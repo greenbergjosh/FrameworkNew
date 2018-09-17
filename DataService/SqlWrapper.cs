@@ -61,7 +61,7 @@ namespace DataService
                 SqlConnection cn = new SqlConnection(connectionString);
                 cn.Open();
                 SqlCommand cmd = cn.CreateCommand();
-                cmd.CommandText = "[dbo].[spInsertErrorLog]";
+                cmd.CommandText = "[TowerVisitorRedirectPixel].[spInsertErrorLog]";
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 cmd.Parameters.Add(new SqlParameter("Severity", severity));

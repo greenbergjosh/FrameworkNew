@@ -135,7 +135,7 @@ namespace DataService
             }
             catch (Exception ex)
             {
-                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1, "TowerPixelCapture", "ProcessTowerPixelCapture", $@"{DateTime.Now}::{requestFromPost}", ex.ToString());
+                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $@"{DateTime.Now}::{requestFromPost}", ex.ToString());
             }
         }
 
@@ -158,7 +158,7 @@ namespace DataService
             }
             catch (Exception ex)
             {
-                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::string error::{rawstring}", ex.ToString());
+                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::string error::{rawstring}", ex.ToString());
             }
 
             try
@@ -179,13 +179,13 @@ namespace DataService
                 }
                 else
                 {
-                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::{result}", "No md5");
+                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::{result}", "No md5");
                 }
             }
             catch (Exception ex)
             {
                 File.AppendAllText("DataService.log", $@"{DateTime.Now}::Decrypt error: {rawstring}::{ex.ToString()}" + Environment.NewLine);
-                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::decrypt error::{rawstring}", ex.ToString());
+                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::decrypt error::{rawstring}", ex.ToString());
             }
         }
 
@@ -242,7 +242,7 @@ namespace DataService
 
                 if (!string.IsNullOrEmpty(emailMd5) && emailMd5.ToLower() == "none")
                 {
-                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1, "TowerPixelCapture",
+                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture",
                         "Main", $"{emailMd5}||{label}||{dom}||{page}", "None");
                 }
                 else if (!string.IsNullOrEmpty(emailMd5) && emailMd5.Length == 32)
