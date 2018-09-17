@@ -236,8 +236,12 @@ namespace DataService
                 if (label.Contains("|"))
                 {
                     string[] array = label.Split('|');
-                    dom = array[0];
+                    dom = array[0].Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
                     page = array[1];
+                }
+                else
+                {
+                    dom = label.Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
                 }
 
                 if (!string.IsNullOrEmpty(emailMd5) && emailMd5.ToLower() == "none")
