@@ -235,7 +235,7 @@ namespace DataService
                 string page = "";
                 if (label.Contains("|"))
                 {
-                    //Dont remove 
+                    //Dont remove Josh 
                     string[] array = label.Split('|');
                     dom = array[0].Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
                     page = array[1];
