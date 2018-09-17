@@ -4,15 +4,22 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using GenericEntity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Jw = Utility.JsonWrapper;
 
-namespace ReadPIxel
+namespace ReadPixel
 {
     public class Startup
     {
+        public string ConnectionString;
+        public string ConfigurationKey;
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -26,6 +33,23 @@ namespace ReadPIxel
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                            .SetBasePath(Directory.GetCurrentDirectory())
+                            .AddJsonFile("appsettings.json")
+                            .Build();
+            this.ConnectionString = configuration.GetConnectionString("DefaultConnection");
+            this.ConfigurationKey = configuration.GetValue<String>("Application:Instance");
+
+            string result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                        "SelectConfig",
+                        Jw.Json(new { InstanceId = this.ConfigurationKey }),
+                        "").GetAwaiter().GetResult();
+            IGenericEntity gc = new GenericEntityJson();
+            var gcstate = JsonConvert.DeserializeObject(result);
+            gc.InitializeEntity(null, null, gcstate);
+
+            this.ConnectionString = gc.GetS("Config/PixelReadConnectionString");
 
             app.Run(async (context) =>
             {
@@ -44,31 +68,20 @@ namespace ReadPIxel
 
                 if (!String.IsNullOrEmpty(context.Request.Query["pxl"]))
                 {
-                    Stopwatch stopWatch = new Stopwatch();
-                    try
+                    Stopwatch stopWatch = new Stopwatch();                    
+                    stopWatch.Start();
+
+                    context.RequestAborted.Register(() =>
                     {
-                        stopWatch.Start();
+                        stopWatch.Stop();
+                        long duration = stopWatch.ElapsedMilliseconds;
+                        // Write to DB
+                    });
 
-                        context.RequestAborted.Register(() =>
-                        {
-                            stopWatch.Stop();
-                            long duration = stopWatch.ElapsedMilliseconds;
-                            // Write to DB
-                        });
+                    await Task.Delay(8000);
 
-                        int i = 0;
-                        while (i < 10 && !context.RequestAborted.IsCancellationRequested)
-                        {
-                            await Task.Delay(1000);
-                            i++;
-                        }
-                        context.RequestAborted.ThrowIfCancellationRequested();
-                        if (context.RequestAborted.IsCancellationRequested)
-                        {
-                            stopWatch.Stop();
-                            long duration = stopWatch.ElapsedMilliseconds;
-                            File.AppendAllText("log.txt", $"If canceled: {duration}");
-                        }
+                    if (!context.RequestAborted.IsCancellationRequested)
+                    {
                         var PixelContentBase64 = "R0lGODlhAQABAPcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAABAAEAAAgEAP8FBAA7";
                         var PixelContentType = "image/gif";
                         var PixelImage = Convert.FromBase64String(PixelContentBase64);
@@ -76,14 +89,7 @@ namespace ReadPIxel
                         context.Response.Headers.ContentLength = PixelImage.Length;
                         await context.Response.Body.WriteAsync(PixelImage);
                     }
-                    catch (Exception exPixelWait)
-                    {
-                        stopWatch.Stop();
-                        long duration = stopWatch.ElapsedMilliseconds;
-                        File.AppendAllText("log.txt", $"Exception: {duration}::{exPixelWait.ToString()}");
-                    }
                 }
-
             }
             catch (Exception ex)
             {

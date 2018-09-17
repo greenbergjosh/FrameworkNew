@@ -77,7 +77,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoslynArticleTester", "Rosl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoadBalancedWriter", "LoadBalancedWriter\LoadBalancedWriter.csproj", "{90681011-F30C-424E-8AE5-DA352B0B425C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadPIxel", "ReadPIxel\ReadPIxel.csproj", "{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadPixel", "ReadPIxel\ReadPixel.csproj", "{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -319,7 +319,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal
