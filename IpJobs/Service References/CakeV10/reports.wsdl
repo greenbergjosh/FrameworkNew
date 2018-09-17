@@ -1,0 +1,697 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://cakemarketing.com/api/10/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:s1="API:id_name_store" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://cakemarketing.com/api/10/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://cakemarketing.com/api/10/">
+      <s:import namespace="API:id_name_store" />
+      <s:element name="Conversions">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="api_key" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="start_date" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="end_date" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="affiliate_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="advertiser_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="offer_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="campaign_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="creative_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="include_tests" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="start_at_row" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="row_limit" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="sort_field" type="tns:ConversionsSortFields" />
+            <s:element minOccurs="1" maxOccurs="1" name="sort_descending" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:simpleType name="ConversionsSortFields">
+        <s:restriction base="s:string">
+          <s:enumeration value="conversion_id" />
+          <s:enumeration value="visitor_id" />
+          <s:enumeration value="request_session_id" />
+          <s:enumeration value="click_id" />
+          <s:enumeration value="conversion_date" />
+          <s:enumeration value="transaction_id" />
+          <s:enumeration value="last_updated" />
+        </s:restriction>
+      </s:simpleType>
+      <s:element name="ConversionsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ConversionsResult" type="tns:conversion_report_response" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="conversion_report_response">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:get_response">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="conversions" type="tns:ArrayOfConversion" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="get_response">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:base_response">
+            <s:sequence>
+              <s:element minOccurs="1" maxOccurs="1" name="row_count" type="s:int" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="base_response">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="success" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="message" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfConversion">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="conversion" nillable="true" type="tns:conversion" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="conversion">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="conversion_id" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="visitor_id" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="request_session_id" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="click_request_session_id" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="click_id" nillable="true" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="conversion_date" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="last_updated" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="1" maxOccurs="1" name="click_date" nillable="true" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="affiliate" type="s1:affiliate" />
+          <s:element minOccurs="0" maxOccurs="1" name="advertiser" type="s1:advertiser" />
+          <s:element minOccurs="0" maxOccurs="1" name="offer" type="s1:offer" />
+          <s:element minOccurs="0" maxOccurs="1" name="offer_contract" type="s1:offer_contract" />
+          <s:element minOccurs="1" maxOccurs="1" name="campaign_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="creative" type="s1:creative" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_3" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_4" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_5" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="conversion_type" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="paid" type="tns:payment" />
+          <s:element minOccurs="0" maxOccurs="1" name="received" type="tns:payment" />
+          <s:element minOccurs="1" maxOccurs="1" name="step_reached" type="s:unsignedByte" />
+          <s:element minOccurs="1" maxOccurs="1" name="pixel_dropped" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="suppressed" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="returned" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="test" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="transaction_id" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="conversion_ip_address" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="click_ip_address" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="conversion_referrer_url" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="click_referrer_url" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="search_term" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="conversion_user_agent" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="click_user_agent" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="country" type="s1:country" />
+          <s:element minOccurs="0" maxOccurs="1" name="region" type="s1:region" />
+          <s:element minOccurs="0" maxOccurs="1" name="language" type="s1:language" />
+          <s:element minOccurs="0" maxOccurs="1" name="isp" type="s1:isp" />
+          <s:element minOccurs="0" maxOccurs="1" name="device" type="s1:device" />
+          <s:element minOccurs="0" maxOccurs="1" name="operating_system" type="tns:operating_system" />
+          <s:element minOccurs="0" maxOccurs="1" name="browser" type="tns:browser" />
+          <s:element minOccurs="0" maxOccurs="1" name="current_disposition" type="tns:disposition" />
+          <s:element minOccurs="0" maxOccurs="1" name="campaign_type" type="s1:campaign_type" />
+          <s:element minOccurs="0" maxOccurs="1" name="order_total" type="tns:payment" />
+          <s:element minOccurs="0" maxOccurs="1" name="storefront" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="payout_rule_name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="note" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="payment">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="currency_id" type="s:unsignedByte" />
+          <s:element minOccurs="1" maxOccurs="1" name="amount" type="s:decimal" />
+          <s:element minOccurs="0" maxOccurs="1" name="formatted_amount" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="operating_system">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="operating_system_id" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="operating_system_name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="operating_system_version" type="s1:version" />
+          <s:element minOccurs="0" maxOccurs="1" name="operating_system_version_minor" type="s1:version" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="browser">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="browser_id" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="browser_name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="browser_version" type="s1:version" />
+          <s:element minOccurs="0" maxOccurs="1" name="browser_version_minor" type="s1:version" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="disposition">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="disposition_id" type="s:short" />
+          <s:element minOccurs="0" maxOccurs="1" name="disposition_name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="disposition_type" type="s1:disposition_type" />
+          <s:element minOccurs="0" maxOccurs="1" name="contact" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="disposition_date" type="s:dateTime" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="ConversionChanges">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="api_key" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="changes_since" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="include_new_conversions" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="affiliate_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="advertiser_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="offer_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="campaign_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="creative_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="include_tests" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="start_at_row" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="row_limit" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="sort_field" type="tns:ConversionsSortFields" />
+            <s:element minOccurs="1" maxOccurs="1" name="sort_descending" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ConversionChangesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ConversionChangesResult" type="tns:conversion_report_response" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Clicks">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="api_key" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="start_date" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="end_date" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="affiliate_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="advertiser_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="offer_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="campaign_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="creative_id" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="price_format_id" type="s:unsignedByte" />
+            <s:element minOccurs="1" maxOccurs="1" name="include_duplicates" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="include_tests" type="s:boolean" />
+            <s:element minOccurs="1" maxOccurs="1" name="start_at_row" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="row_limit" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ClicksResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ClicksResult" type="tns:click_report_response" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="click_report_response">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:get_response">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="clicks" type="tns:ArrayOfClick" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ArrayOfClick">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="click" nillable="true" type="tns:click" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="click">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="click_id" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="visitor_id" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="request_session_id" type="s:long" />
+          <s:element minOccurs="1" maxOccurs="1" name="click_date" type="s:dateTime" />
+          <s:element minOccurs="0" maxOccurs="1" name="udid" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="channel" type="s1:channel" />
+          <s:element minOccurs="0" maxOccurs="1" name="source_affiliate" type="s1:source_affiliate" />
+          <s:element minOccurs="0" maxOccurs="1" name="brand_advertiser" type="s1:brand_advertiser" />
+          <s:element minOccurs="0" maxOccurs="1" name="site_offer" type="s1:site_offer" />
+          <s:element minOccurs="0" maxOccurs="1" name="site_offer_contract" type="s1:site_offer_contract" />
+          <s:element minOccurs="0" maxOccurs="1" name="affiliate" type="s1:affiliate" />
+          <s:element minOccurs="0" maxOccurs="1" name="advertiser" type="s1:advertiser" />
+          <s:element minOccurs="0" maxOccurs="1" name="offer" type="s1:offer" />
+          <s:element minOccurs="0" maxOccurs="1" name="offer_contract" type="s1:offer_contract" />
+          <s:element minOccurs="0" maxOccurs="1" name="campaign" type="tns:campaign" />
+          <s:element minOccurs="0" maxOccurs="1" name="creative" type="s1:creative" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_1" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_2" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_3" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_4" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="sub_id_5" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ip_address" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="user_agent" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="referrer_url" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="search_term" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="request_url" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="redirect_url" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="country" type="s1:country" />
+          <s:element minOccurs="0" maxOccurs="1" name="region" type="s1:region" />
+          <s:element minOccurs="0" maxOccurs="1" name="language" type="s1:language" />
+          <s:element minOccurs="0" maxOccurs="1" name="isp" type="s1:isp" />
+          <s:element minOccurs="0" maxOccurs="1" name="device" type="s1:device" />
+          <s:element minOccurs="0" maxOccurs="1" name="operating_system" type="tns:operating_system" />
+          <s:element minOccurs="0" maxOccurs="1" name="browser" type="tns:browser" />
+          <s:element minOccurs="0" maxOccurs="1" name="disposition" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="paid_action" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="paid" type="tns:payment" />
+          <s:element minOccurs="0" maxOccurs="1" name="received" type="tns:payment" />
+          <s:element minOccurs="1" maxOccurs="1" name="duplicate" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="duplicate_clicks" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="total_clicks" type="s:int" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="campaign">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="campaign_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="campaign_third_party_name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="campaign_type" type="tns:campaign_type" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="campaign_type">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="campaign_type_id" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="campaign_type_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="conversion_report_response" nillable="true" type="tns:conversion_report_response" />
+      <s:element name="click_report_response" nillable="true" type="tns:click_report_response" />
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="API:id_name_store">
+      <s:complexType name="affiliate">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="affiliate_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="affiliate_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="advertiser">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="advertiser_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="advertiser_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="offer">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="offer_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="offer_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="offer_contract">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="offer_contract_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="offer_contract_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="creative">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="creative_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="creative_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="country">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="country_code" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="country_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="region">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="region_code" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="region_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="language">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="language_id" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="language_name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="language_abbr" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="isp">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="isp_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="isp_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="device">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="device_id" type="s:short" />
+          <s:element minOccurs="0" maxOccurs="1" name="device_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="version">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="version_id" type="s:short" />
+          <s:element minOccurs="0" maxOccurs="1" name="version_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="disposition_type">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="disposition_type_id" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="disposition_type_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="campaign_type">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="campaign_type_id" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="campaign_type_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="channel">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="channel_id" nillable="true" type="s:unsignedByte" />
+          <s:element minOccurs="0" maxOccurs="1" name="channel_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="source_affiliate">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="source_affiliate_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="source_affiliate_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="brand_advertiser">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="brand_advertiser_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="brand_advertiser_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="site_offer">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="site_offer_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="site_offer_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="site_offer_contract">
+        <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="site_offer_contract_id" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="site_offer_contract_name" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="ConversionsSoapIn">
+    <wsdl:part name="parameters" element="tns:Conversions" />
+  </wsdl:message>
+  <wsdl:message name="ConversionsSoapOut">
+    <wsdl:part name="parameters" element="tns:ConversionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ConversionChangesSoapIn">
+    <wsdl:part name="parameters" element="tns:ConversionChanges" />
+  </wsdl:message>
+  <wsdl:message name="ConversionChangesSoapOut">
+    <wsdl:part name="parameters" element="tns:ConversionChangesResponse" />
+  </wsdl:message>
+  <wsdl:message name="ClicksSoapIn">
+    <wsdl:part name="parameters" element="tns:Clicks" />
+  </wsdl:message>
+  <wsdl:message name="ClicksSoapOut">
+    <wsdl:part name="parameters" element="tns:ClicksResponse" />
+  </wsdl:message>
+  <wsdl:message name="ConversionsHttpGetIn">
+    <wsdl:part name="api_key" type="s:string" />
+    <wsdl:part name="start_date" type="s:string" />
+    <wsdl:part name="end_date" type="s:string" />
+    <wsdl:part name="affiliate_id" type="s:string" />
+    <wsdl:part name="advertiser_id" type="s:string" />
+    <wsdl:part name="offer_id" type="s:string" />
+    <wsdl:part name="campaign_id" type="s:string" />
+    <wsdl:part name="creative_id" type="s:string" />
+    <wsdl:part name="include_tests" type="s:string" />
+    <wsdl:part name="start_at_row" type="s:string" />
+    <wsdl:part name="row_limit" type="s:string" />
+    <wsdl:part name="sort_field" type="s:string" />
+    <wsdl:part name="sort_descending" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ConversionsHttpGetOut">
+    <wsdl:part name="Body" element="tns:conversion_report_response" />
+  </wsdl:message>
+  <wsdl:message name="ConversionChangesHttpGetIn">
+    <wsdl:part name="api_key" type="s:string" />
+    <wsdl:part name="changes_since" type="s:string" />
+    <wsdl:part name="include_new_conversions" type="s:string" />
+    <wsdl:part name="affiliate_id" type="s:string" />
+    <wsdl:part name="advertiser_id" type="s:string" />
+    <wsdl:part name="offer_id" type="s:string" />
+    <wsdl:part name="campaign_id" type="s:string" />
+    <wsdl:part name="creative_id" type="s:string" />
+    <wsdl:part name="include_tests" type="s:string" />
+    <wsdl:part name="start_at_row" type="s:string" />
+    <wsdl:part name="row_limit" type="s:string" />
+    <wsdl:part name="sort_field" type="s:string" />
+    <wsdl:part name="sort_descending" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ConversionChangesHttpGetOut">
+    <wsdl:part name="Body" element="tns:conversion_report_response" />
+  </wsdl:message>
+  <wsdl:message name="ClicksHttpGetIn">
+    <wsdl:part name="api_key" type="s:string" />
+    <wsdl:part name="start_date" type="s:string" />
+    <wsdl:part name="end_date" type="s:string" />
+    <wsdl:part name="affiliate_id" type="s:string" />
+    <wsdl:part name="advertiser_id" type="s:string" />
+    <wsdl:part name="offer_id" type="s:string" />
+    <wsdl:part name="campaign_id" type="s:string" />
+    <wsdl:part name="creative_id" type="s:string" />
+    <wsdl:part name="price_format_id" type="s:string" />
+    <wsdl:part name="include_duplicates" type="s:string" />
+    <wsdl:part name="include_tests" type="s:string" />
+    <wsdl:part name="start_at_row" type="s:string" />
+    <wsdl:part name="row_limit" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ClicksHttpGetOut">
+    <wsdl:part name="Body" element="tns:click_report_response" />
+  </wsdl:message>
+  <wsdl:message name="ConversionsHttpPostIn">
+    <wsdl:part name="api_key" type="s:string" />
+    <wsdl:part name="start_date" type="s:string" />
+    <wsdl:part name="end_date" type="s:string" />
+    <wsdl:part name="affiliate_id" type="s:string" />
+    <wsdl:part name="advertiser_id" type="s:string" />
+    <wsdl:part name="offer_id" type="s:string" />
+    <wsdl:part name="campaign_id" type="s:string" />
+    <wsdl:part name="creative_id" type="s:string" />
+    <wsdl:part name="include_tests" type="s:string" />
+    <wsdl:part name="start_at_row" type="s:string" />
+    <wsdl:part name="row_limit" type="s:string" />
+    <wsdl:part name="sort_field" type="s:string" />
+    <wsdl:part name="sort_descending" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ConversionsHttpPostOut">
+    <wsdl:part name="Body" element="tns:conversion_report_response" />
+  </wsdl:message>
+  <wsdl:message name="ConversionChangesHttpPostIn">
+    <wsdl:part name="api_key" type="s:string" />
+    <wsdl:part name="changes_since" type="s:string" />
+    <wsdl:part name="include_new_conversions" type="s:string" />
+    <wsdl:part name="affiliate_id" type="s:string" />
+    <wsdl:part name="advertiser_id" type="s:string" />
+    <wsdl:part name="offer_id" type="s:string" />
+    <wsdl:part name="campaign_id" type="s:string" />
+    <wsdl:part name="creative_id" type="s:string" />
+    <wsdl:part name="include_tests" type="s:string" />
+    <wsdl:part name="start_at_row" type="s:string" />
+    <wsdl:part name="row_limit" type="s:string" />
+    <wsdl:part name="sort_field" type="s:string" />
+    <wsdl:part name="sort_descending" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ConversionChangesHttpPostOut">
+    <wsdl:part name="Body" element="tns:conversion_report_response" />
+  </wsdl:message>
+  <wsdl:message name="ClicksHttpPostIn">
+    <wsdl:part name="api_key" type="s:string" />
+    <wsdl:part name="start_date" type="s:string" />
+    <wsdl:part name="end_date" type="s:string" />
+    <wsdl:part name="affiliate_id" type="s:string" />
+    <wsdl:part name="advertiser_id" type="s:string" />
+    <wsdl:part name="offer_id" type="s:string" />
+    <wsdl:part name="campaign_id" type="s:string" />
+    <wsdl:part name="creative_id" type="s:string" />
+    <wsdl:part name="price_format_id" type="s:string" />
+    <wsdl:part name="include_duplicates" type="s:string" />
+    <wsdl:part name="include_tests" type="s:string" />
+    <wsdl:part name="start_at_row" type="s:string" />
+    <wsdl:part name="row_limit" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ClicksHttpPostOut">
+    <wsdl:part name="Body" element="tns:click_report_response" />
+  </wsdl:message>
+  <wsdl:portType name="reportsSoap">
+    <wsdl:operation name="Conversions">
+      <wsdl:input message="tns:ConversionsSoapIn" />
+      <wsdl:output message="tns:ConversionsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <wsdl:input message="tns:ConversionChangesSoapIn" />
+      <wsdl:output message="tns:ConversionChangesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <wsdl:input message="tns:ClicksSoapIn" />
+      <wsdl:output message="tns:ClicksSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="reportsHttpGet">
+    <wsdl:operation name="Conversions">
+      <wsdl:input message="tns:ConversionsHttpGetIn" />
+      <wsdl:output message="tns:ConversionsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <wsdl:input message="tns:ConversionChangesHttpGetIn" />
+      <wsdl:output message="tns:ConversionChangesHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <wsdl:input message="tns:ClicksHttpGetIn" />
+      <wsdl:output message="tns:ClicksHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="reportsHttpPost">
+    <wsdl:operation name="Conversions">
+      <wsdl:input message="tns:ConversionsHttpPostIn" />
+      <wsdl:output message="tns:ConversionsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <wsdl:input message="tns:ConversionChangesHttpPostIn" />
+      <wsdl:output message="tns:ConversionChangesHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <wsdl:input message="tns:ClicksHttpPostIn" />
+      <wsdl:output message="tns:ClicksHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="reportsSoap" type="tns:reportsSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Conversions">
+      <soap:operation soapAction="http://cakemarketing.com/api/10/Conversions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <soap:operation soapAction="http://cakemarketing.com/api/10/ConversionChanges" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <soap:operation soapAction="http://cakemarketing.com/api/10/Clicks" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="reportsSoap12" type="tns:reportsSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Conversions">
+      <soap12:operation soapAction="http://cakemarketing.com/api/10/Conversions" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <soap12:operation soapAction="http://cakemarketing.com/api/10/ConversionChanges" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <soap12:operation soapAction="http://cakemarketing.com/api/10/Clicks" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="reportsHttpGet" type="tns:reportsHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="Conversions">
+      <http:operation location="/Conversions" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <http:operation location="/ConversionChanges" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <http:operation location="/Clicks" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="reportsHttpPost" type="tns:reportsHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="Conversions">
+      <http:operation location="/Conversions" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ConversionChanges">
+      <http:operation location="/ConversionChanges" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Clicks">
+      <http:operation location="/Clicks" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="reports">
+    <wsdl:port name="reportsSoap" binding="tns:reportsSoap">
+      <soap:address location="http://admin.smartadv.com/api/10/reports.asmx" />
+    </wsdl:port>
+    <wsdl:port name="reportsSoap12" binding="tns:reportsSoap12">
+      <soap12:address location="http://admin.smartadv.com/api/10/reports.asmx" />
+    </wsdl:port>
+    <wsdl:port name="reportsHttpGet" binding="tns:reportsHttpGet">
+      <http:address location="http://admin.smartadv.com/api/10/reports.asmx" />
+    </wsdl:port>
+    <wsdl:port name="reportsHttpPost" binding="tns:reportsHttpPost">
+      <http:address location="http://admin.smartadv.com/api/10/reports.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

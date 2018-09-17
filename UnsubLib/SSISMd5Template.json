@@ -1,0 +1,28 @@
+{
+  "CreatorComputerName" : "BLANK",
+  "CreatorName" : "BLANK",
+  "FlatFileFormat" : "Delimited",
+  "FlatFileHeaderRowDelimiter" : "_x000D__x000A_",
+  "FlatFileColumnNamesInFirstDataRow" : "False",
+  "FlatFileRowDelimiter" : "_x000D__x000A_",
+  "FlatFileTextQualifier" : "_x003C_none_x003E_",
+  "FlatFileConnectionString" : "[=FlatFileLocation=]",
+  "FlatFileRetainNulls" : "false",
+  "ServerName" : "[=ServerName=]",
+  "DatabaseName" : "[=DatabaseName=]",
+  "DatabaseConnectionString" : "[=ConnectionString=]",
+  "ErrorTable" : "[=ErrorTable=]",
+  "DestinationTable" : "[=DestinationTable=]",
+  "Columns" : [
+      { 
+        "ColumnDelimiter" : "_x000D__x000A_", 
+        "MaximumWidth" : "32", 
+        "DataType" : "129",
+        "TextQualified" : "True",
+        "ObjectName" : "c_varchar_32",
+	"SDataType" : "str",
+	"CodePage" : "1252",
+	"EMDataType" : "str"
+      }
+  ]
+}
