@@ -61,7 +61,7 @@ namespace ReadPixel
                 SqlConnection cn = new SqlConnection(connectionString);
                 cn.Open();
                 SqlCommand cmd = cn.CreateCommand();
-                cmd.CommandText = "[TowerVisitorRedirectPixel].[spInsertErrorLog]";
+                cmd.CommandText = "[ReadPixel].[spInsertErrorLog]";
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 cmd.Parameters.Add(new SqlParameter("Severity", severity));

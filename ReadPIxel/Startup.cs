@@ -19,6 +19,9 @@ namespace ReadPixel
     {
         public string ConnectionString;
         public string ConfigurationKey;
+        public string PixelReadConnectionString;
+        public string PixelValue;
+        public int PixelDuration;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -49,7 +52,9 @@ namespace ReadPixel
             var gcstate = JsonConvert.DeserializeObject(result);
             gc.InitializeEntity(null, null, gcstate);
 
-            this.ConnectionString = gc.GetS("Config/PixelReadConnectionString");
+            this.PixelReadConnectionString = gc.GetS("Config/PixelReadConnectionString");
+            this.PixelValue = gc.GetS("Config/PixelValue");
+            this.PixelDuration = Int32.Parse(gc.GetS("Config/PixelDuration"));
 
             app.Run(async (context) =>
             {
@@ -66,7 +71,8 @@ namespace ReadPixel
                 StreamReader reader = new StreamReader(context.Request.Body);
                 requestFromPost = await reader.ReadToEndAsync();
 
-                if (!String.IsNullOrEmpty(context.Request.Query["pxl"]))
+                string pixelValue = context.Request.Query["pxl"];
+                if (!String.IsNullOrEmpty(pixelValue))
                 {
                     Stopwatch stopWatch = new Stopwatch();                    
                     stopWatch.Start();
@@ -75,13 +81,22 @@ namespace ReadPixel
                     {
                         stopWatch.Stop();
                         long duration = stopWatch.ElapsedMilliseconds;
-                        // Write to DB
+
+                        string result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                        "FireReadPixel",
+                        Jw.Json(new { Duration = duration, PixelValue = pixelValue }),
+                        "").GetAwaiter().GetResult();
                     });
 
-                    await Task.Delay(8000);
+                    await Task.Delay(this.PixelDuration * 1000);
 
                     if (!context.RequestAborted.IsCancellationRequested)
                     {
+                        string result = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                            "FireReadPixel",
+                            Jw.Json(new { Duration = -1, PixelValue = pixelValue }),
+                            "");
+
                         var PixelContentBase64 = "R0lGODlhAQABAPcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAABAAEAAAgEAP8FBAA7";
                         var PixelContentType = "image/gif";
                         var PixelImage = Convert.FromBase64String(PixelContentBase64);
