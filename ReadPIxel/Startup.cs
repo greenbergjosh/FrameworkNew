@@ -82,7 +82,7 @@ namespace ReadPixel
                         stopWatch.Stop();
                         long duration = stopWatch.ElapsedMilliseconds;
 
-                        string result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                        string result = SqlWrapper.SqlServerProviderEntry(this.PixelReadConnectionString,
                         "ReadPixelFire",
                         Jw.Json(new { Duration = duration, PixelValue = pixelValue }),
                         "").GetAwaiter().GetResult();
@@ -92,7 +92,7 @@ namespace ReadPixel
 
                     if (!context.RequestAborted.IsCancellationRequested)
                     {
-                        string result = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                        string result = await SqlWrapper.SqlServerProviderEntry(this.PixelReadConnectionString,
                             "ReadPixelFire",
                             Jw.Json(new { Duration = -1, PixelValue = pixelValue }),
                             "");

@@ -19,6 +19,7 @@ namespace ReadPixel
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .UseKestrel(options => { options.ListenAnyIP(8082); });
     }
 }
