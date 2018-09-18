@@ -79,6 +79,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoadBalancedWriter", "LoadB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadPixel", "ReadPIxel\ReadPixel.csproj", "{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CountdownGenerator", "CountdownGenerator\CountdownGenerator.csproj", "{E621A07E-2C9C-4897-9EAC-41397D52F0BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -314,6 +316,12 @@ Global
 		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

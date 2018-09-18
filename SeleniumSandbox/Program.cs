@@ -41,11 +41,11 @@ namespace SeleniumSandbox
                 if (type == "Hotmail")
                 {
                     string apiKey = ps.GetS("Credentials/ApiKey");
-                    await DoHotmail(cs, pmAcctId, username, password, url, apiKey);
+                    //await DoHotmail(cs, pmAcctId, username, password, url, apiKey);
                 }
                 else if (type == "Gmail")
                 {
-                    //await DoGmail(cs, pmAcctId, username, password, url);
+                    await DoGmail(cs, pmAcctId, username, password, url);
                 }
             }
         }        
@@ -263,31 +263,39 @@ namespace SeleniumSandbox
                     string pre = "https://postmaster.google.com/dashboards#do=";
                     string post = "&dr=7";
                     string dompart = dom1;
-/*
+
                     // Section 0
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[0] + post);
-                    Wait(driver, 2000, 500);
-
-                    IList<IWebElement> dateCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-date')]"));
-                    IList<IWebElement> numberCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-number')]"));
-
-                    List<Tuple<string, string, string>> spamRate = new List<Tuple<string, string, string>>();
-                    for (int i = 0; i < dateCells.Count; i++)
+                    try
                     {
-                        string date = dateCells[i].Text;
-                        string num = numberCells[i].Text;
-                        spamRate.Add(new Tuple<string, string, string>(domId, date, num));
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[0] + post);
+                        Wait(driver, 2000, 500);
+
+                        IList<IWebElement> dateCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-date')]"));
+                        IList<IWebElement> numberCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-number')]"));
+
+                        List<Tuple<string, string, string>> spamRate = new List<Tuple<string, string, string>>();
+                        for (int i = 0; i < dateCells.Count; i++)
+                        {
+                            string date = dateCells[i].Text;
+                            string num = numberCells[i].Text;
+                            spamRate.Add(new Tuple<string, string, string>(domId, date, num));
+                        }
+
+                        string jsSpam = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
+                            (domains, new List<string>() { "id", "sd", "sr" },
+                            new bool[] { true, true, true });
+
+                        await SqlWrapper.SqlServerProviderEntry(cs,
+                           "InsertDomainSpamRate",
+                           "",
+                           jsSpam);
                     }
-
-                    string jsSpam = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
-                        (domains, new List<string>() { "id", "sd", "sr" },
-                        new bool[] { true, true, true });
-
-                    await SqlWrapper.SqlServerProviderEntry(cs,
-                       "InsertDomainSpamRate",
-                       "",
-                       jsSpam);
-
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 0 Exception", ex.ToString());
+                    }
+/*
                     // Section 1
                     driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[1] + post);
                     Wait(driver, 2000, 500);
