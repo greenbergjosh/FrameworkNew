@@ -142,7 +142,7 @@ namespace CountdownGenerator
                     
                     context.Response.ContentType = "image/gif";
                     long length = ms.Length;
-                    context.Response.Headers.ContentLength = length;
+                    context.Response.Headers.ContentLength = length; 
                     ms.Position = 0;
                     byte[] buffer = ms.GetBuffer();
                     await context.Response.Body.WriteAsync(buffer, 0, (int)length);
