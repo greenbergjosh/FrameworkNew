@@ -95,6 +95,7 @@ namespace CountdownGenerator
                 FontStretch fs;
                 if (!Enum.TryParse<FontStretch>(context.Request.Query["fs"], out fs))
                     fs = FontStretch.Normal;
+                int p = Int32.TryParse(context.Request.Query["p"], out p) == false ? 10 : p;
 
                 //i=teavana&dx=-160&dy=10&dv=10&hx=-55&hy=10&hv=11&mx=50&my=10&mv=12&sx=155&sy=10&fr=32&fg=141&fb=151
                 if (!String.IsNullOrEmpty(imageName))
@@ -129,7 +130,7 @@ namespace CountdownGenerator
 
                         image.AnimationDelay = 100;
                         image.Depth = 16;
-                        image.Posterize(64);
+                        image.Posterize(p);
                         //collection.Add(image);
                         frames[number] = image;
                     });
