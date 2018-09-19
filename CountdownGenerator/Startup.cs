@@ -96,6 +96,8 @@ namespace CountdownGenerator
                 if (!Enum.TryParse<FontStretch>(context.Request.Query["fs"], out fs))
                     fs = FontStretch.Normal;
                 int p = Int32.TryParse(context.Request.Query["p"], out p) == false ? 10 : p;
+                int sz = Int32.TryParse(context.Request.Query["sz"], out sz) == false ? 50 : sz;
+                int dp = Int32.TryParse(context.Request.Query["dp"], out dp) == false ? 16 : dp;
 
                 //i=teavana&dx=-160&dy=10&dv=10&hx=-55&hy=10&hv=11&mx=50&my=10&mv=12&sx=155&sy=10&fr=32&fg=141&fb=151
                 if (!String.IsNullOrEmpty(imageName))
@@ -116,7 +118,7 @@ namespace CountdownGenerator
                         var drawable4 = new DrawableText(sx, sy, number.ToString());
                         var gravity = new DrawableGravity(Gravity.North);
                         var antialias = new DrawableTextAntialias(true);
-                        var size = new DrawableFontPointSize(50);
+                        var size = new DrawableFontPointSize(sz);
                         var color = new DrawableFillColor(MagickColor.FromRgb(fr, fg, fb));
                         var font = new DrawableFont(fnt, fst, fw, fs);
 
@@ -129,8 +131,9 @@ namespace CountdownGenerator
                         image.Draw(drawable4, gravity, font, antialias, size, color);
 
                         image.AnimationDelay = 100;
-                        image.Depth = 16;
+                        image.Depth = dp;
                         image.Posterize(p);
+
                         //collection.Add(image);
                         frames[number] = image;
                     });
@@ -152,6 +155,7 @@ namespace CountdownGenerator
             catch (Exception ex)
             {
                 //File.AppendAllText("log.txt", $@"{DateTime.Now}::{requestFromPost}::{ex.ToString()}" + Environment.NewLine);
+                await SqlWrapper.InsertErrorLog(this.CountdownTimerConnectionString, 1000, "CountDownGenerator", "StartProcess", $@"{DateTime.Now}::{requestFromPost}", ex.ToString());
             }
         }
     }
