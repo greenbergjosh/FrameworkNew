@@ -605,19 +605,14 @@ namespace Utility
             return await sr.ReadToEndAsync();
         }
 
-        public static async Task<string> HttpGetAsync(string path, double timeoutSeconds=60)
+        public static async Task<Tuple<bool, string>> HttpGetAsync(string path, double timeoutSeconds=60)
         {
-            string res = null;
             using (HttpClient client = new HttpClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
                 HttpResponseMessage response = await client.GetAsync(path);
-                if (response.IsSuccessStatusCode)
-                {
-                    res = await response.Content.ReadAsStringAsync();
-                }
+                return new Tuple<bool, string>(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
             }
-            return res;
         }
     }
 }

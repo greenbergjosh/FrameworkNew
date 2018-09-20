@@ -156,7 +156,7 @@ namespace DataService
                             Sev = 1,
                             Proc = "TowerPixelCapture",
                             Meth = "Start",
-                            Desc = Utility.Hashing.EncodeTo64($@"{DateTime.Now}::{ requestFromPost}"),
+                            Desc = Utility.Hashing.EncodeTo64($@"{requestFromPost}"),
                             Msg = Utility.Hashing.EncodeTo64(ex.ToString())
                         }),
                         "");
@@ -208,7 +208,7 @@ namespace DataService
                             Sev = 1000,
                             Proc = "TowerPixelCapture",
                             Meth = "ProcessTowerPixelCapture - Step1Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"{DateTime.Now}::string error::{rawstring}"),
+                            Desc = Utility.Hashing.EncodeTo64($"string error::{rawstring}"),
                             Msg = Utility.Hashing.EncodeTo64(ex.ToString())
                         }),
                         "");
@@ -239,7 +239,7 @@ namespace DataService
                             Sev = 1000,
                             Proc = "TowerPixelCapture",
                             Meth = "ProcessTowerPixelCapture - Step2Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"{DateTime.Now}::{result}"),
+                            Desc = Utility.Hashing.EncodeTo64($"{result}"),
                             Msg = Utility.Hashing.EncodeTo64("No md5")
                         }),
                         "");
@@ -254,7 +254,7 @@ namespace DataService
                             Sev = 1000,
                             Proc = "TowerPixelCapture",
                             Meth = "ProcessTowerPixelCapture - Step3Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"{DateTime.Now}::decrypt error::{rawstring}"),
+                            Desc = Utility.Hashing.EncodeTo64($"decrypt error::{rawstring}"),
                             Msg = Utility.Hashing.EncodeTo64(ex.ToString())
                         }),
                         "");
@@ -342,7 +342,7 @@ namespace DataService
                         try
                         {
                             string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + emailMd5;
-                            string jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
+                            var jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
                             await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
                                 "TowerVisitorErrorLog",
                                 Jw.Json(new
@@ -351,17 +351,21 @@ namespace DataService
                                     Proc = "TowerPixelCapture",
                                     Meth = "ProcessTowerMessage - CallEmailApi",
                                     Desc = Utility.Hashing.EncodeTo64(emailMd5),
-                                    Msg = !String.IsNullOrEmpty(jsonPlainEmail) 
-                                        ? Utility.Hashing.EncodeTo64(jsonPlainEmail) : "Null or empty jsonPlainEmail"
+                                    Msg = !String.IsNullOrEmpty(jsonPlainEmail.Item2) 
+                                        ? Utility.Hashing.EncodeTo64(jsonPlainEmail.Item2) 
+                                        : Utility.Hashing.EncodeTo64("Null or empty jsonPlainEmail")
                                 }),
                                 "");
-                            IGenericEntity te = new GenericEntityJson();
-                            var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail);
-                            te.InitializeEntity(null, null, ts);
-                            if (te.GetS("target_email").Length > 3)
+                            if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
                             {
-                                emailSource = "tower";
-                                towerEmailPlainText = te.GetS("target_email");
+                                IGenericEntity te = new GenericEntityJson();
+                                var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail.Item2);
+                                te.InitializeEntity(null, null, ts);
+                                if (te.GetS("target_email").Length > 3)
+                                {
+                                    emailSource = "tower";
+                                    towerEmailPlainText = te.GetS("target_email");
+                                }
                             }
                         }
                         catch (Exception tgException)
