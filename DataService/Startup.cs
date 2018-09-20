@@ -121,13 +121,27 @@ namespace DataService
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
-                    await ProcessTowerPixelCapture(context.Request.Query["eqs"].ToString());
+                    string eqs = context.Request.Query["eqs"].ToString();
+                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1,
+                            Proc = "TowerPixelCapture",
+                            Meth = "Router",
+                            Desc = "",
+                            Msg = Utility.Hashing.EncodeTo64(eqs)
+                        }),
+                        "");
+
+                    await ProcessTowerPixelCapture(eqs);
                     context.Response.ContentType = ContentType;
                     context.Response.Headers.ContentLength = TowerPixelImage.Length;
                     await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))
                 {
+                    // I don't know what this is - remove it if we don't know
                     string nf = Jw.Json(new { Email = "NotFound" });
                     context.Response.StatusCode = 200;
                     await context.Response.WriteAsync(nf);
@@ -135,16 +149,45 @@ namespace DataService
             }
             catch (Exception ex)
             {
-                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $@"{DateTime.Now}::{requestFromPost}", ex.ToString());
+                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1,
+                            Proc = "TowerPixelCapture",
+                            Meth = "Start",
+                            Desc = Utility.Hashing.EncodeTo64($@"{DateTime.Now}::{ requestFromPost}"),
+                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
             }
         }
 
         public async Task<string> SaveOnPointConsoleLiveFeed(string request)
         {
-            return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+            string result = Jw.Json(new { Result = "Failure" });
+            try
+            {
+                return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
                         "SaveOnPointConsoleLiveFeed",
                         "",
                         request);
+            }
+            catch (Exception ex)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                "OnPointConsoleErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1000,
+                                    Proc = "DataService",
+                                    Meth = "SaveOnPointConsoleLiveFeed - SaveOnPointConsoleLiveFeed Failed",
+                                    Desc = Utility.Hashing.EncodeTo64(request),
+                                    Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                                }),
+                                "");
+            }
+            return result;
         }
 
         public async Task ProcessTowerPixelCapture(string rawstring)
@@ -158,7 +201,17 @@ namespace DataService
             }
             catch (Exception ex)
             {
-                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::string error::{rawstring}", ex.ToString());
+                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "TowerPixelCapture",
+                            Meth = "ProcessTowerPixelCapture - Step1Fail",
+                            Desc = Utility.Hashing.EncodeTo64($"{DateTime.Now}::string error::{rawstring}"),
+                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
             }
 
             try
@@ -179,13 +232,32 @@ namespace DataService
                 }
                 else
                 {
-                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::{result}", "No md5");
+                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "TowerPixelCapture",
+                            Meth = "ProcessTowerPixelCapture - Step2Fail",
+                            Desc = Utility.Hashing.EncodeTo64($"{DateTime.Now}::{result}"),
+                            Msg = Utility.Hashing.EncodeTo64("No md5")
+                        }),
+                        "");
                 }
             }
             catch (Exception ex)
             {
-                File.AppendAllText("DataService.log", $@"{DateTime.Now}::Decrypt error: {rawstring}::{ex.ToString()}" + Environment.NewLine);
-                await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture", "ProcessTowerPixelCapture", $"{DateTime.Now}::decrypt error::{rawstring}", ex.ToString());
+                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "TowerPixelCapture",
+                            Meth = "ProcessTowerPixelCapture - Step3Fail",
+                            Desc = Utility.Hashing.EncodeTo64($"{DateTime.Now}::decrypt error::{rawstring}"),
+                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
             }
         }
 
@@ -216,17 +288,6 @@ namespace DataService
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
-        public static byte[] ToByteArray(String HexString)
-        {
-            int NumberChars = HexString.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(HexString.Substring(i, 2), 16);
-            }
-            return bytes;
-        }
-
         public async Task ProcessTowerMessage(string emailMd5, string label)
         {
             try
@@ -235,7 +296,6 @@ namespace DataService
                 string page = "";
                 if (label.Contains("|"))
                 {
-                    //Dont remove Josh 
                     string[] array = label.Split('|');
                     dom = array[0].Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
                     page = array[1];
@@ -247,8 +307,17 @@ namespace DataService
 
                 if (!string.IsNullOrEmpty(emailMd5) && emailMd5.ToLower() == "none")
                 {
-                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture",
-                        "Main", $"{emailMd5}||{label}||{dom}||{page}", "None");
+                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "TowerPixelCapture",
+                            Meth = "ProcessTowerMessage",
+                            Desc = Utility.Hashing.EncodeTo64($"Md5 is empty"),
+                            Msg = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
+                        }),
+                        "");
                 }
                 else if (!string.IsNullOrEmpty(emailMd5) && emailMd5.Length == 32)
                 {
@@ -269,32 +338,51 @@ namespace DataService
                     string emailSource = "legacy";
                     if (lpfEmRes == "NotFound")
                     {
+                        string towerEmailPlainText = null;
                         try
                         {
                             string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + emailMd5;
                             string jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
-                            await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 50, "TowerPixelCapture",
-                                "CallEmailApi", emailMd5, jsonPlainEmail);
+                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                "TowerVisitorErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1,
+                                    Proc = "TowerPixelCapture",
+                                    Meth = "ProcessTowerMessage - CallEmailApi",
+                                    Desc = Utility.Hashing.EncodeTo64(emailMd5),
+                                    Msg = Utility.Hashing.EncodeTo64(jsonPlainEmail)
+                                }),
+                                "");
                             IGenericEntity te = new GenericEntityJson();
                             var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail);
                             te.InitializeEntity(null, null, ts);
                             if (te.GetS("target_email").Length > 3)
                             {
                                 emailSource = "tower";
-                                plainText = te.GetS("target_email");
+                                towerEmailPlainText = te.GetS("target_email");
                             }
                         }
                         catch (Exception tgException)
                         {
-                            await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture",
-                                    "TowerDataEmailApiFailed", $"{emailMd5}||{label}||{dom}||{page}", tgException.ToString());
+                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                "TowerVisitorErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1000,
+                                    Proc = "TowerPixelCapture",
+                                    Meth = "ProcessTowerMessage - TowerDataEmailApiFailed",
+                                    Desc = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}"),
+                                    Msg = Utility.Hashing.EncodeTo64(tgException.ToString())
+                                }),
+                                "");
                         }
 
-                        if (plainText != null)
+                        if (towerEmailPlainText != null)
                         {
                             string anteRes = await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
                                 "AddNewTowerEmail",
-                                Jw.Json(new { Email = plainText }),
+                                Jw.Json(new { Email = towerEmailPlainText, Label = label }),
                                 "");
                             IGenericEntity anteGe = new GenericEntityJson();
                             var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
@@ -324,9 +412,17 @@ namespace DataService
                 }
                 else
                 {
-                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture",
-                        "Main", "Invalid query string",
-                        $"{emailMd5}||{label}||{dom}||{page}");
+                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "TowerPixelCapture",
+                            Meth = "ProcessTowerMessage",
+                            Desc = Utility.Hashing.EncodeTo64($"Invalid query string"),
+                            Msg = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
+                        }),
+                        "");
                 }
 
             }
@@ -334,12 +430,21 @@ namespace DataService
             {
                 try
                 {
-                    await SqlWrapper.InsertErrorLog(this.TowerDataDbConnectionString, 1000, "TowerPixelCapture",
-                        "Main", "", ex.ToString());
+                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "TowerVisitorErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "TowerPixelCapture",
+                            Meth = "ProcessTowerMessage - OuterException",
+                            Desc = Utility.Hashing.EncodeTo64($""),
+                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
                 }
                 catch (Exception inex)
                 {
-                    File.AppendAllText("DataService.log", $@"InsertErrorLog Failed::{DateTime.Now}::{inex.ToString()}" +
+                    File.AppendAllText("DataService.log", $@"InsertErrorLog Failed::OuterException::{DateTime.Now}::{inex.ToString()}" +
                                 Environment.NewLine);
                 }
             }

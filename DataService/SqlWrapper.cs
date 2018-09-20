@@ -19,7 +19,9 @@ namespace DataService
                 { "LogPixelFire", "[TowerVisitorRedirectPixel].[spLogPixelFire]" },
                 { "SelectOnMd5", "[TowerVisitorRedirectPixel].[spSelectOnMd5]" },
                 { "AddNewTowerEmail", "[TowerVisitorRedirectPixel].[spAddNewTowerEmail]" },
-                { "SaveOnPointConsoleLiveFeed", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveFeed]" }
+                { "SaveOnPointConsoleLiveFeed", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveFeed]" },
+                { "TowerVisitorErrorLog", "[TowerVisitorRedirectPixel].[spInsertErrorLog]" },
+                { "OnPointConsoleErrorLog", "[OnPointConsoleLiveFeed].[spInsertErrorLog]" }
             };
 
             string sp = null;
@@ -53,32 +55,5 @@ namespace DataService
 
             return outval;
         }
-
-        public static async Task InsertErrorLog(string connectionString, int severity, string process, string method, string descriptor, string message)
-        {
-            try
-            {
-                SqlConnection cn = new SqlConnection(connectionString);
-                cn.Open();
-                SqlCommand cmd = cn.CreateCommand();
-                cmd.CommandText = "[TowerVisitorRedirectPixel].[spInsertErrorLog]";
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.Add(new SqlParameter("Severity", severity));
-                cmd.Parameters.Add(new SqlParameter("Process", process));
-                cmd.Parameters.Add(new SqlParameter("Method", method));
-                cmd.Parameters.Add(new SqlParameter("Descriptor", descriptor));
-                cmd.Parameters.Add(new SqlParameter("Message", message));
-
-                cmd.CommandTimeout = 120;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
-                cn.Close();
-            }
-            catch (Exception ex)
-            {
-                int i = 1;
-            }
-        }
-
     }
 }

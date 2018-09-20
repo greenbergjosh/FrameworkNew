@@ -1,0 +1,2303 @@
+{
+  "Test0": { "Entity" : { "Evaluate": { "Constant": "Any constant evaluated now"} } },
+  "Test1": { "Entity" : { "Evaluate": { "Code": "Actual C# code here to be evaluated now" } } },
+  "Test2": { "Entity" : { "Evaluate": { "EntityId": 15 } } },
+  "Test3": { "QuotedEntity" : { "Evaluate": { "Constant": "Any constant to be evaluated in the future"} } } ,
+  "ConfigurationEntities": [
+    {
+      "EntityTypeId": "",
+      "Name": "",
+      "Description": ""
+    },
+    {
+      "EntityTypeVersionId": "",
+      "EntityTypeId": ""
+    },
+    {
+      "EntityId": "",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "",
+      "EntityId": "",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityTypeId": "2fabc096-f54f-4bf0-a407-117a4b41acc0",
+      "Name": "Evaluatable",
+      "Description": "The core evaluatable of the E language"
+    },
+    {
+      "EntityTypeVersionId": "3e0b7dbe-a3c5-4c16-a2d4-6c7e7bd3d236",
+      "EntityTypeId": "2fabc096-f54f-4bf0-a407-117a4b41acc0",
+      "InputParameters": [
+        { "Name": "EntityId", "Required": "True" }
+      ]
+    },
+    {
+      "EntityId": "265f2479-6ef7-4462-b695-8cafeb75cb16",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "2dc4ebe8-887b-41ae-8e0a-a80f31f36b1e",
+      "EntityId": "265f2479-6ef7-4462-b695-8cafeb75cb16",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "77a4b42d-e67e-4de1-998c-c54fae820ca3",
+      "EntityVariantId": "2dc4ebe8-887b-41ae-8e0a-a80f31f36b1e",
+      "EntityTypeVersionId": "3e0b7dbe-a3c5-4c16-a2d4-6c7e7bd3d236",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Evaluatable",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.Evaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "d79fda8d-ae03-44e9-8874-47833be07cf9",
+      "Name": "Memory Evaluatable",
+      "Description": "The memory service type"
+    },
+    {
+      "EntityTypeVersionId": "1bb079c4-8355-44da-a235-58b0ee53d3d6",
+      "EntityTypeId": "d79fda8d-ae03-44e9-8874-47833be07cf9",
+      "InputParameters": [
+        { "Name": "Method", "Required": "True", "AllowedValues": ["Get", "Set"] },
+        { "Name": "Location", "Required": "True" },
+        { "Name": "Partition" },
+        { "Name": "Key", "Required": "True" },
+        { "Name": "Value", "RequiredWhen": [ { "Name": "Method", "MatchValues": [ "Set" ] } ] },
+        { "Name": "DefaultValue", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] },
+        { "Name": "DefaultValueCreator", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] }
+      ],
+      "ReturnValues": [
+        { "Name": "Result", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] }
+      ]
+    },
+    {
+      "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "67533d42-a520-4351-8367-28d5d529654e",
+      "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "6fc3cfa0-397f-429c-ad02-a18b3395082d",
+      "EntityVariantId": "67533d42-a520-4351-8367-28d5d529654e",
+      "EntityTypeVersionId": "1bb079c4-8355-44da-a235-58b0ee53d3d6",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Memory Evaluatable",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.MemoryEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "42c3e22e-2beb-486c-b4b5-49336da0bff6",
+      "Name": "Composite Evaluatable",
+      "Description": "Composite Evaluatable"
+    },
+    {
+      "EntityTypeVersionId": "6d539633-5b2d-4fec-b1e5-22ed19e8827f",
+      "EntityTypeId": "42c3e22e-2beb-486c-b4b5-49336da0bff6",
+      "InputParameters": [
+        { "Name": "PreEvaluatables" },
+        { "Name": "PostEvaluatables" },
+        { "Name": "Evaluatables" },
+        { "Name": "PrimaryEntityId" },
+        { "Name": "Reverse" },
+        { "Name": "OutputToPropagate" }
+      ]
+    },
+    {
+      "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "5dfc6bab-bcee-4dde-9bb0-9ce0dc63b8fc",
+      "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "9984d6f3-fbbd-43ff-83d5-066fb281ba66",
+      "EntityVariantId": "5dfc6bab-bcee-4dde-9bb0-9ce0dc63b8fc",
+      "EntityTypeVersionId": "6d539633-5b2d-4fec-b1e5-22ed19e8827f",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Composite Evaluatable",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.CompositeEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "0091515d-e53f-4ed1-99ef-8f50ed22689f",
+      "Name": "Calls Decoration",
+      "Description": "Calls Decoration"
+    },
+    {
+      "EntityTypeVersionId": "d2e7dd1a-afdb-4b59-be05-bb04ffc10a61",
+      "EntityTypeId": "0091515d-e53f-4ed1-99ef-8f50ed22689f",
+      "InputParameters": [ { "Name": "TargetEntityId" } ],
+      "OutputParameters": [ "Calls" ]
+    },
+    {
+      "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "a323482a-1a7d-4c2a-82b6-a7a703d3b832",
+      "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "e0498e58-5bc9-4b86-93d6-aa203789228a",
+      "EntityVariantId": "a323482a-1a7d-4c2a-82b6-a7a703d3b832",
+      "EntityTypeVersionId": "d2e7dd1a-afdb-4b59-be05-bb04ffc10a61",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Calls Decoration",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.CallsDecoration, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "9502e953-7924-4fbd-95fb-890b95b47977",
+      "Name": "IO Evaluatable",
+      "Description": "IO Evaluatable"
+    },
+    {
+      "EntityTypeVersionId": "450aa731-bdc0-45a9-ba89-0def05f37656",
+      "EntityTypeId": "9502e953-7924-4fbd-95fb-890b95b47977",
+      "InputParameters": [
+        { "Name": "Method", "Required": "True", "AllowedValues": [ "Write", "WriteLine", "Indent", "Unindent" ] },
+        { "Name": "Message", "RequiredWhen": [ { "Name": "Method", "MatchValues": [ "Write", "WriteLine" ] } ] },
+        { "Name": "MemoryLocationGuid" }
+      ]
+    },
+    {
+      "EntityId": "92897a5d-0797-43ef-a4f6-3d88f62952a0",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "6c8efe17-d11d-4c88-812c-ccd7cd7a3f83",
+      "EntityId": "92897a5d-0797-43ef-a4f6-3d88f62952a0",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "35a3f59b-a354-430f-b7b6-fc2737bbfdc9",
+      "EntityVariantId": "6c8efe17-d11d-4c88-812c-ccd7cd7a3f83",
+      "EntityTypeVersionId": "450aa731-bdc0-45a9-ba89-0def05f37656",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "IO Evaluatable",    
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "MemoryGet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate":  { "Constant": "Get" } } },
+                "Partition": { "Entity" : { "Evaluate":  { "Constant": "__IO__" } } }
+              }
+            }
+          }
+        },
+        { "QuotedEntity": { 
+            "Name": "MemorySet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate":  { "Constant": "Set" } } },
+                "Partition": { "Entity" : { "Evaluate":  { "Constant": "__IO__" } } }
+              }
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.IoEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "7d1ec250-5122-499e-8662-8d1c8fdc9a37",
+      "Name": "IO Evaluatable With Fixed Memory Location",
+      "Description": "IO Evaluatable With Fixed Memory Location"
+    },
+    {
+      "EntityTypeVersionId": "7af64509-f4e4-4e81-a260-05147fdc4324",
+      "EntityTypeId": "7d1ec250-5122-499e-8662-8d1c8fdc9a37"
+    },
+    {
+      "EntityId": "a54c22b7-7a68-42f8-9a15-a3c7e930210c",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "dc3eccfb-1f81-4e3a-a130-4c3e5d76bbfe",
+      "EntityId": "a54c22b7-7a68-42f8-9a15-a3c7e930210c",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "a48454f1-f3a0-48ac-903d-ccc34c110ca4",
+      "EntityVariantId": "dc3eccfb-1f81-4e3a-a130-4c3e5d76bbfe",
+      "EntityTypeVersionId": "7af64509-f4e4-4e81-a260-05147fdc4324",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "IO Evaluatable With Fixed Memory Location",    
+      "Evaluate": {
+        "EntityId": "92897a5d-0797-43ef-a4f6-3d88f62952a0",
+        "ActualParameters": {
+          "MemoryLocationGuid": { "Entity" : { "Evaluate":  { "Constant": "620015f2-dca1-4cae-9e3e-18d3fa06a458"} } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "4b1a222f-c476-454c-9d11-40e5bf82a4c0",
+      "Name": "Composite Decorated with MemoryLocation, Calls",
+      "Description": "Composite Decorated with MemoryLocation, Calls"
+    },
+    {
+      "EntityTypeVersionId": "75af7542-23b5-4922-8595-bc771d4610a1",
+      "EntityTypeId": "4b1a222f-c476-454c-9d11-40e5bf82a4c0",
+      "InputParameters": [
+        { "Name": "PrimaryEntityId" },
+        { "Name": "OutputToPropagate" }
+      ]
+    },
+    {
+      "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "81d8a42e-48df-4164-b5d1-697cebe2318f",
+      "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "8318a85d-743b-4774-ba90-9d438bdc76a0",
+      "EntityVariantId": "81d8a42e-48df-4164-b5d1-697cebe2318f",
+      "EntityTypeVersionId": "75af7542-23b5-4922-8595-bc771d4610a1",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Composite Decorated with MemoryLocation, Calls",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+          "OutputToPropagate": { "__InputParameter": "OutputToPropagate" },
+          "PreEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            },
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "66bf4a8d-f527-44bf-bd90-a21fc2ff4bc0",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "EntityTypeId": "b98f629e-8835-4d94-aad3-fb0982ca5c65",
+      "Name": "Composite Decorated with Calls",
+      "Description": "Composite Decorated with Calls"
+    },
+    {
+      "EntityTypeVersionId": "87a8ea04-45a8-4b17-bcca-cdb458923753",
+      "EntityTypeId": "b98f629e-8835-4d94-aad3-fb0982ca5c65",
+      "InputParameters": [
+        { "Name": "PrimaryEntityId" },
+        { "Name": "OutputToPropagate" }
+      ]
+    },
+    {
+      "EntityId": "37472d79-d354-4bde-b5ff-d1ee03d52706",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "4cf2abe9-2b1d-479a-92db-6a3d4f6ae9fa",
+      "EntityId": "37472d79-d354-4bde-b5ff-d1ee03d52706",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "db24b8fb-600b-4824-b324-ce7345ef5cec",
+      "EntityVariantId": "4cf2abe9-2b1d-479a-92db-6a3d4f6ae9fa",
+      "EntityTypeVersionId": "87a8ea04-45a8-4b17-bcca-cdb458923753",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Composite Decorated with Calls",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+          "OutputToPropagate": { "__InputParameter": "OutputToPropagate" },
+          "PreEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "EntityTypeId": "e96dcec0-5c11-476c-9e04-80ca13d17d5f",
+      "Name": "IO decorated with Calls",
+      "Description": "IO decorated with Calls"
+    },
+    {
+      "EntityTypeVersionId": "5454dd6b-cc1c-4302-9911-78480f9d5fc0",
+      "EntityTypeId": "e96dcec0-5c11-476c-9e04-80ca13d17d5f"
+    },
+    {
+      "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "9de84bd3-ede5-4247-9190-9214a9d8ce8b",
+      "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "a2b32fef-fe8b-42a2-a47a-462cea2b452c",
+      "EntityVariantId": "9de84bd3-ede5-4247-9190-9214a9d8ce8b",
+      "EntityTypeVersionId": "5454dd6b-cc1c-4302-9911-78480f9d5fc0",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "IO decorated with Calls",
+      "Evaluate": {
+        "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
+        "ActualParameters": { 
+          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "92897a5d-0797-43ef-a4f6-3d88f62952a0" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "e1fc5e80-f3af-480c-8d52-b31f11bc2459",
+      "Name": "TransitionLogger Decoration",
+      "Description": "TransitionLogger Decoration"
+    },
+    {
+      "EntityTypeVersionId": "33b34db6-d4e1-4ba1-88b3-57b486eb6195",
+      "EntityTypeId": "e1fc5e80-f3af-480c-8d52-b31f11bc2459",
+      "InputParameters": [
+        { "Name": "TargetEntityId" },
+        { "Name": "Message" }
+      ]
+    },
+    {
+      "EntityId": "db0b11bb-0e8d-494b-8a62-dc185a6487d3",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "9416202b-097c-493f-8b08-f274156d23e1",
+      "EntityId": "db0b11bb-0e8d-494b-8a62-dc185a6487d3",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "5aa69519-836c-4a7e-878f-287db9a387e9",
+      "EntityVariantId": "9416202b-097c-493f-8b08-f274156d23e1",
+      "EntityTypeVersionId": "33b34db6-d4e1-4ba1-88b3-57b486eb6195",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "TransitionLogger Decoration",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "IO",
+            "Evaluate": {
+              "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477"
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.TransitionLoggerDecoration, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "a2483dc3-8407-430a-a589-0cc02e405104",
+      "Name": "TransitionLogger Decorated with Calls",
+      "Description": "TransitionLogger Decorated with Calls"
+    },
+    {
+      "EntityTypeVersionId": "e058dfc9-d8cd-4776-99db-bac099fc1802",
+      "EntityTypeId": "a2483dc3-8407-430a-a589-0cc02e405104",
+      "InputParameters": [ { "Name": "PrimaryEntityId" } ]
+    },
+    {
+      "EntityId": "f5597d45-a67e-4de3-b9af-f9d6c33a31a7",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "583408bc-df6a-4824-8e9c-f129fdfa0ece",
+      "EntityId": "f5597d45-a67e-4de3-b9af-f9d6c33a31a7",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "80d979b2-f3b0-4769-aa63-b96f9f3c6317",
+      "EntityVariantId": "583408bc-df6a-4824-8e9c-f129fdfa0ece",
+      "EntityTypeVersionId": "e058dfc9-d8cd-4776-99db-bac099fc1802",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "TransitionLogger Decorated with Calls",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "db0b11bb-0e8d-494b-8a62-dc185a6487d3" } } },
+          "PreEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "Entity" : { "Evaluate": { "Constant": "db0b11bb-0e8d-494b-8a62-dc185a6487d3" } } }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "EntityTypeId": "83ba3fed-2da3-409e-a1a5-d330b071de75",
+      "Name": "StackFrame Decoration",
+      "Description": "StackFrame Decoration"
+    },
+    {
+      "EntityTypeVersionId": "b838d1bb-06a2-43c2-8d84-26321609c04f",
+      "EntityTypeId": "83ba3fed-2da3-409e-a1a5-d330b071de75",
+      "InputParameters": [
+        { "Name": "DecorationStage" },
+        { "Name": "ContinuationPointer" },
+        { "Name": "CompositeReturn" }
+      ]
+    },
+    {
+      "EntityId": "19ea855b-bada-4ebc-8425-aa53cd14cb32",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "e877dec7-6b7e-4bba-93ce-42a5026b7c08",
+      "EntityId": "19ea855b-bada-4ebc-8425-aa53cd14cb32",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "273dd49f-5b1d-47d5-855d-205059378656",
+      "EntityVariantId": "e877dec7-6b7e-4bba-93ce-42a5026b7c08",
+      "EntityTypeVersionId": "b838d1bb-06a2-43c2-8d84-26321609c04f",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "StackFrame Decoration",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.StackFrameDecoration, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "b3c7c1cc-7794-480d-9e2d-811ca81261cc",
+      "Name": "Grid Decoration Code",
+      "Description": "Grid Decoration Code"
+    },
+    {
+      "EntityTypeVersionId": "b6eced14-e66e-4673-9ddf-2743650f12c7",
+      "EntityTypeId": "b3c7c1cc-7794-480d-9e2d-811ca81261cc",
+      "InputParameters": [
+        { "Name": "DecorationStage" },
+        { "Name": "Calls" },
+        { "Name": "ContinuationPointer" },
+        { "Name": "FinalCall" }
+      ],
+      "OutputParameters": [
+        { "Name": "Grid" },
+        { "Name": "CellId" },
+        { "Name": "StackFrameId" }
+      ]
+    },
+    {
+      "EntityId": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "39ba0f4d-b190-44c0-bf72-f72af0b198ef",
+      "EntityId": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "7f9d2531-49c1-465b-b42c-3882641b4fd2",
+      "EntityVariantId": "39ba0f4d-b190-44c0-bf72-f72af0b198ef",
+      "EntityTypeVersionId": "b6eced14-e66e-4673-9ddf-2743650f12c7",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Grid Decoration Code",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "MemoryGet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "Get" } } },
+                "Partition": { "Entity" : { "Evaluate": { "Constant": "__FrameworkState__" } } }
+              }
+            }
+          }
+        },
+        { "QuotedEntity": { 
+            "Name": "MemorySet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "Set" } } },
+                "Partition": { "Entity" : { "Evaluate": { "Constant": "__FrameworkState__" } } }
+              }
+            }
+          }
+        },
+        { "QuotedEntity": { 
+            "Name": "IOWrite",
+            "Evaluate": {
+              "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } },
+                "Partition": { "Entity" : { "Evaluate": { "Constant": "__FrameworkState__" } } }
+              }
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.GridDecoration, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "5a94af0f-18bc-47d4-99de-8cfdb23befa6",
+      "Name": "Grid decorated with Calls And MemoryLocation (why MemLoc)",
+      "Description": "Grid decorated with Calls And MemoryLocation (why MemLoc)"
+    },
+    {
+      "EntityTypeVersionId": "eda821cf-ac2c-4520-932d-0107be86ec71",
+      "EntityTypeId": "5a94af0f-18bc-47d4-99de-8cfdb23befa6",
+      "InputParameters": [
+        { "Name": "DecorationStage" },
+        { "Name": "Calls" },
+        { "Name": "ContinuationPointer" },
+        { "Name": "CompositeReturn" }
+      ],
+      "OutputParameters": [
+        { "Name": "Grid" },
+        { "Name": "CellId" },
+        { "Name": "StackFrameId" }
+      ]
+    },
+    {
+      "EntityId": "dceb74be-cd6d-4126-bd6e-636c6916dcc0",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "dab71a8a-c8e2-4783-aef8-2bfcf2e2adc3",
+      "EntityId": "dceb74be-cd6d-4126-bd6e-636c6916dcc0",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "6e5cd791-0283-42df-93a8-4d0ea3d83b05",
+      "EntityVariantId": "dab71a8a-c8e2-4783-aef8-2bfcf2e2adc3",
+      "EntityTypeVersionId": "eda821cf-ac2c-4520-932d-0107be86ec71",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Grid decorated with Calls And MemoryLocation (why MemLoc)",
+      "Evaluate": {
+        "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8" } } },
+          "OutputToPropagate": { "Entity" : { "Evaluate": { "Constant": [
+            { "Name": "Grid" },
+            { "Name": "CellId" },
+            { "Name": "StackFrameId" }
+          ] } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "1dec60ae-8d74-4f46-b47c-2a398a9d5cdb",
+      "Name": "Grid decorated with Calls",
+      "Description": "Grid decorated with Calls"
+    },
+    {
+      "EntityTypeVersionId": "de315ff6-1302-4fe8-84fc-e88463d00bdd",
+      "EntityTypeId": "1dec60ae-8d74-4f46-b47c-2a398a9d5cdb",
+      "InputParameters": [
+        { "Name": "DecorationStage" },
+        { "Name": "Calls" },
+        { "Name": "ContinuationPointer" },
+        { "Name": "CompositeReturn" }
+      ],
+      "OutputParameters": [
+        { "Name": "Grid" },
+        { "Name": "CellId" },
+        { "Name": "StackFrameId" }
+      ]
+    },
+    {
+      "EntityId": "10d896b5-b1c4-4d06-8c85-7452a217c15a",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "4eee4562-751d-42f3-b63f-b18ffcf352e9",
+      "EntityId": "10d896b5-b1c4-4d06-8c85-7452a217c15a",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "b99ba082-10ac-4993-9df4-a64a389472f4",
+      "EntityVariantId": "4eee4562-751d-42f3-b63f-b18ffcf352e9",
+      "EntityTypeVersionId": "de315ff6-1302-4fe8-84fc-e88463d00bdd",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Grid decorated with Calls",
+      "Evaluate": {
+        "EntityId": "37472d79-d354-4bde-b5ff-d1ee03d52706",
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8" } } }
+        },
+        "OutputParameters": {
+          "Grid": { "Bubble": "true" },
+          "CellId": { "Bubble": "true" },
+          "StackFrameId": { "Bubble": "true" }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "3a9fad8f-d7e3-4a33-9cfd-940a0e34b619",
+      "Name": "MemoryLocation Decoration",
+      "Description": "MemoryLocation Decoration"
+    },
+    {
+      "EntityTypeVersionId": "2bc87f3f-41e2-4fcb-aa8d-7bcc04ed7d25",
+      "EntityTypeId": "3a9fad8f-d7e3-4a33-9cfd-940a0e34b619",
+      "OutputParameters": [
+        { "Name": "ReadLocation" },
+        { "Name": "WriteLocation" }
+      ]
+    },
+    {
+      "EntityId": "66bf4a8d-f527-44bf-bd90-a21fc2ff4bc0",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "88aad456-2f9e-4206-85c7-6411f9a61dd8",
+      "EntityId": "66bf4a8d-f527-44bf-bd90-a21fc2ff4bc0",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "6ab2386b-e4f1-4000-8a1b-8e217df4e32b",
+      "EntityVariantId": "88aad456-2f9e-4206-85c7-6411f9a61dd8",
+      "EntityTypeVersionId": "2bc87f3f-41e2-4fcb-aa8d-7bcc04ed7d25",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "MemoryLocation Decoration",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.MemoryLocationDecoration, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "cebbd424-6212-48df-8374-d62984f908d5",
+      "Name": "Composite of TransitionLogger, Calls, MemoryLocation",
+      "Description": "Composite of TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "2e2197a7-f925-4b14-9368-585208a67b34",
+      "EntityTypeId": "cebbd424-6212-48df-8374-d62984f908d5",
+      "InputParameters": [ { "Name": "PrimaryEntityId" } ]
+    },
+    {
+      "EntityId": "b2284257-433e-475c-818f-14db9fa651e2",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "e5342479-9160-4737-aa98-2d9a7aea9f4a",
+      "EntityId": "b2284257-433e-475c-818f-14db9fa651e2",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "23c151f2-2a25-445a-9c0c-b7ec601badc7",
+      "EntityVariantId": "e5342479-9160-4737-aa98-2d9a7aea9f4a",
+      "EntityTypeVersionId": "2e2197a7-f925-4b14-9368-585208a67b34",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Composite of TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PreEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "f5597d45-a67e-4de3-b9af-f9d6c33a31a7",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            },
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            },
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "66bf4a8d-f527-44bf-bd90-a21fc2ff4bc0",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "OutputParameters": {
+          "ReadLocation": { "Bubble": "true" },
+          "WriteLocation": { "Bubble": "true" },
+          "Services": { "Bubble": "true" }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "a0f975e8-1f02-404e-a917-a6e630e1dc79",
+      "Name": "Entity Decorated with TransitionLogger, Calls, MemoryLocation",
+      "Description": "Entity Decorated with TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "5d16e76a-4614-4da3-a9aa-ca3d438b72ad",
+      "EntityTypeId": "a0f975e8-1f02-404e-a917-a6e630e1dc79",
+      "InputParameters": [ { "Name": "PrimaryEntityId" } ]
+    },
+    {
+      "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "90a0675c-1ea6-40c5-a41d-3de87c0c6b40",
+      "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "c1993598-14d6-4f8c-8b01-3ee679c5f3eb",
+      "EntityVariantId": "90a0675c-1ea6-40c5-a41d-3de87c0c6b40",
+      "EntityTypeVersionId": "5d16e76a-4614-4da3-a9aa-ca3d438b72ad",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Entity Decorated with TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+          "Evaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "b2284257-433e-475c-818f-14db9fa651e2",
+                  "ActualParameters": { 
+                    "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            }
+          ],
+          "RepeatAndReverseOnPost": { "Entity" : { "Evaluate": { "Constant": "true" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "e8d9dbb0-c3ee-4927-ad3b-649092d50b99",
+      "Name": "Composite of StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Composite of StackFrame, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "f391bf1c-6df4-42cc-b0ce-f9fb7d582e5d",
+      "EntityTypeId": "e8d9dbb0-c3ee-4927-ad3b-649092d50b99"
+    },
+    {
+      "EntityId": "86bd8f82-dd4d-4f2e-a87a-5c729fe6e0e1",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "7e73e3b1-80a6-422d-9392-cb70e746c263",
+      "EntityId": "86bd8f82-dd4d-4f2e-a87a-5c729fe6e0e1",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "57079004-2fee-4296-a645-94113bd62e80",
+      "EntityVariantId": "7e73e3b1-80a6-422d-9392-cb70e746c263",
+      "EntityTypeVersionId": "f391bf1c-6df4-42cc-b0ce-f9fb7d582e5d",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Composite of StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "InputParameters": [ { "Name": "DecorationStage" } ],
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PreEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "19ea855b-bada-4ebc-8425-aa53cd14cb32",
+                  "ActualParameters": { 
+                    "DecorationStage": { "__InputParameter": "DecorationStage" }
+                  }
+                }
+              }
+            },
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "b2284257-433e-475c-818f-14db9fa651e2"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "EntityTypeId": "2f25d1ef-a1ef-4f2c-8b47-038e08640000",
+      "Name": "Entity Decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Entity Decorated with StackFrame, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "81fd401e-fd0d-49d6-b38a-62b5b0d7842e",
+      "EntityTypeId": "2f25d1ef-a1ef-4f2c-8b47-038e08640000",
+      "InputParameters": [
+        { "Name": "EntityId", "Required": "True" }
+      ]
+    },
+    {
+      "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "19f2ac79-1cf3-497b-8f89-3bad31433441",
+      "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "32c9a3c8-e122-4128-b1a9-cd0a450ab826",
+      "EntityVariantId": "19f2ac79-1cf3-497b-8f89-3bad31433441",
+      "EntityTypeVersionId": "81fd401e-fd0d-49d6-b38a-62b5b0d7842e",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Entity Decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+          "Evaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "86bd8f82-dd4d-4f2e-a87a-5c729fe6e0e1",
+                  "ActualParameters": { 
+                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Pre" } } }
+                  }
+                }
+              }
+            },
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "86bd8f82-dd4d-4f2e-a87a-5c729fe6e0e1",
+                  "ActualParameters": { 
+                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Post" } } }
+                  }
+                }
+              }
+            }
+          ],
+          "RepeatAndReverseOnPost": { "Entity" : { "Evaluate": { "Constant": "true" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "64649b6a-418b-4036-98d6-8cd458778203",
+      "Name": "Composite of Grid, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Composite of Grid, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "24e349de-993c-484c-b7cf-4e05e4b344d0",
+      "EntityTypeId": "64649b6a-418b-4036-98d6-8cd458778203",
+      "InputParameters": [
+        { "Name": "PrimaryEntityId" },
+        { "Name": "DecorationStage" }
+      ],
+      "OutputParameters": [
+        { "Name": "Grid" },
+        { "Name": "CellId" },
+        { "Name": "StackFrameId" }
+      ]
+    },
+    {
+      "EntityId": "88580a54-9255-4e5f-a1b6-ec10caa66da1",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "898891bc-72e6-45cd-91ea-b18405741768",
+      "EntityId": "88580a54-9255-4e5f-a1b6-ec10caa66da1",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "2b56362e-0777-448c-a59d-907646b68231",
+      "EntityVariantId": "898891bc-72e6-45cd-91ea-b18405741768",
+      "EntityTypeVersionId": "24e349de-993c-484c-b7cf-4e05e4b344d0",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Composite of Grid, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "OutputToPropagate": { "Entity" : { "Evaluate": { "Constant": [
+              { "Name": "Grid" },
+              { "Name": "CellId" },
+              { "Name": "StackFrameId" }
+            ] } } },
+          "Evaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "10d896b5-b1c4-4d06-8c85-7452a217c15a",
+                  "ActualParameters": { 
+                    "DecorationStage": { "__InputParameter": "DecorationStage" }
+                  }
+                }
+              }
+            },
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "b2284257-433e-475c-818f-14db9fa651e2",
+                  "ActualParameters": { 
+                    "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "EntityTypeId": "3f68807a-bee4-4358-a2da-d6763217f3d5",
+      "Name": "Entity Decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Entity Decorated with Grid, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "6da4bf45-136b-4b4d-a326-f20b08d6e416",
+      "EntityTypeId": "3f68807a-bee4-4358-a2da-d6763217f3d5",
+      "InputParameters": [ { "Name": "PrimaryEntityId" } ]
+    },
+    {
+      "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "612c46d4-76e1-4f48-b486-1d70dae976b5",
+      "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "12f17795-7200-4ec1-a490-dbc51e628d6a",
+      "EntityVariantId": "612c46d4-76e1-4f48-b486-1d70dae976b5",
+      "EntityTypeVersionId": "6da4bf45-136b-4b4d-a326-f20b08d6e416",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Entity Decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
+        "ActualParameters": {
+          "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+          "PreEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "88580a54-9255-4e5f-a1b6-ec10caa66da1",
+                  "ActualParameters": { 
+                    "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Pre" } } }
+                  }
+                }
+              }
+            }
+          ],
+          "PostEvaluatables": [
+            { "QuotedEntity": { 
+                "Evaluate": {
+                  "EntityId": "88580a54-9255-4e5f-a1b6-ec10caa66da1",
+                  "ActualParameters": { 
+                    "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
+                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Post" } } }
+                  }
+                }
+              }
+            }
+          ],
+          "ReverseOnPost": { "Entity" : { "Evaluate": { "Constant": "true" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "b3054687-9bbe-46d1-93a2-7abc602d6be2",
+      "Name": "Evaluatable Code",
+      "Description": "Evaluatable Code"
+    },
+    {
+      "EntityTypeVersionId": "721c75eb-ed13-4145-82c5-044ed5f3716e",
+      "EntityTypeId": "b3054687-9bbe-46d1-93a2-7abc602d6be2",
+      "InputParameters": [
+        { "Name": "ConfigEntityId" }
+      ]
+    },
+    {
+      "EntityId": "4c9ca674-f0ac-42d5-a46e-fe28cb76f5b5",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "25ea5f34-ffd9-409d-83ce-51d7a129300c",
+      "EntityId": "4c9ca674-f0ac-42d5-a46e-fe28cb76f5b5",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "f3535474-54f9-4160-8932-cdfef9e62003",
+      "EntityVariantId": "25ea5f34-ffd9-409d-83ce-51d7a129300c",
+      "EntityTypeVersionId": "721c75eb-ed13-4145-82c5-044ed5f3716e",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Evaluatable Code",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.DefaultBootstrapper, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "e523e905-ce56-497f-99b2-fe733fb33b0f",
+      "Name": "Default Bootstrapper",
+      "Description": "Default Bootstrapper"
+    },
+    {
+      "EntityTypeVersionId": "d51e5249-1d03-44e4-81d3-e9c9fbf687b1",
+      "EntityTypeId": "e523e905-ce56-497f-99b2-fe733fb33b0f"
+    },
+    {
+      "EntityId": "beaf31bf-040e-4a2a-9c37-c19795c5f277",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "f38e4662-826c-42a0-b3ad-8db380bcac5b",
+      "EntityId": "beaf31bf-040e-4a2a-9c37-c19795c5f277",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "b42fda6d-84d2-4e9a-8d17-0de5d50a10cc",
+      "EntityVariantId": "f38e4662-826c-42a0-b3ad-8db380bcac5b",
+      "EntityTypeVersionId": "d51e5249-1d03-44e4-81d3-e9c9fbf687b1",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Default Bootstrapper",
+      "Evaluate": {
+        "EntityId": "4c9ca674-f0ac-42d5-a46e-fe28cb76f5b5",
+        "ActualParameters": {
+          "ConfigEntityId": { "Entity" : { "Evaluate": { "Constant": "4e2bd1f6-7cda-4825-b897-8e2c9687347f"} } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "6e60b812-f11f-4f88-ac66-aee61c54dee7",
+      "Name": "Bootstrap Entity Id",
+      "Description": "Bootstrap Entity Id"
+    },
+    {
+      "EntityTypeVersionId": "906f3395-a3d5-4e70-ba17-da5a87603fca",
+      "EntityTypeId": "6e60b812-f11f-4f88-ac66-aee61c54dee7"
+    },
+    {
+      "EntityId": "4e2bd1f6-7cda-4825-b897-8e2c9687347f",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "73545d9e-fb49-47b8-84ab-8ccce3b355b7",
+      "EntityId": "4e2bd1f6-7cda-4825-b897-8e2c9687347f",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "345b2096-caa4-46b3-b4e1-495a51b982ff",
+      "EntityVariantId": "73545d9e-fb49-47b8-84ab-8ccce3b355b7",
+      "EntityTypeVersionId": "906f3395-a3d5-4e70-ba17-da5a87603fca",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Bootstrap Entity Id",
+      "Evaluate": { "Constant": "353d19e4-cbec-47da-98e3-883d103e7740" }
+    },
+    {
+      "EntityTypeId": "a6d5e6fb-5cba-482a-a396-c1309ba848ac",
+      "Name": "Bootstrap Evaluatable Code",
+      "Description": "Bootstrap Evaluatable Code"
+    },
+    {
+      "EntityTypeVersionId": "2bb3ed43-4a12-4b84-9e31-1fbbd8bf0972",
+      "EntityTypeId": "a6d5e6fb-5cba-482a-a396-c1309ba848ac"
+    },
+    {
+      "EntityId": "4aec78df-bd92-4fc4-87db-d768b91812d7",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "a5b82ceb-e99d-4431-a4ee-b31b3e684aad",
+      "EntityId": "4aec78df-bd92-4fc4-87db-d768b91812d7",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "b70e45cd-557b-4034-bfb3-5ffd253193ab",
+      "EntityVariantId": "a5b82ceb-e99d-4431-a4ee-b31b3e684aad",
+      "EntityTypeVersionId": "2bb3ed43-4a12-4b84-9e31-1fbbd8bf0972",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Bootstrap Evaluatable Code",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "IOWrite",
+            "Evaluate": {
+              "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } }
+              }
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.BootstrapEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "257d4bc8-46bc-4898-8abe-a5bc44ad4cd1",
+      "Name": "Bootstrap Evaluatable decorated with Calls",
+      "Description": "Bootstrap Evaluatable decorated with Calls"
+    },
+    {
+      "EntityTypeVersionId": "b8623d92-b75a-460e-bb4e-8e11349c19d9",
+      "EntityTypeId": "257d4bc8-46bc-4898-8abe-a5bc44ad4cd1"
+    },
+    {
+      "EntityId": "353d19e4-cbec-47da-98e3-883d103e7740",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "2e55f72b-ea4a-4afb-932d-009b274d0424",
+      "EntityId": "353d19e4-cbec-47da-98e3-883d103e7740",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "3b956841-ce37-4ac6-b70c-e03a7e3a5454",
+      "EntityVariantId": "2e55f72b-ea4a-4afb-932d-009b274d0424",
+      "EntityTypeVersionId": "b8623d92-b75a-460e-bb4e-8e11349c19d9",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Bootstrap Evaluatable decorated with Calls",
+      "Evaluate": {
+        "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "4aec78df-bd92-4fc4-87db-d768b91812d7"} } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "0c36e182-337d-4f86-b038-7e6f34673824",
+      "Name": "Accumulator Evaluatable Code",
+      "Description": "Accumulator Evaluatable Code"
+    },
+    {
+      "EntityTypeVersionId": "d099b745-516b-459c-93c1-d3fd4253e5b8",
+      "EntityTypeId": "0c36e182-337d-4f86-b038-7e6f34673824",
+      "InputParameters": [
+        { "Name": "value", "Required": "true" },
+        { "Name": "MemoryLocationGuid" }
+      ]
+    },
+    {
+      "EntityId": "34570621-cab8-4208-a09d-38ede245033c",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "122f5d69-e784-49e1-a3f2-a133fbc9b418",
+      "EntityId": "34570621-cab8-4208-a09d-38ede245033c",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "cd950402-3017-4797-b6f3-81f9771f8ddf",
+      "EntityVariantId": "122f5d69-e784-49e1-a3f2-a133fbc9b418",
+      "EntityTypeVersionId": "d099b745-516b-459c-93c1-d3fd4253e5b8",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Accumulator Evaluatable Code",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "IOWrite",
+            "Evaluate": {
+              "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } }
+              }
+            }
+          }
+        },
+        { "QuotedEntity": { 
+            "Name": "MemoryGet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "Get" } } }
+              }
+            }
+          }
+        },
+        { "QuotedEntity": { 
+            "Name": "MemorySet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "Set" } } }
+              }
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.AccumulatorEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "e149c738-b240-4a09-bd12-6e08025bd391",
+      "Name": "Accumulator Evaluatable With Fixed Memory Location",
+      "Description": "Accumulator Evaluatable With Fixed Memory Location"
+    },
+    {
+      "EntityTypeVersionId": "50688ec4-fcb2-4d20-9a9e-552030871a7d",
+      "EntityTypeId": "e149c738-b240-4a09-bd12-6e08025bd391"
+    },
+    {
+      "EntityId": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "80638996-af42-4205-b377-8484bef77b6d",
+      "EntityId": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "29b2adbc-5355-4c36-b467-5fb51e227767",
+      "EntityVariantId": "80638996-af42-4205-b377-8484bef77b6d",
+      "EntityTypeVersionId": "50688ec4-fcb2-4d20-9a9e-552030871a7d",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Accumulator Evaluatable With Fixed Memory Location",
+      "Evaluate": {
+        "EntityId": "34570621-cab8-4208-a09d-38ede245033c",
+        "ActualParameters": {
+          "MemoryLocationGuid":  { "Entity" : { "Evaluate": { "Constant": "17709acc-8508-49ad-b1a7-3e1490b0f8ea" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "a4722fa4-b23c-434f-a2b3-1f3fc2f8c501",
+      "Name": "Accumulator decorated with TransitionLogger, Calls, MemoryLocation",
+      "Description": "Accumulator decorated with TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "18ebd0f8-758f-4f3a-b2f1-6eb69afbdf58",
+      "EntityTypeId": "a4722fa4-b23c-434f-a2b3-1f3fc2f8c501"
+    },
+    {
+      "EntityId": "a187ca02-7349-41fe-b5ce-33b7a25e4bc4",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "7beb0873-e8da-45bf-93f6-6bd13a9b4359",
+      "EntityId": "a187ca02-7349-41fe-b5ce-33b7a25e4bc4",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "e86afacd-8be3-4cf8-b1a7-356a58828ac7",
+      "EntityVariantId": "7beb0873-e8da-45bf-93f6-6bd13a9b4359",
+      "EntityTypeVersionId": "18ebd0f8-758f-4f3a-b2f1-6eb69afbdf58",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Accumulator decorated with TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "bc85012c-1dc7-43d2-b2fe-f8e93f390eb6",
+      "Name": "Accumulator decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Accumulator decorated with StackFrame, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "be4634c8-ed99-4ad3-bf63-25916584d0c5",
+      "EntityTypeId": "bc85012c-1dc7-43d2-b2fe-f8e93f390eb6"
+    },
+    {
+      "EntityId": "41225ba9-220e-4f25-9a95-670e870fb88e",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "98d7efaf-d203-4cf6-a063-f093eae10fb1",
+      "EntityId": "41225ba9-220e-4f25-9a95-670e870fb88e",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "dd64e7f6-7659-4502-989f-528fce1696b2",
+      "EntityVariantId": "98d7efaf-d203-4cf6-a063-f093eae10fb1",
+      "EntityTypeVersionId": "be4634c8-ed99-4ad3-bf63-25916584d0c5",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Accumulator decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "7f2761a1-d910-4c5e-bb12-a3b3db14d881",
+      "Name": "Accumulator decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Accumulator decorated with Grid, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "472b2024-5cde-4597-929b-a934dff73115",
+      "EntityTypeId": "7f2761a1-d910-4c5e-bb12-a3b3db14d881"
+    },
+    {
+      "EntityId": "6f4484e6-cd7e-44cc-9945-6d71630f2249",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "2956340a-fdb9-4512-9ef4-ffb259fb720f",
+      "EntityId": "6f4484e6-cd7e-44cc-9945-6d71630f2249",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "c092fb46-143e-4415-aa1f-7a9a880cb2fb",
+      "EntityVariantId": "2956340a-fdb9-4512-9ef4-ffb259fb720f",
+      "EntityTypeVersionId": "472b2024-5cde-4597-929b-a934dff73115",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Accumulator decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "03820b01-705f-4eb7-9294-fa97ff6c52ba",
+      "Name": "Creative Evaluatable",
+      "Description": "Creative Evaluatable"
+    },
+    {
+      "EntityTypeVersionId": "792efa66-3b52-4f7c-986d-100bbdf4cd97",
+      "EntityTypeId": "03820b01-705f-4eb7-9294-fa97ff6c52ba",
+    },
+    {
+      "EntityId": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "4fce3f37-b525-42b2-bd07-ecb0a2a9e624",
+      "EntityId": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "8d9dc2ef-af2d-4786-a2bf-f13a0bf64399",
+      "EntityVariantId": "4fce3f37-b525-42b2-bd07-ecb0a2a9e624",
+      "EntityTypeVersionId": "792efa66-3b52-4f7c-986d-100bbdf4cd97",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative Evaluatable",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "IOWrite",
+            "Evaluate": {
+              "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } }
+              }
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.AccumulatorEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "6d4808a3-0b9b-4f55-a649-bd16b86169c9",
+      "Name": "Creative decorated with TransitionLogger, Calls, MemoryLocation",
+      "Description": "Creative decorated with TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "47b5c95d-9cbd-4ffe-8ba5-c8dff77f2cdd",
+      "EntityTypeId": "6d4808a3-0b9b-4f55-a649-bd16b86169c9"
+    },
+    {
+      "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "131c0759-4923-458b-a2b2-8f4a1fb1530c",
+      "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "9bb938e1-3faf-4664-be81-fad5ecee2ccd",
+      "EntityVariantId": "131c0759-4923-458b-a2b2-8f4a1fb1530c",
+      "EntityTypeVersionId": "47b5c95d-9cbd-4ffe-8ba5-c8dff77f2cdd",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative decorated with TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "3f0d4d6d-f306-4b70-b50a-6ace9f0f010f",
+      "Name": "Creative decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Creative decorated with StackFrame, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "850f8f90-97c0-4032-ae09-9c07328ceaea",
+      "EntityTypeId": "3f0d4d6d-f306-4b70-b50a-6ace9f0f010f"
+    },
+    {
+      "EntityId": "b1dc93d6-f333-4a01-a33f-489ae2bd8586",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "357d87d1-a786-4d94-b8f1-a757c135c711",
+      "EntityId": "b1dc93d6-f333-4a01-a33f-489ae2bd8586",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "b29c637b-00bc-40b3-96e8-5c79d2272e38",
+      "EntityVariantId": "357d87d1-a786-4d94-b8f1-a757c135c711",
+      "EntityTypeVersionId": "850f8f90-97c0-4032-ae09-9c07328ceaea",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "cd51ccaa-e1fe-4df7-a015-485aa6fb3e0e",
+      "Name": "Creative decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Creative decorated with Grid, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "f0d89341-ec51-4abe-a629-4eb079fdb5bd",
+      "EntityTypeId": "cd51ccaa-e1fe-4df7-a015-485aa6fb3e0e"
+    },
+    {
+      "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "02a0f842-dc69-4804-a879-828739e5c02b",
+      "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "4a343845-f7f3-45e5-9eee-d538b5ef9903",
+      "EntityVariantId": "02a0f842-dc69-4804-a879-828739e5c02b",
+      "EntityTypeVersionId": "f0d89341-ec51-4abe-a629-4eb079fdb5bd",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "70a86e63-b06e-4d49-a7b6-493232080b22",
+      "Name": "Sequence Evaluatable Code",
+      "Description": "Sequence Evaluatable Code"
+    },
+    {
+      "EntityTypeVersionId": "c17bf23f-2459-48ed-ad93-d2ec6cc99ed3",
+      "EntityTypeId": "70a86e63-b06e-4d49-a7b6-493232080b22",
+      "InputParameters": [
+        { "Name": "MemoryLocationGuid" },
+        { "Name": "ReadLocation" },
+        { "Name": "WriteLocation" }
+      ]
+    },
+    {
+      "EntityId": "cc2de38d-5e34-46f3-96ce-ee9f0e56ba35",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "e49dbbfa-2a1e-46ef-87c3-0a5178db0156",
+      "EntityId": "cc2de38d-5e34-46f3-96ce-ee9f0e56ba35",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "ba497daa-6939-4989-ba1a-430f7ab4e0d0",
+      "EntityVariantId": "e49dbbfa-2a1e-46ef-87c3-0a5178db0156",
+      "EntityTypeVersionId": "c17bf23f-2459-48ed-ad93-d2ec6cc99ed3",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence Evaluatable Code",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "MemoryGet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "Get" } } },
+                "Partition": { "Entity" : { "Evaluate": { "Constant": "__Sequence__" } } }
+              }
+            }
+          }
+        },
+        { "QuotedEntity": { 
+            "Name": "MemorySet",
+            "Evaluate": {
+              "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+              "ActualParameters": { 
+                "Method": { "Entity" : { "Evaluate": { "Constant": "Set" } } },
+                "Partition": { "Entity" : { "Evaluate": { "Constant": "__Sequence__" } } }
+              }
+            }
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.SequenceEvaluatable, Evaluate"
+      }
+    },
+    {
+      "EntityTypeId": "9298e7fc-1f58-4362-bb39-62df54f3c95b",
+      "Name": "Sequence Evaluatable With Fixed Memory Location",
+      "Description": "Sequence Evaluatable With Fixed Memory Location"
+    },
+    {
+      "EntityTypeVersionId": "5c3d8af5-c20d-4db2-9b28-1120698ddb74",
+      "EntityTypeId": "9298e7fc-1f58-4362-bb39-62df54f3c95b"
+    },
+    {
+      "EntityId": "38a701ed-c0c6-46d3-8a65-b49c31751edc",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "fc7b3e88-98b1-49eb-bf9b-4dfd4bd3d658",
+      "EntityId": "38a701ed-c0c6-46d3-8a65-b49c31751edc",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "db879f65-7011-41b1-aa41-03dddfeaadce",
+      "EntityVariantId": "fc7b3e88-98b1-49eb-bf9b-4dfd4bd3d658",
+      "EntityTypeVersionId": "5c3d8af5-c20d-4db2-9b28-1120698ddb74",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence Evaluatable With Fixed Memory Location",
+      "Evaluate": {
+        "EntityId": "cc2de38d-5e34-46f3-96ce-ee9f0e56ba35",
+        "ActualParameters": { 
+          "MemoryLocationGuid":  { "Entity" : { "Evaluate": { "Constant": "6e460d85-81dd-4d4a-9906-788c8cd425fe" } } }
+        }
+      }
+    },   
+    {
+      "EntityTypeId": "5653a969-a6a9-4a40-8bc1-bf5ccf26eaa6",
+      "Name": "Sequence decorated with TransitionLogger, Calls, MemoryLocation",
+      "Description": "Sequence decorated with TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "90a66ec2-3d0f-40dd-9578-9daa82e20157",
+      "EntityTypeId": "5653a969-a6a9-4a40-8bc1-bf5ccf26eaa6"
+    },
+    {
+      "EntityId": "894999b2-73e0-40c9-a351-d877cfe6da50",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "dbf4c448-1c93-432d-a469-15c01435219a",
+      "EntityId": "894999b2-73e0-40c9-a351-d877cfe6da50",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    }, 
+    {
+      "EntityVariantVersionId": "4334ece6-45f4-4ddd-950d-4f221e896a5c",
+      "EntityVariantId": "dbf4c448-1c93-432d-a469-15c01435219a",
+      "EntityTypeVersionId": "90a66ec2-3d0f-40dd-9578-9daa82e20157",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence decorated with TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "c4d3eb36-2e5b-4efa-aa48-16212ef76b68",
+      "Name": "Sequence decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Sequence decorated with StackFrame, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "be92762d-0af2-4bd5-933d-74bdbeb40d80",
+      "EntityTypeId": "c4d3eb36-2e5b-4efa-aa48-16212ef76b68"
+    },
+    {
+      "EntityId": "396d29fd-ffc4-41c0-acd0-9619f00dc2a1",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "338542de-c13d-4019-81ea-316a3fd52a80",
+      "EntityId": "396d29fd-ffc4-41c0-acd0-9619f00dc2a1",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "ea7586f1-a246-4ea5-adf8-6a448d239a3f",
+      "EntityVariantId": "338542de-c13d-4019-81ea-316a3fd52a80",
+      "EntityTypeVersionId": "be92762d-0af2-4bd5-933d-74bdbeb40d80",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "da5bd552-437f-4096-9e20-8d9797288c96",
+      "Name": "Sequence decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Description": "Sequence decorated with Grid, TransitionLogger, Calls, MemoryLocation"
+    },
+    {
+      "EntityTypeVersionId": "e43bc62d-7677-4db4-bba2-0c1dfd311259",
+      "EntityTypeId": "da5bd552-437f-4096-9e20-8d9797288c96"
+    },
+    {
+      "EntityId": "b2e6dcf9-4d64-4635-949a-7955137cf3be",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "bc06ea5a-547c-4212-86a4-902f6b15a58b",
+      "EntityId": "b2e6dcf9-4d64-4635-949a-7955137cf3be",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "d5e76579-13ff-4ad9-84c9-71c5e2f10103",
+      "EntityVariantId": "bc06ea5a-547c-4212-86a4-902f6b15a58b",
+      "EntityTypeVersionId": "e43bc62d-7677-4db4-bba2-0c1dfd311259",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence decorated with Grid, TransitionLogger, Calls, MemoryLocation",
+      "Evaluate": {
+        "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
+        "ActualParameters": { 
+          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
+        }
+      }
+    },
+    {
+      "EntityTypeId": "ff945bf9-1680-4589-b031-91e4a39935f8",
+      "Name": "Sequence",
+      "Description": "Sequence"
+    },
+    {
+      "EntityTypeVersionId": "220f6c64-af87-41dd-84f3-da9fd5e0e182",
+      "EntityTypeId": "ff945bf9-1680-4589-b031-91e4a39935f8"
+    },
+    {
+      "EntityId": "1a58c863-ff2e-4d28-b3da-a58de1784f67",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "0e80e61f-8b33-44a4-a754-60fcd62f574b",
+      "EntityId": "1a58c863-ff2e-4d28-b3da-a58de1784f67",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "2dc0abdd-9158-457f-a3e7-aa85e0cd2700",
+      "EntityVariantId": "0e80e61f-8b33-44a4-a754-60fcd62f574b",
+      "EntityTypeVersionId": "220f6c64-af87-41dd-84f3-da9fd5e0e182",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence 400",
+      "Evaluate": {
+        "EntityId": "894999b2-73e0-40c9-a351-d877cfe6da50",
+        "ActualParameters": {
+          "Slots":  { "Entity" : { "Evaluate": { "Constant": 
+            [
+              {
+                "EntityId": "9cb28947-5636-4402-b121-02699601ad73"
+              },
+              {
+                "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372"
+              }
+            ] } } }
+        }
+      }
+    },
+    {
+      "EntityId": "201a2422-0159-49a7-8f46-a514c5e1b94e",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "20f5e31c-9585-41d2-97ec-218a21a5e0b4",
+      "EntityId": "201a2422-0159-49a7-8f46-a514c5e1b94e",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "7ea33c23-496a-46bb-aa9e-d7552d302953",
+      "EntityVariantId": "20f5e31c-9585-41d2-97ec-218a21a5e0b4",
+      "EntityTypeVersionId": "220f6c64-af87-41dd-84f3-da9fd5e0e182",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence 401",
+      "Evaluate": {
+        "EntityId": "396d29fd-ffc4-41c0-acd0-9619f00dc2a1",
+        "ActualParameters": {
+          "Slots":  { "Entity" : { "Evaluate": { "Constant": 
+            [
+              {
+                "EntityId": "9cb28947-5636-4402-b121-02699601ad73"
+              },
+              {
+                "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372"
+              }
+            ] } } }
+        }
+      }
+    },
+    {
+      "EntityId": "b57ec655-cb7a-4126-ac83-a7dbc3b50c40",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "9cca560b-9fdd-4a94-b0e8-a98d670f5f62",
+      "EntityId": "b57ec655-cb7a-4126-ac83-a7dbc3b50c40",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "b9df2381-8dae-44ab-9e83-901eb1e7d449",
+      "EntityVariantId": "9cca560b-9fdd-4a94-b0e8-a98d670f5f62",
+      "EntityTypeVersionId": "220f6c64-af87-41dd-84f3-da9fd5e0e182",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Sequence 402",
+        "Evaluate": {
+          "EntityId": "b2e6dcf9-4d64-4635-949a-7955137cf3be",
+          "ActualParameters": {
+            "Slots":  { "Entity" : { "Evaluate": { "Constant": 
+              [
+                {
+                  "EntityId": "252ed4e5-dcf1-47d2-a1c8-070c99ba179f"
+                },
+                {
+                  "EntityId": "c815a56f-4e4a-446f-8aba-93c85ce44cd0"
+                },
+                {
+                  "EntityId": "659ed4fc-6dfc-48c7-8735-640a2b01bbff"
+                },
+                {
+                  "EntityId": "df21de03-6d82-49c5-bd26-a5e7740416f6"
+                }
+              ] } } }
+          }
+        }
+    },
+    {
+      "EntityTypeId": "8ac9e2cf-9766-4487-ba6b-719cd2bfc2c2",
+      "Name": "Creative",
+      "Description": "Creative"
+    },
+    {
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "EntityTypeId": "8ac9e2cf-9766-4487-ba6b-719cd2bfc2c2"
+    },
+    {
+      "EntityId": "9cb28947-5636-4402-b121-02699601ad73",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "1c0f0718-93e8-4146-abca-7e74cdd97eca",
+      "EntityId": "9cb28947-5636-4402-b121-02699601ad73",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "211357c0-1563-4a3a-9d8c-73892fd08aa2",
+      "EntityVariantId": "1c0f0718-93e8-4146-abca-7e74cdd97eca",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 600",
+      "Evaluate": {
+        "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+        "ActualParameters" : {
+          "Master" : { "Entity" : { "Evaluate": { "Constant": "8a3becd4-0351-4d89-97d5-068e15f5a77f" } } },
+          "Placeholders": { "Entity" : { "Evaluate": { "Constant": "This is Creative 600!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "95bc87a6-128d-4106-ab47-d4c18db19ffe",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "8c6af4fe-c52a-48ca-a36a-b466250055a2",
+      "EntityId": "95bc87a6-128d-4106-ab47-d4c18db19ffe",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "e8b148b9-87c1-48b1-8095-6f1e899675f0",
+      "EntityVariantId": "8c6af4fe-c52a-48ca-a36a-b466250055a2",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 601",
+      "Evaluate": {
+        "EntityId": "b1dc93d6-f333-4a01-a33f-489ae2bd8586",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 601!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "7cfb9631-a8ba-4237-b791-c43d599d1d3e",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "93612be6-1dfe-4164-9086-974e47b075fd",
+      "EntityId": "7cfb9631-a8ba-4237-b791-c43d599d1d3e",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "786777af-b6f9-4900-812b-56d074a671b4",
+      "EntityVariantId": "93612be6-1dfe-4164-9086-974e47b075fd",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 602",
+      "Evaluate": {
+        "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 602!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "d389a0a0-ec7a-408d-a19f-4dbb39170843",
+      "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "7094a881-6f4d-4773-aae6-ad64804f9256",
+      "EntityVariantId": "d389a0a0-ec7a-408d-a19f-4dbb39170843",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 603",
+      "Evaluate": {
+        "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 603!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "252ed4e5-dcf1-47d2-a1c8-070c99ba179f",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "6e5eda02-84fb-4d39-8935-bc0d9ae3fbfc",
+      "EntityId": "252ed4e5-dcf1-47d2-a1c8-070c99ba179f",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "dbd648c5-65dc-493b-aa7c-f33430198527",
+      "EntityVariantId": "6e5eda02-84fb-4d39-8935-bc0d9ae3fbfc",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 604",
+      "Evaluate": {
+        "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 604!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "c815a56f-4e4a-446f-8aba-93c85ce44cd0",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "5f299f58-7f9a-40a0-9983-782c08326342",
+      "EntityId": "c815a56f-4e4a-446f-8aba-93c85ce44cd0",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "1c4ef1d9-3940-445e-8d08-189959b3e879",
+      "EntityVariantId": "5f299f58-7f9a-40a0-9983-782c08326342",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 605",
+      "Evaluate": {
+        "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 605!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "659ed4fc-6dfc-48c7-8735-640a2b01bbff",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "419b3e1a-ebe3-4efc-9974-6c59687df994",
+      "EntityId": "659ed4fc-6dfc-48c7-8735-640a2b01bbff",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "3f208bad-e3f1-4876-8155-377e19ef328a",
+      "EntityVariantId": "419b3e1a-ebe3-4efc-9974-6c59687df994",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 606",
+      "Evaluate": {
+        "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 606!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "df21de03-6d82-49c5-bd26-a5e7740416f6",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "693b7f70-e59c-444e-b77c-564bb6ee8fd6",
+      "EntityId": "df21de03-6d82-49c5-bd26-a5e7740416f6",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "981e8dd9-f7fb-45ba-964e-8c80778efd64",
+      "EntityVariantId": "693b7f70-e59c-444e-b77c-564bb6ee8fd6",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 607",
+      "Evaluate": {
+        "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 607!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "fa3d224d-6298-4268-b01d-fb8a571f3f17",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "4bcec2ab-a667-484d-aa50-7686bfe64091",
+      "EntityId": "fa3d224d-6298-4268-b01d-fb8a571f3f17",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "4058333c-6cc5-4d0a-8e2e-7e97af9b4c12",
+      "EntityVariantId": "4bcec2ab-a667-484d-aa50-7686bfe64091",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 608",
+      "Evaluate": {
+        "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 608!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "4fcf1584-759c-4a9b-8b5e-51bd0c0e96f1",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "e64ec9c9-6219-4a1b-ba6c-91b98fdec420",
+      "EntityId": "4fcf1584-759c-4a9b-8b5e-51bd0c0e96f1",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "32dbe7ad-7058-49a8-bd80-0cb677ae3690",
+      "EntityVariantId": "e64ec9c9-6219-4a1b-ba6c-91b98fdec420",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 609",
+      "Evaluate": {
+        "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 609!!!" } } }
+        }
+      }
+    },
+    {
+      "EntityId": "a7f819dd-a8e6-4f8f-9a06-425cb527675b",
+      "VariantSelector": "",
+      "EntitySharedState": ""
+    },
+    {
+      "EntityVariantId": "bb08b97c-b6c2-423d-b757-e7d168d50323",
+      "EntityId": "a7f819dd-a8e6-4f8f-9a06-425cb527675b",
+      "VariantDescriptor": "",
+      "EntityVariantSharedState": ""
+    },
+    {
+      "EntityVariantVersionId": "281c7a1c-6bde-4e66-88f0-a03639379dea",
+      "EntityVariantId": "bb08b97c-b6c2-423d-b757-e7d168d50323",
+      "EntityTypeVersionId": "e24998ae-28c6-4c24-8cea-0d8e63155303",
+      "TimestampUTC": "1/1/2018 10:10:10",
+      "EntityVersionBranchId": "",
+      "ChangeAuditDetails": {},
+      "Name": "Creative 610",
+      "Evaluate": {
+        "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
+        "ActualParameters": {
+          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 610!!!" } } }
+        }
+      }
+    }
+  ]
+}
