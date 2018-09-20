@@ -351,7 +351,8 @@ namespace DataService
                                     Proc = "TowerPixelCapture",
                                     Meth = "ProcessTowerMessage - CallEmailApi",
                                     Desc = Utility.Hashing.EncodeTo64(emailMd5),
-                                    Msg = Utility.Hashing.EncodeTo64(jsonPlainEmail)
+                                    Msg = !String.IsNullOrEmpty(jsonPlainEmail) 
+                                        ? Utility.Hashing.EncodeTo64(jsonPlainEmail) : "Null or empty jsonPlainEmail"
                                 }),
                                 "");
                             IGenericEntity te = new GenericEntityJson();
