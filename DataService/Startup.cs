@@ -112,7 +112,9 @@ namespace DataService
                         case "OnPointConsoleLiveFeed":
                             result = await SaveOnPointConsoleLiveFeed(requestFromPost);
                             break;
-
+                        case "OnPointConsoleLiveEmailEvent":
+                            result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
+                            break;
                         default:
                             File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
                             break;
@@ -190,6 +192,33 @@ namespace DataService
             return result;
         }
 
+        public async Task<string> SaveOnPointConsoleLiveEmailEvent(string request)
+        {
+            string result = Jw.Json(new { Result = "Failure" });
+            try
+            {
+                return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "SaveOnPointConsoleLiveEmailEvent",
+                        "",
+                        request);
+            }
+            catch (Exception ex)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                "OnPointConsoleErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1000,
+                                    Proc = "DataService",
+                                    Meth = "SaveOnPointConsoleLiveEmailEvent - Insert Failed",
+                                    Desc = Utility.Hashing.EncodeTo64(request),
+                                    Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                                }),
+                                "");
+            }
+            return result;
+        }
+
         public async Task ProcessTowerPixelCapture(string rawstring)
         {
             try
@@ -226,7 +255,7 @@ namespace DataService
                     string labelvalue = "";
                     if (parsedstring["label"] != null)
                     {
-                        labelvalue = parsedstring["label"].ToString();
+                        labelvalue = CleanLabel(parsedstring["label"].ToString());
                     }
                     await ProcessTowerMessage(md5value, labelvalue);
                 }
@@ -239,7 +268,7 @@ namespace DataService
                             Sev = 1000,
                             Proc = "TowerPixelCapture",
                             Meth = "ProcessTowerPixelCapture - Step2Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"{result}"),
+                            Desc = Utility.Hashing.EncodeTo64($"{CleanLabel(result)}"),
                             Msg = Utility.Hashing.EncodeTo64("No md5")
                         }),
                         "");
@@ -288,6 +317,12 @@ namespace DataService
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
+        private string CleanLabel(string label)
+        {
+            string newlabel =  label.Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
+            return newlabel;
+        }
+
         public async Task ProcessTowerMessage(string emailMd5, string label)
         {
             try
@@ -297,12 +332,12 @@ namespace DataService
                 if (label.Contains("|"))
                 {
                     string[] array = label.Split('|');
-                    dom = array[0].Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
+                    dom = array[0];
                     page = array[1];
                 }
                 else
                 {
-                    dom = label.Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
+                    dom = label;
                 }
 
                 if (!string.IsNullOrEmpty(emailMd5) && emailMd5.ToLower() == "none")
@@ -401,18 +436,52 @@ namespace DataService
 
                     if (plainText != null)
                     {
-                        await Utility.ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
-                            Jw.Json(new { header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
-                                           body = Jw.Json(new { domain_id = this.OnPointConsoleTowerDomain,
-                                               email = plainText,
-                                               first_name = firstName,
-                                               last_name = lastName,
-                                               dob = dateOfBirth,
-                                               email_source = emailSource,
-                                               isFinal = "true",
-                                               label_domain = dom
-                                           })}, new bool[] { false, false }),
-                            "application/json");
+                        try
+                        {
+                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                "TowerVisitorErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1,
+                                    Proc = "TowerPixelCapture",
+                                    Meth = "ConsolePost",
+                                    Desc = Utility.Hashing.EncodeTo64(plainText),
+                                    Msg = Utility.Hashing.EncodeTo64(dom)
+                                }),
+                            "");
+
+                            await Utility.ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
+                                Jw.Json(new
+                                {
+                                    header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
+                                    body = Jw.Json(new
+                                    {
+                                        domain_id = this.OnPointConsoleTowerDomain,
+                                        email = plainText,
+                                        first_name = firstName,
+                                        last_name = lastName,
+                                        dob = dateOfBirth,
+                                        email_source = emailSource,
+                                        isFinal = "true",
+                                        label_domain = dom
+                                    })
+                                }, new bool[] { false, false }),
+                                "application/json");
+                        }
+                        catch (Exception ex)
+                        {
+                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                "TowerVisitorErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1000,
+                                    Proc = "TowerPixelCapture",
+                                    Meth = "ProcessTowerMessage - TowerDataEmailConsolePostError",
+                                    Desc = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}"),
+                                    Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                                }),
+                                "");
+                        }
                     }
                 }
                 else

@@ -21,7 +21,8 @@ namespace DataService
                 { "AddNewTowerEmail", "[TowerVisitorRedirectPixel].[spAddNewTowerEmail]" },
                 { "SaveOnPointConsoleLiveFeed", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveFeed]" },
                 { "TowerVisitorErrorLog", "[TowerVisitorRedirectPixel].[spInsertErrorLog]" },
-                { "OnPointConsoleErrorLog", "[OnPointConsoleLiveFeed].[spInsertErrorLog]" }
+                { "OnPointConsoleErrorLog", "[OnPointConsoleLiveFeed].[spInsertErrorLog]" },
+                { "SaveOnPointConsoleLiveEmailEvent", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveEmailEvent]" }
             };
 
             string sp = null;
