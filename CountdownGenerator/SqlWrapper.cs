@@ -58,7 +58,7 @@ namespace CountdownGenerator
                 SqlConnection cn = new SqlConnection(connectionString);
                 cn.Open();
                 SqlCommand cmd = cn.CreateCommand();
-                cmd.CommandText = "[ReadPixel].[spInsertErrorLog]";
+                cmd.CommandText = "[dbo].[spInsertErrorLog]";
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 cmd.Parameters.Add(new SqlParameter("Severity", severity));
