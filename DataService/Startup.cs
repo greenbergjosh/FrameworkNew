@@ -365,7 +365,6 @@ namespace DataService
                     geplain.InitializeEntity(null, null, stateplain);
 
                     string lpfEmRes = geplain.GetS("Result");
-
                     string plainText = geplain.GetS("Email");
                     string firstName = geplain.GetS("Fn");
                     string lastName = geplain.GetS("Ln");
@@ -396,10 +395,29 @@ namespace DataService
                                 IGenericEntity te = new GenericEntityJson();
                                 var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail.Item2);
                                 te.InitializeEntity(null, null, ts);
-                                if (te.GetS("target_email").Length > 3)
+                                if (te.GetS("target_email") != null)
                                 {
-                                    emailSource = "tower";
-                                    towerEmailPlainText = te.GetS("target_email");
+                                    if (te.GetS("target_email").Length > 3)
+                                    {
+                                        emailSource = "tower";
+                                        towerEmailPlainText = te.GetS("target_email");
+                                    }
+                                }
+                                else
+                                {
+                                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                        "TowerVisitorErrorLog",
+                                        Jw.Json(new
+                                        {
+                                            Sev = 1,
+                                            Proc = "TowerPixelCapture",
+                                            Meth = "ProcessTowerMessage - CallEmailApi Returned Null or Short Email",
+                                            Desc = Utility.Hashing.EncodeTo64(emailMd5),
+                                            Msg = jsonPlainEmail.Item2 != null
+                                                ? Utility.Hashing.EncodeTo64("|" + jsonPlainEmail.Item2 + "|")
+                                                : Utility.Hashing.EncodeTo64("Null jsonPlainEmail")
+                                        }),
+                                        "");
                                 }
                             }
                         }
