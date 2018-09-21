@@ -438,17 +438,34 @@ namespace DataService
 
                         if (towerEmailPlainText != null)
                         {
-                            string anteRes = await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "AddNewTowerEmail",
-                                Jw.Json(new { Email = towerEmailPlainText, Label = label }),
-                                "");
-                            IGenericEntity anteGe = new GenericEntityJson();
-                            var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-                            anteGe.InitializeEntity(null, null, anteTs);
-                            plainText = geplain.GetS("Email");
-                            firstName = geplain.GetS("Fn");
-                            lastName = geplain.GetS("Ln");
-                            dateOfBirth = geplain.GetS("Dob");
+                            try
+                            {
+                                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                    "AddNewTowerEmail",
+                                    Jw.Json(new { Email = towerEmailPlainText, Label = label }),
+                                    "");
+                                IGenericEntity anteGe = new GenericEntityJson();
+                                var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
+                                anteGe.InitializeEntity(null, null, anteTs);
+                                plainText = anteGe.GetS("Email");
+                                firstName = anteGe.GetS("Fn");
+                                lastName = anteGe.GetS("Ln");
+                                dateOfBirth = anteGe.GetS("Dob");
+                            }
+                            catch (Exception exAddNewTowerEmail)
+                            {
+                                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                                    "TowerVisitorErrorLog",
+                                    Jw.Json(new
+                                    {
+                                        Sev = 1000,
+                                        Proc = "TowerPixelCapture",
+                                        Meth = "ProcessTowerMessage - Exception calling spAddNewTowerEmail",
+                                        Desc = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}"),
+                                        Msg = Utility.Hashing.EncodeTo64(exAddNewTowerEmail.ToString())
+                                    }),
+                                    "");
+                            }
                         }
                     }
 
