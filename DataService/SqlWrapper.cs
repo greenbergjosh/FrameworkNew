@@ -9,7 +9,7 @@ namespace DataService
 {
     public class SqlWrapper
     {
-        public static async Task<string> SqlServerProviderEntry(string conStr, string method, string args, string payload)
+        public static async Task<string> SqlServerProviderEntry(string conStr, string method, string args, string payload, int timeout = 120)
         {
             string ret = null;
 
@@ -28,12 +28,12 @@ namespace DataService
             string sp = null;
             spMap.TryGetValue(method, out sp);
             if (sp == null) return "";
-            ret = await ExecuteSql(args, payload, sp, conStr);
+            ret = await ExecuteSql(args, payload, sp, conStr, timeout);
 
             return ret;
         }
 
-        public static async Task<string> ExecuteSql(string args, string payload, string sproc, string connectionString)
+        public static async Task<string> ExecuteSql(string args, string payload, string sproc, string connectionString, int timeout = 120)
         {
             string outval = null;
 
@@ -48,7 +48,7 @@ namespace DataService
                 cmd.Parameters.Add(new SqlParameter("@Payload", payload));
                 cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
                     .Direction = System.Data.ParameterDirection.Output;
-                cmd.CommandTimeout = 120;
+                cmd.CommandTimeout = timeout;
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                 outval = (string)cmd.Parameters["@Return"].Value;
                 cn.Close();

@@ -359,7 +359,7 @@ namespace DataService
                     string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
                         "LogPixelFire",
                         Jw.Json(new { Em = emailMd5, Lb = label, Dm = dom, Pg = page }),
-                        "");
+                        "", 240);
                     IGenericEntity geplain = new GenericEntityJson();
                     var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
                     geplain.InitializeEntity(null, null, stateplain);
@@ -512,7 +512,7 @@ namespace DataService
                                     Sev = 1000,
                                     Proc = "TowerPixelCapture",
                                     Meth = "ProcessTowerMessage - TowerDataEmailConsolePostError",
-                                    Desc = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}"),
+                                    Desc = Utility.Hashing.EncodeTo64($"{plainText}||{label}"),
                                     Msg = Utility.Hashing.EncodeTo64(ex.ToString())
                                 }),
                                 "");
