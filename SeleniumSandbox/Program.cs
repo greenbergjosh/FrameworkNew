@@ -30,7 +30,7 @@ namespace SeleniumSandbox
 
             IGenericEntity pas = await GetPostmasterAccounts(cs);
 
-            foreach(var ps in pas.GetL(""))
+            foreach (var ps in pas.GetL(""))
             {
                 string pmAcctId = ps.GetS("Id");
                 string username = ps.GetS("Credentials/Username");
@@ -48,7 +48,7 @@ namespace SeleniumSandbox
                     await DoGmail(cs, pmAcctId, username, password, url);
                 }
             }
-        }        
+        }
 
         public static async Task DoHotmail(string cs, string pmAcctId, string username, string password,
             string url, string apiKey)
@@ -98,10 +98,11 @@ namespace SeleniumSandbox
                     if (!string.IsNullOrEmpty(ret3))
                     {
                         var trapEmail = ParseEmail(ret3);
-                        
+
                         await SqlWrapper.SqlServerProviderEntry(cs,
                             "InsertBlacklist",
-                            Jw.Json(new {
+                            Jw.Json(new
+                            {
                                 PostmasterAccountId = pmAcctId,
                                 IpAddress = ip.GetS("Ip"),
                                 ComplaintType = "trap",
@@ -197,7 +198,7 @@ namespace SeleniumSandbox
             try
             {
                 // Log in
-                IWebDriver driver = new ChromeDriver(@"E:\Workspace\Postmaster");
+                IWebDriver driver = new ChromeDriver(@"C:\inetpub\wwwroot\PostMasterTool\chromedriver_win32");
                 driver.Navigate().GoToUrl(url);
                 driver.Manage().Timeouts().ImplicitWait = new TimeSpan(0, 0, 2);
                 IWebElement email_phone = driver.FindElement(By.XPath("//input[@id='identifierId']"));
@@ -268,204 +269,264 @@ namespace SeleniumSandbox
                     try
                     {
                         driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[0] + post);
-                        Wait(driver, 2000, 500);
+                        Wait(driver, 4000, 500);
 
-                        IList<IWebElement> dateCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-date')]"));
-                        IList<IWebElement> numberCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-number')]"));
-
-                        List<Tuple<string, string, string>> spamRate = new List<Tuple<string, string, string>>();
-                        for (int i = 0; i < dateCells.Count; i++)
+                        if (!driver.PageSource.Contains("No data to display at this time"))
                         {
-                            string date = dateCells[i].Text;
-                            string num = numberCells[i].Text;
-                            spamRate.Add(new Tuple<string, string, string>(domId, date, num));
+                            IList<IWebElement> dateCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-date')]"));
+                            IList<IWebElement> numberCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-number')]"));
+
+                            List<Tuple<string, string, string>> spamRate = new List<Tuple<string, string, string>>();
+                            for (int i = 0; i < dateCells.Count; i++)
+                            {
+                                string date = dateCells[i].Text;
+                                string num = numberCells[i].Text;
+                                spamRate.Add(new Tuple<string, string, string>(domId, date, num));
+                            }
+
+                            string jsSpam = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
+                                (spamRate, new List<string>() { "id", "sd", "sr" },
+                                new bool[] { true, true, true });
+
+                            await SqlWrapper.SqlServerProviderEntry(cs,
+                               "InsertDomainSpamRate",
+                               "",
+                               jsSpam);
                         }
-
-                        string jsSpam = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
-                            (domains, new List<string>() { "id", "sd", "sr" },
-                            new bool[] { true, true, true });
-
-                        await SqlWrapper.SqlServerProviderEntry(cs,
-                           "InsertDomainSpamRate",
-                           "",
-                           jsSpam);
                     }
                     catch (Exception ex)
                     {
                         await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
                             "Section 0 Exception", ex.ToString());
                     }
-/*
+
+
                     // Section 1
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[1] + post);
-                    Wait(driver, 2000, 500);
-
-                    IWebElement chart = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
-                    IList<IWebElement> bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect']"));
-
-                    List<Tuple<string, string, DateTime, string>> domIpRep
-                                = new List<Tuple<string, string, DateTime, string>>();
-                    foreach (var bar in bars)
+                    try
                     {
-                        Actions actions = new Actions(driver);
-                        actions.MoveToElement(bar).Click().Build().Perform();
-                        Wait(driver, 500, 500);
 
-                        try
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[1] + post);
+                        Wait(driver, 2000, 500);
+
+                        if (!driver.PageSource.Contains("No data to display at this time"))
                         {
-                            IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
-                            string[] hdrParts = ipHdr.Text.Split(' ');
-                            string reputation = hdrParts[0];
-                            DateTime repDate = ParseDateFromHeader(hdrParts);
+                            IWebElement chart = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
+                            IList<IWebElement> bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @fill='#f2a600']"));
 
-                            IList<IWebElement> ips = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr/td"));
-                            foreach (var ip in ips)
+                            List<Tuple<string, string, DateTime, string>> domIpRep
+                                        = new List<Tuple<string, string, DateTime, string>>();
+                            foreach (var bar in bars)
                             {
-                                string ipaddr = ip.Text;
-                                domIpRep.Add(new Tuple<string, string, DateTime, string>
-                                    (domId, ipaddr, repDate, reputation));
+                                Actions actions = new Actions(driver);
+                                actions.MoveToElement(bar).Click().Build().Perform();
+                                Wait(driver, 500, 500);
+
+                                IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
+                                string[] hdrParts = ipHdr.Text.Split(' ');
+                                string reputation = hdrParts[0];
+                                DateTime repDate = ParseDateFromHeader(hdrParts);
+
+                                IList<IWebElement> ips = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr/td"));
+                                foreach (var ip in ips)
+                                {
+                                    string ipaddr = ip.Text;
+                                    domIpRep.Add(new Tuple<string, string, DateTime, string>
+                                        (domId, ipaddr, repDate, reputation));
+                                }
+
                             }
+
+                            string jsIpRep = Utility.JsonWrapper.JsonTuple<Tuple<string, string, DateTime, string>>
+                                (domIpRep, new List<string>() { "id", "ip", "rd", "rp" },
+                                new bool[] { true, true, true, true });
+
+                            await SqlWrapper.SqlServerProviderEntry(cs,
+                               "InsertDomainIpReputation",
+                               "",
+                               jsIpRep);
                         }
-                        catch (Exception ex)
-                        { }
                     }
-
-                    string jsIpRep = Utility.JsonWrapper.JsonTuple<Tuple<string, string, DateTime, string>>
-                        (domIpRep, new List<string>() { "id", "ip", "rd", "rp" },
-                        new bool[] { true, true, true, true });
-
-                    await SqlWrapper.SqlServerProviderEntry(cs,
-                       "InsertDomainIpReputation",
-                       "",
-                       jsIpRep);
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 1 Exception", ex.ToString());
+                    }
 
                     // Section 2
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[2] + post);
-                    Wait(driver, 2000, 500);
-
-                    List<Tuple<string, string, string>> domRep
-                                = new List<Tuple<string, string, string>>();
-                    IList<IWebElement> domreprows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
-                    foreach (var domreprow in domreprows)
+                    try
                     {
-                        string domrepdate = domreprow.FindElement(By.XPath("td[starts-with(@class,'google-visualization-table-type-date')]")).Text;
-                        string domrep = domreprow.FindElement(By.XPath("td[starts-with(@class,'google-visualization-table-type-number')]")).Text;
-                        domRep.Add(new Tuple<string, string, string>
-                                    (domId, domrepdate, domrep));
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[2] + post);
+                        Wait(driver, 4000, 500);
+
+                        if (!driver.PageSource.Contains("No data to display at this time"))
+                        {
+                            List<Tuple<string, string, string>> domRep
+                                    = new List<Tuple<string, string, string>>();
+                            //IList<IWebElement> domreprows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
+                            IList<IWebElement> domreprows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/*"));
+
+
+                            foreach (var domreprow in domreprows)
+                            {
+                                string domrepdate = domreprow.FindElement(By.XPath("td[starts-with(@class,'google-visualization-table-type-date')]")).Text;
+                                string domrep = domreprow.FindElement(By.XPath("td[starts-with(@class,'google-visualization-table-type-number')]")).Text;
+                                domRep.Add(new Tuple<string, string, string>
+                                            (domId, domrepdate, domrep));
+                            }
+
+                            string jsDomRep = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
+                                (domRep, new List<string>() { "id", "rd", "rp" },
+                                new bool[] { true, true, true });
+
+                            await SqlWrapper.SqlServerProviderEntry(cs,
+                               "InsertDomainReputation",
+                               "",
+                               jsDomRep);
+                        }
                     }
-
-                    string jsDomRep = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
-                        (domRep, new List<string>() { "id", "rd", "rp" },
-                        new bool[] { true, true, true });
-
-                    await SqlWrapper.SqlServerProviderEntry(cs,
-                       "InsertDomainReputation",
-                       "",
-                       jsDomRep);
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 2 Exception", ex.ToString());
+                    }
 
                     // Section 3
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[3] + post);
-                    Wait(driver, 2000, 500);
-
-                    IWebElement chart2 = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
-                    IList<IWebElement> bars2 = chart2.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect']"));
-
-                    List<Tuple<string, string, string, DateTime>> domFb
-                                = new List<Tuple<string, string, string, DateTime>>();
-                    foreach (var bar in bars2)
+                    try
                     {
-                        Actions actions = new Actions(driver);
-                        actions.MoveToElement(bar).Click().Build().Perform();
-                        Wait(driver, 500, 500);
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[3] + post);
+                        Wait(driver, 4000, 500);
 
-                        try
+                        if (!driver.PageSource.Contains("No data to display at this time"))
                         {
-                            IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
-                            string[] hdrParts = ipHdr.Text.Split(' ');
-                            DateTime fbDate = ParseDateFromHeader(hdrParts);
-                            IList<IWebElement> fbrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
-                            foreach (var fbrow in fbrows)
+                            IWebElement chart2 = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
+                            IList<IWebElement> bars2 = chart2.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect']"));
+
+                            List<Tuple<string, string, string, DateTime>> domFb
+                                        = new List<Tuple<string, string, string, DateTime>>();
+                            foreach (var bar in bars2)
                             {
-                                string fbid = fbrow.FindElement(By.XPath("td[1]")).Text;
-                                string fbspamrate = fbrow.FindElement(By.XPath("td[2]")).Text;
-                                domFb.Add(new Tuple<string, string, string, DateTime>
-                                    (domId, fbid, fbspamrate, fbDate));
+                                Actions actions = new Actions(driver);
+                                actions.MoveToElement(bar).Click().Build().Perform();
+                                Wait(driver, 500, 500);
+
+                                try
+                                {
+                                    IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
+                                    string[] hdrParts = ipHdr.Text.Split(' ');
+                                    DateTime fbDate = ParseDateFromHeader(hdrParts);
+                                    IList<IWebElement> fbrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
+                                    foreach (var fbrow in fbrows)
+                                    {
+                                        string fbid = fbrow.FindElement(By.XPath("td[1]")).Text;
+                                        string fbspamrate = fbrow.FindElement(By.XPath("td[2]")).Text;
+                                        domFb.Add(new Tuple<string, string, string, DateTime>
+                                            (domId, fbid, fbspamrate, fbDate));
+                                    }
+                                }
+                                catch (Exception ex)
+                                { }
                             }
+
+                            string jsFb = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string, DateTime>>
+                                (domFb, new List<string>() { "id", "fbid", "sr", "fd" },
+                                new bool[] { true, true, true, true });
+
+                            await SqlWrapper.SqlServerProviderEntry(cs,
+                               "InsertDomainFeedbackLoop",
+                               "",
+                               jsFb);
                         }
-                        catch (Exception ex)
-                        { }
                     }
-
-                    string jsFb = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string, DateTime>>
-                        (domFb, new List<string>() { "id", "fbid", "sr", "fd" },
-                        new bool[] { true, true, true, true });
-
-                    await SqlWrapper.SqlServerProviderEntry(cs,
-                       "InsertDomainFeedbackLoop",
-                       "",
-                       jsFb);
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 3 Exception", ex.ToString());
+                    }
 
                     // Section 4
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[4] + post);
-                    Wait(driver, 2000, 500);
-
-                    IList<IWebElement> authtrafrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
-
-                    List<Tuple<string, string, string, string, string>> domAuth
-                                = new List<Tuple<string, string, string, string, string>>();
-                    foreach (var authtrafrow in authtrafrows)
+                    try
                     {
-                        string authdate = authtrafrow.FindElement(By.XPath("td[1]")).Text;
-                        string authdkimsuccrate = authtrafrow.FindElement(By.XPath("td[2]")).Text;
-                        string authspfsuccrate = authtrafrow.FindElement(By.XPath("td[3]")).Text;
-                        string authdmarcsuccrate = authtrafrow.FindElement(By.XPath("td[4]")).Text;
-                        domAuth.Add(new Tuple<string, string, string, string, string>
-                                    (domId, authdate, authdkimsuccrate, authspfsuccrate, authdmarcsuccrate));
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[4] + post);
+                        Wait(driver, 4000, 500);
+
+                        if (!driver.PageSource.Contains("No data to display at this time"))
+                        {
+                            IList<IWebElement> authtrafrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
+
+                            List<Tuple<string, string, string, string, string>> domAuth
+                                        = new List<Tuple<string, string, string, string, string>>();
+                            foreach (var authtrafrow in authtrafrows)
+                            {
+                                string authdate = authtrafrow.FindElement(By.XPath("td[1]")).Text;
+                                string authdkimsuccrate = authtrafrow.FindElement(By.XPath("td[2]")).Text;
+                                string authspfsuccrate = authtrafrow.FindElement(By.XPath("td[3]")).Text;
+                                string authdmarcsuccrate = authtrafrow.FindElement(By.XPath("td[4]")).Text;
+                                domAuth.Add(new Tuple<string, string, string, string, string>
+                                            (domId, authdate, authdkimsuccrate, authspfsuccrate, authdmarcsuccrate));
+                            }
+
+                            string jsAuth = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string, string, string>>
+                                (domAuth, new List<string>() { "id", "ad", "dkim", "spf", "dmarc" },
+                                new bool[] { true, true, true, true, true });
+
+                            await SqlWrapper.SqlServerProviderEntry(cs,
+                               "InsertDomainAuth",
+                               "",
+                               jsAuth);
+                        }
                     }
-
-                    string jsAuth = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string, string, string>>
-                        (domAuth, new List<string>() { "id", "ad", "dkim", "spf", "dmarc" },
-                        new bool[] { true, true, true, true, true });
-
-                    await SqlWrapper.SqlServerProviderEntry(cs,
-                       "InsertDomainAuth",
-                       "",
-                       jsAuth);
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 4 Exception", ex.ToString());
+                    }
 
                     // Section 5
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[5] + post);
-                    Wait(driver, 2000, 500);
-
-                    IList<IWebElement> encryptrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
-
-                    List<Tuple<string, string, string, string>> domEnc
-                                = new List<Tuple<string, string, string, string>>();
-                    foreach (var encryptrow in encryptrows)
+                    try
                     {
-                        string encdate = encryptrow.FindElement(By.XPath("td[1]")).Text;
-                        string inboundtls = encryptrow.FindElement(By.XPath("td[2]")).Text;
-                        string outboundtls = encryptrow.FindElement(By.XPath("td[3]")).Text;
-                        domEnc.Add(new Tuple<string, string, string, string>
-                                    (domId, encdate, inboundtls, outboundtls));
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[5] + post);
+                        Wait(driver, 2000, 500);
+
+                        if (!driver.PageSource.Contains("No data to display at this time"))
+                        {
+                            IList<IWebElement> encryptrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
+
+                            List<Tuple<string, string, string, string>> domEnc
+                                        = new List<Tuple<string, string, string, string>>();
+                            foreach (var encryptrow in encryptrows)
+                            {
+                                string encdate = encryptrow.FindElement(By.XPath("td[1]")).Text;
+                                string inboundtls = encryptrow.FindElement(By.XPath("td[2]")).Text;
+                                string outboundtls = encryptrow.FindElement(By.XPath("td[3]")).Text;
+                                domEnc.Add(new Tuple<string, string, string, string>
+                                            (domId, encdate, inboundtls, outboundtls));
+                            }
+
+                            string jsEnc = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string, string>>
+                                (domEnc, new List<string>() { "id", "ed", "itls", "otls" },
+                                new bool[] { true, true, true, true });
+
+                            await SqlWrapper.SqlServerProviderEntry(cs,
+                               "InsertDomainEnc",
+                               "",
+                               jsEnc);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 5 Exception", ex.ToString());
                     }
 
-                    string jsEnc = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string, string>>
-                        (domEnc, new List<string>() { "id", "ed", "itls", "otls" },
-                        new bool[] { true, true, true, true });
-
-                    await SqlWrapper.SqlServerProviderEntry(cs,
-                       "InsertDomainEnc",
-                       "",
-                       jsEnc);
-*/
                     // Section 6
-                    driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[6] + post);
-                    Wait(driver, 2000, 500);
-
-                    if (!driver.PageSource.Contains("No data to display at this time"))
+                    try
                     {
-                        try
+                        driver.Navigate().GoToUrl(pre + dompart + "&st=" + sections[6] + post);
+                        Wait(driver, 2000, 500);
+
+                        if (!driver.PageSource.Contains("No data to display at this time"))
                         {
+
                             IList<IWebElement> circleG = driver.FindElements(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]/following-sibling::*[name()='g']"));
                             IList<IWebElement> startCircles = circleG[0].FindElements(By.XPath("./*[name()='circle']"));
                             List<Tuple<string, DateTime, string, string, string>> domErr
@@ -494,16 +555,19 @@ namespace SeleniumSandbox
                                 {
                                     DateTime errdate = DateTime.Now;
                                     IList<IWebElement> erHdr = driver.FindElements(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
-                                    string hdr = erHdr[0].Text;
-                                    errdate = ParseDateFromHeader(hdr.Split(' '));
-                                    IList<IWebElement> fbrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
-                                    foreach (var fbrow in fbrows)
+                                    if (erHdr.Count > 0)
                                     {
-                                        string errType = fbrow.FindElement(By.XPath("td[1]")).Text;
-                                        string reason = fbrow.FindElement(By.XPath("td[2]")).Text;
-                                        string percentage = fbrow.FindElement(By.XPath("td[3]")).Text;
-                                        domErr.Add(new Tuple<string, DateTime, string, string, string>
-                                            (domId, errdate, errType, reason, percentage));
+                                        string hdr = erHdr[0].Text;
+                                        errdate = ParseDateFromHeader(hdr.Split(' '));
+                                        IList<IWebElement> fbrows = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr"));
+                                        foreach (var fbrow in fbrows)
+                                        {
+                                            string errType = fbrow.FindElement(By.XPath("td[1]")).Text;
+                                            string reason = fbrow.FindElement(By.XPath("td[2]")).Text;
+                                            string percentage = fbrow.FindElement(By.XPath("td[3]")).Text;
+                                            domErr.Add(new Tuple<string, DateTime, string, string, string>
+                                                (domId, errdate, errType, reason, percentage));
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
@@ -511,6 +575,10 @@ namespace SeleniumSandbox
 
                                 circleG = driver.FindElements(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]/following-sibling::*[name()='g']"));
                                 startCircles = circleG[0].FindElements(By.XPath("./*[name()='circle']"));
+
+                                var button = driver.FindElement(By.Id("a0-i"));
+                                button.Click();
+                                button.Click();
                             }
 
                             if (domErr.Count > 0)
@@ -524,13 +592,15 @@ namespace SeleniumSandbox
                                    "",
                                    jsErr);
                             }
-                            
+
+
                         }
-                        catch (Exception errEx)
-                        {
-                            int i = 0;
-                        }                        
-                    } 
+                    }
+                    catch (Exception ex)
+                    {
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "Postmaster", "DoGmail",
+                            "Section 6 Exception", ex.ToString());
+                    }
                 }
 
                 driver.Quit();
