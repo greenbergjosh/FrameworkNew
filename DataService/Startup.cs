@@ -36,14 +36,14 @@ namespace DataService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddCors(options =>
-            //{
-            //    options.AddPolicy("CorsPolicy",
-            //        builder => builder.AllowAnyOrigin()
-            //        .AllowAnyMethod()
-            //        .AllowAnyHeader()
-            //        .AllowCredentials());
-            //});
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
         }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
@@ -59,7 +59,7 @@ namespace DataService
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseCors("CorsPolicy");
+            app.UseCors("CorsPolicy");
 
             File.AppendAllText("DataService.log", $@"{DateTime.Now}::Starting" +
                             Environment.NewLine);
@@ -159,7 +159,7 @@ namespace DataService
 
                         string ret = "{\"k2\":\"" + cookieValueFromReq + "\"}";
                         context.Response.StatusCode = 200;
-                        context.Response.ContentType = "text/plain";
+                        context.Response.ContentType = "application/json";
                         context.Response.ContentLength = ret.Length;
                         //X-Content-Type-Options: nosniff
                         await context.Response.WriteAsync(ret);
