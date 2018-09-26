@@ -136,10 +136,20 @@ namespace DataService
                         }),
                         "");
 
-                    await ProcessTowerPixelCapture(eqs);
-                    context.Response.ContentType = ContentType;
-                    context.Response.Headers.ContentLength = TowerPixelImage.Length;
-                    await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
+                    string label = await ProcessTowerPixelCapture(eqs);
+                    if (label == "testvisitorid")
+                    {
+                        string ret = "{\"k2\":\"v2\"}";
+                        context.Response.StatusCode = 200;
+                        context.Response.ContentLength = ret.Length;
+                        await context.Response.WriteAsync(ret);
+                    }
+                    else
+                    {
+                        context.Response.ContentType = ContentType;
+                        context.Response.Headers.ContentLength = TowerPixelImage.Length;
+                        await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
+                    }  
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))
                 {
@@ -219,8 +229,9 @@ namespace DataService
             return result;
         }
 
-        public async Task ProcessTowerPixelCapture(string rawstring)
+        public async Task<string> ProcessTowerPixelCapture(string rawstring)
         {
+            string labelvalue = "";
             try
             {
                 string[] a = rawstring.Split("  ");
@@ -252,7 +263,7 @@ namespace DataService
                     var parsedstring = HttpUtility.ParseQueryString(result);
                     string md5value = parsedstring["md5_email"].ToString();
 
-                    string labelvalue = "";
+                    
                     if (parsedstring["label"] != null)
                     {
                         labelvalue = CleanLabel(parsedstring["label"].ToString());
@@ -288,6 +299,8 @@ namespace DataService
                         }),
                         "");
             }
+
+            return labelvalue;
         }
 
         public static int PadCount(string str)
