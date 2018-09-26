@@ -149,8 +149,15 @@ namespace DataService
                     string label = await ProcessTowerPixelCapture(eqs);
                     if (label == "testvisitorid")
                     {
-                        string ret = "{\"k2\":\"v2\"}";
+                        //string ret = "{\"k2\":\"v2\"}";
                         //context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                        string cookieValueFromReq = context.Request.Cookies["test2"];
+                        if (String.IsNullOrEmpty(cookieValueFromReq))
+                        {
+                            SetCookie(context, "test2", "rich@hotmail.com", 30);
+                        }
+
+                        string ret = "{\"k2\":\"" + cookieValueFromReq + "\"}";
                         context.Response.StatusCode = 200;
                         context.Response.ContentType = "text/plain";
                         context.Response.ContentLength = ret.Length;
@@ -186,6 +193,26 @@ namespace DataService
                         }),
                         "");
             }
+        }
+
+        public void SetCookie(HttpContext ctx, string key, string value, int? expireTime)
+        {
+            CookieOptions option = new CookieOptions();
+            option.Path = "/";
+            option.SameSite = SameSiteMode.None;
+            option.HttpOnly = false;
+
+            if (expireTime.HasValue)
+                option.Expires = DateTime.Now.AddMinutes(expireTime.Value);
+            else
+                option.Expires = DateTime.Now.AddMilliseconds(10);
+
+            ctx.Response.Cookies.Append(key, value, option);
+        }
+
+        public void DeleteCookie(HttpContext ctx, string key)
+        {
+            ctx.Response.Cookies.Delete(key);
         }
 
         public async Task<string> SaveOnPointConsoleLiveFeed(string request)
