@@ -152,6 +152,8 @@ namespace DataService
                         string ret = "{\"k2\":\"v2\"}";
                         context.Response.StatusCode = 200;
                         context.Response.ContentLength = ret.Length;
+                        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                        //X-Content-Type-Options: nosniff
                         await context.Response.WriteAsync(ret);
                     }
                     else
