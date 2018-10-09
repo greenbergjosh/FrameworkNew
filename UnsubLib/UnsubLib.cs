@@ -110,10 +110,17 @@ namespace UnsubLib
 
         public async Task<IGenericEntity> GetNetworksAndCreateLockFiles()
         {
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "Entry", "");
+
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
                     "{}",
                     "");
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "After SelectNetwork", "");
+
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
             ge.InitializeEntity(this.RosWrap, null, state);
@@ -122,7 +129,15 @@ namespace UnsubLib
             {
                 fileNames.Add(this.WorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
             }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "After parsing SelectNetwork return", "");
+
             await Fs.CreateEmptyFiles(fileNames);
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "After creating empty files", "");
+
             return ge;
         }
 
