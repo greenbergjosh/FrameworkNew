@@ -1075,6 +1075,7 @@ namespace UnsubLib
                 campaignXml);
         }
 
+        
         public async Task<string> GetSuppressionFileUri(
             IGenericEntity network, string networkCampaignId, int maxConnections)
         {
@@ -1082,6 +1083,7 @@ namespace UnsubLib
             string networkName = network.GetS("Name");
             string apiKey = network.GetS($"Credentials/{networkName}ApiKey");
             string apiUrl = network.GetS($"Credentials/{networkName}ApiUrl");
+            string optizmoToken = network.GetS($"Credentials/OptizmoToken");
 
             IDictionary<string, string> parms = new Dictionary<string, string>()
             {
@@ -1104,6 +1106,25 @@ namespace UnsubLib
                     && (usurl["key"] != null) && (usurl["s"] != null))
                 {
                     uri = "https://api.unsubcentral.com/api/service/keys/" + usurl["key"] + "?s=" + usurl["s"] + "&format=hash&zipped=true";
+                }
+                else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
+                {
+                    string[] pathParts = usuri.AbsolutePath.Split('/');
+                    //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
+                    StringBuilder optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
+                    optizmoUrl.Append(pathParts[pathParts.Length - 1]);
+                    optizmoUrl.Append($"?token={optizmoToken}&format=md5");
+                    var aojson = await Utility.ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
+                    if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
+                    {
+                        IGenericEntity te = new GenericEntityJson();
+                        var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
+                        te.InitializeEntity(null, null, ts);
+                        if (te.GetS("download_link") != null)
+                        {
+                            uri = te.GetS("download_link");
+                        }
+                    }
                 }
                 else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
