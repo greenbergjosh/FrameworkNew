@@ -39,8 +39,9 @@ namespace UnsubLib
     public class UnsubLib
     {
         // Set to true for debugging - always false in production
-        public const bool CallLocalLoadUnsubFiles = true;
-        public const bool UseLocalNetworkFile = true;
+        public bool CallLocalLoadUnsubFiles;
+        public bool UseLocalNetworkFile;
+        public string LocalNetworkFilePath;
 
         public string ApplicationName;
 
@@ -96,6 +97,9 @@ namespace UnsubLib
             this.SearchFileCacheSize = Int64.Parse(gc.GetS("Config/SearchFileCacheSize"));
             this.UnsubServerUri = gc.GetS("Config/UnsubServerUri");
             this.DtExecPath = gc.GetS("Config/DtExecPath");
+            this.CallLocalLoadUnsubFiles = gc.GetB("Config/CallLocalLoadUnsubFiles");
+            this.UseLocalNetworkFile = gc.GetB("Config/UseLocalNetworkFile");
+            this.LocalNetworkFilePath = gc.GetS("Config/LocalNetworkFilePath");
 
             List<Rw.ScriptDescriptor> scripts = new List<Rw.ScriptDescriptor>();
             string scriptsPath = this.WorkingDirectory + "\\scripts";
@@ -219,7 +223,7 @@ namespace UnsubLib
                 campaignsJson.Append(Jw.Json(new
                 {
                     NetworkCampaignId = campaignNetworkId,
-                    NetworkName = networkCampaignName,
+                    NetworkCampaignName = networkCampaignName,
                     CampaignPayload = campaignJson
                 }, new bool[] { true, true, false }));
                 campaignsJson.Append(",");
@@ -456,11 +460,11 @@ namespace UnsubLib
                         if (this.FileCacheFtpServer != null)
                         {
                             await Utility.ProtocolClient.UploadFile(
-                                    this.WorkingDirectory + "\\" + fmd5 + ".txt.srt",
-                                    fmd5 + ".txt.srt",
-                                    this.FileCacheFtpServer,
-                                    this.FileCacheFtpUser,
-                                    this.FileCacheFtpPassword);
+                                this.WorkingDirectory + "\\" + fmd5 + ".txt.srt",
+                                fmd5 + ".txt.srt",
+                                this.FileCacheFtpServer,
+                                this.FileCacheFtpUser,
+                                this.FileCacheFtpPassword);
 
                             Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5 + ".txt.srt"}");
                         }
@@ -540,7 +544,7 @@ namespace UnsubLib
                 new bool[] { true, false, false });
 
             string result = null;
-            if (!UnsubLib.CallLocalLoadUnsubFiles)
+            if (!this.CallLocalLoadUnsubFiles)
             {
                 result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                     new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
@@ -1034,14 +1038,14 @@ namespace UnsubLib
             };
 
             string campaignXml = null;
-            if (!UnsubLib.UseLocalNetworkFile)
+            if (!this.UseLocalNetworkFile)
             {
                 campaignXml = await Utility.ProtocolClient.HttpPostAsync(apiUrl, parms);
-                File.WriteAllText(networkId + ".xml", campaignXml);
+                File.WriteAllText(this.LocalNetworkFilePath + "\\" + networkId + ".xml", campaignXml);
             }
             else
             {
-                campaignXml = File.ReadAllText($@"{networkId}.xml");
+                campaignXml = File.ReadAllText($@"{this.LocalNetworkFilePath}\{networkId}.xml");
             }                
                 
             return await SqlWrapper.SqlServerProviderEntry(this.ConnectionString, 

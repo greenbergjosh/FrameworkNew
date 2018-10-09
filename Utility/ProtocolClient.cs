@@ -202,32 +202,25 @@ namespace Utility
         public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password)
         {
             FtpWebRequest ftpReq = null;
-            try
+            string filename = "ftp://" + host + "//" + targetFile;
+            ftpReq = (FtpWebRequest)WebRequest.Create(filename);
+            ftpReq.UseBinary = true;
+            ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
+            ftpReq.Credentials = new NetworkCredential(userName, password);
+
+            byte[] b = File.ReadAllBytes(sourceFile);
+
+            ftpReq.ContentLength = b.Length;
+            using (Stream s = ftpReq.GetRequestStream())
             {
-                string filename = "ftp://" + host + "//" + targetFile;
-                ftpReq = (FtpWebRequest)WebRequest.Create(filename);
-                ftpReq.UseBinary = true;
-                ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
-                ftpReq.Credentials = new NetworkCredential(userName, password);
-
-                byte[] b = File.ReadAllBytes(sourceFile);
-
-                ftpReq.ContentLength = b.Length;
-                using (Stream s = ftpReq.GetRequestStream())
-                {
-                    await s.WriteAsync(b, 0, b.Length);
-                }
-
-                FtpWebResponse ftpResp = (FtpWebResponse)(await ftpReq.GetResponseAsync());
-
-                if (ftpResp != null)
-                {
-                    string s = ftpResp.StatusDescription;
-                }
+                await s.WriteAsync(b, 0, b.Length);
             }
-            catch (Exception ex)
+
+            FtpWebResponse ftpResp = (FtpWebResponse)(await ftpReq.GetResponseAsync());
+
+            if (ftpResp != null)
             {
-                string s = ex.ToString();
+                string s = ftpResp.StatusDescription;
             }
         }
 
