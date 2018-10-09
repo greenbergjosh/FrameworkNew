@@ -47,6 +47,8 @@ namespace UnsubLib
 
         public string ConnectionString;
         public string WorkingDirectory;
+        public string ServerWorkingDirectory;
+        public string ClientWorkingDirectory;
         public string SearchDirectory;
         public string ServerName;
         public string DatabaseName;
@@ -83,7 +85,8 @@ namespace UnsubLib
             IGenericEntity gc = new GenericEntityJson();
             var gcstate = ((JArray)JsonConvert.DeserializeObject(general))[0];
             gc.InitializeEntity(null, null, gcstate);
-            this.WorkingDirectory = gc.GetS("Config/WorkingDirectory");
+            this.ServerWorkingDirectory = gc.GetS("Config/ServerWorkingDirectory");
+            this.ClientWorkingDirectory = gc.GetS("Config/ClientWorkingDirectory");
             this.SearchDirectory = gc.GetS("Config/SearchDirectory");
             this.ServerName = gc.GetS("Config/ServerName");
             this.DatabaseName = gc.GetS("Config/DatabaseName");
@@ -102,7 +105,7 @@ namespace UnsubLib
             this.LocalNetworkFilePath = gc.GetS("Config/LocalNetworkFilePath");
 
             List<Rw.ScriptDescriptor> scripts = new List<Rw.ScriptDescriptor>();
-            string scriptsPath = this.WorkingDirectory + "\\scripts";
+            string scriptsPath = this.ServerWorkingDirectory + "\\Scripts";
             var rw = new Rw.RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
 
             this.RosWrap = rw;
@@ -129,8 +132,8 @@ namespace UnsubLib
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                     $"GetNetworksAndCreateLockFiles", "Creating lock file",
-                    this.WorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
-                fileNames.Add(this.WorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
+                    this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
+                fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
             }
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -146,7 +149,7 @@ namespace UnsubLib
 
         public async Task CreateNetworkLockFile(IGenericEntity network)
         {
-            string lckFileName = this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck";
+            string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck";
             if (!File.Exists(lckFileName))
                 await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
         }
@@ -164,7 +167,7 @@ namespace UnsubLib
                 string nowString = now.ToString("yyyyMMdd");
 
                 List<DirectoryInfo> dirs = new List<DirectoryInfo>();
-                DirectoryInfo di = new DirectoryInfo(this.WorkingDirectory + "\\Manual");
+                DirectoryInfo di = new DirectoryInfo(this.ClientWorkingDirectory + "\\Manual");
                 foreach (var dd in di.EnumerateDirectories())
                 {
                     if (DateTime.ParseExact(dd.Name, "yyyyMMdd", new CultureInfo("en-US")) <=
@@ -211,11 +214,11 @@ namespace UnsubLib
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
 
             try
             {
-                DirectoryInfo dir = new DirectoryInfo(this.WorkingDirectory + "\\Force\\" + forceDirName);
+                DirectoryInfo dir = new DirectoryInfo(this.ClientWorkingDirectory + "\\Force\\" + forceDirName);
                 await ManualJob(dir, network);
             }
             finally
@@ -278,7 +281,7 @@ namespace UnsubLib
         public async Task ScheduledUnsubJob(IGenericEntity network)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
             
             try
             {
@@ -455,21 +458,21 @@ namespace UnsubLib
                                     { UNKNOWNHANDLER, UnknownTypeHandler }
                                 },
                                 fis.DirectoryName,
-                                this.WorkingDirectory);
+                                this.ClientWorkingDirectory);
                     }                     
 
                     if (cf.ContainsKey(MD5HANDLER))
                     {
                         string fmd5 = cf[MD5HANDLER].ToString();
 
-                        await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.WorkingDirectory,
+                        await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt", fmd5 + ".txt.cln");
 
-                        await Utility.UnixWrapper.RemoveNonMD5LinesFromFile(this.WorkingDirectory,
+                        await Utility.UnixWrapper.RemoveNonMD5LinesFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
 
                         await Utility.UnixWrapper.SortFile(
-                            this.WorkingDirectory,
+                            this.ClientWorkingDirectory,
                             fmd5 + ".txt.cl2",
                             fmd5 + ".txt.srt",
                             false,
@@ -478,18 +481,18 @@ namespace UnsubLib
                         if (this.FileCacheFtpServer != null)
                         {
                             await Utility.ProtocolClient.UploadFile(
-                                this.WorkingDirectory + "\\" + fmd5 + ".txt.srt",
+                                this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt",
                                 fmd5 + ".txt.srt",
                                 this.FileCacheFtpServer,
                                 this.FileCacheFtpUser,
                                 this.FileCacheFtpPassword);
 
-                            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5 + ".txt.srt"}");
+                            Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5 + ".txt.srt"}");
                         }
 
-                        Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5}.txt");
-                        Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5}.txt.cln");
-                        Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5}.txt.cl2");
+                        Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5}.txt");
+                        Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5}.txt.cln");
+                        Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5}.txt.cl2");
                     }
 
                     if (cf.ContainsKey(DOMAINHANDLER))
@@ -499,13 +502,13 @@ namespace UnsubLib
                         if (this.FileCacheFtpServer != null)
                         {
                             await Utility.ProtocolClient.UploadFile(
-                                    this.WorkingDirectory + "\\" + fdom + ".txt",
+                                    this.ClientWorkingDirectory + "\\" + fdom + ".txt",
                                     fdom + ".txt",
                                     this.FileCacheFtpServer,
                                     this.FileCacheFtpUser,
                                     this.FileCacheFtpPassword);
 
-                            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fdom}.txt");
+                            Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fdom}.txt");
                         }
                     }
 
@@ -622,7 +625,7 @@ namespace UnsubLib
             }
             else
             {
-                DirectoryInfo sourceDir = new DirectoryInfo(this.WorkingDirectory);
+                DirectoryInfo sourceDir = new DirectoryInfo(this.ClientWorkingDirectory);
                 FileInfo[] files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
                 foreach (var file in files)
                 {
@@ -664,20 +667,20 @@ namespace UnsubLib
                     {
                         campaignId = x.GetS("CId");
                         fileId = x.GetS("FId");
-                        tmpFileName = await GetFileFromFileId(fileId, ".txt", this.WorkingDirectory,
+                        tmpFileName = await GetFileFromFileId(fileId, ".txt", this.ServerWorkingDirectory,
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tmd");
 
-                        string wd = this.WorkingDirectory.Replace("\\", "\\\\");
+                        string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
                         await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                             "UploadDomainUnsubFile",
                             Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }),
                             "");
 
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + tmpFileName);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
                     }
                     catch (Exception exDomUnsub)
                     {
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + tmpFileName);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
                         
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                             $"LoadUnsubFiles", "UploadDomainUnsubFile", campaignId + 
@@ -693,7 +696,7 @@ namespace UnsubLib
                 }
                 foreach (var domFile in domFiles)
                 {
-                    Fs.TryDeleteFile(this.WorkingDirectory + "\\" + domFile + ".txt");
+                    Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + domFile + ".txt");
 
                     if (!string.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
@@ -717,15 +720,15 @@ namespace UnsubLib
 
                     try
                     {
-                        oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.WorkingDirectory, 
+                        oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.ServerWorkingDirectory, 
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tdd");
-                        newfname = await GetFileFromFileId(newf, ".txt.srt", this.WorkingDirectory, 
+                        newfname = await GetFileFromFileId(newf, ".txt.srt", this.ServerWorkingDirectory, 
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tdd");
 
                         bool res = await Utility.UnixWrapper.DiffFiles(
                             oldfname,
                             newfname,
-                            this.WorkingDirectory,
+                            this.ServerWorkingDirectory,
                             diffname);
                         
                         await SSISLoadMd5File(diffname,
@@ -743,9 +746,9 @@ namespace UnsubLib
                     }
                     finally
                     {
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + diffname);
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + newfname);
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + oldfname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + diffname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + newfname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + oldfname);
                     }
                 });
             }
@@ -796,7 +799,7 @@ namespace UnsubLib
                     return false;
                 }
 
-                DirectoryInfo sourceDir = new DirectoryInfo(this.WorkingDirectory);
+                DirectoryInfo sourceDir = new DirectoryInfo(this.ServerWorkingDirectory);
                 FileInfo[] files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
                 long dirSize = 0;
                 foreach (var file in files) dirSize += file.Length;
@@ -909,7 +912,7 @@ namespace UnsubLib
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
 
                 bool result =  await Utility.UnixWrapper.BinarySearchSortedMd5File(
-                    this.WorkingDirectory,
+                    this.ServerWorkingDirectory,
                     fileName,
                     emailMd5);
 
@@ -989,17 +992,17 @@ namespace UnsubLib
             string fileId = fileNameParts[0];
 
             string jsonText = File.ReadAllText($"{jsonTemplateFile}");
-            jsonText = jsonText.Replace("[=FlatFileLocation=]", $"{this.WorkingDirectory.Replace("\\", "\\\\")}\\\\{fileName}")
+            jsonText = jsonText.Replace("[=FlatFileLocation=]", $"{this.ServerWorkingDirectory.Replace("\\", "\\\\")}\\\\{fileName}")
                 .Replace("[=ServerName=]", servName)
                 .Replace("[=DatabaseName=]", dbName)
                 .Replace("[=ConnectionString=]", ssisConStr)
                 .Replace("[=ErrorTable=]", $"[dbo].[err_{fileId}]")
                 .Replace("[=DestinationTable=]", $"[dbo].[stg_{fileId}]");
-            File.WriteAllText($"{this.WorkingDirectory}\\{fileName}.json", jsonText);
+            File.WriteAllText($"{this.ServerWorkingDirectory}\\{fileName}.json", jsonText);
 
             string pkgText = await SsisWrapper.SsisWrapper.TokenReplaceSSISPackage(
                 $"{ssisTemplateFile}",
-                $"{this.WorkingDirectory}\\{fileName}.json",
+                $"{this.ServerWorkingDirectory}\\{fileName}.json",
                 new Dictionary<string, string>()
                         {
                             { "FlatFileColumn", "Columns" },
@@ -1010,14 +1013,14 @@ namespace UnsubLib
                         },
                 this.RosWrap);
 
-            File.WriteAllText($"{this.WorkingDirectory}\\{fileName}.xml", pkgText);
+            File.WriteAllText($"{this.ServerWorkingDirectory}\\{fileName}.xml", pkgText);
 
             try
             {
                 await SqlWrapper.CreateSsisTables(this.ConnectionString, fileId);
                 await SsisWrapper.SsisWrapper.ExecutePackage(
                     this.DtExecPath,
-                    $"{this.WorkingDirectory}\\{fileName}.xml", 
+                    $"{this.ServerWorkingDirectory}\\{fileName}.xml", 
                     ssisConStr,
                     null);
             }
@@ -1042,8 +1045,8 @@ namespace UnsubLib
                            fileName + "::" + exPostProcess.ToString());
             }
 
-            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fileName}.json");
-            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fileName}.xml");
+            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
+            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.xml");
         }
 
         public async Task<string> GetNetworkCampaigns(
@@ -1161,7 +1164,7 @@ namespace UnsubLib
                         { DOMAINHANDLER, DomainZipHandler },
                         { UNKNOWNHANDLER, UnknownTypeHandler }
                     },
-                    this.WorkingDirectory,
+                    this.ClientWorkingDirectory,
                     30 * 60,
                     this.AmobeeParallelism);
             }
@@ -1192,7 +1195,7 @@ namespace UnsubLib
                         { DOMAINHANDLER, DomainZipHandler },
                         { UNKNOWNHANDLER, UnknownTypeHandler }
                     },
-                    this.WorkingDirectory,
+                    this.ClientWorkingDirectory,
                     30 * 60,
                     this.MadrivoParallelism);
             }
@@ -1272,21 +1275,21 @@ namespace UnsubLib
         public async Task<object> Md5ZipHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
-            f.MoveTo($"{this.WorkingDirectory}\\{fileName}.txt");
+            f.MoveTo($"{this.ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
         public async Task<object> PlainTextHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
-            f.MoveTo($"{this.WorkingDirectory}\\{fileName}.txt");
+            f.MoveTo($"{this.ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
         public async Task<object> DomainZipHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
-            f.MoveTo($"{this.WorkingDirectory}\\{fileName}.txt");
+            f.MoveTo($"{this.ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
