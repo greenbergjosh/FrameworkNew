@@ -26,7 +26,18 @@ namespace UnsubJob
                            "Main", "Starting...", "");
 
             UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("ThirdPartyUnsub", cs);
-            IGenericEntity networks = await nw.GetNetworksAndCreateLockFiles();
+            IGenericEntity networks = null;
+            try
+            {
+                networks = await nw.GetNetworksAndCreateLockFiles();
+            }
+            catch (Exception exGetNetworks)
+            {
+                await SqlWrapper.InsertErrorLog(cs, 1000, "ThirdPartyUnsub",
+                           $"GetNetworksAndCreateLockFiles",
+                           "Main failed", exGetNetworks.ToString());
+                return;
+            }            
 
             foreach (var n in networks.GetL(""))
             {

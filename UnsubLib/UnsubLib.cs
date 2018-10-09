@@ -119,7 +119,7 @@ namespace UnsubLib
                     "");
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "After SelectNetwork", "");
+                $"GetNetworksAndCreateLockFiles", "After SelectNetwork", network);
 
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
@@ -127,6 +127,9 @@ namespace UnsubLib
             List<string> fileNames = new List<string>();
             foreach (var n in ge.GetL(""))
             {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"GetNetworksAndCreateLockFiles", "Creating lock file",
+                    this.WorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
                 fileNames.Add(this.WorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
             }
 

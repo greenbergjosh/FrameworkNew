@@ -40,13 +40,9 @@ namespace Utility
         {
             foreach (var fileName in fileNames)
             {
-                try
+                using (var f = File.CreateText(fileName))
                 {
-                    using (var f = File.CreateText(fileName))
-                    {
-                    }
                 }
-                catch (Exception) { }
             }
         }
 
