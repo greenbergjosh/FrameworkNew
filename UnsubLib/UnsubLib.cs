@@ -62,6 +62,8 @@ namespace UnsubLib
         public long SearchFileCacheSize;
         public string UnsubServerUri;
         public string DtExecPath;
+        public int MaxConnections;
+        public int MaxParallelism;
 
         public Rw.RoslynWrapper RosWrap;        
 
@@ -76,9 +78,7 @@ namespace UnsubLib
         public UnsubLib(string appName, string connectionString)
         {
             this.ApplicationName = appName;
-            this.ConnectionString = connectionString;
-
-            ServicePointManager.DefaultConnectionLimit = this.MadrivoParallelism;            
+            this.ConnectionString = connectionString;                     
 
             string general = SqlWrapper.SqlServerProviderEntry(this.ConnectionString, "SelectConfig", "", "")
                 .GetAwaiter().GetResult();
@@ -103,6 +103,12 @@ namespace UnsubLib
             this.CallLocalLoadUnsubFiles = gc.GetB("Config/CallLocalLoadUnsubFiles");
             this.UseLocalNetworkFile = gc.GetB("Config/UseLocalNetworkFile");
             this.LocalNetworkFilePath = gc.GetS("Config/LocalNetworkFilePath");
+            // for diffs and loads
+            this.MaxParallelism = Int32.Parse(gc.GetS("Config/MaxParallelism"));
+            // for downloads and uploads
+            this.MaxConnections = Int32.Parse(gc.GetS("Config/MaxConnections"));
+
+            ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
             List<Rw.ScriptDescriptor> scripts = new List<Rw.ScriptDescriptor>();
             string scriptsPath = this.ServerWorkingDirectory + "\\Scripts";
@@ -397,6 +403,7 @@ namespace UnsubLib
         public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IGenericEntity campaigns)
         {
             string networkName = network.GetS("Name");
+            int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             ConcurrentDictionary<string, List<IGenericEntity>> uris = new ConcurrentDictionary<string, List<IGenericEntity>>();
             await Pw.ForEachAsync(campaigns.GetL(""), this.MadrivoParallelism, async c =>
             {
@@ -405,7 +412,7 @@ namespace UnsubLib
                     string uri = await GetSuppressionFileUri(
                         network,
                         c.GetS("NetworkCampaignId"),
-                        this.MadrivoParallelism);
+                        parallelism);
 
                     if (uris.ContainsKey(uri)) uris[uri].Add(c);
                     else uris.TryAdd(uri, new List<IGenericEntity>() { c });
@@ -430,11 +437,12 @@ namespace UnsubLib
         {
             string networkName = network.GetS("Name");
             string networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
+            int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
             var ncf = new ConcurrentDictionary<string, string>();
             var ndf = new ConcurrentDictionary<string, string>();
 
-            await Pw.ForEachAsync(uris, this.MadrivoParallelism, async uri =>
+            await Pw.ForEachAsync(uris, parallelism, async uri =>
             {
                 try
                 {
@@ -653,11 +661,11 @@ namespace UnsubLib
         public async Task<string> LoadUnsubFiles(IGenericEntity dtve)
         {
             string result = Jw.Json(new { Result = "Success" });
-
+            
             try
             {
                 //foreach (var x in dtve.GetL("DomUnsub"))
-                await Pw.ForEachAsync(dtve.GetL("DomUnsub"), this.MadrivoParallelism, async x =>
+                await Pw.ForEachAsync(dtve.GetL("DomUnsub"), this.MaxParallelism, async x =>
                 {
                     string tmpFileName = "";
                     string campaignId = "";
@@ -710,7 +718,7 @@ namespace UnsubLib
                 }
 
                 //foreach (var x in dtve.GetL("Diff"))
-                await Pw.ForEachAsync(dtve.GetL("Diff"), this.MadrivoParallelism, async x =>
+                await Pw.ForEachAsync(dtve.GetL("Diff"), this.MaxParallelism, async x =>
                 {
                     string oldf = x.GetS("oldf");
                     string newf = x.GetS("newf");
@@ -1114,17 +1122,32 @@ namespace UnsubLib
                     StringBuilder optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
                     optizmoUrl.Append(pathParts[pathParts.Length - 1]);
                     optizmoUrl.Append($"?token={optizmoToken}&format=md5");
-                    var aojson = await Utility.ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
-                    if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
+                    //503 Service Unavailable
+                    Tuple<bool, string> aojson = null;
+                    int retryCount = 0;
+                    int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+                    while (retryCount < 5)
                     {
-                        IGenericEntity te = new GenericEntityJson();
-                        var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
-                        te.InitializeEntity(null, null, ts);
-                        if (te.GetS("download_link") != null)
+                        aojson = await Utility.ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
+                        if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
                         {
-                            uri = te.GetS("download_link");
+                            if (aojson.Item2.Contains("503 Service Unavailable"))
+                            {
+                                await Task.Delay(retryWalkaway[retryCount] * 1000);
+                                retryCount += 1;
+                                continue;
+                            }
+                            IGenericEntity te = new GenericEntityJson();
+                            var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
+                            te.InitializeEntity(null, null, ts);
+                            if (te.GetS("download_link") != null)
+                            {
+                                uri = te.GetS("download_link");
+                            }
                         }
+                        break;
                     }
+                    
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                                "GetSuppressionFileUri", "Optizmo",
                                $"{optizmoUrl.ToString()}::{aojson.Item1}::{aojson.Item2}");
@@ -1157,6 +1180,7 @@ namespace UnsubLib
         {
             object dr = null;
             string networkName = network.GetS("Name");
+            int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
             if (networkName == "Amobee")
             {
@@ -1190,7 +1214,7 @@ namespace UnsubLib
                     },
                     this.ClientWorkingDirectory,
                     30 * 60,
-                    this.AmobeeParallelism);
+                    parallelism);
             }
             else if (networkName == "Madrivo")
             {
@@ -1221,7 +1245,7 @@ namespace UnsubLib
                     },
                     this.ClientWorkingDirectory,
                     30 * 60,
-                    this.MadrivoParallelism);
+                    parallelism);
             }
             else
             {
