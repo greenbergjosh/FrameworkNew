@@ -169,7 +169,7 @@ namespace DataService
                         //context.Response.ContentType = ContentType;
                         //context.Response.Headers.ContentLength = TowerPixelImage.Length;
                         //await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
-                        string ret = "{\"label\":\"" + label + "\"}";
+                        string ret = "{\"label\":\"" + label + "\", \"a\":\"b\"}";
                         context.Response.StatusCode = 200;
                         context.Response.ContentType = "application/json";
                         context.Response.ContentLength = ret.Length;
