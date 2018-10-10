@@ -184,6 +184,15 @@ namespace DataService
                     context.Response.StatusCode = 200;
                     await context.Response.WriteAsync(nf);
                 }
+                else
+                {
+                    string ret = "{\"Error\":\"Unknown method\"}";
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength = ret.Length;
+                    //X-Content-Type-Options: nosniff
+                    await context.Response.WriteAsync(ret);
+                }
             }
             catch (Exception ex)
             {
