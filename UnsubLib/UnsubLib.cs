@@ -1125,6 +1125,9 @@ namespace UnsubLib
                             uri = te.GetS("download_link");
                         }
                     }
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                               "GetSuppressionFileUri", "Optizmo",
+                               $"{optizmoUrl.ToString()}::{aojson.Item1}::{aojson.Item2}");
                 }
                 else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
