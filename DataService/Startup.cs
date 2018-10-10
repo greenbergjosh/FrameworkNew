@@ -186,7 +186,8 @@ namespace DataService
                 }
                 else
                 {
-                    string ret = "{\"Error\":\"Unknown method\"}";
+                    string ret = "{\"Error\":\"Unknown method\", \"ip\":\"" +
+                        context.Request.HttpContext.Connection.RemoteIpAddress + "\"}";
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
                     context.Response.ContentLength = ret.Length;
