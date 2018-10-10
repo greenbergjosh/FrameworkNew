@@ -917,6 +917,10 @@ namespace UnsubLib
             {
                 campaignId = dtve.GetS("CampaignId");
                 emailMd5 = dtve.GetS("EmailMd5");
+                if (emailMd5.Contains("@"))
+                {
+                    emailMd5 = Utility.Hashing.CalculateMD5Hash(emailMd5.ToLower());
+                }
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
 
                 bool result =  await Utility.UnixWrapper.BinarySearchSortedMd5File(
@@ -956,7 +960,16 @@ namespace UnsubLib
             try
             {
                 campaignId = dtve.GetS("CampaignId");
-                foreach (var y in dtve.GetL("EmailMd5")) emailMd5.Add(y.GetS(""));
+                foreach (var y in dtve.GetL("EmailMd5"))
+                {
+                    string emailFixed = y.GetS("");
+                    if (emailFixed.Contains("@"))
+                    {
+                        emailFixed = Utility.Hashing.CalculateMD5Hash(emailFixed.ToLower());
+                    }
+                    emailMd5.Add(emailFixed);
+                }
+                
 
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
                 emailMd5.Sort();

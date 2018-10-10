@@ -47,6 +47,19 @@ namespace Utility
             //return sb.ToString();
         }
 
+        public static string CalculateMD5Hash(string input)
+        {
+            String hash;
+
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+            {
+                hash = String.Concat(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input))
+                  .Select(x => x.ToString("x2")));
+            }
+
+            return hash;
+        }
+
         public static byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
