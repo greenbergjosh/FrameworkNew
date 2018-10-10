@@ -166,9 +166,15 @@ namespace DataService
                     }
                     else
                     {
-                        context.Response.ContentType = ContentType;
-                        context.Response.Headers.ContentLength = TowerPixelImage.Length;
-                        await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
+                        //context.Response.ContentType = ContentType;
+                        //context.Response.Headers.ContentLength = TowerPixelImage.Length;
+                        //await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
+                        string ret = "{\"label\":\"" + label + "\"}";
+                        context.Response.StatusCode = 200;
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength = ret.Length;
+                        //X-Content-Type-Options: nosniff
+                        await context.Response.WriteAsync(ret);
                     }
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))

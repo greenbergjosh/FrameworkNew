@@ -1317,7 +1317,7 @@ namespace UnsubLib
                 bool allDom = true;
                 for (int l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
                 {
-                    if (!lines[l].Contains("."))
+                    if (!lines[l].Contains(".") || lines[l].Length == 0)
                     {
                         allDom = false;
                         break;
