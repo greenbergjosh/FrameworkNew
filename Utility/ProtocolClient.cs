@@ -225,7 +225,7 @@ namespace Utility
                     {
                         byte[] buf = new byte[1000000];
                         int numRead = await f.ReadAsync(buf);
-                        if (numRead > 0) await s.WriteAsync(buf, 0, buf.Length);
+                        if (numRead > 0) await s.WriteAsync(buf, 0, numRead);
                         else break;
                     }
                 }  
@@ -428,7 +428,7 @@ namespace Utility
                 request.ServicePoint.ConnectionLimit = 10;
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
                 request.Credentials = new NetworkCredential(userName, password);
-                request.UseBinary = false;
+                request.UseBinary = true;
                 response = (FtpWebResponse)(await request.GetResponseAsync());
                 Stream responseStream = response.GetResponseStream();
                 await responseStream.CopyToAsync(f);
