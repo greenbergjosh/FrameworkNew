@@ -413,7 +413,7 @@ namespace UnsubLib
             string networkName = network.GetS("Name");
             int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             ConcurrentDictionary<string, List<IGenericEntity>> uris = new ConcurrentDictionary<string, List<IGenericEntity>>();
-            await Pw.ForEachAsync(campaigns.GetL(""), this.MadrivoParallelism, async c =>
+            await Pw.ForEachAsync(campaigns.GetL(""), parallelism, async c =>
             {
                 try
                 {
@@ -519,7 +519,7 @@ namespace UnsubLib
                         {
                             await Utility.ProtocolClient.UploadFile(
                                     this.ClientWorkingDirectory + "\\" + fdom + ".txt",
-                                    fdom + ".txt",
+                                    this.FileCacheFtpServerPath + "/" + fdom + ".txt",
                                     this.FileCacheFtpServer,
                                     this.FileCacheFtpUser,
                                     this.FileCacheFtpPassword);
@@ -622,7 +622,7 @@ namespace UnsubLib
             {
                 List<string> listFiles;
                 listFiles = await Utility.ProtocolClient.FtpGetFiles(
-                        null,
+                        this.FileCacheFtpServerPath,
                         this.FileCacheFtpServer,
                         this.FileCacheFtpUser,
                         this.FileCacheFtpPassword);
@@ -632,7 +632,7 @@ namespace UnsubLib
                     string[] ftpFileParts = ftpFile.Split(new char[] { '.' });
                     if (!refdFiles.Contains(ftpFileParts[0].ToLower()))
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
-                        ftpFile,
+                        this.FileCacheFtpServerPath + "/" + ftpFile,
                         this.FileCacheFtpServer,
                         21,
                         this.FileCacheFtpUser,
@@ -717,7 +717,7 @@ namespace UnsubLib
                     if (!string.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
-                            domFile + ".txt",
+                            this.FileCacheFtpServerPath + "/" + domFile + ".txt",
                             this.FileCacheFtpServer,
                             21,
                             this.FileCacheFtpUser,
@@ -803,7 +803,7 @@ namespace UnsubLib
             try
             {
                 long newFileSize = await Utility.ProtocolClient.FtpGetFileSize(
-                        fileName,
+                        this.FileCacheFtpServerPath + "/" + fileName,
                         this.FileCacheFtpServer,
                         this.FileCacheFtpUser,
                         this.FileCacheFtpPassword);
@@ -864,7 +864,7 @@ namespace UnsubLib
 
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,
-                        fileName,
+                        this.FileCacheFtpServerPath + "/" + fileName,
                         dfileName,
                         this.FileCacheFtpServer,
                         this.FileCacheFtpUser,
