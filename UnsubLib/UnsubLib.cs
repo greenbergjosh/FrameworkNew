@@ -691,8 +691,15 @@ namespace UnsubLib
                     {
                         campaignId = x.GetS("CId");
                         fileId = x.GetS("FId");
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            $"LoadUnsubFiles", "Before GetFileFromFileId", campaignId + "::" + fileId);
+
                         tmpFileName = await GetFileFromFileId(fileId, ".txt", this.ServerWorkingDirectory,
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tmd");
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            $"LoadUnsubFiles", "After GetFileFromFileId", campaignId + "::" + fileId + "::" + tmpFileName);
 
                         string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
                         await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
@@ -853,11 +860,11 @@ namespace UnsubLib
             return true;            
         }
 
-        public async Task<string> GetFileFromFileId(string fileId, string ext, string destDir, long cacheSize, string destFileName=null)
+        public async Task<string> GetFileFromFileId(string fileId, string ext, string destDir, long cacheSize, string destFileName="")
         {
             bool success = false;
             string fileName = fileId + ext;
-            string dfileName = destFileName == null ? fileName : destFileName;
+            string dfileName = destFileName == "" ? fileName : destFileName;
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
                         $"GetFileFromFileId", "Download file from ftp", this.FileCacheFtpServerPath + "/" + fileName);
