@@ -495,7 +495,7 @@ namespace Utility
                             string line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                             while (!string.IsNullOrEmpty(line))
                             {
-                                dirs.Add(line);
+                                if (line != "." && line != "..") dirs.Add(line);
                                 line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                             }
 
@@ -514,7 +514,7 @@ namespace Utility
                                             string fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                                             while (!string.IsNullOrEmpty(fileLine))
                                             {
-                                                listFiles[dir].Add(fileLine);
+                                                if (fileLine != "." && fileLine != "..") listFiles[dir].Add(fileLine);
                                                 fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                                             }
                                         }
@@ -553,7 +553,7 @@ namespace Utility
                         string fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                         while (!string.IsNullOrEmpty(fileLine))
                         {
-                            files.Add(fileLine);
+                            if (fileLine != "." && fileLine != "..") files.Add(fileLine);
                             fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                         }
                     }

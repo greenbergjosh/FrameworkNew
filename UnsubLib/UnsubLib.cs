@@ -870,6 +870,10 @@ namespace UnsubLib
                     if (!success)
                         throw new Exception("Could not make room for file.");
 
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                        $"GetFileFromFileId", "Download file from ftp", this.FileCacheFtpServerPath + "/" + fileName);
+
+
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,
                         this.FileCacheFtpServerPath + "/" + fileName,
