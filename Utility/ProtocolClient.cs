@@ -208,12 +208,27 @@ namespace Utility
             ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
             ftpReq.Credentials = new NetworkCredential(userName, password);
 
-            byte[] b = File.ReadAllBytes(sourceFile);
+            //byte[] b = File.ReadAllBytes(sourceFile);
 
-            ftpReq.ContentLength = b.Length;
-            using (Stream s = ftpReq.GetRequestStream())
+            //ftpReq.ContentLength = b.Length;
+            //using (Stream s = ftpReq.GetRequestStream())
+            //{
+            //    await s.WriteAsync(b, 0, b.Length);
+            //}
+
+            using (var f = File.OpenRead(sourceFile))
             {
-                await s.WriteAsync(b, 0, b.Length);
+                using (Stream s = ftpReq.GetRequestStream())
+                {
+                    ftpReq.ContentLength = f.Length;
+                    while (true)
+                    {
+                        byte[] buf = new byte[1000000];
+                        int numRead = await f.ReadAsync(buf);
+                        if (numRead > 0) await s.WriteAsync(buf, 0, buf.Length);
+                        else break;
+                    }
+                }  
             }
 
             FtpWebResponse ftpResp = (FtpWebResponse)(await ftpReq.GetResponseAsync());
