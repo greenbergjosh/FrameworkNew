@@ -20,6 +20,10 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Net.Http;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 
 // servName = LEADME_DB, dbName=Unsub, ssisConStr="Data Source=localhost;Initial Catalog=Unsub;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"
 // jsonTemplateFile=SSISMd5Template.json, ssisTemplateFile=NewestPkg.xml
@@ -64,6 +68,8 @@ namespace UnsubLib
         public string DtExecPath;
         public int MaxConnections;
         public int MaxParallelism;
+        public string SeleniumChromeDriverPath;
+        public string FileCacheFtpServerPath;
 
         public Rw.RoslynWrapper RosWrap;        
 
@@ -107,6 +113,8 @@ namespace UnsubLib
             this.MaxParallelism = Int32.Parse(gc.GetS("Config/MaxParallelism"));
             // for downloads and uploads
             this.MaxConnections = Int32.Parse(gc.GetS("Config/MaxConnections"));
+            this.SeleniumChromeDriverPath = gc.GetS("Config/SeleniumChromeDriverPath");
+            this.FileCacheFtpServerPath = gc.GetS("Config/FileCacheFtpServerPath");
 
             ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
@@ -490,7 +498,7 @@ namespace UnsubLib
                         {
                             await Utility.ProtocolClient.UploadFile(
                                 this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt",
-                                fmd5 + ".txt.srt",
+                                this.FileCacheFtpServerPath + "/" + fmd5 + ".txt.srt",
                                 this.FileCacheFtpServer,
                                 this.FileCacheFtpUser,
                                 this.FileCacheFtpPassword);
@@ -1128,42 +1136,16 @@ namespace UnsubLib
                 {
                     uri = "https://api.unsubcentral.com/api/service/keys/" + usurl["key"] + "?s=" + usurl["s"] + "&format=hash&zipped=true";
                 }
+                else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net"))
+                    && (usurl["key"] != null) && (usurl["s"] != null))
+                {
+                    string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
+                    if (ezepoUnsubUrl != "")
+                        uri = ezepoUnsubUrl;
+                }
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
                 {
-                    string[] pathParts = usuri.AbsolutePath.Split('/');
-                    //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
-                    StringBuilder optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
-                    optizmoUrl.Append(pathParts[pathParts.Length - 1]);
-                    optizmoUrl.Append($"?token={optizmoToken}&format=md5");
-                    //503 Service Unavailable
-                    Tuple<bool, string> aojson = null;
-                    int retryCount = 0;
-                    int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-                    while (retryCount < 5)
-                    {
-                        aojson = await Utility.ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
-                        if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
-                        {
-                            if (aojson.Item2.Contains("503 Service Unavailable"))
-                            {
-                                await Task.Delay(retryWalkaway[retryCount] * 1000);
-                                retryCount += 1;
-                                continue;
-                            }
-                            IGenericEntity te = new GenericEntityJson();
-                            var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
-                            te.InitializeEntity(null, null, ts);
-                            if (te.GetS("download_link") != null)
-                            {
-                                uri = te.GetS("download_link");
-                            }
-                        }
-                        break;
-                    }
-                    
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                               "GetSuppressionFileUri", "Optizmo",
-                               $"{optizmoUrl.ToString()}::{aojson.Item1}::{aojson.Item2}");
+                    string optizmoUnsubUrl = await GetOptizmoUnsubFileUri(usuri.AbsolutePath, optizmoToken);
                 }
                 else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
@@ -1186,6 +1168,88 @@ namespace UnsubLib
             }
             
             return uri;
+        }
+
+        public async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
+        {
+            string optizmoUnsubUrl = "";
+            string[] pathParts = url.Split('/');
+            //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
+            StringBuilder optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
+            optizmoUrl.Append(pathParts[pathParts.Length - 1]);
+            optizmoUrl.Append($"?token={optizmoToken}&format=md5");
+            //503 Service Unavailable
+            Tuple<bool, string> aojson = null;
+            int retryCount = 0;
+            int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+            while (retryCount < 5)
+            {
+                aojson = await Utility.ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
+                if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
+                {
+                    if (aojson.Item2.Contains("503 Service Unavailable"))
+                    {
+                        await Task.Delay(retryWalkaway[retryCount] * 1000);
+                        retryCount += 1;
+                        continue;
+                    }
+                    IGenericEntity te = new GenericEntityJson();
+                    var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
+                    te.InitializeEntity(null, null, ts);
+                    if (te.GetS("download_link") != null)
+                    {
+                        optizmoUnsubUrl = te.GetS("download_link");
+                    }
+                }
+                break;
+            }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                       "GetOptizmoUnsubFileUri", "Optizmo",
+                       $"{optizmoUrl.ToString()}::{aojson.Item1}::{aojson.Item2}");
+
+            return optizmoUnsubUrl;
+        }
+
+        public async Task<string> GetEzepoUnsubFileUri(string url)
+        {
+            //var chromeOptions = new ChromeOptions();
+            //chromeOptions.AddUserProfilePreference("download.default_directory", @"e:\workspace\unsub");
+            //chromeOptions.AddUserProfilePreference("intl.accept_languages", "nl");
+            //chromeOptions.AddUserProfilePreference("disable-popup-blocking", "true");
+            //var driver = new ChromeDriver(this.SeleniumChromeDriverPath, chromeOptions);
+            var driver = new ChromeDriver(this.SeleniumChromeDriverPath);
+            driver.Navigate().GoToUrl(url);
+            driver.FindElement(By.XPath("//button[.='Download All Data']")).Click();
+            IWebElement dwnldLink = null;
+            int retryCount = 0;
+            int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+            while (retryCount < 5)
+            {
+                try
+                {
+                    dwnldLink = driver.FindElement(By.Id("downloadlink"));
+                    if (dwnldLink.Displayed) break;
+                    else throw new Exception();
+                }
+                catch (Exception ex)
+                {
+                    await Task.Delay(retryWalkaway[retryCount] * 1000);
+                }
+            }
+
+            string fileUrl = "";
+            if (dwnldLink != null)
+            {
+                //dwnldLink.Click();
+                fileUrl = dwnldLink.GetAttribute("href");
+            }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                       "GetEzepoUnsubFileUri", "Ezepo",
+                       $"{fileUrl.ToString()}");
+
+            return fileUrl;
         }
 
         public async Task<IDictionary<string, object>> DownloadSuppressionFiles(

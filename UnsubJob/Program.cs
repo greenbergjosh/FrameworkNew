@@ -16,6 +16,14 @@ namespace UnsubJob
     {
         public static async Task Main(string[] args)
         {
+            await Utility.ProtocolClient.UploadFile(
+                                @"c:\workspace\unsub\2f4d4b49-4f9b-4ec9-97cb-21b1c3cef676.txt",
+                                "Unsub/2f4d4b49-4f9b-4ec9-97cb-21b1c3cef676.txt.upl",
+                                "ftpback-bhs6-85.ip-66-70-176.net",
+                                "ns557038.ip-66-70-182.net",
+                                "kerBVnPFmJ");
+            return;
+
             IConfigurationRoot configuration = new ConfigurationBuilder()
                         .SetBasePath(Directory.GetCurrentDirectory())
                         .AddJsonFile("appsettings.json")
