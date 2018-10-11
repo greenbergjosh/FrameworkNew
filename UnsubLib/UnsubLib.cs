@@ -77,9 +77,6 @@ namespace UnsubLib
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
-
-        public int AmobeeParallelism = 5;
-        public int MadrivoParallelism = 5;
                    
         public UnsubLib(string appName, string connectionString)
         {
@@ -422,8 +419,16 @@ namespace UnsubLib
                         c.GetS("NetworkCampaignId"),
                         parallelism);
 
-                    if (uris.ContainsKey(uri)) uris[uri].Add(c);
-                    else uris.TryAdd(uri, new List<IGenericEntity>() { c });
+                    if (String.IsNullOrEmpty(uri))
+                    {
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 500, this.ApplicationName,
+                            $"ScheduledUnsubJob::{networkName}", "GetSuppressionFileUri", c.GetS("NetworkCampaignId"));
+                    }
+                    else
+                    {
+                        if (uris.ContainsKey(uri)) uris[uri].Add(c);
+                        else uris.TryAdd(uri, new List<IGenericEntity>() { c });
+                    }
                 }
                 catch (Exception exCampaign)
                 {
