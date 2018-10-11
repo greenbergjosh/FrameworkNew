@@ -859,6 +859,9 @@ namespace UnsubLib
             string fileName = fileId + ext;
             string dfileName = destFileName == null ? fileName : destFileName;
 
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                        $"GetFileFromFileId", "Download file from ftp", this.FileCacheFtpServerPath + "/" + fileName);
+
             if (this.FileCacheFtpServer != null)
             {
                 DirectoryInfo di = new DirectoryInfo(destDir);
@@ -869,10 +872,6 @@ namespace UnsubLib
                     success = await MakeRoom(fileName, cacheSize);
                     if (!success)
                         throw new Exception("Could not make room for file.");
-
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                        $"GetFileFromFileId", "Download file from ftp", this.FileCacheFtpServerPath + "/" + fileName);
-
 
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,
