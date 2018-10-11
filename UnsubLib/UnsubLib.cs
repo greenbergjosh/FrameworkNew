@@ -865,11 +865,11 @@ namespace UnsubLib
             return true;            
         }
 
-        public async Task<string> GetFileFromFileId(string fileId, string ext, string destDir, long cacheSize, string destFileName="")
+        public async Task<string> GetFileFromFileId(string fileId, string ext, string destDir, long cacheSize, string destFileName=null)
         {
             bool success = false;
             string fileName = fileId + ext;
-            string dfileName = destFileName == "" ? fileName : destFileName;
+            string dfileName = destFileName == null ? fileName : destFileName;
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
                         $"GetFileFromFileId", "Download file from ftp", this.FileCacheFtpServerPath + "/" + fileName);
