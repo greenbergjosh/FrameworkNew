@@ -588,6 +588,9 @@ namespace UnsubLib
             string result = null;
             if (!this.CallLocalLoadUnsubFiles)
             {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                        $"SignlUnsubServerService", "Calling service", msg);
+
                 result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                     new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
             }
@@ -598,7 +601,9 @@ namespace UnsubLib
                 cse.InitializeEntity(null, null, cs);
                 result = await LoadUnsubFiles(cse);
             }
-            
+
+            if (result == null) throw new Exception("Null result");
+
             var res = (JObject)JsonConvert.DeserializeObject(result);
             IGenericEntity rese = new GenericEntityJson();
             rese.InitializeEntity(null, null, res);
