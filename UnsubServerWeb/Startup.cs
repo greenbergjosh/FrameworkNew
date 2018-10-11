@@ -87,6 +87,9 @@ namespace UnsubServerWeb
                                 Environment.NewLine);
                 }
 
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "application/json";
+                context.Response.ContentLength = result.Length;
                 await context.Response.WriteAsync(result);
 
             });
