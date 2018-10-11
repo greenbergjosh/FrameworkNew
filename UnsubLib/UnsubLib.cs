@@ -634,6 +634,9 @@ namespace UnsubLib
 
                 foreach (var ftpFile in listFiles)
                 {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                        $"CleanUnusedFiles", "Delete file from ftp", this.FileCacheFtpServerPath + "/" + ftpFile);
+
                     string[] ftpFileParts = ftpFile.Split(new char[] { '.' });
                     if (!refdFiles.Contains(ftpFileParts[0].ToLower()))
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
