@@ -50,7 +50,6 @@ namespace UnsubLib
         public string ApplicationName;
 
         public string ConnectionString;
-        public string WorkingDirectory;
         public string ServerWorkingDirectory;
         public string ClientWorkingDirectory;
         public string SearchDirectory;
@@ -168,10 +167,10 @@ namespace UnsubLib
         public async Task ManualDirectory(IGenericEntity network)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ManualDirectory", "Before locking files", this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck");
+                $"ManualDirectory", "Before locking files", this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck");
 
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                 $"ManualDirectory", "After locking files", "");
@@ -589,9 +588,6 @@ namespace UnsubLib
             string result = null;
             if (!this.CallLocalLoadUnsubFiles)
             {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                        $"SignlUnsubServerService", "Calling service", msg);
-
                 result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                     new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
             }
@@ -862,9 +858,6 @@ namespace UnsubLib
             bool success = false;
             string fileName = fileId + ext;
             string dfileName = destFileName == null ? fileName : destFileName;
-
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                        $"GetFileFromFileId", "Download file from ftp", this.FileCacheFtpServerPath + "/" + fileName);
 
             if (this.FileCacheFtpServer != null)
             {
