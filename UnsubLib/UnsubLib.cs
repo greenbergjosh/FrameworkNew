@@ -269,6 +269,7 @@ namespace UnsubLib
             if (campaignsJson.Length > 1) campaignsJson.Remove(campaignsJson.Length - 1, 1);
             campaignsJson.Append("]");
 
+            if (campaignsJson.Length < 2) campaignsJson = new StringBuilder("[]");
             string cmps = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "MergeNetworkCampaignsManual",
                     Jw.Json(new { NetworkId = network.GetS("Id") }),
@@ -1391,7 +1392,8 @@ namespace UnsubLib
                 bool allDom = true;
                 for (int l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
                 {
-                    if (!lines[l].Contains(".") || lines[l].Length == 0)
+                    if (lines[l].Length == 0) continue;
+                    if (!lines[l].Contains("."))
                     {
                         allDom = false;
                         break;
