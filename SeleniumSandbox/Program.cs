@@ -41,7 +41,7 @@ namespace SeleniumSandbox
                 if (type == "Hotmail")
                 {
                     string apiKey = ps.GetS("Credentials/ApiKey");
-                    //await DoHotmail(cs, pmAcctId, username, password, url, apiKey);
+                    await DoHotmail(cs, pmAcctId, username, password, url, apiKey);
                 }
                 else if (type == "Gmail")
                 {
