@@ -1,0 +1,777 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BusinessLogic</RootNamespace>
+    <AssemblyName>BusinessLogic</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="DnsClient, Version=1.0.7.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
+      <HintPath>..\packages\DnsClient.1.0.7\lib\net45\DnsClient.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="MailKit, Version=1.22.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
+      <HintPath>..\packages\MailKit.1.22.0\lib\net451\MailKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.2.0.3\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Caching.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Caching.Memory.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Caching.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyModel, Version=2.0.3.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyModel.2.0.3\lib\net451\Microsoft.Extensions.DependencyModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Hosting.Abstractions.2.0.1\lib\netstandard2.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Localization, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Localization.2.0.1\lib\netstandard2.0\Microsoft.Extensions.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Localization.Abstractions.2.0.1\lib\netstandard2.0\Microsoft.Extensions.Localization.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.ObjectPool, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.ObjectPool.2.0.0\lib\netstandard2.0\Microsoft.Extensions.ObjectPool.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.2.0.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Net.Http.Headers, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Net.Http.Headers.2.0.1\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Office.Interop.Excel.15.0.4795.1000\lib\net20\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="MimeKit, Version=2.0.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <HintPath>..\packages\MimeKit.2.0.3\lib\net45\MimeKit.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Bson, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.2.3.0\lib\net45\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.2.3.0\lib\net45\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.3.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.2.2.7\lib\net45\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.5.4\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NodaTime, Version=2.3.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NodaTime.2.3.0\lib\net45\NodaTime.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql, Version=2.2.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.2.2.7\lib\net45\Npgsql.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql.EntityFramework, Version=2.2.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Npgsql.EntityFramework.2.2.7\lib\net45\Npgsql.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="PagedList, Version=1.17.0.0, Culture=neutral, PublicKeyToken=abbb863e9397c5e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\PagedList.1.17.0.0\lib\net40\PagedList.dll</HintPath>
+    </Reference>
+    <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpRaven, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpRaven.2.2.0\lib\net45\SharpRaven.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.4.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ComponentModel.Annotations.4.4.1\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SqlClient, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SqlClient.4.4.0\lib\net461\System.Data.SqlClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.4.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Interactive.Async, Version=3.0.3000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.Async.3.1.1\lib\net46\System.Interactive.Async.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Text.Encodings.Web, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.4.4.0\lib\netstandard2.0\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.0\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Campaign.cs">
+      <DependentUpon>dbEmailEntities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CampaingTemplate.cs">
+      <DependentUpon>dbEmailEntities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CredentialContext.cs" />
+    <Compile Include="DatabaseContext.cs" />
+    <Compile Include="dbEmailEntities.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>dbEmailEntities.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="dbEmailEntities.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>dbEmailEntities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="dbEmailEntities.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>dbEmailEntities.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="MailAdapter.cs" />
+    <Compile Include="MailClient.cs" />
+    <Compile Include="MailStorage.cs" />
+    <Compile Include="Migrations\201712291756456_Prueba.cs" />
+    <Compile Include="Migrations\201712291756456_Prueba.Designer.cs">
+      <DependentUpon>201712291756456_Prueba.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801031752269_addSeqHeader.cs" />
+    <Compile Include="Migrations\201801031752269_addSeqHeader.Designer.cs">
+      <DependentUpon>201801031752269_addSeqHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801031759082_deleteSeq.cs" />
+    <Compile Include="Migrations\201801031759082_deleteSeq.Designer.cs">
+      <DependentUpon>201801031759082_deleteSeq.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801031800189_HeaderSeq.cs" />
+    <Compile Include="Migrations\201801031800189_HeaderSeq.Designer.cs">
+      <DependentUpon>201801031800189_HeaderSeq.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801181510126_changeAccountToMailAccount.cs" />
+    <Compile Include="Migrations\201801181510126_changeAccountToMailAccount.Designer.cs">
+      <DependentUpon>201801181510126_changeAccountToMailAccount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801221655315_dbContext.cs" />
+    <Compile Include="Migrations\201801221655315_dbContext.Designer.cs">
+      <DependentUpon>201801221655315_dbContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801291836141_deletePrueba.cs" />
+    <Compile Include="Migrations\201801291836141_deletePrueba.Designer.cs">
+      <DependentUpon>201801291836141_deletePrueba.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801301746047_renameMailAccountToSeed.cs" />
+    <Compile Include="Migrations\201801301746047_renameMailAccountToSeed.Designer.cs">
+      <DependentUpon>201801301746047_renameMailAccountToSeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801301849343_refactorHeaderMailHeader.cs" />
+    <Compile Include="Migrations\201801301849343_refactorHeaderMailHeader.Designer.cs">
+      <DependentUpon>201801301849343_refactorHeaderMailHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802011527031_AddOffsetToMailHeader.cs" />
+    <Compile Include="Migrations\201802011527031_AddOffsetToMailHeader.Designer.cs">
+      <DependentUpon>201802011527031_AddOffsetToMailHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802021844087_changeAccountToSeed.cs" />
+    <Compile Include="Migrations\201802021844087_changeAccountToSeed.Designer.cs">
+      <DependentUpon>201802021844087_changeAccountToSeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802051442085_addClient.cs" />
+    <Compile Include="Migrations\201802051442085_addClient.Designer.cs">
+      <DependentUpon>201802051442085_addClient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802051959138_addSeedBucket.cs" />
+    <Compile Include="Migrations\201802051959138_addSeedBucket.Designer.cs">
+      <DependentUpon>201802051959138_addSeedBucket.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802052001129_updateClient.cs" />
+    <Compile Include="Migrations\201802052001129_updateClient.Designer.cs">
+      <DependentUpon>201802052001129_updateClient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802061419257_makeRequierdClient.cs" />
+    <Compile Include="Migrations\201802061419257_makeRequierdClient.Designer.cs">
+      <DependentUpon>201802061419257_makeRequierdClient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802061518266_makeRequierdSeedBucket.cs" />
+    <Compile Include="Migrations\201802061518266_makeRequierdSeedBucket.Designer.cs">
+      <DependentUpon>201802061518266_makeRequierdSeedBucket.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802081857297_addSeedBucketSeed.cs" />
+    <Compile Include="Migrations\201802081857297_addSeedBucketSeed.Designer.cs">
+      <DependentUpon>201802081857297_addSeedBucketSeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802081931431_syncDB.cs" />
+    <Compile Include="Migrations\201802081931431_syncDB.Designer.cs">
+      <DependentUpon>201802081931431_syncDB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802202100161_add-client-apikey-seedsbucket-uuid.cs" />
+    <Compile Include="Migrations\201802202100161_add-client-apikey-seedsbucket-uuid.Designer.cs">
+      <DependentUpon>201802202100161_add-client-apikey-seedsbucket-uuid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802211755481_createDate_Update_Seed.cs" />
+    <Compile Include="Migrations\201802211755481_createDate_Update_Seed.Designer.cs">
+      <DependentUpon>201802211755481_createDate_Update_Seed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802211918158_add-SeedApiLog.cs" />
+    <Compile Include="Migrations\201802211918158_add-SeedApiLog.Designer.cs">
+      <DependentUpon>201802211918158_add-SeedApiLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802222058251_add_from_mail.cs" />
+    <Compile Include="Migrations\201802222058251_add_from_mail.Designer.cs">
+      <DependentUpon>201802222058251_add_from_mail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803021918234_add_type_provider.cs" />
+    <Compile Include="Migrations\201803021918234_add_type_provider.Designer.cs">
+      <DependentUpon>201803021918234_add_type_provider.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803051515231_add_X_REF_ID.cs" />
+    <Compile Include="Migrations\201803051515231_add_X_REF_ID.Designer.cs">
+      <DependentUpon>201803051515231_add_X_REF_ID.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803081730420_rename_SeedApiLog_to_ClientSeed.cs" />
+    <Compile Include="Migrations\201803081730420_rename_SeedApiLog_to_ClientSeed.Designer.cs">
+      <DependentUpon>201803081730420_rename_SeedApiLog_to_ClientSeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803151524050_add_SendDomain.cs" />
+    <Compile Include="Migrations\201803151524050_add_SendDomain.Designer.cs">
+      <DependentUpon>201803151524050_add_SendDomain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803151721255_rename_SendDomain_to_SenderDomain.cs" />
+    <Compile Include="Migrations\201803151721255_rename_SendDomain_to_SenderDomain.Designer.cs">
+      <DependentUpon>201803151721255_rename_SendDomain_to_SenderDomain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803191927153_rename_tracking_id.cs" />
+    <Compile Include="Migrations\201803191927153_rename_tracking_id.Designer.cs">
+      <DependentUpon>201803191927153_rename_tracking_id.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201803271511288_add_campaign_template_name.cs" />
+    <Compile Include="Migrations\201803271511288_add_campaign_template_name.Designer.cs">
+      <DependentUpon>201803271511288_add_campaign_template_name.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804171858151_add_Mail_ISP.cs" />
+    <Compile Include="Migrations\201804171858151_add_Mail_ISP.Designer.cs">
+      <DependentUpon>201804171858151_add_Mail_ISP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804172044361_delete_Mail_ISP.cs" />
+    <Compile Include="Migrations\201804172044361_delete_Mail_ISP.Designer.cs">
+      <DependentUpon>201804172044361_delete_Mail_ISP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804172054375_add1_Mail_ISP.cs" />
+    <Compile Include="Migrations\201804172054375_add1_Mail_ISP.Designer.cs">
+      <DependentUpon>201804172054375_add1_Mail_ISP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804181731463_add_MarkMailAsRead.cs" />
+    <Compile Include="Migrations\201804181731463_add_MarkMailAsRead.Designer.cs">
+      <DependentUpon>201804181731463_add_MarkMailAsRead.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804201420218_add_SeedBucket_to_ClientSeed.cs" />
+    <Compile Include="Migrations\201804201420218_add_SeedBucket_to_ClientSeed.Designer.cs">
+      <DependentUpon>201804201420218_add_SeedBucket_to_ClientSeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804271703382_add_move_to_inbox_seed.cs" />
+    <Compile Include="Migrations\201804271703382_add_move_to_inbox_seed.Designer.cs">
+      <DependentUpon>201804271703382_add_move_to_inbox_seed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804271940497_add_seed_replay_mail.cs" />
+    <Compile Include="Migrations\201804271940497_add_seed_replay_mail.Designer.cs">
+      <DependentUpon>201804271940497_add_seed_replay_mail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805021704078_add_smtp_data_provider.cs" />
+    <Compile Include="Migrations\201805021704078_add_smtp_data_provider.Designer.cs">
+      <DependentUpon>201805021704078_add_smtp_data_provider.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805021746357_update_smtp_data_provider.cs" />
+    <Compile Include="Migrations\201805021746357_update_smtp_data_provider.Designer.cs">
+      <DependentUpon>201805021746357_update_smtp_data_provider.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805111525467_add_seed_actions_to_bucket.cs" />
+    <Compile Include="Migrations\201805111525467_add_seed_actions_to_bucket.Designer.cs">
+      <DependentUpon>201805111525467_add_seed_actions_to_bucket.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805111543284_add_seed_actions_to_bucket_1.cs" />
+    <Compile Include="Migrations\201805111543284_add_seed_actions_to_bucket_1.Designer.cs">
+      <DependentUpon>201805111543284_add_seed_actions_to_bucket_1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805111904522_rename_seedbucket_field.cs" />
+    <Compile Include="Migrations\201805111904522_rename_seedbucket_field.Designer.cs">
+      <DependentUpon>201805111904522_rename_seedbucket_field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805111917373_update_rename_seedbucket_field.cs" />
+    <Compile Include="Migrations\201805111917373_update_rename_seedbucket_field.Designer.cs">
+      <DependentUpon>201805111917373_update_rename_seedbucket_field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805140347480_add_seedbucket_to_seed.cs" />
+    <Compile Include="Migrations\201805140347480_add_seedbucket_to_seed.Designer.cs">
+      <DependentUpon>201805140347480_add_seedbucket_to_seed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805211649018_add_log_table.cs" />
+    <Compile Include="Migrations\201805211649018_add_log_table.Designer.cs">
+      <DependentUpon>201805211649018_add_log_table.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805211656373_add_log_table_Index.cs" />
+    <Compile Include="Migrations\201805211656373_add_log_table_Index.Designer.cs">
+      <DependentUpon>201805211656373_add_log_table_Index.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805211855411_update_add_log_table_Seed_to_string.cs" />
+    <Compile Include="Migrations\201805211855411_update_add_log_table_Seed_to_string.Designer.cs">
+      <DependentUpon>201805211855411_update_add_log_table_Seed_to_string.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805241802422_rename_log_table.cs" />
+    <Compile Include="Migrations\201805241802422_rename_log_table.Designer.cs">
+      <DependentUpon>201805241802422_rename_log_table.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805241822294_rename_log_table_UPDATE.cs" />
+    <Compile Include="Migrations\201805241822294_rename_log_table_UPDATE.Designer.cs">
+      <DependentUpon>201805241822294_rename_log_table_UPDATE.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805281759338_add_actions_to_mail.cs" />
+    <Compile Include="Migrations\201805281759338_add_actions_to_mail.Designer.cs">
+      <DependentUpon>201805281759338_add_actions_to_mail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806011616192_add_runlog.cs" />
+    <Compile Include="Migrations\201806011616192_add_runlog.Designer.cs">
+      <DependentUpon>201806011616192_add_runlog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806041528246_update_index_runlog.cs" />
+    <Compile Include="Migrations\201806041528246_update_index_runlog.Designer.cs">
+      <DependentUpon>201806041528246_update_index_runlog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806041837173_add_templatetest.cs" />
+    <Compile Include="Migrations\201806041837173_add_templatetest.Designer.cs">
+      <DependentUpon>201806041837173_add_templatetest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806051409270_update_templateTest_field.cs" />
+    <Compile Include="Migrations\201806051409270_update_templateTest_field.Designer.cs">
+      <DependentUpon>201806051409270_update_templateTest_field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806051819301_update_templateTest_fields.cs" />
+    <Compile Include="Migrations\201806051819301_update_templateTest_fields.Designer.cs">
+      <DependentUpon>201806051819301_update_templateTest_fields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806081750550_add_templateTest_info_to_mail.cs" />
+    <Compile Include="Migrations\201806081750550_add_templateTest_info_to_mail.Designer.cs">
+      <DependentUpon>201806081750550_add_templateTest_info_to_mail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806152046574_add_mail_into_templateTest.cs" />
+    <Compile Include="Migrations\201806152046574_add_mail_into_templateTest.Designer.cs">
+      <DependentUpon>201806152046574_add_mail_into_templateTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806211747314_add_mailClassWarmUp.cs" />
+    <Compile Include="Migrations\201806211747314_add_mailClassWarmUp.Designer.cs">
+      <DependentUpon>201806211747314_add_mailClassWarmUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806211912474_update_MailClassWarmUp.cs" />
+    <Compile Include="Migrations\201806211912474_update_MailClassWarmUp.Designer.cs">
+      <DependentUpon>201806211912474_update_MailClassWarmUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Model\Client.cs" />
+    <Compile Include="Model\EmailLogValues.cs" />
+    <Compile Include="Model\MailClassWarmUp.cs" />
+    <Compile Include="Model\RunLog.cs" />
+    <Compile Include="Model\SeedLog.cs" />
+    <Compile Include="Model\Seed.cs" />
+    <Compile Include="Model\Content.cs" />
+    <Compile Include="Model\Header.cs" />
+    <Compile Include="Model\Mail.cs" />
+    <Compile Include="Model\MailHeader.cs" />
+    <Compile Include="Model\Provider.cs" />
+    <Compile Include="Model\ClientSeed.cs" />
+    <Compile Include="Model\SeedBucket.cs" />
+    <Compile Include="Model\SeedBucketSeed.cs" />
+    <Compile Include="Model\TemplateTest.cs" />
+    <Compile Include="Model\UserProfile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sentry.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Content\bootstrap-datetimepicker-build.less" />
+    <None Include="Content\bootstrap-theme.css.map" />
+    <None Include="Content\bootstrap.css.map" />
+    <None Include="Content\bootstrap\alerts.less" />
+    <None Include="Content\bootstrap\badges.less" />
+    <None Include="Content\bootstrap\bootstrap.less" />
+    <None Include="Content\bootstrap\breadcrumbs.less" />
+    <None Include="Content\bootstrap\button-groups.less" />
+    <None Include="Content\bootstrap\buttons.less" />
+    <None Include="Content\bootstrap\carousel.less" />
+    <None Include="Content\bootstrap\close.less" />
+    <None Include="Content\bootstrap\code.less" />
+    <None Include="Content\bootstrap\component-animations.less" />
+    <None Include="Content\bootstrap\dropdowns.less" />
+    <None Include="Content\bootstrap\forms.less" />
+    <None Include="Content\bootstrap\glyphicons.less" />
+    <None Include="Content\bootstrap\grid.less" />
+    <None Include="Content\bootstrap\input-groups.less" />
+    <None Include="Content\bootstrap\jumbotron.less" />
+    <None Include="Content\bootstrap\labels.less" />
+    <None Include="Content\bootstrap\list-group.less" />
+    <None Include="Content\bootstrap\media.less" />
+    <None Include="Content\bootstrap\mixins.less" />
+    <None Include="Content\bootstrap\mixins\alerts.less" />
+    <None Include="Content\bootstrap\mixins\background-variant.less" />
+    <None Include="Content\bootstrap\mixins\border-radius.less" />
+    <None Include="Content\bootstrap\mixins\buttons.less" />
+    <None Include="Content\bootstrap\mixins\center-block.less" />
+    <None Include="Content\bootstrap\mixins\clearfix.less" />
+    <None Include="Content\bootstrap\mixins\forms.less" />
+    <None Include="Content\bootstrap\mixins\gradients.less" />
+    <None Include="Content\bootstrap\mixins\grid-framework.less" />
+    <None Include="Content\bootstrap\mixins\grid.less" />
+    <None Include="Content\bootstrap\mixins\hide-text.less" />
+    <None Include="Content\bootstrap\mixins\image.less" />
+    <None Include="Content\bootstrap\mixins\labels.less" />
+    <None Include="Content\bootstrap\mixins\list-group.less" />
+    <None Include="Content\bootstrap\mixins\nav-divider.less" />
+    <None Include="Content\bootstrap\mixins\nav-vertical-align.less" />
+    <None Include="Content\bootstrap\mixins\opacity.less" />
+    <None Include="Content\bootstrap\mixins\pagination.less" />
+    <None Include="Content\bootstrap\mixins\panels.less" />
+    <None Include="Content\bootstrap\mixins\progress-bar.less" />
+    <None Include="Content\bootstrap\mixins\reset-filter.less" />
+    <None Include="Content\bootstrap\mixins\reset-text.less" />
+    <None Include="Content\bootstrap\mixins\resize.less" />
+    <None Include="Content\bootstrap\mixins\responsive-visibility.less" />
+    <None Include="Content\bootstrap\mixins\size.less" />
+    <None Include="Content\bootstrap\mixins\tab-focus.less" />
+    <None Include="Content\bootstrap\mixins\table-row.less" />
+    <None Include="Content\bootstrap\mixins\text-emphasis.less" />
+    <None Include="Content\bootstrap\mixins\text-overflow.less" />
+    <None Include="Content\bootstrap\mixins\vendor-prefixes.less" />
+    <None Include="Content\bootstrap\modals.less" />
+    <None Include="Content\bootstrap\navbar.less" />
+    <None Include="Content\bootstrap\navs.less" />
+    <None Include="Content\bootstrap\normalize.less" />
+    <None Include="Content\bootstrap\pager.less" />
+    <None Include="Content\bootstrap\pagination.less" />
+    <None Include="Content\bootstrap\panels.less" />
+    <None Include="Content\bootstrap\popovers.less" />
+    <None Include="Content\bootstrap\print.less" />
+    <None Include="Content\bootstrap\progress-bars.less" />
+    <None Include="Content\bootstrap\responsive-embed.less" />
+    <None Include="Content\bootstrap\responsive-utilities.less" />
+    <None Include="Content\bootstrap\scaffolding.less" />
+    <None Include="Content\bootstrap\tables.less" />
+    <None Include="Content\bootstrap\theme.less" />
+    <None Include="Content\bootstrap\thumbnails.less" />
+    <None Include="Content\bootstrap\tooltip.less" />
+    <None Include="Content\bootstrap\type.less" />
+    <None Include="Content\bootstrap\utilities.less" />
+    <None Include="Content\bootstrap\variables.less" />
+    <None Include="Content\bootstrap\wells.less" />
+    <None Include="Content\fonts\glyphicons-halflings-regular.eot" />
+    <None Include="Content\fonts\glyphicons-halflings-regular.ttf" />
+    <None Include="Content\fonts\glyphicons-halflings-regular.woff" />
+    <None Include="Content\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="Content\_bootstrap-datetimepicker.less" />
+    <EntityDeploy Include="dbEmailEntities.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>dbEmailEntities.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="dbEmailEntities.edmx.diagram">
+      <DependentUpon>dbEmailEntities.edmx</DependentUpon>
+    </None>
+    <None Include="fonts\glyphicons-halflings-regular.eot" />
+    <None Include="fonts\glyphicons-halflings-regular.ttf" />
+    <None Include="fonts\glyphicons-halflings-regular.woff" />
+    <None Include="packages.config" />
+    <None Include="Scripts\jquery-1.9.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201712291756456_Prueba.resx">
+      <DependentUpon>201712291756456_Prueba.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801031752269_addSeqHeader.resx">
+      <DependentUpon>201801031752269_addSeqHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801031759082_deleteSeq.resx">
+      <DependentUpon>201801031759082_deleteSeq.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801031800189_HeaderSeq.resx">
+      <DependentUpon>201801031800189_HeaderSeq.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801181510126_changeAccountToMailAccount.resx">
+      <DependentUpon>201801181510126_changeAccountToMailAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801221655315_dbContext.resx">
+      <DependentUpon>201801221655315_dbContext.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801291836141_deletePrueba.resx">
+      <DependentUpon>201801291836141_deletePrueba.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801301746047_renameMailAccountToSeed.resx">
+      <DependentUpon>201801301746047_renameMailAccountToSeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801301849343_refactorHeaderMailHeader.resx">
+      <DependentUpon>201801301849343_refactorHeaderMailHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802011527031_AddOffsetToMailHeader.resx">
+      <DependentUpon>201802011527031_AddOffsetToMailHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802021844087_changeAccountToSeed.resx">
+      <DependentUpon>201802021844087_changeAccountToSeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802051442085_addClient.resx">
+      <DependentUpon>201802051442085_addClient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802051959138_addSeedBucket.resx">
+      <DependentUpon>201802051959138_addSeedBucket.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802052001129_updateClient.resx">
+      <DependentUpon>201802052001129_updateClient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802061419257_makeRequierdClient.resx">
+      <DependentUpon>201802061419257_makeRequierdClient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802061518266_makeRequierdSeedBucket.resx">
+      <DependentUpon>201802061518266_makeRequierdSeedBucket.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802081857297_addSeedBucketSeed.resx">
+      <DependentUpon>201802081857297_addSeedBucketSeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802081931431_syncDB.resx">
+      <DependentUpon>201802081931431_syncDB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802202100161_add-client-apikey-seedsbucket-uuid.resx">
+      <DependentUpon>201802202100161_add-client-apikey-seedsbucket-uuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802211755481_createDate_Update_Seed.resx">
+      <DependentUpon>201802211755481_createDate_Update_Seed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802211918158_add-SeedApiLog.resx">
+      <DependentUpon>201802211918158_add-SeedApiLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802222058251_add_from_mail.resx">
+      <DependentUpon>201802222058251_add_from_mail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803021918234_add_type_provider.resx">
+      <DependentUpon>201803021918234_add_type_provider.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803051515231_add_X_REF_ID.resx">
+      <DependentUpon>201803051515231_add_X_REF_ID.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803081730420_rename_SeedApiLog_to_ClientSeed.resx">
+      <DependentUpon>201803081730420_rename_SeedApiLog_to_ClientSeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803151524050_add_SendDomain.resx">
+      <DependentUpon>201803151524050_add_SendDomain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803151721255_rename_SendDomain_to_SenderDomain.resx">
+      <DependentUpon>201803151721255_rename_SendDomain_to_SenderDomain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803191927153_rename_tracking_id.resx">
+      <DependentUpon>201803191927153_rename_tracking_id.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201803271511288_add_campaign_template_name.resx">
+      <DependentUpon>201803271511288_add_campaign_template_name.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804171858151_add_Mail_ISP.resx">
+      <DependentUpon>201804171858151_add_Mail_ISP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804172044361_delete_Mail_ISP.resx">
+      <DependentUpon>201804172044361_delete_Mail_ISP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804172054375_add1_Mail_ISP.resx">
+      <DependentUpon>201804172054375_add1_Mail_ISP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804181731463_add_MarkMailAsRead.resx">
+      <DependentUpon>201804181731463_add_MarkMailAsRead.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804201420218_add_SeedBucket_to_ClientSeed.resx">
+      <DependentUpon>201804201420218_add_SeedBucket_to_ClientSeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804271703382_add_move_to_inbox_seed.resx">
+      <DependentUpon>201804271703382_add_move_to_inbox_seed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804271940497_add_seed_replay_mail.resx">
+      <DependentUpon>201804271940497_add_seed_replay_mail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805021704078_add_smtp_data_provider.resx">
+      <DependentUpon>201805021704078_add_smtp_data_provider.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805021746357_update_smtp_data_provider.resx">
+      <DependentUpon>201805021746357_update_smtp_data_provider.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805111525467_add_seed_actions_to_bucket.resx">
+      <DependentUpon>201805111525467_add_seed_actions_to_bucket.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805111543284_add_seed_actions_to_bucket_1.resx">
+      <DependentUpon>201805111543284_add_seed_actions_to_bucket_1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805111904522_rename_seedbucket_field.resx">
+      <DependentUpon>201805111904522_rename_seedbucket_field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805111917373_update_rename_seedbucket_field.resx">
+      <DependentUpon>201805111917373_update_rename_seedbucket_field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805140347480_add_seedbucket_to_seed.resx">
+      <DependentUpon>201805140347480_add_seedbucket_to_seed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805211649018_add_log_table.resx">
+      <DependentUpon>201805211649018_add_log_table.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805211656373_add_log_table_Index.resx">
+      <DependentUpon>201805211656373_add_log_table_Index.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805211855411_update_add_log_table_Seed_to_string.resx">
+      <DependentUpon>201805211855411_update_add_log_table_Seed_to_string.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805241802422_rename_log_table.resx">
+      <DependentUpon>201805241802422_rename_log_table.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805241822294_rename_log_table_UPDATE.resx">
+      <DependentUpon>201805241822294_rename_log_table_UPDATE.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805281759338_add_actions_to_mail.resx">
+      <DependentUpon>201805281759338_add_actions_to_mail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806011616192_add_runlog.resx">
+      <DependentUpon>201806011616192_add_runlog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806041528246_update_index_runlog.resx">
+      <DependentUpon>201806041528246_update_index_runlog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806041837173_add_templatetest.resx">
+      <DependentUpon>201806041837173_add_templatetest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806051409270_update_templateTest_field.resx">
+      <DependentUpon>201806051409270_update_templateTest_field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806051819301_update_templateTest_fields.resx">
+      <DependentUpon>201806051819301_update_templateTest_fields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806081750550_add_templateTest_info_to_mail.resx">
+      <DependentUpon>201806081750550_add_templateTest_info_to_mail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806152046574_add_mail_into_templateTest.resx">
+      <DependentUpon>201806152046574_add_mail_into_templateTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806211747314_add_mailClassWarmUp.resx">
+      <DependentUpon>201806211747314_add_mailClassWarmUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806211912474_update_MailClassWarmUp.resx">
+      <DependentUpon>201806211912474_update_MailClassWarmUp.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\bootstrap-datetimepicker.css" />
+    <Content Include="Content\bootstrap-datetimepicker.min.css" />
+    <Content Include="Content\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap-theme.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="dbEmailEntities.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>dbEmailEntities.edmx</DependentUpon>
+      <LastGenOutput>dbEmailEntities.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="dbEmailEntities.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>dbEmailEntities.edmx</DependentUpon>
+      <LastGenOutput>dbEmailEntities.cs</LastGenOutput>
+    </Content>
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Scripts\bootstrap-datetimepicker.js" />
+    <Content Include="Scripts\bootstrap-datetimepicker.min.js" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\jquery-1.9.1-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.9.1.js" />
+    <Content Include="Scripts\jquery-1.9.1.min.js" />
+    <Content Include="Scripts\moment-with-locales.js" />
+    <Content Include="Scripts\moment-with-locales.min.js" />
+    <Content Include="Scripts\moment.js" />
+    <Content Include="Scripts\moment.min.js" />
+    <Content Include="Scripts\npm.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

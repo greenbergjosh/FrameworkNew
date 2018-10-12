@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="EditorModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Campaign">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="type" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="leadage" Type="int" Nullable="false" />
+          <Property Name="sendstatus" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="domainid" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="dtstart" Type="datetime" Nullable="false" />
+          <Property Name="stime" Type="time" Precision="7" Nullable="false" />
+          <Property Name="etime" Type="time" Precision="7" />
+          <Property Name="scheduletype" Type="int" Nullable="false" />
+          <Property Name="active" Type="bit" Nullable="false" />
+          <Property Name="deleted" Type="bit" />
+          <Property Name="dtcreated" Type="datetime" />
+          <Property Name="dtmodified" Type="datetime" />
+          <Property Name="credential_id" Type="int" Nullable="false" />
+          <Property Name="emailog_campaign" Type="int" />
+          <Property Name="audience_id" Type="int" />
+          <Property Name="delay" Type="int" />
+          <Property Name="dtstartopeners" Type="datetime" />
+          <Property Name="dtendopeners" Type="datetime" />
+          <Property Name="limitperday" Type="int" />
+          <Property Name="blockpacer" Type="bit" />
+        </EntityType>
+        <EntityType Name="CampaingTemplate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="subject" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="html" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="text" Type="nvarchar(max)" />
+          <Property Name="active" Type="bit" Nullable="false" />
+          <Property Name="campaignid" Type="int" Nullable="false" />
+          <Property Name="deleted" Type="bit" />
+          <Property Name="dtcreated" Type="datetime" />
+          <Property Name="dtmodified" Type="datetime" />
+          <Property Name="countsent" Type="int" />
+          <Property Name="is250ok" Type="bit" />
+          <Property Name="friendlyName" Type="nvarchar" MaxLength="500" />
+          <Property Name="type" Type="nvarchar" MaxLength="50" />
+          <Property Name="classification" Type="int" />
+        </EntityType>
+        <Association Name="FK_Campaing_Template">
+          <End Role="Campaign" Type="Self.Campaign" Multiplicity="1" />
+          <End Role="CampaingTemplate" Type="Self.CampaingTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Campaign">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="CampaingTemplate">
+              <PropertyRef Name="campaignid" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="EditorModelStoreContainer">
+          <EntitySet Name="Campaign" EntityType="Self.Campaign" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CampaingTemplate" EntityType="Self.CampaingTemplate" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Campaing_Template" Association="Self.FK_Campaing_Template">
+            <End Role="Campaign" EntitySet="Campaign" />
+            <End Role="CampaingTemplate" EntitySet="CampaingTemplate" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="EditorModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Campaign">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="type" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="leadage" Type="Int32" Nullable="false" />
+          <Property Name="sendstatus" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="domainid" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="dtstart" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="stime" Type="Time" Nullable="false" Precision="7" />
+          <Property Name="etime" Type="Time" Precision="7" />
+          <Property Name="scheduletype" Type="Int32" Nullable="false" />
+          <Property Name="active" Type="Boolean" Nullable="false" />
+          <Property Name="deleted" Type="Boolean" />
+          <Property Name="dtcreated" Type="DateTime" Precision="3" />
+          <Property Name="dtmodified" Type="DateTime" Precision="3" />
+          <Property Name="credential_id" Type="Int32" Nullable="false" />
+          <Property Name="emailog_campaign" Type="Int32" />
+          <Property Name="audience_id" Type="Int32" />
+          <Property Name="delay" Type="Int32" />
+          <Property Name="dtstartopeners" Type="DateTime" Precision="3" />
+          <Property Name="dtendopeners" Type="DateTime" Precision="3" />
+          <Property Name="limitperday" Type="Int32" />
+          <Property Name="blockpacer" Type="Boolean" />
+          <NavigationProperty Name="CampaingTemplates" Relationship="Self.FK_Campaing_Template" FromRole="Campaign" ToRole="CampaingTemplate" />
+        </EntityType>
+        <EntityType Name="CampaingTemplate">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="subject" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="html" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="text" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="active" Type="Boolean" Nullable="false" />
+          <Property Name="campaignid" Type="Int32" Nullable="false" />
+          <Property Name="deleted" Type="Boolean" />
+          <Property Name="dtcreated" Type="DateTime" Precision="3" />
+          <Property Name="dtmodified" Type="DateTime" Precision="3" />
+          <Property Name="countsent" Type="Int32" />
+          <Property Name="is250ok" Type="Boolean" />
+          <Property Name="friendlyName" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="type" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="classification" Type="Int32" />
+          <NavigationProperty Name="Campaign" Relationship="Self.FK_Campaing_Template" FromRole="CampaingTemplate" ToRole="Campaign" />
+        </EntityType>
+        <Association Name="FK_Campaing_Template">
+          <End Role="Campaign" Type="Self.Campaign" Multiplicity="1" />
+          <End Role="CampaingTemplate" Type="Self.CampaingTemplate" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Campaign">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="CampaingTemplate">
+              <PropertyRef Name="campaignid" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="EditorEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Campaigns" EntityType="Self.Campaign" />
+          <EntitySet Name="CampaingTemplates" EntityType="Self.CampaingTemplate" />
+          <AssociationSet Name="FK_Campaing_Template" Association="Self.FK_Campaing_Template">
+            <End Role="Campaign" EntitySet="Campaigns" />
+            <End Role="CampaingTemplate" EntitySet="CampaingTemplates" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="EditorModelStoreContainer" CdmEntityContainer="EditorEntities">
+          <EntitySetMapping Name="Campaigns">
+            <EntityTypeMapping TypeName="EditorModel.Campaign">
+              <MappingFragment StoreEntitySet="Campaign">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="type" ColumnName="type" />
+                <ScalarProperty Name="leadage" ColumnName="leadage" />
+                <ScalarProperty Name="sendstatus" ColumnName="sendstatus" />
+                <ScalarProperty Name="domainid" ColumnName="domainid" />
+                <ScalarProperty Name="dtstart" ColumnName="dtstart" />
+                <ScalarProperty Name="stime" ColumnName="stime" />
+                <ScalarProperty Name="etime" ColumnName="etime" />
+                <ScalarProperty Name="scheduletype" ColumnName="scheduletype" />
+                <ScalarProperty Name="active" ColumnName="active" />
+                <ScalarProperty Name="deleted" ColumnName="deleted" />
+                <ScalarProperty Name="dtcreated" ColumnName="dtcreated" />
+                <ScalarProperty Name="dtmodified" ColumnName="dtmodified" />
+                <ScalarProperty Name="credential_id" ColumnName="credential_id" />
+                <ScalarProperty Name="emailog_campaign" ColumnName="emailog_campaign" />
+                <ScalarProperty Name="audience_id" ColumnName="audience_id" />
+                <ScalarProperty Name="delay" ColumnName="delay" />
+                <ScalarProperty Name="dtstartopeners" ColumnName="dtstartopeners" />
+                <ScalarProperty Name="dtendopeners" ColumnName="dtendopeners" />
+                <ScalarProperty Name="limitperday" ColumnName="limitperday" />
+                <ScalarProperty Name="blockpacer" ColumnName="blockpacer" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CampaingTemplates">
+            <EntityTypeMapping TypeName="EditorModel.CampaingTemplate">
+              <MappingFragment StoreEntitySet="CampaingTemplate">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="subject" ColumnName="subject" />
+                <ScalarProperty Name="html" ColumnName="html" />
+                <ScalarProperty Name="text" ColumnName="text" />
+                <ScalarProperty Name="active" ColumnName="active" />
+                <ScalarProperty Name="campaignid" ColumnName="campaignid" />
+                <ScalarProperty Name="deleted" ColumnName="deleted" />
+                <ScalarProperty Name="dtcreated" ColumnName="dtcreated" />
+                <ScalarProperty Name="dtmodified" ColumnName="dtmodified" />
+                <ScalarProperty Name="countsent" ColumnName="countsent" />
+                <ScalarProperty Name="is250ok" ColumnName="is250ok" />
+                <ScalarProperty Name="friendlyName" ColumnName="friendlyName" />
+                <ScalarProperty Name="type" ColumnName="type" />
+                <ScalarProperty Name="classification" ColumnName="classification" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
