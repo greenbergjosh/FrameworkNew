@@ -1,0 +1,25 @@
+﻿
+@{
+    ViewBag.Title = "New";
+}
+
+<h2>New Client</h2>
+<hr />
+<form action="/Client/Create" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <label for="">Name*</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Description</label>
+            <input type="text" class="form-control" id="description" name="description" placeholder="Enter description">
+        </div>
+
+        <input type="submit" class="btn pull-right btn-success" value="Create" />
+    </div>
+</form>
+
+
+

@@ -1,0 +1,22 @@
+﻿
+@{
+    ViewBag.Title = "New";
+}
+
+<h2>New WarmUp</h2>
+<hr />
+<form action="/MailClassWarmUp/Create" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <label for="">Mail Class</label>
+            <input type="text" class="form-control" id="mailClass" name="mailClass" placeholder="Enter name">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Portion of Mail</label>
+            <input type="text" class="form-control" id="portionMail" name="portionMail" placeholder="Enter description">
+        </div>
+
+        <input type="submit" class="btn pull-right btn-success" value="Create" />
+    </div>
+</form>

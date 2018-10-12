@@ -1,0 +1,106 @@
+﻿.text_area_wide {
+    max-width: 100% !important;
+}
+
+.v-center {
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    flex-flow: column wrap;
+}
+
+.btn-new {
+    margin-top: 23px;
+}
+
+.page-selector {
+    margin-top: 20px;
+}
+.sidebar-element {
+    padding: 20px;
+}
+
+
+.text-align-rigth {
+    text-align: right;
+}
+
+.account-label {
+    
+    margin-top: 27px;
+}
+
+
+.mail-label {
+    margin-top: 20px;
+}
+
+.dtp-mail {
+    margin-top: 19px;
+}
+
+.align-left-dropdown {
+    margin-left: 5px;
+}
+
+.align-left {
+    margin-left: 30px;
+}
+
+.marging-top-label {
+    margin-top: 27px;
+}
+
+.marging-account-label {
+    margin-left: -66px;
+}
+
+.marging-pages-label {
+    margin-left: 5px;
+}
+
+.adjust-pading {
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.table > tbody > tr > td {
+    font-size: 12px;
+}
+
+.subject-info-box-1,
+.subject-info-box-2 {
+    float: left;
+    width: 25%;
+}
+
+    .subject-info-box-1 select,
+    .subject-info-box-2 select {
+        height: 200px;
+        padding: 0;
+    }
+
+        .subject-info-box-1 select option,
+        .subject-info-box-2 select option {
+            padding: 4px 10px 4px 10px;
+        }
+
+            .subject-info-box-1 select option:hover,
+            .subject-info-box-2 select option:hover {
+                background: #EEEEEE;
+            }
+
+.subject-info-arrows {
+    float: left;
+    width: 10%;
+}
+
+    .subject-info-arrows input {
+        width: 70%;
+        margin-bottom: 5px;
+    }
+
+
+.select-size {
+    height: 200px !important;
+}

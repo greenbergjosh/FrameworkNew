@@ -1,0 +1,544 @@
+﻿@using PagedList;
+@using PagedList.Mvc;
+@model MailApplication.Models.MailViewModel
+@Styles.Render("~/Content/sidebar.css")
+@Styles.Render("~/Content/daterangepicker.css")
+@{
+
+    ViewData["Title"] = "Index";
+    var seedId = ViewBag.seedId;
+    var pageSize = ViewBag.pageSize;
+    var startDate = ViewBag.startDate;
+    var endDate = ViewBag.endDate;
+    var seedUserName = ViewBag.seedUserName;
+    var tableSort = ViewBag.sort;
+    var sortOrder = ViewBag.sortOrder;
+
+    //Sort data
+    var fromDESC = ViewBag.fromDESC;
+    var fromASC = ViewBag.fromASC;
+
+    var idDESC = ViewBag.idDESC;
+    var idASC = ViewBag.idASC;
+
+    var subjectDESC = ViewBag.subjectDESC;
+    var subjectASC = ViewBag.subjectASC;
+
+    var folderDESC = ViewBag.folderDESC;
+    var folderASC = ViewBag.folderASC;
+
+    var seedDESC = ViewBag.seedDESC;
+    var seedASC = ViewBag.seedASC;
+
+    var dateDESC = ViewBag.dateDESC;
+    var dateASC = ViewBag.dateASC;
+
+    var sendDomainDESC = ViewBag.sendDomainDESC;
+    var sendDomainASC = ViewBag.sendDomainASC;
+
+    var campaignNameDESC = ViewBag.campaignNameDESC;
+    var campaignNameASC = ViewBag.campaignNameASC;
+
+    var templateNameDESC = ViewBag.templateNameDESC;
+    var templateNameASC = ViewBag.templateNameASC;
+
+    var seedISPDESC = ViewBag.seedISPDESC;
+    var seedISPASC = ViewBag.seedISPASC;
+
+    //Search Data
+    var searchFrom = ViewBag.searchFrom;
+    var searchSubject = ViewBag.searchSubject;
+    var searchId = ViewBag.searchId;
+    var searchSenderDomain = ViewBag.searchSenderDomain;
+    var searchFolder = ViewBag.searchFolder;
+    var campaignName = ViewBag.campaignName;
+    var templateName = ViewBag.templateName;
+    var inReplayTo = ViewBag.inReplayTo;
+    var resentMessageId = ViewBag.resentMessageId;
+    var datefilter = ViewBag.datefilter;
+    var seedISP = ViewBag.ISP;
+
+    //set visibility of columns
+    var visibilityFrom = ViewBag.visibilityColumnFrom;
+    var visibilitySubject = ViewBag.visibilityColumnSubject;
+    var visibilityId = ViewBag.visibilityColumnId;
+    var visibilitySenderDomain = ViewBag.visibilityColumnSenderDomain;
+    var visibilityFolder = ViewBag.visibilityColumnFolder;
+    var visibilityColumnSeed = ViewBag.visibilityColumnSeed;
+    var visibilityColumnISP = ViewBag.visibilityColumnISP;
+
+}
+
+<!-- Add all page content inside this div if you want the side nav to push page content to the right (not used if you only want the sidenav to sit on top of the page
+<div id="main">
+
+</div>
+-->
+
+<form id="mail-form" class="form-inline" action="/Mail/Index">
+    <!--Sidebar START-->
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="pull-right" onclick="closeNav()">&times;</a>
+
+        <!--Sidebar Content-->
+        <h2 class="sidebar-pading">Columns</h2>
+
+        <hr style="color:black" />
+
+
+        <!--Selector-->
+        <h3 class="sidebar-pading" style="color:darkslategray">Select Column</h3>
+        <div class="container">
+            <label class="form-check-label" for="checkId">
+                <input class="form-check-input" type="checkbox" value="" id="checkId" onclick="setColumnVisibility('Id')" checked="">
+                TrackingId
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkSenderDomain" onclick="setColumnVisibility('SenderDomain')" checked>
+            <label class="form-check-label" for="checkSenderDomain">
+                SenderDomain
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkFrom" onclick="setColumnVisibility('From')" checked>
+            <label class="form-check-label" for="checkFrom">
+                From
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkSubject" onclick="setColumnVisibility('Subject')" checked>
+            <label class="form-check-label" for="checkSubject">
+                Subject
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkFolder" onclick="setColumnVisibility('Folder')" checked>
+            <label class="form-check-label" for="checkFolder">
+                Folder
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkCampaignName" onclick="setColumnVisibility('CampaignName')">
+            <label class="form-check-label" for="checkCampaignName">
+                CampaignName
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkTemplateName" onclick="setColumnVisibility('TemplateName')">
+            <label class="form-check-label" for="checkTemplateName">
+                TemplateName
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkSeed" onclick="setColumnVisibility('Seed')">
+            <label class="form-check-label" for="checkSeed">
+                Seed
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkISP" onclick="setColumnVisibility('ISP')">
+            <label class="form-check-label" for="checkISP">
+                ISP
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkImportance" onclick="setColumnVisibility('Importance')">
+            <label class="form-check-label" for="checkImportance">
+                Importance
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkInReplayTo" onclick="setColumnVisibility('InReplayTo')">
+            <label class="form-check-label" for="checkInReplayTo">
+                InReplayTo
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkPriority" onclick="setColumnVisibility('Priority')">
+            <label class="form-check-label" for="checkPriority">
+                Priority
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkResentDate" onclick="setColumnVisibility('ResentDate')">
+            <label class="form-check-label" for="checkResentDate">
+                ResentDate
+            </label>
+            <br />
+            <input class="form-check-input sidebar-pading" type="checkbox" value="" id="checkResentMessageId" onclick="setColumnVisibility('ResentMessageId')">
+            <label class="form-check-label" for="checkResentMessageId">
+                ResentMessageId
+            </label>
+            <br />
+
+            <hr style="color:black" />
+        </div>
+    </div>
+
+    <!--Sidebar END-->
+    <!--Modal START-->
+    <div class="modal fade" id="runModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Start Running</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    The Process start running, if you want to see more details go to the RunLog tab.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <!--<button type="button" class="btn btn-primary" onclick="location.href = '/RunLog/Index/'">Go to RunLog</button>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Modal END-->
+
+    <div class="row">
+        <div class="col-md-9 col-sm-6 col-xs-12">
+            <!-- Use any element to open the sidenav -->
+            <h2>Messages</h2>
+        </div>
+        <!--Variables-->
+        <input type="hidden" class="form-control" placeholder="" name="visibilityId" id="visibilityColumnId" value=@visibilityId>
+        <input type="hidden" class="form-control" placeholder="" name="tableSort" id="tableSort" value=@tableSort>
+        <input type="hidden" class="form-control" placeholder="" name="sortOrder" id="sortOrder" value=@sortOrder>
+        <input type="hidden" class="form-control" placeholder="" name="startDate" id="startDate" value=@startDate>
+        <input type="hidden" class="form-control" placeholder="" name="endDate" id="endDate" value=@endDate>
+
+        <div class="col-md-1 col-sm-2 col-xs-4 dtp-mail">
+            <button type="button" class="btn btn-warning btn-sm" style="width:100%" title="Download" onclick="openNav()">Columns</button>
+        </div>
+
+        <div class="col-md-1 col-sm-2 col-xs-4 dtp-mail">
+            <button type="button" class="btn btn-success btn-sm" style="width:100%" title="Download" onclick="exportDataExcel()">Download</button>
+        </div>
+
+        <div class="col-md-1 col-sm-2 col-xs-4 dtp-mail">
+            <button type="button" class="btn btn-primary btn-sm" style="width:100%" title="Run" onclick="runSeeder()">Run</button>
+        </div>
+
+
+    </div>
+    <hr />
+
+
+    <div class="table-responsive">
+        <table class="table table-striped" id="mailTable" runat="server" style="width:auto">
+            <thead>
+                <tr>
+                    <th onclick="callSubmit('Id')" style="cursor:pointer; width:5%;" id="columnId">TrackingId <span style="float:right; "><i class="glyphicon glyphicon-arrow-up" style="visibility:@idASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@idDESC"></i></span></th>
+                    <th style="width:5%" id="columnSenderDomain">SenderDomain <span style="float:right;"><i id="FromASC" class="glyphicon glyphicon-arrow-up" style="visibility:@sendDomainASC" /><i id="FromDESC" class="glyphicon glyphicon-arrow-down" style="visibility:@sendDomainDESC"></i></span></th>
+                    <th onclick="callSubmit('From')" style="cursor:pointer; width:5%" id="columnFrom">From <span style="float:right;"><i id="FromASC" class="glyphicon glyphicon-arrow-up" style="visibility:@fromASC" /><i id="FromDESC" class="glyphicon glyphicon-arrow-down" style="visibility:@fromDESC"></i></span></th>
+                    <th onclick="callSubmit('Subject')" style="cursor:pointer; width:10%" id="columnSubject">Subject <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@subjectASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@subjectDESC"></i></span></th>
+                    <th onclick="callSubmit('Folder')" style="cursor:pointer; width:10%;" id="columnFolder">Folder <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@folderASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@folderDESC"></i></span></th>
+
+                    <th onclick="callSubmit('CampaignName')" style="cursor:pointer; width:5%; display:@visibilityColumnSeed" id="columnCampaignName">CampaignName <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@campaignNameASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@campaignNameDESC"></i></span></th>
+                    <th onclick="callSubmit('TemplateName')" style="cursor:pointer; width:5%; display:@visibilityColumnSeed" id="columnTemplateName">TemplateName <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@templateNameASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@templateNameDESC"></i></span></th>
+
+
+                    <th onclick="callSubmit('Seed')" style="cursor:pointer; width:5%; display:@visibilityColumnSeed" id="columnSeed">Seed <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@seedASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@seedDESC"></i></span></th>
+                    <th onclick="callSubmit('ISP')" style="cursor:pointer; width:5%; display:@visibilityColumnSeed" id="columnISP">ISP <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@seedISPASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@seedISPDESC"></i></span></th>
+
+                    <th style="width:5%; display:@visibilityColumnSeed" id="columnImportance">Importance <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:hidden" /><i class="glyphicon glyphicon-arrow-down" style="visibility:hidden"></i></span></th>
+                    <th style="width:5%; display:@visibilityColumnSeed" id="columnInReplayTo">InReplyTo <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:hidden" /><i class="glyphicon glyphicon-arrow-down" style="visibility:hidden"></i></span></th>
+                    <th style="width:5%; display:@visibilityColumnSeed" id="columnPriority">Priority <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:hidden" /><i class="glyphicon glyphicon-arrow-down" style="visibility:hidden"></i></span></th>
+                    <th style="width:5%; display:@visibilityColumnSeed" id="columnResentDate">ResentDate <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:hidden" /><i class="glyphicon glyphicon-arrow-down" style="visibility:hidden"></i></span></th>
+                    <th style="width:5%; display:@visibilityColumnSeed" id="columnResentMessageId">ResentMessageId <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:hidden" /><i class="glyphicon glyphicon-arrow-down" style="visibility:hidden"></i></span></th>
+
+
+
+                    <!-- <th onclick="callSubmit('SeedBucket')" style="cursor:pointer; width:8%">SeedBucket <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@folderASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@folderDESC"></i></span></th>
+                    -->
+
+                    <th onclick="callSubmit('Date')" style="cursor:pointer; width:17%" id="columnDate">Date <span style="float:right;"><i class="glyphicon glyphicon-arrow-up" style="visibility:@dateASC" /><i class="glyphicon glyphicon-arrow-down" style="visibility:@dateDESC"></i></span></th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="visibility:@visibilityId" id="columnDataId">
+                        <input type="text" class="form-control" placeholder="Search TrackingId" name="searchId" value=@searchId>
+                    </td>
+                    <td style="visibility:@visibilitySenderDomain" id="columnDataSenderDomain">
+                        <input type="text" class="form-control" placeholder="Search SenderDomain" name="searchSenderDomain" value=@searchSenderDomain>
+                    </td>
+                    <td style="visibility:@visibilityFrom" id="columnDataFrom">
+                        <input type="text" class="form-control" placeholder="Search From" name="searchFrom" value=@searchFrom>
+                    </td>
+                    <td style="visibility:@visibilitySubject" id="columnDataSubject">
+                        <input type="text" class="form-control" placeholder="Sarch Subject" name="searchSubject" value="@searchSubject">
+                    </td>
+                    <td style="visibility:@visibilityFolder" id="columnDataFolder">
+                        <input type="text" class="form-control" placeholder="Search Folder" name="searchFolder" value=@searchFolder>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataCampaignName">
+                        <input type="text" class="form-control" placeholder="Search Campaign" name="campaignName" value=@campaignName>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataTemplateName">
+                        <input type="text" class="form-control" placeholder="Search Template" name="templateName" value=@templateName>
+                    </td>
+
+                    <td style="display:@visibilityColumnSeed" id="columnDataSeed">
+                        <input type="text" class="form-control" placeholder="Search Seed" name="seedUserName" value=@seedUserName>
+                    </td>
+                    <td style="display:@visibilityColumnISP" id="columnDataISP">
+                        <input type="text" class="form-control" placeholder="Search ISP" name="seedISP" value=@seedISP>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataImportance">
+                        <input type="text" class="form-control" placeholder="Search Importance" name="importance" disabled>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataInReplayTo">
+                        <input type="text" class="form-control" placeholder="Search InReplayTo" name="inReplayTo" value=@inReplayTo>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataPriority">
+                        <input type="text" class="form-control" placeholder="Search Priority" name="priority" disabled>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataResentDate">
+                        <input type="text" class="form-control" placeholder="Search ResentDate" name="resentDate" disabled>
+                    </td>
+                    <td style="display:@visibilityColumnSeed" id="columnDataResentMessageId">
+                        <input type="text" class="form-control" placeholder="Search ResentMessageId" name="resentMessageId" value=@resentMessageId>
+                    </td>
+                    <td id="columnDataDate">
+                        <input type="text" class="form-control" name="datefilter" id="datefilter" placeholder="Search Date" value="@datefilter" />
+                    </td>
+                    <td><input type="submit" class="btn btn-danger btn-xs" value="Search" />
+                </tr>
+
+                @foreach (var item in Model.Messages)
+                {
+
+
+                    <tr>
+                        <td style="visibility:@visibilityId" id="columnDataId">@item.TrackingId</td>
+                        <td style="visibility:@visibilitySenderDomain" id="columnDataSenderDomain">@item.SenderDomain</td>
+                        <td style="visibility:@visibilityFrom" id="columnDataFrom">@item.From</td>
+                        <td style="visibility:@visibilitySubject" id="columnDataSubject">@item.Subject</td>
+                        <td style="visibility:@visibilityFolder" id="columnDataFolder">@item.FolderName</td>
+
+                        <td style="display:@visibilityColumnSeed" id="columnDataCampaignName">@item.CampaignName</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataTemplateName">@item.TemplateName</td>
+
+                        <td style="display:@visibilityColumnSeed" id="columnDataSeed">@item.Seed.UserName</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataISP">@item.ISP</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataImportance">@item.Importance</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataInReplayTo">@item.InReplayTo</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataPriority">@item.Priority</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataResentDate">@item.ResentDate</td>
+                        <td style="display:@visibilityColumnSeed" id="columnDataResentMessageId">@item.ResentMessageId</td>
+                        <td id="columnDataDate">@item.Date</td>
+                        <td><button type="button" class="btn btn-primary btn-xs" title="Preview" onclick="location.href='/Mail/Show/@item.Id'">Preview</button></td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    Page @(Model.Messages.PageCount < Model.Messages.PageNumber ? 0 : Model.Messages.PageNumber) of @Model.Messages.PageCount
+    <div class="row">
+        @if (@Model.Messages.PageCount > 1)
+        {
+            <div class="col-xs-9">
+                @Html.PagedListPager(Model.Messages, page => Url.Action("Index", new { seedId, page, pageSize, tableSort, seedUserName, sortOrder, startDate, endDate, searchFrom, searchSubject, searchId, searchSenderDomain, searchFolder, visibilityId, campaignName, templateName, inReplayTo, resentMessageId, datefilter, seedISP }))
+            </div>
+
+            <div class="col-xs-1">
+                <h5 class="account-lebel marging-top-label marging-pages-label">Page Size</h5>
+            </div>
+            <div class="dropdown col-xs-2 pull-left">
+
+                @Html.DropDownList("pageSize", new SelectList(new List<int> { 20, 50, 100 }), "Page Size", new { @class = "form-control page-selector", @onchange = "this.form.submit();" })
+
+            </div>
+        }
+    </div>
+</form>
+
+<script type="text/javascript">
+    //Calendar
+    $(function () {
+
+        $('input[name="datefilter"]').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('input[name="datefilter"]').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+        });
+
+        $('input[name="datefilter"]').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+    });
+
+    $(function () {
+        $('#datetimepicker1').datetimepicker({
+            format: 'YYYY/MM/DD'
+        });
+    });
+
+    $(function () {
+        $('#datetimepicker2').datetimepicker({
+            format: 'YYYY/MM/DD'
+        });
+    });
+
+    /* Set the width of the side navigation to 250px */
+    function openNav() {
+        document.getElementById("mySidenav").style.width = "270px";
+    }
+
+    /* Set the width of the side navigation to 0 */
+    function closeNav() {
+        document.getElementById("mySidenav").style.width = "0";
+    }
+
+    function callSubmit(field) {
+
+        //get column to sort
+        var sortColumn = document.getElementById("tableSort").value;
+
+        //get sort order
+        var sortOrder = document.getElementById("sortOrder").value;
+        
+        //determinate is a column is clicked twice
+        if (sortColumn == field && sortColumn != "") {
+            if (sortOrder == "DESC")
+                document.getElementById("sortOrder").value = "ASC";
+            else
+                document.getElementById("sortOrder").value = "DESC";
+        } else {
+            document.getElementById("sortOrder").value = "DESC";
+        }
+
+        document.getElementById("tableSort").value = field;
+        document.getElementById("mail-form").submit();
+    }
+
+    //Initilizate the visibility of the columns
+    $(document).ready(function () {
+
+        if (localStorage.getItem("checkId") == null)
+            localStorage.setItem("checkId", true);
+
+        if (localStorage.getItem("checkSenderDomain") == null)
+            localStorage.setItem("checkSenderDomain", true);
+
+        if (localStorage.getItem("checkFrom") == null)
+            localStorage.setItem("checkFrom", true);
+
+        if (localStorage.getItem("checkSubject") == null)
+            localStorage.setItem("checkSubject", true);
+
+        if (localStorage.getItem("checkFolder") == null)
+            localStorage.setItem("checkFolder", true);
+
+        var columns = ["Id", "SenderDomain", "From", "Subject", "Folder", "Date", "Seed", "ISP","Importance", "CampaignName", "TemplateName", "InReplayTo", "Priority", "ResentDate", "ResentMessageId"];
+
+        columns.forEach(function (column) {
+            var checkId = "check" + column;
+            var hId = "check" + column;
+            var inputId = "inputSearch" + column;
+            var columnId = "column" + column;
+            var tableElements = "td#columnData" + column;
+
+            if (localStorage.getItem(checkId) != null) {
+                var value = (localStorage.getItem(checkId) == "true");
+                if (value) {
+                    document.getElementById(checkId).checked = value;
+                    //document.getElementById("hId").style.display = "inline-block";
+                   // document.getElementById(inputId).style.display = "inline-block";
+                    document.getElementById(columnId).style.display = "table-cell";
+                    elements = $(tableElements);
+                    $.each(elements, function (i, v) { $(v).css('display', 'table-cell') });
+                } else {
+                    document.getElementById(checkId).checked = value;
+                    //document.getElementById("hId").style.display = "none";
+                    //document.getElementById(inputId).style.display = "none";
+                    document.getElementById(columnId).style.display = "none";
+                    elements = $(tableElements);
+                    $.each(elements, function (i, v) { $(v).css('display', 'none') });
+
+                }
+            }
+
+        });
+
+    });
+
+    function setColumnVisibility(field) {
+
+        var nameCheckbox = "check" + field
+        var checked = document.getElementById(nameCheckbox).checked;
+        if (checked) {
+
+            var nameH = "h" + field;
+            var nameInputSearch = "inputSearch" + field;
+            var nameColumn = "column" + field;
+            var nameColumnData = "td#columnData" + field; //td#columnDataId
+
+            document.getElementById(nameColumn).style.display = "table-cell";
+            elements = $(nameColumnData);
+            $.each(elements, function (i, v) { $(v).css('display', 'table-cell') });
+
+            localStorage.setItem(nameCheckbox, true);
+            localStorage.setItem(nameColumn, "table-cell");
+
+
+
+        } else {
+
+            var nameH = "h" + field;
+            var nameInputSearch = "inputSearch" + field;
+            var nameColumn = "column" + field;
+            var nameColumnData = "td#columnData" + field; //td#columnDataId
+
+            document.getElementById(nameColumn).style.display = "none";
+            elements = $(nameColumnData);
+            $.each(elements, function (i, v) { $(v).css('display', 'none') });
+
+            localStorage.setItem(nameCheckbox, false);
+        }
+
+    }
+
+    function exportDataExcel()
+    {
+
+        var columns = ["Id", "SenderDomain", "From", "Subject", "Folder", "CampaignName", "TemplateName", "Seed", "ISP","Importance", "InReplayTo", "Priority", "ResentDate", "ResentMessageId"];
+
+        var colString = "";
+        var count = 0;
+        columns.forEach(function (column) {
+            var checkId = "check" + column;
+            var hId = "check" + column;
+            var inputId = "inputSearch" + column;
+            var columnId = "column" + column;
+            var tableElements = "td#columnData" + column;
+
+            if (localStorage.getItem(checkId) != null) {
+                var value = (localStorage.getItem(checkId) == "true");
+
+                if (value) {
+                    if (column == "Folder")
+                        column = "FolderName";
+                    if (column == "Id")
+                        column = "TrackingId";
+                colString += column;
+                colString += ",";
+
+                count++;
+                }
+
+            }
+        });
+        colString += "Date";
+
+        location.href = "/Report/ExportExcel?startDate=@startDate&endDate=@endDate&seedId=@seedId&seedUserName=@seedUserName&searchId=@searchId&searchSenderDomain=@searchSenderDomain&searchFrom=@searchFrom&searchSubject=@searchSubject&searchFolder=@searchFolder&campaignName=@campaignName&datefilter=@datefilter&columns=" + colString + "&campaignName=@campaignName&templateName=@templateName&inReplayTo=@inReplayTo&resentMessageId=@resentMessageId&seedISP=@seedISP";
+    }
+
+    function runSeeder() {
+        $("#runModal").modal().modal('show');
+        setTimeout(function () { $("#runModal").modal().modal('hide'); location.href = '/Mail/RunAll/'; }, 3000);
+
+    }
+</script>

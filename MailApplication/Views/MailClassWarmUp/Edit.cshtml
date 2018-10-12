@@ -1,0 +1,23 @@
+﻿@model BusinessLogic.Model.MailClassWarmUp
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit WarmUp</h2>
+<hr />
+<form action="/MailClassWarmUp/Update" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <input class="form-control" type="hidden" value="@Model.Id" id="idMailClassWarmUp" name="idMailClassWarmUp">
+            <label for="">Mail Class</label>
+            <input type="text" class="form-control" id="mailClass" name="mailClass" placeholder="Enter mailClass" value=@Model.MailClass>
+        </div>
+
+        <div class="form-group row">
+            <label for="">Portion of Mail</label>
+            <input type="text" class="form-control" id="portionMail" name="portionMail" placeholder="Enter %" value=@Model.PortionMail>
+        </div>
+
+        <input type="submit" class="btn pull-right btn-success" value="Save" />
+    </div>
+</form>

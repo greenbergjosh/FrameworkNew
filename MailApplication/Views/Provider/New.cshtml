@@ -1,0 +1,46 @@
+﻿
+@{
+    ViewData["Title"] = "New";
+}
+<h2>New Provider</h2>
+<hr />
+<form action="/Provider/Create" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <label for="">Name*</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Server</label>
+            <input type="text" class="form-control" id="server" name="server" placeholder="Enter server">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Port</label>
+            <input type="text" class="form-control" id="port" name="port" placeholder="Enter port">
+        </div>
+
+        <div class="form-group row">
+            <label for="">SMTPServer</label>
+            <input type="text" class="form-control" id="smtpServer" name="smtpServer" placeholder="Enter SMTPServer">
+        </div>
+
+        <div class="form-group row">
+            <label for="">SMTPport</label>
+            <input type="text" class="form-control" id="smtpPort" name="smtpPort" placeholder="Enter SMTPport">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Type</label>
+
+            <div class="dropdown">
+                @Html.DropDownList("type", ViewBag.items as SelectList, "Select Type", new { @class = "form-control" })
+
+            </div>
+        </div>
+
+        <input type="submit" class="btn pull-right btn-success" value="Create" />
+    </div>
+</form>
+

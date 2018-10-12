@@ -1,0 +1,109 @@
+﻿@Styles.Render("~/Content/mailapp.css")
+@model MailApplication.Models.MailShowViewModel
+
+<h2>Mail Info</h2>
+<form>
+
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a href="#messageRender" data-toggle="tab"><h5>Message Render</h5></a>
+        </li>
+        <li><a href="#headers" data-toggle="tab"><h5>Headers</h5></a></li>
+        <li><a href="#messageBodyHTML" data-toggle="tab"><h5>Message Body HTML</h5></a></li>
+        <li><a href="#message" data-toggle="tab"><h5>Message</h5></a></li>
+    </ul>
+
+
+    <div class="form-group tab-content">
+        <div class="tab-pane" id="message">
+
+            <div class="form-group">
+                <label for="example-text-input" class="col-2 col-form-label">Id</label>
+                <input class="form-control " type="text" value="@Model.Messages.MessageId" id="example-text-input" disabled>
+            </div>
+
+
+            <div class="form-group">
+                <label for="example-text-input" class="col-2 col-form-label">Date</label>
+                <div class="col-10">
+                    <input class="form-control " type="text" value="@Model.Messages.Date" id="example-text-input" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="example-text-input" class="col-2 col-form-label">Folder</label>
+                <div class="col-10">
+                    <input class="form-control " type="text" value="@Model.Messages.FolderName" id="example-text-input" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="example-text-input" class="col-2 col-form-label">Subject</label>
+                <div class="col-10">
+                    <input class="form-control " type="text" value="@Model.Messages.Subject" id="example-text-input" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="exampleTextarea">Text Body</label>
+                <textarea class="form-control " id="exampleTextarea" rows="10" disabled>@Model.Messages.TextBody</textarea>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="headers">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <td><h6><b>Filed</b></h6></td>
+                        <td><h6><b>Value</b></h6></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Headers)
+            {
+                        <tr>
+                            <td>@item.Field</td>
+                            <td>@item.Value</td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+
+        </div>
+        <div class="tab-pane" id="messageBodyHTML">
+            <div class="form-group">
+                <label for="exampleTextarea">HTML Body</label>
+                <textarea class="form-control text_area_wide" id="exampleTextarea" rows="50">@Model.Messages.HtmlBody</textarea>
+            </div>
+        </div>
+        <div class="tab-pane active" id="messageRender">
+            <br />
+            <div class="col-md-4 form-inline">
+                <label for="example-text-input" class="col-2 col-form-label">From</label>
+                <input class="form-control " type="text" value="@Model.Messages.From" id="example-text-input" style="width:auto;" disabled>
+            </div>
+            <div class="col-md-4 form-inline">
+                <label for="example-text-input" class="col-2 col-form-label">Subject</label>
+                <input class="form-control " type="text" value="@Model.Messages.Subject" id="example-text-input" disabled>
+            </div>
+            <div class="col-md-4 form-inline">
+                <label for="example-text-input" class="col-2 col-form-label">Folder</label>
+                <input class="form-control " type="text" value="@Model.Messages.FolderName" id="example-text-input" style="width:auto;" disabled>
+            </div>
+
+            <br />
+            <div class="form-group">
+                <hr />
+                    @Html.Raw(Model.Messages.HtmlBody)
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<!-- Bootstrap core JavaScript
+    ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="~/Scripts/jquery-3.2.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>

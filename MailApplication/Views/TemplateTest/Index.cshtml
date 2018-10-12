@@ -1,0 +1,114 @@
+﻿@model PagedList.IPagedList<BusinessLogic.Model.TemplateTest>
+@using PagedList;
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Index";
+}
+<!--Modal START-->
+<div class="modal fade" id="runModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Start Running</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                The Process start running, if you want to see more details go to the RunLog tab.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                <!--<button type="button" class="btn btn-primary" onclick="location.href = '/RunLog/Index/'">Go to RunLog</button>
+                -->
+            </div>
+        </div>
+    </div>
+</div>
+<!--Modal END-->
+
+<div class="row ">
+    <div class="col-xs-9">
+        <h2>TemplateTest</h2>
+    </div>
+    <div class="col-md-1 col-sm-2 col-xs-4 dtp-mail">
+        <button type="button" class="btn btn-primary btn-sm" style="width:100%" title="Run" onclick="runSeeder()">Run</button>
+    </div>
+    <div class="col-md-1 col-sm-2 col-xs-4 dtp-mail">
+        <button type="button" class="btn btn-success btn-sm" style="width:100%" title="New" onclick="location.href='/Report/ExportExcelTemplateTest'">Download</button>
+    </div>
+    <div class="col-md-1 col-sm-2 col-xs-4 dtp-mail">
+        <button type="button" class="btn btn-warning btn-sm" style="width:100%" title="New" onclick="location.href='/TemplateTest/New'">New</button>
+    </div>
+</div>
+<hr />
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>CampaignID</th>
+            <th>Subject</th>
+            <th>To</th>
+            <th>CreatedAt</th>
+            <th>Result</th>
+
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+            {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.CampaignId</td>
+                <td>@item.Subject</td>
+                <td>@item.To</td>
+                <td>@item.CreatedAt</td>
+                @if (item.Result == "Inbox")
+                {
+                    <td class="alert alert-success">@item.Result</td>
+                }
+                @if (item.Result == "Spam")
+                {
+                    <td class="alert alert-danger">@item.Result</td>
+                }
+                @if (item.Result == "No data")
+                {
+                    <td>@item.Result</td>
+                }
+
+                <td>
+                    <button type="button" class="btn btn-warning btn-xs" title="Clone" onclick="location.href='/TemplateTest/Clone/@item.Id'">Clone</button>
+                    @if (item.Result == "No data")
+                    {
+                        <button type="button" class="btn btn-primary btn-xs" title="Preview" onclick="location.href='/TemplateTest/Show/@item.Id'" disabled>Preview</button>
+                    }
+
+                    else
+                    {
+
+                        <button type="button" class="btn btn-primary btn-xs" title="Preview" onclick="location.href='/TemplateTest/Show/@item.Id'">Preview</button>
+                    }
+                    <button type="button" class="btn btn-danger btn-xs" title="Delete" onclick="location.href='/TemplateTest/Delete/@item.Id'">Delete</button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+    @if (@Model.PageCount > 1)
+    {
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+
+    }
+<script>
+    function runSeeder() {
+        $("#runModal").modal().modal('show');
+        setTimeout(function () { $("#runModal").modal().modal('hide'); location.href='/TemplateTest/RunAll/'; }, 3000);
+   }
+
+</script>

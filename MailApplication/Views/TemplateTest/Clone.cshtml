@@ -1,0 +1,59 @@
+﻿@model BusinessLogic.Model.TemplateTest
+@{
+    ViewBag.Title = "Clone";
+}
+
+<h2>Clone TemplateTest</h2>
+
+<hr />
+<form action="/TemplateTest/Create" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <label for="">Name*</label>
+            <input type="text" class="form-control text_area_wide" id="name" name="name" placeholder="Enter Name" value="@Model.Name">
+        </div>
+        <div class="form-group row">
+            <label for="">CampaignID</label>
+            <input type="text" class="form-control text_area_wide" id="campaignID" name="campaignID" placeholder="Enter CampaignID" value="@Model.CampaignId">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Subject</label>
+            <input type="text" class="form-control text_area_wide" id="subject" name="subject" placeholder="Enter Subject" value="@Model.Subject">
+        </div>
+
+        <div class="form-group row">
+            <label for="">To</label>
+            <input type="text" class="form-control text_area_wide" id="to" name="to" placeholder="Enter To" value="@Model.To">
+        </div>
+        <hr />
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a href="#HTML" data-toggle="tab"><h5>HTML</h5></a>
+            </li>
+            <li><a href="#bodyText" data-toggle="tab"><h5>BodyText</h5></a></li>
+        </ul>
+
+
+        <div class="form-group tab-content">
+            <div class="tab-pane active" id="HTML">
+                <div class="form-group row">
+                    <br />
+                    <label for="">HTML</label>
+                    <textarea class="form-control text_area_wide" rows="25" id="html" name="html" placeholder="Enter HTML">@Model.HTML</textarea>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="bodyText">
+                <div class="form-group row">
+                    <br />
+                    <label for="">Text</label>
+                    <textarea class="form-control text_area_wide" rows="25" id="textBody" name="textBody" placeholder="Enter Text">@Model.BodyText</textarea>
+                </div>
+            </div>
+        </div>
+        <input type="submit" class="btn pull-right btn-success" value="Test" />
+
+    </div>
+</form>
+

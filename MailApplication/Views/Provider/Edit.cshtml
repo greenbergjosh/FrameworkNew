@@ -1,0 +1,58 @@
+﻿@model BusinessLogic.Model.Provider
+@{
+    ViewData["Title"] = "Edit";
+}
+<h2>Edit Provider</h2>
+<hr/>
+<form action="/Provider/Update" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <div class="col-10">
+                <input class="form-control" type="hidden" value="@Model.Id" id="idProvider" name="idProvider">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Name</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="@Model.Name" id="name" name="name">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Server</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="@Model.Server" id="server" name="server">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Port</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="@Model.Port" id="port" name="port">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="">SMTPServer</label>
+            <input type="text" class="form-control" id="server" name="smtpServer" value="@Model.SMTPServer" placeholder="Enter SMTPServer">
+        </div>
+
+        <div class="form-group row">
+            <label for="">SMTPport</label>
+            <input type="text" class="form-control" id="port" name="smtpPort" value="@Model.SMTPport" placeholder="Enter SMTPport">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Type</label>
+
+            <div class="dropdown">
+                @Html.DropDownList("type", ViewBag.items as SelectList, @Model.Type, new { @class = "form-control"  })
+
+            </div>
+        </div>
+
+        <input type="submit" class="btn pull-right btn-success" value="Save" />
+    </div>
+</form>
+

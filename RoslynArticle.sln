@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataService", "DataService\DataService.csproj", "{60E068D0-1AC7-4176-94C1-E075638EF8CD}"
 EndProject
@@ -82,6 +82,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Seeder", "Seeder", "{5B0E3B8A-B8FE-4948-B66C-C67325A5245B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogic", "BusinessLogic\BusinessLogic.csproj", "{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailApplication", "MailApplication\MailApplication.csproj", "{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -324,15 +326,22 @@ Global
 		{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801} = {5B0E3B8A-B8FE-4948-B66C-C67325A5245B}
+		{7935BDDF-B0AA-451B-B0AB-661B9C39CD5C} = {5B0E3B8A-B8FE-4948-B66C-C67325A5245B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal

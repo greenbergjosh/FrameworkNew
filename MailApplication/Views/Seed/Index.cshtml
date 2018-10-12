@@ -1,0 +1,96 @@
+﻿@model PagedList.IPagedList<BusinessLogic.Model.Seed>
+@using PagedList;
+@using PagedList.Mvc;
+@{
+    ViewData["Title"] = "Index";
+}
+<form action="/Seed/LoadSeedsExcel">
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Import Seeds</h4>
+                </div>
+                <div class="modal-body">
+                    <label for="">File Location</label>
+                    <div class="form-inline">
+                        <input type="file" class="form-control" id="file" placeholder="Enter file location">
+                    </div>
+                    <h5>*The file extension must be CSV</h5>
+                    <input id="file" type="text" name="file" style="display: none;" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success">Load File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End Modal-->
+</form>
+
+
+<div class="row ">
+    <div class="col-xs-1">
+        <h2>Seeds</h2>
+    </div>
+
+    <div class="col-xs-1 pull-right">
+        <button type="button" class="btn btn-success btn-new" title="Add" onclick="location.href='/Seed/New'">New</button>
+    </div>
+    @if (ViewContext.HttpContext.User.IsInRole("SUPER USER"))
+    {
+        <div class="col-xs-1 pull-right">
+            <button type="button" class="btn btn-warning btn-new align-left" title="Import" data-toggle="modal" data-target="#exampleModal">Import</button>
+        </div>
+    }
+</div>
+<hr />
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>LastName</th>
+            <th>UserName</th>
+            <th>ProviderName</th>
+            <th>Actions</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+            {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.LastName</td>
+                <td>@item.UserName</td>
+                <td>@Html.DisplayFor(modelItem => item.Provider.Name)</td>
+
+                <td>
+                    <button type="button" class="btn btn-warning btn-xs" title="Edit" onclick="location.href='/Seed/Edit/@item.Id'">Edit</button>
+                    <button type="button" class="btn btn-danger btn-xs" title="Delete" onclick="location.href='/Seed/Delete/@item.Id'">Delete</button>
+
+                </td>
+            </tr>
+
+        }
+    </tbody>
+</table>
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+    @if (@Model.PageCount > 1)
+    {
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+    }
+
+<script>
+    $('input[type=file]').change(function () {
+        alert(this.value);
+        document.getElementById("file").value = path.dirname(this.value);
+    });
+    
+</script>

@@ -1,0 +1,50 @@
+﻿@model PagedList.IPagedList<BusinessLogic.Model.MailClassWarmUp>
+@using PagedList;
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Index";
+}
+
+<div class="row">
+    <div class="col-xs-1">
+        <h2>WarmUp</h2>
+    </div>
+    <div class="col-xs-1 pull-right">
+        <button type="button" class="btn btn-success btn-new pull-right" title="Add" onclick="location.href='/MailClassWarmUp/New'">New</button>
+    </div>
+</div>
+<hr />
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>MailClass</th>
+            <th>Portion of Mail %</th>
+            <th>CreateAt</th>
+            <th>UpdatedAt</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+            {
+            <tr>
+                <td>@item.MailClass</td>
+                <td>@item.PortionMail</td>
+                <td>@item.CreatedAt</td>
+                <td>@item.UpdatedAt</td>
+
+                <td>
+                    <button type="button" class="btn btn-warning btn-xs" title="Edit" onclick="location.href='/MailClassWarmUp/Edit/@item.Id'">Edit</button>
+                    <button type="button" class="btn btn-danger btn-xs" title="Delete" onclick="location.href='/MailClassWarmUp/Delete/@item.Id'">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    @if (@Model.PageCount > 1)
+    {
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+
+    }

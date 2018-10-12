@@ -1,0 +1,52 @@
+﻿@model BusinessLogic.Model.Client
+@{
+    ViewBag.Title = "Edit";
+}
+<h2>Edit Client</h2>
+<hr />
+<form action="/Client/Update" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <div class="col-10">
+                <input class="form-control" type="hidden" value="@Model.Id" id="idClient" name="idClient">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="">Name*</label>
+            <input type="text" class="form-control" id="name" name="name" value="@Model.Name" placeholder="Enter name">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Description</label>
+            <textarea type="text" class="form-control" id="description" name="description" placeholder="Enter description">@Model.Description</textarea>
+        </div>
+
+        <div class="form-group">
+            <div class="row ">
+                <label for="">ApiKey</label>
+                <div class='input-group col-md-12'>
+                    <input type='hidden' class="form-control" placeholder="apiKey" name="apikey" id="apiKey" value="@Model.ApiKey" />
+                    <input type='text' class="form-control" placeholder="apiKeydisabled" name="apikeydisabled" id="apiKeydisabled" value="@Model.ApiKey" disabled/>
+                    <input type="button" value="change" class="input-group btn btn-warning col-md-1 col-md-offset-0" style="margin-left:10px;" onclick="ChangeApiKey()">
+                        
+                </div>
+            </div>
+        </div>
+
+        <input type="submit" class="btn pull-right btn-success" value="Save" />
+    </div>
+</form>
+<script>
+    function ChangeApiKey() {
+        $.ajax({
+            url: '/Client/ChangeApiKey',
+            data: {},
+            success: function (d) {
+                document.getElementById('apiKey').value = d;
+                document.getElementById('apiKeydisabled').value = d;
+                
+            },         
+        });
+    }
+</script>

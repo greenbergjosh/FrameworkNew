@@ -1,0 +1,261 @@
+﻿@model ICollection<BusinessLogic.Model.Seed>
+@{
+    ViewBag.Title = "New";
+}
+
+<h2>New SeedBucket</h2>
+<hr />
+<form action="/SeedBucket/Create" method="post">
+    <div class="container">
+        <div class="form-group row">
+            <label for="">Name*</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Description</label>
+            <input type="text" class="form-control" id="description" name="description" placeholder="Enter description">
+        </div>
+
+        <div class="form-group row">
+            <label for="">Seeds</label>
+        </div>
+
+        <div id="block_container">
+            <div class="subject-info-box-1 col-xs-4">
+                <select multiple="multiple" id='lstBox1' class="form-control select-size">
+                    @foreach (var item in Model)
+                    {
+                        <option value="@item.Id">@item.UserName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="subject-info-arrows text-center col-xs-2">
+                <button type="button" id="btnRight" class="btn btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button><br />
+                <button type="button" id="btnLeft" class="btn btn-primary"><span class=" glyphicon glyphicon-chevron-left"></span></button><br />
+            </div>
+
+            <div class="subject-info-box-2 col-xs-4">
+                <select multiple="multiple" id='lstBox2' class="form-control select-size"></select>
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+        <br />
+        <div class="form-group row">
+            <label for="">Actions</label>
+        </div>
+        <div class="block_container">
+            @Html.CheckBox("markAsRead", false)
+            <label class="form-check-label" for="markAsRead">Mark mails as read</label>
+        </div>
+
+        <div class="block_container">
+            @Html.CheckBox("moveToInbox", false)
+            <label class="form-check-label" for="moveToInbox">Move mails to Inbox</label>
+        </div>
+
+        <div class="block_container">
+            @Html.CheckBox("replyMail", false)
+            <label class="form-check-label" for="replyMail">Reply mails</label>
+        </div>
+
+        <div class="block_container">
+            @Html.CheckBox("clickMail", false)
+            <label class="form-check-label" for="clickMail">Click mails</label>
+        </div>
+
+        <div class="block_container">
+            @Html.CheckBox("forwardMail", false)
+            <label class="form-check-label" for="forwardMail">Forward mails</label>
+        </div>
+
+        <br />
+        <div class="form-group row">
+            <label for="">Sender Domain</label>
+        </div>
+        
+        <div class="block_container">
+            <div>
+                <input type="text" id="myInput" class="list-group-item form-control col-xs-4" placeholder="Enter Sender Domain...">
+                <span onclick="newElement()" class="btn btn-primary">Add</span>
+            </div>
+
+
+            <ul id="myUL" name="list" class="list-group col-xs-4">
+            </ul>
+        </div>
+
+
+        <input type="hidden" id="seeds" name="seeds" value="" />
+        <input type="hidden" id="senderDomains" name="senderDomains" value="" />
+
+        <input type="submit" class="btn pull-right btn-success" value="Create" />
+    </div>
+
+</form>
+<script type="text/javascript">
+    var seedTobucket = [];
+    var SenderDomains = [];
+    function addSeedId(seedId) {
+        var selected = document.getElementById(seedId).checked;
+
+        if (selected) {
+            seedTobucket.push(seedId);
+
+        } else {
+            var positionIdSeed = seedTobucket.indexOf(seedId);
+            seedTobucket.splice(positionIdSeed, 1);
+
+        }
+
+        document.getElementById('seeds').value = seedTobucket;
+    }
+
+    (function () {
+        $('#btnRight').click(function (e) {
+            var selectedOpts = $('#lstBox1 option:selected');
+
+            $.each(selectedOpts, function (index, seed) {
+
+
+                var seedId = seed.value;
+
+                //var seedId = selectedOpts.attr("value");
+                seedTobucket.push(seedId);
+                document.getElementById('seeds').value = seedTobucket;
+            });
+
+            if (selectedOpts.length == 0) {
+                e.preventDefault();
+            }
+
+            $('#lstBox2').append($(selectedOpts).clone());
+            $(selectedOpts).remove();
+            e.preventDefault();
+        });
+
+        $('#btnAllRight').click(function (e) {
+            var selectedOpts = $('#lstBox1 option');
+            if (selectedOpts.length == 0) {
+                e.preventDefault();
+            }
+
+            $('#lstBox2').append($(selectedOpts).clone());
+            $(selectedOpts).remove();
+            e.preventDefault();
+        });
+
+        $('#btnLeft').click(function (e) {
+            var selectedOpts = $('#lstBox2 option:selected');
+
+
+            $.each(selectedOpts, function (index, seed) {
+
+
+                var seedId = seed.value;
+
+                //var seedId = selectedOpts.attr("value");
+
+                var positionIdSeed = seedTobucket.indexOf(seedId);
+                seedTobucket.splice(positionIdSeed, 1);
+                document.getElementById('seeds').value = seedTobucket;
+            });
+
+            if (selectedOpts.length == 0) {
+                e.preventDefault();
+            }
+
+            $('#lstBox1').append($(selectedOpts).clone());
+            $(selectedOpts).remove();
+            e.preventDefault();
+        });
+
+        $('#btnAllLeft').click(function (e) {
+            var selectedOpts = $('#lstBox2 option');
+            if (selectedOpts.length == 0) {
+                e.preventDefault();
+            }
+
+            $('#lstBox1').append($(selectedOpts).clone());
+            $(selectedOpts).remove();
+            e.preventDefault();
+        });
+    }(jQuery));
+
+    // Create a "close" button and append it to each list item
+    /*var myNodelist = document.getElementsByName("list");
+    var i;
+    for (i = 0; i < myNodelist.length; i++) {
+        var span = document.createElement("SPAN");
+        var txt = document.createTextNode("\u00D7");
+        span.className = "close";
+        span.appendChild(txt);
+        myNodelist[i].appendChild(span);
+    }*/
+
+    // Click on a close button to hide the current list item
+    var close = document.getElementsByClassName("close");
+    var i;
+    for (i = 0; i < close.length; i++) {
+        close[i].onclick = function () {
+            var div = this.parentElement;
+            div.style.display = "none";
+        }
+    }
+
+    // Add a "checked" symbol when clicking on a list item
+    var list = document.querySelector('ul');
+    list.addEventListener('click', function (ev) {
+        if (ev.target.tagName === 'LI') {
+            ev.target.classList.toggle('checked');
+        }
+    }, false);
+
+    
+    // Create a new list item when clicking on the "Add" button
+    function newElement() {
+        var li = document.createElement("li");
+        li.className = "list-group-item col-xs-11";
+        var inputValue = document.getElementById("myInput").value;
+
+        if (inputValue != "" || inputValue != null)
+            SenderDomains.push(inputValue);
+
+        document.getElementById('senderDomains').value = SenderDomains;
+        var t = document.createTextNode(inputValue);
+        li.appendChild(t);
+        if (inputValue === '') {
+            alert("You must write something!");
+        } else {
+            document.getElementById("myUL").appendChild(li);
+        }
+        document.getElementById("myInput").value = "";
+
+        var span = document.createElement("a");
+        var txt = document.createTextNode("\u00D7");
+        span.id = "senderDomainId";
+        span.addEventListener("click", function () { func(inputValue);}, false);
+        span.className = "close";
+        span.appendChild(txt);
+        
+        li.appendChild(span);
+
+        for (i = 0; i < close.length; i++) {
+            close[i].onclick = function () {
+                var div = this.parentElement;
+                div.style.display = "none";
+            }
+        }
+    }
+
+    function func(x) {
+        var positionIdSeed = SenderDomains.indexOf(x);
+        SenderDomains.splice(positionIdSeed, 1);
+        document.getElementById('senderDomains').value = SenderDomains;
+    }
+    
+        
+    
+</script>

@@ -1,0 +1,52 @@
+﻿@using PagedList;
+@using PagedList.Mvc;
+@model PagedList.IPagedList<BusinessLogic.Model.Provider>
+@{
+    ViewData["Title"] = "Index";
+}
+<div class="row">
+    <div class="col-xs-1">
+        <h2>Providers</h2>
+    </div>
+    <div class="col-xs-1 pull-right">
+        <button type="button" class="pull-right btn btn-success btn-new" title="Add" onclick="location.href='/Provider/New'">New</button>
+    </div>
+</div>
+<hr>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Server</th>
+            <th>Port</th>
+            <th>Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Server</td>
+                <td>@item.Port</td>
+                <td>@item.Type</td>
+                <td>
+                    <button type="button" class="btn btn-warning btn-xs" title="Edit" onclick="location.href='/Provider/Edit/@item.Id'">Edit</button>
+                    <button type="button" class="btn btn-danger btn-xs" title="Delete" onclick="location.href='/Provider/Delete/@item.Id'">Delete</button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+    Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+
+    @if (@Model.PageCount > 1)
+    {
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+
+    }
+
