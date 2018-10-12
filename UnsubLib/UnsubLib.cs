@@ -20,6 +20,10 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Net.Http;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 
 // servName = LEADME_DB, dbName=Unsub, ssisConStr="Data Source=localhost;Initial Catalog=Unsub;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"
 // jsonTemplateFile=SSISMd5Template.json, ssisTemplateFile=NewestPkg.xml
@@ -39,13 +43,15 @@ namespace UnsubLib
     public class UnsubLib
     {
         // Set to true for debugging - always false in production
-        public const bool CallLocalLoadUnsubFiles = true;
-        public const bool UseLocalNetworkFile = true;
+        public bool CallLocalLoadUnsubFiles;
+        public bool UseLocalNetworkFile;
+        public string LocalNetworkFilePath;
 
         public string ApplicationName;
 
         public string ConnectionString;
-        public string WorkingDirectory;
+        public string ServerWorkingDirectory;
+        public string ClientWorkingDirectory;
         public string SearchDirectory;
         public string ServerName;
         public string DatabaseName;
@@ -59,6 +65,10 @@ namespace UnsubLib
         public long SearchFileCacheSize;
         public string UnsubServerUri;
         public string DtExecPath;
+        public int MaxConnections;
+        public int MaxParallelism;
+        public string SeleniumChromeDriverPath;
+        public string FileCacheFtpServerPath;
 
         public Rw.RoslynWrapper RosWrap;        
 
@@ -66,23 +76,19 @@ namespace UnsubLib
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
-
-        public int AmobeeParallelism = 5;
-        public int MadrivoParallelism = 5;
                    
         public UnsubLib(string appName, string connectionString)
         {
             this.ApplicationName = appName;
-            this.ConnectionString = connectionString;
-
-            ServicePointManager.DefaultConnectionLimit = this.MadrivoParallelism;            
+            this.ConnectionString = connectionString;                     
 
             string general = SqlWrapper.SqlServerProviderEntry(this.ConnectionString, "SelectConfig", "", "")
                 .GetAwaiter().GetResult();
             IGenericEntity gc = new GenericEntityJson();
             var gcstate = ((JArray)JsonConvert.DeserializeObject(general))[0];
             gc.InitializeEntity(null, null, gcstate);
-            this.WorkingDirectory = gc.GetS("Config/WorkingDirectory");
+            this.ServerWorkingDirectory = gc.GetS("Config/ServerWorkingDirectory");
+            this.ClientWorkingDirectory = gc.GetS("Config/ClientWorkingDirectory");
             this.SearchDirectory = gc.GetS("Config/SearchDirectory");
             this.ServerName = gc.GetS("Config/ServerName");
             this.DatabaseName = gc.GetS("Config/DatabaseName");
@@ -96,9 +102,20 @@ namespace UnsubLib
             this.SearchFileCacheSize = Int64.Parse(gc.GetS("Config/SearchFileCacheSize"));
             this.UnsubServerUri = gc.GetS("Config/UnsubServerUri");
             this.DtExecPath = gc.GetS("Config/DtExecPath");
+            this.CallLocalLoadUnsubFiles = gc.GetB("Config/CallLocalLoadUnsubFiles");
+            this.UseLocalNetworkFile = gc.GetB("Config/UseLocalNetworkFile");
+            this.LocalNetworkFilePath = gc.GetS("Config/LocalNetworkFilePath");
+            // for diffs and loads
+            this.MaxParallelism = Int32.Parse(gc.GetS("Config/MaxParallelism"));
+            // for downloads and uploads
+            this.MaxConnections = Int32.Parse(gc.GetS("Config/MaxConnections"));
+            this.SeleniumChromeDriverPath = gc.GetS("Config/SeleniumChromeDriverPath");
+            this.FileCacheFtpServerPath = gc.GetS("Config/FileCacheFtpServerPath");
+
+            ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
             List<Rw.ScriptDescriptor> scripts = new List<Rw.ScriptDescriptor>();
-            string scriptsPath = this.WorkingDirectory + "\\scripts";
+            string scriptsPath = this.ServerWorkingDirectory + "\\Scripts";
             var rw = new Rw.RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
 
             this.RosWrap = rw;
@@ -106,33 +123,57 @@ namespace UnsubLib
 
         public async Task<IGenericEntity> GetNetworksAndCreateLockFiles()
         {
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "Entry", "");
+
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
                     "{}",
                     "");
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "After SelectNetwork", network);
+
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
             ge.InitializeEntity(this.RosWrap, null, state);
             List<string> fileNames = new List<string>();
             foreach (var n in ge.GetL(""))
             {
-                fileNames.Add(this.WorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"GetNetworksAndCreateLockFiles", "Creating lock file",
+                    this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
+                fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
             }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "After parsing SelectNetwork return", "");
+
             await Fs.CreateEmptyFiles(fileNames);
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"GetNetworksAndCreateLockFiles", "After creating empty files", "");
+
             return ge;
         }
 
         public async Task CreateNetworkLockFile(IGenericEntity network)
         {
-            string lckFileName = this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck";
+            string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck";
             if (!File.Exists(lckFileName))
                 await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
         }
 
         public async Task ManualDirectory(IGenericEntity network)
         {
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ManualDirectory", "Before locking files", this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck");
+
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ManualDirectory", "After locking files", "");
 
             try
             {
@@ -142,7 +183,7 @@ namespace UnsubLib
                 string nowString = now.ToString("yyyyMMdd");
 
                 List<DirectoryInfo> dirs = new List<DirectoryInfo>();
-                DirectoryInfo di = new DirectoryInfo(this.WorkingDirectory + "\\Manual");
+                DirectoryInfo di = new DirectoryInfo(this.ClientWorkingDirectory + "\\Manual");
                 foreach (var dd in di.EnumerateDirectories())
                 {
                     if (DateTime.ParseExact(dd.Name, "yyyyMMdd", new CultureInfo("en-US")) <=
@@ -189,11 +230,11 @@ namespace UnsubLib
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
 
             try
             {
-                DirectoryInfo dir = new DirectoryInfo(this.WorkingDirectory + "\\Force\\" + forceDirName);
+                DirectoryInfo dir = new DirectoryInfo(this.ClientWorkingDirectory + "\\Force\\" + forceDirName);
                 await ManualJob(dir, network);
             }
             finally
@@ -219,7 +260,7 @@ namespace UnsubLib
                 campaignsJson.Append(Jw.Json(new
                 {
                     NetworkCampaignId = campaignNetworkId,
-                    NetworkName = networkCampaignName,
+                    NetworkCampaignName = networkCampaignName,
                     CampaignPayload = campaignJson
                 }, new bool[] { true, true, false }));
                 campaignsJson.Append(",");
@@ -256,7 +297,7 @@ namespace UnsubLib
         public async Task ScheduledUnsubJob(IGenericEntity network)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
             
             try
             {
@@ -372,18 +413,22 @@ namespace UnsubLib
         public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IGenericEntity campaigns)
         {
             string networkName = network.GetS("Name");
+            int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             ConcurrentDictionary<string, List<IGenericEntity>> uris = new ConcurrentDictionary<string, List<IGenericEntity>>();
-            await Pw.ForEachAsync(campaigns.GetL(""), this.MadrivoParallelism, async c =>
+            await Pw.ForEachAsync(campaigns.GetL(""), parallelism, async c =>
             {
                 try
                 {
                     string uri = await GetSuppressionFileUri(
                         network,
                         c.GetS("NetworkCampaignId"),
-                        this.MadrivoParallelism);
+                        parallelism);
 
-                    if (uris.ContainsKey(uri)) uris[uri].Add(c);
-                    else uris.TryAdd(uri, new List<IGenericEntity>() { c });
+                    if (!String.IsNullOrEmpty(uri))
+                    {
+                        if (uris.ContainsKey(uri)) uris[uri].Add(c);
+                        else uris.TryAdd(uri, new List<IGenericEntity>() { c });
+                    }
                 }
                 catch (Exception exCampaign)
                 {
@@ -405,11 +450,12 @@ namespace UnsubLib
         {
             string networkName = network.GetS("Name");
             string networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
+            int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
             var ncf = new ConcurrentDictionary<string, string>();
             var ndf = new ConcurrentDictionary<string, string>();
 
-            await Pw.ForEachAsync(uris, this.MadrivoParallelism, async uri =>
+            await Pw.ForEachAsync(uris, parallelism, async uri =>
             {
                 try
                 {
@@ -433,21 +479,21 @@ namespace UnsubLib
                                     { UNKNOWNHANDLER, UnknownTypeHandler }
                                 },
                                 fis.DirectoryName,
-                                this.WorkingDirectory);
+                                this.ClientWorkingDirectory);
                     }                     
 
                     if (cf.ContainsKey(MD5HANDLER))
                     {
                         string fmd5 = cf[MD5HANDLER].ToString();
 
-                        await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.WorkingDirectory,
+                        await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt", fmd5 + ".txt.cln");
 
-                        await Utility.UnixWrapper.RemoveNonMD5LinesFromFile(this.WorkingDirectory,
+                        await Utility.UnixWrapper.RemoveNonMD5LinesFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
 
                         await Utility.UnixWrapper.SortFile(
-                            this.WorkingDirectory,
+                            this.ClientWorkingDirectory,
                             fmd5 + ".txt.cl2",
                             fmd5 + ".txt.srt",
                             false,
@@ -456,18 +502,18 @@ namespace UnsubLib
                         if (this.FileCacheFtpServer != null)
                         {
                             await Utility.ProtocolClient.UploadFile(
-                                    this.WorkingDirectory + "\\" + fmd5 + ".txt.srt",
-                                    fmd5 + ".txt.srt",
-                                    this.FileCacheFtpServer,
-                                    this.FileCacheFtpUser,
-                                    this.FileCacheFtpPassword);
+                                this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt",
+                                this.FileCacheFtpServerPath + "/" + fmd5 + ".txt.srt",
+                                this.FileCacheFtpServer,
+                                this.FileCacheFtpUser,
+                                this.FileCacheFtpPassword);
 
-                            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5 + ".txt.srt"}");
+                            Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5 + ".txt.srt"}");
                         }
 
-                        Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5}.txt");
-                        Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5}.txt.cln");
-                        Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fmd5}.txt.cl2");
+                        Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5}.txt");
+                        Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5}.txt.cln");
+                        Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5}.txt.cl2");
                     }
 
                     if (cf.ContainsKey(DOMAINHANDLER))
@@ -477,13 +523,13 @@ namespace UnsubLib
                         if (this.FileCacheFtpServer != null)
                         {
                             await Utility.ProtocolClient.UploadFile(
-                                    this.WorkingDirectory + "\\" + fdom + ".txt",
-                                    fdom + ".txt",
+                                    this.ClientWorkingDirectory + "\\" + fdom + ".txt",
+                                    this.FileCacheFtpServerPath + "/" + fdom + ".txt",
                                     this.FileCacheFtpServer,
                                     this.FileCacheFtpUser,
                                     this.FileCacheFtpPassword);
 
-                            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fdom}.txt");
+                            Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fdom}.txt");
                         }
                     }
 
@@ -540,7 +586,7 @@ namespace UnsubLib
                 new bool[] { true, false, false });
 
             string result = null;
-            if (!UnsubLib.CallLocalLoadUnsubFiles)
+            if (!this.CallLocalLoadUnsubFiles)
             {
                 result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                     new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
@@ -552,7 +598,9 @@ namespace UnsubLib
                 cse.InitializeEntity(null, null, cs);
                 result = await LoadUnsubFiles(cse);
             }
-            
+
+            if (result == null) throw new Exception("Null result");
+
             var res = (JObject)JsonConvert.DeserializeObject(result);
             IGenericEntity rese = new GenericEntityJson();
             rese.InitializeEntity(null, null, res);
@@ -581,7 +629,7 @@ namespace UnsubLib
             {
                 List<string> listFiles;
                 listFiles = await Utility.ProtocolClient.FtpGetFiles(
-                        null,
+                        this.FileCacheFtpServerPath,
                         this.FileCacheFtpServer,
                         this.FileCacheFtpUser,
                         this.FileCacheFtpPassword);
@@ -591,7 +639,7 @@ namespace UnsubLib
                     string[] ftpFileParts = ftpFile.Split(new char[] { '.' });
                     if (!refdFiles.Contains(ftpFileParts[0].ToLower()))
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
-                        ftpFile,
+                        this.FileCacheFtpServerPath + "/" + ftpFile,
                         this.FileCacheFtpServer,
                         21,
                         this.FileCacheFtpUser,
@@ -600,7 +648,7 @@ namespace UnsubLib
             }
             else
             {
-                DirectoryInfo sourceDir = new DirectoryInfo(this.WorkingDirectory);
+                DirectoryInfo sourceDir = new DirectoryInfo(this.ClientWorkingDirectory);
                 FileInfo[] files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
                 foreach (var file in files)
                 {
@@ -628,11 +676,11 @@ namespace UnsubLib
         public async Task<string> LoadUnsubFiles(IGenericEntity dtve)
         {
             string result = Jw.Json(new { Result = "Success" });
-
+            
             try
             {
                 //foreach (var x in dtve.GetL("DomUnsub"))
-                await Pw.ForEachAsync(dtve.GetL("DomUnsub"), this.MadrivoParallelism, async x =>
+                await Pw.ForEachAsync(dtve.GetL("DomUnsub"), this.MaxParallelism, async x =>
                 {
                     string tmpFileName = "";
                     string campaignId = "";
@@ -642,20 +690,21 @@ namespace UnsubLib
                     {
                         campaignId = x.GetS("CId");
                         fileId = x.GetS("FId");
-                        tmpFileName = await GetFileFromFileId(fileId, ".txt", this.WorkingDirectory,
+
+                        tmpFileName = await GetFileFromFileId(fileId, ".txt", this.ServerWorkingDirectory,
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tmd");
 
-                        string wd = this.WorkingDirectory.Replace("\\", "\\\\");
+                        string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
                         await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                             "UploadDomainUnsubFile",
                             Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }),
                             "");
 
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + tmpFileName);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
                     }
                     catch (Exception exDomUnsub)
                     {
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + tmpFileName);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
                         
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                             $"LoadUnsubFiles", "UploadDomainUnsubFile", campaignId + 
@@ -671,12 +720,12 @@ namespace UnsubLib
                 }
                 foreach (var domFile in domFiles)
                 {
-                    Fs.TryDeleteFile(this.WorkingDirectory + "\\" + domFile + ".txt");
+                    Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + domFile + ".txt");
 
                     if (!string.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
-                            domFile + ".txt",
+                            this.FileCacheFtpServerPath + "/" + domFile + ".txt",
                             this.FileCacheFtpServer,
                             21,
                             this.FileCacheFtpUser,
@@ -685,7 +734,7 @@ namespace UnsubLib
                 }
 
                 //foreach (var x in dtve.GetL("Diff"))
-                await Pw.ForEachAsync(dtve.GetL("Diff"), this.MadrivoParallelism, async x =>
+                await Pw.ForEachAsync(dtve.GetL("Diff"), this.MaxParallelism, async x =>
                 {
                     string oldf = x.GetS("oldf");
                     string newf = x.GetS("newf");
@@ -695,15 +744,15 @@ namespace UnsubLib
 
                     try
                     {
-                        oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.WorkingDirectory, 
+                        oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.ServerWorkingDirectory, 
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tdd");
-                        newfname = await GetFileFromFileId(newf, ".txt.srt", this.WorkingDirectory, 
+                        newfname = await GetFileFromFileId(newf, ".txt.srt", this.ServerWorkingDirectory, 
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tdd");
 
                         bool res = await Utility.UnixWrapper.DiffFiles(
                             oldfname,
                             newfname,
-                            this.WorkingDirectory,
+                            this.ServerWorkingDirectory,
                             diffname);
                         
                         await SSISLoadMd5File(diffname,
@@ -721,9 +770,9 @@ namespace UnsubLib
                     }
                     finally
                     {
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + diffname);
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + newfname);
-                        Fs.TryDeleteFile(this.WorkingDirectory + "\\" + oldfname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + diffname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + newfname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + oldfname);
                     }
                 });
             }
@@ -762,7 +811,7 @@ namespace UnsubLib
             try
             {
                 long newFileSize = await Utility.ProtocolClient.FtpGetFileSize(
-                        fileName,
+                        this.FileCacheFtpServerPath + "/" + fileName,
                         this.FileCacheFtpServer,
                         this.FileCacheFtpUser,
                         this.FileCacheFtpPassword);
@@ -774,7 +823,7 @@ namespace UnsubLib
                     return false;
                 }
 
-                DirectoryInfo sourceDir = new DirectoryInfo(this.WorkingDirectory);
+                DirectoryInfo sourceDir = new DirectoryInfo(this.ServerWorkingDirectory);
                 FileInfo[] files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
                 long dirSize = 0;
                 foreach (var file in files) dirSize += file.Length;
@@ -823,7 +872,7 @@ namespace UnsubLib
 
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,
-                        fileName,
+                        this.FileCacheFtpServerPath + "/" + fileName,
                         dfileName,
                         this.FileCacheFtpServer,
                         this.FileCacheFtpUser,
@@ -884,10 +933,14 @@ namespace UnsubLib
             {
                 campaignId = dtve.GetS("CampaignId");
                 emailMd5 = dtve.GetS("EmailMd5");
+                if (emailMd5.Contains("@"))
+                {
+                    emailMd5 = Utility.Hashing.CalculateMD5Hash(emailMd5.ToLower());
+                }
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
 
                 bool result =  await Utility.UnixWrapper.BinarySearchSortedMd5File(
-                    this.WorkingDirectory,
+                    this.ServerWorkingDirectory,
                     fileName,
                     emailMd5);
 
@@ -923,7 +976,16 @@ namespace UnsubLib
             try
             {
                 campaignId = dtve.GetS("CampaignId");
-                foreach (var y in dtve.GetL("EmailMd5")) emailMd5.Add(y.GetS(""));
+                foreach (var y in dtve.GetL("EmailMd5"))
+                {
+                    string emailFixed = y.GetS("");
+                    if (emailFixed.Contains("@"))
+                    {
+                        emailFixed = Utility.Hashing.CalculateMD5Hash(emailFixed.ToLower());
+                    }
+                    emailMd5.Add(emailFixed);
+                }
+                
 
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
                 emailMd5.Sort();
@@ -967,17 +1029,17 @@ namespace UnsubLib
             string fileId = fileNameParts[0];
 
             string jsonText = File.ReadAllText($"{jsonTemplateFile}");
-            jsonText = jsonText.Replace("[=FlatFileLocation=]", $"{this.WorkingDirectory.Replace("\\", "\\\\")}\\\\{fileName}")
+            jsonText = jsonText.Replace("[=FlatFileLocation=]", $"{this.ServerWorkingDirectory.Replace("\\", "\\\\")}\\\\{fileName}")
                 .Replace("[=ServerName=]", servName)
                 .Replace("[=DatabaseName=]", dbName)
                 .Replace("[=ConnectionString=]", ssisConStr)
                 .Replace("[=ErrorTable=]", $"[dbo].[err_{fileId}]")
                 .Replace("[=DestinationTable=]", $"[dbo].[stg_{fileId}]");
-            File.WriteAllText($"{this.WorkingDirectory}\\{fileName}.json", jsonText);
+            File.WriteAllText($"{this.ServerWorkingDirectory}\\{fileName}.json", jsonText);
 
             string pkgText = await SsisWrapper.SsisWrapper.TokenReplaceSSISPackage(
                 $"{ssisTemplateFile}",
-                $"{this.WorkingDirectory}\\{fileName}.json",
+                $"{this.ServerWorkingDirectory}\\{fileName}.json",
                 new Dictionary<string, string>()
                         {
                             { "FlatFileColumn", "Columns" },
@@ -988,14 +1050,14 @@ namespace UnsubLib
                         },
                 this.RosWrap);
 
-            File.WriteAllText($"{this.WorkingDirectory}\\{fileName}.xml", pkgText);
+            File.WriteAllText($"{this.ServerWorkingDirectory}\\{fileName}.xml", pkgText);
 
             try
             {
                 await SqlWrapper.CreateSsisTables(this.ConnectionString, fileId);
                 await SsisWrapper.SsisWrapper.ExecutePackage(
                     this.DtExecPath,
-                    $"{this.WorkingDirectory}\\{fileName}.xml", 
+                    $"{this.ServerWorkingDirectory}\\{fileName}.xml", 
                     ssisConStr,
                     null);
             }
@@ -1020,8 +1082,8 @@ namespace UnsubLib
                            fileName + "::" + exPostProcess.ToString());
             }
 
-            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fileName}.json");
-            Fs.TryDeleteFile($"{this.WorkingDirectory}\\{fileName}.xml");
+            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
+            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.xml");
         }
 
         public async Task<string> GetNetworkCampaigns(
@@ -1034,14 +1096,14 @@ namespace UnsubLib
             };
 
             string campaignXml = null;
-            if (!UnsubLib.UseLocalNetworkFile)
+            if (!this.UseLocalNetworkFile)
             {
                 campaignXml = await Utility.ProtocolClient.HttpPostAsync(apiUrl, parms);
-                File.WriteAllText(networkId + ".xml", campaignXml);
+                File.WriteAllText(this.LocalNetworkFilePath + "\\" + networkId + ".xml", campaignXml);
             }
             else
             {
-                campaignXml = File.ReadAllText($@"{networkId}.xml");
+                campaignXml = File.ReadAllText($@"{this.LocalNetworkFilePath}\{networkId}.xml");
             }                
                 
             return await SqlWrapper.SqlServerProviderEntry(this.ConnectionString, 
@@ -1050,6 +1112,7 @@ namespace UnsubLib
                 campaignXml);
         }
 
+        
         public async Task<string> GetSuppressionFileUri(
             IGenericEntity network, string networkCampaignId, int maxConnections)
         {
@@ -1057,6 +1120,7 @@ namespace UnsubLib
             string networkName = network.GetS("Name");
             string apiKey = network.GetS($"Credentials/{networkName}ApiKey");
             string apiUrl = network.GetS($"Credentials/{networkName}ApiUrl");
+            string optizmoToken = network.GetS($"Credentials/OptizmoToken");
 
             IDictionary<string, string> parms = new Dictionary<string, string>()
             {
@@ -1079,6 +1143,27 @@ namespace UnsubLib
                     && (usurl["key"] != null) && (usurl["s"] != null))
                 {
                     uri = "https://api.unsubcentral.com/api/service/keys/" + usurl["key"] + "?s=" + usurl["s"] + "&format=hash&zipped=true";
+                }
+                else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net"))
+                    && (usurl["key"] != null) && (usurl["s"] != null))
+                {
+                    string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
+                    if (ezepoUnsubUrl != "")
+                        uri = ezepoUnsubUrl;
+                    else
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                               "GetSuppressionFileUri", "Empty ezepo url",
+                               usuri.ToString());
+                }
+                else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
+                {
+                    string optizmoUnsubUrl = await GetOptizmoUnsubFileUri(usuri.AbsolutePath, optizmoToken);
+                    if (optizmoUnsubUrl != "")
+                        uri = optizmoUnsubUrl;
+                    else
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                               "GetSuppressionFileUri", "Empty otizmo url",
+                               usuri.ToString());
                 }
                 else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
@@ -1103,11 +1188,86 @@ namespace UnsubLib
             return uri;
         }
 
+        public async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
+        {
+            string optizmoUnsubUrl = "";
+            string[] pathParts = url.Split('/');
+            //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
+            StringBuilder optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
+            optizmoUrl.Append(pathParts[pathParts.Length - 1]);
+            optizmoUrl.Append($"?token={optizmoToken}&format=md5");
+            //503 Service Unavailable
+            Tuple<bool, string> aojson = null;
+            int retryCount = 0;
+            int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+            while (retryCount < 5)
+            {
+                aojson = await Utility.ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
+                if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
+                {
+                    if (aojson.Item2.Contains("503 Service Unavailable"))
+                    {
+                        await Task.Delay(retryWalkaway[retryCount] * 1000);
+                        retryCount += 1;
+                        continue;
+                    }
+                    IGenericEntity te = new GenericEntityJson();
+                    var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
+                    te.InitializeEntity(null, null, ts);
+                    if (te.GetS("download_link") != null)
+                    {
+                        optizmoUnsubUrl = te.GetS("download_link");
+                    }
+                }
+                break;
+            }
+
+            return optizmoUnsubUrl;
+        }
+
+        public async Task<string> GetEzepoUnsubFileUri(string url)
+        {
+            //var chromeOptions = new ChromeOptions();
+            //chromeOptions.AddUserProfilePreference("download.default_directory", @"e:\workspace\unsub");
+            //chromeOptions.AddUserProfilePreference("intl.accept_languages", "nl");
+            //chromeOptions.AddUserProfilePreference("disable-popup-blocking", "true");
+            //var driver = new ChromeDriver(this.SeleniumChromeDriverPath, chromeOptions);
+            var driver = new ChromeDriver(this.SeleniumChromeDriverPath);
+            driver.Navigate().GoToUrl(url);
+            driver.FindElement(By.XPath("//button[.='Download All Data']")).Click();
+            IWebElement dwnldLink = null;
+            int retryCount = 0;
+            int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+            while (retryCount < 5)
+            {
+                try
+                {
+                    dwnldLink = driver.FindElement(By.Id("downloadlink"));
+                    if (dwnldLink.Displayed) break;
+                    else throw new Exception();
+                }
+                catch (Exception ex)
+                {
+                    await Task.Delay(retryWalkaway[retryCount] * 1000);
+                }
+            }
+
+            string fileUrl = "";
+            if (dwnldLink != null)
+            {
+                //dwnldLink.Click();
+                fileUrl = dwnldLink.GetAttribute("href");
+            }
+
+            return fileUrl;
+        }
+
         public async Task<IDictionary<string, object>> DownloadSuppressionFiles(
             IGenericEntity network, string unsubUrl)
         {
             object dr = null;
             string networkName = network.GetS("Name");
+            int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
             if (networkName == "Amobee")
             {
@@ -1139,9 +1299,9 @@ namespace UnsubLib
                         { DOMAINHANDLER, DomainZipHandler },
                         { UNKNOWNHANDLER, UnknownTypeHandler }
                     },
-                    this.WorkingDirectory,
+                    this.ClientWorkingDirectory,
                     30 * 60,
-                    this.AmobeeParallelism);
+                    parallelism);
             }
             else if (networkName == "Madrivo")
             {
@@ -1170,9 +1330,9 @@ namespace UnsubLib
                         { DOMAINHANDLER, DomainZipHandler },
                         { UNKNOWNHANDLER, UnknownTypeHandler }
                     },
-                    this.WorkingDirectory,
+                    this.ClientWorkingDirectory,
                     30 * 60,
-                    this.MadrivoParallelism);
+                    parallelism);
             }
             else
             {
@@ -1231,7 +1391,7 @@ namespace UnsubLib
                 bool allDom = true;
                 for (int l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
                 {
-                    if (!lines[l].Contains("."))
+                    if (!lines[l].Contains(".") || lines[l].Length == 0)
                     {
                         allDom = false;
                         break;
@@ -1250,21 +1410,21 @@ namespace UnsubLib
         public async Task<object> Md5ZipHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
-            f.MoveTo($"{this.WorkingDirectory}\\{fileName}.txt");
+            f.MoveTo($"{this.ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
         public async Task<object> PlainTextHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
-            f.MoveTo($"{this.WorkingDirectory}\\{fileName}.txt");
+            f.MoveTo($"{this.ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
         public async Task<object> DomainZipHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
-            f.MoveTo($"{this.WorkingDirectory}\\{fileName}.txt");
+            f.MoveTo($"{this.ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 

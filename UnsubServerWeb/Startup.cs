@@ -58,7 +58,7 @@ namespace UnsubServerWeb
                     UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubServer", this.ConnectionString);
                     switch (dtve.GetS("m"))
                     {
-                        case "LoadUnsubFiles":
+                        case "LoadUnsubFiles":                            
                             result = await nw.LoadUnsubFiles(dtve);
                             break;
 
@@ -87,6 +87,9 @@ namespace UnsubServerWeb
                                 Environment.NewLine);
                 }
 
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "application/json";
+                context.Response.ContentLength = result.Length;
                 await context.Response.WriteAsync(result);
 
             });

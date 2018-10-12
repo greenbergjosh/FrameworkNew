@@ -202,32 +202,40 @@ namespace Utility
         public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password)
         {
             FtpWebRequest ftpReq = null;
-            try
+            string filename = "ftp://" + host + "//" + targetFile;
+            ftpReq = (FtpWebRequest)WebRequest.Create(filename);
+            ftpReq.UseBinary = true;
+            ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
+            ftpReq.Credentials = new NetworkCredential(userName, password);
+
+            //byte[] b = File.ReadAllBytes(sourceFile);
+
+            //ftpReq.ContentLength = b.Length;
+            //using (Stream s = ftpReq.GetRequestStream())
+            //{
+            //    await s.WriteAsync(b, 0, b.Length);
+            //}
+
+            using (var f = File.OpenRead(sourceFile))
             {
-                string filename = "ftp://" + host + "//" + targetFile;
-                ftpReq = (FtpWebRequest)WebRequest.Create(filename);
-                ftpReq.UseBinary = true;
-                ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
-                ftpReq.Credentials = new NetworkCredential(userName, password);
-
-                byte[] b = File.ReadAllBytes(sourceFile);
-
-                ftpReq.ContentLength = b.Length;
                 using (Stream s = ftpReq.GetRequestStream())
                 {
-                    await s.WriteAsync(b, 0, b.Length);
-                }
-
-                FtpWebResponse ftpResp = (FtpWebResponse)(await ftpReq.GetResponseAsync());
-
-                if (ftpResp != null)
-                {
-                    string s = ftpResp.StatusDescription;
-                }
+                    ftpReq.ContentLength = f.Length;
+                    while (true)
+                    {
+                        byte[] buf = new byte[1000000];
+                        int numRead = await f.ReadAsync(buf);
+                        if (numRead > 0) await s.WriteAsync(buf, 0, numRead);
+                        else break;
+                    }
+                }  
             }
-            catch (Exception ex)
+
+            FtpWebResponse ftpResp = (FtpWebResponse)(await ftpReq.GetResponseAsync());
+
+            if (ftpResp != null)
             {
-                string s = ex.ToString();
+                string s = ftpResp.StatusDescription;
             }
         }
 
@@ -420,7 +428,7 @@ namespace Utility
                 request.ServicePoint.ConnectionLimit = 10;
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
                 request.Credentials = new NetworkCredential(userName, password);
-                request.UseBinary = false;
+                request.UseBinary = true;
                 response = (FtpWebResponse)(await request.GetResponseAsync());
                 Stream responseStream = response.GetResponseStream();
                 await responseStream.CopyToAsync(f);
@@ -487,7 +495,7 @@ namespace Utility
                             string line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                             while (!string.IsNullOrEmpty(line))
                             {
-                                dirs.Add(line);
+                                if (line != "." && line != "..") dirs.Add(line);
                                 line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                             }
 
@@ -506,7 +514,7 @@ namespace Utility
                                             string fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                                             while (!string.IsNullOrEmpty(fileLine))
                                             {
-                                                listFiles[dir].Add(fileLine);
+                                                if (fileLine != "." && fileLine != "..") listFiles[dir].Add(fileLine);
                                                 fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                                             }
                                         }
@@ -545,7 +553,7 @@ namespace Utility
                         string fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                         while (!string.IsNullOrEmpty(fileLine))
                         {
-                            files.Add(fileLine);
+                            if (fileLine != "." && fileLine != "..") files.Add(fileLine);
                             fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                         }
                     }

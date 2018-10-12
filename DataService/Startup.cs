@@ -36,6 +36,14 @@ namespace DataService
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
         }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
@@ -50,6 +58,8 @@ namespace DataService
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors("CorsPolicy");
 
             File.AppendAllText("DataService.log", $@"{DateTime.Now}::Starting" +
                             Environment.NewLine);
@@ -136,10 +146,36 @@ namespace DataService
                         }),
                         "");
 
-                    await ProcessTowerPixelCapture(eqs);
-                    context.Response.ContentType = ContentType;
-                    context.Response.Headers.ContentLength = TowerPixelImage.Length;
-                    await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
+                    string label = await ProcessTowerPixelCapture(eqs);
+                    if (label == "testvisitorid")
+                    {
+                        //string ret = "{\"k2\":\"v2\"}";
+                        //context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                        string cookieValueFromReq = context.Request.Cookies["test2"];
+                        if (String.IsNullOrEmpty(cookieValueFromReq))
+                        {
+                            SetCookie(context, "test2", "rich@hotmail.com", 30);
+                        }
+
+                        string ret = "{\"k2\":\"" + cookieValueFromReq + "\"}";
+                        context.Response.StatusCode = 200;
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength = ret.Length;
+                        //X-Content-Type-Options: nosniff
+                        await context.Response.WriteAsync(ret);
+                    }
+                    else
+                    {
+                        //context.Response.ContentType = ContentType;
+                        //context.Response.Headers.ContentLength = TowerPixelImage.Length;
+                        //await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
+                        string ret = "{\"label\":\"" + label + "\", \"a\":\"b\"}";
+                        context.Response.StatusCode = 200;
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength = ret.Length;
+                        //X-Content-Type-Options: nosniff
+                        await context.Response.WriteAsync(ret);
+                    }
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))
                 {
@@ -147,6 +183,16 @@ namespace DataService
                     string nf = Jw.Json(new { Email = "NotFound" });
                     context.Response.StatusCode = 200;
                     await context.Response.WriteAsync(nf);
+                }
+                else
+                {
+                    string ret = "{\"Error\":\"Unknown method\", \"ip\":\"" +
+                        context.Request.HttpContext.Connection.RemoteIpAddress + "\"}";
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength = ret.Length;
+                    //X-Content-Type-Options: nosniff
+                    await context.Response.WriteAsync(ret);
                 }
             }
             catch (Exception ex)
@@ -163,6 +209,26 @@ namespace DataService
                         }),
                         "");
             }
+        }
+
+        public void SetCookie(HttpContext ctx, string key, string value, int? expireTime)
+        {
+            CookieOptions option = new CookieOptions();
+            option.Path = "/";
+            option.SameSite = SameSiteMode.None;
+            option.HttpOnly = false;
+
+            if (expireTime.HasValue)
+                option.Expires = DateTime.Now.AddMinutes(expireTime.Value);
+            else
+                option.Expires = DateTime.Now.AddMilliseconds(10);
+
+            ctx.Response.Cookies.Append(key, value, option);
+        }
+
+        public void DeleteCookie(HttpContext ctx, string key)
+        {
+            ctx.Response.Cookies.Delete(key);
         }
 
         public async Task<string> SaveOnPointConsoleLiveFeed(string request)
@@ -219,8 +285,9 @@ namespace DataService
             return result;
         }
 
-        public async Task ProcessTowerPixelCapture(string rawstring)
+        public async Task<string> ProcessTowerPixelCapture(string rawstring)
         {
+            string labelvalue = "";
             try
             {
                 string[] a = rawstring.Split("  ");
@@ -252,7 +319,7 @@ namespace DataService
                     var parsedstring = HttpUtility.ParseQueryString(result);
                     string md5value = parsedstring["md5_email"].ToString();
 
-                    string labelvalue = "";
+                    
                     if (parsedstring["label"] != null)
                     {
                         labelvalue = CleanLabel(parsedstring["label"].ToString());
@@ -288,6 +355,8 @@ namespace DataService
                         }),
                         "");
             }
+
+            return labelvalue;
         }
 
         public static int PadCount(string str)

@@ -138,17 +138,32 @@ namespace GenericEntity
 
         public virtual bool GetB(string path)
         {
-            return (bool)Get(path);
+            object s = Get(path);
+            if (s == null) return false;
+            if (s.GetType() == typeof(bool)) return (bool)s;
+            string sb = s.ToString().ToLower();
+            if (sb == "true" || sb == "t" || sb == "y" || sb == "yes" || sb == "1") return true;
+            else return false;
         }
 
         public virtual bool RunB(string fname)
         {
-            return (bool)Run(fname);
+            object s = Run(fname);
+            if (s == null) return false;
+            if (s.GetType() == typeof(bool)) return (bool)s;
+            string sb = s.ToString().ToLower();
+            if (sb == "true" || sb == "t" || sb == "y" || sb == "yes" || sb == "1") return true;
+            else return false;
         }
 
         public virtual bool GetB(string path, string fname)
         {
-            return (bool)Get(path, fname);
+            object s = Get(path, fname);
+            if (s == null) return false;
+            if (s.GetType() == typeof(bool)) return (bool)s;
+            string sb = s.ToString().ToLower();
+            if (sb == "true" || sb == "t" || sb == "y" || sb == "yes" || sb == "1") return true;
+            else return false;
         }
     }
 }
