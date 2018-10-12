@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataService", "DataService\DataService.csproj", "{60E068D0-1AC7-4176-94C1-E075638EF8CD}"
 EndProject
@@ -328,8 +328,11 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6FFCB24A-1061-4A9A-8DFC-0B77F4CCF801} = {5B0E3B8A-B8FE-4948-B66C-C67325A5245B}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal
