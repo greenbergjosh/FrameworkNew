@@ -42,9 +42,6 @@ namespace UnsubServerWeb
 
             app.Run(async (context) =>
             {
-                File.AppendAllText("UnsubServer.log", $@"Enter UnsubServerWeb" + DateTime.Now.ToString() +
-                                Environment.NewLine);
-
                 string requestFromPost = "";
                 string result = Jw.Json(new { Error = "SeeLogs" });
 
@@ -61,9 +58,7 @@ namespace UnsubServerWeb
                     UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubServer", this.ConnectionString);
                     switch (dtve.GetS("m"))
                     {
-                        case "LoadUnsubFiles":
-                            File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::{requestFromPost}::LoadUnsubFiles" +
-                                Environment.NewLine);
+                        case "LoadUnsubFiles":                            
                             result = await nw.LoadUnsubFiles(dtve);
                             break;
 

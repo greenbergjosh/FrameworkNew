@@ -36,6 +36,11 @@ namespace Utility
             return f;
         }
 
+        public static void ReleaseFile(FileStream file)
+        {
+            file.Close();
+        }
+
         public static async Task CreateEmptyFiles(List<string> fileNames)
         {
             foreach (var fileName in fileNames)

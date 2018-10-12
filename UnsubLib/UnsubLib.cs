@@ -167,8 +167,14 @@ namespace UnsubLib
 
         public async Task ManualDirectory(IGenericEntity network)
         {
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ManualDirectory", "Before locking files", this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck");
+
             CancellationTokenSource cts = new CancellationTokenSource();
             FileStream lckFile = await Fs.WaitForFile(this.WorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ManualDirectory", "After locking files", "");
 
             try
             {
@@ -419,12 +425,7 @@ namespace UnsubLib
                         c.GetS("NetworkCampaignId"),
                         parallelism);
 
-                    if (String.IsNullOrEmpty(uri))
-                    {
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 500, this.ApplicationName,
-                            $"ScheduledUnsubJob::{networkName}", "GetSuppressionFileUri", c.GetS("NetworkCampaignId"));
-                    }
-                    else
+                    if (!String.IsNullOrEmpty(uri))
                     {
                         if (uris.ContainsKey(uri)) uris[uri].Add(c);
                         else uris.TryAdd(uri, new List<IGenericEntity>() { c });
@@ -639,9 +640,6 @@ namespace UnsubLib
 
                 foreach (var ftpFile in listFiles)
                 {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                        $"CleanUnusedFiles", "Delete file from ftp", this.FileCacheFtpServerPath + "/" + ftpFile);
-
                     string[] ftpFileParts = ftpFile.Split(new char[] { '.' });
                     if (!refdFiles.Contains(ftpFileParts[0].ToLower()))
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
@@ -697,14 +695,8 @@ namespace UnsubLib
                         campaignId = x.GetS("CId");
                         fileId = x.GetS("FId");
 
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            $"LoadUnsubFiles", "Before GetFileFromFileId", campaignId + "::" + fileId);
-
                         tmpFileName = await GetFileFromFileId(fileId, ".txt", this.ServerWorkingDirectory,
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tmd");
-
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            $"LoadUnsubFiles", "After GetFileFromFileId", campaignId + "::" + fileId + "::" + tmpFileName);
 
                         string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
                         await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
@@ -1165,10 +1157,20 @@ namespace UnsubLib
                     string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
                     if (ezepoUnsubUrl != "")
                         uri = ezepoUnsubUrl;
+                    else
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                               "GetSuppressionFileUri", "Empty ezepo url",
+                               usuri.ToString());
                 }
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
                 {
                     string optizmoUnsubUrl = await GetOptizmoUnsubFileUri(usuri.AbsolutePath, optizmoToken);
+                    if (optizmoUnsubUrl != "")
+                        uri = optizmoUnsubUrl;
+                    else
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                               "GetSuppressionFileUri", "Empty otizmo url",
+                               usuri.ToString());
                 }
                 else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
@@ -1227,10 +1229,6 @@ namespace UnsubLib
                 break;
             }
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                       "GetOptizmoUnsubFileUri", "Optizmo",
-                       $"{optizmoUrl.ToString()}::{aojson.Item1}::{aojson.Item2}");
-
             return optizmoUnsubUrl;
         }
 
@@ -1267,10 +1265,6 @@ namespace UnsubLib
                 //dwnldLink.Click();
                 fileUrl = dwnldLink.GetAttribute("href");
             }
-
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                       "GetEzepoUnsubFileUri", "Ezepo",
-                       $"{fileUrl.ToString()}");
 
             return fileUrl;
         }
