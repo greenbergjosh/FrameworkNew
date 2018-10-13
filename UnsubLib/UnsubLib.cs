@@ -677,7 +677,16 @@ namespace UnsubLib
         public async Task<string> LoadUnsubFiles(IGenericEntity dtve)
         {
             string result = Jw.Json(new { Result = "Success" });
-            
+
+            List<string> allFiles = await Utility.ProtocolClient.FtpGetFiles("Unsub", this.FileCacheFtpServer, this.FileCacheFtpUser, this.FileCacheFtpPassword);
+            StringBuilder sbAllFiles = new StringBuilder();
+            foreach (string fl in allFiles)
+            {
+                sbAllFiles.Append(fl + ":");
+            }
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                $"LoadUnsubFiles", "List of All FTP files", sbAllFiles.ToString());
+
             try
             {
                 //foreach (var x in dtve.GetL("DomUnsub"))
@@ -742,6 +751,9 @@ namespace UnsubLib
                     string oldfname = "";
                     string newfname = "";
                     string diffname = Guid.NewGuid().ToString() + ".dif";
+
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            $"Before Diffing", "DiffFiles", oldf + "::" + newf);
 
                     try
                     {
@@ -870,6 +882,9 @@ namespace UnsubLib
                     success = await MakeRoom(fileName, cacheSize);
                     if (!success)
                         throw new Exception("Could not make room for file.");
+
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            $"GetFileFromFileId", "", destDir + "::" + this.FileCacheFtpServerPath + "/" + fileName + "::" + dfileName);
 
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,

@@ -58,7 +58,9 @@ namespace UnsubServerWeb
                     UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubServer", this.ConnectionString);
                     switch (dtve.GetS("m"))
                     {
-                        case "LoadUnsubFiles":                            
+                        case "LoadUnsubFiles":
+                            File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::{requestFromPost}::Request to LoadUnsubFiles" +
+                                Environment.NewLine);
                             result = await nw.LoadUnsubFiles(dtve);
                             break;
 
