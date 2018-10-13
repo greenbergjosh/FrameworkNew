@@ -487,6 +487,7 @@ namespace UnsubLib
                     {
                         string fmd5 = cf[MD5HANDLER].ToString();
 
+
                         await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt", fmd5 + ".txt.cln");
 
