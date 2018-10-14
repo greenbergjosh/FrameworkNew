@@ -142,8 +142,8 @@ namespace UnsubLib
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                     $"GetNetworksAndCreateLockFiles", "Creating lock file",
-                    this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
-                fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id") + ".lck");
+                    this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
+                fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
             }
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -159,7 +159,7 @@ namespace UnsubLib
 
         public async Task CreateNetworkLockFile(IGenericEntity network)
         {
-            string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck";
+            string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck";
             if (!File.Exists(lckFileName))
                 await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
         }
@@ -167,10 +167,10 @@ namespace UnsubLib
         public async Task ManualDirectory(IGenericEntity network)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ManualDirectory", "Before locking files", this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck");
+                $"ManualDirectory", "Before locking files", this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                 $"ManualDirectory", "After locking files", "");
@@ -189,7 +189,7 @@ namespace UnsubLib
                     if (DateTime.ParseExact(dd.Name, "yyyyMMdd", new CultureInfo("en-US")) <=
                         DateTime.ParseExact(nowString, "yyyyMMdd", new CultureInfo("en-US")))
                     {
-                        var dir = new DirectoryInfo(dd.FullName + "\\" + network.GetS("Id"));
+                        var dir = new DirectoryInfo(dd.FullName + "\\" + network.GetS("Id").ToLower());
                         if (dir.Exists) dirs.Add(dd);
                     }
                 }
@@ -230,7 +230,7 @@ namespace UnsubLib
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
 
             try
             {
@@ -245,13 +245,13 @@ namespace UnsubLib
 
         public async Task ManualJob(DirectoryInfo dir, IGenericEntity network)
         {
-            DirectoryInfo cd = new DirectoryInfo(dir.FullName + "\\" + network.GetS("Id"));
+            DirectoryInfo cd = new DirectoryInfo(dir.FullName + "\\" + network.GetS("Id").ToLower());
             IDictionary<string, string> idtof = new Dictionary<string, string>();
             StringBuilder campaignsJson = new StringBuilder("[");
             foreach (var dd in cd.EnumerateDirectories())
             {
                 // Each folder corresponds to a campaign to be processed
-                string campaignNetworkId = dd.Name;
+                string networkCampaignId = dd.Name;
                 string campaignJson = await File.ReadAllTextAsync(dd.FullName + "\\" + "json.txt");
                 IGenericEntity ge = new GenericEntityJson();
                 var state = JsonConvert.DeserializeObject(campaignJson);
@@ -259,12 +259,12 @@ namespace UnsubLib
                 string networkCampaignName = ge.GetS("NetworkName");
                 campaignsJson.Append(Jw.Json(new
                 {
-                    NetworkCampaignId = campaignNetworkId,
+                    NetworkCampaignId = networkCampaignId,
                     NetworkCampaignName = networkCampaignName,
                     CampaignPayload = campaignJson
                 }, new bool[] { true, true, false }));
                 campaignsJson.Append(",");
-                idtof.Add(campaignNetworkId, dd.FullName + "\\" + "unsub.zip");
+                idtof.Add(networkCampaignId, dd.FullName + "\\" + "unsub.zip");
             }
             if (campaignsJson.Length > 1) campaignsJson.Remove(campaignsJson.Length - 1, 1);
             campaignsJson.Append("]");
@@ -272,7 +272,7 @@ namespace UnsubLib
             if (campaignsJson.Length < 2) campaignsJson = new StringBuilder("[]");
             string cmps = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "MergeNetworkCampaignsManual",
-                    Jw.Json(new { NetworkId = network.GetS("Id") }),
+                    Jw.Json(new { NetworkId = network.GetS("Id").ToLower() }),
                     campaignsJson.ToString());
             IGenericEntity cse = new GenericEntityJson();
             var cstate = JsonConvert.DeserializeObject(cmps);
@@ -298,7 +298,7 @@ namespace UnsubLib
         public async Task ScheduledUnsubJob(IGenericEntity network)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id") + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
             
             try
             {
@@ -352,12 +352,12 @@ namespace UnsubLib
             HashSet<Tuple<string, string>> diffs = new HashSet<Tuple<string, string>>();
             foreach (var c in cse.GetL(""))
             {
-                if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
+                if (unsubFiles.Item1.ContainsKey(c.GetS("Id").ToLower()))
                 {
                     if (!string.IsNullOrEmpty(c.GetS("MostRecentUnsubFileId")))
                     {
                         if (c.GetS("MostRecentUnsubFileId").Length == 36)
-                            diffs.Add(new Tuple<string, string>(c.GetS("MostRecentUnsubFileId"), unsubFiles.Item1[c.GetS("Id")]));
+                            diffs.Add(new Tuple<string, string>(c.GetS("MostRecentUnsubFileId").ToLower(), unsubFiles.Item1[c.GetS("Id").ToLower()]));
                     }
                 }
             }
@@ -485,8 +485,7 @@ namespace UnsubLib
 
                     if (cf.ContainsKey(MD5HANDLER))
                     {
-                        string fmd5 = cf[MD5HANDLER].ToString();
-
+                        string fmd5 = cf[MD5HANDLER].ToString().ToLower();
 
                         await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt", fmd5 + ".txt.cln");
@@ -520,7 +519,7 @@ namespace UnsubLib
 
                     if (cf.ContainsKey(DOMAINHANDLER))
                     {
-                        string fdom = cf[DOMAINHANDLER].ToString();
+                        string fdom = cf[DOMAINHANDLER].ToString().ToLower();
 
                         if (this.FileCacheFtpServer != null)
                         {
@@ -540,20 +539,20 @@ namespace UnsubLib
                         if (cf.ContainsKey(MD5HANDLER))
                         {
                             string fmd5 = cf[MD5HANDLER].ToString();
-                            if (!ncf.TryAdd(c.GetS("Id"), fmd5))
+                            if (!ncf.TryAdd(c.GetS("Id"), fmd5.ToLower()))
                             {
                                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                                    $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", "ncf.TryAdd Failed::" + uri.Key + "::" + c.GetS("Id") + "::" + fmd5);
+                                    $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", "ncf.TryAdd Failed::" + uri.Key + "::" + c.GetS("Id") + "::" + fmd5.ToLower());
                             }
                         }
 
                         if (cf.ContainsKey(DOMAINHANDLER))
                         {
                             string fdom = cf[DOMAINHANDLER].ToString();
-                            if (!ndf.TryAdd(c.GetS("Id"), fdom))
+                            if (!ndf.TryAdd(c.GetS("Id"), fdom.ToLower()))
                             {
                                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                                    $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", "ndf.TryAdd Failed::" + uri.Key + "::" + c.GetS("Id") + "::" + fdom);
+                                    $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", "ndf.TryAdd Failed::" + uri.Key + "::" + c.GetS("Id") + "::" + fdom.ToLower());
                             }
                         }
                     }
@@ -576,7 +575,7 @@ namespace UnsubLib
             {
                 sbDiff.Append("[");
                 foreach (var t in diffs)
-                    sbDiff.Append(Jw.Json(new { oldf = t.Item1, newf = t.Item2 }) + ",");
+                    sbDiff.Append(Jw.Json(new { oldf = t.Item1.ToLower(), newf = t.Item2.ToLower() }) + ",");
                 sbDiff.Remove(sbDiff.Length - 1, 1).Append("]");
             }
             else
@@ -641,7 +640,7 @@ namespace UnsubLib
                     string[] ftpFileParts = ftpFile.Split(new char[] { '.' });
                     if (!refdFiles.Contains(ftpFileParts[0].ToLower()))
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
-                        this.FileCacheFtpServerPath + "/" + ftpFile,
+                        this.FileCacheFtpServerPath + "/" + ftpFile.ToLower(),
                         this.FileCacheFtpServer,
                         21,
                         this.FileCacheFtpUser,
@@ -700,10 +699,10 @@ namespace UnsubLib
                     try
                     {
                         campaignId = x.GetS("CId");
-                        fileId = x.GetS("FId");
+                        fileId = x.GetS("FId").ToLower();
 
                         tmpFileName = await GetFileFromFileId(fileId, ".txt", this.ServerWorkingDirectory,
-                            this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tmd");
+                            this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tmd");
 
                         string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
                         await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
@@ -726,7 +725,7 @@ namespace UnsubLib
                 List<string> domFiles = new List<string>();
                 foreach (var cfp in dtve.GetL("DomUnsub"))
                 {
-                    string fid = cfp.GetS("FId");
+                    string fid = cfp.GetS("FId").ToLower();
                     if (!domFiles.Contains(fid)) domFiles.Add(fid);
                 }
                 foreach (var domFile in domFiles)
@@ -747,11 +746,11 @@ namespace UnsubLib
                 //foreach (var x in dtve.GetL("Diff"))
                 await Pw.ForEachAsync(dtve.GetL("Diff"), this.MaxParallelism, async x =>
                 {
-                    string oldf = x.GetS("oldf");
-                    string newf = x.GetS("newf");
+                    string oldf = x.GetS("oldf").ToLower();
+                    string newf = x.GetS("newf").ToLower();
                     string oldfname = "";
                     string newfname = "";
-                    string diffname = Guid.NewGuid().ToString() + ".dif";
+                    string diffname = Guid.NewGuid().ToString().ToLower() + ".dif";
 
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                             $"Before Diffing", "DiffFiles", oldf + "::" + newf);
@@ -759,9 +758,9 @@ namespace UnsubLib
                     try
                     {
                         oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.ServerWorkingDirectory, 
-                            this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tdd");
+                            this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tdd");
                         newfname = await GetFileFromFileId(newf, ".txt.srt", this.ServerWorkingDirectory, 
-                            this.WorkingFileCacheSize, Guid.NewGuid().ToString() + ".tdd");
+                            this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tdd");
 
                         bool res = await Utility.UnixWrapper.DiffFiles(
                             oldfname,
@@ -931,7 +930,7 @@ namespace UnsubLib
             var state = JsonConvert.DeserializeObject(c);
             ge.InitializeEntity(this.RosWrap, null, state);
 
-            string fileId = ge.GetS("MostRecentUnsubFileId");
+            string fileId = ge.GetS("MostRecentUnsubFileId").ToLower();
 
             return await GetFileFromFileId(fileId, ext, destDir, cacheSize);
         }
