@@ -1166,8 +1166,7 @@ namespace UnsubLib
                 {
                     uri = "https://api.unsubcentral.com/api/service/keys/" + usurl["key"] + "?s=" + usurl["s"] + "&format=hash&zipped=true";
                 }
-                else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net"))
-                    && (usurl["key"] != null) && (usurl["s"] != null))
+                else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net")))
                 {
                     string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
                     if (ezepoUnsubUrl != "")
