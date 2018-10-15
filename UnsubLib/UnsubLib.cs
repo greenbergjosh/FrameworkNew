@@ -796,9 +796,9 @@ namespace UnsubLib
                     }
                     finally
                     {
-                        //Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + diffname);
-                        //Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + newfname);
-                        //Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + oldfname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + diffname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + newfname);
+                        Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + oldfname);
                     }
                 });
             }
@@ -1108,8 +1108,8 @@ namespace UnsubLib
                            fileName + "::" + exPostProcess.ToString());
             }
 
-            //Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
-            //Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.xml");
+            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
+            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.xml");
         }
 
         public async Task<string> GetNetworkCampaigns(
