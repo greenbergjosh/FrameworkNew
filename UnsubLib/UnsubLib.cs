@@ -1118,13 +1118,24 @@ namespace UnsubLib
             };
 
             string campaignXml = null;
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                           "GetNetworkCampaigns", "UseLocalNetworkFiles",
+                           this.UseLocalNetworkFile.ToString());
+
             if (!this.UseLocalNetworkFile)
             {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                           "GetNetworkCampaigns", "Reading Remote Network File",
+                           "");
                 campaignXml = await Utility.ProtocolClient.HttpPostAsync(apiUrl, parms);
                 File.WriteAllText(this.LocalNetworkFilePath + "\\" + networkId + ".xml", campaignXml);
             }
             else
             {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                           "GetNetworkCampaigns", "Reading Local Network File",
+                           $@"{this.LocalNetworkFilePath}\{networkId}.xml");
                 campaignXml = File.ReadAllText($@"{this.LocalNetworkFilePath}\{networkId}.xml");
             }                
                 
