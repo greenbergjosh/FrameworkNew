@@ -352,12 +352,12 @@ namespace UnsubLib
             HashSet<Tuple<string, string>> diffs = new HashSet<Tuple<string, string>>();
             foreach (var c in cse.GetL(""))
             {
-                if (unsubFiles.Item1.ContainsKey(c.GetS("Id").ToLower()))
+                if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
                 {
                     if (!string.IsNullOrEmpty(c.GetS("MostRecentUnsubFileId")))
                     {
                         if (c.GetS("MostRecentUnsubFileId").Length == 36)
-                            diffs.Add(new Tuple<string, string>(c.GetS("MostRecentUnsubFileId").ToLower(), unsubFiles.Item1[c.GetS("Id").ToLower()]));
+                            diffs.Add(new Tuple<string, string>(c.GetS("MostRecentUnsubFileId").ToLower(), unsubFiles.Item1[c.GetS("Id")].ToLower()));
                     }
                 }
             }
@@ -709,6 +709,9 @@ namespace UnsubLib
                             "UploadDomainUnsubFile",
                             Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }),
                             "");
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                            $"LoadUnsubFiles", "UploadedDomainUnsubFile", campaignId + "::" + wd +
+                            "::" + fileId + "::" + tmpFileName);
 
                         Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
                     }
@@ -752,7 +755,7 @@ namespace UnsubLib
                     string newfname = "";
                     string diffname = Guid.NewGuid().ToString().ToLower() + ".dif";
 
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
                             $"Before Diffing", "DiffFiles", oldf + "::" + newf);
 
                     try
@@ -774,7 +777,10 @@ namespace UnsubLib
                             this.SsisConnectionString,
                             this.JsonTemplateFile,
                             this.SsisTemplateFile,
-                            "PostProcessDiffFile");                        
+                            "PostProcessDiffFile");
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                            $"LoadUnsubFiles", "DiffedFiles", oldfname + "::" + newfname + "::" + diffname);
                     }
                     catch (Exception exDiff)
                     {
