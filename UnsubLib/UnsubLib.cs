@@ -1259,38 +1259,39 @@ namespace UnsubLib
 
         public async Task<string> GetEzepoUnsubFileUri(string url)
         {
+            string fileUrl = "";
             //var chromeOptions = new ChromeOptions();
             //chromeOptions.AddUserProfilePreference("download.default_directory", @"e:\workspace\unsub");
             //chromeOptions.AddUserProfilePreference("intl.accept_languages", "nl");
             //chromeOptions.AddUserProfilePreference("disable-popup-blocking", "true");
             //var driver = new ChromeDriver(this.SeleniumChromeDriverPath, chromeOptions);
-            var driver = new ChromeDriver(this.SeleniumChromeDriverPath);
-            driver.Navigate().GoToUrl(url);
-            driver.FindElement(By.XPath("//button[.='Download All Data']")).Click();
-            IWebElement dwnldLink = null;
-            int retryCount = 0;
-            int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-            while (retryCount < 5)
+            using (var driver = new ChromeDriver(this.SeleniumChromeDriverPath))
             {
-                try
+                driver.Navigate().GoToUrl(url);
+                driver.FindElement(By.XPath("//button[.='Download All Data']")).Click();
+                IWebElement dwnldLink = null;
+                int retryCount = 0;
+                int[] retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+                while (retryCount < 5)
                 {
-                    dwnldLink = driver.FindElement(By.Id("downloadlink"));
-                    if (dwnldLink.Displayed) break;
-                    else throw new Exception();
+                    try
+                    {
+                        dwnldLink = driver.FindElement(By.Id("downloadlink"));
+                        if (dwnldLink.Displayed) break;
+                        else throw new Exception();
+                    }
+                    catch (Exception ex)
+                    {
+                        await Task.Delay(retryWalkaway[retryCount] * 1000);
+                    }
                 }
-                catch (Exception ex)
+
+                if (dwnldLink != null)
                 {
-                    await Task.Delay(retryWalkaway[retryCount] * 1000);
-                }
+                    //dwnldLink.Click();
+                    fileUrl = dwnldLink.GetAttribute("href");
+                } 
             }
-
-            string fileUrl = "";
-            if (dwnldLink != null)
-            {
-                //dwnldLink.Click();
-                fileUrl = dwnldLink.GetAttribute("href");
-            }
-
             return fileUrl;
         }
 
