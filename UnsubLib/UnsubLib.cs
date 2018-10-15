@@ -770,6 +770,10 @@ namespace UnsubLib
                             newfname,
                             this.ServerWorkingDirectory,
                             diffname);
+
+                        List<string> difflines = new List<string>() { "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"};
+                        File.AppendAllLines(this.ServerWorkingDirectory + "\\" + diffname, difflines);
                         
                         await SSISLoadMd5File(diffname,
                             this.ServerName,
