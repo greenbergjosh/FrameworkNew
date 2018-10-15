@@ -278,6 +278,13 @@ namespace UnsubLib
             var cstate = JsonConvert.DeserializeObject(cmps);
             cse.InitializeEntity(null, null, cstate);
 
+            if (cse.GetS("Result") == "NoData")
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
+                        $"ManualJob", "NoData", "");
+                return;
+            }
+
             IDictionary<string, List<IGenericEntity>> uris =
                new Dictionary<string, List<IGenericEntity>>();
             foreach (var cmp in cse.GetL(""))
@@ -770,10 +777,6 @@ namespace UnsubLib
                             newfname,
                             this.ServerWorkingDirectory,
                             diffname);
-
-                        List<string> difflines = new List<string>() { "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"};
-                        File.AppendAllLines(this.ServerWorkingDirectory + "\\" + diffname, difflines);
                         
                         await SSISLoadMd5File(diffname,
                             this.ServerName,
@@ -892,9 +895,6 @@ namespace UnsubLib
                     success = await MakeRoom(fileName, cacheSize);
                     if (!success)
                         throw new Exception("Could not make room for file.");
-
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            $"GetFileFromFileId", "", destDir + "::" + this.FileCacheFtpServerPath + "/" + fileName + "::" + dfileName);
 
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,
