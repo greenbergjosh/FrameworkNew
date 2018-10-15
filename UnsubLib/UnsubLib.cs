@@ -1104,7 +1104,7 @@ namespace UnsubLib
                            fileName + "::" + exPostProcess.ToString());
             }
 
-            Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
+            //Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
             Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.xml");
         }
 
