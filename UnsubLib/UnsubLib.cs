@@ -435,7 +435,7 @@ namespace UnsubLib
             // Signal server to load domain unsub files, diff md5 unsub files
             try
             {
-                await SignalUnsubServerService(diffs, unsubFiles.Item2);
+                await SignalUnsubServerService(network, diffs, unsubFiles.Item2);
             }
             catch (Exception exSignal)
             {
@@ -706,7 +706,7 @@ namespace UnsubLib
             return new Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>(ncf, ndf);
         }
 
-        public async Task SignalUnsubServerService(HashSet<Tuple<string, string>> diffs, 
+        public async Task SignalUnsubServerService(IGenericEntity network, HashSet<Tuple<string, string>> diffs, 
             IDictionary<string, string> ndf)
         {
             StringBuilder sbDiff = new StringBuilder("");
@@ -722,7 +722,8 @@ namespace UnsubLib
                 sbDiff.Append("[]");
             }
             
-            string msg = Jw.Json(new { m = "LoadUnsubFiles", DomUnsub = Jw.Json("CId", "FId", ndf), Diff = sbDiff.ToString() },
+            string msg = Jw.Json(new { m = "LoadUnsubFiles", ntwrk = network.GetS("Name"),
+                DomUnsub = Jw.Json("CId", "FId", ndf), Diff = sbDiff.ToString() },
                 new bool[] { true, false, false });
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -1036,6 +1037,10 @@ namespace UnsubLib
                              ex.ToString());
                 result = Jw.Json(new { Error = "Exception" });
             }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", 
+                            $"Finished spUploadDomainUnsubFile({dtve.GetS("ntwrk")}): " + result);
 
             return result;
         }
