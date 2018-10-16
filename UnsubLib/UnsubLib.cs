@@ -137,50 +137,50 @@ namespace UnsubLib
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
             ge.InitializeEntity(this.RosWrap, null, state);
-            List<string> fileNames = new List<string>();
-            foreach (var n in ge.GetL(""))
-            {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                    $"GetNetworksAndCreateLockFiles", "Tracking",
-                    "Adding lock file name to list: " + this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
-                fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
-            }
+            //List<string> fileNames = new List<string>();
+            //foreach (var n in ge.GetL(""))
+            //{
+            //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //        $"GetNetworksAndCreateLockFiles", "Tracking",
+            //        "Adding lock file name to list: " + this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
+            //    fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
+            //}
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "Tracking", "Before creating lock files");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"GetNetworksAndCreateLockFiles", "Tracking", "Before creating lock files");
 
-            await Fs.CreateEmptyFiles(fileNames);
+            //await Fs.CreateEmptyFiles(fileNames);
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "Tracking", "After creating lock files");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"GetNetworksAndCreateLockFiles", "Tracking", "After creating lock files");
 
             return ge;
         }
 
-        public async Task CreateNetworkLockFile(IGenericEntity network)
-        {
-            string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck";
+        //public async Task CreateNetworkLockFile(IGenericEntity network)
+        //{
+        //    string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck";
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                "CreateNetworkLockFile", "Tracking", "Before creating lock file: " + lckFileName);
+        //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+        //        "CreateNetworkLockFile", "Tracking", "Before creating lock file: " + lckFileName);
 
-            if (!File.Exists(lckFileName))
-                await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
+        //    if (!File.Exists(lckFileName))
+        //        await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                "CreateNetworkLockFile", "Tracking", "After creating lock file: " + lckFileName);
-        }
+        //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+        //        "CreateNetworkLockFile", "Tracking", "After creating lock file: " + lckFileName);
+        //}
 
         public async Task ManualDirectory(IGenericEntity network)
         {
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ManualDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"ManualDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
+            //CancellationTokenSource cts = new CancellationTokenSource();
+            //FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ManualDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"ManualDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             try
             {
@@ -217,7 +217,7 @@ namespace UnsubLib
             }
             finally
             {
-                lckFile.Close();
+                //lckFile.Close();
             }
         }
 
@@ -253,14 +253,14 @@ namespace UnsubLib
 
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
         {
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ForceDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"ForceDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
+            //CancellationTokenSource cts = new CancellationTokenSource();
+            //FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ForceDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"ForceDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             try
             {
@@ -273,7 +273,7 @@ namespace UnsubLib
             }
             finally
             {
-                lckFile.Close();
+                //lckFile.Close();
             }
         }
 
@@ -355,14 +355,14 @@ namespace UnsubLib
 
         public async Task ScheduledUnsubJob(IGenericEntity network)
         {
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ScheduledUnsubJob", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"ScheduledUnsubJob", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
+            //CancellationTokenSource cts = new CancellationTokenSource();
+            //FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ScheduledUnsubJob", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+            //    $"ScheduledUnsubJob", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             try
             {
@@ -392,7 +392,7 @@ namespace UnsubLib
             }
             finally
             {
-                lckFile.Close();
+                //lckFile.Close();
             }
         }
 

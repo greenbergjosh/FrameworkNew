@@ -9,47 +9,47 @@ namespace Utility
 {
     public static class FileSystem
     {
-        public static FileStream IsFileReady(string filename)
-        {
-            // If the file can be opened for exclusive access it means that the file
-            // is no longer locked by another process.
-            FileStream f = null;
-            try
-            {
-                f = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.None);
-                return f;
-            }
-            catch (Exception ex)
-            {
-                return f;
-            }
-        }
+        //public static FileStream IsFileReady(string filename)
+        //{
+        //    // If the file can be opened for exclusive access it means that the file
+        //    // is no longer locked by another process.
+        //    FileStream f = null;
+        //    try
+        //    {
+        //        f = File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.None);
+        //        return f;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return f;
+        //    }
+        //}
 
-        public static async Task<FileStream> WaitForFile(string filename, int pollingInterval, CancellationToken ct)
-        {
-            FileStream f = null;
-            while ((f = IsFileReady(filename)) == null)
-            {
-                if (ct.IsCancellationRequested) throw new Exception("File Wait canceled.");
-                await Task.Delay(pollingInterval);
-            }
-            return f;
-        }
+        //public static async Task<FileStream> WaitForFile(string filename, int pollingInterval, CancellationToken ct)
+        //{
+        //    FileStream f = null;
+        //    while ((f = IsFileReady(filename)) == null)
+        //    {
+        //        if (ct.IsCancellationRequested) throw new Exception("File Wait canceled.");
+        //        await Task.Delay(pollingInterval);
+        //    }
+        //    return f;
+        //}
 
-        public static void ReleaseFile(FileStream file)
-        {
-            file.Close();
-        }
+        //public static void ReleaseFile(FileStream file)
+        //{
+        //    file.Close();
+        //}
 
-        public static async Task CreateEmptyFiles(List<string> fileNames)
-        {
-            foreach (var fileName in fileNames)
-            {
-                using (var f = File.CreateText(fileName))
-                {
-                }
-            }
-        }
+        //public static async Task CreateEmptyFiles(List<string> fileNames)
+        //{
+        //    foreach (var fileName in fileNames)
+        //    {
+        //        using (var f = File.CreateText(fileName))
+        //        {
+        //        }
+        //    }
+        //}
 
         public static string QuotePathParts(string path)
         {
