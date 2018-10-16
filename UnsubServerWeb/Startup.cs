@@ -59,7 +59,8 @@ namespace UnsubServerWeb
                     switch (dtve.GetS("m"))
                     {
                         case "LoadUnsubFiles":
-                            result = await nw.LoadUnsubFiles(dtve);
+                            Task.Run(() => nw.LoadUnsubFiles(dtve));
+                            result = Jw.Json(new { Result = "Success" });
                             break;
 
                         case "IsUnsub":
@@ -72,6 +73,10 @@ namespace UnsubServerWeb
 
                         case "ForceUnsub":
                             result = await nw.ForceUnsub(dtve);
+                            break;
+
+                        case "CleanUnusedFilesServer":
+                            result = await nw.CleanUnusedFilesServer();
                             break;
 
                         default:

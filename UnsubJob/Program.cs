@@ -27,6 +27,23 @@ namespace UnsubJob
 
             UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubJob", cs);
             IGenericEntity networks = null;
+            
+            try
+            {
+                await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                    $"Main", "Tracking", $"Starting CleanUnusedFiles");
+
+                await nw.CleanUnusedFiles();
+
+                await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                    $"Main", "Tracking", $"Completed CleanUnusedFiles");
+            }
+            catch (Exception exClean)
+            {
+                await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
+                    $"Main", "Exception", $"CleanUnusedFiles:: " + exClean.ToString());
+            }
+
             try
             {
                 networks = await nw.GetNetworksAndCreateLockFiles();

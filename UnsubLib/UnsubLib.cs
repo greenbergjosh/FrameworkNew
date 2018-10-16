@@ -444,15 +444,15 @@ namespace UnsubLib
             }
 
             // Clean unused files that have not been touched in a day and are unreferenced
-            try
-            {
-                await CleanUnusedFiles();
-            }
-            catch (Exception exClean)
-            {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ProcessUnsubFiles", "Exception", $"CleanUnusedFiles({networkName}):: " + exClean.ToString());
-            }
+            //try
+            //{
+            //    await CleanUnusedFiles();
+            //}
+            //catch (Exception exClean)
+            //{
+            //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+            //        $"ProcessUnsubFiles", "Exception", $"CleanUnusedFiles({networkName}):: " + exClean.ToString());
+            //}
         }
 
         public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network)
@@ -832,6 +832,57 @@ namespace UnsubLib
                             Fs.TryDeleteFile(file); 
                 }
             }
+
+            DirectoryInfo sourceDirLocal = new DirectoryInfo(this.ClientWorkingDirectory);
+            FileInfo[] filesLocal = sourceDirLocal.GetFiles("*", SearchOption.TopDirectoryOnly);
+            foreach (var file in filesLocal)
+            {
+                Fs.TryDeleteFile(file);
+            }
+            
+            try
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"CleanUnusedFiles", "Tracking", "Starting HttpPostAsync CleanUnusedFilesServer");
+
+                await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
+                    Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"CleanUnusedFiles", "Tracking", "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, "UnsubJob",
+                    $"CleanUnusedFiles", "Exception", $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+            }
+
+
+        }
+
+        public async Task<string> CleanUnusedFilesServer()
+        {
+            try
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, "UnsubJob",
+                    $"CleanUnusedFilesServer", "Tracking", $"Starting CleanUnusedFilesServer");
+
+                DirectoryInfo sourceDirLocal = new DirectoryInfo(this.ServerWorkingDirectory);
+                FileInfo[] filesLocal = sourceDirLocal.GetFiles("*", SearchOption.TopDirectoryOnly);
+                foreach (var file in filesLocal)
+                {
+                    Fs.TryDeleteFile(file);
+                }
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, "UnsubJob",
+                    $"CleanUnusedFilesServer", "Tracking", $"Completed CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, "UnsubJob",
+                     $"CleanUnusedFilesServer", "Exception", $"CleanUnusedFilesServer: " + exClean.ToString());
+            }
+            return Jw.Json(new { Result = "Success" });
         }
 
         public async Task<IGenericEntity> GetNetworkConfiguration(string conString, string networkName)
