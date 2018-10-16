@@ -593,12 +593,13 @@ namespace Utility
         }
 
         // "application/json"
-        public static async Task<string> HttpPostAsync(string uri, string content, string mediaType)
+        public static async Task<string> HttpPostAsync(string uri, string content, string mediaType, int timeoutSeconds = 60)
         {
             var http = (HttpWebRequest)WebRequest.Create(new Uri(uri));
             http.Accept = mediaType;
             http.ContentType = mediaType;
             http.Method = "POST";
+            http.Timeout = timeoutSeconds;
 
             ASCIIEncoding encoding = new ASCIIEncoding();
             Byte[] bytes = encoding.GetBytes(content);

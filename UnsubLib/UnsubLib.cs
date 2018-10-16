@@ -734,8 +734,11 @@ namespace UnsubLib
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                         $"SignalUnsubServerService", "Tracking", "Calling HttpPostAsync");
 
-                result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
-                    new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
+                //result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
+                //    new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
+
+                result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri, 
+                    msg, "application/json", 1000 * 60);
 
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                         $"SignalUnsubServerService", "Tracking", "Completed HttpPostAsync");
