@@ -724,7 +724,7 @@ namespace UnsubLib
             
             string msg = Jw.Json(new { m = "LoadUnsubFiles", ntwrk = network.GetS("Name"),
                 DomUnsub = Jw.Json("CId", "FId", ndf), Diff = sbDiff.ToString() },
-                new bool[] { true, false, false });
+                new bool[] { true, true, false, false });
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                         $"SignalUnsubServerService", "Tracking", msg);
