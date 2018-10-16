@@ -23,9 +23,9 @@ namespace UnsubJob
             string cs = configuration.GetConnectionString("DefaultConnection");
 
             await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Starting...", "");
+                           "Main", "Tracking", "Starting...");
 
-            UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("ThirdPartyUnsub", cs);
+            UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubJob", cs);
             IGenericEntity networks = null;
             try
             {
@@ -33,43 +33,50 @@ namespace UnsubJob
             }
             catch (Exception exGetNetworks)
             {
-                await SqlWrapper.InsertErrorLog(cs, 1000, "ThirdPartyUnsub",
-                           $"GetNetworksAndCreateLockFiles",
-                           "Main failed", exGetNetworks.ToString());
+                await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
+                           "Main",
+                           "Exception", "GetNetworksAndCreateLockFiles: " + exGetNetworks.ToString());
                 return;
             }            
 
             foreach (var n in networks.GetL(""))
             {
                 await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Starting...", n.GetS("Name"));
+                           "Main", "Tracking", $"Starting({n.GetS("Name")})...");
 
                 string unsubMethod = n.GetS("Credentials/UnsubMethod");
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
                     try
                     {
-                        //if (n.GetS("Name") == "bypass")
+                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                           "Main", "Tracking", $"Starting ScheduledUnsubJob({n.GetS("Name")})...");
                         await nw.ScheduledUnsubJob(n);
+                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                           "Main", "Tracking", $"Completed ScheduledUnsubJob({n.GetS("Name")})...");
                     }
                     catch (Exception exScheduledUnsub)
                     {
-                        await SqlWrapper.InsertErrorLog(cs, 1000, "ThirdPartyUnsub",
-                            $"ScheduledUnsubJob::" + n.GetS("Name"), 
-                            "Main failed " + n.GetS("Name"), exScheduledUnsub.ToString());
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
+                            "Main", "Exception",
+                            $"ScheduledUnsubJob failed({n.GetS("Name")}): " +  exScheduledUnsub.ToString());
                     }
 
                     if (n.GetS("AlsoDoManualDirectory") == "True")
                     {
                         try
                         {
+                            await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                                "Main", "Tracking", $"Starting AlsoDoManualDirectory({n.GetS("Name")})...");
                             await nw.ManualDirectory(n);
+                            await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                                "Main", "Tracking", $"Completed AlsoDoManualDirectory({n.GetS("Name")})...");
                         }
                         catch (Exception exScheduledUnsub)
                         {
-                            await SqlWrapper.InsertErrorLog(cs, 1000, "ThirdPartyUnsub",
-                                $"AlsoDoManual::" + n.GetS("Name"),
-                                "Main failed " + n.GetS("Name"), exScheduledUnsub.ToString());
+                            await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
+                                "Main", "Exception",
+                                $"AlsoDoManualDirectory failed({n.GetS("Name")}): " + exScheduledUnsub.ToString());
                         }
                     }
                 }
@@ -77,27 +84,31 @@ namespace UnsubJob
                 {
                     try
                     {
+                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                                "Main", "Tracking", $"Starting ManualDirectory({n.GetS("Name")})...");
                         await nw.ManualDirectory(n);
+                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
+                                "Main", "Tracking", $"Completed ManualDirectory({n.GetS("Name")})...");
                     }
                     catch (Exception exScheduledUnsub)
                     {
-                        await SqlWrapper.InsertErrorLog(cs, 1000, "ThirdPartyUnsub",
-                            $"ManualDirectory::" + n.GetS("Name"), 
-                            "Main failed " + n.GetS("Name"), exScheduledUnsub.ToString());
+                        await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
+                                "Main", "Exception",
+                                $"ManualDirectory failed({n.GetS("Name")}): " + exScheduledUnsub.ToString());
                     }
                 }
                 else
                 {
-                    await SqlWrapper.InsertErrorLog(cs, 1000, "ThirdPartyUnsub",
-                            "Main", "Unknown UnsubMethod type", unsubMethod);
+                    await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
+                            "Main", "Error", "Unknown UnsubMethod type: " + unsubMethod);
                 }
 
                 await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Completed...", n.GetS("Name"));
+                           "Main", "Tracking", $"Completed({n.GetS("Name")})...");
             }
 
             await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "...Stopping", "");
+                           "Main", "Tracking", $"...Stopping");
         }
 
         public void Nothing()

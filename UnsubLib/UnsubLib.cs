@@ -124,7 +124,7 @@ namespace UnsubLib
         public async Task<IGenericEntity> GetNetworksAndCreateLockFiles()
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "Entry", "");
+                "GetNetworksAndCreateLockFiles", "Tracking", "Before SelectNetwork");
 
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
@@ -132,7 +132,7 @@ namespace UnsubLib
                     "");
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "After SelectNetwork", network);
+                $"GetNetworksAndCreateLockFiles", "Tracking", "After SelectNetwork: " + network);
 
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
@@ -141,18 +141,18 @@ namespace UnsubLib
             foreach (var n in ge.GetL(""))
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                    $"GetNetworksAndCreateLockFiles", "Creating lock file",
-                    this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
+                    $"GetNetworksAndCreateLockFiles", "Tracking",
+                    "Adding lock file name to list: " + this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
                 fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
             }
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "After parsing SelectNetwork return", "");
+                $"GetNetworksAndCreateLockFiles", "Tracking", "Before creating lock files");
 
             await Fs.CreateEmptyFiles(fileNames);
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "After creating empty files", "");
+                $"GetNetworksAndCreateLockFiles", "Tracking", "After creating lock files");
 
             return ge;
         }
@@ -160,20 +160,27 @@ namespace UnsubLib
         public async Task CreateNetworkLockFile(IGenericEntity network)
         {
             string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck";
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                "CreateNetworkLockFile", "Tracking", "Before creating lock file: " + lckFileName);
+
             if (!File.Exists(lckFileName))
                 await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                "CreateNetworkLockFile", "Tracking", "After creating lock file: " + lckFileName);
         }
 
         public async Task ManualDirectory(IGenericEntity network)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ManualDirectory", "Before locking files", this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+                $"ManualDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             CancellationTokenSource cts = new CancellationTokenSource();
             FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"ManualDirectory", "After locking files", "");
+                $"ManualDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             try
             {
@@ -199,7 +206,13 @@ namespace UnsubLib
 
                 foreach (var dir in dirs)
                 {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualDirectory", "Tracking", "Before ManualJob: " + dir);
+
                     await ManualJob(dir, network);
+
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualDirectory", "Tracking", "After ManualJob: " + dir);
                 }
             }
             finally
@@ -211,6 +224,10 @@ namespace UnsubLib
         public async Task<string> ForceUnsub(IGenericEntity dtve)
         {
             string forceName = dtve.GetS("ForceName");
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ForceUnsub", "Tracking", "Starting ForceUnsub: " + forceName);
+
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
                     "{}",
@@ -221,21 +238,38 @@ namespace UnsubLib
             List<string> fileNames = new List<string>();
             foreach (var n in ge.GetL(""))
             {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ForceUnsub", "Tracking", $"Starting ForceUnsub({n.GetS("Name")}): " + forceName);
                 await ForceDirectory(forceName, n);
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ForceUnsub", "Tracking", $"Completed ForceUnsub({n.GetS("Name")}): " + forceName);
             }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ForceUnsub", "Tracking", "Completed ForceUnsub: " + forceName);
 
             return Jw.Json(new { Result = "Success" });
         }
 
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
         {
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ForceDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+
             CancellationTokenSource cts = new CancellationTokenSource();
-            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
+            FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ForceDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
 
             try
             {
                 DirectoryInfo dir = new DirectoryInfo(this.ClientWorkingDirectory + "\\Force\\" + forceDirName);
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ForceDirectory", "Tracking", $"Starting ManualJob({network.GetS("Name")}): " + dir);
                 await ManualJob(dir, network);
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ForceDirectory", "Tracking", $"Completed ManualJob({network.GetS("Name")}): " + dir);
             }
             finally
             {
@@ -251,6 +285,9 @@ namespace UnsubLib
             foreach (var dd in cd.EnumerateDirectories())
             {
                 // Each folder corresponds to a campaign to be processed
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualJob", "Tracking", $"ManualJob({network.GetS("Name")}) Processing: " + dd.Name);
+
                 string networkCampaignId = dd.Name;
                 string campaignJson = await File.ReadAllTextAsync(dd.FullName + "\\" + "json.txt");
                 IGenericEntity ge = new GenericEntityJson();
@@ -268,8 +305,11 @@ namespace UnsubLib
             }
             if (campaignsJson.Length > 1) campaignsJson.Remove(campaignsJson.Length - 1, 1);
             campaignsJson.Append("]");
-
             if (campaignsJson.Length < 2) campaignsJson = new StringBuilder("[]");
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualJob", "Tracking", $"ManualJob({network.GetS("Name")}) Campaigns: " + campaignsJson);
+
             string cmps = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "MergeNetworkCampaignsManual",
                     Jw.Json(new { NetworkId = network.GetS("Id").ToLower() }),
@@ -280,9 +320,14 @@ namespace UnsubLib
 
             if (cse.GetS("Result") == "NoData")
             {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                        $"ManualJob", "NoData", "");
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualJob", "Tracking", "NoData");
                 return;
+            }
+            else
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualJob", "Tracking", $"ManualJob({network.GetS("Name")}) MergeNetworkCampaignsManual->: " + cmps);
             }
 
             IDictionary<string, List<IGenericEntity>> uris =
@@ -297,16 +342,28 @@ namespace UnsubLib
                 }
             }
 
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualJob", "Tracking", $"ManualJob({network.GetS("Name")}) Calling ProcessUnsubFiles");
+
             await ProcessUnsubFiles(uris, network, cse);
 
-            //di.Delete(true);
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ManualJob", "Tracking", $"ManualJob({network.GetS("Name")}) Completed ProcessUnsubFiles");
+
+            dir.Delete(true);
         }
 
         public async Task ScheduledUnsubJob(IGenericEntity network)
         {
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ScheduledUnsubJob", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+
             CancellationTokenSource cts = new CancellationTokenSource();
             FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
-            
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"ScheduledUnsubJob", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+
             try
             {
                 // Get campaigns
@@ -322,10 +379,16 @@ namespace UnsubLib
                 catch (Exception exGetUnsubUris)
                 {
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                        $"ScheduledUnsubJob::{networkName}", "GetUnsubUris", exGetUnsubUris.ToString());
+                        $"ScheduledUnsubJob", "Exception", $"GetUnsubUris({networkName}):" + exGetUnsubUris.ToString());
                 }
 
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Calling ProcessUnsubFiles");
+
                 await ProcessUnsubFiles(uris, network, cse);
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Completed ProcessUnsubFiles");
             }
             finally
             {
@@ -352,7 +415,7 @@ namespace UnsubLib
             catch (Exception exUpdateCampaigns)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ScheduledUnsubJob::{networkName}", "UpdateNetworkCampaignsUnsubFiles", exUpdateCampaigns.ToString());
+                    $"ProcessUnsubFiles", "Exception", $"UpdateNetworkCampaignsUnsubFiles({networkName}):: " + exUpdateCampaigns.ToString());
             }
 
             // Generate diff list
@@ -377,7 +440,7 @@ namespace UnsubLib
             catch (Exception exSignal)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ScheduledUnsubJob::{networkName}", "SignalUnsubServerService", exSignal.ToString());
+                    $"ProcessUnsubFiles", "Exception", $"SignalUnsubServerService({networkName}):: " + exSignal.ToString());
             }
 
             // Clean unused files that have not been touched in a day and are unreferenced
@@ -388,7 +451,7 @@ namespace UnsubLib
             catch (Exception exClean)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ScheduledUnsubJob::{networkName}", "CleanUnusedFiles", exClean.ToString());
+                    $"ProcessUnsubFiles", "Exception", $"CleanUnusedFiles({networkName}):: " + exClean.ToString());
             }
         }
 
@@ -408,11 +471,10 @@ namespace UnsubLib
             catch (Exception exCampaigns)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ScheduledUnsubJob::{networkName}", "GetCampaigns", exCampaigns.ToString());
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ScheduledUnsubJob::{networkName}", "GetCampaignsEx", network.GetS("Id") + "::" +
+                    $"GetCampaignsScheduledJobs", "Exception", $"GetNetworkCampaigns({networkName}):: " +
+                        network.GetS("Id") + "::" +
                         network.GetS($"Credentials/{networkName}ApiKey") + "::" +
-                        network.GetS($"Credentials/{networkName}ApiUrl"));
+                        network.GetS($"Credentials/{networkName}ApiUrl") + exCampaigns.ToString());
                 throw new Exception($"Failed to get {networkName} campaigns");
             }
             return cse;
@@ -427,10 +489,18 @@ namespace UnsubLib
             {
                 try
                 {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"GetUnsubUris", "Tracking", $"Calling GetSuppressionFileUri({networkName}):: " +
+                        "for campaign " + c.GetS("NetworkCampaignId"));
+
                     string uri = await GetSuppressionFileUri(
                         network,
                         c.GetS("NetworkCampaignId"),
                         parallelism);
+
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"GetUnsubUris", "Tracking", $"Completed GetSuppressionFileUri({networkName}):: " +
+                        "for campaign " + c.GetS("NetworkCampaignId"));
 
                     if (!String.IsNullOrEmpty(uri))
                     {
@@ -440,12 +510,14 @@ namespace UnsubLib
                 }
                 catch (Exception exCampaign)
                 {
-                    string campaignId = "Failed to retrieve unsubscribe Id.";
+                    string campaignId = "unknown";
                     try { campaignId = c.GetS("NetworkCampaignId"); }
                     catch (Exception exGetC) { }
 
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                        $"ScheduledUnsubJob::{networkName}", "GetSuppressionFileUri", campaignId + "::" + exCampaign.ToString());
+                        $"GetUnsubUris", "Exception", $"GetSuppressionFileUri({networkName}):: " +
+                        network.GetS("Id") + "::" +
+                        "Failed to retrieve unsubscribe Id for " + campaignId + exCampaign.ToString());
                 }
             });
 
@@ -467,15 +539,36 @@ namespace UnsubLib
             {
                 try
                 {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var c in uri.Value)
+                    {
+                        sb.Append(c.GetS("Id") + ":");
+                    }
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"Iteration({networkName}):: " +
+                            "for url " + uri.Key + " for campaigns " + sb.ToString());
+
                     IDictionary<string, object> cf = new Dictionary<string, object>();
                     if (networkUnsubMethod == "ScheduledUnsubJob")
                     {
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"Calling DownloadSuppressionFiles({networkName}):: " +
+                            "for url " + uri.Key);
+
                         cf = await DownloadSuppressionFiles(
                                 network,
                                 uri.Key);
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"Completed DownloadSuppressionFiles({networkName}):: " +
+                            "for url " + uri.Key);
                     }
                     else if (networkUnsubMethod == "ManualDirectory")
                     {
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"Calling UnzipUnbuffered({networkName}):: " +
+                            "for url " + uri.Key);
+
                         FileInfo fis = new FileInfo(uri.Key);
                         cf = await Utility.ProtocolClient.UnzipUnbuffered(uri.Key,
                                 ZipTester,
@@ -488,17 +581,33 @@ namespace UnsubLib
                                 },
                                 fis.DirectoryName,
                                 this.ClientWorkingDirectory);
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"Completed UnzipUnbuffered({networkName}):: " +
+                            "for url " + uri.Key);
                     }                     
 
                     if (cf.ContainsKey(MD5HANDLER))
                     {
                         string fmd5 = cf[MD5HANDLER].ToString().ToLower();
 
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"RemoveNonAsciiFromFile({networkName}):: " +
+                            "for file " + fmd5);
+
                         await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt", fmd5 + ".txt.cln");
 
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"RemoveNonMD5LinesFromFile({networkName}):: " +
+                            "for file " + fmd5);
+
                         await Utility.UnixWrapper.RemoveNonMD5LinesFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"SortFile({networkName}):: " +
+                            "for file " + fmd5);
 
                         await Utility.UnixWrapper.SortFile(
                             this.ClientWorkingDirectory,
@@ -507,14 +616,26 @@ namespace UnsubLib
                             false,
                             true);
 
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"DownloadUnsubFiles", "Tracking", $"Completed Cleaning({networkName}):: " +
+                            "for file " + fmd5);
+
                         if (this.FileCacheFtpServer != null)
                         {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Starting Upload({networkName}):: " +
+                                "for file " + fmd5);
+
                             await Utility.ProtocolClient.UploadFile(
                                 this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt",
                                 this.FileCacheFtpServerPath + "/" + fmd5 + ".txt.srt",
                                 this.FileCacheFtpServer,
                                 this.FileCacheFtpUser,
                                 this.FileCacheFtpPassword);
+
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Completed Upload({networkName}):: " +
+                                "for file " + fmd5);
 
                             Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5 + ".txt.srt"}");
                         }
@@ -530,12 +651,20 @@ namespace UnsubLib
 
                         if (this.FileCacheFtpServer != null)
                         {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Starting Upload({networkName}):: " +
+                                "for file " + fdom);
+
                             await Utility.ProtocolClient.UploadFile(
                                     this.ClientWorkingDirectory + "\\" + fdom + ".txt",
                                     this.FileCacheFtpServerPath + "/" + fdom + ".txt",
                                     this.FileCacheFtpServer,
                                     this.FileCacheFtpUser,
                                     this.FileCacheFtpPassword);
+
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Completed Upload({networkName}):: " +
+                                "for file " + fdom);
 
                             Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fdom}.txt");
                         }
@@ -549,7 +678,8 @@ namespace UnsubLib
                             if (!ncf.TryAdd(c.GetS("Id"), fmd5.ToLower()))
                             {
                                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                                    $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", "ncf.TryAdd Failed::" + uri.Key + "::" + c.GetS("Id") + "::" + fmd5.ToLower());
+                                    $"DownloadUnsubFiles", "Error", $"ncf.TryAdd Failed({networkName}):: " +
+                                    uri.Key + "::" + c.GetS("Id") + "::" + fmd5.ToLower());
                             }
                         }
 
@@ -559,7 +689,8 @@ namespace UnsubLib
                             if (!ndf.TryAdd(c.GetS("Id"), fdom.ToLower()))
                             {
                                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                                    $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", "ndf.TryAdd Failed::" + uri.Key + "::" + c.GetS("Id") + "::" + fdom.ToLower());
+                                    $"DownloadUnsubFiles", "Error", $"ndf.TryAdd Failed({networkName}):: " +
+                                    uri.Key + "::" + c.GetS("Id") + "::" + fdom.ToLower());
                             }
                         }
                     }
@@ -567,7 +698,8 @@ namespace UnsubLib
                 catch (Exception exFile)
                 {
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                        $"ScheduledUnsubJob::{networkName}", "DownloadSuppressionFiles", uri.Key + "::" + exFile.ToString());
+                        $"DownloadUnsubFiles", "Exception", $"OuterCatch({networkName}):: " +
+                        uri.Key + "::" + exFile.ToString());
                 }
             });
 
@@ -593,26 +725,57 @@ namespace UnsubLib
             string msg = Jw.Json(new { m = "LoadUnsubFiles", DomUnsub = Jw.Json("CId", "FId", ndf), Diff = sbDiff.ToString() },
                 new bool[] { true, false, false });
 
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"SignalUnsubServerService", "Tracking", msg);
+
             string result = null;
             if (!this.CallLocalLoadUnsubFiles)
             {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"SignalUnsubServerService", "Tracking", "Calling HttpPostAsync");
+
                 result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                     new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"SignalUnsubServerService", "Tracking", "Completed HttpPostAsync");
             }
             else
             {
                 IGenericEntity cse = new GenericEntityJson();
                 var cs = JsonConvert.DeserializeObject(msg);
                 cse.InitializeEntity(null, null, cs);
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"SignalUnsubServerService", "Tracking", "Calling LoadUnsubFiles");
+
                 result = await LoadUnsubFiles(cse);
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"SignalUnsubServerService", "Tracking", "Completed LoadUnsubFiles");
             }
 
-            if (result == null) throw new Exception("Null result");
+            if (result == null)
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                        $"SignalUnsubServerService", "Error", "Null Result");
+                throw new Exception("Null result");
+            }
+            else
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        $"SignalUnsubServerService", "Tracking", "Result: " + result);
+            }
 
             var res = (JObject)JsonConvert.DeserializeObject(result);
             IGenericEntity rese = new GenericEntityJson();
             rese.InitializeEntity(null, null, res);
-            if (rese.GetS("Result") != "Success") throw new Exception(result);
+            if (rese.GetS("Result") != "Success")
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                        $"SignalUnsubServerService", "Error", "Failure: " + result);
+                throw new Exception(result);
+            }
         }
 
         public async Task CleanUnusedFiles()
@@ -691,8 +854,8 @@ namespace UnsubLib
             {
                 sbAllFiles.Append(fl + ":");
             }
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                $"LoadUnsubFiles", "List of All FTP files", sbAllFiles.ToString());
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                $"LoadUnsubFiles", "Tracking", "List of All FTP files: " + sbAllFiles.ToString());
 
             try
             {
@@ -712,12 +875,15 @@ namespace UnsubLib
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tmd");
 
                         string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", "Calling spUploadDomainUnsubFile: " + campaignId + "::" + wd +
+                            "::" + fileId + "::" + tmpFileName);
                         await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                             "UploadDomainUnsubFile",
                             Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }),
                             "");
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                            $"LoadUnsubFiles", "UploadedDomainUnsubFile", campaignId + "::" + wd +
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", "Called spUploadDomainUnsubFile: " + campaignId + "::" + wd +
                             "::" + fileId + "::" + tmpFileName);
 
                         Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
@@ -725,10 +891,10 @@ namespace UnsubLib
                     catch (Exception exDomUnsub)
                     {
                         Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
-                        
+
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            $"LoadUnsubFiles", "UploadDomainUnsubFile", campaignId + 
-                            "::" + fileId + "::" + exDomUnsub.ToString());
+                            $"LoadUnsubFiles", "Exception", "spUploadDomainUnsubFile: " + campaignId + 
+                            "::" + fileId + "::" + tmpFileName + "::" + exDomUnsub);
                     }
                 });
 
@@ -762,8 +928,9 @@ namespace UnsubLib
                     string newfname = "";
                     string diffname = Guid.NewGuid().ToString().ToLower() + ".dif";
 
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                            $"Before Diffing", "DiffFiles", oldf + "::" + newf);
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", "Before Diffing: " +
+                            oldf + "::" + newf);
 
                     try
                     {
@@ -777,7 +944,11 @@ namespace UnsubLib
                             newfname,
                             this.ServerWorkingDirectory,
                             diffname);
-                        
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", "After Diffing: " +
+                            oldf + "::" + newf);
+
                         await SSISLoadMd5File(diffname,
                             this.ServerName,
                             this.DatabaseName,
@@ -786,13 +957,15 @@ namespace UnsubLib
                             this.SsisTemplateFile,
                             "PostProcessDiffFile");
 
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 10, this.ApplicationName,
-                            $"LoadUnsubFiles", "DiffedFiles", oldfname + "::" + newfname + "::" + diffname);
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", "After SSISLoad: " +
+                            oldf + "::" + newf);
                     }
                     catch (Exception exDiff)
                     {
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            $"LoadUnsubFiles", "DiffFiles", oldfname + "::" + newfname + "::" + exDiff.ToString());
+                            $"LoadUnsubFiles", "Exception", "Diff Failed: " +
+                            oldfname + "::" + newfname + "::" + exDiff.ToString());
                     }
                     finally
                     {
@@ -805,7 +978,8 @@ namespace UnsubLib
             catch (Exception ex)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                        "LoadUnsubFiles", "Exception", ex.ToString());
+                            $"LoadUnsubFiles", "Exception", "Outer Catch: " +
+                             ex.ToString());
                 result = Jw.Json(new { Error = "Exception" });
             }
 
@@ -845,7 +1019,7 @@ namespace UnsubLib
                 if (newFileSize > cacheSize)
                 {
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                        "MakeRoom", "File larger than cache", fileName);
+                        "MakeRoom", "Error", "File larger than cache: " + fileName);
                     return false;
                 }
 
@@ -894,7 +1068,12 @@ namespace UnsubLib
                 {
                     success = await MakeRoom(fileName, cacheSize);
                     if (!success)
+                    {
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            "GetFileFromFileId", "Error", "Could not make room for file: " + fileName);
                         throw new Exception("Could not make room for file.");
+                    }
+                        
 
                     await Utility.ProtocolClient.DownloadFileFtp(
                         destDir,
@@ -907,9 +1086,19 @@ namespace UnsubLib
 
                     fi = di.GetFiles(dfileName);
                     if (fi.Length == 1) return dfileName;
-                    else throw new Exception("Could not find file on ftp: " + fileName);
+                    else
+                    {
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            "GetFileFromFileId", "Error", "Could not find file on ftp: " + fileName);
+                        throw new Exception("Could not find file on ftp: " + fileName);
+                    }
                 }
-                else throw new Exception("Too many file matches: " + fileName);
+                else
+                {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            "GetFileFromFileId", "Error", "Too many file matches: " + fileName);
+                    throw new Exception("Too many file matches: " + fileName);
+                }
             }
             else
             {
@@ -926,7 +1115,12 @@ namespace UnsubLib
                         return destFileName;
                     }
                 }
-                else throw new Exception("Could not find file locally: " + fileName);
+                else
+                {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            "GetFileFromFileId", "Error", "Could not find file locally: " + fileName);
+                    throw new Exception("Could not find file locally: " + fileName);
+                }
             }
         }
 
@@ -975,8 +1169,8 @@ namespace UnsubLib
             catch (Exception ex)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "IsUnsub", "Search failed.", 
-                           campaignId + "::" + emailMd5 + "::" + ex.ToString());
+                           "IsUnsub", "Exception",
+                           "Search failed: " + campaignId + "::" + emailMd5 + "::" + ex.ToString());
                 throw new Exception("Search failed.");
             }            
         }
@@ -1040,8 +1234,8 @@ namespace UnsubLib
             catch (Exception ex)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "IsUnsubList", "Search failed.",
-                           campaignId + "::" + ex.ToString());
+                           "IsUnsubList", "Exception",
+                           "Search failed: " + campaignId + "::" + ex.ToString());
                 throw new Exception("Search failed.");
             }
 
@@ -1090,8 +1284,8 @@ namespace UnsubLib
             catch (Exception exSsisLoad)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "SSISLoadMd5File", "Package failed.",
-                           fileName + "::" + exSsisLoad.ToString());
+                           "SSISLoadMd5File", "Exception",
+                           "Package failed: " + fileName + "::" + exSsisLoad.ToString());
             }
 
             try
@@ -1104,8 +1298,8 @@ namespace UnsubLib
             catch (Exception exPostProcess)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "SSISLoadMd5File", "Package PostProcess failed.",
-                           fileName + "::" + exPostProcess.ToString());
+                           "SSISLoadMd5File", "Exception",
+                           "Package PostProcess failed: " + fileName + "::" + exPostProcess.ToString());
             }
 
             Fs.TryDeleteFile($"{this.ServerWorkingDirectory}\\{fileName}.json");
@@ -1123,23 +1317,23 @@ namespace UnsubLib
 
             string campaignXml = null;
 
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "GetNetworkCampaigns", "UseLocalNetworkFiles",
-                           this.UseLocalNetworkFile.ToString());
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                "GetNetworkCampaigns", "Tracking",
+                "UseLocalNetworkFiles = " + this.UseLocalNetworkFile.ToString());
 
             if (!this.UseLocalNetworkFile)
             {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "GetNetworkCampaigns", "Reading Remote Network File",
-                           "");
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                           "GetNetworkCampaigns", "Tracking",
+                           "Reading Remote Network File");
                 campaignXml = await Utility.ProtocolClient.HttpPostAsync(apiUrl, parms);
                 File.WriteAllText(this.LocalNetworkFilePath + "\\" + networkId + ".xml", campaignXml);
             }
             else
             {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "GetNetworkCampaigns", "Reading Local Network File",
-                           $@"{this.LocalNetworkFilePath}\{networkId}.xml");
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                           "GetNetworkCampaigns", "Tracking",
+                           $@"Reading Local Network File: {this.LocalNetworkFilePath}\{networkId}.xml");
                 campaignXml = File.ReadAllText($@"{this.LocalNetworkFilePath}\{networkId}.xml");
             }                
                 
@@ -1183,23 +1377,41 @@ namespace UnsubLib
                 }
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net")))
                 {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                               "GetSuppressionFileUri", "Tracking",
+                               "Calling GetEzepoUnsubFileUri: " + usuri.ToString());
+
                     string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
+
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                               "GetSuppressionFileUri", "Tracking",
+                               "Completed GetEzepoUnsubFileUri: " + usuri.ToString());
+
                     if (ezepoUnsubUrl != "")
                         uri = ezepoUnsubUrl;
                     else
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                               "GetSuppressionFileUri", "Empty ezepo url",
-                               usuri.ToString());
+                               "GetSuppressionFileUri", "Error",
+                               "Empty ezepo url: " + usuri.ToString());
                 }
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
                 {
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                               "GetSuppressionFileUri", "Tracking",
+                               "Calling GetOptizmoUnsubFileUri: " + usuri.ToString());
+
                     string optizmoUnsubUrl = await GetOptizmoUnsubFileUri(usuri.AbsolutePath, optizmoToken);
+
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                               "GetSuppressionFileUri", "Tracking",
+                               "Completed GetOptizmoUnsubFileUri: " + usuri.ToString());
+
                     if (optizmoUnsubUrl != "")
                         uri = optizmoUnsubUrl;
                     else
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                               "GetSuppressionFileUri", "Empty otizmo url",
-                               usuri.ToString());
+                               "GetSuppressionFileUri", "Error",
+                               "Empty otizmo url: " + usuri.ToString());
                 }
                 else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
@@ -1208,16 +1420,16 @@ namespace UnsubLib
                 else
                 {
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                               "GetSuppressionFileUri", "Unknown unsub file source.",
-                               suppDetails);
+                               "GetSuppressionFileUri", "Error",
+                               "Unknown unsub file source: " + suppDetails);
                     throw new Exception("Unknown unsub file source.");
                 }
             }
             catch (Exception findUnsubException)
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                               "GetSuppressionFileUri", "Exception finding unsub file source.",
-                               suppDetails + "::" + findUnsubException.ToString());
+                               "GetSuppressionFileUri", "Exception",
+                               "Exception finding unsub file source: " + suppDetails + "::" + findUnsubException.ToString());
                 throw new Exception("Exception finding unsub file source.");
             }
             
@@ -1440,8 +1652,8 @@ namespace UnsubLib
             }
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "ZipTester", "Unknown file type.",
-                           f.FullName + "::" + theText);
+                           "ZipTester", "Error",
+                           "Unknown file type: " + f.FullName + "::" + theText);
             return UNKNOWNHANDLER;
         }
         
@@ -1469,8 +1681,8 @@ namespace UnsubLib
         public async Task<object> UnknownTypeHandler(FileInfo fi)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                           "UnknownTypeHandler", "Unknown file type.",
-                           fi.FullName);
+                           "UnknownTypeHandler", "Error",
+                           "Unknown file type: " + fi.FullName);
             return new object();
         }        
     }
