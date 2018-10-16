@@ -1040,7 +1040,7 @@ namespace UnsubLib
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"LoadUnsubFiles", "Tracking", 
-                            $"Finished spUploadDomainUnsubFile({dtve.GetS("ntwrk")}): " + result);
+                            $"Finished LoadUnsubFiles({dtve.GetS("ntwrk")}): " + result);
 
             return result;
         }
