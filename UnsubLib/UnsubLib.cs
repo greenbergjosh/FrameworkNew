@@ -874,7 +874,7 @@ namespace UnsubLib
                     Fs.TryDeleteFile(file);
                 }
 
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, "UnsubJob",
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, "UnsubJob",
                     $"CleanUnusedFilesServer", "Tracking", $"Completed CleanUnusedFilesServer");
             }
             catch (Exception exClean)
