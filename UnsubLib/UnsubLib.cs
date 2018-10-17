@@ -38,6 +38,8 @@ using OpenQA.Selenium.Support.UI;
  }
  */
 
+// net use z: \\ftpback-bhs6-85.ip-66-70-176.net\ns557038.ip-66-70-182.net /persistent:Yes
+
 namespace UnsubLib
 {
     public class UnsubLib
@@ -58,6 +60,7 @@ namespace UnsubLib
         public string SsisConnectionString;
         public string JsonTemplateFile;
         public string SsisTemplateFile;
+        public string FileCacheDirectory;
         public string FileCacheFtpServer;
         public string FileCacheFtpUser;
         public string FileCacheFtpPassword;
@@ -95,6 +98,7 @@ namespace UnsubLib
             this.SsisConnectionString = gc.GetS("Config/SsisConnectionString");
             this.JsonTemplateFile = gc.GetS("Config/JsonTemplateFile");
             this.SsisTemplateFile = gc.GetS("Config/SsisTemplateFile");
+            this.FileCacheDirectory = gc.GetS("Config/FileCacheDirectory");
             this.FileCacheFtpServer = gc.GetS("Config/FileCacheFtpServer");
             this.FileCacheFtpUser = gc.GetS("Config/FileCacheFtpUser");
             this.FileCacheFtpPassword = gc.GetS("Config/FileCacheFtpPassword");
@@ -620,10 +624,23 @@ namespace UnsubLib
                             $"DownloadUnsubFiles", "Tracking", $"Completed Cleaning({networkName}):: " +
                             "for file " + fmd5);
 
-                        if (this.FileCacheFtpServer != null)
+                        if (!String.IsNullOrEmpty(this.FileCacheDirectory))
                         {
                             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                                $"DownloadUnsubFiles", "Tracking", $"Starting Upload({networkName}):: " +
+                                $"DownloadUnsubFiles", "Tracking", $"Starting UploadToDirectory({networkName}):: " +
+                                "for file " + fmd5);
+
+                            new FileInfo(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt")
+                                .MoveTo(this.FileCacheDirectory + "\\" + fmd5 + ".txt.srt");
+
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Completed UploadToDirectory({networkName}):: " +
+                                "for file " + fmd5);
+                        }
+                        else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Starting UploadToFtp({networkName}):: " +
                                 "for file " + fmd5);
 
                             await Utility.ProtocolClient.UploadFile(
@@ -634,7 +651,7 @@ namespace UnsubLib
                                 this.FileCacheFtpPassword);
 
                             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                                $"DownloadUnsubFiles", "Tracking", $"Completed Upload({networkName}):: " +
+                                $"DownloadUnsubFiles", "Tracking", $"Completed UploadToFtp({networkName}):: " +
                                 "for file " + fmd5);
 
                             Fs.TryDeleteFile($"{this.ClientWorkingDirectory}\\{fmd5 + ".txt.srt"}");
@@ -649,7 +666,20 @@ namespace UnsubLib
                     {
                         string fdom = cf[DOMAINHANDLER].ToString().ToLower();
 
-                        if (this.FileCacheFtpServer != null)
+                        if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Starting UploadToDirectory({networkName}):: " +
+                                "for file " + fdom);
+
+                            new FileInfo(this.ClientWorkingDirectory + "\\" + fdom + ".txt")
+                                .MoveTo(this.FileCacheDirectory + "\\" + fdom + ".txt");
+
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"DownloadUnsubFiles", "Tracking", $"Completed UploadToDirectory({networkName}):: " +
+                                "for file " + fdom);
+                        }
+                        else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
                         {
                             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                                 $"DownloadUnsubFiles", "Tracking", $"Starting Upload({networkName}):: " +
@@ -799,8 +829,19 @@ namespace UnsubLib
                 }
                 catch (Exception ex) { }
             }
-                                         
-            if (this.FileCacheFtpServer != null)
+
+            if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+            {
+                DirectoryInfo sourceDir = new DirectoryInfo(this.FileCacheDirectory);
+                FileInfo[] files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
+                foreach (var file in files)
+                {
+                    string[] fileParts = file.Name.Split(new char[] { '.' });
+                    if (!refdFiles.Contains(fileParts[0].ToLower()))
+                        Fs.TryDeleteFile(file);
+                }
+            }
+            else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
             {
                 List<string> listFiles;
                 listFiles = await Utility.ProtocolClient.FtpGetFiles(
@@ -903,14 +944,29 @@ namespace UnsubLib
         {
             string result = Jw.Json(new { Result = "Success" });
 
-            List<string> allFiles = await Utility.ProtocolClient.FtpGetFiles("Unsub", this.FileCacheFtpServer, this.FileCacheFtpUser, this.FileCacheFtpPassword);
-            StringBuilder sbAllFiles = new StringBuilder();
-            foreach (string fl in allFiles)
+            if (!String.IsNullOrEmpty(this.FileCacheDirectory))
             {
-                sbAllFiles.Append(fl + ":");
+                DirectoryInfo sourceDir = new DirectoryInfo(this.FileCacheDirectory);
+                FileInfo[] files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
+                StringBuilder sbAllFiles = new StringBuilder();
+                foreach (var file in files)
+                {
+                    sbAllFiles.Append(file.Name + ":");
+                }
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"LoadUnsubFiles", "Tracking", "List of All FTP files(FileCacheDirectory): " + sbAllFiles.ToString());
             }
-            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"LoadUnsubFiles", "Tracking", "List of All FTP files: " + sbAllFiles.ToString());
+            else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+            { 
+                List<string> allFiles = await Utility.ProtocolClient.FtpGetFiles("Unsub", this.FileCacheFtpServer, this.FileCacheFtpUser, this.FileCacheFtpPassword);
+                StringBuilder sbAllFiles = new StringBuilder();
+                foreach (string fl in allFiles)
+                {
+                    sbAllFiles.Append(fl + ":");
+                }
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"LoadUnsubFiles", "Tracking", "List of All FTP files(FileCacheFtpServer): " + sbAllFiles.ToString());
+            }
 
             try
             {
@@ -963,7 +1019,11 @@ namespace UnsubLib
                 {
                     Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + domFile + ".txt");
 
-                    if (!string.IsNullOrEmpty(this.FileCacheFtpServer))
+                    if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                    {
+                        Fs.TryDeleteFile(this.FileCacheDirectory + "\\" + domFile + ".txt");
+                    }
+                    else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
                         await Utility.ProtocolClient.DeleteFileFromFtpServer(
                             this.FileCacheFtpServerPath + "/" + domFile + ".txt",
@@ -1069,12 +1129,20 @@ namespace UnsubLib
         {
             try
             {
-                long newFileSize = await Utility.ProtocolClient.FtpGetFileSize(
-                        this.FileCacheFtpServerPath + "/" + fileName,
-                        this.FileCacheFtpServer,
-                        this.FileCacheFtpUser,
-                        this.FileCacheFtpPassword);
+                long newFileSize = 0;
 
+                if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                {
+                    newFileSize = new FileInfo(this.FileCacheDirectory + "\\" + fileName).Length;
+                }
+                else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+                {
+                    newFileSize = await Utility.ProtocolClient.FtpGetFileSize(
+                            this.FileCacheFtpServerPath + "/" + fileName,
+                            this.FileCacheFtpServer,
+                            this.FileCacheFtpUser,
+                            this.FileCacheFtpPassword);
+                }
                 if (newFileSize > cacheSize)
                 {
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
@@ -1118,7 +1186,8 @@ namespace UnsubLib
             string fileName = fileId + ext;
             string dfileName = destFileName == null ? fileName : destFileName;
 
-            if (this.FileCacheFtpServer != null)
+            if (!String.IsNullOrEmpty(this.FileCacheFtpServer) ||
+                !String.IsNullOrEmpty(this.FileCacheDirectory))
             {
                 DirectoryInfo di = new DirectoryInfo(destDir);
                 FileInfo[] fi = di.GetFiles(fileName);
@@ -1132,16 +1201,23 @@ namespace UnsubLib
                             "GetFileFromFileId", "Error", "Could not make room for file: " + fileName);
                         throw new Exception("Could not make room for file.");
                     }
-                        
 
-                    await Utility.ProtocolClient.DownloadFileFtp(
-                        destDir,
-                        this.FileCacheFtpServerPath + "/" + fileName,
-                        dfileName,
-                        this.FileCacheFtpServer,
-                        this.FileCacheFtpUser,
-                        this.FileCacheFtpPassword
-                        );
+                    if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                    {
+                        new FileInfo(this.FileCacheDirectory + "\\" + fileName)
+                                .CopyTo(dfileName);
+                    }
+                    else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+                    {
+                        await Utility.ProtocolClient.DownloadFileFtp(
+                            destDir,
+                            this.FileCacheFtpServerPath + "/" + fileName,
+                            dfileName,
+                            this.FileCacheFtpServer,
+                            this.FileCacheFtpUser,
+                            this.FileCacheFtpPassword
+                            );
+                    }                    
 
                     fi = di.GetFiles(dfileName);
                     if (fi.Length == 1) return dfileName;
