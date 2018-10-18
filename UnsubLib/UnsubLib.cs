@@ -954,7 +954,7 @@ namespace UnsubLib
                     sbAllFiles.Append(file.Name + ":");
                 }
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                    $"LoadUnsubFiles", "Tracking", "List of All FTP files(FileCacheDirectory): " + sbAllFiles.ToString());
+                    $"LoadUnsubFiles", "Tracking", "List of All Cached files(FileCacheDirectory): " + sbAllFiles.ToString());
             }
             else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
             { 
@@ -965,7 +965,7 @@ namespace UnsubLib
                     sbAllFiles.Append(fl + ":");
                 }
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                    $"LoadUnsubFiles", "Tracking", "List of All FTP files(FileCacheFtpServer): " + sbAllFiles.ToString());
+                    $"LoadUnsubFiles", "Tracking", "List of All Cached files(FileCacheFtpServer): " + sbAllFiles.ToString());
             }
 
             try
@@ -1205,7 +1205,7 @@ namespace UnsubLib
                     if (!String.IsNullOrEmpty(this.FileCacheDirectory))
                     {
                         new FileInfo(this.FileCacheDirectory + "\\" + fileName)
-                                .CopyTo(dfileName);
+                                .CopyTo(destDir + "\\" + dfileName);
                     }
                     else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
@@ -1224,8 +1224,8 @@ namespace UnsubLib
                     else
                     {
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            "GetFileFromFileId", "Error", "Could not find file on ftp: " + fileName);
-                        throw new Exception("Could not find file on ftp: " + fileName);
+                            "GetFileFromFileId", "Error", "Could not find file in cache: " + fileName);
+                        throw new Exception("Could not find file in cache: " + fileName);
                     }
                 }
                 else
