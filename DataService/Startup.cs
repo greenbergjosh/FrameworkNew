@@ -125,6 +125,16 @@ namespace DataService
                         case "OnPointConsoleLiveEmailEvent":
                             result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
                             break;
+                        case "GetEmailFromMd5":
+                            result = Jw.Json(new { email = "Bob@hotmail.com", md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+                            break;
+                        case "GetVisitorIdServices":
+                            List<string> serviceUrls = new List<string>() { "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif" };
+                            result = Jw.Json("uri", serviceUrls);
+                            break;
+                        case "SaveSession":
+                            result = Jw.Json(new { result = "Success" });
+                            break;
                         default:
                             File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
                             break;
