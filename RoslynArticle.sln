@@ -87,7 +87,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailApplication", "MailAppl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailProcess", "MailProcess\MailProcess.csproj", "{3B3F53E2-4782-4BA8-A925-39CC92507919}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTester", "QuickTester\QuickTester.csproj", "{6FA1EDC6-EE85-43BD-A726-311455D51040}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTester", "QuickTester\QuickTester.csproj", "{55162AC9-FA00-433D-B400-94147913ED44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -342,12 +342,12 @@ Global
 		{3B3F53E2-4782-4BA8-A925-39CC92507919}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{3B3F53E2-4782-4BA8-A925-39CC92507919}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B3F53E2-4782-4BA8-A925-39CC92507919}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6FA1EDC6-EE85-43BD-A726-311455D51040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6FA1EDC6-EE85-43BD-A726-311455D51040}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6FA1EDC6-EE85-43BD-A726-311455D51040}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{6FA1EDC6-EE85-43BD-A726-311455D51040}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{6FA1EDC6-EE85-43BD-A726-311455D51040}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6FA1EDC6-EE85-43BD-A726-311455D51040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55162AC9-FA00-433D-B400-94147913ED44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55162AC9-FA00-433D-B400-94147913ED44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55162AC9-FA00-433D-B400-94147913ED44}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{55162AC9-FA00-433D-B400-94147913ED44}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{55162AC9-FA00-433D-B400-94147913ED44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55162AC9-FA00-433D-B400-94147913ED44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -358,7 +358,7 @@ Global
 		{3B3F53E2-4782-4BA8-A925-39CC92507919} = {5B0E3B8A-B8FE-4948-B66C-C67325A5245B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal

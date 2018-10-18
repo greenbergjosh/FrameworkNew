@@ -833,7 +833,7 @@ namespace UnsubLib
             if (!String.IsNullOrEmpty(this.FileCacheDirectory))
             {
                 DirectoryInfo sourceDir = new DirectoryInfo(this.FileCacheDirectory);
-                FileInfo[] files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
+                FileInfo[] files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
                 foreach (var file in files)
                 {
                     string[] fileParts = file.Name.Split(new char[] { '.' });
