@@ -1295,7 +1295,7 @@ namespace UnsubLib
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
 
                 bool result =  await Utility.UnixWrapper.BinarySearchSortedMd5File(
-                    this.ServerWorkingDirectory,
+                    this.SearchDirectory,
                     fileName,
                     emailMd5);
 
