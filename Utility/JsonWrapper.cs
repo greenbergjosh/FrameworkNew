@@ -108,7 +108,7 @@ namespace Utility
             StringBuilder sb = new StringBuilder("[");
             foreach (var e in data)
             {
-                sb.Append("\"" + data + "\",");
+                sb.Append("\"" + e + "\",");
             }
             sb.Remove(sb.Length - 1, 1);
             sb.Append("]");
