@@ -131,7 +131,7 @@ namespace DataService
                             break;
                         case "GetVisitorIdServices":
                             List<string> serviceUrls = new List<string>() { "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif" };
-                            result = Jw.Json("uri", serviceUrls);
+                            result = Jw.Json(serviceUrls);
                             break;
                         case "SaveSession":
                             result = Jw.Json(new { result = "Success" });
