@@ -36,14 +36,14 @@ namespace DataService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-            });
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("CorsPolicy",
+            //        builder => builder.AllowAnyOrigin()
+            //        .AllowAnyMethod()
+            //        .AllowAnyHeader()
+            //        .AllowCredentials());
+            //});
         }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
@@ -60,7 +60,7 @@ namespace DataService
             }
 
             app.UseStaticFiles();
-            app.UseCors("CorsPolicy");
+            //app.UseCors("CorsPolicy");
 
             File.AppendAllText("DataService.log", $@"{DateTime.Now}::Starting" +
                             Environment.NewLine);

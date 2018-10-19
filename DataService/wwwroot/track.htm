@@ -1,0 +1,140 @@
+﻿<html>
+<head>
+    <script>
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function getEmailFromMd5(md5, url) {
+  return jfetch({'m':'GetEmailFromMd5', 'md5':md5}, [], url + '?m=GetEmailFromMd5');
+}
+
+function getServices(url) {
+ var x = jfetch({'m':'GetVisitorIdServices'}, [], url + '?m=GetVisitorIdServices');
+ return x;
+  //return jfetch({'m':'GetVisitorIdServices'}, [], url);
+}
+
+function saveSession(querystring, res, url)
+{
+  return jfetch({'m':'SaveSession', 'qs':querystring, ...res}, [], url + '?m=SaveSession');
+}
+
+function jfetch(data, defret, uri) {
+  var ret = defret;
+  fetch(uri, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+	    "Accept": "application/json"
+        },
+        redirect: "follow",
+        referrer: "no-referrer",
+        body: data,
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Network response was not ok.');
+    })
+    .then(json => {
+      ret = json;
+    }).catch(error => {
+      ret = defret;
+  });
+
+  return ret;
+}
+
+function callService(url) {
+  var ret = {};
+  fetch(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+	    "Accept": "application/json"
+        },
+        redirect: "follow",
+        referrer: "no-referrer"
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Network response was not ok.');
+    })
+    .then(json => {
+      ret = json;
+    }).catch(error => {
+      ret = {};
+  });
+
+  return ret;
+}
+
+function callServices(services, url)
+{
+    services.forEach(function(service)
+    {
+        var res = callService(service.url);
+        if (res.md5 && !res.email) res = getEmailFromMd5(res.md5, url);
+        if (res.md5) return res;
+    });
+    return {};
+}
+
+function visitorId(sessionid, cookieexpdays, url)
+{
+  var res = {};
+  var vidck = getCookie("vidck");
+  if (!vidck)
+  {
+    res = callServices(getServices(url), sessionid, cookieexpdays, url);
+  }
+  else
+  {
+    res = JSON.parse(vidck)
+    if (ckval.md5 && !ckval.email) res = getEmailFromMd5(res.md5, url);
+  }
+  if (res.md5 || res.email)
+  {
+     setCookie("vidck", JSON.stringify({'email':res.email, 'md5':res.md5, 'sid':sessionid}), cookieexpdays);
+     saveSession(querystring, res, url);
+  }
+}
+
+let urlParams = new URLSearchParams(window.location.search);
+let sessionId = urlParams.get('sid');
+let visitorIdCookieExpDays = urlParams.get('vce');
+visitorId(sessionId, visitorIdCookieExpDays, '//v-track.net')
+    </script>
+</head>
+<body>
+</body>
+</html>
