@@ -1339,8 +1339,7 @@ namespace UnsubLib
                         emailFixed = Utility.Hashing.CalculateMD5Hash(emailFixed.ToLower());
                     }
                     emailMd5.Add(emailFixed);
-                }
-                
+                }                
 
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
                 emailMd5.Sort();

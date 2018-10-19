@@ -59,6 +59,7 @@ namespace DataService
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseStaticFiles();
             app.UseCors("CorsPolicy");
 
             File.AppendAllText("DataService.log", $@"{DateTime.Now}::Starting" +
