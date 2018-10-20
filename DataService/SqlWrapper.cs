@@ -22,7 +22,8 @@ namespace DataService
                 { "SaveOnPointConsoleLiveFeed", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveFeed]" },
                 { "TowerVisitorErrorLog", "[TowerVisitorRedirectPixel].[spInsertErrorLog]" },
                 { "OnPointConsoleErrorLog", "[OnPointConsoleLiveFeed].[spInsertErrorLog]" },
-                { "SaveOnPointConsoleLiveEmailEvent", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveEmailEvent]" }
+                { "SaveOnPointConsoleLiveEmailEvent", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveEmailEvent]" },
+                { "InsertImpression", "[VisitorId].[spInsertImpression]" }
             };
 
             string sp = null;

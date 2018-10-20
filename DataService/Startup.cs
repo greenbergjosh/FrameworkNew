@@ -33,6 +33,7 @@ namespace DataService
         public string ContentType;
         public string OnPointConsoleUrl;
         public string OnPointConsoleTowerDomain;
+        public string VisitorIdConnectionString;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -93,6 +94,7 @@ namespace DataService
                 this.ContentType = gc.GetS("Config/TowerContentType");
                 this.OnPointConsoleUrl = gc.GetS("Config/OnPointConsoleUrl");
                 this.OnPointConsoleTowerDomain = gc.GetS("Config/OnPointConsoleTowerDomain");
+                this.VisitorIdConnectionString = gc.GetS("Config/VisitorIdConnectionString");
             }
             catch (Exception ex)
             {
@@ -126,15 +128,54 @@ namespace DataService
                         case "OnPointConsoleLiveEmailEvent":
                             result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
                             break;
-                        case "GetEmailFromMd5":
-                            result = Jw.Json(new { email = "Bob@hotmail.com", md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+                        case "VisitorId":
+                            int idx = Int32.Parse(context.Request.Query["i"]);
+                            string sid = context.Request.Query["sd"];
+                            int ced = Int32.Parse(context.Request.Query["ced"]);
+                            string qs = context.Request.Query["qs"];
+                            //result = Jw.Json(new { name = "service" + idx, url = "//v-track.net?m=TestService&i="+idx});
+                            result = await DoVisitorId(context, idx, sid, ced, qs);
+                            context.Response.StatusCode = 200;
+                            context.Response.ContentType = "application/json";
+                            context.Response.ContentLength = result.Length;
                             break;
-                        case "GetVisitorIdServices":
-                            List<string> serviceUrls = new List<string>() { "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif" };
-                            result = Jw.Json(serviceUrls);
+                        case "TestService":
+                            int idx1 = Int32.Parse(context.Request.Query["i"]);
+                            if (idx1 == 0)
+                                result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "t0md5" });
+                            else if (idx1 == 1)
+                                result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "t1md5" });
+                            else
+                                result = Jw.Json(new { result = "NoMd5" });
+
+                            context.Response.StatusCode = 200;
+                            context.Response.ContentType = "application/json";
+                            context.Response.ContentLength = result.Length;
+
                             break;
                         case "SaveSession":
-                            result = Jw.Json(new { result = "Success" });
+                            int cd = Int32.Parse(context.Request.Query["ced"]);
+                            string ssemail = context.Request.Query["email"];
+                            string ssmd5 = context.Request.Query["md5"];
+                            string sssn = context.Request.Query["sn"];
+                            if (String.IsNullOrEmpty(ssemail))
+                                ssemail = await GetEmailFromMd5(ssmd5, sssn);
+                            string res = Jw.Json(new
+                            {
+                                email = ssemail,
+                                md5 = ssmd5,
+                                sid = context.Request.Query["sd"],
+                                qs = context.Request.Query["qs"],
+                                ip = context.Request.HttpContext.Connection.RemoteIpAddress,
+                                sn = sssn
+                            });
+                            await SaveSession(context, res, cd);
+
+                            context.Response.StatusCode = 200;
+                            context.Response.ContentType = "application/json";
+                            context.Response.ContentLength = result.Length;
+
+                            result = "{\"Result\":\"Success\"}";
                             break;
                         default:
                             File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
@@ -221,6 +262,129 @@ namespace DataService
                         "");
             }
         }
+
+        public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, int ced, string qstr)
+        {
+            // This is the first method called by visitorid
+            // If the cookie already exists, just log the session
+            // If no cookie, return the idx-th service to be called
+            // If a service is returned, the service is fetched by the javascript
+            //   The return value is parsed by the javascript
+            //   If the return value is adequate, then no further calls will be made to this method
+            //   If the return value is not adequate, this method will again be called with an incremented idx
+            string cookieValueFromReq = context.Request.Cookies["vidck"];
+
+            if (!String.IsNullOrEmpty(cookieValueFromReq))
+            {
+                IGenericEntity gc = new GenericEntityJson();
+                var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
+                gc.InitializeEntity(null, null, gcstate);
+                string md5 = gc.GetS("md5");
+                if (!String.IsNullOrEmpty(md5))
+                {
+                    string email = gc.GetS("email");
+                    if (String.IsNullOrEmpty(email))
+                        email = await GetEmailFromMd5(md5, "cookie");
+                    string res = Jw.Json(new { email = email, md5 = md5, sid = sesid, qs=qstr,
+                        ip = context.Request.HttpContext.Connection.RemoteIpAddress });
+                    await SaveSession(context, res, ced);
+                    return res;
+                }
+            }
+
+            if (idx < Services.Count)
+            {
+                var s = Services[idx];
+                return Jw.Json(new { name = s.Name,
+                    url = s.Name, fetchParms = s.FetchParms,
+                    fetchType = s.FetchType, imgFlag = s.ImgFlag},
+                    new bool[] { true, true, false, true, true});
+            }
+
+            return "{}";
+        }
+
+        public async Task SaveSession(HttpContext context, string res, int ced, bool setCookie=true)
+        {
+            if (setCookie) SetCookie(context, "vidck", res, ced);
+            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
+                        "InsertImpression", res, "", 240);
+        }
+
+        public async Task<string> GetEmailFromMd5(string md5, string src)
+        {
+            if (src == "cookie")
+            {
+                return "";
+            }
+            else if (src == "Tower")
+            {
+
+            }
+
+            return "";
+        }
+
+        public List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)> Services =
+            new List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)>()
+            {
+                (Name: "TestService1", Url: "//v-track.net?m=TestService&i=0",
+                    FetchParms: @"{
+                                method: 'GET',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "TestService2", Url: "//v-track.net?m=TestService&i=1",
+                    FetchParms: @"{
+                                method: 'GET',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "Tower", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif", 
+                    FetchParms: @"{
+                                method: 'GET',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "Traverse", Url: "",
+                    FetchParms: @"{
+                                    method: 'GET',
+                                    mode: 'cors',
+                                    cache: 'no-cache',
+                                    credentials: 'include',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'
+                                    },
+                                    redirect: 'follow',
+                                    referrer: 'no-referrer'
+                                }",
+                    FetchType: "base64", ImgFlag: "data:image/gif;base64,")
+            };
 
         public void SetCookie(HttpContext ctx, string key, string value, int? expireTime)
         {
