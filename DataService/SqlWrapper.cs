@@ -23,7 +23,10 @@ namespace DataService
                 { "TowerVisitorErrorLog", "[TowerVisitorRedirectPixel].[spInsertErrorLog]" },
                 { "OnPointConsoleErrorLog", "[OnPointConsoleLiveFeed].[spInsertErrorLog]" },
                 { "SaveOnPointConsoleLiveEmailEvent", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveEmailEvent]" },
-                { "InsertImpression", "[VisitorId].[spInsertImpression]" }
+                { "InsertImpression", "[VisitorId].[spInsertImpression]" },
+                { "Md5ToLegacyEmail", "[VisitorId].[spMd5ToLegacyEmail]" },
+                { "VisitorIdErrorLog", "[VisitorId].[spInsertErrorLog]" },
+                { "GetEmailFromMd5", "[VisitorId].[spGetEmailFromMd5]" }
             };
 
             string sp = null;

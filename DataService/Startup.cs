@@ -35,6 +35,8 @@ namespace DataService
         public string OnPointConsoleTowerDomain;
         public string VisitorIdConnectionString;
 
+        public int VisitorIdCookieExpDays = 10;
+
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddCors(options =>
@@ -131,10 +133,10 @@ namespace DataService
                         case "VisitorId":
                             int idx = Int32.Parse(context.Request.Query["i"]);
                             string sid = context.Request.Query["sd"];
-                            int ced = Int32.Parse(context.Request.Query["ced"]);
                             string qs = context.Request.Query["qs"];
+                            string opaque = context.Request.Query["op"];
                             //result = Jw.Json(new { name = "service" + idx, url = "//v-track.net?m=TestService&i="+idx});
-                            result = await DoVisitorId(context, idx, sid, ced, qs);
+                            result = await DoVisitorId(context, idx, sid, opaque, qs);
                             context.Response.StatusCode = 200;
                             context.Response.ContentType = "application/json";
                             context.Response.ContentLength = result.Length;
@@ -154,28 +156,20 @@ namespace DataService
 
                             break;
                         case "SaveSession":
-                            int cd = Int32.Parse(context.Request.Query["ced"]);
                             string ssemail = context.Request.Query["email"];
                             string ssmd5 = context.Request.Query["md5"];
                             string sssn = context.Request.Query["sn"];
-                            if (String.IsNullOrEmpty(ssemail))
-                                ssemail = await GetEmailFromMd5(ssmd5, sssn);
-                            string res = Jw.Json(new
-                            {
-                                email = ssemail,
-                                md5 = ssmd5,
-                                sid = context.Request.Query["sd"],
-                                qs = context.Request.Query["qs"],
-                                ip = context.Request.HttpContext.Connection.RemoteIpAddress,
-                                sn = sssn
-                            });
-                            await SaveSession(context, res, cd);
+                            string sssid = context.Request.Query["sd"];
+                            string ssqs = context.Request.Query["qs"];
+                            string ssopaque = context.Request.Query["op"];
+                            
+                            string ssres = await SaveSession(context, sssn, ServiceMd5ImpressionTypeId[sssn],
+                                !String.IsNullOrEmpty(ssemail) ? ServicePlainImpressionTypeId[sssn] : 0,
+                                sssid, ssmd5, ssemail, ssqs, ssopaque, "", "");
 
                             context.Response.StatusCode = 200;
                             context.Response.ContentType = "application/json";
-                            context.Response.ContentLength = result.Length;
-
-                            result = "{\"Result\":\"Success\"}";
+                            context.Response.ContentLength = ssres.Length;
                             break;
                         default:
                             File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
@@ -186,48 +180,12 @@ namespace DataService
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
                     string eqs = context.Request.Query["eqs"].ToString();
-                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1,
-                            Proc = "TowerPixelCapture",
-                            Meth = "Router",
-                            Desc = "",
-                            Msg = Utility.Hashing.EncodeTo64(eqs)
-                        }),
-                        "");
-
-                    string label = await ProcessTowerPixelCapture(eqs);
-                    if (label == "testvisitorid")
-                    {
-                        //string ret = "{\"k2\":\"v2\"}";
-                        //context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-                        string cookieValueFromReq = context.Request.Cookies["test2"];
-                        if (String.IsNullOrEmpty(cookieValueFromReq))
-                        {
-                            SetCookie(context, "test2", "rich@hotmail.com", 30);
-                        }
-
-                        string ret = "{\"k2\":\"" + cookieValueFromReq + "\"}";
-                        context.Response.StatusCode = 200;
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength = ret.Length;
-                        //X-Content-Type-Options: nosniff
-                        await context.Response.WriteAsync(ret);
-                    }
-                    else
-                    {
-                        //context.Response.ContentType = ContentType;
-                        //context.Response.Headers.ContentLength = TowerPixelImage.Length;
-                        //await context.Response.Body.WriteAsync(TowerPixelImage, 0, TowerPixelImage.Length);
-                        string ret = "{\"label\":\"" + label + "\", \"a\":\"b\"}";
-                        context.Response.StatusCode = 200;
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength = ret.Length;
-                        //X-Content-Type-Options: nosniff
-                        await context.Response.WriteAsync(ret);
-                    }
+                    string ret = await ProcessTowerMessage(context, eqs, 
+                        context.Request.HttpContext.Connection.RemoteIpAddress.ToString());
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength = ret.Length;
+                    await context.Response.WriteAsync(ret);
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))
                 {
@@ -263,40 +221,43 @@ namespace DataService
             }
         }
 
-        public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, int ced, string qstr)
+        public Dictionary<string, int> ServiceMd5ImpressionTypeId = new Dictionary<string, int>()
         {
-            // This is the first method called by visitorid
-            // If the cookie already exists, just log the session
-            // If no cookie, return the idx-th service to be called
-            // If a service is returned, the service is fetched by the javascript
-            //   The return value is parsed by the javascript
-            //   If the return value is adequate, then no further calls will be made to this method
-            //   If the return value is not adequate, this method will again be called with an incremented idx
-            string cookieValueFromReq = context.Request.Cookies["vidck"];
+            { "Service1", 10 }
+        };
 
+        public Dictionary<string, int> ServicePlainImpressionTypeId = new Dictionary<string, int>()
+        {
+            { "Service1", 11 }
+        };
+
+        public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, string opaque, string qstr)
+        {
+            string cookieValueFromReq = context.Request.Cookies["vidck"];
             if (!String.IsNullOrEmpty(cookieValueFromReq))
             {
                 IGenericEntity gc = new GenericEntityJson();
                 var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
                 gc.InitializeEntity(null, null, gcstate);
-                string md5 = gc.GetS("md5");
+                string md5 = gc.GetS("Md5");
                 if (!String.IsNullOrEmpty(md5))
                 {
-                    string email = gc.GetS("email");
-                    if (String.IsNullOrEmpty(email))
-                        email = await GetEmailFromMd5(md5, "cookie");
-                    string res = Jw.Json(new { email = email, md5 = md5, sid = sesid, qs=qstr,
-                        ip = context.Request.HttpContext.Connection.RemoteIpAddress });
-                    await SaveSession(context, res, ced);
-                    return res;
-                }
+                    string email = gc.GetS("Em");
+                    return await SaveSession(context, "cookie", 1, 4, sesid, md5, email, qstr, opaque, "", "");
+                }                
             }
 
             if (idx < Services.Count)
             {
                 var s = Services[idx];
+
+                string appendUrl = "";
+                if (s.Name == "Tower")
+                {
+                    appendUrl = "?label=" + opaque;
+                }
                 return Jw.Json(new { name = s.Name,
-                    url = s.Name, fetchParms = s.FetchParms,
+                    url = s.Url + appendUrl, fetchParms = s.FetchParms,
                     fetchType = s.FetchType, imgFlag = s.ImgFlag},
                     new bool[] { true, true, false, true, true});
             }
@@ -304,25 +265,130 @@ namespace DataService
             return "{}";
         }
 
-        public async Task SaveSession(HttpContext context, string res, int ced, bool setCookie=true)
+        public async Task<string> SaveSession(HttpContext context, string serviceName, int M5dImpressionTypeId,
+            int PlainImpressionTypeId, string sessionId, string md5,
+            string email, string queryString, string opaque, string domain, string page)
         {
-            if (setCookie) SetCookie(context, "vidck", res, ced);
-            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "InsertImpression", res, "", 240);
+            string plainText = email;
+
+            if (!String.IsNullOrEmpty(md5))
+            {
+                if (String.IsNullOrEmpty(email))
+                {
+                    string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "Md5ToLegacyEmail",
+                        Jw.Json(new { Md5It = M5dImpressionTypeId, Sid = sessionId, Md5 = md5,
+                            Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                            Qs = queryString, Op = opaque, Dm = domain, Pg = page
+                        }),
+                        "", 240);
+                    IGenericEntity geplain = new GenericEntityJson();
+                    var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
+                    geplain.InitializeEntity(null, null, stateplain);
+
+                    string lpfEmRes = geplain.GetS("Result");
+
+                    if (lpfEmRes == "NotFound")
+                    {
+                        // Based on serviceName, see if other services can be used to convert md5 to plaintext
+                        // If so, then SaveSession() with that email instead of blank
+                        string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                    "InsertImpression",
+                                    Jw.Json(new { Md5It = M5dImpressionTypeId, EmIt = 9 /*PlainNone*/,
+                                        Sid = sessionId,
+                                        Em = !String.IsNullOrEmpty(email) ? email : "",
+                                        Md5 = md5, Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                                        Qs = queryString, Op = opaque, Dm = domain, Pg = page }),
+                                    "");
+                        IGenericEntity anteGe = new GenericEntityJson();
+                        var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
+                        anteGe.InitializeEntity(null, null, anteTs);
+                        plainText = anteGe.GetS("Email");
+                        //firstName = anteGe.GetS("Fn");
+                        //lastName = anteGe.GetS("Ln");
+                        //dateOfBirth = anteGe.GetS("Dob");
+
+                        SetCookie(context, "vidck", Jw.Json(new
+                            { Sid = sessionId, Md5 = md5, Em = "" }), this.VisitorIdCookieExpDays);
+                    }
+                    else
+                    {
+                        plainText = geplain.GetS("Email");
+                        //firstName = geplain.GetS("Fn");
+                        //lastName = geplain.GetS("Ln");
+                        //dateOfBirth = geplain.GetS("Dob");
+                        //EmIt = Int32.Parse(geplain.GetS("EmIt"));
+                        SetCookie(context, "vidck", 
+                            Jw.Json(new { Sid = sessionId, Md5 = md5,
+                            Em = !String.IsNullOrEmpty(plainText) ? plainText : ""
+                        }), this.VisitorIdCookieExpDays);
+                    }
+                }
+                else
+                {
+                    string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                    "InsertImpression",
+                                    Jw.Json(new { Md5It = M5dImpressionTypeId, EmIt = PlainImpressionTypeId,
+                                        Sid = sessionId,
+                                        Em = !String.IsNullOrEmpty(email) ? email : "",
+                                        Md5 = md5, Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                                        Qs = queryString, Op = opaque, Dm = domain, Pg = page }),
+                                    "");
+                        IGenericEntity anteGe = new GenericEntityJson();
+                        var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
+                        anteGe.InitializeEntity(null, null, anteTs);
+                        plainText = anteGe.GetS("Email");
+                        //firstName = anteGe.GetS("Fn");
+                        //lastName = anteGe.GetS("Ln");
+                        //dateOfBirth = anteGe.GetS("Dob");
+
+                    SetCookie(context, "vidck", 
+                        Jw.Json(new { Sid = sessionId, Md5 = md5, Em = email }), this.VisitorIdCookieExpDays);
+                }
+
+                // If we do this here we have to get the extra fields if the email
+                // was already in the cookie
+                // I think the posts to console should be fed off of the Impression
+                // table by a scheduled job, instead.
+                //await PostVisitorIdToConsole(plainText, firstName, lastName,
+                //            dateOfBirth, emailSource, dom);
+
+                return Jw.Json(new { email = plainText, md5 = md5 });
+            }
+
+            return Jw.Json(new { Result = "Failure" });
         }
 
-        public async Task<string> GetEmailFromMd5(string md5, string src)
+        public async Task<(string Email, int EmIt)> GetEmailFromMd5(string md5, string src)
         {
+            string plainText = "";
+            int emIt = 0;
+
             if (src == "cookie")
             {
-                return "";
+                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "GetEmailFromMd5",
+                        Jw.Json(new { Md5 = md5 }),
+                        "");
+                IGenericEntity anteGe = new GenericEntityJson();
+                var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
+                anteGe.InitializeEntity(null, null, anteTs);
+                if (anteGe.GetS("Result") == "NotFound")
+                {
+                    // Ping other services to try to convert md5 to email if desired
+                }
+                else
+                {
+                    plainText = anteGe.GetS("Email");
+                    emIt = Int32.Parse(anteGe.GetS("EmIt"));
+                }
             }
-            else if (src == "Tower")
+            else if (src == "SomeOtherService")
             {
-
+                // 
             }
 
-            return "";
+            return (Email: plainText, EmIt: emIt);
         }
 
         public List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)> Services =
@@ -460,79 +526,27 @@ namespace DataService
             return result;
         }
 
-        public async Task<string> ProcessTowerPixelCapture(string rawstring)
+        public async Task PostVisitorIdToConsole(string plainTextEmail, string firstName, string lastName,
+            string dateOfBirth, string emailSource, string domain)
         {
-            string labelvalue = "";
-            try
-            {
-                string[] a = rawstring.Split("  ");
-                a[a.Length - 1] = a[a.Length - 1].PadRight(a[a.Length - 1].Length + PadCount(a[a.Length - 1]), '=');
-                rawstring = String.Join("\r\n", a);
-                rawstring = rawstring.Replace('-', '+').Replace('_', '/');
-            }
-            catch (Exception ex)
-            {
-                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "TowerPixelCapture",
-                            Meth = "ProcessTowerPixelCapture - Step1Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"string error::{rawstring}"),
-                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
-                        }),
-                        "");
-            }
-
-            try
-            {
-                byte[] key = Utility.Hashing.StringToByteArray(this.TowerEncryptionKey);
-                string result = Decrypt(rawstring, key);
-                if (result.Contains("md5_email"))
-                {
-                    var parsedstring = HttpUtility.ParseQueryString(result);
-                    string md5value = parsedstring["md5_email"].ToString();
-
-                    
-                    if (parsedstring["label"] != null)
+            await Utility.ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
+                    Jw.Json(new
                     {
-                        labelvalue = CleanLabel(parsedstring["label"].ToString());
-                    }
-                    await ProcessTowerMessage(md5value, labelvalue);
-                }
-                else
-                {
-                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
-                        Jw.Json(new
+                        header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
+                        body = Jw.Json(new
                         {
-                            Sev = 1000,
-                            Proc = "TowerPixelCapture",
-                            Meth = "ProcessTowerPixelCapture - Step2Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"{CleanLabel(result)}"),
-                            Msg = Utility.Hashing.EncodeTo64("No md5")
-                        }),
-                        "");
-                }
-            }
-            catch (Exception ex)
-            {
-                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "TowerPixelCapture",
-                            Meth = "ProcessTowerPixelCapture - Step3Fail",
-                            Desc = Utility.Hashing.EncodeTo64($"decrypt error::{rawstring}"),
-                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
-                        }),
-                        "");
-            }
-
-            return labelvalue;
-        }
+                            domain_id = this.OnPointConsoleTowerDomain,
+                            email = plainTextEmail,
+                            first_name = firstName,
+                            last_name = lastName,
+                            dob = dateOfBirth,
+                            email_source = emailSource,
+                            isFinal = "true",
+                            label_domain = domain
+                        })
+                    }, new bool[] { false, false }),
+                    "application/json");
+        }        
 
         public static int PadCount(string str)
         {
@@ -561,16 +575,96 @@ namespace DataService
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
-        private string CleanLabel(string label)
+        public async Task<string> ProcessTowerMessage(HttpContext context, string rawstring, 
+            string userIp)
         {
-            string newlabel =  label.Replace("www.", "").Replace("http://", "").Replace("https://", "").Trim();
-            return newlabel;
-        }
+            string label = "";
+            string emailMd5 = "";
+            string plainText = "";
 
-        public async Task ProcessTowerMessage(string emailMd5, string label)
-        {
+            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = "Tracking",
+                            Msg = "Entry: " + Utility.Hashing.EncodeTo64(rawstring)
+                        }),
+                        "");
+
             try
             {
+                string[] a = rawstring.Split("  ");
+                a[a.Length - 1] = a[a.Length - 1].PadRight(a[a.Length - 1].Length + PadCount(a[a.Length - 1]), '=');
+                rawstring = String.Join("\r\n", a);
+                rawstring = rawstring.Replace('-', '+').Replace('_', '/');
+            }
+            catch (Exception ex)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = "Exception",
+                            Msg = "Step1Fail" + Utility.Hashing.EncodeTo64($"string error::{rawstring}") + 
+                                "::" + Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
+            }
+
+            try
+            {
+                byte[] key = Utility.Hashing.StringToByteArray(this.TowerEncryptionKey);
+                string result = Decrypt(rawstring, key);
+                if (result.Contains("md5_email"))
+                {
+                    var parsedstring = HttpUtility.ParseQueryString(result);
+                    emailMd5 = parsedstring["md5_email"].ToString();
+                }
+                else
+                {
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = "Error",
+                            Msg = "Step2Fail: " + Utility.Hashing.EncodeTo64("No md5") + "::" +
+                                Utility.Hashing.EncodeTo64(result)
+                        }),
+                        "");
+                }
+            }
+            catch (Exception ex)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage - Step3Fail",
+                            Desc = "Exception",
+                            Msg = "Step3Fail: " + Utility.Hashing.EncodeTo64($"decrypt error::{rawstring}") + "::" +
+                                Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
+            }
+
+            if (String.IsNullOrEmpty(emailMd5))
+                return "";
+
+            try
+            {
+                string sessionId = "";
+                string queryString = "";
                 string dom = "";
                 string page = "";
                 if (label.Contains("|"))
@@ -586,52 +680,58 @@ namespace DataService
 
                 if (!string.IsNullOrEmpty(emailMd5) && emailMd5.ToLower() == "none")
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
                         Jw.Json(new
                         {
                             Sev = 1000,
-                            Proc = "TowerPixelCapture",
+                            Proc = "DataService",
                             Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64($"Md5 is empty"),
-                            Msg = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
+                            Desc = "Error",
+                            Msg = "Md5 is empty: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
                         }),
                         "");
+
+                    return "";
                 }
                 else if (!string.IsNullOrEmpty(emailMd5) && emailMd5.Length == 32)
                 {
-                    string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "LogPixelFire",
-                        Jw.Json(new { Em = emailMd5, Lb = label, Dm = dom, Pg = page }),
-                        "", 240);
+                    string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "Md5ToLegacyEmail",
+                        Jw.Json(new { At = "32", Sid = sessionId, Md5 = emailMd5, Ip = userIp,
+                            Qs = queryString, Op = label, Dm = dom, Pg = page }),
+                            "", 240);
                     IGenericEntity geplain = new GenericEntityJson();
                     var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
                     geplain.InitializeEntity(null, null, stateplain);
 
                     string lpfEmRes = geplain.GetS("Result");
-                    string plainText = geplain.GetS("Email");
+                    plainText = geplain.GetS("Email");
                     string firstName = geplain.GetS("Fn");
                     string lastName = geplain.GetS("Ln");
                     string dateOfBirth = geplain.GetS("Dob");
                     string emailSource = "legacy";
+
                     if (lpfEmRes == "NotFound")
                     {
+                        // We did not find the email so we need to do a service-specific search
+                        // for the email (or potentially service-agnostic, but pass service along)
                         string towerEmailPlainText = null;
                         try
                         {
                             string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + emailMd5;
                             var jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
-                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "TowerVisitorErrorLog",
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                "VisitorIdErrorLog",
                                 Jw.Json(new
                                 {
                                     Sev = 1,
-                                    Proc = "TowerPixelCapture",
-                                    Meth = "ProcessTowerMessage - CallEmailApi",
-                                    Desc = Utility.Hashing.EncodeTo64(emailMd5),
+                                    Proc = "DataService",
+                                    Meth = "ProcessTowerMessage",
+                                    Desc = "Tracking",
                                     Msg = !String.IsNullOrEmpty(jsonPlainEmail.Item2) 
-                                        ? Utility.Hashing.EncodeTo64(jsonPlainEmail.Item2) 
-                                        : Utility.Hashing.EncodeTo64("Null or empty jsonPlainEmail")
+                                        ? "CallEmailApi(Tower): " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64(jsonPlainEmail.Item2) 
+                                        : "CallEmailApi(Tower): " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64("Null or empty jsonPlainEmail")
                                 }),
                                 "");
                             if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
@@ -649,17 +749,17 @@ namespace DataService
                                 }
                                 else
                                 {
-                                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                        "TowerVisitorErrorLog",
+                                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                        "VisitorIdErrorLog",
                                         Jw.Json(new
                                         {
                                             Sev = 1,
-                                            Proc = "TowerPixelCapture",
-                                            Meth = "ProcessTowerMessage - CallEmailApi Returned Null or Short Email",
-                                            Desc = Utility.Hashing.EncodeTo64(emailMd5),
+                                            Proc = "DataService",
+                                            Meth = "ProcessTowerMessage",
+                                            Desc = "Error",
                                             Msg = jsonPlainEmail.Item2 != null
-                                                ? Utility.Hashing.EncodeTo64("|" + jsonPlainEmail.Item2 + "|")
-                                                : Utility.Hashing.EncodeTo64("Null jsonPlainEmail")
+                                                ? "CallEmailApi(Tower) Returned Null or Short Email: " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64("|" + jsonPlainEmail.Item2 + "|")
+                                                : "CallEmailApi(Tower) Returned Null or Short Email: " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64("Null jsonPlainEmail")
                                         }),
                                         "");
                                 }
@@ -667,15 +767,15 @@ namespace DataService
                         }
                         catch (Exception tgException)
                         {
-                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "TowerVisitorErrorLog",
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                "VisitorIdErrorLog",
                                 Jw.Json(new
                                 {
                                     Sev = 1000,
-                                    Proc = "TowerPixelCapture",
-                                    Meth = "ProcessTowerMessage - TowerDataEmailApiFailed",
-                                    Desc = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}"),
-                                    Msg = Utility.Hashing.EncodeTo64(tgException.ToString())
+                                    Proc = "DataService",
+                                    Meth = "ProcessTowerMessage",
+                                    Desc = "Exception",
+                                    Msg = "TowerDataEmailApiFailed: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}") + "::" + Utility.Hashing.EncodeTo64(tgException.ToString())
                                 }),
                                 "");
                         }
@@ -684,9 +784,10 @@ namespace DataService
                         {
                             try
                             {
-                                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                    "AddNewTowerEmail",
-                                    Jw.Json(new { Email = towerEmailPlainText, Label = label }),
+                                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                    "InsertImpression",
+                                    Jw.Json(new { At = "32", Sid = sessionId, Md5 = emailMd5, Ip = userIp,
+                                        Qs = queryString, Op = label, Dm = dom, Pg = page }),
                                     "");
                                 IGenericEntity anteGe = new GenericEntityJson();
                                 var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
@@ -698,82 +799,73 @@ namespace DataService
                             }
                             catch (Exception exAddNewTowerEmail)
                             {
-                                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                    "TowerVisitorErrorLog",
+                                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                    "VisitorIdErrorLog",
                                     Jw.Json(new
                                     {
                                         Sev = 1000,
-                                        Proc = "TowerPixelCapture",
-                                        Meth = "ProcessTowerMessage - Exception calling spAddNewTowerEmail",
-                                        Desc = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}"),
-                                        Msg = Utility.Hashing.EncodeTo64(exAddNewTowerEmail.ToString())
+                                        Proc = "DataService",
+                                        Meth = "ProcessTowerMessage",
+                                        Desc = "Exception",
+                                        Msg = "Exception calling InsertImpression: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}") + "::" + Utility.Hashing.EncodeTo64(exAddNewTowerEmail.ToString())
                                     }),
                                     "");
                             }
                         }
                     }
 
-                    if (plainText != null)
+                    SetCookie(context, "vidck", Jw.Json(new { Sid = sessionId, Md5 = emailMd5,
+                        Em = !String.IsNullOrEmpty(plainText) ? plainText : "" }), this.VisitorIdCookieExpDays);
+
+                    if (!String.IsNullOrEmpty(plainText))
                     {
+                       // Now we send the email over to console (channel marketing system)
                         try
                         {
-                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "TowerVisitorErrorLog",
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                "VisitorIdErrorLog",
                                 Jw.Json(new
                                 {
                                     Sev = 1,
-                                    Proc = "TowerPixelCapture",
-                                    Meth = "ConsolePost",
-                                    Desc = Utility.Hashing.EncodeTo64(plainText),
-                                    Msg = Utility.Hashing.EncodeTo64(dom)
+                                    Proc = "DataService",
+                                    Meth = "ProcessTowerMessage",
+                                    Desc = "Tracking",
+                                    Msg = "ConsolePost: " + Utility.Hashing.EncodeTo64(plainText) + "::" + Utility.Hashing.EncodeTo64(dom)
                                 }),
                             "");
 
-                            await Utility.ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
-                                Jw.Json(new
-                                {
-                                    header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
-                                    body = Jw.Json(new
-                                    {
-                                        domain_id = this.OnPointConsoleTowerDomain,
-                                        email = plainText,
-                                        first_name = firstName,
-                                        last_name = lastName,
-                                        dob = dateOfBirth,
-                                        email_source = emailSource,
-                                        isFinal = "true",
-                                        label_domain = dom
-                                    })
-                                }, new bool[] { false, false }),
-                                "application/json");
+                            // I think this should be done by a scheduled job off
+                            // of the impression table instead.
+                            //await PostVisitorIdToConsole(plainText, firstName, lastName,
+                            //    dateOfBirth, emailSource, dom);
                         }
                         catch (Exception ex)
                         {
-                            await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "TowerVisitorErrorLog",
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                "VisitorIdErrorLog",
                                 Jw.Json(new
                                 {
                                     Sev = 1000,
-                                    Proc = "TowerPixelCapture",
-                                    Meth = "ProcessTowerMessage - TowerDataEmailConsolePostError",
-                                    Desc = Utility.Hashing.EncodeTo64($"{plainText}||{label}"),
-                                    Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                                    Proc = "DataService",
+                                    Meth = "ProcessTowerMessage",
+                                    Desc = "Exception",
+                                    Msg = "EmailConsolePostError(Tower): " + Utility.Hashing.EncodeTo64($"{plainText}||{label}") + "::" + Utility.Hashing.EncodeTo64(ex.ToString())
                                 }),
                                 "");
                         }
-                    }
+                    }                    
                 }
                 else
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
                         Jw.Json(new
                         {
                             Sev = 1000,
-                            Proc = "TowerPixelCapture",
+                            Proc = "DataService",
                             Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64($"Invalid query string"),
-                            Msg = Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
+                            Desc = "Error",
+                            Msg = "Invalid query string: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
                         }),
                         "");
                 }
@@ -783,15 +875,15 @@ namespace DataService
             {
                 try
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
                         Jw.Json(new
                         {
                             Sev = 1000,
-                            Proc = "TowerPixelCapture",
-                            Meth = "ProcessTowerMessage - OuterException",
-                            Desc = Utility.Hashing.EncodeTo64($""),
-                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = "Exception",
+                            Msg = "OuterException: " + Utility.Hashing.EncodeTo64(ex.ToString())
                         }),
                         "");
                 }
@@ -801,6 +893,8 @@ namespace DataService
                                 Environment.NewLine);
                 }
             }
+
+            return Jw.Json(new { email = plainText, md5 = emailMd5 });
         }
     }
 }
