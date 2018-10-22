@@ -1054,6 +1054,22 @@ namespace UnsubLib
                         newfname = await GetFileFromFileId(newf, ".txt.srt", this.ServerWorkingDirectory, 
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tdd");
 
+                        long oldflength = new FileInfo(this.ServerWorkingDirectory + "\\" + oldfname).Length;
+                        long newflength = new FileInfo(this.ServerWorkingDirectory + "\\" + newfname).Length
+
+                        if (oldflength > 0 && newflength > 0 && (newflength-oldflength)/oldflength > 0.2)
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                                $"LoadUnsubFiles", "Error", "Large Diff: " +
+                                oldf + "::" + oldfname + $"({oldflength})::" +
+                                newf + "::" + newfname + $"({newflength})::Over 20 percent");
+                        }
+
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                            $"LoadUnsubFiles", "Tracking", "Before Diffing: " +
+                            oldf + "::" + oldfname + $"({oldflength})::" + 
+                            newf + "::" + newfname + $"({newflength})");
+
                         bool res = await Utility.UnixWrapper.DiffFiles(
                             oldfname,
                             newfname,

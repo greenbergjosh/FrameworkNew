@@ -26,6 +26,12 @@ namespace UnsubServerWeb
         {
         }
 
+        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
+        {
+            File.AppendAllText("UnsubServer.log", $@"Unobservered::{DateTime.Now}::{args.ToString()}::{args.ToString()}" +
+                            Environment.NewLine);
+        }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
@@ -33,6 +39,9 @@ namespace UnsubServerWeb
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            TaskScheduler.UnobservedTaskException +=
+                    new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
             File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::Starting..." + Environment.NewLine);
             applicationLifetime.ApplicationStopping.Register(OnShutdown);
