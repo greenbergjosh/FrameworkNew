@@ -698,7 +698,7 @@ namespace DataService
                         Proc = "DataService",
                         Meth = "ProcessTowerMessage",
                         Desc = "Error",
-                        Msg = "Md5 is invalid: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
+                        Msg = "Md5 is invalid: " + Utility.Hashing.EncodeTo64($"{emailMd5}")
                     }),
                     "");
 
