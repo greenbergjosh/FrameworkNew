@@ -1055,7 +1055,7 @@ namespace UnsubLib
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tdd");
 
                         long oldflength = new FileInfo(this.ServerWorkingDirectory + "\\" + oldfname).Length;
-                        long newflength = new FileInfo(this.ServerWorkingDirectory + "\\" + newfname).Length
+                        long newflength = new FileInfo(this.ServerWorkingDirectory + "\\" + newfname).Length;
 
                         if (oldflength > 0 && newflength > 0 && (newflength-oldflength)/oldflength > 0.2)
                         {
