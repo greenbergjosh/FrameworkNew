@@ -37,6 +37,77 @@ namespace DataService
 
         public int VisitorIdCookieExpDays = 10;
 
+        public List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)> Services =
+            new List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)>()
+            {
+                (Name: "TestService1", Url: "//v-track.net?m=TestService&i=0",
+                    FetchParms: @"{
+                                method: 'GET',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "TestService2", Url: "//v-track.net?m=TestService&i=1",
+                    FetchParms: @"{
+                                method: 'GET',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "Tower", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif",
+                    FetchParms: @"{
+                                method: 'GET',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "Traverse", Url: "",
+                    FetchParms: @"{
+                                    method: 'GET',
+                                    mode: 'cors',
+                                    cache: 'no-cache',
+                                    credentials: 'include',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'
+                                    },
+                                    redirect: 'follow',
+                                    referrer: 'no-referrer'
+                                }",
+                    FetchType: "base64", ImgFlag: "data:image/gif;base64,")
+            };
+
+        public Dictionary<string, int> ServiceMd5ImpressionTypeId = new Dictionary<string, int>()
+        {
+            { "Service1", 10 }
+        };
+
+        public Dictionary<string, int> ServicePlainImpressionTypeId = new Dictionary<string, int>()
+        {
+            { "Service1", 11 }
+        };
+
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddCors(options =>
@@ -219,20 +290,11 @@ namespace DataService
                         }),
                         "");
             }
-        }
-
-        public Dictionary<string, int> ServiceMd5ImpressionTypeId = new Dictionary<string, int>()
-        {
-            { "Service1", 10 }
-        };
-
-        public Dictionary<string, int> ServicePlainImpressionTypeId = new Dictionary<string, int>()
-        {
-            { "Service1", 11 }
-        };
+        }        
 
         public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, string opaque, string qstr)
         {
+            // The first service to check is our own cookie
             string cookieValueFromReq = context.Request.Cookies["vidck"];
             if (!String.IsNullOrEmpty(cookieValueFromReq))
             {
@@ -247,10 +309,12 @@ namespace DataService
                 }                
             }
 
+            // Iterate the other services (iteration done by Javascript)
             if (idx < Services.Count)
             {
                 var s = Services[idx];
 
+                // Last minute url customization
                 string appendUrl = "";
                 if (s.Name == "Tower")
                 {
@@ -271,186 +335,79 @@ namespace DataService
         {
             string plainText = email;
 
-            if (!String.IsNullOrEmpty(md5))
+            if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
+
+            if (String.IsNullOrEmpty(plainText)) // Search Legacy for plaintext
             {
-                if (String.IsNullOrEmpty(email))
+                string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                    "Md5ToLegacyEmail",
+                    Jw.Json(new { Md5It = M5dImpressionTypeId, Sid = sessionId, Md5 = md5,
+                        Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                        Qs = queryString, Op = opaque, Dm = domain, Pg = page
+                    }),
+                    "", 240);
+                IGenericEntity geplain = new GenericEntityJson();
+                var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
+                geplain.InitializeEntity(null, null, stateplain);
+                plainText = geplain.GetS("Email");
+
+                if (!String.IsNullOrEmpty(plainText))
                 {
-                    string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "Md5ToLegacyEmail",
-                        Jw.Json(new { Md5It = M5dImpressionTypeId, Sid = sessionId, Md5 = md5,
-                            Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
-                            Qs = queryString, Op = opaque, Dm = domain, Pg = page
-                        }),
-                        "", 240);
-                    IGenericEntity geplain = new GenericEntityJson();
-                    var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
-                    geplain.InitializeEntity(null, null, stateplain);
-
-                    string lpfEmRes = geplain.GetS("Result");
-
-                    if (lpfEmRes == "NotFound")
-                    {
-                        // Based on serviceName, see if other services can be used to convert md5 to plaintext
-                        // If so, then SaveSession() with that email instead of blank
-                        string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "InsertImpression",
-                                    Jw.Json(new { Md5It = M5dImpressionTypeId, EmIt = 9 /*PlainNone*/,
-                                        Sid = sessionId,
-                                        Em = !String.IsNullOrEmpty(email) ? email : "",
-                                        Md5 = md5, Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
-                                        Qs = queryString, Op = opaque, Dm = domain, Pg = page }),
-                                    "");
-                        IGenericEntity anteGe = new GenericEntityJson();
-                        var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-                        anteGe.InitializeEntity(null, null, anteTs);
-                        plainText = anteGe.GetS("Email");
-                        //firstName = anteGe.GetS("Fn");
-                        //lastName = anteGe.GetS("Ln");
-                        //dateOfBirth = anteGe.GetS("Dob");
-
-                        SetCookie(context, "vidck", Jw.Json(new
-                            { Sid = sessionId, Md5 = md5, Em = "" }), this.VisitorIdCookieExpDays);
-                    }
-                    else
-                    {
-                        plainText = geplain.GetS("Email");
-                        //firstName = geplain.GetS("Fn");
-                        //lastName = geplain.GetS("Ln");
-                        //dateOfBirth = geplain.GetS("Dob");
-                        //EmIt = Int32.Parse(geplain.GetS("EmIt"));
-                        SetCookie(context, "vidck", 
-                            Jw.Json(new { Sid = sessionId, Md5 = md5,
+                    // Already created the Impression is spMd5ToLegacyEmail
+                    plainText = geplain.GetS("Email");
+                    //firstName = geplain.GetS("Fn");
+                    //lastName = geplain.GetS("Ln");
+                    //dateOfBirth = geplain.GetS("Dob");
+                    //EmIt = Int32.Parse(geplain.GetS("EmIt"));
+                    SetCookie(context, "vidck",
+                        Jw.Json(new { Sid = sessionId, Md5 = md5,
                             Em = !String.IsNullOrEmpty(plainText) ? plainText : ""
                         }), this.VisitorIdCookieExpDays);
-                    }
+
+                    return Jw.Json(new { email = plainText, md5 = md5 });
                 }
-                else
-                {
-                    string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "InsertImpression",
-                                    Jw.Json(new { Md5It = M5dImpressionTypeId, EmIt = PlainImpressionTypeId,
-                                        Sid = sessionId,
-                                        Em = !String.IsNullOrEmpty(email) ? email : "",
-                                        Md5 = md5, Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
-                                        Qs = queryString, Op = opaque, Dm = domain, Pg = page }),
-                                    "");
-                        IGenericEntity anteGe = new GenericEntityJson();
-                        var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-                        anteGe.InitializeEntity(null, null, anteTs);
-                        plainText = anteGe.GetS("Email");
-                        //firstName = anteGe.GetS("Fn");
-                        //lastName = anteGe.GetS("Ln");
-                        //dateOfBirth = anteGe.GetS("Dob");
-
-                    SetCookie(context, "vidck", 
-                        Jw.Json(new { Sid = sessionId, Md5 = md5, Em = email }), this.VisitorIdCookieExpDays);
-                }
-
-                // If we do this here we have to get the extra fields if the email
-                // was already in the cookie
-                // I think the posts to console should be fed off of the Impression
-                // table by a scheduled job, instead.
-                //await PostVisitorIdToConsole(plainText, firstName, lastName,
-                //            dateOfBirth, emailSource, dom);
-
-                return Jw.Json(new { email = plainText, md5 = md5 });
             }
 
-            return Jw.Json(new { Result = "Failure" });
-        }
-
-        public async Task<(string Email, int EmIt)> GetEmailFromMd5(string md5, string src)
-        {
-            string plainText = "";
-            int emIt = 0;
-
-            if (src == "cookie")
+            int plainTypeId = PlainImpressionTypeId;
+            if (String.IsNullOrEmpty(plainText)) // Search Services for plaintext
             {
-                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "GetEmailFromMd5",
-                        Jw.Json(new { Md5 = md5 }),
+                // Try to get plain text
+                plainTypeId = 9; /*PlainNone*/
+                if (serviceName == "Tower")
+                {
+                    plainText = await CallTowerEmailApi(md5, opaque, domain, page);
+                    plainTypeId = PlainImpressionTypeId;
+                }
+            }
+
+            string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "InsertImpression",
+                        Jw.Json(new { Md5It = M5dImpressionTypeId, EmIt = plainTypeId,
+                            Sid = sessionId,
+                            Em = !String.IsNullOrEmpty(plainText) ? plainText : "",
+                            Md5 = md5, Ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                            Qs = queryString, Op = opaque, Dm = domain, Pg = page }),
                         "");
-                IGenericEntity anteGe = new GenericEntityJson();
-                var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-                anteGe.InitializeEntity(null, null, anteTs);
-                if (anteGe.GetS("Result") == "NotFound")
-                {
-                    // Ping other services to try to convert md5 to email if desired
-                }
-                else
-                {
-                    plainText = anteGe.GetS("Email");
-                    emIt = Int32.Parse(anteGe.GetS("EmIt"));
-                }
-            }
-            else if (src == "SomeOtherService")
-            {
-                // 
-            }
+            IGenericEntity anteGe = new GenericEntityJson();
+            var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
+            anteGe.InitializeEntity(null, null, anteTs);
+            plainText = anteGe.GetS("Email");
+            //firstName = anteGe.GetS("Fn");
+            //lastName = anteGe.GetS("Ln");
+            //dateOfBirth = anteGe.GetS("Dob");
+            
+            SetCookie(context, "vidck", Jw.Json(new
+            { Sid = sessionId, Md5 = md5, Em = plainText }), this.VisitorIdCookieExpDays);
 
-            return (Email: plainText, EmIt: emIt);
-        }
+            // If we do this here we have to get the extra fields if the email
+            // was already in the cookie
+            // I think the posts to console should be fed off of the Impression
+            // table by a scheduled job, instead.
+            //await PostVisitorIdToConsole(plainText, firstName, lastName,
+            //            dateOfBirth, emailSource, dom);
 
-        public List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)> Services =
-            new List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)>()
-            {
-                (Name: "TestService1", Url: "//v-track.net?m=TestService&i=0",
-                    FetchParms: @"{
-                                method: 'GET',
-                                mode: 'cors',
-                                cache: 'no-cache',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                redirect: 'follow',
-                                referrer: 'no-referrer'
-                            }",
-                    FetchType: "json", ImgFlag: ""),
-                (Name: "TestService2", Url: "//v-track.net?m=TestService&i=1",
-                    FetchParms: @"{
-                                method: 'GET',
-                                mode: 'cors',
-                                cache: 'no-cache',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                redirect: 'follow',
-                                referrer: 'no-referrer'
-                            }",
-                    FetchType: "json", ImgFlag: ""),
-                (Name: "Tower", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif", 
-                    FetchParms: @"{
-                                method: 'GET',
-                                mode: 'cors',
-                                cache: 'no-cache',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                redirect: 'follow',
-                                referrer: 'no-referrer'
-                            }",
-                    FetchType: "json", ImgFlag: ""),
-                (Name: "Traverse", Url: "",
-                    FetchParms: @"{
-                                    method: 'GET',
-                                    mode: 'cors',
-                                    cache: 'no-cache',
-                                    credentials: 'include',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json'
-                                    },
-                                    redirect: 'follow',
-                                    referrer: 'no-referrer'
-                                }",
-                    FetchType: "base64", ImgFlag: "data:image/gif;base64,")
-            };
+            return Jw.Json(new { email = plainText, md5 = md5 });
+        }        
 
         public void SetCookie(HttpContext ctx, string key, string value, int? expireTime)
         {
@@ -575,12 +532,80 @@ namespace DataService
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
+        public async Task<string> CallTowerEmailApi(string md5, string opaque, string domain, string page)
+        {
+            string towerEmailPlainText = "";
+            try
+            {
+                string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + md5;
+                var jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                    "VisitorIdErrorLog",
+                    Jw.Json(new
+                    {
+                        Sev = 1,
+                        Proc = "DataService",
+                        Meth = "CallTowerEmailApi",
+                        Desc = "Tracking",
+                        Msg = !String.IsNullOrEmpty(jsonPlainEmail.Item2)
+                            ? "CallEmailApi(Tower): " + md5 + "::" + jsonPlainEmail.Item2
+                            : "CallEmailApi(Tower): " + md5 + "::" + "Null or empty jsonPlainEmail"
+                    }),
+                    "");
+                if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
+                {
+                    IGenericEntity te = new GenericEntityJson();
+                    var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail.Item2);
+                    te.InitializeEntity(null, null, ts);
+                    if (te.GetS("target_email") != null)
+                    {
+                        if (te.GetS("target_email").Length > 3)
+                        {
+                            towerEmailPlainText = te.GetS("target_email");
+                        }
+                    }
+                    else
+                    {
+                        await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                            "VisitorIdErrorLog",
+                            Jw.Json(new
+                            {
+                                Sev = 1,
+                                Proc = "DataService",
+                                Meth = "CallTowerEmailApi",
+                                Desc = "Error",
+                                Msg = jsonPlainEmail.Item2 != null
+                                    ? "CallEmailApi(Tower) Returned Null or Short Email: " + Utility.Hashing.EncodeTo64(md5) + "::" + Utility.Hashing.EncodeTo64("|" + jsonPlainEmail.Item2 + "|")
+                                    : "CallEmailApi(Tower) Returned Null or Short Email: " + Utility.Hashing.EncodeTo64(md5) + "::" + Utility.Hashing.EncodeTo64("Null jsonPlainEmail")
+                            }),
+                            "");
+                    }
+                }
+            }
+            catch (Exception tgException)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                    "VisitorIdErrorLog",
+                    Jw.Json(new
+                    {
+                        Sev = 1000,
+                        Proc = "DataService",
+                        Meth = "CallTowerEmailApi",
+                        Desc = "Exception",
+                        Msg = "TowerDataEmailApiFailed: " + Utility.Hashing.EncodeTo64($"{md5}||{opaque}||{domain}||{page}") + "::" + Utility.Hashing.EncodeTo64(tgException.ToString())
+                    }),
+                    "");
+            }
+
+            return towerEmailPlainText;
+        }
+
         public async Task<string> ProcessTowerMessage(HttpContext context, string rawstring, 
             string userIp)
         {
+            string pRawString = "";
             string label = "";
             string emailMd5 = "";
-            string plainText = "";
 
             await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
                         "VisitorIdErrorLog",
@@ -598,8 +623,8 @@ namespace DataService
             {
                 string[] a = rawstring.Split("  ");
                 a[a.Length - 1] = a[a.Length - 1].PadRight(a[a.Length - 1].Length + PadCount(a[a.Length - 1]), '=');
-                rawstring = String.Join("\r\n", a);
-                rawstring = rawstring.Replace('-', '+').Replace('_', '/');
+                pRawString = String.Join("\r\n", a);
+                pRawString = pRawString.Replace('-', '+').Replace('_', '/');
             }
             catch (Exception ex)
             {
@@ -620,11 +645,15 @@ namespace DataService
             try
             {
                 byte[] key = Utility.Hashing.StringToByteArray(this.TowerEncryptionKey);
-                string result = Decrypt(rawstring, key);
+                string result = Decrypt(pRawString, key);
                 if (result.Contains("md5_email"))
                 {
                     var parsedstring = HttpUtility.ParseQueryString(result);
                     emailMd5 = parsedstring["md5_email"].ToString();
+                    if (parsedstring["label"] != null)
+                    {
+                        label = parsedstring["label"].ToString();
+                    }
                 }
                 else
                 {
@@ -658,8 +687,23 @@ namespace DataService
                         "");
             }
 
-            if (String.IsNullOrEmpty(emailMd5))
-                return "";
+            if (String.IsNullOrEmpty(emailMd5) || 
+                emailMd5.ToLower() == "none" || emailMd5.Length != 32)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                    "VisitorIdErrorLog",
+                    Jw.Json(new
+                    {
+                        Sev = 1000,
+                        Proc = "DataService",
+                        Meth = "ProcessTowerMessage",
+                        Desc = "Error",
+                        Msg = "Md5 is invalid: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
+                    }),
+                    "");
+
+                return Jw.Json(new { Result = "Failure" });
+            }
 
             try
             {
@@ -667,209 +711,17 @@ namespace DataService
                 string queryString = "";
                 string dom = "";
                 string page = "";
+
                 if (label.Contains("|"))
                 {
-                    string[] array = label.Split('|');
-                    dom = array[0];
-                    page = array[1];
-                }
-                else
-                {
-                    dom = label;
+                    string[] larray = label.Split('|');
+                    dom = larray[0];
+                    page = larray[1];
+                    sessionId = larray[2];
+                    queryString = larray[3];
                 }
 
-                if (!string.IsNullOrEmpty(emailMd5) && emailMd5.ToLower() == "none")
-                {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = "Error",
-                            Msg = "Md5 is empty: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
-                        }),
-                        "");
-
-                    return "";
-                }
-                else if (!string.IsNullOrEmpty(emailMd5) && emailMd5.Length == 32)
-                {
-                    string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "Md5ToLegacyEmail",
-                        Jw.Json(new { At = "32", Sid = sessionId, Md5 = emailMd5, Ip = userIp,
-                            Qs = queryString, Op = label, Dm = dom, Pg = page }),
-                            "", 240);
-                    IGenericEntity geplain = new GenericEntityJson();
-                    var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
-                    geplain.InitializeEntity(null, null, stateplain);
-
-                    string lpfEmRes = geplain.GetS("Result");
-                    plainText = geplain.GetS("Email");
-                    string firstName = geplain.GetS("Fn");
-                    string lastName = geplain.GetS("Ln");
-                    string dateOfBirth = geplain.GetS("Dob");
-                    string emailSource = "legacy";
-
-                    if (lpfEmRes == "NotFound")
-                    {
-                        // We did not find the email so we need to do a service-specific search
-                        // for the email (or potentially service-agnostic, but pass service along)
-                        string towerEmailPlainText = null;
-                        try
-                        {
-                            string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + emailMd5;
-                            var jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                "VisitorIdErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1,
-                                    Proc = "DataService",
-                                    Meth = "ProcessTowerMessage",
-                                    Desc = "Tracking",
-                                    Msg = !String.IsNullOrEmpty(jsonPlainEmail.Item2) 
-                                        ? "CallEmailApi(Tower): " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64(jsonPlainEmail.Item2) 
-                                        : "CallEmailApi(Tower): " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64("Null or empty jsonPlainEmail")
-                                }),
-                                "");
-                            if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
-                            {
-                                IGenericEntity te = new GenericEntityJson();
-                                var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail.Item2);
-                                te.InitializeEntity(null, null, ts);
-                                if (te.GetS("target_email") != null)
-                                {
-                                    if (te.GetS("target_email").Length > 3)
-                                    {
-                                        emailSource = "tower";
-                                        towerEmailPlainText = te.GetS("target_email");
-                                    }
-                                }
-                                else
-                                {
-                                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                        "VisitorIdErrorLog",
-                                        Jw.Json(new
-                                        {
-                                            Sev = 1,
-                                            Proc = "DataService",
-                                            Meth = "ProcessTowerMessage",
-                                            Desc = "Error",
-                                            Msg = jsonPlainEmail.Item2 != null
-                                                ? "CallEmailApi(Tower) Returned Null or Short Email: " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64("|" + jsonPlainEmail.Item2 + "|")
-                                                : "CallEmailApi(Tower) Returned Null or Short Email: " + Utility.Hashing.EncodeTo64(emailMd5) + "::" + Utility.Hashing.EncodeTo64("Null jsonPlainEmail")
-                                        }),
-                                        "");
-                                }
-                            }
-                        }
-                        catch (Exception tgException)
-                        {
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                "VisitorIdErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1000,
-                                    Proc = "DataService",
-                                    Meth = "ProcessTowerMessage",
-                                    Desc = "Exception",
-                                    Msg = "TowerDataEmailApiFailed: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}") + "::" + Utility.Hashing.EncodeTo64(tgException.ToString())
-                                }),
-                                "");
-                        }
-
-                        if (towerEmailPlainText != null)
-                        {
-                            try
-                            {
-                                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "InsertImpression",
-                                    Jw.Json(new { At = "32", Sid = sessionId, Md5 = emailMd5, Ip = userIp,
-                                        Qs = queryString, Op = label, Dm = dom, Pg = page }),
-                                    "");
-                                IGenericEntity anteGe = new GenericEntityJson();
-                                var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-                                anteGe.InitializeEntity(null, null, anteTs);
-                                plainText = anteGe.GetS("Email");
-                                firstName = anteGe.GetS("Fn");
-                                lastName = anteGe.GetS("Ln");
-                                dateOfBirth = anteGe.GetS("Dob");
-                            }
-                            catch (Exception exAddNewTowerEmail)
-                            {
-                                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "VisitorIdErrorLog",
-                                    Jw.Json(new
-                                    {
-                                        Sev = 1000,
-                                        Proc = "DataService",
-                                        Meth = "ProcessTowerMessage",
-                                        Desc = "Exception",
-                                        Msg = "Exception calling InsertImpression: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}") + "::" + Utility.Hashing.EncodeTo64(exAddNewTowerEmail.ToString())
-                                    }),
-                                    "");
-                            }
-                        }
-                    }
-
-                    SetCookie(context, "vidck", Jw.Json(new { Sid = sessionId, Md5 = emailMd5,
-                        Em = !String.IsNullOrEmpty(plainText) ? plainText : "" }), this.VisitorIdCookieExpDays);
-
-                    if (!String.IsNullOrEmpty(plainText))
-                    {
-                       // Now we send the email over to console (channel marketing system)
-                        try
-                        {
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                "VisitorIdErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1,
-                                    Proc = "DataService",
-                                    Meth = "ProcessTowerMessage",
-                                    Desc = "Tracking",
-                                    Msg = "ConsolePost: " + Utility.Hashing.EncodeTo64(plainText) + "::" + Utility.Hashing.EncodeTo64(dom)
-                                }),
-                            "");
-
-                            // I think this should be done by a scheduled job off
-                            // of the impression table instead.
-                            //await PostVisitorIdToConsole(plainText, firstName, lastName,
-                            //    dateOfBirth, emailSource, dom);
-                        }
-                        catch (Exception ex)
-                        {
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                "VisitorIdErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1000,
-                                    Proc = "DataService",
-                                    Meth = "ProcessTowerMessage",
-                                    Desc = "Exception",
-                                    Msg = "EmailConsolePostError(Tower): " + Utility.Hashing.EncodeTo64($"{plainText}||{label}") + "::" + Utility.Hashing.EncodeTo64(ex.ToString())
-                                }),
-                                "");
-                        }
-                    }                    
-                }
-                else
-                {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = "Error",
-                            Msg = "Invalid query string: " + Utility.Hashing.EncodeTo64($"{emailMd5}||{label}||{dom}||{page}")
-                        }),
-                        "");
-                }
-
+                return await SaveSession(context, "Tower", 2, 7, sessionId, emailMd5, "", queryString, label, dom, page);
             }
             catch (Exception ex)
             {
@@ -894,7 +746,39 @@ namespace DataService
                 }
             }
 
-            return Jw.Json(new { email = plainText, md5 = emailMd5 });
+            return Jw.Json(new { Result = "Failure" });
         }
+
+        //public async Task<(string Email, int EmIt)> GetEmailFromMd5(string md5, string src)
+        //{
+        //    string plainText = "";
+        //    int emIt = 0;
+
+        //    if (src == "cookie")
+        //    {
+        //        string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+        //                "GetEmailFromMd5",
+        //                Jw.Json(new { Md5 = md5 }),
+        //                "");
+        //        IGenericEntity anteGe = new GenericEntityJson();
+        //        var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
+        //        anteGe.InitializeEntity(null, null, anteTs);
+        //        if (anteGe.GetS("Result") == "NotFound")
+        //        {
+        //            // Ping other services to try to convert md5 to email if desired
+        //        }
+        //        else
+        //        {
+        //            plainText = anteGe.GetS("Email");
+        //            emIt = Int32.Parse(anteGe.GetS("EmIt"));
+        //        }
+        //    }
+        //    else if (src == "SomeOtherService")
+        //    {
+        //        // 
+        //    }
+
+        //    return (Email: plainText, EmIt: emIt);
+        //}
     }
 }
