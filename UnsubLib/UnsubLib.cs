@@ -1511,22 +1511,23 @@ namespace UnsubLib
                 }
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net")))
                 {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                               "GetSuppressionFileUri", "Tracking",
-                               "Calling GetEzepoUnsubFileUri: " + usuri.ToString());
+                    uri = "";
+                    //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    //           "GetSuppressionFileUri", "Tracking",
+                    //           "Calling GetEzepoUnsubFileUri: " + usuri.ToString());
 
-                    string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
+                    //string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
 
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                               "GetSuppressionFileUri", "Tracking",
-                               "Completed GetEzepoUnsubFileUri: " + usuri.ToString());
+                    //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    //           "GetSuppressionFileUri", "Tracking",
+                    //           "Completed GetEzepoUnsubFileUri: " + usuri.ToString());
 
-                    if (ezepoUnsubUrl != "")
-                        uri = ezepoUnsubUrl;
-                    else
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                               "GetSuppressionFileUri", "Error",
-                               "Empty ezepo url: " + usuri.ToString());
+                    //if (ezepoUnsubUrl != "")
+                    //    uri = ezepoUnsubUrl;
+                    //else
+                    //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                    //           "GetSuppressionFileUri", "Error",
+                    //           "Empty ezepo url: " + usuri.ToString());
                 }
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
                 {

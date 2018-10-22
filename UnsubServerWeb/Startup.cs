@@ -27,12 +27,15 @@ namespace UnsubServerWeb
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::Starting..." + Environment.NewLine);
+            applicationLifetime.ApplicationStopping.Register(OnShutdown);
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
                         .SetBasePath(Directory.GetCurrentDirectory())
@@ -98,6 +101,11 @@ namespace UnsubServerWeb
                 await context.Response.WriteAsync(result);
 
             });
+        }
+
+        private void OnShutdown()
+        {
+            File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::OnShutdown()" + Environment.NewLine);
         }
     }
 }
