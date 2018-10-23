@@ -67,6 +67,7 @@ namespace UnsubLib
         public long WorkingFileCacheSize;
         public long SearchFileCacheSize;
         public string UnsubServerUri;
+        public string UnsubJobServerUri;
         public string DtExecPath;
         public int MaxConnections;
         public int MaxParallelism;
@@ -105,6 +106,7 @@ namespace UnsubLib
             this.WorkingFileCacheSize = Int64.Parse(gc.GetS("Config/WorkingFileCacheSize"));
             this.SearchFileCacheSize = Int64.Parse(gc.GetS("Config/SearchFileCacheSize"));
             this.UnsubServerUri = gc.GetS("Config/UnsubServerUri");
+            this.UnsubJobServerUri = gc.GetS("Config/UnsubJobServerUri");
             this.DtExecPath = gc.GetS("Config/DtExecPath");
             this.CallLocalLoadUnsubFiles = gc.GetB("Config/CallLocalLoadUnsubFiles");
             this.UseLocalNetworkFile = gc.GetB("Config/UseLocalNetworkFile");
@@ -768,7 +770,7 @@ namespace UnsubLib
                 //result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                 //    new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
 
-                result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri, 
+                result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubJobServerUri, 
                     msg, "application/json", 1000 * 60);
 
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
