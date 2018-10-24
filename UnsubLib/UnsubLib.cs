@@ -73,6 +73,8 @@ namespace UnsubLib
         public int MaxParallelism;
         public string SeleniumChromeDriverPath;
         public string FileCacheFtpServerPath;
+        public int MinDiffFileSize;
+        public float MaxDiffFilePercentage;
 
         public Rw.RoslynWrapper RosWrap;        
 
@@ -117,6 +119,8 @@ namespace UnsubLib
             this.MaxConnections = Int32.Parse(gc.GetS("Config/MaxConnections"));
             this.SeleniumChromeDriverPath = gc.GetS("Config/SeleniumChromeDriverPath");
             this.FileCacheFtpServerPath = gc.GetS("Config/FileCacheFtpServerPath");
+            this.MinDiffFileSize = Int32.Parse(gc.GetS("Config/MinDiffFileSize"));
+            this.MaxDiffFilePercentage = float.Parse(gc.GetS("Config/MaxDiffFilePercentage"));
 
             ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
@@ -1051,48 +1055,58 @@ namespace UnsubLib
 
                     try
                     {
-                        oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.ServerWorkingDirectory, 
+                        oldfname = await GetFileFromFileId(oldf, ".txt.srt", this.ServerWorkingDirectory,
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tdd");
-                        newfname = await GetFileFromFileId(newf, ".txt.srt", this.ServerWorkingDirectory, 
+                        newfname = await GetFileFromFileId(newf, ".txt.srt", this.ServerWorkingDirectory,
                             this.WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tdd");
 
                         long oldflength = new FileInfo(this.ServerWorkingDirectory + "\\" + oldfname).Length;
                         long newflength = new FileInfo(this.ServerWorkingDirectory + "\\" + newfname).Length;
+                        float diffPerc = ((float)(newflength - oldflength)) / oldflength;
 
-                        if (oldflength > 0 && newflength > 0 && (newflength-oldflength)/oldflength > 0.2)
+                        if (diffPerc < 0)
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                                $"LoadUnsubFiles", "Error", "Negative Diff: " +
+                                oldf + "::" + oldfname + $"({oldflength})::" +
+                                newf + "::" + newfname + $"({newflength})::Negative diff percentage");
+                        }
+                        else if (oldflength > 320000 && diffPerc > 0.2)
                         {
                             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                                 $"LoadUnsubFiles", "Error", "Large Diff: " +
                                 oldf + "::" + oldfname + $"({oldflength})::" +
                                 newf + "::" + newfname + $"({newflength})::Over 20 percent");
                         }
-
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                        else
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"LoadUnsubFiles", "Tracking", "Before Diffing: " +
-                            oldf + "::" + oldfname + $"({oldflength})::" + 
+                            oldf + "::" + oldfname + $"({oldflength})::" +
                             newf + "::" + newfname + $"({newflength})");
 
-                        bool res = await Utility.UnixWrapper.DiffFiles(
-                            oldfname,
-                            newfname,
-                            this.ServerWorkingDirectory,
-                            diffname);
+                            bool res = await Utility.UnixWrapper.DiffFiles(
+                                oldfname,
+                                newfname,
+                                this.ServerWorkingDirectory,
+                                diffname);
 
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                            $"LoadUnsubFiles", "Tracking", "After Diffing: " +
-                            oldf + "::" + newf);
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"LoadUnsubFiles", "Tracking", "After Diffing: " +
+                                oldf + "::" + newf);
 
-                        await SSISLoadMd5File(diffname,
-                            this.ServerName,
-                            this.DatabaseName,
-                            this.SsisConnectionString,
-                            this.JsonTemplateFile,
-                            this.SsisTemplateFile,
-                            "PostProcessDiffFile");
+                            await SSISLoadMd5File(diffname,
+                                this.ServerName,
+                                this.DatabaseName,
+                                this.SsisConnectionString,
+                                this.JsonTemplateFile,
+                                this.SsisTemplateFile,
+                                "PostProcessDiffFile");
 
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                            $"LoadUnsubFiles", "Tracking", "After SSISLoad: " +
-                            oldf + "::" + newf);
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                                $"LoadUnsubFiles", "Tracking", "After SSISLoad: " +
+                                oldf + "::" + newf);
+                        }                     
                     }
                     catch (Exception exDiff)
                     {
