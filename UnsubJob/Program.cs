@@ -46,7 +46,11 @@ namespace UnsubJob
 
             try
             {
-                networks = await nw.GetNetworksAndCreateLockFiles();
+                string singleNetworkName = null;
+                if (args.Length > 0 && !String.IsNullOrEmpty(args[1]))
+                    singleNetworkName = args[1];
+                    
+                networks = await nw.GetNetworks(args[1]);
             }
             catch (Exception exGetNetworks)
             {

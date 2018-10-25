@@ -40,61 +40,56 @@ namespace DataService
         public List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)> Services =
             new List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)>()
             {
-                (Name: "TestService1", Url: "//v-track.net?m=TestService&i=0",
+                (Name: "TestService0", Url: "//v-track.net?m=TestService&i=0",
                     FetchParms: @"{
-                                method: 'GET',
-                                mode: 'cors',
-                                cache: 'no-cache',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                redirect: 'follow',
-                                referrer: 'no-referrer'
+                                ""method"": ""GET"",
+                                ""mode"": ""cors"",
+                                ""cache"": ""no-cache"",
+                                ""redirect"": ""follow"",
+                                ""referrer"": ""no-referrer""
                             }",
                     FetchType: "json", ImgFlag: ""),
-                (Name: "TestService2", Url: "//v-track.net?m=TestService&i=1",
+                (Name: "TestService1", Url: "//v-track.net?m=TestService&i=1",
                     FetchParms: @"{
-                                method: 'GET',
-                                mode: 'cors',
-                                cache: 'no-cache',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
+                                ""method"": ""GET"",
+                                ""mode"": ""cors"",
+                                ""cache"": ""no-cache"",
+                                ""credentials"": ""include"",
+                                ""headers"": {
+                                    ""Content-Type"": ""application/json"",
+                                    ""Accept"": ""application/json""
                                 },
-                                redirect: 'follow',
-                                referrer: 'no-referrer'
+                                ""redirect"": ""follow"",
+                                ""referrer"": ""no-referrer""
                             }",
                     FetchType: "json", ImgFlag: ""),
                 (Name: "Tower", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif",
                     FetchParms: @"{
-                                method: 'GET',
-                                mode: 'cors',
-                                cache: 'no-cache',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
+                                ""method"": ""GET"",
+                                ""mode"": ""cors"",
+                                ""cache"": ""no-cache"",
+                                ""credentials"": ""include"",
+                                ""headers"": {
+                                    ""Content-Type"": ""application/json"",
+                                    ""Accept"": ""application/json""
                                 },
-                                redirect: 'follow',
-                                referrer: 'no-referrer'
+                                ""redirect"": ""follow"",
+                                ""referrer"": ""no-referrer""
                             }",
                     FetchType: "json", ImgFlag: ""),
                 (Name: "Traverse", Url: "",
                     FetchParms: @"{
-                                    method: 'GET',
-                                    mode: 'cors',
-                                    cache: 'no-cache',
-                                    credentials: 'include',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json'
-                                    },
-                                    redirect: 'follow',
-                                    referrer: 'no-referrer'
-                                }",
+                                ""method"": ""GET"",
+                                ""mode"": ""cors"",
+                                ""cache"": ""no-cache"",
+                                ""credentials"": ""include"",
+                                ""headers"": {
+                                    ""Content-Type"": ""application/json"",
+                                    ""Accept"": ""application/json""
+                                },
+                                ""redirect"": ""follow"",
+                                ""referrer"": ""no-referrer""
+                            }",
                     FetchType: "base64", ImgFlag: "data:image/gif;base64,")
             };
 

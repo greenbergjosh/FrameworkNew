@@ -131,103 +131,59 @@ namespace UnsubLib
             this.RosWrap = rw;
         }
 
-        public async Task<IGenericEntity> GetNetworksAndCreateLockFiles()
+        public async Task<IGenericEntity> GetNetworksAndCreateLockFiles(string singleNetworkName)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                "GetNetworksAndCreateLockFiles", "Tracking", "Before SelectNetwork");
+                "GetNetworksAndCreateLockFiles", "Tracking", "Before SelectNetwork" +
+                singleNetworkName != null ? " " + singleNetworkName : "");
 
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
-                    "{}",
+                    singleNetworkName != null ? Jw.Json(new { NetworkName = singleNetworkName}): "{}",
                     "");
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "Tracking", "After SelectNetwork: " + network);
+                $"GetNetworksAndCreateLockFiles", "Tracking", "After SelectNetwork: " + network +
+                singleNetworkName != null ? " " + singleNetworkName : "");
 
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
             ge.InitializeEntity(this.RosWrap, null, state);
-            //List<string> fileNames = new List<string>();
-            //foreach (var n in ge.GetL(""))
-            //{
-            //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //        $"GetNetworksAndCreateLockFiles", "Tracking",
-            //        "Adding lock file name to list: " + this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
-            //    fileNames.Add(this.ClientWorkingDirectory + "\\Lock\\" + n.GetS("Id").ToLower() + ".lck");
-            //}
-
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"GetNetworksAndCreateLockFiles", "Tracking", "Before creating lock files");
-
-            //await Fs.CreateEmptyFiles(fileNames);
-
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"GetNetworksAndCreateLockFiles", "Tracking", "After creating lock files");
-
+            
             return ge;
-        }
-
-        //public async Task CreateNetworkLockFile(IGenericEntity network)
-        //{
-        //    string lckFileName = this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck";
-
-        //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-        //        "CreateNetworkLockFile", "Tracking", "Before creating lock file: " + lckFileName);
-
-        //    if (!File.Exists(lckFileName))
-        //        await Fs.CreateEmptyFiles(new List<string>() { lckFileName });
-
-        //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-        //        "CreateNetworkLockFile", "Tracking", "After creating lock file: " + lckFileName);
-        //}
+        }        
 
         public async Task ManualDirectory(IGenericEntity network)
         {
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"ManualDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            string networkName = network.GetS("Name");
+            // Handle multiple days by doing them one at a time
+            DateTime now = DateTime.Now;
+            string nowString = now.ToString("yyyyMMdd");
 
-            //CancellationTokenSource cts = new CancellationTokenSource();
-            //FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
-
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"ManualDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
-
-            try
+            List<DirectoryInfo> dirs = new List<DirectoryInfo>();
+            DirectoryInfo di = new DirectoryInfo(this.ClientWorkingDirectory + "\\Manual");
+            foreach (var dd in di.EnumerateDirectories())
             {
-                string networkName = network.GetS("Name");
-                // Handle multiple days by doing them one at a time
-                DateTime now = DateTime.Now;
-                string nowString = now.ToString("yyyyMMdd");
-
-                List<DirectoryInfo> dirs = new List<DirectoryInfo>();
-                DirectoryInfo di = new DirectoryInfo(this.ClientWorkingDirectory + "\\Manual");
-                foreach (var dd in di.EnumerateDirectories())
+                if (DateTime.ParseExact(dd.Name, "yyyyMMdd", new CultureInfo("en-US")) <=
+                    DateTime.ParseExact(nowString, "yyyyMMdd", new CultureInfo("en-US")))
                 {
-                    if (DateTime.ParseExact(dd.Name, "yyyyMMdd", new CultureInfo("en-US")) <=
-                        DateTime.ParseExact(nowString, "yyyyMMdd", new CultureInfo("en-US")))
-                    {
-                        var dir = new DirectoryInfo(dd.FullName + "\\" + network.GetS("Id").ToLower());
-                        if (dir.Exists) dirs.Add(dd);
-                    }
-                }
-                dirs.Sort((dir1, dir2) =>
-                    DateTime.ParseExact(dir1.Name, "yyyyMMdd", new CultureInfo("en-US"))
-                    .CompareTo(DateTime.ParseExact(dir2.Name, "yyyyMMdd", new CultureInfo("en-US"))));
-
-                foreach (var dir in dirs)
-                {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                        $"ManualDirectory", "Tracking", "Before ManualJob: " + dir);
-
-                    await ManualJob(dir, network);
-
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                        $"ManualDirectory", "Tracking", "After ManualJob: " + dir);
+                    var dir = new DirectoryInfo(dd.FullName + "\\" + network.GetS("Id").ToLower());
+                    if (dir.Exists) dirs.Add(dd);
                 }
             }
-            finally
+            dirs.Sort((dir1, dir2) =>
+                DateTime.ParseExact(dir1.Name, "yyyyMMdd", new CultureInfo("en-US"))
+                .CompareTo(DateTime.ParseExact(dir2.Name, "yyyyMMdd", new CultureInfo("en-US"))));
+
+            foreach (var dir in dirs)
             {
-                //lckFile.Close();
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"ManualDirectory", "Tracking", "Before ManualJob: " + dir);
+
+                await ManualJob(dir, network);
+
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"ManualDirectory", "Tracking", "After ManualJob: " + dir);
             }
         }
 
@@ -263,28 +219,12 @@ namespace UnsubLib
 
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
         {
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"ForceDirectory", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
-
-            //CancellationTokenSource cts = new CancellationTokenSource();
-            //FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
-
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"ForceDirectory", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
-
-            try
-            {
-                DirectoryInfo dir = new DirectoryInfo(this.ClientWorkingDirectory + "\\Force\\" + forceDirName);
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                        $"ForceDirectory", "Tracking", $"Starting ManualJob({network.GetS("Name")}): " + dir);
-                await ManualJob(dir, network);
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                        $"ForceDirectory", "Tracking", $"Completed ManualJob({network.GetS("Name")}): " + dir);
-            }
-            finally
-            {
-                //lckFile.Close();
-            }
+            DirectoryInfo dir = new DirectoryInfo(this.ClientWorkingDirectory + "\\Force\\" + forceDirName);
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"ForceDirectory", "Tracking", $"Starting ManualJob({network.GetS("Name")}): " + dir);
+            await ManualJob(dir, network);
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"ForceDirectory", "Tracking", $"Completed ManualJob({network.GetS("Name")}): " + dir);
         }
 
         public async Task ManualJob(DirectoryInfo dir, IGenericEntity network)
@@ -365,45 +305,29 @@ namespace UnsubLib
 
         public async Task ScheduledUnsubJob(IGenericEntity network)
         {
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"ScheduledUnsubJob", "Tracking", "Before locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
+            // Get campaigns
+            string networkName = network.GetS("Name");
+            IGenericEntity cse = await GetCampaignsScheduledJobs(network);
 
-            //CancellationTokenSource cts = new CancellationTokenSource();
-            //FileStream lckFile = await Fs.WaitForFile(this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck", 1000, cts.Token);
-
-            //await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-            //    $"ScheduledUnsubJob", "Tracking", "After locking file: " + this.ClientWorkingDirectory + "\\Lock\\" + network.GetS("Id").ToLower() + ".lck");
-
+            // Get uris of files to download - maintain campaign association
+            IDictionary<string, List<IGenericEntity>> uris = new Dictionary<string, List<IGenericEntity>>();
             try
             {
-                // Get campaigns
-                string networkName = network.GetS("Name");
-                IGenericEntity cse = await GetCampaignsScheduledJobs(network);
-
-                // Get uris of files to download - maintain campaign association
-                IDictionary<string, List<IGenericEntity>> uris = new Dictionary<string, List<IGenericEntity>>();
-                try
-                {
-                    uris = await GetUnsubUris(network, cse);
-                }
-                catch (Exception exGetUnsubUris)
-                {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                        $"ScheduledUnsubJob", "Exception", $"GetUnsubUris({networkName}):" + exGetUnsubUris.ToString());
-                }
-
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                        $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Calling ProcessUnsubFiles");
-
-                await ProcessUnsubFiles(uris, network, cse);
-
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                        $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Completed ProcessUnsubFiles");
+                uris = await GetUnsubUris(network, cse);
             }
-            finally
+            catch (Exception exGetUnsubUris)
             {
-                //lckFile.Close();
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                    $"ScheduledUnsubJob", "Exception", $"GetUnsubUris({networkName}):" + exGetUnsubUris.ToString());
             }
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Calling ProcessUnsubFiles");
+
+            await ProcessUnsubFiles(uris, network, cse);
+
+            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
+                    $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Completed ProcessUnsubFiles");
         }
 
         public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, 
@@ -452,17 +376,6 @@ namespace UnsubLib
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                     $"ProcessUnsubFiles", "Exception", $"SignalUnsubServerService({networkName}):: " + exSignal.ToString());
             }
-
-            // Clean unused files that have not been touched in a day and are unreferenced
-            //try
-            //{
-            //    await CleanUnusedFiles();
-            //}
-            //catch (Exception exClean)
-            //{
-            //    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-            //        $"ProcessUnsubFiles", "Exception", $"CleanUnusedFiles({networkName}):: " + exClean.ToString());
-            //}
         }
 
         public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network)
@@ -473,8 +386,8 @@ namespace UnsubLib
             {
                 string campaigns = await GetNetworkCampaigns(
                     network.GetS("Id"),
-                    network.GetS($"Credentials/{networkName}ApiKey"),
-                    network.GetS($"Credentials/{networkName}ApiUrl"));
+                    network.GetS($"Credentials/NetworkApiKey"),
+                    network.GetS($"Credentials/NetworkApiUrl"));
                 var cs = (JArray)JsonConvert.DeserializeObject(campaigns);
                 cse.InitializeEntity(null, null, cs);
             }
@@ -483,8 +396,8 @@ namespace UnsubLib
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
                     $"GetCampaignsScheduledJobs", "Exception", $"GetNetworkCampaigns({networkName}):: " +
                         network.GetS("Id") + "::" +
-                        network.GetS($"Credentials/{networkName}ApiKey") + "::" +
-                        network.GetS($"Credentials/{networkName}ApiUrl") + exCampaigns.ToString());
+                        network.GetS($"Credentials/NetworkApiKey") + "::" +
+                        network.GetS($"Credentials/NetworkApiUrl") + exCampaigns.ToString());
                 throw new Exception($"Failed to get {networkName} campaigns");
             }
             return cse;
@@ -904,8 +817,6 @@ namespace UnsubLib
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, "UnsubJob",
                     $"CleanUnusedFiles", "Exception", $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
             }
-
-
         }
 
         public async Task<string> CleanUnusedFilesServer()
@@ -1515,8 +1426,8 @@ namespace UnsubLib
         {
             string uri = null;
             string networkName = network.GetS("Name");
-            string apiKey = network.GetS($"Credentials/{networkName}ApiKey");
-            string apiUrl = network.GetS($"Credentials/{networkName}ApiUrl");
+            string apiKey = network.GetS($"Credentials/NetworkApiKey");
+            string apiUrl = network.GetS($"Credentials/NetworkApiUrl");
             string optizmoToken = network.GetS($"Credentials/OptizmoToken");
 
             IDictionary<string, string> parms = new Dictionary<string, string>()
