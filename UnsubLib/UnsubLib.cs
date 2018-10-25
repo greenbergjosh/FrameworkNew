@@ -131,7 +131,7 @@ namespace UnsubLib
             this.RosWrap = rw;
         }
 
-        public async Task<IGenericEntity> GetNetworksAndCreateLockFiles(string singleNetworkName)
+        public async Task<IGenericEntity> GetNetworks(string singleNetworkName)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                 "GetNetworksAndCreateLockFiles", "Tracking", "Before SelectNetwork" +
