@@ -27,7 +27,7 @@ namespace UnsubJob
 
             UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubJob", cs);
             IGenericEntity networks = null;
-            
+
             try
             {
                 await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
@@ -47,10 +47,10 @@ namespace UnsubJob
             try
             {
                 string singleNetworkName = null;
-                if (args.Length > 0 && !String.IsNullOrEmpty(args[1]))
-                    singleNetworkName = args[1];
+                if (args.Length > 0 && !String.IsNullOrEmpty(args[0]))
+                    singleNetworkName = args[0];
                     
-                networks = await nw.GetNetworks(args[1]);
+                networks = await nw.GetNetworks(args[0]);
             }
             catch (Exception exGetNetworks)
             {
