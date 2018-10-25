@@ -134,7 +134,7 @@ namespace UnsubLib
         public async Task<IGenericEntity> GetNetworks(string singleNetworkName)
         {
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                "GetNetworksAndCreateLockFiles", "Tracking", "Before SelectNetwork" +
+                "GetNetworks", "Tracking", "Before SelectNetwork" +
                 singleNetworkName != null ? " " + singleNetworkName : "");
 
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
@@ -143,7 +143,7 @@ namespace UnsubLib
                     "");
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                $"GetNetworksAndCreateLockFiles", "Tracking", "After SelectNetwork: " + network +
+                $"GetNetworks", "Tracking", "After SelectNetwork: " + network +
                 singleNetworkName != null ? " " + singleNetworkName : "");
 
             IGenericEntity ge = new GenericEntityJson();
@@ -1426,6 +1426,7 @@ namespace UnsubLib
         {
             string uri = null;
             string networkName = network.GetS("Name");
+            string networkType = network.GetS($"Credentials/NetworkType");
             string apiKey = network.GetS($"Credentials/NetworkApiKey");
             string apiUrl = network.GetS($"Credentials/NetworkApiUrl");
             string optizmoToken = network.GetS($"Credentials/OptizmoToken");
@@ -1447,7 +1448,7 @@ namespace UnsubLib
                 Uri usuri = new Uri(xn.FirstChild.Value);
                 var usurl = HttpUtility.ParseQueryString(usuri.Query);
 
-                if ((networkName == "Amobee") && (usuri.ToString().Contains("go.unsubcentral.com"))
+                if ((networkType == "Amobee") && (usuri.ToString().Contains("go.unsubcentral.com"))
                     && (usurl["key"] != null) && (usurl["s"] != null))
                 {
                     uri = "https://api.unsubcentral.com/api/service/keys/" + usurl["key"] + "?s=" + usurl["s"] + "&format=hash&zipped=true";
@@ -1472,7 +1473,7 @@ namespace UnsubLib
                     //           "GetSuppressionFileUri", "Error",
                     //           "Empty ezepo url: " + usuri.ToString());
                 }
-                else if ((networkName == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
+                else if ((networkType == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
                 {
                     await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                                "GetSuppressionFileUri", "Tracking",
@@ -1491,7 +1492,7 @@ namespace UnsubLib
                                "GetSuppressionFileUri", "Error",
                                "Empty otizmo url: " + usuri.ToString());
                 }
-                else if ((networkName == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
+                else if ((networkType == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
                 {
                     uri = usuri.ToString();
                 }
@@ -1594,9 +1595,10 @@ namespace UnsubLib
         {
             object dr = null;
             string networkName = network.GetS("Name");
+            string networkType = network.GetS($"Credentials/NetworkType");
             int parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
-            if (networkName == "Amobee")
+            if (networkType == "Amobee")
             {
                 string unsubCentralUserName = network.GetS("Credentials/UnsubCentralUserName");
                 string unsubCentralPassword = network.GetS("Credentials/UnsubCentralPassword");
@@ -1630,7 +1632,7 @@ namespace UnsubLib
                     30 * 60,
                     parallelism);
             }
-            else if (networkName == "Madrivo")
+            else if (networkType == "Madrivo")
             {
                 // This version is too slow - switched to unbuffered
                 //dr = await Utility.ProtocolClient.DownloadPage(unsubUrl,
