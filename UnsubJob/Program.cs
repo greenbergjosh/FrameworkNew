@@ -50,7 +50,7 @@ namespace UnsubJob
                 if (args.Length > 0 && !String.IsNullOrEmpty(args[0]))
                     singleNetworkName = args[0];
                     
-                networks = await nw.GetNetworks(args[0]);
+                networks = await nw.GetNetworks(singleNetworkName);
             }
             catch (Exception exGetNetworks)
             {
