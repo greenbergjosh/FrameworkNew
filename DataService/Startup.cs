@@ -68,7 +68,26 @@ namespace DataService
                     FetchParms: @"{
                                 ""method"": ""GET"",
                                 ""mode"": ""cors"",
-                                ""cache"": ""no-cache"",                                
+                                ""cache"": ""no-cache"",
+                                ""credentials"": ""include"",
+                                ""headers"": {
+                                    ""Content-Type"": ""application/json"",
+                                    ""Accept"": ""application/json""
+                                },
+                                ""redirect"": ""follow"",
+                                ""referrer"": ""no-referrer""
+                            }",
+                    FetchType: "json", ImgFlag: ""),
+                (Name: "TowerMock", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif",
+                    FetchParms: @"{
+                                ""method"": ""GET"",
+                                ""mode"": ""cors"",
+                                ""cache"": ""no-cache"",
+                                ""credentials"": ""include"",
+                                ""headers"": {
+                                    ""Content-Type"": ""application/json"",
+                                    ""Accept"": ""application/json""
+                                },
                                 ""redirect"": ""follow"",
                                 ""referrer"": ""no-referrer""
                             }",
@@ -105,14 +124,14 @@ namespace DataService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddCors(options =>
-            //{
-            //    options.AddPolicy("CorsPolicy",
-            //        builder => builder.AllowAnyOrigin()
-            //        .AllowAnyMethod()
-            //        .AllowAnyHeader()
-            //        .AllowCredentials());
-            //});
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
         }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
@@ -129,7 +148,7 @@ namespace DataService
             }
 
             app.UseStaticFiles();
-            //app.UseCors("CorsPolicy");
+            app.UseCors("CorsPolicy");
 
             File.AppendAllText("DataService.log", $@"{DateTime.Now}::Starting" +
                             Environment.NewLine);
@@ -197,10 +216,23 @@ namespace DataService
                             result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
                             break;
                         case "VisitorId":
+                           
                             int idx = Int32.Parse(context.Request.Query["i"]);
                             string sid = context.Request.Query["sd"];
                             string qs = context.Request.Query["qs"];
                             string opaque = context.Request.Query["op"];
+
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                   "VisitorIdErrorLog",
+                   Jw.Json(new
+                   {
+                       Sev = 1000,
+                       Proc = "DataService",
+                       Meth = "Main",
+                       Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                       Msg = Utility.Hashing.EncodeTo64("i=" + idx + "::sid=" + sid + "::qs=" + qs + "::op=" + opaque + "::ip=" + context.Connection.RemoteIpAddress)
+                   }),
+                   "");
                             //result = Jw.Json(new { name = "service" + idx, url = "//v-track.net?m=TestService&i="+idx});
                             result = await DoVisitorId(context, idx, sid, opaque, qs);
                             context.Response.StatusCode = 200;
@@ -270,6 +302,15 @@ namespace DataService
                     context.Response.ContentLength = ret.Length;
                     await context.Response.WriteAsync(ret);
                 }
+                else if (!String.IsNullOrEmpty(context.Request.Query["towermock"]))
+                {
+                    string towermockmd5 = context.Request.Query["towermock"].ToString();
+                    string ret = await ProcessTowerMockMessage(context, towermockmd5);
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength = ret.Length;
+                    await context.Response.WriteAsync(ret);
+                }
                 else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))
                 {
                     // I don't know what this is - remove it if we don't know
@@ -280,7 +321,7 @@ namespace DataService
                 else
                 {
                     string ret = "{\"Error\":\"Unknown method\", \"ip\":\"" +
-                        context.Request.HttpContext.Connection.RemoteIpAddress + "\"}";
+                        context.Connection.RemoteIpAddress + "\"}";
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
                     context.Response.ContentLength = ret.Length;
@@ -317,6 +358,19 @@ namespace DataService
                 if (!String.IsNullOrEmpty(md5))
                 {
                     string email = gc.GetS("Em");
+
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                   "VisitorIdErrorLog",
+                   Jw.Json(new
+                   {
+                       Sev = 1000,
+                       Proc = "DataService",
+                       Meth = "DoVisitorId",
+                       Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                       Msg = Utility.Hashing.EncodeTo64("Save a cookie session::em=" + email + "::md5=" + md5 + "::ip=" + context.Connection.RemoteIpAddress)
+                   }),
+                   "");
+
                     return await SaveSession(context, "cookie", 1, 4, sesid, md5, email, qstr, opaque, "", "");
                 }                
             }
@@ -401,7 +455,7 @@ namespace DataService
                 plainTypeId = 9; /*PlainNone*/
                 if (serviceName == "Tower")
                 {
-                    bEmail = Blank(await CallTowerEmailApi(md5, opaque, domain, page));
+                    bEmail = Blank(await CallTowerEmailApi(context, bMd5, bOpaque, bDomain, bPage));
                     if (!String.IsNullOrEmpty(bEmail)) plainTypeId = PlainImpressionTypeId;
                 }
             }
@@ -584,7 +638,7 @@ namespace DataService
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
-        public async Task<string> CallTowerEmailApi(string md5, string opaque, string domain, string page)
+        public async Task<string> CallTowerEmailApi(HttpContext context, string md5, string opaque, string domain, string page)
         {
             string towerEmailPlainText = "";
             try
@@ -599,9 +653,9 @@ namespace DataService
                         Proc = "DataService",
                         Meth = "CallTowerEmailApi",
                         Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                        Msg = Utility.Hashing.EncodeTo64(!String.IsNullOrEmpty(jsonPlainEmail.Item2)
+                        Msg = Utility.Hashing.EncodeTo64("::ip=" + context.Connection.RemoteIpAddress + "::" + (!String.IsNullOrEmpty(jsonPlainEmail.Item2)
                             ? "CallEmailApi(Tower): " + md5 + "::" + jsonPlainEmail.Item2
-                            : "CallEmailApi(Tower): " + md5 + "::" + "Null or empty jsonPlainEmail")
+                            : "CallEmailApi(Tower): " + md5 + "::" + "Null or empty jsonPlainEmail"))
                     }),
                     "");
                 if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
@@ -626,9 +680,9 @@ namespace DataService
                                 Proc = "DataService",
                                 Meth = "CallTowerEmailApi",
                                 Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                                Msg = Utility.Hashing.EncodeTo64((jsonPlainEmail.Item2 != null)
+                                Msg = Utility.Hashing.EncodeTo64("::ip=" + context.Connection.RemoteIpAddress + "::" + ((jsonPlainEmail.Item2 != null)
                                     ? "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "|" + jsonPlainEmail.Item2 + "|"
-                                    : "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "Null jsonPlainEmail")
+                                    : "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "Null jsonPlainEmail"))
                             }),
                             "");
                     }
@@ -652,23 +706,28 @@ namespace DataService
             return towerEmailPlainText;
         }
 
+        public async Task<string> ProcessTowerMockMessage(HttpContext context, string rawstring)
+        {
+            return await SaveSession(context, "TowerMock", 2, 7, "mocksession", rawstring, "", "mockqs", "mocklabel", "mockdom", "mockpage");
+        }
+
         public async Task<string> ProcessTowerMessage(HttpContext context, string rawstring)
         {
             string pRawString = "";
             string label = "";
             string emailMd5 = "";
 
-            //await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-            //            "VisitorIdErrorLog",
-            //            Jw.Json(new
-            //            {
-            //                Sev = 1,
-            //                Proc = "DataService",
-            //                Meth = "ProcessTowerMessage",
-            //                Desc = "Tracking",
-            //                Msg = "Entry: " + Utility.Hashing.EncodeTo64(rawstring)
-            //            }),
-            //            "");
+            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                            Msg = Utility.Hashing.EncodeTo64("Entry: " + rawstring + "::ip=" + context.Connection.RemoteIpAddress)
+                        }),
+                        "");
 
             try
             {
@@ -687,8 +746,8 @@ namespace DataService
                             Proc = "DataService",
                             Meth = "ProcessTowerMessage",
                             Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64("Step1Fail" + Utility.Hashing.EncodeTo64($"string error::{rawstring}") + 
-                                "::" + Utility.Hashing.EncodeTo64(ex.ToString()))
+                            Msg = Utility.Hashing.EncodeTo64("Step1Fail " + $"string error::{rawstring}" + 
+                                "::" + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
                         }),
                         "");
             }
@@ -699,6 +758,17 @@ namespace DataService
                 string result = Decrypt(pRawString, key);
                 if (result.Contains("md5_email"))
                 {
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 100,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                            Msg = Utility.Hashing.EncodeTo64("Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress)
+                        }),
+                        "");
                     var parsedstring = HttpUtility.ParseQueryString(result);
                     emailMd5 = parsedstring["md5_email"].ToString();
                     if (parsedstring["label"] != null)
@@ -708,17 +778,17 @@ namespace DataService
                 }
                 else
                 {
-                    //await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                    //    "VisitorIdErrorLog",
-                    //    Jw.Json(new
-                    //    {
-                    //        Sev = 100,
-                    //        Proc = "DataService",
-                    //        Meth = "ProcessTowerMessage",
-                    //        Desc = Utility.Hashing.EncodeTo64("Error"),
-                    //        Msg = Utility.Hashing.EncodeTo64("Step2Fail: " + "No md5" + "::" + result)
-                    //    }),
-                    //    "");
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 100,
+                            Proc = "DataService",
+                            Meth = "ProcessTowerMessage",
+                            Desc = Utility.Hashing.EncodeTo64("Error"),
+                            Msg = Utility.Hashing.EncodeTo64("Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress)
+                        }),
+                        "");
                 }
             }
             catch (Exception ex)
@@ -732,7 +802,7 @@ namespace DataService
                             Meth = "ProcessTowerMessage - Step3Fail",
                             Desc = Utility.Hashing.EncodeTo64("Exception"),
                             Msg = Utility.Hashing.EncodeTo64("Step3Fail: " + $"decrypt error::{rawstring}" + "::" +
-                                ex.ToString())
+                                ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
                         }),
                         "");
             }
@@ -750,7 +820,7 @@ namespace DataService
                         Proc = "DataService",
                         Meth = "ProcessTowerMessage",
                         Desc = Utility.Hashing.EncodeTo64("Error"),
-                        Msg = Utility.Hashing.EncodeTo64("Md5 is invalid: " + $"{emailMd5}")
+                        Msg = Utility.Hashing.EncodeTo64("Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress)
                     }),
                     "");
                 }
@@ -760,6 +830,19 @@ namespace DataService
 
             try
             {
+
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                   "VisitorIdErrorLog",
+                   Jw.Json(new
+                   {
+                       Sev = 100,
+                       Proc = "DataService",
+                       Meth = "ProcessTowerMessage",
+                       Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                       Msg = Utility.Hashing.EncodeTo64("Before Parsing Label: " + $"{label}" + "::ip=" + context.Connection.RemoteIpAddress)
+                   }),
+                   "");
+
                 string sessionId = "";
                 string queryString = "";
                 string dom = "";
@@ -788,7 +871,7 @@ namespace DataService
                             Proc = "DataService",
                             Meth = "ProcessTowerMessage",
                             Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64("OuterException: " + ex.ToString())
+                            Msg = Utility.Hashing.EncodeTo64("OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
                         }),
                         "");
                 }
