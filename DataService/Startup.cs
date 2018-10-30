@@ -64,7 +64,8 @@ namespace DataService
                                 ""referrer"": ""no-referrer""
                             }",
                     FetchType: "json", ImgFlag: ""),
-                (Name: "Tower", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif",
+                (Name: "Tower", Url: "https://p.alocdn.com/c/ix13b3pt/a/xtarget/p.gif",
+                //https://p.alocdn.com/c/ix13b3pt/a/xtarget/p.gif
                     FetchParms: @"{
                                 ""method"": ""GET"",
                                 ""mode"": ""cors"",
