@@ -1006,16 +1006,22 @@ namespace UnsubLib
                                 $"LoadUnsubFiles", "Tracking", "After Diffing: " +
                                 oldf + "::" + newf);
 
-                            await SSISLoadMd5File(diffname,
-                                this.ServerName,
-                                this.DatabaseName,
-                                this.SsisConnectionString,
-                                this.JsonTemplateFile,
-                                this.SsisTemplateFile,
-                                "PostProcessDiffFile");
+                            //await SSISLoadMd5File(diffname,
+                            //    this.ServerName,
+                            //    this.DatabaseName,
+                            //    this.SsisConnectionString,
+                            //    this.JsonTemplateFile,
+                            //    this.SsisTemplateFile,
+                            //    "PostProcessDiffFile");
+
+                            string wd = this.ServerWorkingDirectory.Replace("\\", "\\\\");
+                            await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                                "UploadDiffFile",
+                                Jw.Json(new { Ws = wd, Fn = diffname }),
+                                "");
 
                             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                                $"LoadUnsubFiles", "Tracking", "After SSISLoad: " +
+                                $"LoadUnsubFiles", "Tracking", "After BulkInsert: " +
                                 oldf + "::" + newf);
                         }                     
                     }
