@@ -20,6 +20,7 @@ namespace UnsubLib
                 { "SelectConfig" , "[dbo].[spSelectConfig]" },
                 { "UpdateNetworkCampaignsUnsubFiles" , "[dbo].[spUpdateNetworkCampaignsUnsubFiles]" },
                 { "UploadDomainUnsubFile" , "[dbo].[spUploadDomainUnsubFile]" },
+                { "UploadDiffFile" , "[dbo].[spUploadDiffFile]" },
                 { "PostProcessDiffFile" , "[dbo].[spPostProcessDiffFile]" },
                 { "SelectNetworkCampaignsWithPayload" , "[dbo].[spSelectNetworkCampaignsWithPayload]" },
                 { "SelectNetworkCampaigns" , "[dbo].[spSelectNetworkCampaigns]" },
