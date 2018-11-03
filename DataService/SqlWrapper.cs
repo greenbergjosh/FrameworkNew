@@ -16,8 +16,8 @@ namespace DataService
             Dictionary<string, string> spMap = new Dictionary<string, string>()
             {
                 { "SelectConfig", "[dbo].[spSelectConfig]" },
-                { "LogPixelFire", "[TowerVisitorRedirectPixel].[spLogPixelFire]" },
-                { "SelectOnMd5", "[TowerVisitorRedirectPixel].[spSelectOnMd5]" },
+                { "CreateCampaign", "[TowerVisitorRedirectPixel].[spLogPixelFire]" },
+                { "GetCampaignTemplates", "[TowerVisitorRedirectPixel].[spSelectOnMd5]" },
                 { "AddNewTowerEmail", "[TowerVisitorRedirectPixel].[spAddNewTowerEmail]" },
                 { "SaveOnPointConsoleLiveFeed", "[OnPointConsoleLiveFeed].[spSaveOnPointConsoleLiveFeed]" },
                 { "TowerVisitorErrorLog", "[TowerVisitorRedirectPixel].[spInsertErrorLog]" },
