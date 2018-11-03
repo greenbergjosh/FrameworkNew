@@ -359,7 +359,26 @@ namespace UnsubLib
                             diffs.Add(new Tuple<string, string>(oldFileName, newFileName));
                         }
 
-                        if (newFileSize < oldFileSize) campaignsWithNegativeDelta.Add(c.GetS("Id"));  
+                        if (newFileSize < oldFileSize)
+                        {
+                            campaignsWithNegativeDelta.Add(c.GetS("Id"));
+
+                            Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + newFileName);
+
+                            if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                            {
+                                Fs.TryDeleteFile(this.FileCacheDirectory + "\\" + newFileName);
+                            }
+                            else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+                            {
+                                await Utility.ProtocolClient.DeleteFileFromFtpServer(
+                                    this.FileCacheFtpServerPath + "/" + newFileName,
+                                    this.FileCacheFtpServer,
+                                    21,
+                                    this.FileCacheFtpUser,
+                                    this.FileCacheFtpPassword);
+                            }
+                        }
                     }
                 }
             }
