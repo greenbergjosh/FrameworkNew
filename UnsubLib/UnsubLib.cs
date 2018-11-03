@@ -338,32 +338,52 @@ namespace UnsubLib
             // Download unsub files
             var unsubFiles = await DownloadUnsubFiles(uris, network);
 
-            // Update campaigns with new unsub files
-            try
-            {
-                await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
-                    "UpdateNetworkCampaignsUnsubFiles",
-                    "",
-                    Jw.Json("Id", "FId", unsubFiles.Item1));
-            }
-            catch (Exception exUpdateCampaigns)
-            {
-                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                    $"ProcessUnsubFiles", "Exception", $"UpdateNetworkCampaignsUnsubFiles({networkName}):: " + exUpdateCampaigns.ToString());
-            }
-
             // Generate diff list
+            List<string> campaignsWithNegativeDelta = new List<string>();
             HashSet<Tuple<string, string>> diffs = new HashSet<Tuple<string, string>>();
             foreach (var c in cse.GetL(""))
             {
                 if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
                 {
+                    string newFileName = unsubFiles.Item1[c.GetS("Id")].ToLower() + ".txt.srt";
+                    long newFileSize = await GetFileSize(newFileName);
+
                     if (!string.IsNullOrEmpty(c.GetS("MostRecentUnsubFileId")))
                     {
-                        if (c.GetS("MostRecentUnsubFileId").Length == 36)
-                            diffs.Add(new Tuple<string, string>(c.GetS("MostRecentUnsubFileId").ToLower(), unsubFiles.Item1[c.GetS("Id")].ToLower()));
+                        string oldFileName = c.GetS("MostRecentUnsubFileId").ToLower() + ".txt.srt";
+                        long oldFileSize = await GetFileSize(oldFileName);
+
+                        if ((c.GetS("MostRecentUnsubFileId").Length == 36) &&
+                            (newFileSize > oldFileSize))
+                        {
+                            diffs.Add(new Tuple<string, string>(oldFileName, newFileName));
+                        }
+
+                        if (newFileSize < oldFileSize) campaignsWithNegativeDelta.Add(c.GetS("Id"));  
                     }
                 }
+            }
+
+            // Update campaigns with new unsub files
+            try
+            {
+                Dictionary<string, string> campaignsWithPositiveDelta = new Dictionary<string, string>();
+
+                foreach (var cmp in unsubFiles.Item1)
+                {
+                    if (!campaignsWithNegativeDelta.Contains(cmp.Key))
+                        campaignsWithPositiveDelta.Add(cmp.Key, cmp.Value);
+                }
+
+                await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                    "UpdateNetworkCampaignsUnsubFiles",
+                    "",
+                    Jw.Json("Id", "FId", campaignsWithPositiveDelta));
+            }
+            catch (Exception exUpdateCampaigns)
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                    $"ProcessUnsubFiles", "Exception", $"UpdateNetworkCampaignsUnsubFiles({networkName}):: " + exUpdateCampaigns.ToString());
             }
 
             // Signal server to load domain unsub files, diff md5 unsub files
@@ -1072,6 +1092,38 @@ namespace UnsubLib
             }
 
             return result;
+        }
+
+        public async Task<long> GetFileSize(string fileName)
+        {
+            long fileSize = 0;
+
+            try
+            {
+                if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                {
+                    fileSize = new FileInfo(this.FileCacheDirectory + "\\" + fileName).Length;
+                }
+                else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+                {
+                    fileSize = await Utility.ProtocolClient.FtpGetFileSize(
+                            this.FileCacheFtpServerPath + "/" + fileName,
+                            this.FileCacheFtpServer,
+                            this.FileCacheFtpUser,
+                            this.FileCacheFtpPassword);
+                }
+                else
+                {
+                    fileSize = new FileInfo(this.ClientWorkingDirectory + "\\" + fileName).Length;
+                }
+            }
+            catch (Exception fileSizeException)
+            {
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                        "GetFileSize", "Exception", fileName + "::" + fileSizeException.ToString());
+            }
+
+            return fileSize;
         }
 
         public async Task<bool> MakeRoom(string fileName, long cacheSize)
