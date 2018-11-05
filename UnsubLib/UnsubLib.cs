@@ -553,29 +553,28 @@ namespace UnsubLib
                     {
                         string fmd5 = cf[MD5HANDLER].ToString().ToLower();
 
-                        long lineCt = await UnixWrapper.LineCount(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt");
-
+                        long fileSize = new FileInfo(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt").Length;
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"DownloadUnsubFiles", "Tracking", $"RemoveNonAsciiFromFile({networkName}):: " +
-                            "for file " + fmd5 + $"({lineCt})");
+                            "for file " + fmd5 + $"({fileSize})");
 
                         await Utility.UnixWrapper.RemoveNonAsciiFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt", fmd5 + ".txt.cln");
 
-                        lineCt = await UnixWrapper.LineCount(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.cln");
+                        fileSize = new FileInfo(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.cln").Length;
 
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"DownloadUnsubFiles", "Tracking", $"RemoveNonMD5LinesFromFile({networkName}):: " +
-                            "for file " + fmd5 + $"({lineCt})");
+                            "for file " + fmd5 + $"({fileSize})");
 
                         await Utility.UnixWrapper.RemoveNonMD5LinesFromFile(this.ClientWorkingDirectory,
                             fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
 
-                        lineCt = await UnixWrapper.LineCount(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.cl2");
+                        fileSize = new FileInfo(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.cl2").Length;
 
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"DownloadUnsubFiles", "Tracking", $"SortFile({networkName}):: " +
-                            "for file " + fmd5 + $"({lineCt})");
+                            "for file " + fmd5 + $"({fileSize})");
 
                         await Utility.UnixWrapper.SortFile(
                             this.ClientWorkingDirectory,
@@ -584,11 +583,11 @@ namespace UnsubLib
                             false,
                             true);
 
-                        lineCt = await UnixWrapper.LineCount(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt");
+                        fileSize = new FileInfo(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt").Length;
 
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"DownloadUnsubFiles", "Tracking", $"Completed Cleaning({networkName}):: " +
-                            "for file " + fmd5 + $"({lineCt})");
+                            "for file " + fmd5 + $"({fileSize})");
 
                         if (!String.IsNullOrEmpty(this.FileCacheDirectory))
                         {
