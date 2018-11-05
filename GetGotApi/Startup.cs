@@ -203,7 +203,7 @@ namespace GetGotApi
                             break;
 
                         case "GetCampaignTemplates":
-                            result = await GetCampaignTemplates(gc);
+                            //result = await GetCampaignTemplates(gc);
                             break;
 
                         case "CreateMessageBodyTemplateQuery":
