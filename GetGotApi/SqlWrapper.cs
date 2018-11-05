@@ -14,9 +14,11 @@ namespace GetGotApi
             string ret = null;
 
             Dictionary<string, string> spMap = new Dictionary<string, string>()
-            {
+            {//[dbo].[spSelectMessageBodyTemplateQuery]
                 { "SelectConfig", "[dbo].[spSelectConfig]" },
-                { "GetGotDbErrorLog", "[dbo].[spInsertErrorLog]" }
+                { "GetGotDbErrorLog", "[dbo].[spInsertErrorLog]" },
+                { "SelectMessageBodyTemplatesByMeta", "[dbo].[spSelectMessageBodyTemplatesByMeta]" },
+                { "SelectMessageBodyTemplateQuery", "[dbo].[spSelectMessageBodyTemplateQuery]" }
             };
 
             string sp = null;

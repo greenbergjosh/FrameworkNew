@@ -13,11 +13,15 @@ using Newtonsoft.Json;
 using Jw = Utility.JsonWrapper;
 using Newtonsoft.Json.Linq;
 using Utility;
+using System.Text;
 
 namespace GetGotApi
 {
     public class Startup
     {
+        public int MAX_TEMPLATES_PER_CALL = 20;
+        public int LIMIT_TEMPLATE_META_SEARCH = 20;
+
         public string ConnectionString;
         public string ConfigurationKey;
 
@@ -50,10 +54,10 @@ namespace GetGotApi
                                 {""DefaultName"":""DefaultTestTemplateOne""},
                                 {""DefaultMeta"":""holiday""}
                             ],
+                        ""MessageBodyTemplateQueryId"":""41487182-a6df-429c-8f5f-3e9f203e93ea"",
+                        ""MessageBodyTemplateQueryUrl"":""//retailerservice.com/gettemplatequery"",
                         ""MessageBodyTemplateQuery"":
                             [
-                                ""qid(41487182-a6df-429c-8f5f-3e9f203e93ea)"",
-                                ""qurl(//retailerservice.com/gettemplatequery)"",
                                 ""exid(12345)"",
                                 ""id(1a0855f2-c7be-4eef-93b9-71339e5637a2)"",
                                 ""nm(TestTemplateOne)"",
@@ -159,11 +163,20 @@ namespace GetGotApi
 
             IGenericEntity ge = new GenericEntityJson();
 
+            
+
             ge.InitializeEntity(null, null, JsonConvert.DeserializeObject(scRes));
             var queryParts = ge.GetL("Payload/MessageBodyTemplateQuery").ToList();
             for (int i = 0; i < queryParts.Count; i++)
             {
                 var queryPart = queryParts[i].GetS("");
+
+                string[] splitQueryPart = queryPart.Split('(');
+                string queryPartType = splitQueryPart[0];
+                string queryPartBody = queryPart.Substring(queryPartType.Length + 1,
+                    queryPart.Length - queryPartType.Length - 2);
+
+                int x = 1;
 
             }
 
@@ -225,14 +238,13 @@ namespace GetGotApi
             return "";
         }
 
-        public async Task<string> GetCampaignTemplates(IGenericEntity r)
+        public async Task<List<string>> GetCampaignTemplates(IGenericEntity r)
         {
-            // Get the parms
             string cid = r.GetS("c");
             int oidx = Int32.Parse(r.GetS("o"));
             int iidx = Int32.Parse(r.GetS("i"));
 
-            string scRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+            string cRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
                     "SelectCampaign",
                     Jw.Json(new
                     {
@@ -240,19 +252,180 @@ namespace GetGotApi
                     }),
                     "", 240);
 
-            IGenericEntity ge = new GenericEntityJson();
-            
-            ge.InitializeEntity(null, null, JsonConvert.DeserializeObject(scRes));
-            var queryParts = ge.GetL("Payload/MessageBodyTemplateQuery").ToList();
-            for (int i = oidx; i < queryParts.Count; i++)
+            IGenericEntity c = new GenericEntityJson();
+            c.InitializeEntity(null, null, JsonConvert.DeserializeObject(cRes));
+
+            IEnumerable<IGenericEntity> queryParts = null;
+
+            var queryId = c.GetS("Payload/MessageBodyTemplateQueryId");
+            var queryUrl = c.GetS("Payload/MessageBodyTemplateQueryUrl");
+            var query = c.GetL("Payload/MessageBodyTemplateQuery");
+            var advertiserId = c.GetS("Payload/AdvertiserUserId");
+
+            if (!String.IsNullOrEmpty(queryId))
             {
-                var queryPart = queryParts[i].GetS("");
-                
+                string queryRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+                    "SelectMessageBodyTemplateQuery",
+                    Jw.Json(new
+                    {
+                        Id = queryId
+                    }),
+                    "", 240);
+                IGenericEntity queryge = new GenericEntityJson();
+                queryge.InitializeEntity(null, null, JsonConvert.DeserializeObject(queryRes));
+                queryParts = queryge.GetL("QueryJson");
+            }
+            else if (!String.IsNullOrEmpty(queryUrl))
+            {
+                IGenericEntity urlge = await GetValueFromClientPair(queryUrl);
+                queryParts = urlge.GetL("QueryJson");
+            }
+            else if (query != null)
+            {
+                queryParts = query;
             }
 
+            List<string> templates = new List<string>();
 
-            // Ask the db for the payload - should really cache this to satisfy next call
-            return "";
+            if (queryParts == null)
+            {
+                templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'00000000-0000-0000-0000-000000000000'}}");
+                return templates;
+            }
+
+            foreach (var eQueryPart in queryParts)
+            {
+                var queryPart = eQueryPart.GetS("");
+                (string queryPartType, string queryPartBody) = queryPart.SplitOnChar('(');
+                queryPartBody = (queryPartBody.Length == 0) ? "" : 
+                    queryPartBody.Substring(0, queryPartBody.Length - 1);
+
+                switch (queryPartType)
+                {
+                    case "id":
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{queryPartBody}'}}");
+                        break;
+                    case "exid":
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'exid':'{queryPartBody}', 'advid':'{advertiserId}'}}");
+                        break;
+                    case "nm":
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'nm':'{queryPartBody}', 'advid':'{advertiserId}'}}");
+                        break;
+                    case "meta":
+                        IGenericEntity metage = await SelectMessageBodyTemplatesByMeta(queryPartBody, advertiserId);
+                        foreach (var metageitem in metage.GetL(""))
+                            templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{metageitem}'}}");
+                        break;
+                    case "idurl":
+                        string id = await GetValueFromClientPair(queryPartBody, "id");
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{id}'}}");
+                        break;
+                    case "nmurl":
+                        string nm = await GetValueFromClientPair(queryPartBody, "nm");
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'nm':'{nm}', 'advid':'{advertiserId}'}}");
+                        break;
+                    case "exidurl":
+                        string exid = await GetValueFromClientPair(queryPartBody, "exid");
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'exid':'{exid}', 'advid':'{advertiserId}'}}");
+                        break;
+                    case "metaurl":
+                        IGenericEntity metaurlge = await SelectMessageBodyTemplatesByMeta(queryPartBody, advertiserId);
+                        foreach (var metageitem in metaurlge.GetL(""))
+                            templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{metageitem}'}}");
+                        break;
+                    case "defnm":
+                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'nm':'{queryPartBody}', " +
+                            "'advid':'00000000-0000-0000-0000-000000000000'}");
+                        break;
+                    case "defmeta":
+                        IGenericEntity defmetage = await SelectMessageBodyTemplatesByMeta(queryPartBody, "00000000-0000-0000-0000-000000000000");
+                        foreach (var metageitem in defmetage.GetL(""))
+                            templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{metageitem}'}}");
+                        break;
+                    case "exhost":
+                        templates.Add(queryPartBody);
+                        break;
+                }
+            }
+
+            if (templates.Count == 0)
+            {
+                templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'00000000-0000-0000-0000-000000000000'}}");
+            }
+
+            return templates;
+        }
+
+        public async Task<IGenericEntity> SelectMessageBodyTemplatesByMeta(string meta, string advertiserId)
+        {
+            (var pos, var neg) = SplitMetaString(meta, ' ');
+            string metaRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+                "SelectMessageBodyTemplatesByMeta",
+                Jw.Json(new
+                {
+                    AId = advertiserId,
+                    Pos = pos,
+                    Neg = neg,
+                    Lim = this.LIMIT_TEMPLATE_META_SEARCH
+                }),
+                "", 240);
+            IGenericEntity metage = new GenericEntityJson();
+            metage.InitializeEntity(null, null, JsonConvert.DeserializeObject(metaRes));
+            return metage;
+        }
+
+        public async Task<string> GetValueFromClientPair(string queryPart, string key)
+        {
+            IGenericEntity rge = await GetValueFromClientPair(queryPart);
+            return rge.GetS(key);
+        }
+
+        public async Task<IGenericEntity> GetValueFromClientPair(string queryPart)
+        {
+            (string clientUrlPart, string clientPostPart) = queryPart.SplitOnChar(' ');
+            string ret = "{}";
+            try
+            {
+                if (clientPostPart.Trim().Length > 0)
+                {
+                    var getRet = await Utility.ProtocolClient.HttpGetAsync(clientUrlPart, 2);
+                    if (getRet.Item1) ret = getRet.Item2;
+                }
+                else
+                {
+                    ret = await Utility.ProtocolClient.HttpPostAsync(clientUrlPart, clientPostPart, "application/json", 2);
+                }
+                IGenericEntity rge = new GenericEntityJson();
+                rge.InitializeEntity(null, null, JsonConvert.DeserializeObject(ret));
+                return rge;
+            }
+            catch (Exception exCallRetailer)
+            {
+
+            }
+
+            IGenericEntity dge = new GenericEntityJson();
+            dge.InitializeEntity(null, null, JsonConvert.DeserializeObject("{}"));
+            return dge;
+        }
+
+        public static (string Pos, string Neg) SplitMetaString(string s, char c)
+        {
+            if (s == null) return (Pos: null, Neg: null);
+            if (s == "") return (Pos: null, Neg: null);
+            string[] metas = s.Split(c);
+            if (metas.Length == 0) return (Pos: null, Neg: null);
+            StringBuilder pos = new StringBuilder();
+            StringBuilder neg = new StringBuilder();
+            foreach (var meta in metas)
+            {
+                if (meta.Trim()[0] == '!') neg.Append(meta.Trim().Substring(1) + " ");
+                else pos.Append(meta.Trim() + " ");
+            }
+            if (neg.Length > 0) neg.Remove(neg.Length - 1, 1);
+            if (pos.Length > 0) pos.Remove(pos.Length - 1, 1);
+
+            return (Pos: pos.ToString(), Neg: neg.ToString());
         }
     }
 }
