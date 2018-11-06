@@ -87,8 +87,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailApplication", "MailAppl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailProcess", "MailProcess\MailProcess.csproj", "{3B3F53E2-4782-4BA8-A925-39CC92507919}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuickTester", "QuickTester\QuickTester.csproj", "{55162AC9-FA00-433D-B400-94147913ED44}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnsubJobServer", "UnsubJobServer\UnsubJobServer.csproj", "{446F5D06-397C-48EF-B666-9E2B4CFE28AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetGotLib", "GetGotLib\GetGotLib.csproj", "{A92A37C0-BC59-4520-9A8D-8AA8FEA5F1BE}"
@@ -102,6 +100,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetGotRetailerWeb", "GetGotRetailerWeb\GetGotRetailerWeb.csproj", "{AFB65AF2-2802-4A5A-9BD7-F6F4DF48C4CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetGotRetailerService", "GetGotRetailerService\GetGotRetailerService.csproj", "{E2C2E06B-36C0-4837-AA1A-9A201C865B52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTester", "QuickTester\QuickTester.csproj", "{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -356,12 +356,6 @@ Global
 		{3B3F53E2-4782-4BA8-A925-39CC92507919}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{3B3F53E2-4782-4BA8-A925-39CC92507919}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B3F53E2-4782-4BA8-A925-39CC92507919}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55162AC9-FA00-433D-B400-94147913ED44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55162AC9-FA00-433D-B400-94147913ED44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55162AC9-FA00-433D-B400-94147913ED44}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{55162AC9-FA00-433D-B400-94147913ED44}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{55162AC9-FA00-433D-B400-94147913ED44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55162AC9-FA00-433D-B400-94147913ED44}.Release|Any CPU.Build.0 = Release|Any CPU
 		{446F5D06-397C-48EF-B666-9E2B4CFE28AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{446F5D06-397C-48EF-B666-9E2B4CFE28AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{446F5D06-397C-48EF-B666-9E2B4CFE28AC}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -404,6 +398,12 @@ Global
 		{E2C2E06B-36C0-4837-AA1A-9A201C865B52}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{E2C2E06B-36C0-4837-AA1A-9A201C865B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2C2E06B-36C0-4837-AA1A-9A201C865B52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F40CD8F-0AD4-4B00-B970-3EDBAC271A70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

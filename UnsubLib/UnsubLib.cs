@@ -75,6 +75,7 @@ namespace UnsubLib
         public string FileCacheFtpServerPath;
         public int MinDiffFileSize;
         public float MaxDiffFilePercentage;
+        public string SortBufferSize;
 
         public Rw.RoslynWrapper RosWrap;        
 
@@ -121,6 +122,7 @@ namespace UnsubLib
             this.FileCacheFtpServerPath = gc.GetS("Config/FileCacheFtpServerPath");
             this.MinDiffFileSize = Int32.Parse(gc.GetS("Config/MinDiffFileSize"));
             this.MaxDiffFilePercentage = float.Parse(gc.GetS("Config/MaxDiffFilePercentage"));
+            this.SortBufferSize = gc.GetS("Config/SortBufferSize");            
 
             ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
@@ -581,7 +583,10 @@ namespace UnsubLib
                             fmd5 + ".txt.cl2",
                             fmd5 + ".txt.srt",
                             false,
-                            true);
+                            true,
+                            300000,
+                            4,
+                            this.SortBufferSize);
 
                         fileSize = new FileInfo(this.ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt").Length;
 

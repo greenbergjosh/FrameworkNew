@@ -44,11 +44,13 @@ namespace Utility
 
         public static async Task SortFile(string sourcePath, string inputFile, 
             string outputFile, bool caseSensitive, bool unique,
-            int timeout = 1000 * 60 * 5, int parallel = 4)
+            int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "")
         {
             var exitCode = await ProcessWrapper.StartProcess(
                         exeSort,
-                        $"--parallel={parallel} {inputFile} --output={outputFile}"
+                        $"--parallel={parallel} {inputFile}" 
+                            + (String.IsNullOrEmpty(mem) ? "" : (" --buffer-size=" + mem))
+                            + $" --output={outputFile}"
                             + (caseSensitive ? "" : " -f") + (unique ? " -u" : ""),
                         sourcePath,
                         timeout,
@@ -113,7 +115,7 @@ namespace Utility
                 pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
                 pProcess.StartInfo.Verb = "runas";
                 pProcess.StartInfo.Arguments = "/c " +
-                    Fs.QuotePathParts(exeGrep) + " -E -i -x '[0-9a-f]{32}' " + Fs.QuotePathParts(inf) +
+                    Fs.QuotePathParts(exeGrep) + " -P -i '[0-9a-f]{32}' " + Fs.QuotePathParts(inf) +
                     " > " + Fs.QuotePathParts(outf);
                 pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 pProcess.StartInfo.UseShellExecute = true;
