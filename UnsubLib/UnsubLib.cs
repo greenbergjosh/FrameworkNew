@@ -347,18 +347,20 @@ namespace UnsubLib
             {
                 if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
                 {
-                    string newFileName = unsubFiles.Item1[c.GetS("Id")].ToLower() + ".txt.srt";
+                    string newFileId = unsubFiles.Item1[c.GetS("Id")].ToLower();
+                    string newFileName = newFileId + ".txt.srt";
                     long newFileSize = await GetFileSize(newFileName);
 
                     if (!string.IsNullOrEmpty(c.GetS("MostRecentUnsubFileId")))
                     {
-                        string oldFileName = c.GetS("MostRecentUnsubFileId").ToLower() + ".txt.srt";
+                        string oldFileId = c.GetS("MostRecentUnsubFileId").ToLower();
+                        string oldFileName = oldFileId + ".txt.srt";
                         long oldFileSize = await GetFileSize(oldFileName);
 
                         if ((c.GetS("MostRecentUnsubFileId").Length == 36) &&
                             (newFileSize > oldFileSize))
                         {
-                            diffs.Add(new Tuple<string, string>(oldFileName, newFileName));
+                            diffs.Add(new Tuple<string, string>(oldFileId, newFileId));
                         }
 
                         if (newFileSize < oldFileSize)
