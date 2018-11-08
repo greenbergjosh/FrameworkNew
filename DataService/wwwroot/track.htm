@@ -40,9 +40,8 @@ function saveSession(querystring, res, url)
 }
 
 function jfetch(data, defret, uri) {
-  var ret = defret;
-  fetch(uri, {
-        method: "GET",
+  return fetch(uri, {
+        method: "POST",
         mode: "cors",
         cache: "no-cache",
         credentials: "include",
@@ -61,12 +60,10 @@ function jfetch(data, defret, uri) {
       throw new Error('Network response was not ok.');
     })
     .then(json => {
-      ret = json;
+        return response.json();
     }).catch(error => {
-      ret = defret;
+      return defret;
   });
-
-  return ret;
 }
 
 function callService(url) {

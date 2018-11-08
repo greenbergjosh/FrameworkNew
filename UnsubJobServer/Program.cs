@@ -17,6 +17,7 @@ namespace UnsubJobServer
     // For deployment:
     //  https://www.iis.net/downloads/microsoft/application-request-routing
     //  https://docs.microsoft.com/en-us/iis/extensions/url-rewrite-module/reverse-proxy-rule-template
+    // sc create UnsubJobServerService binPath= "c:\CustomServices\UnsubJobServerService\UnsubJobServer.exe" DisplayName= "UnsubJobServerService" start= auto
     public class Program
     {
         public static void Main(string[] args)

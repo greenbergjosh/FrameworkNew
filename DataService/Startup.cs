@@ -133,6 +133,13 @@ namespace DataService
                     .AllowAnyHeader()
                     .AllowCredentials());
             });
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => false;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
         }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
@@ -217,24 +224,22 @@ namespace DataService
                             result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
                             break;
                         case "VisitorId":
-                           
                             int idx = Int32.Parse(context.Request.Query["i"]);
                             string sid = context.Request.Query["sd"];
                             string qs = context.Request.Query["qs"];
                             string opaque = context.Request.Query["op"];
 
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                   "VisitorIdErrorLog",
-                   Jw.Json(new
-                   {
-                       Sev = 1000,
-                       Proc = "DataService",
-                       Meth = "Main",
-                       Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                       Msg = Utility.Hashing.EncodeTo64("i=" + idx + "::sid=" + sid + "::qs=" + qs + "::op=" + opaque + "::ip=" + context.Connection.RemoteIpAddress)
-                   }),
-                   "");
-                            //result = Jw.Json(new { name = "service" + idx, url = "//v-track.net?m=TestService&i="+idx});
+                            //await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                            //   "VisitorIdErrorLog",
+                            //   Jw.Json(new
+                            //   {
+                            //       Sev = 1000,
+                            //       Proc = "DataService",
+                            //       Meth = "Main",
+                            //       Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                            //       Msg = Utility.Hashing.EncodeTo64("i=" + idx + "::sid=" + sid + "::qs=" + qs + "::op=" + opaque + "::ip=" + context.Connection.RemoteIpAddress)
+                            //   }),
+                            //   "");
                             result = await DoVisitorId(context, idx, sid, opaque, qs);
                             context.Response.StatusCode = 200;
                             context.Response.ContentType = "application/json";
@@ -252,7 +257,6 @@ namespace DataService
                             context.Response.StatusCode = 200;
                             context.Response.ContentType = "application/json";
                             context.Response.ContentLength = result.Length;
-
                             break;
                         case "SaveSession":
                             try
@@ -350,6 +354,10 @@ namespace DataService
         {
             // The first service to check is our own cookie
             string cookieValueFromReq = context.Request.Cookies["vidck"];
+
+            SetCookie(context, "vidck",
+                Jw.Json(new { Sid = sesid, Md5 = "", Em = "" }), this.VisitorIdCookieExpDays);
+
             if (!String.IsNullOrEmpty(cookieValueFromReq))
             {
                 IGenericEntity gc = new GenericEntityJson();
@@ -361,16 +369,16 @@ namespace DataService
                     string email = gc.GetS("Em");
 
                     await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                   "VisitorIdErrorLog",
-                   Jw.Json(new
-                   {
-                       Sev = 1000,
-                       Proc = "DataService",
-                       Meth = "DoVisitorId",
-                       Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                       Msg = Utility.Hashing.EncodeTo64("Save a cookie session::em=" + email + "::md5=" + md5 + "::ip=" + context.Connection.RemoteIpAddress)
-                   }),
-                   "");
+                       "VisitorIdErrorLog",
+                       Jw.Json(new
+                       {
+                           Sev = 1000,
+                           Proc = "DataService",
+                           Meth = "DoVisitorId",
+                           Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                           Msg = Utility.Hashing.EncodeTo64("Save a cookie session::em=" + email + "::md5=" + md5 + "::ip=" + context.Connection.RemoteIpAddress)
+                       }),
+                       "");
 
                     return await SaveSession(context, "cookie", 1, 4, sesid, md5, email, qstr, opaque, "", "");
                 }                
@@ -503,8 +511,8 @@ namespace DataService
                     "");
             }
 
-            SetCookie(context, "vidck", Jw.Json(new
-            { Sid = bSessionId, Md5 = md5, Em = bEmail }), this.VisitorIdCookieExpDays);
+            SetCookie(context, "vidck", 
+                Jw.Json(new { Sid = bSessionId, Md5 = md5, Em = bEmail }), this.VisitorIdCookieExpDays);
 
             // If we do this here we have to get the extra fields if the email
             // was already in the cookie
