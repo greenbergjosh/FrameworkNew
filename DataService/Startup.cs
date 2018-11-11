@@ -79,20 +79,6 @@ namespace DataService
                                 ""referrer"": ""no-referrer""
                             }",
                     FetchType: "json", ImgFlag: ""),
-                (Name: "TowerMock", Url: "https://test.alocdn.com/c/yw6hvx10/a/xtarget/p.gif",
-                    FetchParms: @"{
-                                ""method"": ""GET"",
-                                ""mode"": ""cors"",
-                                ""cache"": ""no-cache"",
-                                ""credentials"": ""include"",
-                                ""headers"": {
-                                    ""Content-Type"": ""application/json"",
-                                    ""Accept"": ""application/json""
-                                },
-                                ""redirect"": ""follow"",
-                                ""referrer"": ""no-referrer""
-                            }",
-                    FetchType: "json", ImgFlag: ""),
                 (Name: "Traverse", Url: "",
                     FetchParms: @"{
                                 ""method"": ""GET"",
@@ -229,17 +215,6 @@ namespace DataService
                             string qs = context.Request.Query["qs"];
                             string opaque = context.Request.Query["op"];
 
-                            //await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                            //   "VisitorIdErrorLog",
-                            //   Jw.Json(new
-                            //   {
-                            //       Sev = 1000,
-                            //       Proc = "DataService",
-                            //       Meth = "Main",
-                            //       Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                            //       Msg = Utility.Hashing.EncodeTo64("i=" + idx + "::sid=" + sid + "::qs=" + qs + "::op=" + opaque + "::ip=" + context.Connection.RemoteIpAddress)
-                            //   }),
-                            //   "");
                             result = await DoVisitorId(context, idx, sid, opaque, qs);
                             context.Response.StatusCode = 200;
                             context.Response.ContentType = "application/json";
@@ -302,15 +277,6 @@ namespace DataService
                 {
                     string eqs = context.Request.Query["eqs"].ToString();
                     string ret = await ProcessTowerMessage(context, eqs);
-                    context.Response.StatusCode = 200;
-                    context.Response.ContentType = "application/json";
-                    context.Response.ContentLength = ret.Length;
-                    await context.Response.WriteAsync(ret);
-                }
-                else if (!String.IsNullOrEmpty(context.Request.Query["towermock"]))
-                {
-                    string towermockmd5 = context.Request.Query["towermock"].ToString();
-                    string ret = await ProcessTowerMockMessage(context, towermockmd5);
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
                     context.Response.ContentLength = ret.Length;
@@ -383,6 +349,13 @@ namespace DataService
                     return await SaveSession(context, "cookie", 1, 4, sesid, md5, email, qstr, opaque, "", "");
                 }                
             }
+
+            // Javascript is calling for the next provider 
+            // If we want Javascript to potentially call multiple providers even if one succeeds
+            // then we need to return done when we are done and we need to make the javascript
+            // respect the done flag. We also need a way to express the fact that done is 
+            // either on success or when it is explicitly returned. This means that we need a 
+            // list primitive that can be enumerated in order along with completion rules.
 
             // Iterate the other services (iteration done by Javascript)
             if (idx < Services.Count)
