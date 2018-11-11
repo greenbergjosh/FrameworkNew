@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <title>NEW PAGE</title>
+    <meta name="referrer" content="always">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script>
+        var sessionId = '1234';
+        var opaque = 'dmv.com|langingpage|sessionid|' + encodeURIComponent(window.location.href);
+        document.addEventListener("DOMContentLoaded", function (event) {
+            window.VisitorIdObject = 'visid';
+            var url = '//v-track.net';
+            var a = document.createElement('script');
+            a.async = 1;
+            a.src = url + '/track.js';
+            document.head.appendChild(a);
+            a.onload = async function () {
+                var uniform = await window[window.VisitorIdObject].visitorId(url, sessionId, opaque);
+                console.log(uniform.md5);
+                console.log(uniform.email);
+            };
+        });
+
+        
+    </script>
+</head>
+<body>
+    <div id="aid"></div>
+</body>
+</html>
