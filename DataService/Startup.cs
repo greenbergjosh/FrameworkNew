@@ -266,7 +266,9 @@ namespace DataService
                         case "SaveSession":
                             try
                             {
-                                string ssemail = context.Request.Query["email"];
+                                string encssemail = context.Request.Query["e"];
+                                var byt = Convert.FromBase64String(encssemail);
+                                var ssemail = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
                                 string ssmd5 = context.Request.Query["md5"];
                                 string sssn = context.Request.Query["sn"];
                                 string sssid = context.Request.Query["sd"];
@@ -425,6 +427,7 @@ namespace DataService
                             fetchParms = s.GetS("Config/FetchParms"),
                             transform = s.GetS("Config/Transform"),
                             fetchType = s.GetS("Config/FetchType"),
+                            saveSession = s.GetS("Config/SaveSession"),
                             imgFlag = s.GetS("Config/ImgFlag"),
                             idx = nextIdx,
                             ckmd5 = ckMd5,

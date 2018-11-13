@@ -1,42 +1,44 @@
 ﻿async function visitorId(url, sessionId, opaque) {
-    //var fres = [];
-    //var md5s = '';
-    //var emails = '';
     var success = 0;
     var i = 0;
     while (true) {
         var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + encodeURIComponent(opaque)
-            + '&qs=' + encodeURIComponent(window.location.href),
-            //+ '&md5s=' + encodeURIComponent(md5s) + '&emails=' + encodeURIComponent(emails) + '&succ=' + success,
+            + '&qs=' + encodeURIComponent(window.location.href) + '&succ=' + success,
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
-        if (!res.url || res.done) break;
-        fres.push({ ckemail: res.ckemail, ckmd5: res.ckmd5 });
+        if (!(res.url && res.script) || res.done) break;
         i = res.idx;
 
-        res = await window.handleService(res);
+        if (res.script) {
+            await load(obj.ScriptUrl, 'Segment');
+            for (var x in obj.Strategy) {
+                var f = obj.Strategy[x].f;
+                var a = obj.Strategy[x].a;
+                var exf = getDescendantProp(window[obj.GlobalObject], f);
+                exf(...a);
+            }
+        }
+        else {
+            res = await window.handleService(res);
+        }
+        
         if (res.saveSession == 'true') {
-            var res = await window.genericFetch(url + '?m=SaveSession&md5=' + res.md5 + '&email=' + res.email +
+            var res = await window.genericFetch(url + '?m=SaveSession&md5=' + res.md5 + '&e=' + btoa(res.email) +
                 '&sd=' + sessionId + '&op=' + encodeURIComponent(opaque) + '&qs=' + encodeURIComponent(window.location.href) +
                 '&sn=' + res.name,
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');
         }
-        //fres.push({ email: res.email, md5: res.md5 });
-
-        //md5s += '|' + res.md5;
-        //emails += '|' + res.email;
         success = (res.md5 || res.email) ? 1 : 0;
     }
-    return fres;
 }
 window[window.VisitorIdObject].visitorId = visitorId;
 
 async function handleService(service) {
     var response = await window.genericFetch(service.url, service.fetchParms, service.fetchType, service.imgFlag);
     return service.transform && response ?
-        { email: getDescendantProp(x, p.email) || '', md5: getDescendantProp(x, p.md5) || ''} :
-        { email: '', md5: '' };
+        { email: getDescendantProp(x, p.email) || '', md5: getDescendantProp(x, p.md5) || '', saveSession: service.saveSession } :
+        { email: '', md5: '', saveSession: 'false' };
 }
 
 async function genericFetch(url, fetchParms, fetchType, imgFlag) {
@@ -77,4 +79,41 @@ function getDescendantProp(obj, desc) {
         obj = obj[arr.shift()];
     }
     return obj;
+}
+
+//https://dev.to/timber/wait-for-a-script-to-load-in-javascript-579k
+async function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.async = true
+        script.src = url
+
+        const el = document.getElementsByTagName('script')[0]
+        el.parentNode.insertBefore(script, el)
+
+        script.addEventListener('load', () => {
+            this.isLoaded = true
+            resolve(script)
+        })
+
+        script.addEventListener('error', () => {
+            reject(new Error('Failed to load.'))
+        })
+    })
+}
+
+async function load(script, global) {
+    return new Promise(async (resolve, reject) => {
+        if (!this.isLoaded) {
+            try {
+                await this.loadScript(script, global)
+                resolve(window[global])
+            } catch (e) {
+                reject(e)
+            }
+        } else {
+            resolve(window[global])
+        }
+    })
 }
