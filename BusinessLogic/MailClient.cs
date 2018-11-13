@@ -24,58 +24,60 @@ namespace BusinessLogic
             try
             {
                 var client = BuildIMAPClient(seed);
-
-                IMailFolder folder;
-                try
+                
+                if (client != null)
                 {
-                    folder = client.GetFolder(folderName);
-                }
-                catch (Exception ex)
-                {
-                    //Exception for the old AOL accouts
-                    folder = client.GetFolder("Spam");
-                }
-
-                folder.Open(FolderAccess.ReadWrite);
-
-                //Get the last message on the database
-                MailStorage storage = new MailStorage();
-                String mailIdMaxDate = storage.GetLastMailId(seed, systemFolder);
-
-                //Number of replys
-                var numReplys = storage.GetRemainingsReplysOrForwards(seed, replys);
-                var totalReplys = 50;
-
-                if (seed.SeedBucket != null)
-                    totalReplys = seed.SeedBucket.ReplyLimit;
-
-                for (int i = folder.Count - 1; i >= 0; i--)
-                {
-                    MimeMessage message = folder.GetMessage(i);
-
-                    //Create a new MailAdapter
-                    MailAdapter newMail = new MailAdapter(systemFolder, message);
-
-                    //check if the mail is in the database
-                    if (mailIdMaxDate != newMail.MessageId)
+                    IMailFolder folder;
+                    try
                     {
-                        numReplys = await ProcessMessage(newMail, systemFolder, message, mailIdMaxDate, seed, numReplys, totalReplys, folder, i, client);
+                        folder = client.GetFolder(folderName);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Logger logger = LogManager.GetCurrentClassLogger();
-                        logger.Info("***All Mails Load!!. Seed: " + seed.UserName + " Folder: " + systemFolder);
-
-                        MailStorage runLog = new MailStorage();
-                        runLog.CreateRunLogEntry("Running", "End Load Seed: " + seed.UserName + " Folder: " + systemFolder);
-
-                        break;
+                        //Exception for the old AOL accouts
+                        folder = client.GetFolder("Spam");
                     }
+
+                    folder.Open(FolderAccess.ReadWrite);
+
+                    //Get the last message on the database
+                    MailStorage storage = new MailStorage();
+                    String mailIdMaxDate = storage.GetLastMailId(seed, systemFolder);
+
+                    //Number of replys
+                    var numReplys = storage.GetRemainingsReplysOrForwards(seed, replys);
+                    var totalReplys = 50;
+
+                    if (seed.SeedBucket != null)
+                        totalReplys = seed.SeedBucket.ReplyLimit;
+
+                    for (int i = folder.Count - 1; i >= 0; i--)
+                    {
+                        MimeMessage message = folder.GetMessage(i);
+
+                        //Create a new MailAdapter
+                        MailAdapter newMail = new MailAdapter(systemFolder, message);
+
+                        //check if the mail is in the database
+                        if (mailIdMaxDate != newMail.MessageId)
+                        {
+                            numReplys = await ProcessMessage(newMail, systemFolder, message, mailIdMaxDate, seed, numReplys, totalReplys, folder, i, client);
+                        }
+                        else
+                        {
+                            Logger logger = LogManager.GetCurrentClassLogger();
+                            logger.Info("***All Mails Load!!. Seed: " + seed.UserName + " Folder: " + systemFolder);
+
+                            MailStorage runLog = new MailStorage();
+                            runLog.CreateRunLogEntry("Running", "End Load Seed: " + seed.UserName + " Folder: " + systemFolder);
+
+                            break;
+                        }
+                    }
+
+                    //Crete a log register
+                    await storage.CreateSeedLogEntry(seed.Id, numReplys, numReplys);
                 }
-
-                //Crete a log register
-                await storage.CreateSeedLogEntry(seed.Id, numReplys, numReplys);
-
             }
             catch (Exception ex)
             {
@@ -94,12 +96,27 @@ namespace BusinessLogic
 
             client.Connect(server, port, true);
 
-            client.AuthenticationMechanisms.Remove("XOAUTH2");
+            try
+            {
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                String user = seed.UserName;
+                String password = seed.Password;
+                client.Authenticate(user, password);
 
-            String user = seed.UserName;
-            String password = seed.Password;
-            client.Authenticate(user, password);
-            return client;
+                return client;
+            }
+            catch (Exception ex)
+            {
+                Logger badSeeds = LogManager.GetLogger("BadSeeds");
+                badSeeds.Info(seed.UserName);
+
+                var exeption = "Error Seed Auth: " + seed.UserName + " Exeption: " + ex;
+
+                //RavenClient ravenClient = Sentry.Instance;
+                //ravenClient.Capture(new SentryEvent(exeption));
+
+                return null;
+            }
 
         }
 
@@ -125,7 +142,7 @@ namespace BusinessLogic
 
                     //SAVE THE MESSAGE
                     await storage.SaveMessageAsync(newMail, seed.Id);
- 
+
                 }
             }
 
@@ -261,7 +278,7 @@ namespace BusinessLogic
                 //add the sender of the mail
                 reply.Sender = new MailboxAddress(seed.UserName);
 
-                
+
                 //wait to send messages
                 Random r = new Random();
                 int rInt = r.Next(1000, 2000);
@@ -354,6 +371,6 @@ namespace BusinessLogic
 
             return numReplys;
         }
-        
+
     }
 }

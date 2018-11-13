@@ -23,6 +23,7 @@ namespace MailApplication.Controllers
 
             using (DatabaseContext db = new DatabaseContext())
             {
+
                 String startDateFormated = null;
                 String endDateFormated = null;
 
@@ -39,7 +40,7 @@ namespace MailApplication.Controllers
                 String filename = String.Join("_", filenameComposition.Where(s => !String.IsNullOrEmpty(s))) + ".xls";
 
 
-                var mailList = query.AsEnumerable();
+                //var mailList = query.AsEnumerable();
 
                 //var stmt = CreateNewStatement(columns);
 
@@ -49,7 +50,12 @@ namespace MailApplication.Controllers
                 var dt = new System.Data.DataTable();
                 dt.Columns.AddRange(props.Select(p => new DataColumn(p.Name, p.PropertyType)).ToArray());
 
-                query.ToList().ForEach(i => dt.Rows.Add(props.Select(p => p.GetValue(i, null)).ToArray()));
+                var queryList = query.ToList();
+                
+                db.Configuration.LazyLoadingEnabled = false;
+
+                queryList.ForEach(i => dt.Rows.Add(props.Select(p => p.GetValue(i, null)).ToArray()));
+                
 
                 createExcel(dt, columns, filename);
                 
