@@ -168,6 +168,7 @@ namespace MailApplication.API
                             {
                                 foreach (var seed in seeds)
                                 {
+
                                     //Create new APILog
                                     ClientSeed apiLog = new ClientSeed();
                                     apiLog.Id = Guid.NewGuid();
@@ -175,11 +176,23 @@ namespace MailApplication.API
                                     apiLog.Seed = seed;
                                     apiLog.CreatedAt = DateTime.Now;
 
-                                    db.ClientSeed.Add(apiLog);
-                                    db.SaveChanges();
+                                    if (seed.SeedBucket != null)
+                                    {
+                                        if (seed.SeedBucket.UUID.ToString() != "b30c3769-d41f-4652-910c-6b5b88ac0e0e")
+                                        {
+                                            db.ClientSeed.Add(apiLog);
+                                            db.SaveChanges();
 
-                                    seedIntoJSON.Add(seed.UserName);
+                                            seedIntoJSON.Add(seed.UserName);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        db.ClientSeed.Add(apiLog);
+                                        db.SaveChanges();
 
+                                        seedIntoJSON.Add(seed.UserName);
+                                    }
                                 }
                                 return Json(new { mail = seedIntoJSON }, JsonRequestBehavior.AllowGet);
                             }

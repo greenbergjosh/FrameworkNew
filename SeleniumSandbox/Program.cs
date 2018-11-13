@@ -59,18 +59,28 @@ namespace SeleniumSandbox
             DateTime now = DateTime.Now.AddDays(-1);
             for (int i = 0; i < 14; i++)
             {
-                string rqstDate = now.AddDays(-1 * i).ToString("MMddyy");
+                try
+                {
+                    string rqstDate = now.AddDays(-1 * i).ToString("MMddyy");
 
-                string ret1 = (string)await Utility.ProtocolClient.DownloadPage(finalDataUrl + "&date=" + rqstDate, null, null, null);
+                    string ret1 = (string)await Utility.ProtocolClient.DownloadPage(finalDataUrl + "&date=" + rqstDate, null, null, null);
 
-                string retj1 = Utility.JsonWrapper.ConvertCsvToJson(ret1,
-                    new List<string> { "ip", "sap", "eap", "rcpt", "data", "mrc", "fr", "cr",
+                    if (!string.IsNullOrEmpty(ret1))
+                    {
+                        string retj1 = Utility.JsonWrapper.ConvertCsvToJson(ret1,
+                        new List<string> { "ip", "sap", "eap", "rcpt", "data", "mrc", "fr", "cr",
                                         "tmps", "tmpe", "thc", "helo", "from", "cmnt"});
 
-                await SqlWrapper.SqlServerProviderEntry(cs,
-                        "InsertData",
-                        Jw.Json(new { PostmasterAccountId = pmAcctId }),
-                        retj1);
+                        await SqlWrapper.SqlServerProviderEntry(cs,
+                                "InsertData",
+                                Jw.Json(new { PostmasterAccountId = pmAcctId }),
+                                retj1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var a = ex;
+                }
             }
 
             // Get active ips
@@ -199,6 +209,7 @@ namespace SeleniumSandbox
             {
                 // Log in
                 IWebDriver driver = new ChromeDriver(@"C:\inetpub\wwwroot\PostMasterTool\chromedriver_win32");
+                //IWebDriver driver = new ChromeDriver(@"C:\chromedriver_win32");
                 driver.Navigate().GoToUrl(url);
                 driver.Manage().Timeouts().ImplicitWait = new TimeSpan(0, 0, 2);
                 IWebElement email_phone = driver.FindElement(By.XPath("//input[@id='identifierId']"));

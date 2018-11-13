@@ -12,8 +12,6 @@ namespace BusinessLogic
 {
     public class MailAdapter
     {
-
-
         public MimeMessage MimeMessage;
         public String FolderName;
         public Guid Id;

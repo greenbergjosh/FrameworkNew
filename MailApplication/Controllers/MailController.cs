@@ -133,7 +133,9 @@ namespace MailApp.Controllers
                 ViewBag.datefilter = datefilter;
 
             }
-            IQueryable<Mail> query = query = db.Mail.OrderByDescending(m => m.Date).Where(m => m.FromSeeder != true);
+            //IQueryable<Mail> query = query = db.Mail.OrderByDescending(m => m.Date).Where(m => m.FromSeeder != true);
+
+            IQueryable<Mail> query = query = db.Mail.Include("Seed").OrderByDescending(m => m.Date).Where(m => m.FromSeeder != true);
 
             if (seedId != null)
             {
