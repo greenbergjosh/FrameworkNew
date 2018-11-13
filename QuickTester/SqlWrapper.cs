@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DataService
+namespace QuickTester
 {
     public class SqlWrapper
     {

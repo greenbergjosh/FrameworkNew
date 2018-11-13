@@ -1,12 +1,18 @@
-﻿async function visitorId(url, sessionid, opaque) {
-    var fres = [];
+﻿async function visitorId(url, sessionId, opaque) {
+    //var fres = [];
+    //var md5s = '';
+    //var emails = '';
+    var success = 0;
     var i = 0;
     while (true) {
         var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + encodeURIComponent(opaque)
             + '&qs=' + encodeURIComponent(window.location.href),
+            //+ '&md5s=' + encodeURIComponent(md5s) + '&emails=' + encodeURIComponent(emails) + '&succ=' + success,
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
         if (!res.url || res.done) break;
+        fres.push({ ckemail: res.ckemail, ckmd5: res.ckmd5 });
+        i = res.idx;
 
         res = await window.handleService(res);
         if (res.saveSession == 'true') {
@@ -16,10 +22,11 @@
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');
         }
-        fres.push(res);
-        if (res.done) break;
+        //fres.push({ email: res.email, md5: res.md5 });
 
-        i++;
+        //md5s += '|' + res.md5;
+        //emails += '|' + res.email;
+        success = (res.md5 || res.email) ? 1 : 0;
     }
     return fres;
 }
