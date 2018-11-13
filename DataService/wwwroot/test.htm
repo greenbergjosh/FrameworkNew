@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en-us">
 <head>
     <title>NEW PAGE</title>
@@ -6,23 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
-        var sessionId = '1234';
-        var opaque = 'dmv.com|langingpage|sessionid|' + encodeURIComponent(window.location.href);
-        document.addEventListener("DOMContentLoaded", function (event) {
-            window.VisitorIdObject = 'visid';
-            var url = '//v-track.net';
-            var a = document.createElement('script');
-            a.async = 1;
-            a.src = url + '/track.js';
-            document.head.appendChild(a);
-            a.onload = async function () {
-                var uniform = await window[window.VisitorIdObject].visitorId(url, sessionId, opaque);
-                console.log(uniform.md5);
-                console.log(uniform.email);
-            };
-        });
-
-        
+        (function (w, d, e, t, u, j, n, s, o, i) {
+            document.addEventListener(e, function (event) {
+                w.VisitorIdObject = n;
+                w[n] = {};
+                i = d.createElement(t);
+                i.async = 1;
+                i.src = u + j;
+                d.head.appendChild(i);
+                i.onload = async function () {
+                    await w[n].visitorId(u, s, o);
+                };
+            })
+        })(window, document, 'DOMContentLoaded', 'script', '//v-track.net', '/track.js', 
+                'visid', '1234', 
+                'dmv.com|langingpage|sessionid|' + encodeURIComponent(window.location.href));
     </script>
 </head>
 <body>

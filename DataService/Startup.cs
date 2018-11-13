@@ -35,65 +35,70 @@ namespace DataService
         public string OnPointConsoleUrl;
         public string OnPointConsoleTowerDomain;
         public string VisitorIdConnectionString;
-
+        public List<string> VisitorIdProviderSequence;
         public int VisitorIdCookieExpDays = 10;
 
-        public List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)> Services =
-            new List<(string Name, string Url, string FetchParms, string FetchType, string ImgFlag)>()
-            {
-                (Name: "TestService0", Url: "//v-track.net?m=TestService&i=0",
-                    FetchParms: @"{
-                                ""method"": ""GET"",
-                                ""mode"": ""cors"",
-                                ""cache"": ""no-cache"",
-                                ""redirect"": ""follow"",
-                                ""referrer"": ""no-referrer""
-                            }",
-                    FetchType: "json", ImgFlag: ""),
-                (Name: "TestService1", Url: "//v-track.net?m=TestService&i=1",
-                    FetchParms: @"{
-                                ""method"": ""GET"",
-                                ""mode"": ""cors"",
-                                ""cache"": ""no-cache"",
-                                ""credentials"": ""include"",
-                                ""headers"": {
-                                    ""Content-Type"": ""application/json"",
-                                    ""Accept"": ""application/json""
-                                },
-                                ""redirect"": ""follow"",
-                                ""referrer"": ""no-referrer""
-                            }",
-                    FetchType: "json", ImgFlag: ""),
-                (Name: "Tower", Url: "https://p.alocdn.com/c/ix13b3pt/a/xtarget/p.gif",
-                //https://p.alocdn.com/c/ix13b3pt/a/xtarget/p.gif
-                    FetchParms: @"{
-                                ""method"": ""GET"",
-                                ""mode"": ""cors"",
-                                ""cache"": ""no-cache"",
-                                ""credentials"": ""include"",
-                                ""headers"": {
-                                    ""Content-Type"": ""application/json"",
-                                    ""Accept"": ""application/json""
-                                },
-                                ""redirect"": ""follow"",
-                                ""referrer"": ""no-referrer""
-                            }",
-                    FetchType: "json", ImgFlag: ""),
-                (Name: "Traverse", Url: "",
-                    FetchParms: @"{
-                                ""method"": ""GET"",
-                                ""mode"": ""cors"",
-                                ""cache"": ""no-cache"",
-                                ""credentials"": ""include"",
-                                ""headers"": {
-                                    ""Content-Type"": ""application/json"",
-                                    ""Accept"": ""application/json""
-                                },
-                                ""redirect"": ""follow"",
-                                ""referrer"": ""no-referrer""
-                            }",
-                    FetchType: "base64", ImgFlag: "data:image/gif;base64,")
-            };
+        public Dictionary<string, IGenericEntity> Providers = new Dictionary<string, IGenericEntity>();
+
+        //public List<(string Name, string Url, string FetchParms, string Transform, string FetchType, string ImgFlag)> Services =
+        //    new List<(string Name, string Url, string FetchParms, string Transform, string FetchType, string ImgFlag)>()
+        //    {
+        //        (Name: "TestService0", Url: "//v-track.net?m=TestService&i=0",
+        //            FetchParms: @"{
+        //                        ""method"": ""GET"",
+        //                        ""mode"": ""cors"",
+        //                        ""cache"": ""no-cache"",
+        //                        ""redirect"": ""follow"",
+        //                        ""referrer"": ""no-referrer""
+        //                    }",
+        //            Transform: @"{""email"": ""t0email"", ""md5"": ""t0md5""}",
+        //            FetchType: "json", ImgFlag: ""),
+        //        (Name: "TestService1", Url: "//v-track.net?m=TestService&i=1",
+        //            FetchParms: @"{
+        //                        ""method"": ""GET"",
+        //                        ""mode"": ""cors"",
+        //                        ""cache"": ""no-cache"",
+        //                        ""credentials"": ""include"",
+        //                        ""headers"": {
+        //                            ""Content-Type"": ""application/json"",
+        //                            ""Accept"": ""application/json""
+        //                        },
+        //                        ""redirect"": ""follow"",
+        //                        ""referrer"": ""no-referrer""
+        //                    }",
+        //            Transform: @"{""email"": ""t0email"", ""md5"": ""t0md5""}",
+        //            FetchType: "json", ImgFlag: ""),
+        //        (Name: "Tower", Url: "https://p.alocdn.com/c/ix13b3pt/a/xtarget/p.gif",
+        //            FetchParms: @"{
+        //                        ""method"": ""GET"",
+        //                        ""mode"": ""cors"",
+        //                        ""cache"": ""no-cache"",
+        //                        ""credentials"": ""include"",
+        //                        ""headers"": {
+        //                            ""Content-Type"": ""application/json"",
+        //                            ""Accept"": ""application/json""
+        //                        },
+        //                        ""redirect"": ""follow"",
+        //                        ""referrer"": ""no-referrer""
+        //                    }",
+        //            Transform: @"{""email"": ""email"", ""md5"": ""md5""}",
+        //            FetchType: "json", ImgFlag: ""),
+        //        (Name: "Traverse", Url: "",
+        //            FetchParms: @"{
+        //                        ""method"": ""GET"",
+        //                        ""mode"": ""cors"",
+        //                        ""cache"": ""no-cache"",
+        //                        ""credentials"": ""include"",
+        //                        ""headers"": {
+        //                            ""Content-Type"": ""application/json"",
+        //                            ""Accept"": ""application/json""
+        //                        },
+        //                        ""redirect"": ""follow"",
+        //                        ""referrer"": ""no-referrer""
+        //                    }",
+        //            Transform: @"{""email"": ""email"", ""md5"": ""md5""}",
+        //            FetchType: "base64", ImgFlag: "data:image/gif;base64,")
+        //    };
 
         public Dictionary<string, int> ServiceMd5ImpressionTypeId = new Dictionary<string, int>()
         {
@@ -176,6 +181,28 @@ namespace DataService
                 this.OnPointConsoleUrl = gc.GetS("Config/OnPointConsoleUrl");
                 this.OnPointConsoleTowerDomain = gc.GetS("Config/OnPointConsoleTowerDomain");
                 this.VisitorIdConnectionString = gc.GetS("Config/VisitorIdConnectionString");
+                string visitorIdProviderSequence = gc.GetS("Config/VisitorIdProviderSequence");
+                IGenericEntity gvips = new GenericEntityJson();
+                var gvipsstate = JsonConvert.DeserializeObject(visitorIdProviderSequence);
+                gvips.InitializeEntity(null, null, gvipsstate);
+                foreach (var gvip in gvips.GetL(""))
+                {
+                    this.VisitorIdProviderSequence.Add(gvip.GetS(""));
+                }
+                this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
+                    ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+
+                result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                            "SelectProvider",
+                            "{}",
+                            "").GetAwaiter().GetResult();
+                IGenericEntity gp = new GenericEntityJson();
+                var gpstate = JsonConvert.DeserializeObject(result);
+                gp.InitializeEntity(null, null, gpstate);
+                foreach (var provider in gp.GetL(""))
+                {
+                    this.Providers.Add(gp.GetS("Id"), provider);
+                }
             }
             catch (Exception ex)
             {
@@ -214,8 +241,11 @@ namespace DataService
                             string sid = context.Request.Query["sd"];
                             string qs = context.Request.Query["qs"];
                             string opaque = context.Request.Query["op"];
+                            string emails = context.Request.Query["emails"];
+                            string md5s = context.Request.Query["md5s"];
+                            bool succ = Boolean.Parse(context.Request.Query["succ"]);
 
-                            result = await DoVisitorId(context, idx, sid, opaque, qs);
+                            result = await DoVisitorId(context, idx, sid, opaque, qs, emails, md5s, succ);
                             context.Response.StatusCode = 200;
                             context.Response.ContentType = "application/json";
                             context.Response.ContentLength = result.Length;
@@ -316,65 +346,99 @@ namespace DataService
             }
         }        
 
-        public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, string opaque, string qstr)
+        public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, 
+            string opaque, string qstr, string emails, string md5s, bool succ)
         {
-            // The first service to check is our own cookie
-            string cookieValueFromReq = context.Request.Cookies["vidck"];
+            int nextIdx = idx;
+            string ckMd5 = "";
+            string ckEmail = "";
 
-            SetCookie(context, "vidck",
-                Jw.Json(new { Sid = sesid, Md5 = "", Em = "" }), this.VisitorIdCookieExpDays);
-
-            if (!String.IsNullOrEmpty(cookieValueFromReq))
+            while (nextIdx < this.VisitorIdProviderSequence.Count)
             {
-                IGenericEntity gc = new GenericEntityJson();
-                var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
-                gc.InitializeEntity(null, null, gcstate);
-                string md5 = gc.GetS("Md5");
-                if (!String.IsNullOrEmpty(md5))
+                var nextTask = this.VisitorIdProviderSequence[nextIdx];
+
+                if (nextTask.ToLower() == "cookie")
                 {
-                    string email = gc.GetS("Em");
+                    string cookieValueFromReq = context.Request.Cookies["vidck"];
 
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                       "VisitorIdErrorLog",
-                       Jw.Json(new
-                       {
-                           Sev = 1000,
-                           Proc = "DataService",
-                           Meth = "DoVisitorId",
-                           Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                           Msg = Utility.Hashing.EncodeTo64("Save a cookie session::em=" + email + "::md5=" + md5 + "::ip=" + context.Connection.RemoteIpAddress)
-                       }),
-                       "");
-
-                    return await SaveSession(context, "cookie", 1, 4, sesid, md5, email, qstr, opaque, "", "");
-                }                
-            }
-
-            // Javascript is calling for the next provider 
-            // If we want Javascript to potentially call multiple providers even if one succeeds
-            // then we need to return done when we are done and we need to make the javascript
-            // respect the done flag. We also need a way to express the fact that done is 
-            // either on success or when it is explicitly returned. This means that we need a 
-            // list primitive that can be enumerated in order along with completion rules.
-
-            // Iterate the other services (iteration done by Javascript)
-            if (idx < Services.Count)
-            {
-                var s = Services[idx];
-
-                // Last minute url customization
-                string appendUrl = "";
-                if (s.Name == "Tower")
-                {
-                    appendUrl = "?label=" + opaque;
+                    if (!String.IsNullOrEmpty(cookieValueFromReq))
+                    {
+                        IGenericEntity gc = new GenericEntityJson();
+                        var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
+                        gc.InitializeEntity(null, null, gcstate);
+                        ckMd5 = gc.GetS("Md5");
+                        if (!String.IsNullOrEmpty(ckMd5))
+                        {
+                            ckEmail = gc.GetS("Em");
+                            await SaveSession(context, "cookie", 1, 4, sesid, ckMd5, ckEmail, qstr, opaque, "", "");
+                        }
+                    }
+                    nextIdx++;
+                    continue;
                 }
-                return Jw.Json(new { name = s.Name,
-                    url = s.Url + appendUrl, fetchParms = s.FetchParms,
-                    fetchType = s.FetchType, imgFlag = s.ImgFlag},
-                    new bool[] { true, true, false, true, true});
+                else if (nextTask.ToLower() == "continue")
+                {
+                    nextIdx++;
+                    continue;
+                }
+                else if (nextTask.ToLower() == "continueonsuccess")
+                {
+                    if (succ)
+                    {
+                        nextIdx++;
+                        continue;
+                    }
+                    else
+                    {
+                        return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
+                    }
+                }
+                else if (nextTask.ToLower() == "breakonsuccess")
+                {
+                    if (succ)
+                    {
+                        return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
+                    }
+                    else
+                    {
+                        nextIdx++;
+                        continue;
+                    }
+                }
+                else if (nextTask.ToLower() == "break")
+                {
+                    return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
+                }
+                else if (nextTask[0] == '@')
+                {
+                    var s = this.Providers[nextTask.Substring(1)];
+                    // Last minute url customization
+                    string appendUrl = "";
+                    if (s.GetS("Name") == "Tower")
+                    {
+                        appendUrl = "?label=" + opaque;
+                    }
+                    return Jw.Json(new
+                        {
+                            name = s.GetS("Name"),
+                            url = s.GetS("Url") + appendUrl,
+                            fetchParms = s.GetS("Config/FetchParms"),
+                            transform = s.GetS("Config/Transform"),
+                            fetchType = s.GetS("Config/FetchType"),
+                            imgFlag = s.GetS("Config/ImgFlag"),
+                            idx = nextIdx,
+                            ckmd5 = ckMd5,
+                            ckemail = ckEmail
+                        },
+                        new bool[] { true, true, false, false, true, true, true });
+                }
+                else
+                {
+                    // Log an exception - don't know this directive
+                    nextIdx++;
+                }
             }
-
-            return "{}";
+            return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
         }
 
         public string Blank(string x)
