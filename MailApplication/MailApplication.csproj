@@ -672,6 +672,10 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BusinessLogic\BusinessLogic.csproj">
+      <Project>{6ffcb24a-1061-4a9a-8dfc-0b77f4ccf801}</Project>
+      <Name>BusinessLogic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MailProcess\MailProcess.csproj">
       <Project>{3b3f53e2-4782-4ba8-a925-39cc92507919}</Project>
       <Name>MailProcess</Name>
