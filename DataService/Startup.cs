@@ -35,70 +35,10 @@ namespace DataService
         public string OnPointConsoleUrl;
         public string OnPointConsoleTowerDomain;
         public string VisitorIdConnectionString;
-        public List<string> VisitorIdProviderSequence;
+        public List<string> VisitorIdProviderSequence = new List<string>();
         public int VisitorIdCookieExpDays = 10;
 
         public Dictionary<string, IGenericEntity> Providers = new Dictionary<string, IGenericEntity>();
-
-        //public List<(string Name, string Url, string FetchParms, string Transform, string FetchType, string ImgFlag)> Services =
-        //    new List<(string Name, string Url, string FetchParms, string Transform, string FetchType, string ImgFlag)>()
-        //    {
-        //        (Name: "TestService0", Url: "//v-track.net?m=TestService&i=0",
-        //            FetchParms: @"{
-        //                        ""method"": ""GET"",
-        //                        ""mode"": ""cors"",
-        //                        ""cache"": ""no-cache"",
-        //                        ""redirect"": ""follow"",
-        //                        ""referrer"": ""no-referrer""
-        //                    }",
-        //            Transform: @"{""email"": ""t0email"", ""md5"": ""t0md5""}",
-        //            FetchType: "json", ImgFlag: ""),
-        //        (Name: "TestService1", Url: "//v-track.net?m=TestService&i=1",
-        //            FetchParms: @"{
-        //                        ""method"": ""GET"",
-        //                        ""mode"": ""cors"",
-        //                        ""cache"": ""no-cache"",
-        //                        ""credentials"": ""include"",
-        //                        ""headers"": {
-        //                            ""Content-Type"": ""application/json"",
-        //                            ""Accept"": ""application/json""
-        //                        },
-        //                        ""redirect"": ""follow"",
-        //                        ""referrer"": ""no-referrer""
-        //                    }",
-        //            Transform: @"{""email"": ""t0email"", ""md5"": ""t0md5""}",
-        //            FetchType: "json", ImgFlag: ""),
-        //        (Name: "Tower", Url: "https://p.alocdn.com/c/ix13b3pt/a/xtarget/p.gif",
-        //            FetchParms: @"{
-        //                        ""method"": ""GET"",
-        //                        ""mode"": ""cors"",
-        //                        ""cache"": ""no-cache"",
-        //                        ""credentials"": ""include"",
-        //                        ""headers"": {
-        //                            ""Content-Type"": ""application/json"",
-        //                            ""Accept"": ""application/json""
-        //                        },
-        //                        ""redirect"": ""follow"",
-        //                        ""referrer"": ""no-referrer""
-        //                    }",
-        //            Transform: @"{""email"": ""email"", ""md5"": ""md5""}",
-        //            FetchType: "json", ImgFlag: ""),
-        //        (Name: "Traverse", Url: "",
-        //            FetchParms: @"{
-        //                        ""method"": ""GET"",
-        //                        ""mode"": ""cors"",
-        //                        ""cache"": ""no-cache"",
-        //                        ""credentials"": ""include"",
-        //                        ""headers"": {
-        //                            ""Content-Type"": ""application/json"",
-        //                            ""Accept"": ""application/json""
-        //                        },
-        //                        ""redirect"": ""follow"",
-        //                        ""referrer"": ""no-referrer""
-        //                    }",
-        //            Transform: @"{""email"": ""email"", ""md5"": ""md5""}",
-        //            FetchType: "base64", ImgFlag: "data:image/gif;base64,")
-        //    };
 
         public Dictionary<string, int> ServiceMd5ImpressionTypeId = new Dictionary<string, int>()
         {
@@ -192,16 +132,17 @@ namespace DataService
                 this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
                     ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
 
-                result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                result = SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
                             "SelectProvider",
                             "{}",
                             "").GetAwaiter().GetResult();
                 IGenericEntity gp = new GenericEntityJson();
                 var gpstate = JsonConvert.DeserializeObject(result);
                 gp.InitializeEntity(null, null, gpstate);
+
                 foreach (var provider in gp.GetL(""))
                 {
-                    this.Providers.Add(gp.GetS("Id"), provider);
+                    this.Providers.Add(provider.GetS("Id"), provider);
                 }
             }
             catch (Exception ex)
@@ -237,24 +178,23 @@ namespace DataService
                             result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
                             break;
                         case "VisitorId":
-                            int idx = Int32.Parse(context.Request.Query["i"]);
-                            string sid = context.Request.Query["sd"];
-                            string qs = context.Request.Query["qs"];
-                            string opaque = context.Request.Query["op"];
-                            string emails = context.Request.Query["emails"];
-                            string md5s = context.Request.Query["md5s"];
-                            bool succ = Boolean.Parse(context.Request.Query["succ"]);
+                                int idx = Int32.Parse(context.Request.Query["i"]);
+                                string sid = context.Request.Query["sd"];
+                                if (String.IsNullOrEmpty(sid)) sid = Guid.NewGuid().ToString();
+                                string qs = context.Request.Query["qs"];
+                                string opaque = context.Request.Query["op"];
+                                bool succ = context.Request.Query["succ"] == "1" ? true : false;
 
-                            result = await DoVisitorId(context, idx, sid, opaque, qs, emails, md5s, succ);
-                            context.Response.StatusCode = 200;
-                            context.Response.ContentType = "application/json";
-                            context.Response.ContentLength = result.Length;
+                                result = await DoVisitorId(context, idx, sid, opaque, qs, succ);
+                                context.Response.StatusCode = 200;
+                                context.Response.ContentType = "application/json";
+                                context.Response.ContentLength = result.Length;
                             break;
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
-                            if (idx1 == 0)
+                            if (idx1%2 == 0)
                                 result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
-                            else if (idx1 == 1)
+                            else if (idx1%2 == 1)
                                 result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
@@ -264,8 +204,6 @@ namespace DataService
                             context.Response.ContentLength = result.Length;
                             break;
                         case "SaveSession":
-                            try
-                            {
                                 string encssemail = context.Request.Query["e"];
                                 var byt = Convert.FromBase64String(encssemail);
                                 var ssemail = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
@@ -282,22 +220,6 @@ namespace DataService
                                 context.Response.StatusCode = 200;
                                 context.Response.ContentType = "application/json";
                                 context.Response.ContentLength = result.Length;
-                            }
-                            catch (Exception exSaveSession)
-                            {
-                                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "VisitorIdErrorLog",
-                                    Jw.Json(new
-                                    {
-                                        Sev = 1000,
-                                        Proc = "DataService",
-                                        Meth = "Start",
-                                        Desc = Utility.Hashing.EncodeTo64("Exception"),
-                                        Msg = Utility.Hashing.EncodeTo64(exSaveSession.ToString())
-                                    }),
-                                    "");
-                            }
-                            
                             break;
                         default:
                             File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
@@ -313,13 +235,6 @@ namespace DataService
                     context.Response.ContentType = "application/json";
                     context.Response.ContentLength = ret.Length;
                     await context.Response.WriteAsync(ret);
-                }
-                else if (!String.IsNullOrEmpty(context.Request.Query["md5"]))
-                {
-                    // I don't know what this is - remove it if we don't know
-                    string nf = Jw.Json(new { Email = "NotFound" });
-                    context.Response.StatusCode = 200;
-                    await context.Response.WriteAsync(nf);
                 }
                 else
                 {
@@ -346,100 +261,161 @@ namespace DataService
                         }),
                         "");
             }
-        }        
-
-        public async Task<string> DoVisitorId(HttpContext context, int idx, string sesid, 
-            string opaque, string qstr, string emails, string md5s, bool succ)
+        } 
+        
+        public static string ReplaceToken(string tokenized, string sesid, string opaque)
         {
-            int nextIdx = idx;
+            return tokenized.Replace("[=SESSIONID=]", sesid).Replace("[=OPAQUE=]", opaque);
+        }
+
+        public async Task<string> DoVisitorId(HttpContext context, int idx, string sid, 
+            string opaque, string qstr, bool succ)
+        {
             string ckMd5 = "";
             string ckEmail = "";
-
-            while (nextIdx < this.VisitorIdProviderSequence.Count)
+            try
             {
-                var nextTask = this.VisitorIdProviderSequence[nextIdx];
+                int nextIdx = idx;
 
-                if (nextTask.ToLower() == "cookie")
+                while (nextIdx < this.VisitorIdProviderSequence.Count)
                 {
-                    string cookieValueFromReq = context.Request.Cookies["vidck"];
+                    var nextTask = this.VisitorIdProviderSequence[nextIdx];
 
-                    if (!String.IsNullOrEmpty(cookieValueFromReq))
+                    if (nextTask.ToLower() == "cookie")
                     {
-                        IGenericEntity gc = new GenericEntityJson();
-                        var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
-                        gc.InitializeEntity(null, null, gcstate);
-                        ckMd5 = gc.GetS("Md5");
-                        if (!String.IsNullOrEmpty(ckMd5))
+                        string cookieValueFromReq = context.Request.Cookies["vidck"];
+
+                        if (!String.IsNullOrEmpty(cookieValueFromReq))
                         {
-                            ckEmail = gc.GetS("Em");
-                            await SaveSession(context, "cookie", 1, 4, sesid, ckMd5, ckEmail, qstr, opaque, "", "");
+                            IGenericEntity gc = new GenericEntityJson();
+                            var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
+                            gc.InitializeEntity(null, null, gcstate);
+                            ckMd5 = gc.GetS("Md5");
+                            if (!String.IsNullOrEmpty(ckMd5))
+                            {
+                                ckEmail = gc.GetS("Em");
+                                await SaveSession(context, "cookie", 1, 4, sid, ckMd5, ckEmail, qstr, opaque, "", "");
+                            }
+                        }
+                        nextIdx++;
+                        continue;
+                    }
+                    else if (nextTask.ToLower() == "continue")
+                    {
+                        nextIdx++;
+                        continue;
+                    }
+                    else if (nextTask.ToLower() == "continueonsuccess")
+                    {
+                        if (succ)
+                        {
+                            nextIdx++;
+                            continue;
+                        }
+                        else
+                        {
+                            return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail, sesid = sid });
                         }
                     }
-                    nextIdx++;
-                    continue;
-                }
-                else if (nextTask.ToLower() == "continue")
-                {
-                    nextIdx++;
-                    continue;
-                }
-                else if (nextTask.ToLower() == "continueonsuccess")
-                {
-                    if (succ)
+                    else if (nextTask.ToLower() == "breakonsuccess")
                     {
-                        nextIdx++;
-                        continue;
-                    }
-                    else
-                    {
-                        return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
-                    }
-                }
-                else if (nextTask.ToLower() == "breakonsuccess")
-                {
-                    if (succ)
-                    {
-                        return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
-                    }
-                    else
-                    {
-                        nextIdx++;
-                        continue;
-                    }
-                }
-                else if (nextTask.ToLower() == "break")
-                {
-                    return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
-                }
-                else if (nextTask[0] == '@')
-                {
-                    var s = this.Providers[nextTask.Substring(1)];
-                    // Last minute url customization
-                    string appendUrl = "";
-                    if (s.GetS("Name") == "Tower")
-                    {
-                        appendUrl = "?label=" + opaque;
-                    }
-                    return Jw.Json(new
+                        if (succ)
                         {
-                            name = s.GetS("Name"),
-                            url = s.GetS("Url") + appendUrl,
-                            fetchParms = s.GetS("Config/FetchParms"),
-                            transform = s.GetS("Config/Transform"),
-                            fetchType = s.GetS("Config/FetchType"),
-                            saveSession = s.GetS("Config/SaveSession"),
-                            imgFlag = s.GetS("Config/ImgFlag"),
-                            idx = nextIdx,
-                            ckmd5 = ckMd5,
-                            ckemail = ckEmail
-                        },
-                        new bool[] { true, true, false, false, true, true, true });
-                }
-                else
-                {
-                    // Log an exception - don't know this directive
-                    nextIdx++;
-                }
+                            return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail, sesid = sid });
+                        }
+                        else
+                        {
+                            nextIdx++;
+                            continue;
+                        }
+                    }
+                    else if (nextTask.ToLower() == "break")
+                    {
+                        return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail, sesid = sid });
+                    }
+                    else if (nextTask[0] == '@')
+                    {
+                        var s = this.Providers[nextTask.Substring(1)];
+                        if (!String.IsNullOrEmpty(s.GetS("Config/Url")))
+                        {
+                            return Jw.Json(new
+                            {
+                                name = s.GetS("Nm"),
+                                url = ReplaceToken(s.GetS("Config/Url"), sid, opaque),
+                                fetchParms = s.GetS("Config/FetchParms"),
+                                transform = s.GetS("Config/Transform"),
+                                fetchType = s.GetS("Config/FetchType"),
+                                saveSession = s.GetS("Config/SaveSession"),
+                                imgFlag = s.GetS("Config/ImgFlag"),
+                                sesid = sid,
+                                idx = nextIdx + 1,
+                                ckmd5 = (ckMd5 == null ? "" : ckMd5),
+                                ckemail = (ckEmail == null ? "" : ckEmail)
+                            },
+                            new bool[] { true, true, false, false, true, true, true, true, true, true, true });
+                        }
+                        else if (!String.IsNullOrEmpty(s.GetS("Config/ScriptUrl")))
+                        {
+                            return Jw.Json(new
+                            {
+                                name = s.GetS("Nm"),
+                                scriptUrl = ReplaceToken(s.GetS("Config/ScriptUrl"), sid, opaque),
+                                globalObject = s.GetS("Config/GlobalObject"),
+                                strategy = ReplaceToken(s.GetS("Config/Strategy"), sid, opaque),
+                                saveSession = s.GetS("Config/SaveSession"),
+                                sesid = sid,
+                                idx = nextIdx + 1,
+                                ckmd5 = ckMd5,
+                                ckemail = ckEmail
+                            },
+                            new bool[] { true, true, true, false, true, true, true, true, true });
+                        }
+                        else
+                        {
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                    "VisitorIdErrorLog",
+                                    Jw.Json(new
+                                    {
+                                        Sev = 1000,
+                                        Proc = "DataService",
+                                        Meth = "DoVisitorId",
+                                        Desc = Utility.Hashing.EncodeTo64("Neither URL nor Script"),
+                                        Msg = Utility.Hashing.EncodeTo64($"{s.GetS("")}")
+                                    }),
+                                    "");
+                            nextIdx++;
+                        }
+                    }
+                    else
+                    {
+                        await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                    "VisitorIdErrorLog",
+                                    Jw.Json(new
+                                    {
+                                        Sev = 1000,
+                                        Proc = "DataService",
+                                        Meth = "DoVisitorId",
+                                        Desc = Utility.Hashing.EncodeTo64("Unknown Task Type"),
+                                        Msg = Utility.Hashing.EncodeTo64($"{nextTask}")
+                                    }),
+                                    "");
+                        nextIdx++;
+                    }
+                } 
+            }
+            catch (Exception ex)
+            {
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "DataService",
+                            Meth = "DoVisitorId",
+                            Desc = Utility.Hashing.EncodeTo64("Exception"),
+                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                        }),
+                        "");
             }
             return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
         }
@@ -755,15 +731,10 @@ namespace DataService
             return towerEmailPlainText;
         }
 
-        public async Task<string> ProcessTowerMockMessage(HttpContext context, string rawstring)
-        {
-            return await SaveSession(context, "TowerMock", 2, 7, "mocksession", rawstring, "", "mockqs", "mocklabel", "mockdom", "mockpage");
-        }
-
         public async Task<string> ProcessTowerMessage(HttpContext context, string rawstring)
         {
             string pRawString = "";
-            string label = "";
+            string opaque = "";
             string emailMd5 = "";
 
             await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
@@ -811,7 +782,7 @@ namespace DataService
                         "VisitorIdErrorLog",
                         Jw.Json(new
                         {
-                            Sev = 100,
+                            Sev = 1,
                             Proc = "DataService",
                             Meth = "ProcessTowerMessage",
                             Desc = Utility.Hashing.EncodeTo64("Tracking"),
@@ -822,7 +793,7 @@ namespace DataService
                     emailMd5 = parsedstring["md5_email"].ToString();
                     if (parsedstring["label"] != null)
                     {
-                        label = parsedstring["label"].ToString();
+                        opaque = parsedstring["label"].ToString();
                     }
                 }
                 else
@@ -831,7 +802,7 @@ namespace DataService
                         "VisitorIdErrorLog",
                         Jw.Json(new
                         {
-                            Sev = 100,
+                            Sev = 1,
                             Proc = "DataService",
                             Meth = "ProcessTowerMessage",
                             Desc = Utility.Hashing.EncodeTo64("Error"),
@@ -884,11 +855,11 @@ namespace DataService
                    "VisitorIdErrorLog",
                    Jw.Json(new
                    {
-                       Sev = 100,
+                       Sev = 1,
                        Proc = "DataService",
                        Meth = "ProcessTowerMessage",
                        Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                       Msg = Utility.Hashing.EncodeTo64("Before Parsing Label: " + $"{label}" + "::ip=" + context.Connection.RemoteIpAddress)
+                       Msg = Utility.Hashing.EncodeTo64("Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress)
                    }),
                    "");
 
@@ -897,16 +868,16 @@ namespace DataService
                 string dom = "";
                 string page = "";
 
-                if (label.Contains("|"))
+                if (opaque.Contains("|"))
                 {
-                    string[] larray = label.Split('|');
+                    string[] larray = opaque.Split('|');
                     if (larray.Length > 0) dom = larray[0];
                     if (larray.Length > 1) page = larray[1];
                     if (larray.Length > 2) sessionId = larray[2];
                     if (larray.Length > 3) queryString = larray[3];
                 }
 
-                return await SaveSession(context, "Tower", 2, 7, sessionId, emailMd5, "", queryString, label, dom, page);
+                return await SaveSession(context, "Tower", 2, 7, sessionId, emailMd5, "", queryString, opaque, dom, page);
             }
             catch (Exception ex)
             {
@@ -933,37 +904,5 @@ namespace DataService
 
             return Jw.Json(new { Result = "Failure" });
         }
-
-        //public async Task<(string Email, int EmIt)> GetEmailFromMd5(string md5, string src)
-        //{
-        //    string plainText = "";
-        //    int emIt = 0;
-
-        //    if (src == "cookie")
-        //    {
-        //        string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-        //                "GetEmailFromMd5",
-        //                Jw.Json(new { Md5 = md5 }),
-        //                "");
-        //        IGenericEntity anteGe = new GenericEntityJson();
-        //        var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-        //        anteGe.InitializeEntity(null, null, anteTs);
-        //        if (anteGe.GetS("Result") == "NotFound")
-        //        {
-        //            // Ping other services to try to convert md5 to email if desired
-        //        }
-        //        else
-        //        {
-        //            plainText = anteGe.GetS("Email");
-        //            emIt = Int32.Parse(anteGe.GetS("EmIt"));
-        //        }
-        //    }
-        //    else if (src == "SomeOtherService")
-        //    {
-        //        // 
-        //    }
-
-        //    return (Email: plainText, EmIt: emIt);
-        //}
     }
 }
