@@ -178,17 +178,17 @@ namespace DataService
                             result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
                             break;
                         case "VisitorId":
-                                int idx = Int32.Parse(context.Request.Query["i"]);
-                                string sid = context.Request.Query["sd"];
-                                if (String.IsNullOrEmpty(sid)) sid = Guid.NewGuid().ToString();
-                                string qs = context.Request.Query["qs"];
-                                string opaque = context.Request.Query["op"];
-                                bool succ = context.Request.Query["succ"] == "1" ? true : false;
+                            int idx = Int32.Parse(context.Request.Query["i"]);
+                            string sid = context.Request.Query["sd"];
+                            if (String.IsNullOrEmpty(sid)) sid = Guid.NewGuid().ToString();
+                            string qs = context.Request.Query["qs"];
+                            string opaque = context.Request.Query["op"];
+                            bool succ = context.Request.Query["succ"] == "1" ? true : false;
 
-                                result = await DoVisitorId(context, idx, sid, opaque, qs, succ);
-                                context.Response.StatusCode = 200;
-                                context.Response.ContentType = "application/json";
-                                context.Response.ContentLength = result.Length;
+                            result = await DoVisitorId(context, idx, sid, opaque, qs, succ);
+                            context.Response.StatusCode = 200;
+                            context.Response.ContentType = "application/json";
+                            context.Response.ContentLength = result.Length;
                             break;
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
@@ -204,22 +204,22 @@ namespace DataService
                             context.Response.ContentLength = result.Length;
                             break;
                         case "SaveSession":
-                                string encssemail = context.Request.Query["e"];
-                                var byt = Convert.FromBase64String(encssemail);
-                                var ssemail = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
-                                string ssmd5 = context.Request.Query["md5"];
-                                string sssn = context.Request.Query["sn"];
-                                string sssid = context.Request.Query["sd"];
-                                string ssqs = context.Request.Query["qs"];
-                                string ssopaque = context.Request.Query["op"];
+                            string encssemail = context.Request.Query["e"];
+                            var byt = Convert.FromBase64String(encssemail);
+                            var ssemail = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
+                            string ssmd5 = context.Request.Query["md5"];
+                            string sssn = context.Request.Query["sn"];
+                            string sssid = context.Request.Query["sd"];
+                            string ssqs = context.Request.Query["qs"];
+                            string ssopaque = context.Request.Query["op"];
 
-                                result = await SaveSession(context, sssn, ServiceMd5ImpressionTypeId[sssn],
-                                    !String.IsNullOrEmpty(ssemail) ? ServicePlainImpressionTypeId[sssn] : 0,
-                                    sssid, ssmd5, ssemail, ssqs, ssopaque, "", "");
+                            result = await SaveSession(context, sssn, ServiceMd5ImpressionTypeId[sssn],
+                                !String.IsNullOrEmpty(ssemail) ? ServicePlainImpressionTypeId[sssn] : 0,
+                                sssid, ssmd5, ssemail, ssqs, ssopaque);
 
-                                context.Response.StatusCode = 200;
-                                context.Response.ContentType = "application/json";
-                                context.Response.ContentLength = result.Length;
+                            context.Response.StatusCode = 200;
+                            context.Response.ContentType = "application/json";
+                            context.Response.ContentLength = result.Length;
                             break;
                         default:
                             File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
@@ -294,7 +294,7 @@ namespace DataService
                             if (!String.IsNullOrEmpty(ckMd5))
                             {
                                 ckEmail = gc.GetS("Em");
-                                await SaveSession(context, "cookie", 1, 4, sid, ckMd5, ckEmail, qstr, opaque, "", "");
+                                await SaveSession(context, "cookie", 1, 4, sid, ckMd5, ckEmail, qstr, opaque);
                             }
                         }
                         nextIdx++;
@@ -427,15 +427,13 @@ namespace DataService
 
         public async Task<string> SaveSession(HttpContext context, string serviceName, int M5dImpressionTypeId,
             int PlainImpressionTypeId, string sessionId, string md5,
-            string email, string queryString, string opaque, string domain, string page)
+            string email, string queryString, string opaque)
         {
             string bEmail = Blank(email);
             string bSessionId = Blank(sessionId);
             string bMd5 = Blank(md5);
             string bQueryString = Blank(queryString);
             string bOpaque = Blank(opaque);
-            string bDomain = Blank(domain);
-            string bPage = Blank(page);
             string bIp = (context.Connection.RemoteIpAddress != null) ?
                 context.Connection.RemoteIpAddress.ToString() :
                 "";
@@ -450,7 +448,7 @@ namespace DataService
                 string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
                     "Md5ToLegacyEmail",
                     Jw.Json(new { Md5It = M5dImpressionTypeId, Sid = bSessionId, Md5 = bMd5,
-                        Ip = bIp, Qs = bQueryString, Ua = bUserAgent, Op = bOpaque, Dm = bDomain, Pg = bPage
+                        Ip = bIp, Qs = bQueryString, Ua = bUserAgent, Op = bOpaque
                     }),
                     "", 240);
                 IGenericEntity geplain = new GenericEntityJson();
@@ -480,7 +478,7 @@ namespace DataService
                 plainTypeId = 9; /*PlainNone*/
                 if (serviceName == "Tower")
                 {
-                    bEmail = Blank(await CallTowerEmailApi(context, bMd5, bOpaque, bDomain, bPage));
+                    bEmail = Blank(await CallTowerEmailApi(context, bMd5, bOpaque));
                     if (!String.IsNullOrEmpty(bEmail)) plainTypeId = PlainImpressionTypeId;
                 }
             }
@@ -499,9 +497,7 @@ namespace DataService
                             Ip = bIp,
                             Qs = bQueryString,
                             Ua = bUserAgent,
-                            Op = bOpaque,
-                            Dm = bDomain,
-                            Pg = bPage
+                            Op = bOpaque
                         }),
                         "");
                 IGenericEntity anteGe = new GenericEntityJson();
@@ -663,7 +659,7 @@ namespace DataService
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
-        public async Task<string> CallTowerEmailApi(HttpContext context, string md5, string opaque, string domain, string page)
+        public async Task<string> CallTowerEmailApi(HttpContext context, string md5, string opaque)
         {
             string towerEmailPlainText = "";
             try
@@ -723,7 +719,7 @@ namespace DataService
                         Proc = "DataService",
                         Meth = "CallTowerEmailApi",
                         Desc = Utility.Hashing.EncodeTo64("Exception"),
-                        Msg = Utility.Hashing.EncodeTo64("TowerDataEmailApiFailed: " + $"{md5}||{opaque}||{domain}||{page}" + "::" + tgException.ToString())
+                        Msg = Utility.Hashing.EncodeTo64("TowerDataEmailApiFailed: " + $"{md5}||{opaque}" + "::" + tgException.ToString())
                     }),
                     "");
             }
@@ -863,21 +859,13 @@ namespace DataService
                    }),
                    "");
 
-                string sessionId = "";
-                string queryString = "";
-                string dom = "";
-                string page = "";
+                byte[] byt = Convert.FromBase64String(opaque);
+                string jsopaque = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
+                IGenericEntity op = new GenericEntityJson();
+                var opstate = JsonConvert.DeserializeObject(jsopaque);
+                op.InitializeEntity(null, null, opstate);
 
-                if (opaque.Contains("|"))
-                {
-                    string[] larray = opaque.Split('|');
-                    if (larray.Length > 0) dom = larray[0];
-                    if (larray.Length > 1) page = larray[1];
-                    if (larray.Length > 2) sessionId = larray[2];
-                    if (larray.Length > 3) queryString = larray[3];
-                }
-
-                return await SaveSession(context, "Tower", 2, 7, sessionId, emailMd5, "", queryString, opaque, dom, page);
+                return await SaveSession(context, "Tower", 2, 7, op.GetS("sesid"), emailMd5, "", op.GetS("qs"), opaque);
             }
             catch (Exception ex)
             {
