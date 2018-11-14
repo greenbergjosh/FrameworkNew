@@ -2,15 +2,22 @@
     var success = 0;
     var i = 0;
     var sessionId = '';
-    opaque = btoa(opaque);
+    opaque = opaque || {};
+    opaque.qs = encodeURIComponent(window.location.href);
+    var opaques = btoa(JSON.stringify(opaque));
     while (true) {
-        var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + opaque
+        var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + opaques
             + '&qs=' + encodeURIComponent(window.location.href) + '&succ=' + success,
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
-        sessionId = res.sesid;
         if (!(res.url || res.scriptUrl) || res.done) break;
         i = res.idx;
+
+        if (sessionId == '') {
+            sessionId = res.sesid;
+            opaque.sesid = res.sesid;
+            opaques = btoa(JSON.stringify(opaque));
+        }        
 
         if (res.scriptUrl) {
             await load(res.scriptUrl, 'Segment');
@@ -29,7 +36,7 @@
         
         if (res.saveSession == 'true') {
             var res = await window.genericFetch(url + '?m=SaveSession&md5=' + res.md5 + '&e=' + btoa(res.email) +
-                '&sd=' + sessionId + '&op=' + opaque + '&qs=' + encodeURIComponent(window.location.href) +
+                '&sd=' + sessionId + '&op=' + opaques + '&qs=' + encodeURIComponent(window.location.href) +
                 '&sn=' + res.name,
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');  
@@ -44,9 +51,10 @@ async function handleService(service) {
         {
             email: getDescendantProp(response, service.transform.email) || '',
             md5: getDescendantProp(response, service.transform.md5) || '',
-            saveSession: service.saveSession
+            saveSession: service.saveSession,
+            name: service.name
         } :
-        { email: '', md5: '', saveSession: 'false' };
+        { email: '', md5: '', name: service.name, saveSession: 'false' };
 }
 
 async function genericFetch(url, fetchParms, fetchType, imgFlag) {
