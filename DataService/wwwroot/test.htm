@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
-        (function (w, d, e, t, u, j, n, s, o, f, i) {
+        (function (w, d, e, t, u, j, n, o, f, i) {
             document.addEventListener(e, function (event) {
                 w.VisitorIdObject = n;
                 w[n] = {};
@@ -15,12 +15,13 @@
                 i.src = u + j;
                 d.head.appendChild(i);
                 i.onload = async function () {
-                    await w[n].visitorId(u, s, o);
+                    await w[n].visitorId(u, o, f);
                 };
             })
         })(window, document, 'DOMContentLoaded', 'script', '//v-track.net', '/track.js', 
-                'visid', '1234', 
-                'dmv.com|langingpage|sessionid|' + encodeURIComponent(window.location.href));
+            'visid', 
+            '{"dom":"dmv.com","page":"landingpage","rsid":"sessionid", "qs":"'
+            + encodeURIComponent(window.location.href) + '"}');
     </script>
 </head>
 <body>

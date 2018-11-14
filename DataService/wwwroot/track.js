@@ -1,43 +1,51 @@
-﻿async function visitorId(url, sessionId, opaque) {
+﻿async function visitorId(url, opaque, future) {
     var success = 0;
     var i = 0;
+    var sessionId = '';
+    opaque = btoa(opaque);
     while (true) {
-        var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + encodeURIComponent(opaque)
+        var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + opaque
             + '&qs=' + encodeURIComponent(window.location.href) + '&succ=' + success,
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
-        if (!(res.url && res.script) || res.done) break;
+        sessionId = res.sesid;
+        if (!(res.url || res.scriptUrl) || res.done) break;
         i = res.idx;
 
-        if (res.script) {
-            await load(obj.ScriptUrl, 'Segment');
-            for (var x in obj.Strategy) {
-                var f = obj.Strategy[x].f;
-                var a = obj.Strategy[x].a;
-                var exf = getDescendantProp(window[obj.GlobalObject], f);
+        if (res.scriptUrl) {
+            await load(res.scriptUrl, 'Segment');
+            for (var x in res.strategy) {
+                var f = res.strategy[x].f;
+                var a = res.strategy[x].a;
+                var exf = getDescendantProp(window[res.globalObject], f);
                 exf(...a);
             }
+            success = 1;
         }
         else {
             res = await window.handleService(res);
+            success = (res.md5 || res.email) ? 1 : 0;
         }
         
         if (res.saveSession == 'true') {
             var res = await window.genericFetch(url + '?m=SaveSession&md5=' + res.md5 + '&e=' + btoa(res.email) +
-                '&sd=' + sessionId + '&op=' + encodeURIComponent(opaque) + '&qs=' + encodeURIComponent(window.location.href) +
+                '&sd=' + sessionId + '&op=' + opaque + '&qs=' + encodeURIComponent(window.location.href) +
                 '&sn=' + res.name,
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
-                'json', '');
+                'json', '');  
         }
-        success = (res.md5 || res.email) ? 1 : 0;
     }
 }
 window[window.VisitorIdObject].visitorId = visitorId;
 
 async function handleService(service) {
     var response = await window.genericFetch(service.url, service.fetchParms, service.fetchType, service.imgFlag);
-    return service.transform && response ?
-        { email: getDescendantProp(x, p.email) || '', md5: getDescendantProp(x, p.md5) || '', saveSession: service.saveSession } :
+    return (service.transform && response) ?
+        {
+            email: getDescendantProp(response, service.transform.email) || '',
+            md5: getDescendantProp(response, service.transform.md5) || '',
+            saveSession: service.saveSession
+        } :
         { email: '', md5: '', saveSession: 'false' };
 }
 
@@ -107,7 +115,7 @@ async function load(script, global) {
     return new Promise(async (resolve, reject) => {
         if (!this.isLoaded) {
             try {
-                await this.loadScript(script, global)
+                await this.loadScript(script)
                 resolve(window[global])
             } catch (e) {
                 reject(e)
