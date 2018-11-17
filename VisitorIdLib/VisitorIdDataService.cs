@@ -1,43 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text;
-using Newtonsoft.Json;
-using System.Threading;
-using Jw = Utility.JsonWrapper;
-using Newtonsoft.Json.Linq;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using Utility;
-using System.Security.Cryptography;
-using System.Web;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Web;
+using Utility;
+using Jw = Utility.JsonWrapper;
 
-namespace DataService
+namespace VisitorIdLib
 {
-    public class Startup
+    public class VisitorIdDataService
     {
-        public string ConnectionString;
-        public string ConfigurationKey;
-
         public string TowerEmailApiUrl;
         public string TowerEmailApiKey;
-        public string TowerDataDbConnectionString;
-        public byte[] TowerPixelImage;
         public string TowerEncryptionKey;
-        public string ContentType;
-        public string OnPointConsoleUrl;
-        public string OnPointConsoleTowerDomain;
         public string VisitorIdConnectionString;
-        public List<string> VisitorIdProviderSequence = new List<string>();
+        public Dictionary<string, List<string>> VisitorIdProviderSequences = new Dictionary<string, List<string>>();
         public int VisitorIdCookieExpDays = 10;
-
         public Dictionary<string, IGenericEntity> Providers = new Dictionary<string, IGenericEntity>();
+
+        public void Config(IGenericEntity gc)
+        {
+            this.TowerEmailApiUrl = gc.GetS("Config/TowerEmailApiUrl");
+            this.TowerEmailApiKey = gc.GetS("Config/TowerEmailApiKey");
+            this.TowerEncryptionKey = gc.GetS("Config/TowerEncryptionKey");
+            this.VisitorIdConnectionString = gc.GetS("Config/VisitorIdConnectionString");
+            foreach (var gvip in gc.GetL("Config/VisitorIdProviderSequences"))
+            {
+                string dom = gvip.GetS("dom");
+                List<string> dseq = new List <string>();
+                foreach (var dgvip in gvip.GetL("seq"))
+                {
+                    dseq.Add(dgvip.GetS(""));
+                }
+                VisitorIdProviderSequences.Add(dom, dseq);
+            }
+            this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
+                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+
+            string result = SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "SelectProvider",
+                        "{}",
+                        "").GetAwaiter().GetResult();
+            IGenericEntity gp = new GenericEntityJson();
+            var gpstate = JsonConvert.DeserializeObject(result);
+            gp.InitializeEntity(null, null, gpstate);
+
+            foreach (var provider in gp.GetL(""))
+            {
+                this.Providers.Add(provider.GetS("Id"), provider);
+            }
+        }
 
         //SessionInitiate, ProviderXAttempt, ProviderXCapture, ..., EmailCaptureFromWebsite
         // SI(Time, UserAgent, QueryString, IpAddress, SearchParms, DeviceType, Publisher)
@@ -76,122 +95,6 @@ namespace DataService
 
         // Domain-specific provider list
 
-        public Dictionary<string, int> ServiceMd5ImpressionTypeId = new Dictionary<string, int>()
-        {
-            { "TestService0", 10 },
-            { "TestService1", 11 },
-            { "Tower", 2 }
-        };
-
-        public Dictionary<string, int> ServicePlainImpressionTypeId = new Dictionary<string, int>()
-        {
-            { "TestService0", 12 },
-            { "TestService1", 13 },
-            { "Tower", 7 }
-        };
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-            });
-
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => false;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
-        }
-
-        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
-        {
-            File.AppendAllText("DataService.log", $@"{DateTime.Now}::{args.ToString()}::{args.ToString()}" +
-                            Environment.NewLine);
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseStaticFiles();
-            app.UseCors("CorsPolicy");
-
-            File.AppendAllText("DataService.log", $@"{DateTime.Now}::Starting" +
-                            Environment.NewLine);
-            string result = "";
-            try
-            {
-                TaskScheduler.UnobservedTaskException += 
-                    new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
-
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile("appsettings.json")
-                            .Build();
-                this.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-                this.ConfigurationKey = configuration.GetValue<String>("Application:Instance");
-
-                result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
-                            "SelectConfig",
-                            Jw.Json(new { InstanceId = this.ConfigurationKey }),
-                            "").GetAwaiter().GetResult();
-                IGenericEntity gc = new GenericEntityJson();
-                var gcstate = JsonConvert.DeserializeObject(result);
-                gc.InitializeEntity(null, null, gcstate);
-
-                this.TowerDataDbConnectionString = gc.GetS("Config/TowerDataDbConnectionString");
-                this.TowerEmailApiUrl = gc.GetS("Config/TowerEmailApiUrl");
-                this.TowerEmailApiKey = gc.GetS("Config/TowerEmailApiKey");
-                this.TowerPixelImage = Convert.FromBase64String(gc.GetS("Config/TowerContentBase64"));
-                this.TowerEncryptionKey = gc.GetS("Config/TowerEncryptionKey");
-                this.ContentType = gc.GetS("Config/TowerContentType");
-                this.OnPointConsoleUrl = gc.GetS("Config/OnPointConsoleUrl");
-                this.OnPointConsoleTowerDomain = gc.GetS("Config/OnPointConsoleTowerDomain");
-                this.VisitorIdConnectionString = gc.GetS("Config/VisitorIdConnectionString");
-                string visitorIdProviderSequence = gc.GetS("Config/VisitorIdProviderSequence");
-                IGenericEntity gvips = new GenericEntityJson();
-                var gvipsstate = JsonConvert.DeserializeObject(visitorIdProviderSequence);
-                gvips.InitializeEntity(null, null, gvipsstate);
-                foreach (var gvip in gvips.GetL(""))
-                {
-                    this.VisitorIdProviderSequence.Add(gvip.GetS(""));
-                }
-                this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
-                    ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
-
-                result = SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                            "SelectProvider",
-                            "{}",
-                            "").GetAwaiter().GetResult();
-                IGenericEntity gp = new GenericEntityJson();
-                var gpstate = JsonConvert.DeserializeObject(result);
-                gp.InitializeEntity(null, null, gpstate);
-
-                foreach (var provider in gp.GetL(""))
-                {
-                    this.Providers.Add(provider.GetS("Id"), provider);
-                }
-            }
-            catch (Exception ex)
-            {
-                File.AppendAllText("DataService.log", $@"{DateTime.Now}::{ex.ToString()}" + Environment.NewLine);
-            }
-
-            app.Run(async (context) =>
-            {
-                await Start(context);
-            });
-        }
-
         public async Task Start(HttpContext context)
         {
             string requestFromPost = "";
@@ -207,115 +110,132 @@ namespace DataService
                     string m = context.Request.Query["m"];
                     switch (m)
                     {
-                        case "OnPointConsoleLiveFeed":
-                            result = await SaveOnPointConsoleLiveFeed(requestFromPost);
-                            break;
-                        case "OnPointConsoleLiveEmailEvent":
-                            result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
-                            break;
                         case "VisitorId":
-                            int idx = Int32.Parse(context.Request.Query["i"]);
-                            string sid = context.Request.Query["sd"];
-                            if (String.IsNullOrEmpty(sid)) sid = Guid.NewGuid().ToString();
-                            string qs = context.Request.Query["qs"];
-                            string opaque = context.Request.Query["op"];
-                            bool succ = context.Request.Query["succ"] == "1" ? true : false;
-
-                            result = await DoVisitorId(context, idx, sid, opaque, qs, succ);
-                            context.Response.StatusCode = 200;
-                            context.Response.ContentType = "application/json";
-                            context.Response.ContentLength = result.Length;
+                            result = await DoVisitorId(context);
+                            await WriteResponse(context, result);
+                            break;
+                        case "SaveSession":
+                            result = await SaveSession(context);
+                            await WriteResponse(context, result);
                             break;
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
-                            if (idx1%2 == 0)
+                            if (idx1 % 2 == 0)
                                 result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
-                            else if (idx1%2 == 1)
+                            else if (idx1 % 2 == 1)
                                 result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
 
-                            context.Response.StatusCode = 200;
-                            context.Response.ContentType = "application/json";
-                            context.Response.ContentLength = result.Length;
-                            break;
-                        case "SaveSession":
-                            string encssemail = context.Request.Query["e"];
-                            var byt = Convert.FromBase64String(encssemail);
-                            var ssemail = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
-                            string ssmd5 = context.Request.Query["md5"];
-                            string sssn = context.Request.Query["sn"];
-                            string sssid = context.Request.Query["sd"];
-                            string ssqs = context.Request.Query["qs"];
-                            string ssopaque = context.Request.Query["op"];
-
-                            result = await SaveSession(context, sssn, ServiceMd5ImpressionTypeId[sssn],
-                                !String.IsNullOrEmpty(ssemail) ? ServicePlainImpressionTypeId[sssn] : 0,
-                                sssid, ssmd5, ssemail, ssqs, ssopaque);
-
-                            context.Response.StatusCode = 200;
-                            context.Response.ContentType = "application/json";
-                            context.Response.ContentLength = result.Length;
+                            await WriteResponse(context, result);
                             break;
                         default:
-                            File.AppendAllText("DataService.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
+                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                                "VisitorIdErrorLog",
+                                Jw.Json(new
+                                {
+                                    Sev = 1000,
+                                    Proc = "VisitorId",
+                                    Meth = "Start",
+                                    Desc = Utility.Hashing.EncodeTo64("Error"),
+                                    Msg = Utility.Hashing.EncodeTo64("Unknown request: " + requestFromPost)
+                                }),
+                                "");
                             break;
                     }
                     await context.Response.WriteAsync(result);
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
-                    string eqs = context.Request.Query["eqs"].ToString();
-                    string ret = await ProcessTowerMessage(context, eqs);
-                    context.Response.StatusCode = 200;
-                    context.Response.ContentType = "application/json";
-                    context.Response.ContentLength = ret.Length;
-                    await context.Response.WriteAsync(ret);
+                    string ret = await ProcessTowerMessage(context);
+                    await WriteResponse(context, ret);
                 }
                 else
                 {
-                    string ret = "{\"Error\":\"Unknown method\", \"ip\":\"" +
-                        context.Connection.RemoteIpAddress + "\"}";
-                    context.Response.StatusCode = 200;
-                    context.Response.ContentType = "application/json";
-                    context.Response.ContentLength = ret.Length;
-                    //X-Content-Type-Options: nosniff
-                    await context.Response.WriteAsync(ret);
+                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
+                        Jw.Json(new
+                        {
+                            Sev = 1000,
+                            Proc = "VisitorId",
+                            Meth = "Start",
+                            Desc = Utility.Hashing.EncodeTo64("Tracking"),
+                            Msg = Utility.Hashing.EncodeTo64("Unknown request: " + requestFromPost)
+                        }),
+                        "");
                 }
             }
             catch (Exception ex)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "TowerVisitorErrorLog",
+                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                        "VisitorIdErrorLog",
                         Jw.Json(new
                         {
                             Sev = 1,
-                            Proc = "TowerPixelCapture",
+                            Proc = "VisitorId",
                             Meth = "Start",
-                            Desc = Utility.Hashing.EncodeTo64($@"{requestFromPost}"),
-                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
+                            Desc = Utility.Hashing.EncodeTo64("Exception"),
+                            Msg = Utility.Hashing.EncodeTo64($@"{requestFromPost}::{ex.ToString()}")
                         }),
                         "");
             }
-        } 
-        
+        }
+
+        public async Task WriteResponse(HttpContext context, string resp)
+        {
+            context.Response.StatusCode = 200;
+            context.Response.ContentType = "application/json";
+            context.Response.ContentLength = resp.Length;
+            await context.Response.WriteAsync(resp);
+        }
+
         public static string ReplaceToken(string tokenized, string sesid, string opaque)
         {
             return tokenized.Replace("[=SESSIONID=]", sesid).Replace("[=OPAQUE=]", opaque);
         }
 
-        public async Task<string> DoVisitorId(HttpContext context, int idx, string sid, 
-            string opaque, string qstr, bool succ)
+        public async Task<string> DoVisitorId(HttpContext context)
         {
             string ckMd5 = "";
             string ckEmail = "";
+
+            int idx = Int32.Parse(context.Request.Query["i"]);
+            string sid = context.Request.Query["sd"];
+            if (String.IsNullOrEmpty(sid)) sid = Guid.NewGuid().ToString();
+            string qstr = context.Request.Query["qs"];
+            string opaque = context.Request.Query["op"];
+            bool succ = context.Request.Query["succ"] == "1" ? true : false;
+
+            Uri u = new Uri(qstr);
+            string host = u.Host ?? "";
+            string path = u.AbsolutePath ?? "";
+            string qury = u.Query ?? "";
+
+            //Regex rgx = new Regex(@"^(.*?\.)?xyz\.com$");
+            List<string> VisitorIdProviderSequence = null;
+            foreach (var kvp in VisitorIdProviderSequences)
+            {
+                // If this becomes a performance issue
+                // Don't use regex - custom parse char[]
+                Regex rgx = new Regex(kvp.Key);
+                if (rgx.IsMatch(host)) VisitorIdProviderSequence = kvp.Value;
+            }
+            if (VisitorIdProviderSequence == null)
+            {
+                VisitorIdProviderSequences.TryGetValue("default", out VisitorIdProviderSequence);
+                if (VisitorIdProviderSequence == null)
+                {
+                    VisitorIdProviderSequence = new List<string>() { "cookie" };
+                }
+            }
+
             try
             {
                 int nextIdx = idx;
 
-                while (nextIdx < this.VisitorIdProviderSequence.Count)
+                while (nextIdx < VisitorIdProviderSequence.Count)
                 {
-                    var nextTask = this.VisitorIdProviderSequence[nextIdx];
+                    var nextTask = VisitorIdProviderSequence[nextIdx];
 
                     if (nextTask.ToLower() == "cookie")
                     {
@@ -437,7 +357,7 @@ namespace DataService
                                     "");
                         nextIdx++;
                     }
-                } 
+                }
             }
             catch (Exception ex)
             {
@@ -483,8 +403,15 @@ namespace DataService
             {
                 string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
                     "Md5ToLegacyEmail",
-                    Jw.Json(new { Md5It = M5dImpressionTypeId, Sid = bSessionId, Md5 = bMd5,
-                        Ip = bIp, Qs = bQueryString, Ua = bUserAgent, Op = bOpaque
+                    Jw.Json(new
+                    {
+                        Md5It = M5dImpressionTypeId,
+                        Sid = bSessionId,
+                        Md5 = bMd5,
+                        Ip = bIp,
+                        Qs = bQueryString,
+                        Ua = bUserAgent,
+                        Op = bOpaque
                     }),
                     "", 240);
                 IGenericEntity geplain = new GenericEntityJson();
@@ -500,7 +427,11 @@ namespace DataService
                     //dateOfBirth = geplain.GetS("Dob");
                     //EmIt = Int32.Parse(geplain.GetS("EmIt"));
                     SetCookie(context, "vidck",
-                        Jw.Json(new { Sid = bSessionId, Md5 = bMd5, Em = bEmail
+                        Jw.Json(new
+                        {
+                            Sid = bSessionId,
+                            Md5 = bMd5,
+                            Em = bEmail
                         }), this.VisitorIdCookieExpDays);
 
                     return Jw.Json(new { email = bEmail, md5 = bMd5 });
@@ -559,7 +490,7 @@ namespace DataService
                     "");
             }
 
-            SetCookie(context, "vidck", 
+            SetCookie(context, "vidck",
                 Jw.Json(new { Sid = bSessionId, Md5 = md5, Em = bEmail }), this.VisitorIdCookieExpDays);
 
             // If we do this here we have to get the extra fields if the email
@@ -570,7 +501,24 @@ namespace DataService
             //            dateOfBirth, emailSource, dom);
 
             return Jw.Json(new { email = bEmail, md5 = bMd5 });
-        }        
+        }
+
+        public async Task<string> SaveSession(HttpContext context)
+        {
+            string encssemail = context.Request.Query["e"];
+            var byt = Convert.FromBase64String(encssemail);
+            var email = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
+            string md5 = context.Request.Query["md5"];
+            string serviceName = context.Request.Query["sn"];
+            string sessionId = context.Request.Query["sd"];
+            string queryString = context.Request.Query["qs"];
+            string opaque = context.Request.Query["op"];
+            int M5dImpressionTypeId = 1; // ServiceMd5ImpressionTypeId[serviceName];
+            int PlainImpressionTypeId = 1; // !String.IsNullOrEmpty(email) ? ServicePlainImpressionTypeId[serviceName] : 0;
+
+            return await SaveSession(context, serviceName, M5dImpressionTypeId, PlainImpressionTypeId, sessionId,
+                md5, email, queryString, opaque);
+        }
 
         public void SetCookie(HttpContext ctx, string key, string value, int? expireTime)
         {
@@ -591,90 +539,14 @@ namespace DataService
         {
             ctx.Response.Cookies.Delete(key);
         }
-
-        public async Task<string> SaveOnPointConsoleLiveFeed(string request)
-        {
-            string result = Jw.Json(new { Result = "Failure" });
-            try
-            {
-                return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "SaveOnPointConsoleLiveFeed",
-                        "",
-                        request);
-            }
-            catch (Exception ex)
-            {
-                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "OnPointConsoleErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1000,
-                                    Proc = "DataService",
-                                    Meth = "SaveOnPointConsoleLiveFeed - SaveOnPointConsoleLiveFeed Failed",
-                                    Desc = Utility.Hashing.EncodeTo64(request),
-                                    Msg = Utility.Hashing.EncodeTo64(ex.ToString())
-                                }),
-                                "");
-            }
-            return result;
-        }
-
-        public async Task<string> SaveOnPointConsoleLiveEmailEvent(string request)
-        {
-            string result = Jw.Json(new { Result = "Failure" });
-            try
-            {
-                return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "SaveOnPointConsoleLiveEmailEvent",
-                        "",
-                        request);
-            }
-            catch (Exception ex)
-            {
-                await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                                "OnPointConsoleErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1000,
-                                    Proc = "DataService",
-                                    Meth = "SaveOnPointConsoleLiveEmailEvent - Insert Failed",
-                                    Desc = Utility.Hashing.EncodeTo64(request),
-                                    Msg = Utility.Hashing.EncodeTo64(ex.ToString())
-                                }),
-                                "");
-            }
-            return result;
-        }
-
-        public async Task PostVisitorIdToConsole(string plainTextEmail, string firstName, string lastName,
-            string dateOfBirth, string emailSource, string domain)
-        {
-            await Utility.ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
-                    Jw.Json(new
-                    {
-                        header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
-                        body = Jw.Json(new
-                        {
-                            domain_id = this.OnPointConsoleTowerDomain,
-                            email = plainTextEmail,
-                            first_name = firstName,
-                            last_name = lastName,
-                            dob = dateOfBirth,
-                            email_source = emailSource,
-                            isFinal = "true",
-                            label_domain = domain
-                        })
-                    }, new bool[] { false, false }),
-                    "application/json");
-        }        
-
+        
         public static int PadCount(string str)
         {
-            switch (str.Length % 4) 
+            switch (str.Length % 4)
             {
                 case 0: return 0;
-                case 2: return 2; 
-                case 3: return 1; 
+                case 2: return 2;
+                case 3: return 1;
                 default:
                     throw new System.Exception("Illegal base64url string!");
             }
@@ -763,11 +635,13 @@ namespace DataService
             return towerEmailPlainText;
         }
 
-        public async Task<string> ProcessTowerMessage(HttpContext context, string rawstring)
+        public async Task<string> ProcessTowerMessage(HttpContext context)
         {
             string pRawString = "";
             string opaque = "";
             string emailMd5 = "";
+
+            string rawstring = context.Request.Query["eqs"].ToString();
 
             await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
                         "VisitorIdErrorLog",
@@ -798,7 +672,7 @@ namespace DataService
                             Proc = "DataService",
                             Meth = "ProcessTowerMessage",
                             Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64("Step1Fail " + $"string error::{rawstring}" + 
+                            Msg = Utility.Hashing.EncodeTo64("Step1Fail " + $"string error::{rawstring}" +
                                 "::" + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
                         }),
                         "");
@@ -859,7 +733,7 @@ namespace DataService
                         "");
             }
 
-            if (String.IsNullOrEmpty(emailMd5) || 
+            if (String.IsNullOrEmpty(emailMd5) ||
                 emailMd5.ToLower() == "none" || emailMd5.Length != 32)
             {
                 if (!String.IsNullOrEmpty(emailMd5) && emailMd5.Length != 32)
@@ -882,7 +756,6 @@ namespace DataService
 
             try
             {
-
                 await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
                    "VisitorIdErrorLog",
                    Jw.Json(new

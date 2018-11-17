@@ -1,5 +1,4 @@
-﻿using GenericEntity;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -13,7 +12,6 @@ using System.Web;
 using System.Xml;
 using Jw = Utility.JsonWrapper;
 using Pw = Utility.ParallelWrapper;
-using Rw = RoslynWrapper;
 using Fs = Utility.FileSystem;
 using Utility;
 using System.Globalization;
@@ -77,7 +75,7 @@ namespace UnsubLib
         public float MaxDiffFilePercentage;
         public string SortBufferSize;
 
-        public Rw.RoslynWrapper RosWrap;        
+        public RoslynWrapper RosWrap;        
 
         public const string MD5HANDLER = "Md5Handler";
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
@@ -126,9 +124,9 @@ namespace UnsubLib
 
             ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
-            List<Rw.ScriptDescriptor> scripts = new List<Rw.ScriptDescriptor>();
+            List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
             string scriptsPath = this.ServerWorkingDirectory + "\\Scripts";
-            var rw = new Rw.RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
 
             this.RosWrap = rw;
         }

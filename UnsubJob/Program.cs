@@ -3,7 +3,7 @@ using UnsubLib;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using System.Collections.Generic;
-using GenericEntity;
+using Utility;
 using Fs = Utility.FileSystem;
 using Pw = Utility.ParallelWrapper;
 using System.Threading;

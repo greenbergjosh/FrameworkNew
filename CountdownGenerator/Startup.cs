@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using GenericEntity;
+using Utility;
 using ImageMagick;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

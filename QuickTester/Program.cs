@@ -1,5 +1,4 @@
-﻿using GenericEntity;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using Utility;
 

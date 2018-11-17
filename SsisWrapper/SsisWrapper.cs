@@ -1,12 +1,11 @@
-﻿using RoslynWrapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.SqlServer.Management.Smo;
 using System.Text;
-using System.IO;
+using Utility;
 
 namespace SsisWrapper
 {
@@ -25,7 +24,7 @@ namespace SsisWrapper
                   p.cn.ParentNode.RemoveChild(p.cn);""""";
 
         public static async Task<string> TokenReplaceSSISPackage(string tokenizedPkgFile,
-            string jsonFile, Dictionary<string, string> xmlGeMap, RoslynWrapper.RoslynWrapper rw)
+            string jsonFile, Dictionary<string, string> xmlGeMap, RoslynWrapper rw)
         {
             rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", scriptFlatFileColumnGenerator, false, null));
 
