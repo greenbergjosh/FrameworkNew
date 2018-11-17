@@ -1,11 +1,11 @@
-﻿using GenericEntity;
+﻿using Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RoslynWrapper;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
+
 
 namespace XmlTokenizer
 {
@@ -47,7 +47,7 @@ namespace XmlTokenizer
         public static async Task<XmlDocument> TokenReplaceXml(string xmlFile, string jsonFile,
             Dictionary<string, string> xmlGeMap,
             Dictionary<string, string> ns, 
-            RoslynWrapper.RoslynWrapper rw)
+            RoslynWrapper rw)
         {
             rw.CompileAndCache(new ScriptDescriptor("TokenReplaceXmlR", XmlTokenizer.TokenReplaceXmlR, false, null));
 
@@ -71,7 +71,7 @@ namespace XmlTokenizer
         public static async Task<XmlDocument> TokenReplaceXml(XmlDocument xml, JObject state,
             Dictionary<string, string> xmlGeMap,
             Dictionary<string, string> ns,
-            RoslynWrapper.RoslynWrapper rw)
+            RoslynWrapper rw)
         {
             rw.CompileAndCache(new ScriptDescriptor("TokenReplaceXmlR", XmlTokenizer.TokenReplaceXmlR, false, null));
 

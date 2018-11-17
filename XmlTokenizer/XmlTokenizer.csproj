@@ -9,8 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GenericEntity\GenericEntity.csproj" />
-    <ProjectReference Include="..\RoslynWrapper\RoslynWrapper.csproj" />
+    <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 
 </Project>
