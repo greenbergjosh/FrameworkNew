@@ -19,9 +19,8 @@ namespace Utility
             RemoveEndpoint
         }
 
-        public abstract Task<List<IEndpoint>> InitializeEndpoints();
-        public abstract Task<List<IEndpoint>> PollEndpoints();
-
+        public delegate Task<List<IEndpoint>> InitializeEndpointsDelegate();
+        public delegate Task<List<IEndpoint>> PollEndpointsDelegate();
         public delegate Task InitiateWalkawayDelegate(object w, int timeoutSeconds);
         public delegate Task NoValidEndpointsDelegate(object w);
         public delegate Task FailureDelegate(object w);
@@ -35,22 +34,31 @@ namespace Utility
         public ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints;
         public NextWalkawayValueDelegate nextWalkawayValue;
 
+        public InitializeEndpointsDelegate initializeEndpoints;
+        public PollEndpointsDelegate pollEndpoints;
         public InitiateWalkawayDelegate initiateWalkaway;
         public SelectEndpointDelegate selector;
         public NoValidEndpointsDelegate novalid;
         public FailureDelegate failure;
         public UnhandledExceptionDelegate unhandled;
 
+        public string errorFilePath;
+        public string dataFilePath;
+
         public LoadBalancedWriter(int endpointPollingInterval,
+            InitializeEndpointsDelegate initializeEndpoints,
+            PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate initiateWalkaway,
             NextWalkawayValueDelegate nextWalkawayValue,
             SelectEndpointDelegate selector,
             NoValidEndpointsDelegate novalid,
             FailureDelegate failure,
-            UnhandledExceptionDelegate unhandled)
+            UnhandledExceptionDelegate unhandled,
+            string errorFilePath,
+            string dataFilePath)
         {
             this.endpointPollingInterval = endpointPollingInterval;
-            List<IEndpoint> ps = InitializeEndpoints().ConfigureAwait(false)
+            List<IEndpoint> ps = initializeEndpoints().ConfigureAwait(false)
                 .GetAwaiter().GetResult();
 
             this.endpoints = new ConcurrentDictionary<IEndpoint, Tuple<bool, int>>();
@@ -59,12 +67,16 @@ namespace Utility
                 this.endpoints.TryAdd(p, new Tuple<bool, int>(true, 0));
             }
 
+            this.initializeEndpoints = initializeEndpoints;
+            this.pollEndpoints = pollEndpoints;
             this.nextWalkawayValue = nextWalkawayValue;
             this.initiateWalkaway = initiateWalkaway;
             this.selector = selector;
             this.novalid = novalid;
             this.failure = failure;
             this.unhandled = unhandled;
+            this.errorFilePath = errorFilePath;
+            this.dataFilePath = dataFilePath;
             InitiateEndpointPolling();
         }
 
@@ -153,7 +165,7 @@ namespace Utility
         {
             try
             {
-                List<IEndpoint> newEndpoints = await PollEndpoints().ConfigureAwait(false);
+                List<IEndpoint> newEndpoints = await this.pollEndpoints().ConfigureAwait(false);
                 cacheLock.EnterWriteLock();
                 try
                 {

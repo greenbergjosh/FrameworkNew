@@ -67,9 +67,7 @@ namespace GenericDataService
                 this.ConfigurationKey = configuration.GetValue<String>("Application:Instance");
 
                 this.Configuration = SqlWrapper.Initialize(this.ConnectionString, this.ConfigurationKey).GetAwaiter().GetResult();
-
-                EdwSiloLoadBalancedWriter siloWriter = InitializeEdwSiloLoadBalancedWriter();
-                InitiateSiloEventWriters(siloWriter, 5, 1000).ConfigureAwait(false).GetAwaiter().GetResult();
+                EdwSiloLoadBalancedWriter siloWriter = InitializeEdwSiloLoadBalancedWriter(this.Configuration);
 
                 using (var dynamicContext = new Utility.AssemblyResolver(this.Configuration.GetS("Config/DataServiceAssemblyFilePath")))
                 {
@@ -90,17 +88,23 @@ namespace GenericDataService
             });
         }
 
-        public EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter()
+        public EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
         {
+            string dataFilePath = this.Configuration.GetS("Config/EdwDataFilePath");
+            string errorFilePath = this.Configuration.GetS("Config/EdwErrorFilePath");
+
             return new EdwSiloLoadBalancedWriter(60,
-            async (object w, int timeoutSeconds) => await EdwSiloLoadBalancedWriter.InitiateWalkaway(w, timeoutSeconds)
-                    .ConfigureAwait(false),
-            (int previousValue) => EdwSiloLoadBalancedWriter.NextWalkawayValue(previousValue),
-            (ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen) =>
-                EdwSiloLoadBalancedWriter.Selector(endpoints, alreadyChosen),
-            async (object w) => await EdwSiloLoadBalancedWriter.NoValid(w).ConfigureAwait(false),
-            async (object w) => await EdwSiloLoadBalancedWriter.Failure(w).ConfigureAwait(false),
-            async (object w, Exception ex) => await EdwSiloLoadBalancedWriter.Unhandled(w, ex).ConfigureAwait(false)
+                async () => await EdwSiloLoadBalancedWriter.InitializeEndpoints(this.Configuration).ConfigureAwait(false),
+                async () => await EdwSiloLoadBalancedWriter.PollEndpoints(this.Configuration).ConfigureAwait(false),
+                async (object w, int timeoutSeconds) => await EdwSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
+                (int previousValue) => EdwSiloLoadBalancedWriter.NextWalkawayValue(previousValue),
+                (ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen) =>
+                    EdwSiloLoadBalancedWriter.Selector(endpoints, alreadyChosen),
+                async (object w) => await EdwSiloLoadBalancedWriter.NoValid(w, dataFilePath, errorFilePath).ConfigureAwait(false),
+                async (object w) => await EdwSiloLoadBalancedWriter.Failure(w, errorFilePath).ConfigureAwait(false),
+                async (object w, Exception ex) => await EdwSiloLoadBalancedWriter.Unhandled(w, errorFilePath, ex).ConfigureAwait(false),
+                errorFilePath,
+                dataFilePath
             );
         }
 
