@@ -69,29 +69,69 @@ namespace Utility
             return outval;
         }
 
-        public static async Task InsertErrorLog(string connectionString, int severity, string process, string method, string descriptor, string message)
+        public static async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
         {
+            string outval = null;
+
             try
             {
-                SqlConnection cn = new SqlConnection(connectionString);
-                cn.Open();
-                SqlCommand cmd = cn.CreateCommand();
-                cmd.CommandText = "[dbo].[spInsertErrorLog]";
-                cmd.CommandType = CommandType.StoredProcedure;
+                using (SqlConnection cn = new SqlConnection(connectionString))
+                {
+                    cn.Open();
+                    SqlCommand cmd = cn.CreateCommand();
+                    cmd.CommandText = "[Data].[p_submit_bulk_payload]";
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.Add(new SqlParameter("Severity", severity));
-                cmd.Parameters.Add(new SqlParameter("Process", process));
-                cmd.Parameters.Add(new SqlParameter("Method", method));
-                cmd.Parameters.Add(new SqlParameter("Descriptor", descriptor));
-                cmd.Parameters.Add(new SqlParameter("Message", message));
-
-                cmd.CommandTimeout = 120;
-                await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
-                cn.Close();
+                    cmd.Parameters.Add(new SqlParameter("@Payload", payload));
+                    cmd.Parameters.Add(new SqlParameter("@Debug", debug));
+                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
+                        .Direction = System.Data.ParameterDirection.Output;
+                    cmd.CommandTimeout = timeout;
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    outval = (string)cmd.Parameters["@Return"].Value;
+                    cn.Close();
+                }
+            }
+            catch (System.Data.SqlClient.SqlException sqlex)
+            {
+                if (sqlex.Message.Contains("Timeout") ||
+                    sqlex.Message.Contains("login failed")
+                    ) outval = JsonWrapper.Json(new { status = 600, title = "Walkaway" });
             }
             catch (Exception ex)
             {
-                int i = 1;
+                outval = JsonWrapper.Json(new { status = 600, title = "Exception::{ex.ToString()}" });
+            }
+
+            return outval;
+        }
+
+        public static async Task<bool> InsertErrorLog(string connectionString, int severity, string process, string method, string descriptor, string message, int timeout = 120)
+        {
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(connectionString))
+                {
+                    cn.Open();
+                    SqlCommand cmd = cn.CreateCommand();
+                    cmd.CommandText = "[ErrorLog].[spInsertErrorLog]";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("Severity", severity));
+                    cmd.Parameters.Add(new SqlParameter("Process", process));
+                    cmd.Parameters.Add(new SqlParameter("Method", method));
+                    cmd.Parameters.Add(new SqlParameter("Descriptor", descriptor));
+                    cmd.Parameters.Add(new SqlParameter("Message", message));
+
+                    cmd.CommandTimeout = timeout;
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
+                    cn.Close();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
     }
