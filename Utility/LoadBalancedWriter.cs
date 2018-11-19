@@ -42,9 +42,6 @@ namespace Utility
         public FailureDelegate failure;
         public UnhandledExceptionDelegate unhandled;
 
-        public string errorFilePath;
-        public string dataFilePath;
-
         public LoadBalancedWriter(int endpointPollingInterval,
             InitializeEndpointsDelegate initializeEndpoints,
             PollEndpointsDelegate pollEndpoints,
@@ -53,9 +50,7 @@ namespace Utility
             SelectEndpointDelegate selector,
             NoValidEndpointsDelegate novalid,
             FailureDelegate failure,
-            UnhandledExceptionDelegate unhandled,
-            string errorFilePath,
-            string dataFilePath)
+            UnhandledExceptionDelegate unhandled)
         {
             this.endpointPollingInterval = endpointPollingInterval;
             List<IEndpoint> ps = initializeEndpoints().ConfigureAwait(false)
@@ -75,8 +70,6 @@ namespace Utility
             this.novalid = novalid;
             this.failure = failure;
             this.unhandled = unhandled;
-            this.errorFilePath = errorFilePath;
-            this.dataFilePath = dataFilePath;
             InitiateEndpointPolling();
         }
 

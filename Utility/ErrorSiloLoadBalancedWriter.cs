@@ -8,9 +8,9 @@ using Utility;
 
 namespace Utility
 {
-    public class EdwSiloLoadBalancedWriter : LoadBalancedWriter
+    public class ErrorSiloLoadBalancedWriter : LoadBalancedWriter
     {
-        public EdwSiloLoadBalancedWriter(int endpointPollingInterval,
+        public ErrorSiloLoadBalancedWriter(int endpointPollingInterval,
             InitializeEndpointsDelegate initEndpoints,
             PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate td,
@@ -20,7 +20,8 @@ namespace Utility
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
             : base(endpointPollingInterval, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
-                selector, novalid, invalid, unhandled) { }
+                selector, novalid, invalid, unhandled)
+        { }
 
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
@@ -63,9 +64,8 @@ namespace Utility
             return e;
         }
 
-        public static async Task NoValid(object w, string dataFilePath, string errorFilePath)
+        public static async Task NoValid(object w, string errorFilePath)
         {
-            await File.AppendAllTextAsync(dataFilePath, "<<//RECORD::" + DateTime.Now + "::NoValid::" + (string)w + "//>>").ConfigureAwait(false);
             await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::NoValid::" + (string)w).ConfigureAwait(false);
         }
 
