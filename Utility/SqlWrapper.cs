@@ -33,6 +33,15 @@ namespace Utility
             return gc;
         }
 
+        public static async Task<IGenericEntity> SqlToGenericEntity(string conStr, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        {
+            string result = await SqlWrapper.SqlServerProviderEntry(conStr, method, args, payload, timeout);
+            IGenericEntity gp = new GenericEntityJson();
+            var gpstate = JsonConvert.DeserializeObject(result);
+            gp.InitializeEntity(rw, config, gpstate);
+            return gp;
+        }
+
         public static async Task<string> SqlServerProviderEntry(string conStr, string method, string args, string payload, int timeout = 120)
         {
             string ret = null;

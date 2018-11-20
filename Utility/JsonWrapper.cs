@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -8,11 +9,19 @@ namespace Utility
 {
     public static class JsonWrapper
     {
+        public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
+        {
+            IGenericEntity gp = new GenericEntityJson();
+            var gpstate = JsonConvert.DeserializeObject(json);
+            gp.InitializeEntity(rw, config, gpstate);
+            return gp;
+        }
+
         public static string Json(object o, params bool[] quote)
         {
             if (o == null)
             {
-                throw new ArgumentNullException();
+                return "{ }";
             }
             var t = o.GetType();
             StringBuilder sb = new StringBuilder("{");
@@ -40,12 +49,8 @@ namespace Utility
         //        new bool[] { true, false, true });
         public static string JsonTuple<T>(List<T> o, List<string> names, params bool[] quote)
         {
-            if (o == null)
-            {
-                throw new ArgumentNullException();
-            }
-            else if (o.Count == 0) return "[]";
-
+            if (o == null || o.Count == 0) return "[]";
+ 
             StringBuilder sb = new StringBuilder("[");
             foreach (var le in o)
             {
@@ -90,25 +95,47 @@ namespace Utility
             return sb.ToString();
         }
 
-        public static string Json(string keyName, List<string> data)
+        public static string Json(string name, IDictionary<string, string> d, bool wrap)
         {
-            StringBuilder sb = new StringBuilder("{\"" + keyName + "\": ");
-            sb.Append("[");
-            foreach (var e in data)
+            StringBuilder sb = String.IsNullOrEmpty(name)
+                ? new StringBuilder((wrap ? "{" : ""))
+                : new StringBuilder((wrap ? "{" : "") + "\"" + name + "\": {");
+            if (d.Count > 0)
             {
-                sb.Append("\"" + data + "\",");
+                foreach (var e in d)
+                {
+                    sb.Append("\"" + e.Key + "\": \"" + e.Value + "\",");
+                }
+                sb.Remove(sb.Length - 1, 1);
             }
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append("]}");
+            sb = String.IsNullOrEmpty(name) ? sb.Append(wrap ? "}" : "") : sb.Append("}" + (wrap ? "}" : ""));            
+
             return sb.ToString();
         }
 
-        public static string Json(List<string> data)
+        public static string Json(string keyName, List<string> data, bool wrap = true, bool quote = true)
         {
+            if (data == null || data.Count == 0) return "[]";
+
+            StringBuilder sb = new StringBuilder((wrap ? "{" : "") + "\"" + keyName + "\": ");
+            sb.Append("[");
+            foreach (var e in data)
+            {
+               sb = quote ? sb.Append("\"" + data + "\",") : sb.Append(data + ",");
+            }
+            sb.Remove(sb.Length - 1, 1);
+            sb.Append("]" + (wrap ? "}" : ""));
+            return sb.ToString();
+        }
+
+        public static string Json(List<string> data, bool quote = true)
+        {
+            if (data == null || data.Count == 0) return "[]";
+
             StringBuilder sb = new StringBuilder("[");
             foreach (var e in data)
             {
-                sb.Append("\"" + e + "\",");
+                sb = quote ? sb.Append("\"" + e + "\",") : sb.Append(e + ",");
             }
             sb.Remove(sb.Length - 1, 1);
             sb.Append("]");
@@ -130,7 +157,7 @@ namespace Utility
                     sb.Remove(sb.Length - 1, 1);
                     sb.Append("},");
                 }
-                sb.Remove(sb.Length - 1, 1);
+                if (sb.Length > 1) sb.Remove(sb.Length - 1, 1);
                 sb.Append("]");
             }
             return sb.ToString();

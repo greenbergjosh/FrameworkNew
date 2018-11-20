@@ -29,11 +29,8 @@ namespace Utility
         {
             string res = await SqlWrapper.InsertEdwPayload(this.connectionString, (string)w, timeoutSeconds)
                 .ConfigureAwait(false);
-            IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(res);
-            gp.InitializeEntity(null, null, gpstate);
-            string result = gp.GetS("title").ToLower();
-            if (result == "ok") return LoadBalancedWriter.Result.Success;
+            string result = res.ToLower();
+            if (result == "success") return LoadBalancedWriter.Result.Success;
             else if (result == "walkaway")
                 return LoadBalancedWriter.Result.Walkaway;
             else if (result == "removeendpoint") return LoadBalancedWriter.Result.RemoveEndpoint;
