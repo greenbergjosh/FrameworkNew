@@ -25,8 +25,23 @@ namespace VisitorIdLib
         public int VisitorIdCookieExpDays = 10;
         public Dictionary<string, IGenericEntity> Providers = new Dictionary<string, IGenericEntity>();
 
-        public void Config(IGenericEntity gc)
+        EdwSiloLoadBalancedWriter SiloWriter;
+        ErrorSiloLoadBalancedWriter ErrorWriter;
+
+        public const string APPNAME = "VisitorId";
+        public const int ERRTIMEOUT = 1;
+
+        public static int sequenceIndex;
+        public async Task Err(int severity, string method, string descriptor, string message)
         {
+            await ErrorWriter.Write(new ErrorLogError(severity, APPNAME, method, descriptor, message), ERRTIMEOUT);
+        }
+
+        public void Config(IGenericEntity gc, EdwSiloLoadBalancedWriter siloWriter, ErrorSiloLoadBalancedWriter errorWriter)
+        {
+            this.SiloWriter = siloWriter;
+            this.ErrorWriter = errorWriter;
+
             this.TowerEmailApiUrl = gc.GetS("Config/TowerEmailApiUrl");
             this.TowerEmailApiKey = gc.GetS("Config/TowerEmailApiKey");
             this.TowerEncryptionKey = gc.GetS("Config/TowerEncryptionKey");
@@ -44,13 +59,10 @@ namespace VisitorIdLib
             this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
                 ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
 
-            string result = SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+            IGenericEntity gp = SqlWrapper.SqlToGenericEntity(this.VisitorIdConnectionString,
                         "SelectProvider",
                         "{}",
                         "").GetAwaiter().GetResult();
-            IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(result);
-            gp.InitializeEntity(null, null, gpstate);
 
             foreach (var provider in gp.GetL(""))
             {
@@ -98,8 +110,7 @@ namespace VisitorIdLib
         public async Task Start(HttpContext context)
         {
             string requestFromPost = "";
-            string resp = Jw.Json(new { Error = "SeeLogs" });
-            var result = "ok";
+            var result = Jw.Json(new { Error = "SeeLogs" });
             try
             {
                 StreamReader reader = new StreamReader(context.Request.Body);
@@ -130,17 +141,7 @@ namespace VisitorIdLib
                             await WriteResponse(context, result);
                             break;
                         default:
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                "VisitorIdErrorLog",
-                                Jw.Json(new
-                                {
-                                    Sev = 1000,
-                                    Proc = "VisitorId",
-                                    Meth = "Start",
-                                    Desc = Utility.Hashing.EncodeTo64("Error"),
-                                    Msg = Utility.Hashing.EncodeTo64("Unknown request: " + requestFromPost)
-                                }),
-                                "");
+                            await Err(1000, "Start", "Error", "Unknown request: " + requestFromPost); 
                             break;
                     }
                     await context.Response.WriteAsync(result);
@@ -152,32 +153,12 @@ namespace VisitorIdLib
                 }
                 else
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "VisitorId",
-                            Meth = "Start",
-                            Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                            Msg = Utility.Hashing.EncodeTo64("Unknown request: " + requestFromPost)
-                        }),
-                        "");
+                    await Err(1000, "Start", "Tracking", "Unknown request: " + requestFromPost);
                 }
             }
             catch (Exception ex)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1,
-                            Proc = "VisitorId",
-                            Meth = "Start",
-                            Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64($@"{requestFromPost}::{ex.ToString()}")
-                        }),
-                        "");
+                await Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
             }
         }
 
@@ -211,6 +192,9 @@ namespace VisitorIdLib
             string path = u.AbsolutePath ?? "";
             string qury = u.Query ?? "";
 
+            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
+            string afid = opge.GetS("afid");
+
             //Regex rgx = new Regex(@"^(.*?\.)?xyz\.com$");
             List<string> VisitorIdProviderSequence = null;
             foreach (var kvp in VisitorIdProviderSequences)
@@ -243,9 +227,7 @@ namespace VisitorIdLib
 
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
                         {
-                            IGenericEntity gc = new GenericEntityJson();
-                            var gcstate = JsonConvert.DeserializeObject(cookieValueFromReq);
-                            gc.InitializeEntity(null, null, gcstate);
+                            IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
                             ckMd5 = gc.GetS("Md5");
                             if (!String.IsNullOrEmpty(ckMd5))
                             {
@@ -328,50 +310,20 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "VisitorIdErrorLog",
-                                    Jw.Json(new
-                                    {
-                                        Sev = 1000,
-                                        Proc = "DataService",
-                                        Meth = "DoVisitorId",
-                                        Desc = Utility.Hashing.EncodeTo64("Neither URL nor Script"),
-                                        Msg = Utility.Hashing.EncodeTo64($"{s.GetS("")}")
-                                    }),
-                                    "");
+                            await Err(1000, "DoVisitorId", "Error", "Neither URL nor Script: " + s.GetS(""));
                             nextIdx++;
                         }
                     }
                     else
                     {
-                        await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                                    "VisitorIdErrorLog",
-                                    Jw.Json(new
-                                    {
-                                        Sev = 1000,
-                                        Proc = "DataService",
-                                        Meth = "DoVisitorId",
-                                        Desc = Utility.Hashing.EncodeTo64("Unknown Task Type"),
-                                        Msg = Utility.Hashing.EncodeTo64($"{nextTask}")
-                                    }),
-                                    "");
+                        await Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + nextTask);
                         nextIdx++;
                     }
                 }
             }
             catch (Exception ex)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "DataService",
-                            Meth = "DoVisitorId",
-                            Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
-                        }),
-                        "");
+                await Err(1000, "DoVisitorId", "Exception", ex.ToString());
             }
             return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
         }
@@ -401,7 +353,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(bEmail)) // Search Legacy for plaintext
             {
-                string lpfRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                IGenericEntity geplain = await SqlWrapper.SqlToGenericEntity(this.VisitorIdConnectionString,
                     "Md5ToLegacyEmail",
                     Jw.Json(new
                     {
@@ -413,20 +365,17 @@ namespace VisitorIdLib
                         Ua = bUserAgent,
                         Op = bOpaque
                     }),
-                    "", 240);
-                IGenericEntity geplain = new GenericEntityJson();
-                var stateplain = (JObject)JsonConvert.DeserializeObject(lpfRes);
-                geplain.InitializeEntity(null, null, stateplain);
+                    "", null, null, 240);
                 bEmail = Blank(geplain.GetS("Email"));
 
                 if (!String.IsNullOrEmpty(bEmail))
                 {
-                    // Already created the Impression is spMd5ToLegacyEmail
+                    // Already created the Impression in spMd5ToLegacyEmail
                     //firstName = geplain.GetS("Fn");
                     //lastName = geplain.GetS("Ln");
                     //dateOfBirth = geplain.GetS("Dob");
                     //EmIt = Int32.Parse(geplain.GetS("EmIt"));
-                    SetCookie(context, "vidck",
+                    HttpWrapper.SetCookie(context, "vidck",
                         Jw.Json(new
                         {
                             Sid = bSessionId,
@@ -452,7 +401,7 @@ namespace VisitorIdLib
 
             try
             {
-                string anteRes = await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
+                IGenericEntity anteGe = await SqlWrapper.SqlToGenericEntity(this.VisitorIdConnectionString,
                         "InsertImpression",
                         Jw.Json(new
                         {
@@ -467,9 +416,6 @@ namespace VisitorIdLib
                             Op = bOpaque
                         }),
                         "");
-                IGenericEntity anteGe = new GenericEntityJson();
-                var anteTs = (JObject)JsonConvert.DeserializeObject(anteRes);
-                anteGe.InitializeEntity(null, null, anteTs);
                 bEmail = Blank(anteGe.GetS("Email"));
                 //firstName = anteGe.GetS("Fn");
                 //lastName = anteGe.GetS("Ln");
@@ -477,28 +423,11 @@ namespace VisitorIdLib
             }
             catch (Exception exInsertImpression)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                    "VisitorIdErrorLog",
-                    Jw.Json(new
-                    {
-                        Sev = 1000,
-                        Proc = "DataService",
-                        Meth = "SaveSession",
-                        Desc = Utility.Hashing.EncodeTo64("Exception"),
-                        Msg = Utility.Hashing.EncodeTo64("InsertImpression fails: " + bEmail + "::" + exInsertImpression.ToString())
-                    }),
-                    "");
+                await Err(1000, "SaveSession", "Exception", "InsertImpression fails: " + bEmail + "::" + exInsertImpression.ToString());
             }
 
-            SetCookie(context, "vidck",
+            HttpWrapper.SetCookie(context, "vidck",
                 Jw.Json(new { Sid = bSessionId, Md5 = md5, Em = bEmail }), this.VisitorIdCookieExpDays);
-
-            // If we do this here we have to get the extra fields if the email
-            // was already in the cookie
-            // I think the posts to console should be fed off of the Impression
-            // table by a scheduled job, instead.
-            //await PostVisitorIdToConsole(plainText, firstName, lastName,
-            //            dateOfBirth, emailSource, dom);
 
             return Jw.Json(new { email = bEmail, md5 = bMd5 });
         }
@@ -513,31 +442,11 @@ namespace VisitorIdLib
             string sessionId = context.Request.Query["sd"];
             string queryString = context.Request.Query["qs"];
             string opaque = context.Request.Query["op"];
-            int M5dImpressionTypeId = 1; // ServiceMd5ImpressionTypeId[serviceName];
-            int PlainImpressionTypeId = 1; // !String.IsNullOrEmpty(email) ? ServicePlainImpressionTypeId[serviceName] : 0;
+            int M5dImpressionTypeId = ServiceMd5ImpressionTypeId[serviceName];
+            int PlainImpressionTypeId = !String.IsNullOrEmpty(email) ? ServicePlainImpressionTypeId[serviceName] : 0;
 
             return await SaveSession(context, serviceName, M5dImpressionTypeId, PlainImpressionTypeId, sessionId,
                 md5, email, queryString, opaque);
-        }
-
-        public void SetCookie(HttpContext ctx, string key, string value, int? expireTime)
-        {
-            CookieOptions option = new CookieOptions();
-            option.Path = "/";
-            option.SameSite = SameSiteMode.None;
-            option.HttpOnly = false;
-
-            if (expireTime.HasValue)
-                option.Expires = DateTime.Now.AddMinutes(expireTime.Value);
-            else
-                option.Expires = DateTime.Now.AddMilliseconds(10);
-
-            ctx.Response.Cookies.Append(key, value, option);
-        }
-
-        public void DeleteCookie(HttpContext ctx, string key)
-        {
-            ctx.Response.Cookies.Delete(key);
         }
         
         public static int PadCount(string str)
@@ -574,24 +483,14 @@ namespace VisitorIdLib
             {
                 string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + md5;
                 var jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                    "VisitorIdErrorLog",
-                    Jw.Json(new
-                    {
-                        Sev = 1,
-                        Proc = "DataService",
-                        Meth = "CallTowerEmailApi",
-                        Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                        Msg = Utility.Hashing.EncodeTo64("::ip=" + context.Connection.RemoteIpAddress + "::" + (!String.IsNullOrEmpty(jsonPlainEmail.Item2)
+                await Err(1, "CallTowerEmailApi", "Tracking",
+                    "::ip=" + context.Connection.RemoteIpAddress + "::" + (!String.IsNullOrEmpty(jsonPlainEmail.Item2)
                             ? "CallEmailApi(Tower): " + md5 + "::" + jsonPlainEmail.Item2
-                            : "CallEmailApi(Tower): " + md5 + "::" + "Null or empty jsonPlainEmail"))
-                    }),
-                    "");
+                            : "CallEmailApi(Tower): " + md5 + "::" + "Null or empty jsonPlainEmail"));
+
                 if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
                 {
-                    IGenericEntity te = new GenericEntityJson();
-                    var ts = (JObject)JsonConvert.DeserializeObject(jsonPlainEmail.Item2);
-                    te.InitializeEntity(null, null, ts);
+                    IGenericEntity te = Jw.JsonToGenericEntity(jsonPlainEmail.Item2);
                     if (te.GetS("target_email") != null)
                     {
                         if (te.GetS("target_email").Length > 3)
@@ -601,35 +500,15 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                            "VisitorIdErrorLog",
-                            Jw.Json(new
-                            {
-                                Sev = 1,
-                                Proc = "DataService",
-                                Meth = "CallTowerEmailApi",
-                                Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                                Msg = Utility.Hashing.EncodeTo64("::ip=" + context.Connection.RemoteIpAddress + "::" + ((jsonPlainEmail.Item2 != null)
+                        await Err(1, "CallTowerEmailApi", "Tracking", "::ip=" + context.Connection.RemoteIpAddress + "::" + ((jsonPlainEmail.Item2 != null)
                                     ? "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "|" + jsonPlainEmail.Item2 + "|"
-                                    : "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "Null jsonPlainEmail"))
-                            }),
-                            "");
+                                    : "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "Null jsonPlainEmail"));
                     }
                 }
             }
             catch (Exception tgException)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                    "VisitorIdErrorLog",
-                    Jw.Json(new
-                    {
-                        Sev = 1000,
-                        Proc = "DataService",
-                        Meth = "CallTowerEmailApi",
-                        Desc = Utility.Hashing.EncodeTo64("Exception"),
-                        Msg = Utility.Hashing.EncodeTo64("TowerDataEmailApiFailed: " + $"{md5}||{opaque}" + "::" + tgException.ToString())
-                    }),
-                    "");
+                await Err(1000, "CallTowerEmailApi", "Exception", "TowerDataEmailApiFailed: " + $"{md5}||{opaque}" + "::" + tgException.ToString());
             }
 
             return towerEmailPlainText;
@@ -643,17 +522,7 @@ namespace VisitorIdLib
 
             string rawstring = context.Request.Query["eqs"].ToString();
 
-            await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                            Msg = Utility.Hashing.EncodeTo64("Entry: " + rawstring + "::ip=" + context.Connection.RemoteIpAddress)
-                        }),
-                        "");
+            await Err(1, "ProcessTowerMessage", "Tracking", "Entry: " + rawstring + "::ip=" + context.Connection.RemoteIpAddress);
 
             try
             {
@@ -664,18 +533,8 @@ namespace VisitorIdLib
             }
             catch (Exception ex)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64("Step1Fail " + $"string error::{rawstring}" +
-                                "::" + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
-                        }),
-                        "");
+                await Err(1000, "ProcessTowerMessage", "Exception", "Step1Fail " + $"string error::{rawstring}" +
+                                "::" + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
             try
@@ -684,17 +543,7 @@ namespace VisitorIdLib
                 string result = Decrypt(pRawString, key);
                 if (result.Contains("md5_email"))
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                            Msg = Utility.Hashing.EncodeTo64("Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress)
-                        }),
-                        "");
+                    await Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
                     var parsedstring = HttpUtility.ParseQueryString(result);
                     emailMd5 = parsedstring["md5_email"].ToString();
                     if (parsedstring["label"] != null)
@@ -704,33 +553,13 @@ namespace VisitorIdLib
                 }
                 else
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64("Error"),
-                            Msg = Utility.Hashing.EncodeTo64("Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress)
-                        }),
-                        "");
+                    await Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
                 }
             }
             catch (Exception ex)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage - Step3Fail",
-                            Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64("Step3Fail: " + $"decrypt error::{rawstring}" + "::" +
-                                ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
-                        }),
-                        "");
+                await Err(1000, "ProcessTowerMessage", "Exception", "Step3Fail: " + $"decrypt error::{rawstring}" + "::" +
+                                ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
             if (String.IsNullOrEmpty(emailMd5) ||
@@ -738,17 +567,7 @@ namespace VisitorIdLib
             {
                 if (!String.IsNullOrEmpty(emailMd5) && emailMd5.Length != 32)
                 {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                    "VisitorIdErrorLog",
-                    Jw.Json(new
-                    {
-                        Sev = 100,
-                        Proc = "DataService",
-                        Meth = "ProcessTowerMessage",
-                        Desc = Utility.Hashing.EncodeTo64("Error"),
-                        Msg = Utility.Hashing.EncodeTo64("Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress)
-                    }),
-                    "");
+                    await Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
                 }
 
                 return Jw.Json(new { Result = "Failure" });
@@ -756,17 +575,7 @@ namespace VisitorIdLib
 
             try
             {
-                await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                   "VisitorIdErrorLog",
-                   Jw.Json(new
-                   {
-                       Sev = 1,
-                       Proc = "DataService",
-                       Meth = "ProcessTowerMessage",
-                       Desc = Utility.Hashing.EncodeTo64("Tracking"),
-                       Msg = Utility.Hashing.EncodeTo64("Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress)
-                   }),
-                   "");
+                await Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
                 byte[] byt = Convert.FromBase64String(opaque);
                 string jsopaque = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
@@ -778,28 +587,39 @@ namespace VisitorIdLib
             }
             catch (Exception ex)
             {
-                try
-                {
-                    await SqlWrapper.SqlServerProviderEntry(this.VisitorIdConnectionString,
-                        "VisitorIdErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1000,
-                            Proc = "DataService",
-                            Meth = "ProcessTowerMessage",
-                            Desc = Utility.Hashing.EncodeTo64("Exception"),
-                            Msg = Utility.Hashing.EncodeTo64("OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress)
-                        }),
-                        "");
-                }
-                catch (Exception inex)
-                {
-                    File.AppendAllText("DataService.log", $@"InsertErrorLog Failed::OuterException::{DateTime.Now}::{inex.ToString()}" +
-                                Environment.NewLine);
-                }
+                await Err(1000, "ProcessTowerMessage", "Exception", "OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
             return Jw.Json(new { Result = "Failure" });
+        }
+
+        public void JunkHolder()
+        {
+            //try
+            //{
+            //    //EdwSiloEndpoint.ExecuteSql("{\"TestAction\": \"Walkaway\"}", "[dbo].[spCreateTestRecord]", silo1, 3)
+            //    //    .ConfigureAwait(true).GetAwaiter().GetResult();
+            //    string s = "123456789012345678901234567890123456789012345678901234567890";
+            //    s = s + "123456789012345678901234567890123456789012345678901234567890";
+            //    EdwSiloEndpoint.ExecuteSql("{\"TestAction\": \"Success\", \"V\": \"" + s + "\"}", "[dbo].[spCreateTestRecord]", silo1, 3)
+            //        .ConfigureAwait(true).GetAwaiter().GetResult();
+            //}
+            //catch (Exception ex)
+            //{
+            //    int hij = 1;
+            //}
+
+            //for (int i = 0; i < 20; i++)
+            //{
+            //    await siloWriter.Write("{\"TestAction\": \"Success\", \"V\": \"" + i + "\"}", 10);
+            //}
+
+            //await siloWriter.Write("{\"TestAction\": \"RemoveEndpoint\"}", 10);
+
+            //for (int i = 20; i < 40; i++)
+            //{
+            //    await siloWriter.Write("{\"TestAction\": \"Success\", \"V\": \"" + i + "\"}", 10);
+            //}
         }
     }
 }

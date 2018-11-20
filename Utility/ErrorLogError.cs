@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Utility
 {
-    class ErrorLogError
+    public class ErrorLogError
     {
         public int Severity;
         public string Process;

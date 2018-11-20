@@ -78,5 +78,22 @@ namespace Utility
         {
             await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Unhandled::" + (string)w).ConfigureAwait(false);
         }
+
+        public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
+        {
+            string errorFilePath = config.GetS("Config/ErrorFilePath");
+
+            return new ErrorSiloLoadBalancedWriter(60,
+                async () => await ErrorSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
+                async () => await ErrorSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
+                async (object w, int timeoutSeconds) => await ErrorSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
+                (int previousValue) => ErrorSiloLoadBalancedWriter.NextWalkawayValue(previousValue),
+                (ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen) =>
+                    ErrorSiloLoadBalancedWriter.Selector(endpoints, alreadyChosen),
+                async (object w) => await ErrorSiloLoadBalancedWriter.NoValid(w, errorFilePath).ConfigureAwait(false),
+                async (object w) => await ErrorSiloLoadBalancedWriter.Failure(w, errorFilePath).ConfigureAwait(false),
+                async (object w, Exception ex) => await ErrorSiloLoadBalancedWriter.Unhandled(w, errorFilePath, ex).ConfigureAwait(false)
+            );
+        }
     }
 }
