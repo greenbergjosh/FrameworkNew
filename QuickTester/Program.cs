@@ -88,7 +88,6 @@ namespace QuickTester
             var slc = lts.Select(lt => PL.C(lt));
             string st14 = A.C(slc).ToString();
 
-            string st7 = JW.O(PL.N("name", st1));
 
             string st8 = PL.C(
                 PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
@@ -96,35 +95,23 @@ namespace QuickTester
                 PL.N("zz", A.C(slc))
                 ).ToString();
 
-            List<string> as1 = new List<string>() { st1, st2, st3 };
-            //string st8 = JW.A(SL.C(as1, false));
+            string st9 = A.C(
+                PL.C(
+                PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                PL.N("zz", A.C(slc))
+                ),
+                PL.C(
+                PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                PL.N("zz", A.C(slc))
+                ),
+                SL.C(lts, new List<string>() { "FN", "LN", "PT" }, true),
+                A.C(SL.C(lts, new List<string>() { "AFN", "ALN", "APT" }, true),
+                    SL.C(lts, new List<string>() { "BFN", "BLN", "BPT" }, true))
+                ).ToString();
 
-            //List<object> as2 = new List<object>() { 5, "hello" };
-            //string st9 = JW.A(SL.C(as2, true));
-
-            //List<object> as3 = new List<object>() { t1, t3 };
-            //string st10 = JW.A(SL.C(as3, new List<string>() { "FieldOne" }));
-
-            //List<Tuple<string, string, string>> lts = new List<Tuple<string, string, string>>() { x1, x2 };
-            //string st11 = JW.A(SL.C(lts, new List<string>() { "FN", "LN", "PT" }, true));
-
-
-            //PL pl1 = PL.C(x1, new List<string>() { "FN", "LN", "PT" });
-            //List<PL> lpl1 = new List<PL>() { PL.C(t1), PL.C(t2) };
-
-            //string s1 = JW.O(pl1);
-            //string s2 = JW.OM(lpl1);
-
-            //SL sl1 = SL.C(ls);
-            //string s3 = JW.A(sl1);
-
-            //List<Tuple<string, string, string>> lpl2 = 
-            //    new List<Tuple<string, string, string>>() { x1, x2 };
-            //string s4 = JW.A(SL.C(lpl2, new List<string>() { "FN", "LN", "PT" }, true));
-
-
-
-
+            
             // A PL is a list of things that can be put into an object
             // An SL is a list of things that can be put into an array
             // I can put an object, a PL into an array
@@ -145,61 +132,9 @@ namespace QuickTester
             // I build an SL from base parts, adding, inserting where needed
 
             // I then want to compose those base parts upward to create the larger structure
-            // O(PL, PL, PL) --> O
-            // PL(name, PL) --> PL  ==  PL(name, O) --> PL
+            // PL(name, PL) --> PL
             // PL(name, SL) --> PL  ==  PL(name, A) --> PL
-            // A(O==PL, A, SL) --> A
-
-            // When you pass a list, I add them all together into one object or one array
-            // When you pass a list, I create each as a separate object
-            // IEnumerable json
-
-            // When you pass a tree, I flatten the whole tree
-            // When you pass a tree, I return a tree
-
-
-
-            //string st1 = JW.O(PL.C(new { x = 1, y = "Bob" }));
-            //string st1b = JW.O(PL.C(new { x = 1, y = "Bob", z = "{}" }, new bool[] { true, true, false }));
-            //string st2 = JW.O(PL.C(t1));
-            //string st3 = JW.O(PL.C(tpl1));
-            //string st4 = JW.O(PL.C(d3));
-            //string st5 = JW.O(PL.C("name", "bob"));
-            //string st6 = JW.O(PL.C(x1, new List<string>() { "FN", "LN", "PT" }));
-
-            //string st7 = JW.O(PL.N("name", st1));
-
-            //List<string> as1 = new List<string>() { st1, st2, st3 };
-            //string st8 = JW.A(SL.C(as1, false));
-
-            //List<object> as2 = new List<object>() { 5, "hello" };
-            //string st9 = JW.A(SL.C(as2, true));
-
-            //List<object> as3 = new List<object>() { t1, t3 };
-            //string st10 = JW.A(SL.C(as3, new List<string>() { "FieldOne" }));
-
-            //List<Tuple<string, string, string>> lts = new List<Tuple<string, string, string>>() { x1, x2 };
-            //string st11 = JW.A(SL.C(lts, new List<string>() { "FN", "LN", "PT" }, true));
-
-            //var named = (first: "one", second: "two");
-            //string st12 = JW.O(PL.C(named));
-            //string st13 = JW.O(PL.C(x1));
-            //string st14 = JW.O(PL.C(lts));
-            //// Now consider a + operator for PL and SL
-
-            //PL pl1 = PL.C(x1, new List<string>() { "FN", "LN", "PT" });
-            //List<PL> lpl1 = new List<PL>() { PL.C(t1), PL.C(t2) };
-
-            //string s1 = JW.O(pl1);
-            //string s2 = JW.OM(lpl1);
-
-            //SL sl1 = SL.C(ls);
-            //string s3 = JW.A(sl1);
-
-            //List<Tuple<string, string, string>> lpl2 = 
-            //    new List<Tuple<string, string, string>>() { x1, x2 };
-            //string s4 = JW.A(SL.C(lpl2, new List<string>() { "FN", "LN", "PT" }, true));
-
+            // A(PL, A, SL) --> A
 
         }
     }
@@ -229,132 +164,8 @@ namespace QuickTester
         }
 
     }
-
-    public class JW
-    {
-        public static string OM(IEnumerable<PL> pls/*, List<bool> qs*/)
-        {
-
-            //var output = numbers.SelectMany((n, ni) => animals.Select((s, si) => ((ni * animals.Count) + si) + s + n))
-
-            //return String.Concat("{",
-            //    String.Join(",",
-            //        pls.SelectMany((pl, i) => pl.ps.Select(p => (qs[i] ? Q(p.Item1) : p.Item1) + 
-            //                ":" + (qs[i] ? Q(p.Item2) : p.Item2)))),
-            //    "}");
-
-            return String.Concat("{",
-                String.Join(",",
-                    pls.SelectMany(pl => pl.ps).Select(p => Q(p.Item1) + ":" + Q(p.Item2))),
-                "}");
-        }
-
-        public static string O(PL pl)
-        {
-            return String.Concat("{",
-                String.Join(",",
-                    pl.ps.Select(p => Q(p.Item1) + ":" + (p.Item3 ? Q(p.Item2) : p.Item2))),
-                "}");
-        }
-
-        public static string O(IEnumerable<PL> pls)
-        {
-            return String.Concat("{",
-                String.Join(",",
-                    pls.Select(p => O(p))),
-                "}");
-        }
-
-        public static string AM(IEnumerable<SL> sls/*, List<bool> qs*/)
-        {
-            //return String.Concat("[",
-            //    String.Join(",",
-            //        sls.SelectMany((sl, i) => sl.ls.Select(li => qs[i] ? Q(li) : li))),
-            //    "}");
-
-            return String.Concat("[",
-                String.Join(",",
-                    sls.SelectMany(sl => sl.ls).Select(li => Q(li.Item1))),
-                "]");
-        }
-
-        public static string A(SL sl)
-        {
-            return String.Concat("[",
-                String.Join(",",
-                    sl.ls.Select(li => li.Item2 ? Q(li.Item1) : li.Item1)),
-                "]");
-        }
-
-        public static string A(IEnumerable<SL> sl)
-        {
-            return String.Concat("[",
-                String.Join(",",
-                    sl.Select(li => A(li))),
-                "]");
-        }
-
-        public static string A(string csv, IList<string> names)
-        {
-            StringBuilder sb = new StringBuilder("[");
-            using (StringReader reader = new StringReader(csv))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string[] cols = line.Split(',');
-                    sb.Append("{");
-                    for (int i = 0; i < names.Count; i++)
-                        sb.Append(Q(names[i]) + ":" + Q(cols[i]) + ",");
-                    sb.Remove(sb.Length - 1, 1);
-                    sb.Append("},");
-                }
-                if (sb.Length > 1) sb.Remove(sb.Length - 1, 1);
-                sb.Append("]");
-            }
-            return sb.ToString();
-        }
-
-        public static string Q(object x)
-        {
-            return "\"" + x.ToString() + "\"";
-        }
-    }
-
-    public interface IJ
-    {
-
-    }
-
-    public class O : IJ
-    {
-        IEnumerable<PL> pls = new List<PL>();
-
-        public O(PL pl) { pls = new List<PL> { pl };  }
-
-        public static O C(PL pl) { return new O(pl);  }
-
-        public O(IEnumerable<PL> pls) { this.pls = pls; }
-
-        public static O C(IEnumerable<PL> pls) { return new O(pls);  }
-
-        public O(params PL[] pls) { this.pls = pls;  }
-
-        public static O C(params PL[] pls) { return new O(pls);  }
-
-        public override string ToString()
-        {
-            return String.Concat("{",
-                String.Join(",",
-                    pls.Select(p => p.ToString())),
-                "}");
-        }
-    }
-
-    // O(PL, PL, PL) --> O
-    // PL(name, PL) --> PL  ==  PL(name, O) --> PL
-    // PL(name, SL) --> PL  ==  PL(name, A) --> PL
-    // A(O==PL, A, SL) --> A
+   
+    public interface IJ { }
 
     public class A : IJ
     {
@@ -367,6 +178,10 @@ namespace QuickTester
         public A(IEnumerable<IJ> js) { this.js = js; }
 
         public static A C(IEnumerable<IJ> js) { return new A(js); }
+
+        public A(params IJ[] js) { this.js = js; }
+
+        public static A C(params IJ[] js) { return new A(js); }
 
         public override string ToString()
         {
@@ -428,12 +243,12 @@ namespace QuickTester
             {
                 if (names != null)
                 {
-                    ls = os.Select(o => new Tuple<string, bool>(JW.OM(names.Select((x, i) => PL.C(x,
+                    ls = os.Select(o => new Tuple<string, bool>(PL.OM(names.Select((x, i) => PL.C(x,
                         o.GetType().GetField(x).GetValue(o).ToString()))), false)).ToList();
                 }
                 else
                 {
-                    ls = os.Select(o => new Tuple<string, bool>(JW.OM(o.GetType().GetFields()
+                    ls = os.Select(o => new Tuple<string, bool>(PL.OM(o.GetType().GetFields()
                         .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString()))), false)).ToList();
                 }
             }
@@ -450,18 +265,18 @@ namespace QuickTester
             if (os != null && os.Count > 0)
             {
                 if (tuples)
-                    ls = os.Select(o => JW.OM(names.Select((x, i) => PL.C(x,
+                    ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
                             o.GetType().GetProperty("Item" + (i + 1)).GetValue(o).ToString())))).ToList();
                 else
                 {
                     if (names != null)
                     {
-                        ls = os.Select(o => JW.OM(names.Select((x, i) => PL.C(x,
+                        ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
                             o.GetType().GetField(x).GetValue(o).ToString())))).ToList();
                     }
                     else
                     {
-                        ls = os.Select(o => JW.OM(o.GetType().GetFields()
+                        ls = os.Select(o => PL.OM(o.GetType().GetFields()
                             .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString())))).ToList();
                     }
                 }
@@ -513,11 +328,6 @@ namespace QuickTester
             return new PL(new Dictionary<string, object>() { { name, PL.C(pl) } }, false);
         }
 
-        public static PL N(string name, O o)
-        {
-            return new PL(new Dictionary<string, object>() { { name, o } }, false);
-        }
-
         public static PL N(string name, SL sl)
         {
             return new PL(new Dictionary<string, object>() { { name, A.C(sl) } }, false);
@@ -561,6 +371,14 @@ namespace QuickTester
         public static PL C(Dictionary<string, object> d, bool q = true)
         {
             return new PL(d, q);
+        }
+
+        public static string OM(IEnumerable<PL> pls)
+        {
+            return String.Concat("{",
+                String.Join(",",
+                    pls.SelectMany(pl => pl.ps).Select(p => Q(p.Item1) + ":" + Q(p.Item2))),
+                "}");
         }
 
         public class QC
