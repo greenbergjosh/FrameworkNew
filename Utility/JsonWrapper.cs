@@ -115,7 +115,8 @@ namespace Utility
 
         public static string Json(string keyName, List<string> data, bool wrap = true, bool quote = true)
         {
-            if (data == null || data.Count == 0) return "[]";
+            if (data == null || data.Count == 0)
+                return (wrap ? "{" : "") + "\"" + keyName + "\": " + "[]" + (wrap ? "}" : "");
 
             StringBuilder sb = new StringBuilder((wrap ? "{" : "") + "\"" + keyName + "\": ");
             sb.Append("[");
