@@ -97,21 +97,22 @@ namespace QuickTester
 
             string st9 = A.C(
                 PL.C(
-                PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("zz", A.C(slc))
+                    PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("zz", A.C(slc))
                 ),
                 PL.C(
-                PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("zz", A.C(slc))
+                    PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("zz", A.C(slc))
                 ),
                 SL.C(lts, new List<string>() { "FN", "LN", "PT" }, true),
                 A.C(SL.C(lts, new List<string>() { "AFN", "ALN", "APT" }, true),
-                    SL.C(lts, new List<string>() { "BFN", "BLN", "BPT" }, true))
+                    SL.C(lts, new List<string>() { "BFN", "BLN", "BPT" }, true)),
+                SL.C(new List<object> { "hello", 5 })
                 ).ToString();
 
-            
+            // ["a", 5]
             // A PL is a list of things that can be put into an object
             // An SL is a list of things that can be put into an array
             // I can put an object, a PL into an array
@@ -286,9 +287,7 @@ namespace QuickTester
 
         public override string ToString()
         {
-            return String.Concat("[",
-                String.Join(",", ls.Select(li => li.Item2 ? Q(li.Item1) : li.Item1)),
-            "]");
+            return String.Join(",", ls.Select(li => li.Item2 ? Q(li.Item1) : li.Item1));
         }
 
         public static string Q(object x)
