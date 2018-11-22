@@ -112,6 +112,48 @@ namespace QuickTester
                 SL.C(new List<object> { "hello", 5 })
                 ).ToString();
 
+            Guid id1 = Guid.NewGuid();
+            string ts1 = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
+            Dictionary<string, object> rsids = new Dictionary<string, object>()
+                { {"anrsid", "b0419e46-6620-4ed7-b849-d714f10b1d41" } };
+            List<string> weps = new List<string>()
+                { "4231FE39-D704-4E8B-B982-9D69A9A29C26", "C8404A79-5403-4726-94C9-B663261FD78F" };
+
+
+            string st10 = PL.C(
+                PL.N("E", A.C(
+                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.N("payload", PL.C("a_key", "a_value").Add(
+                        PL.N("rsid", PL.C(rsids)).Add(
+                        PL.N("whep", SL.C(weps)))))),
+
+                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.N("payload", PL.C("a_key", "a_value").Add(
+                        PL.N("rsid", PL.C(rsids)).Add(
+                        PL.N("whep", SL.C(weps))))))
+                    )
+                ),
+                PL.N("IM", A.C(
+                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.N("payload", PL.C("a_key", "a_value")).Add(
+                    PL.C("config_id", id1.ToString()))),
+
+                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.N("payload", PL.C("a_key", "a_value")).Add(
+                    PL.C("config_id", id1.ToString()))))
+
+                )//,
+                //PL.N("CK", ),
+                //PL.N("CD", ),
+                ).ToString();
+
+            AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+            AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+            AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            string st11 = EdwBulk();
+            int i = 0;
+
             // ["a", 5]
             // A PL is a list of things that can be put into an object
             // An SL is a list of things that can be put into an array
@@ -138,7 +180,66 @@ namespace QuickTester
             // A(PL, A, SL) --> A
 
         }
+
+        public static string EdwBulk()
+        {
+            PL blk = null;
+            if (events != null) { blk = ((blk == null) ? PL.C(events) : blk.AddRange(events)); }
+            if (ims != null) { blk = ((blk == null) ? PL.C(ims) : blk.AddRange(ims)); }
+            return blk.ToString();
+        }
+
+        public static List<PL> events = new List<PL>();
+
+        public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
+            List<string> whep, PL payload)
+        {
+            PL np = null;
+            List<PL> rw = new List<PL>();
+            if (rsid != null && rsid.Count > 1) rw.Add(PL.N("rsid", PL.C(rsid)));
+            if (whep != null && whep.Count > 1) rw.Add(PL.N("whep", SL.C(whep)));
+            if (rw.Count > 0)
+            {
+                if (payload != null) np = PL.C(payload).AddRange(rw);
+                else np = PL.C(rw);
+            }
+
+            PL e = PL.C(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
+            if (np != null) e.Add(PL.N("payload", np));
+            PL pl = PL.N("E", A.C(PL.C(e)));
+            events.Add(pl);
+        }
+
+        public static List<PL> ims = new List<PL>();
+        public static List<PL> cks = new List<PL>();
+        public static List<PL> cds = new List<PL>();
+
+        public enum RsType
+        {
+            Immediate = 0,
+            Checked,
+            CheckedDetail
+        }
+
+        public static Dictionary<RsType, string> RsTypes = new Dictionary<RsType, string>()
+            { { RsType.Immediate, "I"}, {RsType.Checked, "CK"}, {RsType.CheckedDetail, "CD"} };
+
+        public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
+        {
+            PL rs = PL.C(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
+            if (payload != null) rs.Add(PL.N("payload", payload));
+            if (configId != null) rs.Add(PL.C("config_id", configId.ToString()));
+            PL pl = PL.N(RsTypes[t], A.C(PL.C(rs)));
+            switch (t) {
+                case RsType.Immediate: ims.Add(pl); break;
+                case RsType.Checked: cks.Add(pl); break;
+                case RsType.CheckedDetail: cds.Add(pl); break;
+                default: break;
+            }
+        }
     }
+
+    
 
     public class Tester
     {
@@ -206,6 +307,13 @@ namespace QuickTester
         {
             SL lhs = new SL(this);
             lhs.ls.AddRange(rhs.ls);
+            return lhs;
+        }
+
+        public SL AddRange(List<SL> sls)
+        {
+            SL lhs = new SL(this);
+            foreach (var sl in sls) lhs.ls.AddRange(sl.ls);
             return lhs;
         }
 
@@ -309,6 +417,13 @@ namespace QuickTester
         {
             PL lhs = new PL(this);
             lhs.ps.AddRange(rhs.ps);
+            return lhs;
+        }
+
+        public PL AddRange(List<PL> pls)
+        {
+            PL lhs = new PL(this);
+            foreach (var pl in pls) lhs.ps.AddRange(pl.ps);
             return lhs;
         }
 
