@@ -36,6 +36,21 @@ namespace QuickTester
             //Console.WriteLine("2: " + args[2]);
             //Console.WriteLine(Utility.UnixWrapper.BinarySearchSortedMd5File(args[0], args[1], args[2]).GetAwaiter().GetResult());
 
+            int xt1 = 1;
+            int xt2 = 2;
+            int xt3 = 3;
+            List<int?> xts1 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
+            IEnumerable<int?> xts2 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
+            int?[] xa1 = new int?[] { xt1, xt2, xt3, 4 };
+
+            int xr0 = Sum(xt1);
+            int xr1 = Sum(xt1, xt2, xt3);
+            int xr2 = Sum(xts1);
+            int xr3 = Sum(xts2);
+            int xr4 = Sum(xa1);
+
+
+
             Tuple<string, string, string> x1 = new Tuple<string, string, string>("Bob", "Jones", "Dog");
             Tuple<string, string, string> x2 = new Tuple<string, string, string>("Tom", "Arnold", "Cat");
 
@@ -75,40 +90,40 @@ namespace QuickTester
 
             var named = (first: "one", second: "two");
 
-            string st1 = PL.C(new { x = 1, y = "Bob" }).ToString();
-            string st1b = PL.C(new { x = 1, y = "Bob", z = "{}" }, new bool[] { true, true, false }).ToString(); ;
-            string st2 = PL.C(t1).ToString(); 
+            string st1 = PL.O(new { x = 1, y = "Bob" }).ToString();
+            string st1b = PL.O(new { x = 1, y = "Bob", z = "{}" }, null, new bool[] { true, true, false }).ToString(); ;
+            string st2 = PL.O(t1).ToString(); 
             string st3 = PL.C(tpl1).ToString(); 
-            string st4 = PL.C(d3).ToString(); 
+            string st4 = PL.D(d3).ToString(); 
             string st5 = PL.C("name", "bob").ToString(); 
-            string st6 = PL.C(x1, new List<string>() { "FN", "LN", "PT" }).ToString();
+            string st6 = PL.O(x1, new List<string>() { "FN", "LN", "PT" }).ToString();
 
-            string st12 = PL.C(named).ToString();
-            string st13 = PL.C(x1).ToString();
-            var slc = lts.Select(lt => PL.C(lt));
+            string st12 = PL.O(named).ToString();
+            string st13 = PL.O(x1).ToString();
+            var slc = lts.Select(lt => PL.O(lt));
             string st14 = A.C(slc).ToString();
 
 
             string st8 = PL.C(
-                PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+                PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
                 PL.N("zz", A.C(slc))
                 ).ToString();
 
             string st9 = A.C(
                 PL.C(
-                    PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                    PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
                     PL.N("zz", A.C(slc))
                 ),
                 PL.C(
-                    PL.N("ss", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
-                    PL.N("tt", PL.C(PL.C(t1).Add(PL.C(tpl1)), PL.C(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+                    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
                     PL.N("zz", A.C(slc))
                 ),
-                SL.C(lts, new List<string>() { "FN", "LN", "PT" }, true),
-                A.C(SL.C(lts, new List<string>() { "AFN", "ALN", "APT" }, true),
-                    SL.C(lts, new List<string>() { "BFN", "BLN", "BPT" }, true)),
+                SL.AO(lts, new List<string>() { "FN", "LN", "PT" }, new bool[] { true, true, true}),
+                A.C(SL.AO(lts, new List<string>() { "AFN", "ALN", "APT" }, new bool[] { true, true, true }),
+                    SL.AO(lts, new List<string>() { "BFN", "BLN", "BPT" }, new bool[] { true, true, true })),
                 SL.C(new List<object> { "hello", 5 })
                 ).ToString();
 
@@ -122,23 +137,23 @@ namespace QuickTester
 
             string st10 = PL.C(
                 PL.N("E", A.C(
-                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.O(new { id = id1, ts = ts1 }).Add(
                     PL.N("payload", PL.C("a_key", "a_value").Add(
-                        PL.N("rsid", PL.C(rsids)).Add(
+                        PL.N("rsid", PL.D(rsids)).Add(
                         PL.N("whep", SL.C(weps)))))),
 
-                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.O(new { id = id1, ts = ts1 }).Add(
                     PL.N("payload", PL.C("a_key", "a_value").Add(
-                        PL.N("rsid", PL.C(rsids)).Add(
+                        PL.N("rsid", PL.D(rsids)).Add(
                         PL.N("whep", SL.C(weps))))))
                     )
                 ),
                 PL.N("IM", A.C(
-                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.O(new { id = id1, ts = ts1 }).Add(
                     PL.N("payload", PL.C("a_key", "a_value")).Add(
                     PL.C("config_id", id1.ToString()))),
 
-                    PL.C(new { id = id1, ts = ts1 }).Add(
+                    PL.O(new { id = id1, ts = ts1 }).Add(
                     PL.N("payload", PL.C("a_key", "a_value")).Add(
                     PL.C("config_id", id1.ToString()))))
 
@@ -181,33 +196,44 @@ namespace QuickTester
 
         }
 
-        public static string EdwBulk()
+        public static int Sum(params int?[] xs)
         {
-            PL blk = null;
-            if (events != null) { blk = ((blk == null) ? PL.C(events) : blk.AddRange(events)); }
-            if (ims != null) { blk = ((blk == null) ? PL.C(ims) : blk.AddRange(ims)); }
-            return blk.ToString();
+            return xs.Aggregate((x, y) => (x ?? 0) + (y ?? 0)) ?? 0;
         }
 
-        public static List<PL> events = new List<PL>();
+        public static int Sum(IEnumerable<int?> xs)
+        {
+            return Sum(xs.ToArray());
+        }
+
+        public static string EdwBulk()
+        {
+            return PL.C().Add("E", false, events)
+                .Add("IM", false, ims)
+                .Add("CK", true, cks)
+                .Add("CD", true, cds)
+                .ToString();
+        }
+
+        public static IList<PL> events = new List<PL>();
 
         public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
             List<string> whep, PL payload)
         {
             PL np = null;
             List<PL> rw = new List<PL>();
-            if (rsid != null && rsid.Count > 1) rw.Add(PL.N("rsid", PL.C(rsid)));
-            if (whep != null && whep.Count > 1) rw.Add(PL.N("whep", SL.C(whep)));
+            if (rsid != null && rsid.Count > 0) rw.Add(PL.N("rsid", PL.D(rsid)));
+            if (whep != null && whep.Count > 0) rw.Add(PL.N("whep", SL.C(whep)));
             if (rw.Count > 0)
             {
-                if (payload != null) np = PL.C(payload).AddRange(rw);
+                if (payload != null) np = PL.C(payload).Add(rw);
                 else np = PL.C(rw);
             }
 
-            PL e = PL.C(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
+            PL e = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
             if (np != null) e.Add(PL.N("payload", np));
-            PL pl = PL.N("E", A.C(PL.C(e)));
-            events.Add(pl);
+            
+            events.Add(e);
         }
 
         public static List<PL> ims = new List<PL>();
@@ -222,18 +248,19 @@ namespace QuickTester
         }
 
         public static Dictionary<RsType, string> RsTypes = new Dictionary<RsType, string>()
-            { { RsType.Immediate, "I"}, {RsType.Checked, "CK"}, {RsType.CheckedDetail, "CD"} };
+            { { RsType.Immediate, "IM"}, {RsType.Checked, "CK"}, {RsType.CheckedDetail, "CD"} };
 
         public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
         {
-            PL rs = PL.C(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
+            PL rs = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
             if (payload != null) rs.Add(PL.N("payload", payload));
             if (configId != null) rs.Add(PL.C("config_id", configId.ToString()));
             PL pl = PL.N(RsTypes[t], A.C(PL.C(rs)));
-            switch (t) {
-                case RsType.Immediate: ims.Add(pl); break;
-                case RsType.Checked: cks.Add(pl); break;
-                case RsType.CheckedDetail: cds.Add(pl); break;
+            switch (t)
+            {
+                case RsType.Immediate: ims.Add(rs); break;
+                case RsType.Checked: cks.Add(rs); break;
+                case RsType.CheckedDetail: cds.Add(rs); break;
                 default: break;
             }
         }
@@ -267,331 +294,331 @@ namespace QuickTester
 
     }
    
-    public interface IJ { }
+    //public interface IJ { }
 
-    public class A : IJ
-    {
-        IEnumerable<IJ> js = new List<IJ>();
+    //public class A : IJ
+    //{
+    //    IEnumerable<IJ> js = new List<IJ>();
 
-        public A(IJ j) { js = new List<IJ>() { j }; }
+    //    public A(IJ j) { js = new List<IJ>() { j }; }
 
-        public static A C(IJ j) { return new A(j); }
+    //    public static A C(IJ j) { return new A(j); }
 
-        public A(IEnumerable<IJ> js) { this.js = js; }
+    //    public A(IEnumerable<IJ> js) { this.js = js; }
 
-        public static A C(IEnumerable<IJ> js) { return new A(js); }
+    //    public static A C(IEnumerable<IJ> js) { return new A(js); }
 
-        public A(params IJ[] js) { this.js = js; }
+    //    public A(params IJ[] js) { this.js = js; }
 
-        public static A C(params IJ[] js) { return new A(js); }
+    //    public static A C(params IJ[] js) { return new A(js); }
 
-        public override string ToString()
-        {
-            return String.Concat("[",
-                String.Join(",",
-                    js.Select(p => p.ToString())),
-                "]");
-        }
-    }
+    //    public override string ToString()
+    //    {
+    //        return String.Concat("[",
+    //            String.Join(",",
+    //                js.Select(p => p.ToString())),
+    //            "]");
+    //    }
+    //}
 
-    public class SL : IJ
-    {
-        public List<Tuple<string, bool>> ls = new List<Tuple<string, bool>>();
+    //public class SL : IJ
+    //{
+    //    public List<Tuple<string, bool>> ls = new List<Tuple<string, bool>>();
 
-        public SL(SL sl)
-        {
-            this.ls = sl.ls.ToList();
-        }
+    //    public SL(SL sl)
+    //    {
+    //        this.ls = sl.ls.ToList();
+    //    }
 
-        public SL Add(SL rhs)
-        {
-            SL lhs = new SL(this);
-            lhs.ls.AddRange(rhs.ls);
-            return lhs;
-        }
+    //    public SL Add(SL rhs)
+    //    {
+    //        SL lhs = new SL(this);
+    //        lhs.ls.AddRange(rhs.ls);
+    //        return lhs;
+    //    }
 
-        public SL AddRange(List<SL> sls)
-        {
-            SL lhs = new SL(this);
-            foreach (var sl in sls) lhs.ls.AddRange(sl.ls);
-            return lhs;
-        }
+    //    public SL AddRange(List<SL> sls)
+    //    {
+    //        SL lhs = new SL(this);
+    //        foreach (var sl in sls) lhs.ls.AddRange(sl.ls);
+    //        return lhs;
+    //    }
 
-        public static SL operator +(SL lhs, SL rhs)
-        {
-            return lhs.Add(rhs);
-        }
+    //    public static SL operator +(SL lhs, SL rhs)
+    //    {
+    //        return lhs.Add(rhs);
+    //    }
 
-        public SL(List<object> l, bool q = true)
-        {
-            ls = l.Select(x => new Tuple<string, bool>(x.ToString(), q)).ToList();
-        }
+    //    public SL(List<object> l, bool q = true)
+    //    {
+    //        ls = l.Select(x => new Tuple<string, bool>(x.ToString(), q)).ToList();
+    //    }
 
-        public static SL C(List<object> l, bool q = true)
-        {
-            return new SL(l, q);
-        }
+    //    public static SL C(List<object> l, bool q = true)
+    //    {
+    //        return new SL(l, q);
+    //    }
 
-        public SL(List<string> l, bool q = true)
-        {
-            ls = l.Select(x => new Tuple<string, bool>(x.ToString(), q)).ToList();
-        }
+    //    public SL(List<string> l, bool q = true)
+    //    {
+    //        ls = l.Select(x => new Tuple<string, bool>(x.ToString(), q)).ToList();
+    //    }
 
-        public static SL C(List<string> l, bool q = true)
-        {
-            return new SL(l, q);
-        }
+    //    public static SL C(List<string> l, bool q = true)
+    //    {
+    //        return new SL(l, q);
+    //    }
 
-        public SL(params SL[] sls) { this.ls.AddRange(sls.SelectMany(x => x.ls)); }
+    //    public SL(params SL[] sls) { this.ls.AddRange(sls.SelectMany(x => x.ls)); }
 
-        public static SL C(params SL[] sls) { return new SL(sls); }
+    //    public static SL C(params SL[] sls) { return new SL(sls); }
 
-        public SL(List<object> os, List<string> names)
-        {
-            if (os != null && os.Count > 0)
-            {
-                if (names != null)
-                {
-                    ls = os.Select(o => new Tuple<string, bool>(PL.OM(names.Select((x, i) => PL.C(x,
-                        o.GetType().GetField(x).GetValue(o).ToString()))), false)).ToList();
-                }
-                else
-                {
-                    ls = os.Select(o => new Tuple<string, bool>(PL.OM(o.GetType().GetFields()
-                        .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString()))), false)).ToList();
-                }
-            }
-        }
+    //    public SL(List<object> os, List<string> names)
+    //    {
+    //        if (os != null && os.Count > 0)
+    //        {
+    //            if (names != null)
+    //            {
+    //                ls = os.Select(o => new Tuple<string, bool>(PL.OM(names.Select((x, i) => PL.C(x,
+    //                    o.GetType().GetField(x).GetValue(o).ToString()))), false)).ToList();
+    //            }
+    //            else
+    //            {
+    //                ls = os.Select(o => new Tuple<string, bool>(PL.OM(o.GetType().GetFields()
+    //                    .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString()))), false)).ToList();
+    //            }
+    //        }
+    //    }
 
-        public static SL C(List<object> os, List<string> names)
-        {
-            return new SL(os, names);
-        }
+    //    public static SL C(List<object> os, List<string> names)
+    //    {
+    //        return new SL(os, names);
+    //    }
 
-        public static SL C<T>(List<T> os, List<string> names, bool tuples)
-        {
-            List<string> ls = new List<string>();
-            if (os != null && os.Count > 0)
-            {
-                if (tuples)
-                    ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
-                            o.GetType().GetProperty("Item" + (i + 1)).GetValue(o).ToString())))).ToList();
-                else
-                {
-                    if (names != null)
-                    {
-                        ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
-                            o.GetType().GetField(x).GetValue(o).ToString())))).ToList();
-                    }
-                    else
-                    {
-                        ls = os.Select(o => PL.OM(o.GetType().GetFields()
-                            .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString())))).ToList();
-                    }
-                }
-            }
-            return SL.C(ls, false);
-        }
+    //    public static SL C<T>(List<T> os, List<string> names, bool tuples)
+    //    {
+    //        List<string> ls = new List<string>();
+    //        if (os != null && os.Count > 0)
+    //        {
+    //            if (tuples)
+    //                ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
+    //                        o.GetType().GetProperty("Item" + (i + 1)).GetValue(o).ToString())))).ToList();
+    //            else
+    //            {
+    //                if (names != null)
+    //                {
+    //                    ls = os.Select(o => PL.OM(names.Select((x, i) => PL.C(x,
+    //                        o.GetType().GetField(x).GetValue(o).ToString())))).ToList();
+    //                }
+    //                else
+    //                {
+    //                    ls = os.Select(o => PL.OM(o.GetType().GetFields()
+    //                        .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString())))).ToList();
+    //                }
+    //            }
+    //        }
+    //        return SL.C(ls, false);
+    //    }
 
-        public override string ToString()
-        {
-            return String.Join(",", ls.Select(li => li.Item2 ? Q(li.Item1) : li.Item1));
-        }
+    //    public override string ToString()
+    //    {
+    //        return String.Join(",", ls.Select(li => li.Item2 ? Q(li.Item1) : li.Item1));
+    //    }
 
-        public static string Q(object x)
-        {
-            return "\"" + x.ToString() + "\"";
-        }
-    }
+    //    public static string Q(object x)
+    //    {
+    //        return "\"" + x.ToString() + "\"";
+    //    }
+    //}
 
-    public class PL : IJ
-    {
-        public List<Tuple<string, string, bool>> ps = new List<Tuple<string, string, bool>>();
+    //public class PL : IJ
+    //{
+    //    public List<Tuple<string, string, bool>> ps = new List<Tuple<string, string, bool>>();
 
-        public PL(PL pl)
-        {
-            this.ps = pl.ps.ToList();
-        }
+    //    public PL(PL pl)
+    //    {
+    //        this.ps = pl.ps.ToList();
+    //    }
 
-        public PL Add(PL rhs)
-        {
-            PL lhs = new PL(this);
-            lhs.ps.AddRange(rhs.ps);
-            return lhs;
-        }
+    //    public PL Add(PL rhs)
+    //    {
+    //        PL lhs = new PL(this);
+    //        lhs.ps.AddRange(rhs.ps);
+    //        return lhs;
+    //    }
 
-        public PL AddRange(List<PL> pls)
-        {
-            PL lhs = new PL(this);
-            foreach (var pl in pls) lhs.ps.AddRange(pl.ps);
-            return lhs;
-        }
+    //    public PL AddRange(List<PL> pls)
+    //    {
+    //        PL lhs = new PL(this);
+    //        foreach (var pl in pls) lhs.ps.AddRange(pl.ps);
+    //        return lhs;
+    //    }
 
-        public static PL operator +(PL lhs, PL rhs)
-        {
-            return lhs.Add(rhs);
-        }
+    //    public static PL operator +(PL lhs, PL rhs)
+    //    {
+    //        return lhs.Add(rhs);
+    //    }
 
-        public static PL N(string k, string v, bool q = false)
-        {
-            return new PL(new Dictionary<string, object>() { { k, v } }, q);
-        }
+    //    public static PL N(string k, string v, bool q = false)
+    //    {
+    //        return new PL(new Dictionary<string, object>() { { k, v } }, q);
+    //    }
 
-        public static PL N(string name, PL pl)
-        {
-            return new PL(new Dictionary<string, object>() { { name, PL.C(pl) } }, false);
-        }
+    //    public static PL N(string name, PL pl)
+    //    {
+    //        return new PL(new Dictionary<string, object>() { { name, PL.C(pl) } }, false);
+    //    }
 
-        public static PL N(string name, SL sl)
-        {
-            return new PL(new Dictionary<string, object>() { { name, A.C(sl) } }, false);
-        }
+    //    public static PL N(string name, SL sl)
+    //    {
+    //        return new PL(new Dictionary<string, object>() { { name, A.C(sl) } }, false);
+    //    }
 
-        public static PL N(string name, A a)
-        {
-            return new PL(new Dictionary<string, object>() { { name, a } }, false);
-        }
+    //    public static PL N(string name, A a)
+    //    {
+    //        return new PL(new Dictionary<string, object>() { { name, a } }, false);
+    //    }
 
-        public PL(params PL[] pls) { this.ps.AddRange(pls.SelectMany(x => x.ps)); }
+    //    public PL(params PL[] pls) { this.ps.AddRange(pls.SelectMany(x => x.ps)); }
 
-        public static PL C(params PL[] pls) { return new PL(pls); }
+    //    public static PL C(params PL[] pls) { return new PL(pls); }
 
-        public PL(List<Tuple<string, string, bool>> lps)
-        {
-            ps = lps;
-        }
+    //    public PL(List<Tuple<string, string, bool>> lps)
+    //    {
+    //        ps = lps;
+    //    }
 
-        public static PL C(List<Tuple<string, string, bool>> lps)
-        {
-            return new PL(lps);
-        }
+    //    public static PL C(List<Tuple<string, string, bool>> lps)
+    //    {
+    //        return new PL(lps);
+    //    }
 
-        public PL(string n, string v, bool q = true)
-        {
-            ps.Add(new Tuple<string, string, bool>(n, v, q));
-        }
+    //    public PL(string n, string v, bool q = true)
+    //    {
+    //        ps.Add(new Tuple<string, string, bool>(n, v, q));
+    //    }
 
-        public static PL C(string n, string v, bool q = true)
-        {
-            return new PL(n, v, q);
-        }
+    //    public static PL C(string n, string v, bool q = true)
+    //    {
+    //        return new PL(n, v, q);
+    //    }
 
-        public PL(Dictionary<string, object> d, bool q = true)
-        {
-            if (d != null && d.Count > 0)
-                ps = d.Select(x => new Tuple<string, string, bool>(x.Key, x.Value.ToString(), q)).ToList();
-        }
+    //    public PL(Dictionary<string, object> d, bool q = true)
+    //    {
+    //        if (d != null && d.Count > 0)
+    //            ps = d.Select(x => new Tuple<string, string, bool>(x.Key, x.Value.ToString(), q)).ToList();
+    //    }
 
-        public static PL C(Dictionary<string, object> d, bool q = true)
-        {
-            return new PL(d, q);
-        }
+    //    public static PL C(Dictionary<string, object> d, bool q = true)
+    //    {
+    //        return new PL(d, q);
+    //    }
 
-        public static string OM(IEnumerable<PL> pls)
-        {
-            return String.Concat("{",
-                String.Join(",",
-                    pls.SelectMany(pl => pl.ps).Select(p => Q(p.Item1) + ":" + Q(p.Item2))),
-                "}");
-        }
+    //    public static string OM(IEnumerable<PL> pls)
+    //    {
+    //        return String.Concat("{",
+    //            String.Join(",",
+    //                pls.SelectMany(pl => pl.ps).Select(p => Q(p.Item1) + ":" + Q(p.Item2))),
+    //            "}");
+    //    }
 
-        public class QC
-        {
-            bool[] Quotes;
-            public QC(bool[] quotes) { this.Quotes = quotes;  }
+    //    public class QC
+    //    {
+    //        bool[] Quotes;
+    //        public QC(bool[] quotes) { this.Quotes = quotes;  }
 
-            public bool V(int i)
-            {
-                return (Quotes == null || Quotes.Length < i + 1) ? true : Quotes[i];
-            }
-        }
+    //        public bool V(int i)
+    //        {
+    //            return (Quotes == null || Quotes.Length < i + 1) ? true : Quotes[i];
+    //        }
+    //    }
 
-        public PL(object o, bool[] quotes = null)
-        {
-            QC qc = new QC(quotes);
+    //    public PL(object o, bool[] quotes = null)
+    //    {
+    //        QC qc = new QC(quotes);
 
-            if (o != null)
-            {
-                if (o is ITuple)
-                {
-                    var tuple = o as ITuple;
-                    for (int i = 0; i < tuple.Length; i++)
-                        ps.Add(new Tuple<string, string, bool>("Item" + (i + 1), tuple[i].ToString(), qc.V(i)));
-                }
-                else if (o.GetType().ToString().Contains("AnonymousType"))
-                    ps = o.GetType().GetProperties().Select((pi, i) =>
-                        new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
-                else
-                    ps = o.GetType().GetFields().Select((pi, i) => 
-                        new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
-            }
-        }
+    //        if (o != null)
+    //        {
+    //            if (o is ITuple)
+    //            {
+    //                var tuple = o as ITuple;
+    //                for (int i = 0; i < tuple.Length; i++)
+    //                    ps.Add(new Tuple<string, string, bool>("Item" + (i + 1), tuple[i].ToString(), qc.V(i)));
+    //            }
+    //            else if (o.GetType().ToString().Contains("AnonymousType"))
+    //                ps = o.GetType().GetProperties().Select((pi, i) =>
+    //                    new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
+    //            else
+    //                ps = o.GetType().GetFields().Select((pi, i) => 
+    //                    new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
+    //        }
+    //    }
 
-        public static PL C(object o, bool[] quotes = null)
-        {
-            return new PL(o, quotes);
-        }
+    //    public static PL C(object o, bool[] quotes = null)
+    //    {
+    //        return new PL(o, quotes);
+    //    }
 
-        public static PL C<T>(T o, List<string> names, bool[] quotes = null)
-        {
-            QC qc = new QC(quotes);
-            List<Tuple<string, string, bool>> ls = new List<Tuple<string, string, bool>>();
-            if (o != null)
-            {
-                if (o is ITuple)
-                {
-                    if (names != null && names.Count > 0)
-                    {
-                        var tuple = o as ITuple;
-                        for (int i = 0; i < tuple.Length && i < names.Count; i++)
-                            ls.Add(new Tuple<string, string, bool>(names[i], tuple[i].ToString(), qc.V(i)));
-                    }
-                    else
-                    {
-                        var tuple = o as ITuple;
-                        for (int i = 0; i < tuple.Length && i < names.Count; i++)
-                            ls.Add(new Tuple<string, string, bool>("Item" + (i + 1), tuple[i].ToString(), qc.V(i)));
-                    }   
-                }
-                else if (o.GetType().ToString().Contains("AnonymousType"))
-                {
-                    if (names != null && names.Count > 0)
-                    {
-                        ls = o.GetType().GetProperties().Select((pi, i) =>
-                            new Tuple<string, string, bool>(names[i], pi.GetValue(o).ToString(), qc.V(i))).ToList();
-                    }
-                    else
-                    {
-                        ls = o.GetType().GetProperties().Select((pi, i) =>
-                            new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
-                    }
-                }   
-                else
-                {
-                    if (names != null && names.Count > 0)
-                    {
-                        ls = names.Select((n, i) => new Tuple<string, string, bool>(n, o.GetType().GetField(n).GetValue(o).ToString(), qc.V(i))).ToList();
-                    }
-                    else
-                    {
-                        ls = o.GetType().GetFields().Select((pi, i) => new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
-                    }
-                }
-            }
-            return PL.C(ls);
-        }
+    //    public static PL C<T>(T o, List<string> names, bool[] quotes = null)
+    //    {
+    //        QC qc = new QC(quotes);
+    //        List<Tuple<string, string, bool>> ls = new List<Tuple<string, string, bool>>();
+    //        if (o != null)
+    //        {
+    //            if (o is ITuple)
+    //            {
+    //                if (names != null && names.Count > 0)
+    //                {
+    //                    var tuple = o as ITuple;
+    //                    for (int i = 0; i < tuple.Length && i < names.Count; i++)
+    //                        ls.Add(new Tuple<string, string, bool>(names[i], tuple[i].ToString(), qc.V(i)));
+    //                }
+    //                else
+    //                {
+    //                    var tuple = o as ITuple;
+    //                    for (int i = 0; i < tuple.Length && i < names.Count; i++)
+    //                        ls.Add(new Tuple<string, string, bool>("Item" + (i + 1), tuple[i].ToString(), qc.V(i)));
+    //                }   
+    //            }
+    //            else if (o.GetType().ToString().Contains("AnonymousType"))
+    //            {
+    //                if (names != null && names.Count > 0)
+    //                {
+    //                    ls = o.GetType().GetProperties().Select((pi, i) =>
+    //                        new Tuple<string, string, bool>(names[i], pi.GetValue(o).ToString(), qc.V(i))).ToList();
+    //                }
+    //                else
+    //                {
+    //                    ls = o.GetType().GetProperties().Select((pi, i) =>
+    //                        new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
+    //                }
+    //            }   
+    //            else
+    //            {
+    //                if (names != null && names.Count > 0)
+    //                {
+    //                    ls = names.Select((n, i) => new Tuple<string, string, bool>(n, o.GetType().GetField(n).GetValue(o).ToString(), qc.V(i))).ToList();
+    //                }
+    //                else
+    //                {
+    //                    ls = o.GetType().GetFields().Select((pi, i) => new Tuple<string, string, bool>(pi.Name, pi.GetValue(o).ToString(), qc.V(i))).ToList();
+    //                }
+    //            }
+    //        }
+    //        return PL.C(ls);
+    //    }
 
-        public override string ToString()
-        {
-            return String.Concat("{",
-                String.Join(",",
-                    ps.Select(p => Q(p.Item1) + ":" + (p.Item3 ? Q(p.Item2) : p.Item2))),
-                "}");
-        }
+    //    public override string ToString()
+    //    {
+    //        return String.Concat("{",
+    //            String.Join(",",
+    //                ps.Select(p => Q(p.Item1) + ":" + (p.Item3 ? Q(p.Item2) : p.Item2))),
+    //            "}");
+    //    }
 
-        public static string Q(object x)
-        {
-            return "\"" + x.ToString() + "\"";
-        }
-    }
+    //    public static string Q(object x)
+    //    {
+    //        return "\"" + x.ToString() + "\"";
+    //    }
+    //}
 }
