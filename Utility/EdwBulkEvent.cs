@@ -4,6 +4,12 @@ using System.Text;
 
 namespace Utility
 {
+    //EdwBulkEvent bulk = new EdwBulkEvent();
+    //bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+    //bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+    //bulk.AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+    //bulk.AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+    //string st11 = bulk.ToString();
     public class EdwBulkEvent
     {
         public EdwBulkEvent()
