@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.CompilerServices;
 using Utility;
+using static Utility.EdwBulkEvent;
 
 namespace QuickTester
 {
@@ -36,96 +37,131 @@ namespace QuickTester
             //Console.WriteLine("2: " + args[2]);
             //Console.WriteLine(Utility.UnixWrapper.BinarySearchSortedMd5File(args[0], args[1], args[2]).GetAwaiter().GetResult());
 
-            int xt1 = 1;
-            int xt2 = 2;
-            int xt3 = 3;
-            List<int?> xts1 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
-            IEnumerable<int?> xts2 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
-            int?[] xa1 = new int?[] { xt1, xt2, xt3, 4 };
+            //int xt1 = 1;
+            //int xt2 = 2;
+            //int xt3 = 3;
+            //List<int?> xts1 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
+            //IEnumerable<int?> xts2 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
+            //int?[] xa1 = new int?[] { xt1, xt2, xt3, 4 };
 
-            int xr0 = Sum(xt1);
-            int xr1 = Sum(xt1, xt2, xt3);
-            int xr2 = Sum(xts1);
-            int xr3 = Sum(xts2);
-            int xr4 = Sum(xa1);
-
-
-
-            Tuple<string, string, string> x1 = new Tuple<string, string, string>("Bob", "Jones", "Dog");
-            Tuple<string, string, string> x2 = new Tuple<string, string, string>("Tom", "Arnold", "Cat");
-
-            Tester t1 = new Tester("bob", "jones");
-            Tester2 t2 = new Tester2("tom", "arnold");
-            Tester t3 = new Tester("billy", "thorn");
-
-            List<string> ls = new List<string>() { "Bob", "John", "Joe" };
-
-            Dictionary<string, string> d = new Dictionary<string, string>()
-            {
-                { "Bob", "Jones" },
-                { "Tom", "Arnold" }
-            };
-
-            Dictionary<string, string> d2 = new Dictionary<string, string>()
-            {
-                { "Name1", "Value1" },
-                { "Name2", "Value2" }
-            };
-
-            Dictionary<string, object> d3 = new Dictionary<string, object>()
-            {
-                { "Name1", 5 },
-                { "Name2", "Value2" }
-            };
-
-            Tuple<string, string, bool> tp1 = new Tuple<string, string, bool>("name1", "value1", true);
-            Tuple<string, string, bool> tp2 = new Tuple<string, string, bool>("name2", "value2", true);
-            List<Tuple<string, string, bool>> tpl1 = new List<Tuple<string, string, bool>>() { tp1, tp2 };
-
-            List<object> as2 = new List<object>() { 5, "hello" };
-
-            List<object> as3 = new List<object>() { t1, t3 };
-
-            List<Tuple<string, string, string>> lts = new List<Tuple<string, string, string>>() { x1, x2 };
-
-            var named = (first: "one", second: "two");
-
-            string st1 = PL.O(new { x = 1, y = "Bob" }).ToString();
-            string st1b = PL.O(new { x = 1, y = "Bob", z = "{}" }, null, new bool[] { true, true, false }).ToString(); ;
-            string st2 = PL.O(t1).ToString(); 
-            string st3 = PL.C(tpl1).ToString(); 
-            string st4 = PL.D(d3).ToString(); 
-            string st5 = PL.C("name", "bob").ToString(); 
-            string st6 = PL.O(x1, new List<string>() { "FN", "LN", "PT" }).ToString();
-
-            string st12 = PL.O(named).ToString();
-            string st13 = PL.O(x1).ToString();
-            var slc = lts.Select(lt => PL.O(lt));
-            string st14 = A.C(slc).ToString();
+            //int xr0 = Sum(xt1);
+            //int xr1 = Sum(xt1, xt2, xt3);
+            //int xr2 = Sum(xts1);
+            //int xr3 = Sum(xts2);
+            //int xr4 = Sum(xa1);
 
 
-            string st8 = PL.C(
-                PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-                PL.N("zz", A.C(slc))
-                ).ToString();
 
-            string st9 = A.C(
-                PL.C(
-                    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-                    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-                    PL.N("zz", A.C(slc))
-                ),
-                PL.C(
-                    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-                    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-                    PL.N("zz", A.C(slc))
-                ),
-                SL.AO(lts, new List<string>() { "FN", "LN", "PT" }, new bool[] { true, true, true}),
-                A.C(SL.AO(lts, new List<string>() { "AFN", "ALN", "APT" }, new bool[] { true, true, true }),
-                    SL.AO(lts, new List<string>() { "BFN", "BLN", "BPT" }, new bool[] { true, true, true })),
-                SL.C(new List<object> { "hello", 5 })
-                ).ToString();
+            //Tuple<string, string, string> x1 = new Tuple<string, string, string>("Bob", "Jones", "Dog");
+            //Tuple<string, string, string> x2 = new Tuple<string, string, string>("Tom", "Arnold", "Cat");
+
+            //Tester t1 = new Tester("bob", "jones");
+            //Tester2 t2 = new Tester2("tom", "arnold");
+            //Tester t3 = new Tester("billy", "thorn");
+
+            //List<string> ls = new List<string>() { "Bob", "John", "Joe" };
+
+            //Dictionary<string, string> d = new Dictionary<string, string>()
+            //{
+            //    { "Bob", "Jones" },
+            //    { "Tom", "Arnold" }
+            //};
+
+            //Dictionary<string, string> d2 = new Dictionary<string, string>()
+            //{
+            //    { "Name1", "Value1" },
+            //    { "Name2", "Value2" }
+            //};
+
+            //Dictionary<string, object> d3 = new Dictionary<string, object>()
+            //{
+            //    { "Name1", 5 },
+            //    { "Name2", "Value2" }
+            //};
+
+            //Tuple<string, string, bool> tp1 = new Tuple<string, string, bool>("name1", "value1", true);
+            //Tuple<string, string, bool> tp2 = new Tuple<string, string, bool>("name2", "value2", true);
+            //List<Tuple<string, string, bool>> tpl1 = new List<Tuple<string, string, bool>>() { tp1, tp2 };
+
+            //List<object> as2 = new List<object>() { 5, "hello" };
+
+            //List<object> as3 = new List<object>() { t1, t3 };
+
+            //List<Tuple<string, string, string>> lts = new List<Tuple<string, string, string>>() { x1, x2 };
+
+            //var named = (first: "one", second: "two");
+
+            //string st1 = PL.O(new { x = 1, y = "Bob" }).ToString();
+            //string st1b = PL.O(new { x = 1, y = "Bob", z = "{}" }, null, new bool[] { true, true, false }).ToString(); ;
+            //string st2 = PL.O(t1).ToString(); 
+            //string st3 = PL.C(tpl1).ToString(); 
+            //string st4 = PL.D(d3).ToString(); 
+            //string st5 = PL.C("name", "bob").ToString(); 
+            //string st6 = PL.O(x1, new List<string>() { "FN", "LN", "PT" }).ToString();
+
+            //string st12 = PL.O(named).ToString();
+            //string st13 = PL.O(x1).ToString();
+            //var slc = lts.Select(lt => PL.O(lt));
+            //string st14 = A.C(slc).ToString();
+
+
+            //string st8 = PL.C(
+            //    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            //    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            //    PL.N("zz", A.C(slc))
+            //    ).ToString();
+
+            //string st9 = A.C(
+            //    PL.C(
+            //        PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            //        PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            //        PL.N("zz", A.C(slc))
+            //    ),
+            //    PL.C(
+            //        PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            //        PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            //        PL.N("zz", A.C(slc))
+            //    ),
+            //    SL.AO(lts, new List<string>() { "FN", "LN", "PT" }, new bool[] { true, true, true}),
+            //    A.C(SL.AO(lts, new List<string>() { "AFN", "ALN", "APT" }, new bool[] { true, true, true }),
+            //        SL.AO(lts, new List<string>() { "BFN", "BLN", "BPT" }, new bool[] { true, true, true })),
+            //    SL.C(new List<object> { "hello", 5 })
+            //    ).ToString();
+
+            //Guid id1 = Guid.NewGuid();
+            //string ts1 = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
+            //Dictionary<string, object> rsids = new Dictionary<string, object>()
+            //    { {"anrsid", "b0419e46-6620-4ed7-b849-d714f10b1d41" } };
+            //List<string> weps = new List<string>()
+            //    { "4231FE39-D704-4E8B-B982-9D69A9A29C26", "C8404A79-5403-4726-94C9-B663261FD78F" };
+
+
+            //string st10 = PL.C(
+            //    PL.N("E", A.C(
+            //        PL.O(new { id = id1, ts = ts1 }).Add(
+            //        PL.N("payload", PL.C("a_key", "a_value").Add(
+            //            PL.N("rsid", PL.D(rsids)).Add(
+            //            PL.N("whep", SL.C(weps)))))),
+
+            //        PL.O(new { id = id1, ts = ts1 }).Add(
+            //        PL.N("payload", PL.C("a_key", "a_value").Add(
+            //            PL.N("rsid", PL.D(rsids)).Add(
+            //            PL.N("whep", SL.C(weps))))))
+            //        )
+            //    ),
+            //    PL.N("IM", A.C(
+            //        PL.O(new { id = id1, ts = ts1 }).Add(
+            //        PL.N("payload", PL.C("a_key", "a_value")).Add(
+            //        PL.C("config_id", id1.ToString()))),
+
+            //        PL.O(new { id = id1, ts = ts1 }).Add(
+            //        PL.N("payload", PL.C("a_key", "a_value")).Add(
+            //        PL.C("config_id", id1.ToString()))))
+
+            //    )//,
+            //    //PL.N("CK", ),
+            //    //PL.N("CD", ),
+            //    ).ToString();
 
             Guid id1 = Guid.NewGuid();
             string ts1 = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
@@ -134,39 +170,12 @@ namespace QuickTester
             List<string> weps = new List<string>()
                 { "4231FE39-D704-4E8B-B982-9D69A9A29C26", "C8404A79-5403-4726-94C9-B663261FD78F" };
 
-
-            string st10 = PL.C(
-                PL.N("E", A.C(
-                    PL.O(new { id = id1, ts = ts1 }).Add(
-                    PL.N("payload", PL.C("a_key", "a_value").Add(
-                        PL.N("rsid", PL.D(rsids)).Add(
-                        PL.N("whep", SL.C(weps)))))),
-
-                    PL.O(new { id = id1, ts = ts1 }).Add(
-                    PL.N("payload", PL.C("a_key", "a_value").Add(
-                        PL.N("rsid", PL.D(rsids)).Add(
-                        PL.N("whep", SL.C(weps))))))
-                    )
-                ),
-                PL.N("IM", A.C(
-                    PL.O(new { id = id1, ts = ts1 }).Add(
-                    PL.N("payload", PL.C("a_key", "a_value")).Add(
-                    PL.C("config_id", id1.ToString()))),
-
-                    PL.O(new { id = id1, ts = ts1 }).Add(
-                    PL.N("payload", PL.C("a_key", "a_value")).Add(
-                    PL.C("config_id", id1.ToString()))))
-
-                )//,
-                //PL.N("CK", ),
-                //PL.N("CD", ),
-                ).ToString();
-
-            AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
-            AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
-            AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
-            AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
-            string st11 = EdwBulk();
+            EdwBulkEvent bulk = new EdwBulkEvent();
+            bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+            bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+            bulk.AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            bulk.AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            string st11 = bulk.ToString();
             int i = 0;
 
             // ["a", 5]
@@ -206,60 +215,49 @@ namespace QuickTester
             return Sum(xs.ToArray());
         }
 
-        public static string EdwBulk()
-        {
-            return PL.C().Add("E", false, events)
-                .Add("IM", false, ims)
-                .Add("CK", true, cks)
-                .Add("CD", true, cds)
-                .ToString();
-        }
+        
 
-        public static IList<PL> events = new List<PL>();
+    //    public enum RsType
+    //    {
+    //        Immediate = 0,
+    //        Checked,
+    //        CheckedDetail
+    //    }
 
-        public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
-            List<string> whep, PL payload)
-        {
-           events.Add(
-                PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                    .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
-                                                      .Add(PL.N("whep", SL.C(whep))))));
-        }
+    //    public static IList<PL> events = new List<PL>();
+    //    public static List<PL> ims = new List<PL>();
+    //    public static List<PL> cks = new List<PL>();
+    //    public static List<PL> cds = new List<PL>();
 
-        public static List<PL> ims = new List<PL>();
-        public static List<PL> cks = new List<PL>();
-        public static List<PL> cds = new List<PL>();
+    //    public static Dictionary<RsType, List<PL>> RsTypes = new Dictionary<RsType, List<PL>>()
+    //        { { RsType.Immediate, ims }, {RsType.Checked, cks}, {RsType.CheckedDetail, cds} };
 
-        public enum RsType
-        {
-            Immediate = 0,
-            Checked,
-            CheckedDetail
-        }
+    //    public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
+    //        List<string> whep, PL payload)
+    //    {
+    //       events.Add(
+    //            PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+    //                .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
+    //                                                  .Add(PL.N("whep", SL.C(whep))))));
+    //    }
 
-        public static Dictionary<RsType, List<PL>> RsTypes = new Dictionary<RsType, List<PL>>()
-            { { RsType.Immediate, ims }, {RsType.Checked, cks}, {RsType.CheckedDetail, cds} };
+    //    public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
+    //    {
+    //        RsTypes[t].Add(
+    //            PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+    //                .Add(PL.N("payload", PL.C(payload)))
+    //                .Add(PL.C("config_id", configId.ToString())));
 
-        public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
-        {
-            //PL rs = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
-            //if (payload != null) rs.Add(PL.N("payload", payload));
-            //if (configId != null) rs.Add(PL.C("config_id", configId.ToString()));
-            //PL pl = PL.N(RsTypes[t], A.C(PL.C(rs)));
-            //switch (t)
-            //{
-            //    case RsType.Immediate: ims.Add(rs); break;
-            //    case RsType.Checked: cks.Add(rs); break;
-            //    case RsType.CheckedDetail: cds.Add(rs); break;
-            //    default: break;
-            //}
+    //    }
 
-            RsTypes[t].Add(
-                PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                    .Add(PL.N("payload", PL.C(payload)))
-                    .Add(PL.C("config_id", configId.ToString())));
-
-        }
+    //    public static string EdwBulk()
+    //    {
+    //        return PL.C().Add("E", false, events)
+    //            .Add("IM", false, ims)
+    //            .Add("CK", true, cks)
+    //            .Add("CD", true, cds)
+    //            .ToString();
+    //    }
     }
 
     
