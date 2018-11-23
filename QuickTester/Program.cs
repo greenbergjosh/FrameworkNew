@@ -220,20 +220,10 @@ namespace QuickTester
         public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
             List<string> whep, PL payload)
         {
-            PL np = null;
-            List<PL> rw = new List<PL>();
-            if (rsid != null && rsid.Count > 0) rw.Add(PL.N("rsid", PL.D(rsid)));
-            if (whep != null && whep.Count > 0) rw.Add(PL.N("whep", SL.C(whep)));
-            if (rw.Count > 0)
-            {
-                if (payload != null) np = PL.C(payload).Add(rw);
-                else np = PL.C(rw);
-            }
-
-            PL e = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
-            if (np != null) e.Add(PL.N("payload", np));
-            
-            events.Add(e);
+           events.Add(
+                PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+                    .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
+                                                      .Add(PL.N("whep", SL.C(whep))))));
         }
 
         public static List<PL> ims = new List<PL>();
@@ -247,22 +237,28 @@ namespace QuickTester
             CheckedDetail
         }
 
-        public static Dictionary<RsType, string> RsTypes = new Dictionary<RsType, string>()
-            { { RsType.Immediate, "IM"}, {RsType.Checked, "CK"}, {RsType.CheckedDetail, "CD"} };
+        public static Dictionary<RsType, List<PL>> RsTypes = new Dictionary<RsType, List<PL>>()
+            { { RsType.Immediate, ims }, {RsType.Checked, cks}, {RsType.CheckedDetail, cds} };
 
         public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
         {
-            PL rs = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
-            if (payload != null) rs.Add(PL.N("payload", payload));
-            if (configId != null) rs.Add(PL.C("config_id", configId.ToString()));
-            PL pl = PL.N(RsTypes[t], A.C(PL.C(rs)));
-            switch (t)
-            {
-                case RsType.Immediate: ims.Add(rs); break;
-                case RsType.Checked: cks.Add(rs); break;
-                case RsType.CheckedDetail: cds.Add(rs); break;
-                default: break;
-            }
+            //PL rs = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") });
+            //if (payload != null) rs.Add(PL.N("payload", payload));
+            //if (configId != null) rs.Add(PL.C("config_id", configId.ToString()));
+            //PL pl = PL.N(RsTypes[t], A.C(PL.C(rs)));
+            //switch (t)
+            //{
+            //    case RsType.Immediate: ims.Add(rs); break;
+            //    case RsType.Checked: cks.Add(rs); break;
+            //    case RsType.CheckedDetail: cds.Add(rs); break;
+            //    default: break;
+            //}
+
+            RsTypes[t].Add(
+                PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+                    .Add(PL.N("payload", PL.C(payload)))
+                    .Add(PL.C("config_id", configId.ToString())));
+
         }
     }
 

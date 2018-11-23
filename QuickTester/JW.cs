@@ -31,17 +31,17 @@ namespace QuickTester
 
     public class A : IJ
     {
-        IEnumerable<IJ> js = new List<IJ>();
+        public List<IJ> js = new List<IJ>();
 
         public A() { }
 
         public static A C() { return new A(); }
 
-        public A(IEnumerable<IJ> js) { this.js = js; }
+        public A(IEnumerable<IJ> js) { this.js.AddRange(js); }
 
         public static A C(IEnumerable<IJ> js) { return new A(js); }
 
-        public A(params IJ[] js) { this.js = js; }
+        public A(params IJ[] js) { this.js.AddRange(js); }
 
         public static A C(params IJ[] js) { return new A(js); }
 
@@ -114,13 +114,13 @@ namespace QuickTester
             {
                 if (names != null)
                 {
-                    ls = os.Select(o => new Tuple<string, bool>(PL.OM(names.Select((x, i) => PL.C(x,
-                        o.GetType().GetField(x).GetValue(o).ToString()))), false)).ToList();
+                    ls.AddRange(os.Select(o => new Tuple<string, bool>(PL.OM(names.Select((x, i) => PL.C(x,
+                        o.GetType().GetField(x).GetValue(o).ToString()))), false)));
                 }
                 else
                 {
-                    ls = os.Select(o => new Tuple<string, bool>(PL.OM(o.GetType().GetFields()
-                        .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString()))), false)).ToList();
+                    ls.AddRange(os.Select(o => new Tuple<string, bool>(PL.OM(o.GetType().GetFields()
+                        .Select(pi => PL.C(pi.Name, pi.GetValue(o).ToString()))), false)));
                 }
             }
         }
@@ -206,7 +206,7 @@ namespace QuickTester
 
         public static PL C() { return new PL(); }
 
-        public PL(PL pl) { this.ps = pl.ps.ToList(); }
+        public PL(PL pl) { this.ps.AddRange(pl.ps); }
 
         public PL(params PL[] pls) { this.ps.AddRange(pls.SelectMany(x => x.ps)); }
 
@@ -216,15 +216,9 @@ namespace QuickTester
 
         public static PL C(IEnumerable<PL> pls) { return new PL(pls); }
 
-        public PL(List<Tuple<string, string, bool>> lps)
-        {
-            ps = lps;
-        }
+        public PL(List<Tuple<string, string, bool>> lps) { this.ps.AddRange(lps); }
 
-        public static PL C(List<Tuple<string, string, bool>> lps)
-        {
-            return new PL(lps);
-        }
+        public static PL C(List<Tuple<string, string, bool>> lps) { return new PL(lps); }
 
         public PL(string n, string v, bool q = true)
         {
@@ -265,25 +259,31 @@ namespace QuickTester
             return new PL(new Dictionary<string, object>() { { k, v } }, q);
         }
 
-        public static PL N(string name, PL pl)
+        public static PL N(string name, PL pl, bool addEmpty = false)
         {
-            return new PL(new Dictionary<string, object>() { { name, PL.C(pl) } }, false);
+            if (pl.ps != null && pl.ps.Count > 0) return PL.C(name, PL.C(pl).ToString(), false);
+            else if (addEmpty) return PL.N(name, "{}", false);
+            return PL.C();
         }
 
-        public static PL N(string name, SL sl)
+        public static PL N(string name, SL sl, bool addEmpty = false)
         {
-            return new PL(new Dictionary<string, object>() { { name, A.C(sl) } }, false);
+            if (sl.ls != null && sl.ls.Count > 0) return PL.C(name, A.C(sl).ToString(), false);
+            else if (addEmpty) return PL.N(name, "[]", false);
+            return PL.C();
         }
 
-        public static PL N(string name, A a)
+        public static PL N(string name, A a, bool addEmpty = false)
         {
-            return new PL(new Dictionary<string, object>() { { name, a } }, false);
+            if (a.js != null && a.js.Count > 0) return PL.C(name, a.ToString(), false);
+            else if (addEmpty) return PL.N(name, "[]", false);
+            return PL.C();
         }
 
         public PL(IDictionary<string, object> d, bool q = true)
         {
             if (d != null && d.Count > 0)
-                ps = d.Select(x => new Tuple<string, string, bool>(x.Key, x.Value.ToString(), q)).ToList();
+                this.ps.AddRange(d.Select(x => new Tuple<string, string, bool>(x.Key, x.Value.ToString(), q)));
         }
 
         public static PL D(IDictionary<string, object> d, bool q = true)
