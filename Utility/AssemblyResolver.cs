@@ -7,11 +7,18 @@ using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
 using System.IO;
 using System.Linq;
+using System.Collections.Concurrent;
 
 namespace Utility
 {
     public class AssemblyResolver : IDisposable
     {
+        public static object _dllCacheLock = new object();
+        public static ConcurrentDictionary<string, Assembly> _dllCache 
+            = new ConcurrentDictionary<string, Assembly>();
+        public static ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache 
+            = new ConcurrentDictionary<Tuple<string, string, string>, MethodInfo>(); 
+
         private readonly ICompilationAssemblyResolver assemblyResolver;
         private readonly DependencyContext dependencyContext;
         private readonly AssemblyLoadContext loadContext;
@@ -89,6 +96,30 @@ namespace Utility
                     Console.WriteLine("    {0} {1}", property.PropertyType.Name, property.Name);
                 }
             }
+        }
+
+        public static MethodInfo GetMethod(string dllPath, string className, string methodName)
+        {
+            MethodInfo mi;
+            var t = new Tuple<string, string, string>(dllPath, className, methodName);
+            if (_cache.TryGetValue(t, out mi)) return mi;
+
+            Assembly a;
+            lock(_dllCacheLock)
+            {
+                a = _dllCache.GetOrAdd(dllPath, _ =>
+                {
+                    using (var dynamicContext = new Utility.AssemblyResolver(dllPath))
+                    {
+                        return dynamicContext.Assembly;
+                    }
+                });
+            }
+            
+            return _cache.GetOrAdd(t, _ =>
+            {
+                    return a.GetType(className).GetMethod(methodName);
+            });
         }
     }
 }

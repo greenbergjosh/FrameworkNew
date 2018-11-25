@@ -12,50 +12,43 @@ namespace Utility
     //string st11 = bulk.ToString();
     public class EdwBulkEvent
     {
-        public EdwBulkEvent()
-        {
-            RsTypes = new Dictionary<RsType, List<PL>>()
-            { { RsType.Immediate, ims }, {RsType.Checked, cks}, {RsType.CheckedDetail, cds} };
-        }
+        public EdwBulkEvent() { }
 
-        public enum RsType
+        public enum EdwType
         {
-            Immediate = 0,
+            Event = 0,
+            Immediate,
             Checked,
             CheckedDetail
         }
 
-        public IList<PL> events = new List<PL>();
-        public List<PL> ims = new List<PL>();
-        public List<PL> cks = new List<PL>();
-        public List<PL> cds = new List<PL>();
-
-        public Dictionary<RsType, List<PL>> RsTypes;
+        public Dictionary<EdwType, List<PL>> RsTypes = new Dictionary<EdwType, List<PL>>()
+            { { EdwType.Event, new List<PL>() }, { EdwType.Immediate, new List<PL>() },
+              { EdwType.Checked, new List<PL>()}, { EdwType.CheckedDetail, new List<PL>()} };
 
         public void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
             List<string> whep, PL payload)
         {
-            events.Add(
+            RsTypes[EdwType.Event].Add(
                  PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
                      .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
                                                        .Add(PL.N("whep", SL.C(whep))))));
         }
 
-        public void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
+        public void AddRS(EdwType t, Guid uid, DateTime tms, PL payload, Guid configId)
         {
             RsTypes[t].Add(
                 PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
                     .Add(PL.N("payload", PL.C(payload)))
                     .Add(PL.C("config_id", configId.ToString())));
-
         }
 
         public override string ToString()
         {
-            return PL.C().Add("E", false, events)
-                .Add("IM", false, ims)
-                .Add("CK", true, cks)
-                .Add("CD", true, cds)
+            return PL.C().Add("E", false, RsTypes[EdwType.Event])
+                .Add("IM", false, RsTypes[EdwType.Immediate])
+                .Add("CK", false, RsTypes[EdwType.Checked])
+                .Add("CD", false, RsTypes[EdwType.CheckedDetail])
                 .ToString();
         }
     }

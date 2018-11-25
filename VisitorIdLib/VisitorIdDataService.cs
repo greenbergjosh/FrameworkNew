@@ -21,7 +21,8 @@ namespace VisitorIdLib
         public string TowerEmailApiKey;
         public string TowerEncryptionKey;
         public string VisitorIdConnectionString;
-        public Dictionary<string, List<string>> VisitorIdProviderSequences = new Dictionary<string, List<string>>();
+        public Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences = new Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>>();
+        public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
         public int VisitorIdCookieExpDays = 10;
         public Dictionary<string, IGenericEntity> Providers = new Dictionary<string, IGenericEntity>();
 
@@ -46,15 +47,35 @@ namespace VisitorIdLib
             this.TowerEmailApiKey = gc.GetS("Config/TowerEmailApiKey");
             this.TowerEncryptionKey = gc.GetS("Config/TowerEncryptionKey");
             this.VisitorIdConnectionString = gc.GetS("Config/VisitorIdConnectionString");
-            foreach (var gvip in gc.GetL("Config/VisitorIdProviderSequences"))
+
+            foreach (var afidCfg in gc.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
-                string dom = gvip.GetS("dom");
-                List<string> dseq = new List <string>();
+                string afid = afidCfg.GetS("afid");
+                List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)> afidSeqs = new List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>();
+                foreach (var afidCfgSeq in  afidCfg.GetL("seqs"))
+                {
+                    string domain = afidCfgSeq.GetS("dom");
+                    List<(string Md5provider, string EmailProviderSeq)> md5seq = new List<(string Md5provider, string EmailProviderSeq)>();
+                    foreach (var dgvipm in afidCfgSeq.GetL("seq"))
+                    {
+                        string md5ProviderStr = dgvipm.GetS("");
+                        string[] md5ProviderStrParts = md5ProviderStr.Split('|');
+                        md5seq.Add((md5ProviderStrParts[0], 
+                            md5ProviderStrParts.Length > 1 ? md5ProviderStrParts[1] : null));
+                    }
+                    afidSeqs.Add((domain, md5seq));
+                }
+                VisitorIdMd5ProviderSequences.Add(afid, afidSeqs);
+            }
+            foreach (var gvip in gc.GetL("Config/VisitorIdEmailProviderSequences"))
+            {
+                string emProviderSeqName = gvip.GetS("name");
+                List<string> dseq = new List<string>();
                 foreach (var dgvip in gvip.GetL("seq"))
                 {
                     dseq.Add(dgvip.GetS(""));
                 }
-                VisitorIdProviderSequences.Add(dom, dseq);
+                VisitorIdEmailProviderSequences.Add(emProviderSeqName, dseq);
             }
             this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
                 ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
@@ -79,7 +100,7 @@ namespace VisitorIdLib
         //   ParseFailed - done at response type level
         //   DecryptionFailed - done at response type level
         // ProviderMd5toEmailRequest - need to know original provider id (I think this can come from savesession|opaque
-        // ProviderMd5ToEmailResponse - email | faailuretype | success
+        // ProviderMd5ToEmailResponse - email | failuretype | success
         // ActualEmailCollected
 
         // Qs --> Domain, Publisher
@@ -148,7 +169,9 @@ namespace VisitorIdLib
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
-                    string ret = await ProcessTowerMessage(context);
+                    string ret = null;
+                    IGenericEntity op = await TowerWrapper.ProcessTowerMessage(context, this.TowerEncryptionKey, Err);
+                    if (op != null) ret = await SaveSession(context, "Tower", 2, 7, op.GetS("sesid"), emailMd5, "", op.GetS("qs"), opaque);
                     await WriteResponse(context, ret);
                 }
                 else
@@ -194,6 +217,11 @@ namespace VisitorIdLib
 
             IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
             string afid = opge.GetS("afid");
+
+            // Fix this to use afid before regex
+            // A client with many domains under a single afid could still be very slow
+            // A siteid could eliminate that performance issue though in general
+            // behavior will likely be the same for all sites under an afid.
 
             //Regex rgx = new Regex(@"^(.*?\.)?xyz\.com$");
             List<string> VisitorIdProviderSequence = null;
@@ -330,7 +358,7 @@ namespace VisitorIdLib
 
         public string Blank(string x)
         {
-            return (x == null) ? "" : x;
+            return x ?? "";
         }
 
         public async Task<string> SaveSession(HttpContext context, string serviceName, int M5dImpressionTypeId,
@@ -351,30 +379,19 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
+            // I search legacy for plaintext - I can convert this to a service / provider
+            //  - when legacy is searched, the md5 is saved into legacy
+            // I then test other plain text providers - all can be services
+
             if (String.IsNullOrEmpty(bEmail)) // Search Legacy for plaintext
             {
-                IGenericEntity geplain = await SqlWrapper.SqlToGenericEntity(this.VisitorIdConnectionString,
-                    "Md5ToLegacyEmail",
-                    Jw.Json(new
-                    {
-                        Md5It = M5dImpressionTypeId,
-                        Sid = bSessionId,
-                        Md5 = bMd5,
-                        Ip = bIp,
-                        Qs = bQueryString,
-                        Ua = bUserAgent,
-                        Op = bOpaque
-                    }),
-                    "", null, null, 240);
+                IGenericEntity geplain = await ConsumerRepository.PlainTextFromMd5(this.VisitorIdConnectionString, bMd5, 240);
                 bEmail = Blank(geplain.GetS("Email"));
+
+                // Events are dropped on every provider hit, success or failure
 
                 if (!String.IsNullOrEmpty(bEmail))
                 {
-                    // Already created the Impression in spMd5ToLegacyEmail
-                    //firstName = geplain.GetS("Fn");
-                    //lastName = geplain.GetS("Ln");
-                    //dateOfBirth = geplain.GetS("Dob");
-                    //EmIt = Int32.Parse(geplain.GetS("EmIt"));
                     HttpWrapper.SetCookie(context, "vidck",
                         Jw.Json(new
                         {
@@ -387,6 +404,8 @@ namespace VisitorIdLib
                 }
             }
 
+            // Each md5 provider needs to be associated to a list of email providers to test
+
             int plainTypeId = PlainImpressionTypeId;
             if (String.IsNullOrEmpty(bEmail)) // Search Services for plaintext
             {
@@ -394,10 +413,13 @@ namespace VisitorIdLib
                 plainTypeId = 9; /*PlainNone*/
                 if (serviceName == "Tower")
                 {
-                    bEmail = Blank(await CallTowerEmailApi(context, bMd5, bOpaque));
+                    bEmail = Blank(await TowerWrapper.CallTowerEmailApi(context, bMd5, bOpaque, 
+                        this.TowerEmailApiUrl, this.TowerEmailApiKey, Err));
                     if (!String.IsNullOrEmpty(bEmail)) plainTypeId = PlainImpressionTypeId;
                 }
             }
+
+            // No need for impressions, always just request/response from provider
 
             try
             {
@@ -447,150 +469,6 @@ namespace VisitorIdLib
 
             return await SaveSession(context, serviceName, M5dImpressionTypeId, PlainImpressionTypeId, sessionId,
                 md5, email, queryString, opaque);
-        }
-        
-        public static int PadCount(string str)
-        {
-            switch (str.Length % 4)
-            {
-                case 0: return 0;
-                case 2: return 2;
-                case 3: return 1;
-                default:
-                    throw new System.Exception("Illegal base64url string!");
-            }
-        }
-
-        private string Decrypt(string encryptedText, byte[] key)
-        {
-            RijndaelManaged aesEncryption = new RijndaelManaged();
-            aesEncryption.BlockSize = 128;
-            aesEncryption.KeySize = 128;
-
-            aesEncryption.Mode = CipherMode.ECB;
-            aesEncryption.Padding = PaddingMode.PKCS7;
-            aesEncryption.Key = key;
-            ICryptoTransform decrypto = aesEncryption.CreateDecryptor();
-            byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
-            byte[] decryptedData = decrypto.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
-            return ASCIIEncoding.UTF8.GetString(decryptedData);
-        }
-
-        public async Task<string> CallTowerEmailApi(HttpContext context, string md5, string opaque)
-        {
-            string towerEmailPlainText = "";
-            try
-            {
-                string towerEmailApi = this.TowerEmailApiUrl + "?api_key=" + this.TowerEmailApiKey + "&md5_email=" + md5;
-                var jsonPlainEmail = await Utility.ProtocolClient.HttpGetAsync(towerEmailApi);
-                await Err(1, "CallTowerEmailApi", "Tracking",
-                    "::ip=" + context.Connection.RemoteIpAddress + "::" + (!String.IsNullOrEmpty(jsonPlainEmail.Item2)
-                            ? "CallEmailApi(Tower): " + md5 + "::" + jsonPlainEmail.Item2
-                            : "CallEmailApi(Tower): " + md5 + "::" + "Null or empty jsonPlainEmail"));
-
-                if (!String.IsNullOrEmpty(jsonPlainEmail.Item2) && jsonPlainEmail.Item1)
-                {
-                    IGenericEntity te = Jw.JsonToGenericEntity(jsonPlainEmail.Item2);
-                    if (te.GetS("target_email") != null)
-                    {
-                        if (te.GetS("target_email").Length > 3)
-                        {
-                            towerEmailPlainText = te.GetS("target_email");
-                        }
-                    }
-                    else
-                    {
-                        await Err(1, "CallTowerEmailApi", "Tracking", "::ip=" + context.Connection.RemoteIpAddress + "::" + ((jsonPlainEmail.Item2 != null)
-                                    ? "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "|" + jsonPlainEmail.Item2 + "|"
-                                    : "CallEmailApi(Tower) Returned Null or Short Email: " + md5 + "::" + "Null jsonPlainEmail"));
-                    }
-                }
-            }
-            catch (Exception tgException)
-            {
-                await Err(1000, "CallTowerEmailApi", "Exception", "TowerDataEmailApiFailed: " + $"{md5}||{opaque}" + "::" + tgException.ToString());
-            }
-
-            return towerEmailPlainText;
-        }
-
-        public async Task<string> ProcessTowerMessage(HttpContext context)
-        {
-            string pRawString = "";
-            string opaque = "";
-            string emailMd5 = "";
-
-            string rawstring = context.Request.Query["eqs"].ToString();
-
-            await Err(1, "ProcessTowerMessage", "Tracking", "Entry: " + rawstring + "::ip=" + context.Connection.RemoteIpAddress);
-
-            try
-            {
-                string[] a = rawstring.Split("  ");
-                a[a.Length - 1] = a[a.Length - 1].PadRight(a[a.Length - 1].Length + PadCount(a[a.Length - 1]), '=');
-                pRawString = String.Join("\r\n", a);
-                pRawString = pRawString.Replace('-', '+').Replace('_', '/');
-            }
-            catch (Exception ex)
-            {
-                await Err(1000, "ProcessTowerMessage", "Exception", "Step1Fail " + $"string error::{rawstring}" +
-                                "::" + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
-            }
-
-            try
-            {
-                byte[] key = Utility.Hashing.StringToByteArray(this.TowerEncryptionKey);
-                string result = Decrypt(pRawString, key);
-                if (result.Contains("md5_email"))
-                {
-                    await Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
-                    var parsedstring = HttpUtility.ParseQueryString(result);
-                    emailMd5 = parsedstring["md5_email"].ToString();
-                    if (parsedstring["label"] != null)
-                    {
-                        opaque = parsedstring["label"].ToString();
-                    }
-                }
-                else
-                {
-                    await Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
-                }
-            }
-            catch (Exception ex)
-            {
-                await Err(1000, "ProcessTowerMessage", "Exception", "Step3Fail: " + $"decrypt error::{rawstring}" + "::" +
-                                ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
-            }
-
-            if (String.IsNullOrEmpty(emailMd5) ||
-                emailMd5.ToLower() == "none" || emailMd5.Length != 32)
-            {
-                if (!String.IsNullOrEmpty(emailMd5) && emailMd5.Length != 32)
-                {
-                    await Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
-                }
-
-                return Jw.Json(new { Result = "Failure" });
-            }
-
-            try
-            {
-                await Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
-
-                byte[] byt = Convert.FromBase64String(opaque);
-                string jsopaque = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
-                IGenericEntity op = new GenericEntityJson();
-                var opstate = JsonConvert.DeserializeObject(jsopaque);
-                op.InitializeEntity(null, null, opstate);
-
-                return await SaveSession(context, "Tower", 2, 7, op.GetS("sesid"), emailMd5, "", op.GetS("qs"), opaque);
-            }
-            catch (Exception ex)
-            {
-                await Err(1000, "ProcessTowerMessage", "Exception", "OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
-            }
-
-            return Jw.Json(new { Result = "Failure" });
         }
 
         public void JunkHolder()

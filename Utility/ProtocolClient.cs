@@ -563,6 +563,16 @@ namespace Utility
             return files;
         }
 
+        public static async Task<IGenericEntity> HttpPostAsyncGe(GlobalScope gs, IGenericEntity ge)
+        {
+            Dictionary<string, string> parms = new Dictionary<string, string>();
+            foreach (var di in ge.GetD("parms")) parms.Add(di.Item1, di.Item2);
+            string resp = await HttpPostAsync(ge.GetS("uri"), parms, 
+                !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60, 
+                ge.GetS("mediaType") ?? "");
+            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { result = resp }));
+        }
+
         public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms, 
             double timeoutSeconds=60, string mediaType="", int maxConnections = 5)
         {
@@ -612,6 +622,13 @@ namespace Utility
             var stream = response.GetResponseStream();
             var sr = new StreamReader(stream);
             return await sr.ReadToEndAsync();
+        }
+
+        public static async Task<IGenericEntity> HttpGetAsync(GlobalScope gs, IGenericEntity ge)
+        {
+            Tuple<bool, string> resp = await HttpGetAsync(ge.GetS("uri"),
+                !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);
+            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { success = resp.Item1, result = resp.Item2 }));
         }
 
         public static async Task<Tuple<bool, string>> HttpGetAsync(string path, double timeoutSeconds=60)

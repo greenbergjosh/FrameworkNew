@@ -62,6 +62,11 @@ namespace Utility
             throw new NotImplementedException();
         }
 
+        public virtual IEnumerable<Tuple<string, string>> GetD(string path)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual object Get(string path)
         {
             return this[path];
