@@ -7,6 +7,8 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using Utility;
 using static Utility.EdwBulkEvent;
+using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace QuickTester
 {
@@ -14,6 +16,51 @@ namespace QuickTester
     {
         static void Main(string[] args)
         {
+            string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
+            IGenericEntity gp = new GenericEntityJson();
+            var gpstate = JsonConvert.DeserializeObject(json);
+            gp.InitializeEntity(null, null, gpstate);
+            
+            foreach (var t in gp.GetD("x"))
+            {
+                string nm = t.Item1;
+                string vl = t.Item2;
+            }
+
+
+            //var result = (JObject)JsonConvert.DeserializeObject(json);
+            //foreach (var je in result.AsJEnumerable())
+            //{
+            //    string nm = ((JProperty)je).Name;
+            //    string vl = ((JProperty)je).Value.ToString();
+            //}
+            //object x;
+            //MethodInfo mi = x.GetType().GetMethod("");
+            //using (var dynamicContext = new Utility.AssemblyResolver(Directory.GetCurrentDirectory() + "\\" + "Utility.dll"))
+            //{
+            //    //dynamic o = dynamicContext.Assembly.CreateInstance("Utility.FileSystem");
+            //    dynamic t = dynamicContext.Assembly.GetType("Utility.FileSystem");
+            //    MethodInfo mi = t.GetMethod("QuotePathParts");
+            //    object[] parms = new object[]
+            //    {
+            //        @"c:\program files\long line\abc\efg.txt"
+            //    };
+            //    string s = (string)mi.Invoke(null, parms);
+            //}
+
+            MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll", 
+                "Utility.FileSystem", "QuotePathParts");
+            object[] parms = new object[]
+                {
+                    @"c:\program files\long line\abc\efg.txt"
+                };
+            string s = (string)mi.Invoke(null, parms);
+            mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
+                "Utility.FileSystem", "QuotePathParts");
+            s = (string)mi.Invoke(null, parms);
+
+            int zz = 0;
+
             //var result = SqlWrapper.SqlServerProviderEntry("Data Source =.;Initial Catalog = dataMail;Integrated Security = SSPI;",
             //                "SelectProvider",
             //                "{}",
@@ -173,8 +220,8 @@ namespace QuickTester
             EdwBulkEvent bulk = new EdwBulkEvent();
             bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
             bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
-            bulk.AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
-            bulk.AddRS(RsType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            bulk.AddRS(EdwType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            bulk.AddRS(EdwType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
             string st11 = bulk.ToString();
             int i = 0;
 

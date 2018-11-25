@@ -124,11 +124,6 @@ namespace Utility
                 return new SL(os, names);
             }
 
-            public static int TrailingInt(string s)
-            {
-                return Int32.Parse(string.Concat(s.ToArray().Reverse().TakeWhile(char.IsNumber).Reverse()));
-            }
-
             public static SL AO<T>(IList<T> os, List<string> names = null, bool[] quotes = null)
             {
                 QC qc = new QC(quotes);

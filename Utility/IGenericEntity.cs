@@ -21,6 +21,7 @@ namespace Utility
 
         IEnumerable<IGenericEntity> GetL(string path);
         IGenericEntity GetE(string path);
+        IEnumerable<Tuple<string, string>> GetD(string path);
 
         object Get(string path);
         object Run(string fname);
