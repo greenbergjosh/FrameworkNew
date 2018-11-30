@@ -1225,8 +1225,8 @@ namespace UnsubLib
             {
                 var di = new DirectoryInfo(destDir);
                 var fi = di.GetFiles($"{fileName}*");
-                var tempFileCopyLocation = $"{destDir}\\{fileName}{tempSuffix}";
-                var finalFileCopyLocation = $"{destDir}\\{fileName}";
+                var tempFileCopyLocation = $"{destDir}\\{dfileName}{tempSuffix}";
+                var finalFileCopyLocation = $"{destDir}\\{dfileName}";
 
                 if (fi.Length == 1)
                 {
@@ -1268,7 +1268,7 @@ namespace UnsubLib
                             this.FileCacheFtpPassword
                             );
 
-                        File.Move($"{destDir}\\{dfileName}{tempSuffix}", $"{destDir}\\{dfileName}");
+                        File.Move(tempFileCopyLocation, finalFileCopyLocation);
                     }
 
                     fi = di.GetFiles(dfileName);
