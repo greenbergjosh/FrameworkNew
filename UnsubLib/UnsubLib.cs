@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Timers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -71,6 +72,7 @@ namespace UnsubLib
         public int MinDiffFileSize;
         public float MaxDiffFilePercentage;
         public string SortBufferSize;
+        public int FileCopyTimeout;
 
         public RoslynWrapper RosWrap;
 
@@ -78,6 +80,7 @@ namespace UnsubLib
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
+        private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
 
         public UnsubLib(string appName, string connectionString)
         {
@@ -118,6 +121,9 @@ namespace UnsubLib
             this.MinDiffFileSize = Int32.Parse(gc.GetS("Config/MinDiffFileSize"));
             this.MaxDiffFilePercentage = float.Parse(gc.GetS("Config/MaxDiffFilePercentage"));
             this.SortBufferSize = gc.GetS("Config/SortBufferSize");
+
+            if (int.TryParse(gc.GetS("Config/SortBufferSize"), out var to)) this.FileCopyTimeout = to;
+            else this.FileCopyTimeout = DefaultFileCopyTimeout;
 
             ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
@@ -1220,27 +1226,25 @@ namespace UnsubLib
             bool success = false;
             string fileName = fileId + ext;
             string dfileName = destFileName == null ? fileName : destFileName;
+            var tempFile = new FileInfo($"{destDir}\\{dfileName}{tempSuffix}");
+            var finalFile = new FileInfo($"{destDir}\\{dfileName}");
 
             if (!String.IsNullOrEmpty(this.FileCacheFtpServer) || !String.IsNullOrEmpty(this.FileCacheDirectory))
             {
                 var di = new DirectoryInfo(destDir);
-                var fi = di.GetFiles($"{fileName}*");
-                var tempFileCopyLocation = $"{destDir}\\{dfileName}{tempSuffix}";
-                var finalFileCopyLocation = $"{destDir}\\{dfileName}";
+                var files = di.GetFiles();
 
-                if (fi.Length == 1)
+                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase))) return fileName;
+                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
                 {
-                    var tempFile = new FileInfo(tempFileCopyLocation);
-                    var finalFile = new FileInfo(finalFileCopyLocation);
-
-                    if (fi[0].Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase))
+                    if (files[0].Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        await WaitForFileCopyInProcess(tempFile, finalFile);
+                        await WaitForFileCopyInProcess(finalFile);
                     }
 
-                    return fileName;
+                    return dfileName;
                 }
-                else if (fi.Length == 0)
+                else
                 {
                     success = await MakeRoom(fileName, cacheSize);
 
@@ -1252,14 +1256,14 @@ namespace UnsubLib
 
                     if (!String.IsNullOrEmpty(this.FileCacheDirectory))
                     {
-                        var tmpFile = new FileInfo($"{this.FileCacheDirectory}\\{fileName}");
+                        var cacheFile = new FileInfo($"{this.FileCacheDirectory}\\{fileName}");
 
-                        tmpFile.CopyTo(tempFileCopyLocation);
-                        tmpFile.MoveTo(finalFileCopyLocation);
+                        cacheFile.CopyTo(tempFile.FullName);
+                        tempFile.MoveTo(finalFile.FullName);
                     }
                     else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
-                        await Utility.ProtocolClient.DownloadFileFtp(
+                        await ProtocolClient.DownloadFileFtp(
                             destDir,
                             this.FileCacheFtpServerPath + "/" + fileName,
                             dfileName + tempSuffix,
@@ -1268,12 +1272,12 @@ namespace UnsubLib
                             this.FileCacheFtpPassword
                             );
 
-                        File.Move(tempFileCopyLocation, finalFileCopyLocation);
+                        tempFile.MoveTo(finalFile.FullName);
                     }
 
-                    fi = di.GetFiles(dfileName);
+                    files = di.GetFiles(dfileName);
 
-                    if (fi.Length == 1) return dfileName;
+                    if (files.Length == 1) return dfileName;
                     else
                     {
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
@@ -1281,29 +1285,28 @@ namespace UnsubLib
                         throw new Exception("Could not find file in cache: " + fileName);
                     }
                 }
-                else
-                {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            "GetFileFromFileId", "Error", "Too many file matches: " + fileName);
-                    throw new Exception("Too many file matches: " + fileName);
-                }
             }
             else
             {
                 DirectoryInfo di = new DirectoryInfo(destDir);
-                FileInfo[] fi = di.GetFiles(fileName);
+                FileInfo[] files = di.GetFiles();
 
-                fi = di.GetFiles(fileName);
-
-                if (fi.Length == 1)
+                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)))
                 {
-                    if (destFileName == null)
-                        return fileName;
+                    if (destFileName == null) return fileName;
                     else
                     {
-                        fi[0].CopyTo(destFileName);
+                        files[0].CopyTo(tempFile.FullName);
+                        tempFile.MoveTo(finalFile.FullName);
+
                         return destFileName;
                     }
+                }
+                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    await WaitForFileCopyInProcess(finalFile);
+
+                    return finalFile.Name;
                 }
                 else
                 {
@@ -1314,37 +1317,46 @@ namespace UnsubLib
             }
         }
 
-        private async Task WaitForFileCopyInProcess(FileInfo tempFile, FileInfo finalFile)
+        private async Task WaitForFileCopyInProcess(FileInfo finalFile)
         {
-            var timeoutAt = DateTime.Now.AddMinutes(5);
-            var checkFileSizeAt = DateTime.Now.AddMinutes(1);
-            var lastFileSize = tempFile.Length;
+            var tcs = new TaskCompletionSource<bool>();
+            var watcher = new FileSystemWatcher(finalFile.Directory.FullName) { EnableRaisingEvents = true };
+            var timer = new System.Timers.Timer(FileCopyTimeout) { AutoReset = false };
 
-            while (!finalFile.Exists && tempFile.Exists)
+            void dispose()
             {
-                var now = DateTime.Now;
-
-                if (now >= checkFileSizeAt)
-                {
-                    if (lastFileSize == finalFile.Length)
-                    {
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "File copy initiated by other request has hung: " + finalFile.Name);
-                        throw new Exception("Timed out waiting for other file copy process to finish: " + finalFile.Name);
-                    }
-
-                    lastFileSize = tempFile.Length;
-                    checkFileSizeAt = now.AddMinutes(1);
-                }
-                else if (now >= timeoutAt)
-                {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "Timed out waiting for file copy initiated by other request: " + finalFile.Name);
-                    throw new Exception("Timed out waiting for other file copy process to finish: " + finalFile.Name);
-                }
-
-                await Task.Delay(3000);
-                finalFile.Refresh();
-                tempFile.Refresh();
+                watcher.Dispose();
+                timer.Dispose();
             }
+            void renamedHandler(object s, RenamedEventArgs e)
+            {
+                if (e.Name.Equals(finalFile.Name, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    dispose();
+                    tcs.TrySetResult(true);
+                }
+            }
+            async void timerHandler(object s, ElapsedEventArgs e)
+            {
+                dispose();
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "Timed out waiting for file copy initiated by other request: " + finalFile.Name);
+                tcs.TrySetException(new TimeoutException("Timed out waiting for other file copy process to finish: " + finalFile.Name));
+            }
+
+            timer.Elapsed += timerHandler;
+            watcher.Renamed += renamedHandler;
+
+            // In case it completed during setup
+            finalFile.Refresh();
+
+            if (finalFile.Exists)
+            {
+                dispose();
+                tcs.TrySetResult(true);
+            }
+            else timer.Start();
+
+            await tcs.Task;
         }
 
         public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
