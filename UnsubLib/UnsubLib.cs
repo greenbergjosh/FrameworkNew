@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Timers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,12 +17,9 @@ using Fs = Utility.FileSystem;
 using Utility;
 using System.Globalization;
 using System.Net;
-using System.Threading;
-using System.Net.Http;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
+using System.Threading;
 
 // servName = LEADME_DB, dbName=Unsub, ssisConStr="Data Source=localhost;Initial Catalog=Unsub;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;"
 // jsonTemplateFile=SSISMd5Template.json, ssisTemplateFile=NewestPkg.xml
@@ -74,18 +72,20 @@ namespace UnsubLib
         public int MinDiffFileSize;
         public float MaxDiffFilePercentage;
         public string SortBufferSize;
+        public int FileCopyTimeout;
 
-        public RoslynWrapper RosWrap;        
+        public RoslynWrapper RosWrap;
 
         public const string MD5HANDLER = "Md5Handler";
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
-                   
+        private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
+
         public UnsubLib(string appName, string connectionString)
         {
             this.ApplicationName = appName;
-            this.ConnectionString = connectionString;                     
+            this.ConnectionString = connectionString;
 
             string general = SqlWrapper.SqlServerProviderEntry(this.ConnectionString, "SelectConfig", "", "")
                 .GetAwaiter().GetResult();
@@ -120,7 +120,10 @@ namespace UnsubLib
             this.FileCacheFtpServerPath = gc.GetS("Config/FileCacheFtpServerPath");
             this.MinDiffFileSize = Int32.Parse(gc.GetS("Config/MinDiffFileSize"));
             this.MaxDiffFilePercentage = float.Parse(gc.GetS("Config/MaxDiffFilePercentage"));
-            this.SortBufferSize = gc.GetS("Config/SortBufferSize");            
+            this.SortBufferSize = gc.GetS("Config/SortBufferSize");
+
+            if (int.TryParse(gc.GetS("Config/SortBufferSize"), out var to)) this.FileCopyTimeout = to;
+            else this.FileCopyTimeout = DefaultFileCopyTimeout;
 
             ServicePointManager.DefaultConnectionLimit = this.MaxConnections;
 
@@ -139,7 +142,7 @@ namespace UnsubLib
 
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
-                    singleNetworkName != null ? Jw.Json(new { NetworkName = singleNetworkName}): "{}",
+                    singleNetworkName != null ? Jw.Json(new { NetworkName = singleNetworkName }) : "{}",
                     "");
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -149,9 +152,9 @@ namespace UnsubLib
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
             ge.InitializeEntity(this.RosWrap, null, state);
-            
+
             return ge;
-        }        
+        }
 
         public async Task ManualDirectory(IGenericEntity network)
         {
@@ -330,7 +333,7 @@ namespace UnsubLib
                     $"ScheduledUnsubJob", "Tracking", $"ScheduledUnsubJob({network.GetS("Name")}) Completed ProcessUnsubFiles");
         }
 
-        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, 
+        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris,
             IGenericEntity network, IGenericEntity cse)
         {
             string networkName = network.GetS("Name");
@@ -488,7 +491,7 @@ namespace UnsubLib
             return uris;
         }
 
-        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> 
+        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>>
         DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris,
             IGenericEntity network)
         {
@@ -549,7 +552,7 @@ namespace UnsubLib
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                             $"DownloadUnsubFiles", "Tracking", $"Completed UnzipUnbuffered({networkName}):: " +
                             "for url " + uri.Key);
-                    }                     
+                    }
 
                     if (cf.ContainsKey(MD5HANDLER))
                     {
@@ -706,7 +709,7 @@ namespace UnsubLib
             return new Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>(ncf, ndf);
         }
 
-        public async Task SignalUnsubServerService(IGenericEntity network, HashSet<Tuple<string, string>> diffs, 
+        public async Task SignalUnsubServerService(IGenericEntity network, HashSet<Tuple<string, string>> diffs,
             IDictionary<string, string> ndf)
         {
             StringBuilder sbDiff = new StringBuilder("");
@@ -721,9 +724,14 @@ namespace UnsubLib
             {
                 sbDiff.Append("[]");
             }
-            
-            string msg = Jw.Json(new { m = "LoadUnsubFiles", ntwrk = network.GetS("Name"),
-                DomUnsub = Jw.Json("CId", "FId", ndf), Diff = sbDiff.ToString() },
+
+            string msg = Jw.Json(new
+            {
+                m = "LoadUnsubFiles",
+                ntwrk = network.GetS("Name"),
+                DomUnsub = Jw.Json("CId", "FId", ndf),
+                Diff = sbDiff.ToString()
+            },
                 new bool[] { true, true, false, false });
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -738,7 +746,7 @@ namespace UnsubLib
                 //result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
                 //    new Dictionary<string, string>() { { "", msg } }, 60 * 60, "application/json");
 
-                result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubJobServerUri, 
+                result = await Utility.ProtocolClient.HttpPostAsync(this.UnsubJobServerUri,
                     msg, "application/json", 1000 * 60);
 
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -841,7 +849,7 @@ namespace UnsubLib
                     string[] fileParts = file.Name.Split(new char[] { '.' });
                     if ((DateTime.UtcNow.Subtract(file.LastAccessTimeUtc).TotalDays > 1)
                         && (!refdFiles.Contains(fileParts[0].ToLower())))
-                            Fs.TryDeleteFile(file); 
+                        Fs.TryDeleteFile(file);
                 }
             }
 
@@ -851,7 +859,7 @@ namespace UnsubLib
             {
                 Fs.TryDeleteFile(file);
             }
-            
+
             try
             {
                 await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
@@ -899,7 +907,7 @@ namespace UnsubLib
         {
             string network = await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                     "SelectNetwork",
-                    Jw.Json(new { NetworkName=networkName }),
+                    Jw.Json(new { NetworkName = networkName }),
                     "");
             IGenericEntity ge = new GenericEntityJson();
             var state = (JArray)JsonConvert.DeserializeObject(network);
@@ -925,7 +933,7 @@ namespace UnsubLib
                     $"LoadUnsubFiles", "Tracking", "List of All Cached files(FileCacheDirectory): " + sbAllFiles.ToString());
             }
             else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
-            { 
+            {
                 List<string> allFiles = await Utility.ProtocolClient.FtpGetFiles("Unsub", this.FileCacheFtpServer, this.FileCacheFtpUser, this.FileCacheFtpPassword);
                 StringBuilder sbAllFiles = new StringBuilder();
                 foreach (string fl in allFiles)
@@ -972,7 +980,7 @@ namespace UnsubLib
                         Fs.TryDeleteFile(this.ServerWorkingDirectory + "\\" + tmpFileName);
 
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            $"LoadUnsubFiles", "Exception", "spUploadDomainUnsubFile: " + campaignId + 
+                            $"LoadUnsubFiles", "Exception", "spUploadDomainUnsubFile: " + campaignId +
                             "::" + fileId + "::" + tmpFileName + "::" + exDomUnsub);
                     }
                 });
@@ -1074,7 +1082,7 @@ namespace UnsubLib
                             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
                                 $"LoadUnsubFiles", "Tracking", "After BulkInsert: " +
                                 oldf + "::" + newf);
-                        }                     
+                        }
                     }
                     catch (Exception exDiff)
                     {
@@ -1099,7 +1107,7 @@ namespace UnsubLib
             }
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1, this.ApplicationName,
-                            $"LoadUnsubFiles", "Tracking", 
+                            $"LoadUnsubFiles", "Tracking",
                             $"Finished LoadUnsubFiles({dtve.GetS("ntwrk")}): " + result);
 
             return result;
@@ -1209,50 +1217,67 @@ namespace UnsubLib
                 return false;
             }
 
-            return true;            
+            return true;
         }
 
-        public async Task<string> GetFileFromFileId(string fileId, string ext, string destDir, long cacheSize, string destFileName=null)
+        public async Task<string> GetFileFromFileId(string fileId, string ext, string destDir, long cacheSize, string destFileName = null)
         {
+            const string tempSuffix = "_temp";
             bool success = false;
             string fileName = fileId + ext;
             string dfileName = destFileName == null ? fileName : destFileName;
+            var tempFile = new FileInfo($"{destDir}\\{dfileName}{tempSuffix}");
+            var finalFile = new FileInfo($"{destDir}\\{dfileName}");
 
-            if (!String.IsNullOrEmpty(this.FileCacheFtpServer) ||
-                !String.IsNullOrEmpty(this.FileCacheDirectory))
+            if (!String.IsNullOrEmpty(this.FileCacheFtpServer) || !String.IsNullOrEmpty(this.FileCacheDirectory))
             {
-                DirectoryInfo di = new DirectoryInfo(destDir);
-                FileInfo[] fi = di.GetFiles(fileName);
-                if (fi.Length == 1) return fileName;
-                else if (fi.Length == 0)
+                var di = new DirectoryInfo(destDir);
+                var files = di.GetFiles();
+
+                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase))) return fileName;
+                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    if (files[0].Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        await WaitForFileCopyInProcess(finalFile);
+                    }
+
+                    return dfileName;
+                }
+                else
                 {
                     success = await MakeRoom(fileName, cacheSize);
+
                     if (!success)
                     {
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            "GetFileFromFileId", "Error", "Could not make room for file: " + fileName);
+                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "Could not make room for file: " + fileName);
                         throw new Exception("Could not make room for file.");
                     }
 
                     if (!String.IsNullOrEmpty(this.FileCacheDirectory))
                     {
-                        new FileInfo(this.FileCacheDirectory + "\\" + fileName)
-                                .CopyTo(destDir + "\\" + dfileName);
+                        var cacheFile = new FileInfo($"{this.FileCacheDirectory}\\{fileName}");
+
+                        cacheFile.CopyTo(tempFile.FullName);
+                        tempFile.MoveTo(finalFile.FullName);
                     }
                     else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
                     {
-                        await Utility.ProtocolClient.DownloadFileFtp(
+                        await ProtocolClient.DownloadFileFtp(
                             destDir,
                             this.FileCacheFtpServerPath + "/" + fileName,
-                            dfileName,
+                            dfileName + tempSuffix,
                             this.FileCacheFtpServer,
                             this.FileCacheFtpUser,
                             this.FileCacheFtpPassword
                             );
-                    }                    
 
-                    fi = di.GetFiles(dfileName);
-                    if (fi.Length == 1) return dfileName;
+                        tempFile.MoveTo(finalFile.FullName);
+                    }
+
+                    files = di.GetFiles(dfileName);
+
+                    if (files.Length == 1) return dfileName;
                     else
                     {
                         await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
@@ -1260,27 +1285,28 @@ namespace UnsubLib
                         throw new Exception("Could not find file in cache: " + fileName);
                     }
                 }
-                else
-                {
-                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            "GetFileFromFileId", "Error", "Too many file matches: " + fileName);
-                    throw new Exception("Too many file matches: " + fileName);
-                }
             }
             else
             {
                 DirectoryInfo di = new DirectoryInfo(destDir);
-                FileInfo[] fi = di.GetFiles(fileName);
-                fi = di.GetFiles(fileName);
-                if (fi.Length == 1)
+                FileInfo[] files = di.GetFiles();
+
+                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)))
                 {
-                    if (destFileName == null)
-                        return fileName;
+                    if (destFileName == null) return fileName;
                     else
                     {
-                        fi[0].CopyTo(destFileName);
+                        files[0].CopyTo(tempFile.FullName);
+                        tempFile.MoveTo(finalFile.FullName);
+
                         return destFileName;
                     }
+                }
+                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    await WaitForFileCopyInProcess(finalFile);
+
+                    return finalFile.Name;
                 }
                 else
                 {
@@ -1289,6 +1315,48 @@ namespace UnsubLib
                     throw new Exception("Could not find file locally: " + fileName);
                 }
             }
+        }
+
+        private async Task WaitForFileCopyInProcess(FileInfo finalFile)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var watcher = new FileSystemWatcher(finalFile.Directory.FullName) { EnableRaisingEvents = true };
+            var timer = new System.Timers.Timer(FileCopyTimeout) { AutoReset = false };
+
+            void dispose()
+            {
+                watcher.Dispose();
+                timer.Dispose();
+            }
+            void renamedHandler(object s, RenamedEventArgs e)
+            {
+                if (e.Name.Equals(finalFile.Name, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    dispose();
+                    tcs.TrySetResult(true);
+                }
+            }
+            async void timerHandler(object s, ElapsedEventArgs e)
+            {
+                dispose();
+                await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "Timed out waiting for file copy initiated by other request: " + finalFile.Name);
+                tcs.TrySetException(new TimeoutException("Timed out waiting for other file copy process to finish: " + finalFile.Name));
+            }
+
+            timer.Elapsed += timerHandler;
+            watcher.Renamed += renamedHandler;
+
+            // In case it completed during setup
+            finalFile.Refresh();
+
+            if (finalFile.Exists)
+            {
+                dispose();
+                tcs.TrySetResult(true);
+            }
+            else timer.Start();
+
+            await tcs.Task;
         }
 
         public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
@@ -1309,7 +1377,7 @@ namespace UnsubLib
         public async Task<string> ServerIsUnsub(string proxyRequest)
         {
             return await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
-                new Dictionary<string, string>() { { "", proxyRequest } }, 5*60, "application/json");
+                new Dictionary<string, string>() { { "", proxyRequest } }, 5 * 60, "application/json");
         }
 
         public async Task<string> IsUnsub(IGenericEntity dtve)
@@ -1326,7 +1394,7 @@ namespace UnsubLib
                 }
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
 
-                bool result =  await Utility.UnixWrapper.BinarySearchSortedMd5File(
+                bool result = await Utility.UnixWrapper.BinarySearchSortedMd5File(
                     this.SearchDirectory,
                     fileName,
                     emailMd5);
@@ -1339,7 +1407,7 @@ namespace UnsubLib
                            "IsUnsub", "Exception",
                            "Search failed: " + campaignId + "::" + emailMd5 + "::" + ex.ToString());
                 throw new Exception("Search failed.");
-            }            
+            }
         }
 
         public async Task<string> ServerForceUnsub(string proxyRequest)
@@ -1351,7 +1419,7 @@ namespace UnsubLib
         public async Task<string> ServerIsUnsubList(string proxyRequest)
         {
             return await Utility.ProtocolClient.HttpPostAsync(this.UnsubServerUri,
-                new Dictionary<string, string>() { { "", proxyRequest } }, 10*60, "application/json");
+                new Dictionary<string, string>() { { "", proxyRequest } }, 10 * 60, "application/json");
         }
 
         public async Task<string> IsUnsubList(IGenericEntity dtve)
@@ -1371,7 +1439,7 @@ namespace UnsubLib
                         emailFixed = Utility.Hashing.CalculateMD5Hash(emailFixed.ToLower());
                     }
                     emailMd5.Add(emailFixed);
-                }                
+                }
 
                 string fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", this.SearchDirectory, this.SearchFileCacheSize);
                 emailMd5.Sort();
@@ -1407,8 +1475,8 @@ namespace UnsubLib
 
             return Jw.Json("NotUnsub", notFound);
         }
-        
-        public async Task SSISLoadMd5File(string fileName, string servName, string dbName, 
+
+        public async Task SSISLoadMd5File(string fileName, string servName, string dbName,
             string ssisConStr, string jsonTemplateFile, string ssisTemplateFile, string postProcessSproc)
         {
             string[] fileNameParts = fileName.Split('.');
@@ -1443,7 +1511,7 @@ namespace UnsubLib
                 await SqlWrapper.CreateSsisTables(this.ConnectionString, fileId);
                 await SsisWrapper.SsisWrapper.ExecutePackage(
                     this.DtExecPath,
-                    $"{this.ServerWorkingDirectory}\\{fileName}.xml", 
+                    $"{this.ServerWorkingDirectory}\\{fileName}.xml",
                     ssisConStr,
                     null);
             }
@@ -1501,15 +1569,15 @@ namespace UnsubLib
                            "GetNetworkCampaigns", "Tracking",
                            $@"Reading Local Network File: {this.LocalNetworkFilePath}\{networkId}.xml");
                 campaignXml = File.ReadAllText($@"{this.LocalNetworkFilePath}\{networkId}.xml");
-            }                
-                
-            return await SqlWrapper.SqlServerProviderEntry(this.ConnectionString, 
+            }
+
+            return await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
                 "MergeNetworkCampaigns",
                 Jw.Json(new { NetworkId = networkId }),
                 campaignXml);
         }
 
-        
+
         public async Task<string> GetSuppressionFileUri(
             IGenericEntity network, string networkCampaignId, int maxConnections)
         {
@@ -1600,7 +1668,7 @@ namespace UnsubLib
                                "Exception finding unsub file source: " + suppDetails + "::" + findUnsubException.ToString());
                 throw new Exception("Exception finding unsub file source.");
             }
-            
+
             return uri;
         }
 
@@ -1674,7 +1742,7 @@ namespace UnsubLib
                 {
                     //dwnldLink.Click();
                     fileUrl = dwnldLink.GetAttribute("href");
-                } 
+                }
             }
             return fileUrl;
         }
@@ -1760,7 +1828,7 @@ namespace UnsubLib
             }
 
             return (IDictionary<string, object>)dr;
-        }        
+        }
 
         public async Task<string> ZipTester(FileInfo f)
         {
@@ -1785,7 +1853,7 @@ namespace UnsubLib
                     StringSplitOptions.None);
 
                 bool allMd5 = true;
-                for (int l = 0; l < (lines.Length == 1 ? 1 : lines.Length-1); l++)
+                for (int l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
                 {
                     if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
                     {
@@ -1817,7 +1885,7 @@ namespace UnsubLib
                     }
                 }
                 if (allDom) return DOMAINHANDLER;
-                
+
             }
 
             await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
@@ -1825,7 +1893,7 @@ namespace UnsubLib
                            "Unknown file type: " + f.FullName + "::" + theText);
             return UNKNOWNHANDLER;
         }
-        
+
         public async Task<object> Md5ZipHandler(FileInfo f)
         {
             Guid fileName = Guid.NewGuid();
@@ -1853,6 +1921,6 @@ namespace UnsubLib
                            "UnknownTypeHandler", "Error",
                            "Unknown file type: " + fi.FullName);
             return new object();
-        }        
+        }
     }
 }
