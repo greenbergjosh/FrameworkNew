@@ -1,26 +1,15 @@
 ﻿async function visitorId(url, opaque, future) {
     var success = 0;
-    var i = 0;
-    var sessionId = '';
-    opaque = opaque || {};
-    opaque.qs = encodeURIComponent(window.location.href);
-    var opaques = btoa(JSON.stringify(opaque));
-    while (true) {
-        var res = await window.genericFetch(url + '?m=VisitorId&i=' + i + '&sd=' + sessionId + '&op=' + opaques
-            + '&qs=' + encodeURIComponent(window.location.href) + '&succ=' + success,
+    opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), i: 0, sd: '', succ: 0 };
+    while (true) {   
+        var res = await window.genericFetch(url + '?m=VisitorId&op=' + btoa(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
         if (!(res.url || res.scriptUrl) || res.done) break;
-        i = res.idx;
 
-        if (sessionId == '') {
-            sessionId = res.sesid;
-            opaque.sesid = res.sesid;
-            opaques = btoa(JSON.stringify(opaque));
-        }        
-
+        var sres = {};
         if (res.scriptUrl) {
-            await load(res.scriptUrl, 'Segment');
+            await load(res.scriptUrl, 'Segment'+res.idx);
             for (var x in res.strategy) {
                 var f = res.strategy[x].f;
                 var a = res.strategy[x].a;
@@ -30,14 +19,17 @@
             success = 1;
         }
         else {
-            res = await window.handleService(res);
+            sres = await window.handleService(res);
             success = (res.md5 || res.email) ? 1 : 0;
         }
+
+        opaque = {
+            ...opaque, i: res.idx, sd: res.sesid, succ: success, md5: sres.md5,
+            e: btoa(sres.email), vieps: res.vieps
+        }; 
         
         if (res.saveSession == 'true') {
-            var res = await window.genericFetch(url + '?m=SaveSession&md5=' + res.md5 + '&e=' + btoa(res.email) +
-                '&sd=' + sessionId + '&op=' + opaques + '&qs=' + encodeURIComponent(window.location.href) +
-                '&sn=' + res.name,
+            var res = await window.genericFetch(url + '?m=SaveSession&op=' + btoa(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');  
         }

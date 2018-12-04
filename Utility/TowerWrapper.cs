@@ -10,7 +10,7 @@ using Jw = Utility.JsonWrapper;
 
 namespace Utility
 {
-    public class TowerWrapper
+    public static class TowerWrapper
     {
         public static int PadCount(string str)
         {
@@ -39,10 +39,10 @@ namespace Utility
             return ASCIIEncoding.UTF8.GetString(decryptedData);
         }
 
-        public static async Task<IGenericEntity> CallTowerEmailApi(GlobalScope gs, IGenericEntity ge)
+        public static async Task<IGenericEntity> CallTowerEmailApi(FrameworkWrapper fw, HttpContext context, IGenericEntity ge)
         {
-            string s = await CallTowerEmailApi(gs.context, ge.GetS("md5"), ge.GetS("opaque"),
-                ge.GetS("towerEmailApiUrl"), ge.GetS("towerEmailApiKey"), gs.Err);
+            string s = await CallTowerEmailApi(context, ge.GetS("md5"), ge.GetS("opaque"),
+                ge.GetS("towerEmailApiUrl"), ge.GetS("towerEmailApiKey"), fw.Err);
             return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { result = s }));
         }
 
@@ -88,8 +88,7 @@ namespace Utility
             return towerEmailPlainText;
         }
 
-        public static async Task<IGenericEntity> ProcessTowerMessage(HttpContext context, string towerEncryptionKey,
-            Func<int, string, string, string, Task> Err)
+        public static async Task<IGenericEntity> ProcessTowerMessage(FrameworkWrapper fw, HttpContext context, string towerEncryptionKey)
         {
             // All this method does in call SaveSession() with the decrypted opaque parm
             string pRawString = "";
@@ -98,7 +97,7 @@ namespace Utility
 
             string rawstring = context.Request.Query["eqs"].ToString();
 
-            await Err(1, "ProcessTowerMessage", "Tracking", "Entry: " + rawstring + "::ip=" + context.Connection.RemoteIpAddress);
+            await fw.Err(1, "ProcessTowerMessage", "Tracking", "Entry: " + rawstring + "::ip=" + context.Connection.RemoteIpAddress);
 
             try
             {
@@ -109,7 +108,7 @@ namespace Utility
             }
             catch (Exception ex)
             {
-                await Err(1000, "ProcessTowerMessage", "Exception", "Step1Fail " + $"string error::{rawstring}" +
+                await fw.Err(1000, "ProcessTowerMessage", "Exception", "Step1Fail " + $"string error::{rawstring}" +
                                 "::" + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
@@ -119,7 +118,7 @@ namespace Utility
                 string result = Decrypt(pRawString, key);
                 if (result.Contains("md5_email"))
                 {
-                    await Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                    await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
                     var parsedstring = HttpUtility.ParseQueryString(result);
                     emailMd5 = parsedstring["md5_email"].ToString();
                     if (parsedstring["label"] != null)
@@ -129,12 +128,12 @@ namespace Utility
                 }
                 else
                 {
-                    await Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                    await fw.Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
                 }
             }
             catch (Exception ex)
             {
-                await Err(1000, "ProcessTowerMessage", "Exception", "Step3Fail: " + $"decrypt error::{rawstring}" + "::" +
+                await fw.Err(1000, "ProcessTowerMessage", "Exception", "Step3Fail: " + $"decrypt error::{rawstring}" + "::" +
                                 ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
@@ -143,7 +142,7 @@ namespace Utility
             {
                 if (!String.IsNullOrEmpty(emailMd5) && emailMd5.Length != 32)
                 {
-                    await Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
+                    await fw.Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
                 }
 
                 return null;
@@ -151,7 +150,7 @@ namespace Utility
 
             try
             {
-                await Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
+                await fw.Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
                 byte[] byt = Convert.FromBase64String(opaque);
                 string jsopaque = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
@@ -162,7 +161,7 @@ namespace Utility
             }
             catch (Exception ex)
             {
-                await Err(1000, "ProcessTowerMessage", "Exception", "OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
+                await fw.Err(1000, "ProcessTowerMessage", "Exception", "OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
             return null;

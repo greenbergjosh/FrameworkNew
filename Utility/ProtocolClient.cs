@@ -572,7 +572,7 @@ namespace Utility
             return files;
         }
 
-        public static async Task<IGenericEntity> HttpPostAsyncGe(GlobalScope gs, IGenericEntity ge)
+        public static async Task<IGenericEntity> HttpPostAsyncGe(FrameworkWrapper fw, IGenericEntity ge)
         {
             Dictionary<string, string> parms = new Dictionary<string, string>();
             foreach (var di in ge.GetD("parms")) parms.Add(di.Item1, di.Item2);
@@ -633,7 +633,7 @@ namespace Utility
             return await sr.ReadToEndAsync();
         }
 
-        public static async Task<IGenericEntity> HttpGetAsync(GlobalScope gs, IGenericEntity ge)
+        public static async Task<IGenericEntity> HttpGetAsync(FrameworkWrapper fw, IGenericEntity ge)
         {
             Tuple<bool, string> resp = await HttpGetAsync(ge.GetS("uri"),
                 !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);

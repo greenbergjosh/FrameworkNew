@@ -16,6 +16,28 @@ namespace QuickTester
     {
         static void Main(string[] args)
         {
+            List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
+            string scriptsPath = @"e:\workspace\scripts";
+            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            string scriptFlatFileColumnGenerator =
+                @"int i = 0;
+                  foreach (var x in p.ge.GetL(""""))
+                  {
+                    XmlNode cln = p.cn.Clone();
+                    ((XmlElement)cln).RemoveAttribute(""TokenizerReplace"" + [=i=]);
+                    await f.TokenReplaceXmlR(new {pn = cln, ge = x}, s);
+                    p.cn.ParentNode.AppendChild(cln);
+                    i++;
+                  }
+                  p.cn.ParentNode.RemoveChild(p.cn);""""";
+        for (int ij = 0; ij < 100; ij++)
+            rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
+                scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
+
+
+        string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
+            string result = SqlWrapper.SqlServerProviderEntry(constr, "SelectConfig", JsonWrapper.Json(new { InstanceId = "3B93EB28-79B6-489E-95D1-6EAA392536B5" }), "").GetAwaiter().GetResult();
+
             string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
             IGenericEntity gp = new GenericEntityJson();
             var gpstate = JsonConvert.DeserializeObject(json);
@@ -26,6 +48,8 @@ namespace QuickTester
                 string nm = t.Item1;
                 string vl = t.Item2;
             }
+
+            
 
 
             //var result = (JObject)JsonConvert.DeserializeObject(json);
