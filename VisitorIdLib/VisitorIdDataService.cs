@@ -149,8 +149,7 @@ namespace VisitorIdLib
                 {
                     string ret = null;
                     IGenericEntity op = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
-                    if (op != null) ret = await SaveSession(this.Fw, context, "Tower", op.GetS("sesid"), op.GetS("md5"), "", 
-                        op.GetS("qs"), op.GetS("opaque"), op.GetS("vieps"));
+                    if (op != null) ret = await SaveSession(this.Fw, context, op.GetS("sesid"), op.GetS("md5"), "", op.GetS("vieps"));
                     await WriteResponse(context, ret);
                 }
                 else
@@ -182,20 +181,18 @@ namespace VisitorIdLib
 
         public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
         {
-            // Consider an IGenericEntity that wraps the request dictionary
-            int idx = c.Get("i", 0, x => Int32.Parse(x));
-            string sid = c.Get("sd", Guid.NewGuid().ToString());
-            string qstr = c.Get("qs", "");
             string opaque = c.Get("op", "");
-            bool succ = c.Get("succ", false, x => x == "1" ? true : false);
-
+            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
+            string afid = opge.GetS("afid");
+            int idx = Int32.Parse(opge.GetS("i"));
+            string sid = opge.GetS("sd");
+            sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
+            bool succ = opge.GetS("succ") == "1" ? true : false;
+            string qstr = opge.GetS("qs");
             Uri u = new Uri(qstr);
             string host = u.Host ?? "";
             string path = u.AbsolutePath ?? "";
-            string qury = u.Query ?? "";
-
-            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
-            string afid = opge.GetS("afid");
+            string qury = u.Query ?? "";            
 
             // Consider accepting an existing Guid from opaque.rsid and using it or dropping
             // events to it, in addition to the events we drop specifically for vid
@@ -251,7 +248,7 @@ namespace VisitorIdLib
                             if (!String.IsNullOrEmpty(md5))
                             {
                                 eml = gc.GetS("Em");
-                                await SaveSession(fw, c, "cookie", sid, md5, eml, qstr, opaque, visitorIdEmailProviderSequence);
+                                await SaveSession(fw, c, sid, md5, eml, visitorIdEmailProviderSequence);
                             }
                         }
                         nextIdx++;
@@ -275,14 +272,14 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return Jw.Json(new { done = "1", ckmd5 = md5, ckemail = eml, sesid = sid });
+                            return Jw.Json(new { done = "1", sesid = sid });
                         }
                     }
                     else if (nextTask.ToLower() == "breakonsuccess")
                     {
                         if (succ)
                         {
-                            return Jw.Json(new { done = "1", ckmd5 = md5, ckemail = eml, sesid = sid });
+                            return Jw.Json(new { done = "1", sesid = sid });
                         }
                         else
                         {
@@ -294,7 +291,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "break")
                     {
-                        return Jw.Json(new { done = "1", ckmd5 = md5, ckemail = eml, sesid = sid });
+                        return Jw.Json(new { done = "1", sesid = sid });
                     }
                     else if (nextTask[0] == '@')
                     {
@@ -348,18 +345,18 @@ namespace VisitorIdLib
             {
                 await fw.Err(1000, "DoVisitorId", "Exception", ex.ToString());
             }
-            return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
+            return Jw.Json(new { done = "1", sesid = sid });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string serviceName, string sessionId, string md5,
-            string email, string queryString, string opaque, string visitorIdEmailProviderSequence)
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId, string md5,
+            string email, string visitorIdEmailProviderSequence)
         {
             string ip = c.Ip();
             string userAgent = c.UserAgent();
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            string em = await DoEmailProviders(fw, c, md5, email, visitorIdEmailProviderSequence);
+            string em = await DoEmailProviders(fw, c, md5, email, sessionId, visitorIdEmailProviderSequence);
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -374,13 +371,22 @@ namespace VisitorIdLib
 
         public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c)
         {
-            return await SaveSession(fw, c, c.Get("sn", ""), c.Get("sd", ""),
-                c.Get("md5", ""), c.Get("e", "", x => Hashing.DecodeUtf8From64(x)),
-                c.Get("qs", ""), c.Get("op", ""), c.Get("vieps", ""));
+            string opaque = c.Get("op", "");
+            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
+            string afid = opge.GetS("afid");
+            int idx = Int32.Parse(opge.GetS("i"));
+            string sid = opge.GetS("sd");
+            string vieps = opge.GetS("vieps");
+            string qstr = opge.GetS("qs");
+            string md5 = opge.GetS("md5");
+            string eml = opge.GetS("e");
+            string decEml = String.IsNullOrEmpty(eml) ? "" : Hashing.DecodeUtf8From64(eml);
+
+            return await SaveSession(fw, c, sid, md5, eml, vieps);
         }
 
-        public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string md5, 
-            string email, string visitorIdEmailProviderSequence)
+        public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
+            string md5, string email, string visitorIdEmailProviderSequence)
         {
             string eml = "";
             int slotnum = 0;
@@ -452,21 +458,7 @@ namespace VisitorIdLib
                 }
             }
 
-            //IGenericEntity geplain = await ConsumerRepository.PlainTextFromMd5(this.VisitorIdConnectionString, bMd5, 240);
-            //bEmail = Blank(geplain.GetS("Email"));
-
-            //int plainTypeId = PlainImpressionTypeId;
-            //if (String.IsNullOrEmpty(bEmail)) // Search Services for plaintext
-            //{
-            //    // Try to get plain text
-            //    plainTypeId = 9; /*PlainNone*/
-            //    if (serviceName == "Tower")
-            //    {
-            //        bEmail = Blank(await TowerWrapper.CallTowerEmailApi(context, bMd5, bOpaque,
-            //            this.TowerEmailApiUrl, this.TowerEmailApiKey, Err));
-            //        if (!String.IsNullOrEmpty(bEmail)) plainTypeId = PlainImpressionTypeId;
-            //    }
-            //}
+            return eml;
         }
     }
 }
