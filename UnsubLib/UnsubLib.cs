@@ -1308,24 +1308,19 @@ namespace UnsubLib
             else
             {
                 DirectoryInfo di = new DirectoryInfo(destDir);
-                FileInfo[] files = di.GetFiles();
+                FileInfo[] fi = di.GetFiles(fileName);
 
-                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)))
+                fi = di.GetFiles(fileName);
+
+                if (fi.Length == 1)
                 {
-                    if (destFileName == null) return fileName;
+                    if (destFileName == null)
+                        return fileName;
                     else
                     {
-                        files[0].CopyTo(tempFile.FullName);
-                        tempFile.MoveTo(finalFile.FullName);
-
+                        fi[0].CopyTo(destFileName);
                         return destFileName;
                     }
-                }
-                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    await WaitForFileCopyInProcess(finalFile);
-
-                    return finalFile.Name;
                 }
                 else
                 {
