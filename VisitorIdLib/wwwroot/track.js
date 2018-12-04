@@ -20,7 +20,7 @@
         }        
 
         if (res.scriptUrl) {
-            await load(res.scriptUrl, 'Segment');
+            await load(res.scriptUrl, 'Segment'+i);
             for (var x in res.strategy) {
                 var f = res.strategy[x].f;
                 var a = res.strategy[x].a;

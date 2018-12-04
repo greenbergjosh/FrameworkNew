@@ -17,38 +17,26 @@ namespace VisitorIdLib
 {
     public class VisitorIdDataService
     {
+        public FrameworkWrapper Fw;
+
+        public Guid RsConfigGuid;
         public string TowerEmailApiUrl;
         public string TowerEmailApiKey;
         public string TowerEncryptionKey;
-        public string VisitorIdConnectionString;
         public Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences = new Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>>();
         public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
         public int VisitorIdCookieExpDays = 10;
-        public Dictionary<string, IGenericEntity> Providers = new Dictionary<string, IGenericEntity>();
-
-        EdwSiloLoadBalancedWriter SiloWriter;
-        ErrorSiloLoadBalancedWriter ErrorWriter;
-
-        public const string APPNAME = "VisitorId";
-        public const int ERRTIMEOUT = 1;
 
         public static int sequenceIndex;
-        public async Task Err(int severity, string method, string descriptor, string message)
+
+        public void Config(FrameworkWrapper fw)
         {
-            await ErrorWriter.Write(new ErrorLogError(severity, APPNAME, method, descriptor, message), ERRTIMEOUT);
-        }
+            this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+            this.TowerEmailApiUrl = fw.StartupConfiguration.GetS("Config/TowerEmailApiUrl");
+            this.TowerEmailApiKey = fw.StartupConfiguration.GetS("Config/TowerEmailApiKey");
+            this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
 
-        public void Config(IGenericEntity gc, EdwSiloLoadBalancedWriter siloWriter, ErrorSiloLoadBalancedWriter errorWriter)
-        {
-            this.SiloWriter = siloWriter;
-            this.ErrorWriter = errorWriter;
-
-            this.TowerEmailApiUrl = gc.GetS("Config/TowerEmailApiUrl");
-            this.TowerEmailApiKey = gc.GetS("Config/TowerEmailApiKey");
-            this.TowerEncryptionKey = gc.GetS("Config/TowerEncryptionKey");
-            this.VisitorIdConnectionString = gc.GetS("Config/VisitorIdConnectionString");
-
-            foreach (var afidCfg in gc.GetL("Config/VisitorIdMd5ProviderSequences"))
+            foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
                 string afid = afidCfg.GetS("afid");
                 List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)> afidSeqs = new List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>();
@@ -67,7 +55,7 @@ namespace VisitorIdLib
                 }
                 VisitorIdMd5ProviderSequences.Add(afid, afidSeqs);
             }
-            foreach (var gvip in gc.GetL("Config/VisitorIdEmailProviderSequences"))
+            foreach (var gvip in fw.StartupConfiguration.GetL("Config/VisitorIdEmailProviderSequences"))
             {
                 string emProviderSeqName = gvip.GetS("name");
                 List<string> dseq = new List<string>();
@@ -77,18 +65,8 @@ namespace VisitorIdLib
                 }
                 VisitorIdEmailProviderSequences.Add(emProviderSeqName, dseq);
             }
-            this.VisitorIdCookieExpDays = Int32.TryParse(gc.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
+            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
                 ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
-
-            IGenericEntity gp = SqlWrapper.SqlToGenericEntity(this.VisitorIdConnectionString,
-                        "SelectProvider",
-                        "{}",
-                        "").GetAwaiter().GetResult();
-
-            foreach (var provider in gp.GetL(""))
-            {
-                this.Providers.Add(provider.GetS("Id"), provider);
-            }
         }
 
         //SessionInitiate, ProviderXAttempt, ProviderXCapture, ..., EmailCaptureFromWebsite
@@ -143,11 +121,11 @@ namespace VisitorIdLib
                     switch (m)
                     {
                         case "VisitorId":
-                            result = await DoVisitorId(context);
+                            result = await DoVisitorId(this.Fw, context);
                             await WriteResponse(context, result);
                             break;
                         case "SaveSession":
-                            result = await SaveSession(context);
+                            result = await SaveSession(this.Fw, context);
                             await WriteResponse(context, result);
                             break;
                         case "TestService":
@@ -162,7 +140,7 @@ namespace VisitorIdLib
                             await WriteResponse(context, result);
                             break;
                         default:
-                            await Err(1000, "Start", "Error", "Unknown request: " + requestFromPost); 
+                            await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost); 
                             break;
                     }
                     await context.Response.WriteAsync(result);
@@ -170,18 +148,19 @@ namespace VisitorIdLib
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
                     string ret = null;
-                    IGenericEntity op = await TowerWrapper.ProcessTowerMessage(context, this.TowerEncryptionKey, Err);
-                    if (op != null) ret = await SaveSession(context, "Tower", 2, 7, op.GetS("sesid"), emailMd5, "", op.GetS("qs"), opaque);
+                    IGenericEntity op = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
+                    if (op != null) ret = await SaveSession(this.Fw, context, "Tower", op.GetS("sesid"), op.GetS("md5"), "", 
+                        op.GetS("qs"), op.GetS("opaque"), op.GetS("vieps"));
                     await WriteResponse(context, ret);
                 }
                 else
                 {
-                    await Err(1000, "Start", "Tracking", "Unknown request: " + requestFromPost);
+                    await this.Fw.Err(1000, "Start", "Tracking", "Unknown request: " + requestFromPost);
                 }
             }
             catch (Exception ex)
             {
-                await Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
+                await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
             }
         }
 
@@ -198,17 +177,17 @@ namespace VisitorIdLib
             return tokenized.Replace("[=SESSIONID=]", sesid).Replace("[=OPAQUE=]", opaque);
         }
 
-        public async Task<string> DoVisitorId(HttpContext context)
-        {
-            string ckMd5 = "";
-            string ckEmail = "";
+        // await ConsumerRepository.SaveMd5ToContact("ConsumerRepository", ckMd5, 1);
+        // Need ConsumerRepository.SaveEmailPlainTextToContact()
 
-            int idx = Int32.Parse(context.Request.Query["i"]);
-            string sid = context.Request.Query["sd"];
-            if (String.IsNullOrEmpty(sid)) sid = Guid.NewGuid().ToString();
-            string qstr = context.Request.Query["qs"];
-            string opaque = context.Request.Query["op"];
-            bool succ = context.Request.Query["succ"] == "1" ? true : false;
+        public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
+        {
+            // Consider an IGenericEntity that wraps the request dictionary
+            int idx = c.Get("i", 0, x => Int32.Parse(x));
+            string sid = c.Get("sd", Guid.NewGuid().ToString());
+            string qstr = c.Get("qs", "");
+            string opaque = c.Get("op", "");
+            bool succ = c.Get("succ", false, x => x == "1" ? true : false);
 
             Uri u = new Uri(qstr);
             string host = u.Host ?? "";
@@ -218,49 +197,61 @@ namespace VisitorIdLib
             IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
             string afid = opge.GetS("afid");
 
-            // Fix this to use afid before regex
-            // A client with many domains under a single afid could still be very slow
-            // A siteid could eliminate that performance issue though in general
-            // behavior will likely be the same for all sites under an afid.
-
-            //Regex rgx = new Regex(@"^(.*?\.)?xyz\.com$");
-            List<string> VisitorIdProviderSequence = null;
-            foreach (var kvp in VisitorIdProviderSequences)
+            // Consider accepting an existing Guid from opaque.rsid and using it or dropping
+            // events to it, in addition to the events we drop specifically for vid
+            Guid rsInstance = Guid.NewGuid();
+            if (idx == 0)
             {
-                // If this becomes a performance issue
-                // Don't use regex - custom parse char[]
-                Regex rgx = new Regex(kvp.Key);
-                if (rgx.IsMatch(host)) VisitorIdProviderSequence = kvp.Value;
+                EdwBulkEvent be = new EdwBulkEvent();
+                be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
+                    PL.O(new { qs = qstr, op = opaque, ip = c.Connection.RemoteIpAddress,
+                        h = host, p = path, q = qury}), this.RsConfigGuid);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow,
+                    new Dictionary<string, object>() { { "vid", rsInstance.ToString() } },
+                    null, PL.O(new { et = "SessionInitiate", qs = qstr, op = opaque,
+                        ip = c.Connection.RemoteIpAddress,
+                        h = host, p = path, q = qury }));
+                await fw.SiloWriter.Write(be, 1);
             }
-            if (VisitorIdProviderSequence == null)
+            
+            List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = null;
+            foreach (var kvp in VisitorIdMd5ProviderSequences[afid])
             {
-                VisitorIdProviderSequences.TryGetValue("default", out VisitorIdProviderSequence);
-                if (VisitorIdProviderSequence == null)
+                if (host != "" && ((host == kvp.Domain) || host.EndsWith("." + kvp.Domain)))
                 {
-                    VisitorIdProviderSequence = new List<string>() { "cookie" };
+                    visitorIdMd5ProviderSequence = kvp.Item2;
+                    break;
+                }
+                else if (kvp.Domain == "default") // allow default option anywhere in list
+                {
+                    if (visitorIdMd5ProviderSequence == null) visitorIdMd5ProviderSequence = kvp.Item2;
                 }
             }
 
             try
             {
+                string md5 = "";
+                string eml = "";
                 int nextIdx = idx;
 
-                while (nextIdx < VisitorIdProviderSequence.Count)
+                while (nextIdx < visitorIdMd5ProviderSequence.Count)
                 {
-                    var nextTask = VisitorIdProviderSequence[nextIdx];
+                    var nextTask = visitorIdMd5ProviderSequence[nextIdx].Md5provider;
+                    var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[nextIdx].EmailProviderSeq;
 
                     if (nextTask.ToLower() == "cookie")
                     {
-                        string cookieValueFromReq = context.Request.Cookies["vidck"];
+                        string cookieValueFromReq = c.Request.Cookies["vidck"];
 
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
                         {
                             IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-                            ckMd5 = gc.GetS("Md5");
-                            if (!String.IsNullOrEmpty(ckMd5))
+                            
+                            md5 = gc.GetS("Md5");
+                            if (!String.IsNullOrEmpty(md5))
                             {
-                                ckEmail = gc.GetS("Em");
-                                await SaveSession(context, "cookie", 1, 4, sid, ckMd5, ckEmail, qstr, opaque);
+                                eml = gc.GetS("Em");
+                                await SaveSession(fw, c, "cookie", sid, md5, eml, qstr, opaque, visitorIdEmailProviderSequence);
                             }
                         }
                         nextIdx++;
@@ -269,6 +260,8 @@ namespace VisitorIdLib
                     else if (nextTask.ToLower() == "continue")
                     {
                         nextIdx++;
+                        md5 = "";
+                        eml = "";
                         continue;
                     }
                     else if (nextTask.ToLower() == "continueonsuccess")
@@ -276,32 +269,36 @@ namespace VisitorIdLib
                         if (succ)
                         {
                             nextIdx++;
+                            md5 = "";
+                            eml = "";
                             continue;
                         }
                         else
                         {
-                            return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail, sesid = sid });
+                            return Jw.Json(new { done = "1", ckmd5 = md5, ckemail = eml, sesid = sid });
                         }
                     }
                     else if (nextTask.ToLower() == "breakonsuccess")
                     {
                         if (succ)
                         {
-                            return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail, sesid = sid });
+                            return Jw.Json(new { done = "1", ckmd5 = md5, ckemail = eml, sesid = sid });
                         }
                         else
                         {
                             nextIdx++;
+                            md5 = "";
+                            eml = "";
                             continue;
                         }
                     }
                     else if (nextTask.ToLower() == "break")
                     {
-                        return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail, sesid = sid });
+                        return Jw.Json(new { done = "1", ckmd5 = md5, ckemail = eml, sesid = sid });
                     }
                     else if (nextTask[0] == '@')
                     {
-                        var s = this.Providers[nextTask.Substring(1)];
+                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(nextTask.Substring(1)));
                         if (!String.IsNullOrEmpty(s.GetS("Config/Url")))
                         {
                             return Jw.Json(new
@@ -315,8 +312,7 @@ namespace VisitorIdLib
                                 imgFlag = s.GetS("Config/ImgFlag"),
                                 sesid = sid,
                                 idx = nextIdx + 1,
-                                ckmd5 = (ckMd5 == null ? "" : ckMd5),
-                                ckemail = (ckEmail == null ? "" : ckEmail)
+                                vieps = visitorIdEmailProviderSequence
                             },
                             new bool[] { true, true, false, false, true, true, true, true, true, true, true });
                         }
@@ -331,172 +327,145 @@ namespace VisitorIdLib
                                 saveSession = s.GetS("Config/SaveSession"),
                                 sesid = sid,
                                 idx = nextIdx + 1,
-                                ckmd5 = ckMd5,
-                                ckemail = ckEmail
+                                vieps = visitorIdEmailProviderSequence
                             },
                             new bool[] { true, true, true, false, true, true, true, true, true });
                         }
                         else
                         {
-                            await Err(1000, "DoVisitorId", "Error", "Neither URL nor Script: " + s.GetS(""));
+                            await fw.Err(1000, "DoVisitorId", "Error", "Neither URL nor Script: " + s.GetS(""));
                             nextIdx++;
                         }
                     }
                     else
                     {
-                        await Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + nextTask);
+                        await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + nextTask);
                         nextIdx++;
                     }
                 }
             }
             catch (Exception ex)
             {
-                await Err(1000, "DoVisitorId", "Exception", ex.ToString());
+                await fw.Err(1000, "DoVisitorId", "Exception", ex.ToString());
             }
             return Jw.Json(new { done = "1", ckmd5 = ckMd5, ckemail = ckEmail });
         }
 
-        public string Blank(string x)
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string serviceName, string sessionId, string md5,
+            string email, string queryString, string opaque, string visitorIdEmailProviderSequence)
         {
-            return x ?? "";
-        }
-
-        public async Task<string> SaveSession(HttpContext context, string serviceName, int M5dImpressionTypeId,
-            int PlainImpressionTypeId, string sessionId, string md5,
-            string email, string queryString, string opaque)
-        {
-            string bEmail = Blank(email);
-            string bSessionId = Blank(sessionId);
-            string bMd5 = Blank(md5);
-            string bQueryString = Blank(queryString);
-            string bOpaque = Blank(opaque);
-            string bIp = (context.Connection.RemoteIpAddress != null) ?
-                context.Connection.RemoteIpAddress.ToString() :
-                "";
-            string bUserAgent = (!StringValues.IsNullOrEmpty(context.Request.Headers["User-Agent"])) ?
-                context.Request.Headers["User-Agent"].ToString() :
-                "";
+            string ip = c.Ip();
+            string userAgent = c.UserAgent();
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            // I search legacy for plaintext - I can convert this to a service / provider
-            //  - when legacy is searched, the md5 is saved into legacy
-            // I then test other plain text providers - all can be services
+            string em = await DoEmailProviders(fw, c, md5, email, visitorIdEmailProviderSequence);
 
-            if (String.IsNullOrEmpty(bEmail)) // Search Legacy for plaintext
-            {
-                IGenericEntity geplain = await ConsumerRepository.PlainTextFromMd5(this.VisitorIdConnectionString, bMd5, 240);
-                bEmail = Blank(geplain.GetS("Email"));
-
-                // Events are dropped on every provider hit, success or failure
-
-                if (!String.IsNullOrEmpty(bEmail))
+            c.SetCookie("vidck",
+                Jw.Json(new
                 {
-                    HttpWrapper.SetCookie(context, "vidck",
-                        Jw.Json(new
-                        {
-                            Sid = bSessionId,
-                            Md5 = bMd5,
-                            Em = bEmail
-                        }), this.VisitorIdCookieExpDays);
+                    Sid = sessionId,
+                    Md5 = md5,
+                    Em = em
+                }), this.VisitorIdCookieExpDays);
 
-                    return Jw.Json(new { email = bEmail, md5 = bMd5 });
+            return Jw.Json(new { email = em, md5 = md5 });
+        }
+
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c)
+        {
+            return await SaveSession(fw, c, c.Get("sn", ""), c.Get("sd", ""),
+                c.Get("md5", ""), c.Get("e", "", x => Hashing.DecodeUtf8From64(x)),
+                c.Get("qs", ""), c.Get("op", ""), c.Get("vieps", ""));
+        }
+
+        public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string md5, 
+            string email, string visitorIdEmailProviderSequence)
+        {
+            string eml = "";
+            int slotnum = 0;
+            foreach (var s in this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
+            {
+                if (s.ToLower() == "stopifemail")
+                {
+                    if (!String.IsNullOrEmpty(email)) return email;
+                }
+                else if (s.ToLower() == "cookie")
+                {
+                    string cookieValueFromReq = context.Request.Cookies["vidck"];
+
+                    if (!String.IsNullOrEmpty(cookieValueFromReq))
+                    {
+                        IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
+                        if (!String.IsNullOrEmpty(md5)) eml = gc.GetS("Em");
+                    }
+                    slotnum++;
+                    continue;
+                }
+                else if (s.ToLower() == "continue")
+                {
+                    slotnum++;
+                    eml = "";
+                    continue;
+                }
+                else if (s.ToLower() == "continueonsuccess")
+                {
+                    if (!String.IsNullOrEmpty(eml))
+                    {
+                        slotnum++;
+                        eml = "";
+                        continue;
+                    }
+                    else
+                    {
+                        return eml;
+                    }
+                }
+                else if (s.ToLower() == "breakonsuccess")
+                {
+                    if (!String.IsNullOrEmpty(eml))
+                    {
+                        return eml;
+                    }
+                    else
+                    {
+                        slotnum++;
+                        eml = "";
+                        continue;
+                    }
+                }
+                else if (s.ToLower() == "break")
+                {
+                    return eml;
+                }
+                else if (s[0] == '@')
+                {
+                    IGenericEntity p = await fw.Entities.GetEntityGe(new Guid(s.Substring(1)));
+                    string lbm = await fw.Entities.GetEntity(new Guid(p.GetS("LbmId")));
+                    eml = (string)await fw.RoslynWrapper[lbm](new { ge = p }, new StateWrapper());
+                    slotnum++;
+                }
+                else
+                {
+                    await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + slotnum);
+                    slotnum++;
                 }
             }
 
-            // Each md5 provider needs to be associated to a list of email providers to test
+            //IGenericEntity geplain = await ConsumerRepository.PlainTextFromMd5(this.VisitorIdConnectionString, bMd5, 240);
+            //bEmail = Blank(geplain.GetS("Email"));
 
-            int plainTypeId = PlainImpressionTypeId;
-            if (String.IsNullOrEmpty(bEmail)) // Search Services for plaintext
-            {
-                // Try to get plain text
-                plainTypeId = 9; /*PlainNone*/
-                if (serviceName == "Tower")
-                {
-                    bEmail = Blank(await TowerWrapper.CallTowerEmailApi(context, bMd5, bOpaque, 
-                        this.TowerEmailApiUrl, this.TowerEmailApiKey, Err));
-                    if (!String.IsNullOrEmpty(bEmail)) plainTypeId = PlainImpressionTypeId;
-                }
-            }
-
-            // No need for impressions, always just request/response from provider
-
-            try
-            {
-                IGenericEntity anteGe = await SqlWrapper.SqlToGenericEntity(this.VisitorIdConnectionString,
-                        "InsertImpression",
-                        Jw.Json(new
-                        {
-                            Md5It = M5dImpressionTypeId,
-                            EmIt = plainTypeId,
-                            Sid = bSessionId,
-                            Em = bEmail,
-                            Md5 = bMd5,
-                            Ip = bIp,
-                            Qs = bQueryString,
-                            Ua = bUserAgent,
-                            Op = bOpaque
-                        }),
-                        "");
-                bEmail = Blank(anteGe.GetS("Email"));
-                //firstName = anteGe.GetS("Fn");
-                //lastName = anteGe.GetS("Ln");
-                //dateOfBirth = anteGe.GetS("Dob");
-            }
-            catch (Exception exInsertImpression)
-            {
-                await Err(1000, "SaveSession", "Exception", "InsertImpression fails: " + bEmail + "::" + exInsertImpression.ToString());
-            }
-
-            HttpWrapper.SetCookie(context, "vidck",
-                Jw.Json(new { Sid = bSessionId, Md5 = md5, Em = bEmail }), this.VisitorIdCookieExpDays);
-
-            return Jw.Json(new { email = bEmail, md5 = bMd5 });
-        }
-
-        public async Task<string> SaveSession(HttpContext context)
-        {
-            string encssemail = context.Request.Query["e"];
-            var byt = Convert.FromBase64String(encssemail);
-            var email = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
-            string md5 = context.Request.Query["md5"];
-            string serviceName = context.Request.Query["sn"];
-            string sessionId = context.Request.Query["sd"];
-            string queryString = context.Request.Query["qs"];
-            string opaque = context.Request.Query["op"];
-            int M5dImpressionTypeId = ServiceMd5ImpressionTypeId[serviceName];
-            int PlainImpressionTypeId = !String.IsNullOrEmpty(email) ? ServicePlainImpressionTypeId[serviceName] : 0;
-
-            return await SaveSession(context, serviceName, M5dImpressionTypeId, PlainImpressionTypeId, sessionId,
-                md5, email, queryString, opaque);
-        }
-
-        public void JunkHolder()
-        {
-            //try
+            //int plainTypeId = PlainImpressionTypeId;
+            //if (String.IsNullOrEmpty(bEmail)) // Search Services for plaintext
             //{
-            //    //EdwSiloEndpoint.ExecuteSql("{\"TestAction\": \"Walkaway\"}", "[dbo].[spCreateTestRecord]", silo1, 3)
-            //    //    .ConfigureAwait(true).GetAwaiter().GetResult();
-            //    string s = "123456789012345678901234567890123456789012345678901234567890";
-            //    s = s + "123456789012345678901234567890123456789012345678901234567890";
-            //    EdwSiloEndpoint.ExecuteSql("{\"TestAction\": \"Success\", \"V\": \"" + s + "\"}", "[dbo].[spCreateTestRecord]", silo1, 3)
-            //        .ConfigureAwait(true).GetAwaiter().GetResult();
-            //}
-            //catch (Exception ex)
-            //{
-            //    int hij = 1;
-            //}
-
-            //for (int i = 0; i < 20; i++)
-            //{
-            //    await siloWriter.Write("{\"TestAction\": \"Success\", \"V\": \"" + i + "\"}", 10);
-            //}
-
-            //await siloWriter.Write("{\"TestAction\": \"RemoveEndpoint\"}", 10);
-
-            //for (int i = 20; i < 40; i++)
-            //{
-            //    await siloWriter.Write("{\"TestAction\": \"Success\", \"V\": \"" + i + "\"}", 10);
+            //    // Try to get plain text
+            //    plainTypeId = 9; /*PlainNone*/
+            //    if (serviceName == "Tower")
+            //    {
+            //        bEmail = Blank(await TowerWrapper.CallTowerEmailApi(context, bMd5, bOpaque,
+            //            this.TowerEmailApiUrl, this.TowerEmailApiKey, Err));
+            //        if (!String.IsNullOrEmpty(bEmail)) plainTypeId = PlainImpressionTypeId;
+            //    }
             //}
         }
     }

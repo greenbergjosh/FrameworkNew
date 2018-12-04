@@ -14,10 +14,7 @@ namespace GenericDataService
 {
     public class Startup
     {
-        public string ConnectionString;
-        public string ConfigurationKey;
         public dynamic DataService;
-        public IGenericEntity Configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -53,39 +50,22 @@ namespace GenericDataService
 
             app.UseStaticFiles();
             app.UseCors("CorsPolicy");
+            
+            TaskScheduler.UnobservedTaskException +=
+                new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
-            try
+            FrameworkWrapper fw = new FrameworkWrapper();
+
+            using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath")))
             {
-                TaskScheduler.UnobservedTaskException +=
-                    new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
-
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile("appsettings.json")
-                            .Build();
-                this.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-                this.ConfigurationKey = configuration.GetValue<String>("Application:Instance");
-
-                this.Configuration = SqlWrapper.Initialize(this.ConnectionString, this.ConfigurationKey).GetAwaiter().GetResult();
-                EdwSiloLoadBalancedWriter siloWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(this.Configuration);
-                ErrorSiloLoadBalancedWriter errorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.Configuration);
-
-                using (var dynamicContext = new Utility.AssemblyResolver(this.Configuration.GetS("Config/DataServiceAssemblyFilePath")))
-                {
-                    this.DataService = dynamicContext.Assembly.CreateInstance(this.Configuration.GetS("Config/DataServiceTypeName"));
-                }
-
-                DataService.Config(this.Configuration, siloWriter, errorWriter);
+                this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
             }
-            catch (Exception ex)
-            {
-                File.AppendAllText(this.Configuration.GetS("Config/DataServiceLogFileName"), 
-                    $@"{DateTime.Now}::{ex.ToString()}" + Environment.NewLine);
-            }
+
+            DataService.Config(fw.StartupConfiguration, fw.SiloWriter, fw.ErrorWriter);
 
             app.Run(async (context) =>
             {
-                await DataService.Start(context);
+                await this.DataService.Start(context);
             });
         }
     }

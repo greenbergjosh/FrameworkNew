@@ -13,14 +13,4 @@ namespace Utility
         public dynamic s; // StateWrapper
         public dynamic f; // RoslynWrapper
     }
-
-    public class GlobalScope
-    {
-        // Temporary ugliness to get visitorid moving ahead
-        public HttpContext context;
-        public IGenericEntity startupConfiguration;
-        public EdwSiloLoadBalancedWriter siloWriter;
-        public ErrorSiloLoadBalancedWriter errorWriter;
-        public  Func<int, string, string, string, Task> Err;
-    }
 }
