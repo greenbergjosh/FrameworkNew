@@ -419,24 +419,33 @@ namespace Utility
 
         public static async Task DownloadFileFtp(string baseDir, string sourceFile, string destinationFile, string host, string userName, string password)
         {
-            FileStream f = null;
+            using (FileStream f = File.OpenWrite(baseDir + @"\" + destinationFile))
+            {
+                await DownloadFileFtp(f, sourceFile, host, userName, password);
+            }
+        }
+
+        public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password)
+        {
             FtpWebResponse response = null;
+
             try
             {
-                f = File.OpenWrite(baseDir + @"\" + destinationFile);
-                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + sourceFile));
+                var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + sourceFile));
+
                 request.ServicePoint.ConnectionLimit = 10;
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
                 request.Credentials = new NetworkCredential(userName, password);
                 request.UseBinary = true;
                 response = (FtpWebResponse)(await request.GetResponseAsync());
-                Stream responseStream = response.GetResponseStream();
-                await responseStream.CopyToAsync(f);
+
+                var responseStream = response.GetResponseStream();
+
+                await responseStream.CopyToAsync(writeStream);
             }
             finally
             {
-                if (f != null) f.Close();
-                if (response != null) response.Close();
+                response?.Close();
             }
         }
 
