@@ -10,46 +10,54 @@ namespace Utility
 {
     public class SqlWrapper
     {
-        public static Dictionary<string, string> spMap = new Dictionary<string, string>()
-        {
-            { "SelectConfig", "[dbo].[spSelectConfig]" }
-        };
-
+        // TODO: This should all be ConcurrentDictionary to become thread-safe
+        public static Dictionary<string, string> Connections = new Dictionary<string, string>();
+        public static Dictionary<string, Dictionary<string, string>> StoredProcedures = new Dictionary<string, Dictionary<string, string>>();
+        
         public static async Task<IGenericEntity> Initialize(string conStr, string configKey)
         {
-            string result = await SqlServerProviderEntry(conStr,
+            IGenericEntity gc = await SqlToGenericEntity(conStr,
                                 "SelectConfig",
                                 JsonWrapper.Json(new { InstanceId = configKey }),
                                 "");
-            IGenericEntity gc = new GenericEntityJson();
-            var gcstate = JsonConvert.DeserializeObject(result);
-            gc.InitializeEntity(null, null, gcstate);
 
-            foreach (var o in gc.GetL("Config/DataLayer"))
+            foreach (var o in gc.GetD("Config/ConnectionStrings"))
             {
-                spMap.Add(o.GetS("n"), o.GetS("v"));
+                IGenericEntity gcon = await SqlToGenericEntity(conStr,
+                                "SelectConfig",
+                                JsonWrapper.Json(new { InstanceId = o.Item2 }),
+                                "");
+
+                if (!StoredProcedures.ContainsKey(o.Item2)) StoredProcedures.Add(o.Item2, new Dictionary<string, string>());
+                var spMap = StoredProcedures[o.Item2];
+                foreach (var sp in gcon.GetD("Config/DataLayer"))
+                {
+                    spMap.Add(sp.Item1, sp.Item2);
+                }
+                
+                Connections.Add(o.Item2, gcon.GetS("Config/ConnectionString"));
             }
 
             return gc;
         }
 
-        public static async Task<IGenericEntity> SqlToGenericEntity(string conStr, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
-            string result = await SqlWrapper.SqlServerProviderEntry(conStr, method, args, payload, timeout);
+            string result = await SqlWrapper.SqlServerProviderEntry(Connections[conName], method, args, payload, timeout);
             IGenericEntity gp = new GenericEntityJson();
             var gpstate = JsonConvert.DeserializeObject(result);
             gp.InitializeEntity(rw, config, gpstate);
             return gp;
         }
 
-        public static async Task<string> SqlServerProviderEntry(string conStr, string method, string args, string payload, int timeout = 120)
+        public static async Task<string> SqlServerProviderEntry(string conName, string method, string args, string payload, int timeout = 120)
         {
             string ret = null;
 
             string sp = null;
-            spMap.TryGetValue(method, out sp);
+            StoredProcedures[conName].TryGetValue(method, out sp);
             if (sp == null) return "";
-            ret = await ExecuteSql(args, payload, sp, conStr, timeout);
+            ret = await ExecuteSql(args, payload, sp, Connections[conName], timeout);
 
             return ret;
         }
@@ -115,7 +123,8 @@ namespace Utility
             return outval;
         }
 
-        public static async Task<string> InsertErrorLog(string connectionString, int severity, string process, string method, string descriptor, string message, int timeout = 120)
+        public static async Task<string> InsertErrorLog(string connectionString, int sequence, int severity, 
+            string process, string method, string descriptor, string message, int timeout = 120)
         {
             string outval = null;
 
@@ -128,6 +137,7 @@ namespace Utility
                     cmd.CommandText = "[ErrorLog].[spInsertErrorLog]";
                     cmd.CommandType = CommandType.StoredProcedure;
 
+                    cmd.Parameters.Add(new SqlParameter("Sequence", sequence));
                     cmd.Parameters.Add(new SqlParameter("Severity", severity));
                     cmd.Parameters.Add(new SqlParameter("Process", process));
                     cmd.Parameters.Add(new SqlParameter("Method", method));

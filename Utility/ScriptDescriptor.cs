@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.Scripting;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using Utility;
@@ -7,6 +8,7 @@ namespace Utility
 {
     public class ScriptDescriptor
     {
+        public Guid Id;
         public string Name;
         public string Code;
         public bool Debug;
@@ -14,8 +16,9 @@ namespace Utility
 
         public ScriptRunner<object> Script;
 
-        public ScriptDescriptor(string name, string code, bool debug, string debugDir)
+        public ScriptDescriptor(Guid id, string name, string code, bool debug, string debugDir)
         {
+            Id = id;
             Name = name;
             Code = code;
             Debug = debug;
@@ -28,7 +31,8 @@ namespace Utility
         {
             get
             {
-                if (_key == null) _key = Name ?? Hashing.Utf8MD5HashAsHexString(Code);
+                if (_key == null) _key = (Id == null ? null : Id.ToString().ToLower()) ?? 
+                        (Name.ToLower() ?? Hashing.Utf8MD5HashAsHexString(Code));
                 return _key;
             }
         }

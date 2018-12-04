@@ -12,6 +12,7 @@ namespace Utility
     public class ErrorSiloEndpoint : IEndpoint
     {
         public string connectionString;
+        public int sequence = 0;
 
         public ErrorSiloEndpoint(string connectionString)
         {
@@ -28,7 +29,7 @@ namespace Utility
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
             ErrorLogError e = (ErrorLogError)w;
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, e.Severity, e.Process, 
+            string res = await SqlWrapper.InsertErrorLog(this.connectionString, sequence++, e.Severity, e.Process, 
                 e.Message, e.Descriptor, e.Message).ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return LoadBalancedWriter.Result.Success;
