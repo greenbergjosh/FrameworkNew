@@ -93,5 +93,14 @@ namespace Utility
                System.Text.ASCIIEncoding.ASCII.GetString(encodedDataAsBytes);
             return returnValue;
         }
+
+        public static string DecodeUtf8From64(string encodedData)
+        {
+            byte[] encodedDataAsBytes
+                = System.Convert.FromBase64String(encodedData);
+            string returnValue =
+               System.Text.ASCIIEncoding.UTF8.GetString(encodedDataAsBytes, 0, encodedDataAsBytes.Length);
+            return returnValue;
+        }
     }
 }
