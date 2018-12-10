@@ -1232,81 +1232,95 @@ namespace UnsubLib
             if (!String.IsNullOrEmpty(this.FileCacheFtpServer) || !String.IsNullOrEmpty(this.FileCacheDirectory))
             {
                 var di = new DirectoryInfo(destDir);
-                var files = di.GetFiles();
+                var files = di.GetFiles(fileName);
 
-                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase))) return fileName;
-                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
+                if (files.Length == 1) return fileName;
+                else if (files.Length == 0)
                 {
-                    if (files[0].Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase))
+                    var fileCopyInProgress = false;
+
+                    try
                     {
-                        await WaitForFileCopyInProcess(finalFile);
+                        tempFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None).Dispose();
+                    }
+                    catch (IOException)
+                    {
+                        fileCopyInProgress = true;
                     }
 
-                    return dfileName;
+                    if (fileCopyInProgress)
+                    {
+                        await WaitForFileCopyInProcess(finalFile);
+
+                        return finalFile.Name;
+                    }
+                    else
+                    {
+                        success = await MakeRoom(fileName, cacheSize);
+
+                        if (!success)
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "Could not make room for file: " + fileName);
+                            throw new Exception("Could not make room for file.");
+                        }
+
+                        if (!String.IsNullOrEmpty(this.FileCacheDirectory))
+                        {
+                            var cacheFile = new FileInfo($"{this.FileCacheDirectory}\\{fileName}");
+
+                            await Task.Run(() => cacheFile.CopyTo(tempFile.FullName, true)).ConfigureAwait(false);
+                            tempFile.MoveTo(finalFile.FullName);
+                        }
+                        else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
+                        {
+                            using (var fs = tempFile.Open(FileMode.Open, FileAccess.Write, FileShare.None))
+                            {
+                                await ProtocolClient.DownloadFileFtp(
+                                    fs,
+                                    this.FileCacheFtpServerPath + "/" + fileName,
+                                    this.FileCacheFtpServer,
+                                    this.FileCacheFtpUser,
+                                    this.FileCacheFtpPassword
+                                );
+                            }
+
+                            tempFile.MoveTo(finalFile.FullName);
+                        }
+
+                        files = di.GetFiles(dfileName);
+
+                        if (files.Length == 1) return dfileName;
+                        else
+                        {
+                            await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                                "GetFileFromFileId", "Error", "Could not find file in cache: " + fileName);
+                            throw new Exception("Could not find file in cache: " + fileName);
+                        }
+                    }
                 }
                 else
                 {
-                    success = await MakeRoom(fileName, cacheSize);
-
-                    if (!success)
-                    {
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName, "GetFileFromFileId", "Error", "Could not make room for file: " + fileName);
-                        throw new Exception("Could not make room for file.");
-                    }
-
-                    if (!String.IsNullOrEmpty(this.FileCacheDirectory))
-                    {
-                        var cacheFile = new FileInfo($"{this.FileCacheDirectory}\\{fileName}");
-
-                        cacheFile.CopyTo(tempFile.FullName);
-                        tempFile.MoveTo(finalFile.FullName);
-                    }
-                    else if (!String.IsNullOrEmpty(this.FileCacheFtpServer))
-                    {
-                        await ProtocolClient.DownloadFileFtp(
-                            destDir,
-                            this.FileCacheFtpServerPath + "/" + fileName,
-                            dfileName + tempSuffix,
-                            this.FileCacheFtpServer,
-                            this.FileCacheFtpUser,
-                            this.FileCacheFtpPassword
-                            );
-
-                        tempFile.MoveTo(finalFile.FullName);
-                    }
-
-                    files = di.GetFiles(dfileName);
-
-                    if (files.Length == 1) return dfileName;
-                    else
-                    {
-                        await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
-                            "GetFileFromFileId", "Error", "Could not find file in cache: " + fileName);
-                        throw new Exception("Could not find file in cache: " + fileName);
-                    }
+                    await SqlWrapper.InsertErrorLog(this.ConnectionString, 1000, this.ApplicationName,
+                            "GetFileFromFileId", "Error", "Too many file matches: " + fileName);
+                    throw new Exception("Too many file matches: " + fileName);
                 }
             }
             else
             {
                 DirectoryInfo di = new DirectoryInfo(destDir);
-                FileInfo[] files = di.GetFiles();
+                FileInfo[] fi = di.GetFiles(fileName);
 
-                if (files.Any(f => f.Name.Equals(fileName, StringComparison.CurrentCultureIgnoreCase)))
+                fi = di.GetFiles(fileName);
+
+                if (fi.Length == 1)
                 {
-                    if (destFileName == null) return fileName;
+                    if (destFileName == null)
+                        return fileName;
                     else
                     {
-                        files[0].CopyTo(tempFile.FullName);
-                        tempFile.MoveTo(finalFile.FullName);
-
+                        fi[0].CopyTo(destFileName);
                         return destFileName;
                     }
-                }
-                else if (files.Any(f => f.Name.Equals(tempFile.Name, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    await WaitForFileCopyInProcess(finalFile);
-
-                    return finalFile.Name;
                 }
                 else
                 {
