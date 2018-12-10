@@ -53,7 +53,9 @@ namespace Utility
                     .AddReferences(
                         Assembly.GetAssembly(typeof(System.Dynamic.DynamicObject)),  // System.Code
                         Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                        Assembly.GetAssembly(typeof(System.Dynamic.ExpandoObject))  // System.Dynamic
+                        Assembly.GetAssembly(typeof(System.Dynamic.ExpandoObject)),  // System.Dynamic
+                        Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),  // TODO: Use Assembly.Load() from db list
+                        Assembly.GetAssembly(typeof(Utility.JsonWrapper))
                         )
                     .AddImports("System.Dynamic", "System.Xml");
             if (sd.Debug)
@@ -89,16 +91,29 @@ namespace Utility
 
         public async Task<object> Evaluate(string name, string code, object parms, StateWrapper state, bool debug, string debugDir)
         {
-            ScriptDescriptor sd = new ScriptDescriptor(name, code, debug, debugDir);
+            ScriptDescriptor sd = new ScriptDescriptor(null, name, code, debug, debugDir);
             sd = CompileAndCache(sd);
             return await RunFunction(sd.Key, parms, state);
-        }        
+        }
+
+        public async Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state, bool debug, string debugDir)
+        {
+            return await Evaluate(name.ToString().ToLower(), code, parms, state, debug, debugDir);
+        }
 
         public Func<object, StateWrapper, Task<object>> this[string fn]
         {
             get
             {
                 return CreateFunction(fn);
+            }
+        }
+
+        public Func<object, StateWrapper, Task<object>> this[Guid fn]
+        {
+            get
+            {
+                return CreateFunction(fn.ToString().ToLower());
             }
         }
 

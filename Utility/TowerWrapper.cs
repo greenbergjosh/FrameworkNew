@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using Jw = Utility.JsonWrapper;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Utility
 {
@@ -41,12 +40,12 @@ namespace Utility
 
         public static async Task<IGenericEntity> CallTowerEmailApi(FrameworkWrapper fw, HttpContext context, IGenericEntity ge)
         {
-            string s = await CallTowerEmailApi(context, ge.GetS("md5"), ge.GetS("opaque"),
+            string s = await CallTowerEmailApi(context, ge.GetS("md5"),
                 ge.GetS("towerEmailApiUrl"), ge.GetS("towerEmailApiKey"), fw.Err);
             return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { result = s }));
         }
 
-        public static async Task<string> CallTowerEmailApi(HttpContext context, string md5, string opaque,
+        public static async Task<string> CallTowerEmailApi(HttpContext context, string md5,
             string towerEmailApiUrl, string towerEmailApiKey,
             Func<int, string, string, string, Task> Err)
         {
@@ -82,7 +81,7 @@ namespace Utility
             }
             catch (Exception tgException)
             {
-                await Err(1000, "CallTowerEmailApi", "Exception", "TowerDataEmailApiFailed: " + $"{md5}||{opaque}" + "::" + tgException.ToString());
+                await Err(1000, "CallTowerEmailApi", "Exception", "TowerDataEmailApiFailed: " + $"{md5}" + "::" + tgException.ToString());
             }
 
             return towerEmailPlainText;
@@ -119,12 +118,12 @@ namespace Utility
                 if (result.Contains("md5_email"))
                 {
                     await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
-                    var parsedstring = HttpUtility.ParseQueryString(result);
-                    emailMd5 = parsedstring["md5_email"].ToString();
-                    if (parsedstring["label"] != null)
-                    {
-                        opaque = parsedstring["label"].ToString();
-                    }
+
+                    var uri = new Uri(result);
+                    var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
+                    var query = QueryHelpers.ParseQuery(uri.Query);
+                    opaque = query.ContainsKey("label") ? query["label"][0] : opaque;
+                    emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : emailMd5;
                 }
                 else
                 {

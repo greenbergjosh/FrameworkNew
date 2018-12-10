@@ -8,7 +8,10 @@ using System.Runtime.CompilerServices;
 using Utility;
 using static Utility.EdwBulkEvent;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
+
+using System.Threading.Tasks;
+using Jw = Utility.JsonWrapper;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace QuickTester
 {
@@ -16,6 +19,14 @@ namespace QuickTester
     {
         static void Main(string[] args)
         {
+
+            var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
+            var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
+            var query = QueryHelpers.ParseQuery(uri.Query);
+            string opaque = query.ContainsKey("label") ? query["label"][0] : "";
+            string emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : "";
+
+
             List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
             string scriptsPath = @"e:\workspace\scripts";
             var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
@@ -30,9 +41,9 @@ namespace QuickTester
                     i++;
                   }
                   p.cn.ParentNode.RemoveChild(p.cn);""""";
-        for (int ij = 0; ij < 100; ij++)
-            rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
-                scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
+        //for (int ij = 0; ij < 100; ij++)
+        //    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
+        //        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
 
 
         string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";

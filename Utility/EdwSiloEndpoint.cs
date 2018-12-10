@@ -19,10 +19,12 @@ namespace Utility
         }
         public async Task<bool> Audit()
         {
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, 1, "EDWLogAudit", "", "", "").ConfigureAwait(false);
-            string result = res.ToLower();
-            if (result == "success") return true;
-            else return false;
+            // TODO: Replace audit logic with select top 1 id (nolock) from EDW event table
+            // string res = await SqlWrapper.InsertErrorLog(this.connectionString, 1, "EDWLogAudit", "", "", "").ConfigureAwait(false);
+            //string result = res.ToLower();
+            //if (result == "success") return true;
+            //else return false;
+            return true;  // Default to true for now
         }
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)

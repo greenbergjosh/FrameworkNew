@@ -20,7 +20,7 @@ namespace Utility
         }
         public async Task<bool> Audit()
         {
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
+            string res = await SqlWrapper.InsertErrorLog(this.connectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return true;
             else return false;

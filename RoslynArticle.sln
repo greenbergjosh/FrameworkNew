@@ -85,8 +85,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetGotLib", "GetGotLib\GetG
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetGotWeb", "GetGotWeb\GetGotWeb.csproj", "{3A30973C-9B81-43C4-B087-2CEE7AC088CB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetGotApi", "GetGotApi\GetGotApi.csproj", "{B28A9AA6-2F64-4842-8D69-D988276A59B8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetGotApiClient", "GetGotApiClient\GetGotApiClient.csproj", "{96328349-0BE4-4511-AC78-5CDB830A6105}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetGotRetailerWeb", "GetGotRetailerWeb\GetGotRetailerWeb.csproj", "{AFB65AF2-2802-4A5A-9BD7-F6F4DF48C4CB}"
@@ -346,12 +344,6 @@ Global
 		{3A30973C-9B81-43C4-B087-2CEE7AC088CB}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{3A30973C-9B81-43C4-B087-2CEE7AC088CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A30973C-9B81-43C4-B087-2CEE7AC088CB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B28A9AA6-2F64-4842-8D69-D988276A59B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B28A9AA6-2F64-4842-8D69-D988276A59B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B28A9AA6-2F64-4842-8D69-D988276A59B8}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{B28A9AA6-2F64-4842-8D69-D988276A59B8}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{B28A9AA6-2F64-4842-8D69-D988276A59B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B28A9AA6-2F64-4842-8D69-D988276A59B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{96328349-0BE4-4511-AC78-5CDB830A6105}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{96328349-0BE4-4511-AC78-5CDB830A6105}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96328349-0BE4-4511-AC78-5CDB830A6105}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -398,7 +390,7 @@ Global
 		{3B3F53E2-4782-4BA8-A925-39CC92507919} = {5B0E3B8A-B8FE-4948-B66C-C67325A5245B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal

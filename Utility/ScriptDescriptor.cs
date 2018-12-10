@@ -8,7 +8,7 @@ namespace Utility
 {
     public class ScriptDescriptor
     {
-        public Guid Id;
+        public Guid? Id;
         public string Name;
         public string Code;
         public bool Debug;
@@ -16,9 +16,19 @@ namespace Utility
 
         public ScriptRunner<object> Script;
 
-        public ScriptDescriptor(Guid id, string name, string code, bool debug, string debugDir)
+        public ScriptDescriptor(Guid? id, string name, string code, bool debug, string debugDir)
         {
             Id = id;
+            Name = name;
+            Code = code;
+            Debug = debug;
+            DebugDir = debugDir;
+            _key = null;
+        }
+
+        public ScriptDescriptor(string name, string code, bool debug, string debugDir)
+        {
+            Id = null;
             Name = name;
             Code = code;
             Debug = debug;

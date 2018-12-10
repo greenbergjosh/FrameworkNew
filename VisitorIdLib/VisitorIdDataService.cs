@@ -1,15 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using Utility;
 using Jw = Utility.JsonWrapper;
 
@@ -20,8 +13,6 @@ namespace VisitorIdLib
         public FrameworkWrapper Fw;
 
         public Guid RsConfigGuid;
-        public string TowerEmailApiUrl;
-        public string TowerEmailApiKey;
         public string TowerEncryptionKey;
         public Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences = new Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>>();
         public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
@@ -31,9 +22,9 @@ namespace VisitorIdLib
 
         public void Config(FrameworkWrapper fw)
         {
+            this.Fw = fw;
+
             this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
-            this.TowerEmailApiUrl = fw.StartupConfiguration.GetS("Config/TowerEmailApiUrl");
-            this.TowerEmailApiKey = fw.StartupConfiguration.GetS("Config/TowerEmailApiKey");
             this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
 
             foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
@@ -106,8 +97,15 @@ namespace VisitorIdLib
 
         // Domain-specific provider list
 
-        public async Task Start(HttpContext context)
+        public async Task Test(HttpContext c)
         {
+            string x = await DoEmailProviders(Fw, c, Guid.NewGuid().ToString(),
+                "4fa38f522392f9e1c47f23aeabaffbe9", "", "abc");
+        }
+
+        public async Task Run(HttpContext context)
+        {
+            await Test(context);
             string requestFromPost = "";
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
@@ -122,11 +120,9 @@ namespace VisitorIdLib
                     {
                         case "VisitorId":
                             result = await DoVisitorId(this.Fw, context);
-                            await WriteResponse(context, result);
                             break;
                         case "SaveSession":
                             result = await SaveSession(this.Fw, context);
-                            await WriteResponse(context, result);
                             break;
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
@@ -136,21 +132,16 @@ namespace VisitorIdLib
                                 result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
-
-                            await WriteResponse(context, result);
                             break;
                         default:
                             await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost); 
                             break;
                     }
-                    await context.Response.WriteAsync(result);
                 }
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
-                    string ret = null;
                     IGenericEntity op = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
-                    if (op != null) ret = await SaveSession(this.Fw, context, op.GetS("sesid"), op.GetS("md5"), "", op.GetS("vieps"));
-                    await WriteResponse(context, ret);
+                    if (op != null) result = await SaveSession(this.Fw, context, op.GetS("sesid"), op.GetS("md5"), "", op.GetS("vieps"));
                 }
                 else
                 {
@@ -161,6 +152,7 @@ namespace VisitorIdLib
             {
                 await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
             }
+            await WriteResponse(context, result);
         }
 
         public async Task WriteResponse(HttpContext context, string resp)
@@ -176,8 +168,13 @@ namespace VisitorIdLib
             return tokenized.Replace("[=SESSIONID=]", sesid).Replace("[=OPAQUE=]", opaque);
         }
 
-        // await ConsumerRepository.SaveMd5ToContact("ConsumerRepository", ckMd5, 1);
+        //await ConsumerRepository.SaveMd5ToContact("ConsumerRepository", ckMd5, 1);
         // Need ConsumerRepository.SaveEmailPlainTextToContact()
+    //    await SqlWrapper.SqlToGenericEntity("ConsumerRepository",
+    //                "SaveMd5ToContact",
+    //                Jw.Json(new { Md5 = md5
+    //}),
+    //                "", null, null, timeout);
 
         public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
         {
@@ -208,7 +205,7 @@ namespace VisitorIdLib
                     null, PL.O(new { et = "SessionInitiate", qs = qstr, op = opaque,
                         ip = c.Connection.RemoteIpAddress,
                         h = host, p = path, q = qury }));
-                await fw.SiloWriter.Write(be, 1);
+                await fw.EdwWriter.Write(be, 1);
             }
             
             List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = null;
@@ -446,9 +443,10 @@ namespace VisitorIdLib
                 }
                 else if (s[0] == '@')
                 {
-                    IGenericEntity p = await fw.Entities.GetEntityGe(new Guid(s.Substring(1)));
-                    string lbm = await fw.Entities.GetEntity(new Guid(p.GetS("LbmId")));
-                    eml = (string)await fw.RoslynWrapper[lbm](new { ge = p }, new StateWrapper());
+                    IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(s.Substring(1)));
+                    Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
+                    string lbm = await fw.Entities.GetEntity(lbmId);
+                    eml = (string) await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), true, "e:\\workspace\\scripts\\debug");
                     slotnum++;
                 }
                 else

@@ -49,7 +49,7 @@ namespace XmlTokenizer
             Dictionary<string, string> ns, 
             RoslynWrapper rw)
         {
-            rw.CompileAndCache(new ScriptDescriptor("TokenReplaceXmlR", XmlTokenizer.TokenReplaceXmlR, false, null));
+            rw.CompileAndCache(new ScriptDescriptor(null, "TokenReplaceXmlR", XmlTokenizer.TokenReplaceXmlR, false, null));
 
             StateWrapper sw = new StateWrapper();
             XmlDocument xml = new XmlDocument();
@@ -73,7 +73,7 @@ namespace XmlTokenizer
             Dictionary<string, string> ns,
             RoslynWrapper rw)
         {
-            rw.CompileAndCache(new ScriptDescriptor("TokenReplaceXmlR", XmlTokenizer.TokenReplaceXmlR, false, null));
+            rw.CompileAndCache(new ScriptDescriptor(null, "TokenReplaceXmlR", XmlTokenizer.TokenReplaceXmlR, false, null));
 
             StateWrapper sw = new StateWrapper();
             XmlNamespaceManager nsmgr = new XmlNamespaceManager(xml.NameTable);

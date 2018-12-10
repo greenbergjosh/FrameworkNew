@@ -39,7 +39,7 @@ namespace Utility
 
         public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + (string)w).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
         }
 
         public static int NextWalkawayValue(int previousValue)
@@ -67,17 +67,17 @@ namespace Utility
         public static async Task NoValid(object w, string dataFilePath, string errorFilePath)
         {
             await File.AppendAllTextAsync(dataFilePath, "<<//RECORD::" + DateTime.Now + "::NoValid::" + (string)w + "//>>").ConfigureAwait(false);
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::NoValid::" + (string)w).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::NoValid::" + w.ToString()).ConfigureAwait(false);
         }
 
         public static async Task Failure(object w, string errorFilePath)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Failure::" + (string)w).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Failure::" + w.ToString()).ConfigureAwait(false);
         }
 
         public static async Task Unhandled(object w, string errorFilePath, Exception ex)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Unhandled::" + (string)w).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Unhandled::" + w.ToString()).ConfigureAwait(false);
         }
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
