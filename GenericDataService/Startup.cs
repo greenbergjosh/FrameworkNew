@@ -61,11 +61,11 @@ namespace GenericDataService
                 this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
             }
 
-            DataService.Config(fw.StartupConfiguration, fw.SiloWriter, fw.ErrorWriter);
+            DataService.Config(fw);
 
             app.Run(async (context) =>
             {
-                await this.DataService.Start(context);
+                await this.DataService.Run(context);
             });
         }
     }

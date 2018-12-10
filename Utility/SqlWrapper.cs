@@ -10,23 +10,31 @@ namespace Utility
 {
     public class SqlWrapper
     {
+        public const string GlobalConfig = "GlobalConfig";
+
         // TODO: This should all be ConcurrentDictionary to become thread-safe
         public static Dictionary<string, string> Connections = new Dictionary<string, string>();
         public static Dictionary<string, Dictionary<string, string>> StoredProcedures = new Dictionary<string, Dictionary<string, string>>();
         
-        public static async Task<IGenericEntity> Initialize(string conStr, string configKey)
+        public static async Task<IGenericEntity> Initialize(string conStr, string configKey, string configSproc)
         {
-            IGenericEntity gc = await SqlToGenericEntity(conStr,
-                                "SelectConfig",
-                                JsonWrapper.Json(new { InstanceId = configKey }),
-                                "");
+            IGenericEntity gc = JsonWrapper.JsonToGenericEntity(
+                JsonWrapper.Json(new { Config = 
+                await SqlWrapper.ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", 
+                    configSproc, conStr) }, new bool[] { false }));
+
+            StoredProcedures.Add(SqlWrapper.GlobalConfig, new Dictionary<string, string>()
+            {
+                { "SelectConfig", configSproc}
+            });
+            Connections.Add(SqlWrapper.GlobalConfig, conStr);
 
             foreach (var o in gc.GetD("Config/ConnectionStrings"))
             {
-                IGenericEntity gcon = await SqlToGenericEntity(conStr,
-                                "SelectConfig",
-                                JsonWrapper.Json(new { InstanceId = o.Item2 }),
-                                "");
+                IGenericEntity gcon = JsonWrapper.JsonToGenericEntity(
+                JsonWrapper.Json(new { Config = 
+                await SqlWrapper.ExecuteSql(JsonWrapper.Json(new { InstanceId = o.Item2 }), "", 
+                    configSproc, conStr) }, new bool[] { false }));
 
                 if (!StoredProcedures.ContainsKey(o.Item2)) StoredProcedures.Add(o.Item2, new Dictionary<string, string>());
                 var spMap = StoredProcedures[o.Item2];

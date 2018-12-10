@@ -9,19 +9,19 @@ namespace Utility
 {
     public class ConfigEntityRepo
     {
-        public string ConnectionString;
+        public string ConName;
         public ConcurrentDictionary<Guid, Task<string>> _entities = new ConcurrentDictionary<Guid, Task<string>>();
 
-        public ConfigEntityRepo(string connectionString)
+        public ConfigEntityRepo(string conName)
         {
-            ConnectionString = connectionString;
+            ConName = conName;
         }
 
         public async Task<string> GetEntity(Guid id)
         {
             return await _entities.GetOrAdd(id, async _ =>
             {
-                return await SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
+                return await SqlWrapper.SqlServerProviderEntry(this.ConName,
                                 "SelectConfig",
                                 JsonWrapper.Json(new { InstanceId = id }),
                                 "");
@@ -31,7 +31,8 @@ namespace Utility
         public async Task<IGenericEntity> GetEntityGe(Guid id)
         {
             IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(await GetEntity(id));
+            var gpstate = JsonConvert.DeserializeObject(JsonWrapper.Json(new { Config = await GetEntity(id) },
+                new bool[] { false }));
             gp.InitializeEntity(null, null, gpstate);
             return gp;
         }

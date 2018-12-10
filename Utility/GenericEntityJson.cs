@@ -59,8 +59,20 @@ namespace Utility
             entity.InitializeEntity(this.rw, null, _root.SelectToken(ConvertPath(path)));
             foreach (var je in entity._root.AsJEnumerable())
             {
-                yield return new Tuple<string, string>(((JProperty)je).Name, ((JProperty)je).Value.ToString());
+                yield return new Tuple<string, string>(((JProperty)je).Name, 
+                    ((JProperty)je).Value.ToString());
             }
         }
+
+        //public override IEnumerable<Tuple<string, string>> GetArrTuples(string path)
+        //{
+        //    GenericEntityJson entity = new GenericEntityJson();
+        //    entity.InitializeEntity(this.rw, null, _root.SelectToken(ConvertPath(path)));
+        //    foreach (var je in entity._root.AsJEnumerable())
+        //    {
+        //        yield return new Tuple<string, string>(((JProperty)((JObject)je).First).Name,
+        //            ((JProperty)((JObject)je).First).Value.ToString());
+        //    }
+        //}
     }
 }

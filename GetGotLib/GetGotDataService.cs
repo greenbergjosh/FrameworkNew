@@ -1,23 +1,23 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Jw = Utility.JsonWrapper;
-using Newtonsoft.Json.Linq;
-using Utility;
 using System.Text;
+using System.Threading.Tasks;
+using Utility;
+using Jw = Utility.JsonWrapper;
 
-namespace GetGotApi
+namespace GetGotLib
 {
-    public class Startup
+    public class GetGotDataService
     {
+        public FrameworkWrapper Fw;
+        public Guid RsConfigGuid;
+
+
+
+        // GetGotOld
         public int MAX_TEMPLATES_PER_CALL = 20;
         public int LIMIT_TEMPLATE_META_SEARCH = 20;
 
@@ -91,147 +91,237 @@ namespace GetGotApi
                 }"
             }
         };
+        // GetGotOld End
 
-        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
+        public void Config(FrameworkWrapper fw)
         {
-            File.AppendAllText("GetGotApi.log", $@"{DateTime.Now}::{args.ToString()}::{args.ToString()}" +
-                            Environment.NewLine);
+            this.Fw = fw;
+            this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+        }
+        
+        public async Task Test(HttpContext c)
+        {
+            //Dictionary<string, string> spMap = new Dictionary<string, string>()
+            //{//[dbo].[spSelectMessageBodyTemplateQuery]
+            //    { "SelectConfig", "[dbo].[spSelectConfig]" },
+            //    { "GetGotDbErrorLog", "[dbo].[spInsertErrorLog]" },
+            //    { "SelectMessageBodyTemplatesByMeta", "[dbo].[spSelectMessageBodyTemplatesByMeta]" },
+            //    { "SelectMessageBodyTemplateQuery", "[dbo].[spSelectMessageBodyTemplateQuery]" }
+            //};
+
+            //string scRes = ApiSamples["CreateCampaign"];
+
+            //IGenericEntity ge = new GenericEntityJson();
+
+
+
+            //ge.InitializeEntity(null, null, JsonConvert.DeserializeObject(scRes));
+            //var queryParts = ge.GetL("Payload/MessageBodyTemplateQuery").ToList();
+            //for (int i = 0; i < queryParts.Count; i++)
+            //{
+            //    var queryPart = queryParts[i].GetS("");
+
+            //    string[] splitQueryPart = queryPart.Split('(');
+            //    string queryPartType = splitQueryPart[0];
+            //    string queryPartBody = queryPart.Substring(queryPartType.Length + 1,
+            //        queryPart.Length - queryPartType.Length - 2);
+
+            //    int x = 1;
+
+            //}
         }
 
-        public void ConfigureServices(IServiceCollection services)
+        public async Task Run(HttpContext context)
         {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-            });
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseStaticFiles();
-            app.UseCors("CorsPolicy");
-
-            File.AppendAllText("GetGotApi.log", $@"{DateTime.Now}::Starting" +
-                            Environment.NewLine);
-            string result = "";
-            try
-            {
-                TaskScheduler.UnobservedTaskException +=
-                    new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
-
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .AddJsonFile("appsettings.json")
-                            .Build();
-                this.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-                this.ConfigurationKey = configuration.GetValue<String>("Application:Instance");
-
-                result = SqlWrapper.SqlServerProviderEntry(this.ConnectionString,
-                            "SelectConfig",
-                            Jw.Json(new { InstanceId = this.ConfigurationKey }),
-                            "").GetAwaiter().GetResult();
-                IGenericEntity gc = new GenericEntityJson();
-                var gcstate = JsonConvert.DeserializeObject(result);
-                gc.InitializeEntity(null, null, gcstate);
-
-                this.GetGotDbConnectionString = gc.GetS("Config/GetGotDbConnectionString");
-            }
-            catch (Exception ex)
-            {
-                File.AppendAllText("GetGotApi.log", $@"{DateTime.Now}::{ex.ToString()}" + Environment.NewLine);
-            }
-
-            app.Run(async (context) =>
-            {
-                await Start(context);
-            });
-        }
-
-        public async Task Start(HttpContext context)
-        {
-            string scRes = ApiSamples["CreateCampaign"];
-
-            IGenericEntity ge = new GenericEntityJson();
-
-            
-
-            ge.InitializeEntity(null, null, JsonConvert.DeserializeObject(scRes));
-            var queryParts = ge.GetL("Payload/MessageBodyTemplateQuery").ToList();
-            for (int i = 0; i < queryParts.Count; i++)
-            {
-                var queryPart = queryParts[i].GetS("");
-
-                string[] splitQueryPart = queryPart.Split('(');
-                string queryPartType = splitQueryPart[0];
-                string queryPartBody = queryPart.Substring(queryPartType.Length + 1,
-                    queryPart.Length - queryPartType.Length - 2);
-
-                int x = 1;
-
-            }
-
-
+            await Test(context);
             string requestFromPost = "";
-            string resp = Jw.Json(new { Error = "SeeLogs" });
-            var result = "ok";
+            var result = Jw.Json(new { Error = "SeeLogs" });
             try
             {
                 StreamReader reader = new StreamReader(context.Request.Body);
                 requestFromPost = await reader.ReadToEndAsync();
-
-                IGenericEntity gc = new GenericEntityJson();
-                var gcstate = JsonConvert.DeserializeObject(requestFromPost);
-                gc.InitializeEntity(null, null, gcstate);
 
                 if (!String.IsNullOrEmpty(context.Request.Query["m"]))
                 {
                     string m = context.Request.Query["m"];
                     switch (m)
                     {
-                        case "CreateCampaign":
-                            result = await CreateCampaign(gc);
-                            break;
+                        //case "UserSignupEvent":                            
+                        //    result = await UserSignupEvent(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "CreateUser":
+                        //    //id: uuid (app is responsible for generating the id)
+                        //    //h: handle
+                        //    //e: email
+                        //    //p: phone
 
-                        case "GetCampaignTemplates":
-                            //result = await GetCampaignTemplates(gc);
-                            break;
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
 
-                        case "CreateMessageBodyTemplateQuery":
-                            //result = await CreateMessageBodyTemplateQuery(gc);
-                            break;
+
+                        //    //                       Id uniqueidentifier    N'$.u.Id',   
+                        //    //         H varchar(100)		N'$.u.H',
+                        //    //Em varchar(350)		N'$.u.Em',
+                        //    //Ph varchar(30)			N'$.u.Ph',
+                        //    //Dob datetime2(1)	    N'$.u.Dob',
+                        //    //USId uniqueidentifier    N'$.u.USId'
+                        //    //                           $.u.Pwd 
+                        //    result = await CreateUser(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "ValidateUser":
+                        //    //h: handle
+                        //    //p: phone
+                        //    //vc: verification code
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await ValidateUser(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "CreateNewPassword":
+                        //    //id: 
+                        //    //vc: verification code
+                        //    //pwd: hashed password
+                        //    //d: device info
+
+                        //    //t: User token
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await CreateNewPassword(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "UpdateUserProfile":
+                        //    //t: User token
+                        //    //cts: JSON array of JSON objects. Each object represents a contact and will contain at least the following:
+                        //    //fn: firstname
+                        //    //ln: lastname
+                        //    //e: email  char[254] -- I don't think it's necessary to create an array at this point -- ariel 
+                        //    //p: phone char[20] -- same as email - no need for array at this point
+                        //    //dob: date of birth
+                        //    //gender: char[1] -- m/f
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await UpdateUserProfile(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "GetContactList":
+                        //    //t: User token
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    //cts: A JSON array of JSON objects representing the contacts the user can choose to follow. Each JSON object will contain at least the following:
+                        //    //id: Getgot id
+                        //    //img: image (URL ok)
+                        //    //n: name
+                        //    result = await GetContactList(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "RegisterUser":
+                        //    //t: User token
+                        //    //ids: JSON array of Getgot ids
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await RegisterUser(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "GetInterestList":
+                        //    //t: User token
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    //ints: A JSON array of JSON objects representing the interests the user can choose to follow. Each JSON object will contain at least the following:
+                        //    //id: Getgot id
+                        //    //img: image (URL ok)
+                        //    //n: name
+                        //    result = await GetInterestList(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "FollowInterests":
+                        //    //t: User token
+                        //    //ids: JSON array of Getgot interest ids
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await FollowInterests(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "GetInfluencerList":
+                        //    //t: User token
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    //infs: A JSON array of JSON objects representing the influencers the user can choose to follow. Each JSON object will contain at least the following:
+                        //    //id: Getgot id
+                        //    //img: image (URL ok)
+                        //    //n: name
+                        //    result = await GetInfluencerList(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "FollowInfluencers":
+                        //    //t: User token
+                        //    //ids: JSON array of Getgot influencer ids
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await FollowInfluencers(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "Login":
+                        //    //e: email
+                        //    //p: phone
+                        //    //pwd: hashed password
+                        //    //d: device info
+                        //    //dt: device type
+                        //    //exp: login expiration(optional)
+
+                        //    //c: Status code (to be defined, success or error)
+                        //    //m: Status message
+                        //    //t: user token
+                        //    result = await Login(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "ListLoggedInDevices":
+                        //    //t: token
+
+                        //    //dt:[ , , ...]
+                        //    result = await ListLoggedInDevices(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "Logout":
+                        //    //t: token
+                        //    //dt: [optional]
+
+                        //    //c: Status code(to be defined, success or error)
+                        //    //m: Status message
+                        //    result = await Logout(this.Fw, context, requestFromPost);
+                        //    break;
+                        //case "GetLatestAppVersion":
+                        //    //--none--
+
+                        //    //a: Android version number
+                        //    //i: iOS version number
+                        //    result = await GetLatestAppVersion(this.Fw, context, requestFromPost);
+                        //    break;
+
+
+
+
 
                         default:
-                            File.AppendAllText("GetGotApi.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" + Environment.NewLine);
+                            await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
                             break;
                     }
-                    await context.Response.WriteAsync(result);
+                }
+                else
+                {
+                    await this.Fw.Err(1000, "Start", "Tracking", "Unknown request: " + requestFromPost);
                 }
             }
             catch (Exception ex)
             {
-                await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                        "GetGotDbErrorLog",
-                        Jw.Json(new
-                        {
-                            Sev = 1,
-                            Proc = "GetGotApi",
-                            Meth = "Start",
-                            Desc = Utility.Hashing.EncodeTo64($@"{requestFromPost}"),
-                            Msg = Utility.Hashing.EncodeTo64(ex.ToString())
-                        }),
-                        "");
+                await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
             }
+            await WriteResponse(context, result);
         }
 
+        public async Task WriteResponse(HttpContext context, string resp)
+        {
+            context.Response.StatusCode = 200;
+            context.Response.ContentType = "application/json";
+            context.Response.ContentLength = resp.Length;
+            await context.Response.WriteAsync(resp);
+        }
         public async Task<string> CreateCampaign(IGenericEntity r)
         {
             return "";
@@ -296,7 +386,7 @@ namespace GetGotApi
             {
                 var queryPart = eQueryPart.GetS("");
                 (string queryPartType, string queryPartBody) = queryPart.SplitOnChar('(');
-                queryPartBody = (queryPartBody.Length == 0) ? "" : 
+                queryPartBody = (queryPartBody.Length == 0) ? "" :
                     queryPartBody.Substring(0, queryPartBody.Length - 1);
 
                 switch (queryPartType)
