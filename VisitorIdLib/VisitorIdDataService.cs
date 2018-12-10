@@ -97,15 +97,60 @@ namespace VisitorIdLib
 
         // Domain-specific provider list
 
-        public async Task Test(HttpContext c)
+        public async Task Test(HttpContext c, FrameworkWrapper fw)
         {
-            string x = await DoEmailProviders(Fw, c, Guid.NewGuid().ToString(),
-                "4fa38f522392f9e1c47f23aeabaffbe9", "", "abc");
+            //string x = await DoEmailProviders(Fw, c, Guid.NewGuid().ToString(),
+            //    "4fa38f522392f9e1c47f23aeabaffbe9", "", "abc");
+
+            string opaque = c.Get("op", "", false, false);   if (opaque == "") return;
+            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
+            string afid = opge.GetS("afid");
+            int idx = Int32.Parse(opge.GetS("i"));
+            string sid = opge.GetS("sd");
+            sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
+            bool succ = opge.GetS("succ") == "1" ? true : false;
+            string qstr = opge.GetS("qs");
+            Uri u = new Uri(qstr);
+            string host = u.Host ?? "";
+            string path = u.AbsolutePath ?? "";
+            string qury = u.Query ?? "";
+
+            // Consider accepting an existing Guid from opaque.rsid and using it or dropping
+            // events to it, in addition to the events we drop specifically for vid
+            Guid rsInstance = Guid.NewGuid();
+            if (idx == 0)
+            {
+                EdwBulkEvent be = new EdwBulkEvent();
+                be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
+                    PL.O(new
+                    {
+                        qs = qstr,
+                        op = opaque,
+                        ip = c.Connection.RemoteIpAddress,
+                        h = host,
+                        p = path,
+                        q = qury
+                    }), this.RsConfigGuid);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow,
+                    new Dictionary<string, object>() { { "vid", rsInstance.ToString() } },
+                    null, PL.O(new
+                    {
+                        et = "SessionInitiate",
+                        qs = qstr,
+                        op = opaque,
+                        ip = c.Connection.RemoteIpAddress,
+                        h = host,
+                        p = path,
+                        q = qury
+                    }));
+                await fw.EdwWriter.Write(be, 1);
+            }
+
         }
 
         public async Task Run(HttpContext context)
         {
-            await Test(context);
+            await Test(context, Fw);
             string requestFromPost = "";
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
