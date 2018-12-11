@@ -1,6 +1,6 @@
 ﻿async function visitorId(url, opaque, future) {
     var success = 0;
-    opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), i: 0, sd: '', succ: 0 };
+    opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: 0, page: 0, sd: '', succ: 0 };
     while (true) {   
         var res = await window.genericFetch(url + '?m=VisitorId&op=' + btoa(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
@@ -9,7 +9,7 @@
 
         var sres = {};
         if (res.scriptUrl) {
-            await load(res.scriptUrl, 'Segment'+res.idx);
+            await load(res.scriptUrl, 'Segment'+res.slot);
             for (var x in res.strategy) {
                 var f = res.strategy[x].f;
                 var a = res.strategy[x].a;
@@ -24,7 +24,7 @@
         }
 
         opaque = {
-            ...opaque, i: res.idx, sd: res.sesid, succ: success, md5: sres.md5,
+            ...opaque, slot: res.slot, page: res.page, sd: res.sesid, succ: success, md5: sres.md5,
             e: btoa(sres.email), vieps: res.vieps
         }; 
         

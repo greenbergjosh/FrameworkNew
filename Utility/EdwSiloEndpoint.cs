@@ -29,7 +29,7 @@ namespace Utility
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            string res = await SqlWrapper.InsertEdwPayload(this.connectionString, (string)w, timeoutSeconds)
+            string res = await SqlWrapper.InsertEdwPayload(this.connectionString, w.ToString(), timeoutSeconds)
                 .ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return LoadBalancedWriter.Result.Success;
