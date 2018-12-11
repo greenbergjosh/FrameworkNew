@@ -101,51 +101,57 @@ namespace VisitorIdLib
         {
             //string x = await DoEmailProviders(Fw, c, Guid.NewGuid().ToString(),
             //    "4fa38f522392f9e1c47f23aeabaffbe9", "", "abc");
-
-            string opaque = c.Get("op", "", false, false);   if (opaque == "") return;
-            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
-            string afid = opge.GetS("afid");
-            int idx = Int32.Parse(opge.GetS("i"));
-            string sid = opge.GetS("sd");
-            sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
-            bool succ = opge.GetS("succ") == "1" ? true : false;
-            string qstr = opge.GetS("qs");
-            Uri u = new Uri(qstr);
-            string host = u.Host ?? "";
-            string path = u.AbsolutePath ?? "";
-            string qury = u.Query ?? "";
-
-            // Consider accepting an existing Guid from opaque.rsid and using it or dropping
-            // events to it, in addition to the events we drop specifically for vid
-            Guid rsInstance = Guid.NewGuid();
-            if (idx == 0)
+            try
             {
-                EdwBulkEvent be = new EdwBulkEvent();
-                be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
-                    PL.O(new
-                    {
-                        qs = qstr,
-                        op = opaque,
-                        ip = c.Connection.RemoteIpAddress,
-                        h = host,
-                        p = path,
-                        q = qury
-                    }), this.RsConfigGuid);
-                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow,
-                    new Dictionary<string, object>() { { "vid", rsInstance.ToString() } },
-                    null, PL.O(new
-                    {
-                        et = "SessionInitiate",
-                        qs = qstr,
-                        op = opaque,
-                        ip = c.Connection.RemoteIpAddress,
-                        h = host,
-                        p = path,
-                        q = qury
-                    }));
-                await fw.EdwWriter.Write(be, 1);
-            }
+                string opaque = c.Get("op", "", false, false); if (opaque == "") return;
+                IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
+                string afid = opge.GetS("afid");
+                int slot = Int32.Parse(opge.GetS("slot"));
+                int page = Int32.Parse(opge.GetS("page"));
+                string sid = opge.GetS("sd");
+                sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
+                bool succ = opge.GetS("succ") == "1" ? true : false;
+                string qstr = opge.GetS("qs");
+                Uri u = new Uri(qstr);
+                string host = u.Host ?? "";
+                string path = u.AbsolutePath ?? "";
+                string qury = u.Query ?? "";
 
+                // Consider accepting an existing Guid from opaque.rsid and using it or dropping
+                // events to it, in addition to the events we drop specifically for vid
+                Guid rsInstance = Guid.NewGuid();
+                if (slot == 0)
+                {
+                    EdwBulkEvent be = new EdwBulkEvent();
+                    be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
+                        PL.O(new
+                        {
+                            qs = qstr,
+                            op = opaque,
+                            ip = c.Connection.RemoteIpAddress,
+                            h = host,
+                            p = path,
+                            q = qury
+                        }), this.RsConfigGuid);
+                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow,
+                        new Dictionary<string, object>() { { "vid", rsInstance.ToString() } },
+                        null, PL.O(new
+                        {
+                            et = "SessionInitiate",
+                            qs = qstr,
+                            op = opaque,
+                            ip = c.Connection.RemoteIpAddress,
+                            h = host,
+                            p = path,
+                            q = qury
+                        }));
+                    await fw.EdwWriter.Write(be, 1);
+                }
+            }
+            catch (Exception ex)
+            {
+                string exs = ex.ToString();
+            }
         }
 
         public async Task Run(HttpContext context)
@@ -186,7 +192,7 @@ namespace VisitorIdLib
                 else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
                 {
                     IGenericEntity op = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
-                    if (op != null) result = await SaveSession(this.Fw, context, op.GetS("sesid"), op.GetS("md5"), "", op.GetS("vieps"));
+                    if (op != null) result = await SaveSession(this.Fw, context, op);
                 }
                 else
                 {
@@ -213,20 +219,14 @@ namespace VisitorIdLib
             return tokenized.Replace("[=SESSIONID=]", sesid).Replace("[=OPAQUE=]", opaque);
         }
 
-        //await ConsumerRepository.SaveMd5ToContact("ConsumerRepository", ckMd5, 1);
-        // Need ConsumerRepository.SaveEmailPlainTextToContact()
-    //    await SqlWrapper.SqlToGenericEntity("ConsumerRepository",
-    //                "SaveMd5ToContact",
-    //                Jw.Json(new { Md5 = md5
-    //}),
-    //                "", null, null, timeout);
-
         public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
         {
             string opaque = c.Get("op", "");
             IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
             string afid = opge.GetS("afid");
-            int idx = Int32.Parse(opge.GetS("i"));
+            string tpid = opge.GetS("tpid");            
+            int slot = Int32.Parse(opge.GetS("slot"));
+            int page = Int32.Parse(opge.GetS("page"));
             string sid = opge.GetS("sd");
             sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
             bool succ = opge.GetS("succ") == "1" ? true : false;
@@ -234,19 +234,19 @@ namespace VisitorIdLib
             Uri u = new Uri(qstr);
             string host = u.Host ?? "";
             string path = u.AbsolutePath ?? "";
-            string qury = u.Query ?? "";            
+            string qury = u.Query ?? "";
+            Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
+            foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
             // Consider accepting an existing Guid from opaque.rsid and using it or dropping
             // events to it, in addition to the events we drop specifically for vid
-            Guid rsInstance = Guid.NewGuid();
-            if (idx == 0)
+            if (slot == 0)
             {
                 EdwBulkEvent be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
                     PL.O(new { qs = qstr, op = opaque, ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury}), this.RsConfigGuid);
-                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow,
-                    new Dictionary<string, object>() { { "vid", rsInstance.ToString() } },
+                        h = host, p = path, q = qury, afid}), this.RsConfigGuid);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                     null, PL.O(new { et = "SessionInitiate", qs = qstr, op = opaque,
                         ip = c.Connection.RemoteIpAddress,
                         h = host, p = path, q = qury }));
@@ -271,7 +271,8 @@ namespace VisitorIdLib
             {
                 string md5 = "";
                 string eml = "";
-                int nextIdx = idx;
+                int nextIdx = slot;
+                int nextPage = page;
 
                 while (nextIdx < visitorIdMd5ProviderSequence.Count)
                 {
@@ -290,10 +291,23 @@ namespace VisitorIdLib
                             if (!String.IsNullOrEmpty(md5))
                             {
                                 eml = gc.GetS("Em");
-                                await SaveSession(fw, c, sid, md5, eml, visitorIdEmailProviderSequence);
+                                await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, visitorIdEmailProviderSequence, rsids);
                             }
                         }
+
+                        EdwBulkEvent be = new EdwBulkEvent();                        
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderSelected",
+                                pid = "cookie",
+                                slot,
+                                page
+                            }));
+                        await fw.EdwWriter.Write(be, 1);
+
                         nextIdx++;
+                        nextPage++;
                         continue;
                     }
                     else if (nextTask.ToLower() == "continue")
@@ -337,7 +351,20 @@ namespace VisitorIdLib
                     }
                     else if (nextTask[0] == '@')
                     {
-                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(nextTask.Substring(1)));
+                        string pid = nextTask.Substring(1);
+                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
+
+                        EdwBulkEvent be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderSelected",
+                                pid,
+                                slot,
+                                page
+                            }));
+                        await fw.EdwWriter.Write(be, 1);
+
                         if (!String.IsNullOrEmpty(s.GetS("Config/Url")))
                         {
                             return Jw.Json(new
@@ -350,7 +377,9 @@ namespace VisitorIdLib
                                 saveSession = s.GetS("Config/SaveSession"),
                                 imgFlag = s.GetS("Config/ImgFlag"),
                                 sesid = sid,
-                                idx = nextIdx + 1,
+                                pid,
+                                slot = nextIdx + 1,
+                                page = nextPage + 1,
                                 vieps = visitorIdEmailProviderSequence
                             },
                             new bool[] { true, true, false, false, true, true, true, true, true, true, true });
@@ -365,7 +394,9 @@ namespace VisitorIdLib
                                 strategy = ReplaceToken(s.GetS("Config/Strategy"), sid, opaque),
                                 saveSession = s.GetS("Config/SaveSession"),
                                 sesid = sid,
-                                idx = nextIdx + 1,
+                                pid,
+                                slot = nextIdx + 1,
+                                page = nextPage + 1,
                                 vieps = visitorIdEmailProviderSequence
                             },
                             new bool[] { true, true, true, false, true, true, true, true, true });
@@ -390,15 +421,28 @@ namespace VisitorIdLib
             return Jw.Json(new { done = "1", sesid = sid });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId, string md5,
-            string email, string visitorIdEmailProviderSequence)
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId, 
+            string pid, int slot, int page, string md5, string email, string visitorIdEmailProviderSequence, 
+            Dictionary<string, object> rsids)
         {
             string ip = c.Ip();
             string userAgent = c.UserAgent();
 
+            EdwBulkEvent be = new EdwBulkEvent();
+            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                null, PL.O(new
+                {
+                    et = "Md5ProviderResponse",
+                    pid,
+                    slot,
+                    page,
+                    succ = !String.IsNullOrEmpty(md5) ? "1" : "0"
+                }));
+            await fw.EdwWriter.Write(be, 1);
+
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            string em = await DoEmailProviders(fw, c, md5, email, sessionId, visitorIdEmailProviderSequence);
+            string em = await DoEmailProviders(fw, c, md5, email, sessionId, visitorIdEmailProviderSequence, rsids);
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -411,27 +455,39 @@ namespace VisitorIdLib
             return Jw.Json(new { email = em, md5 = md5 });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c)
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, IGenericEntity op = null)
         {
-            string opaque = c.Get("op", "");
-            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
-            string afid = opge.GetS("afid");
-            int idx = Int32.Parse(opge.GetS("i"));
+            IGenericEntity opge;
+            if (op == null)
+            {
+                string opaque = c.Get("op", "");
+                opge = Jw.JsonToGenericEntity(opaque);
+            }
+            else
+            {
+                opge = op;
+            }
+            
             string sid = opge.GetS("sd");
+            int slot = Int32.Parse(opge.GetS("slot"));
+            int page = Int32.Parse(opge.GetS("page"));
+            string pid = opge.GetS("pid");
             string vieps = opge.GetS("vieps");
-            string qstr = opge.GetS("qs");
             string md5 = opge.GetS("md5");
             string eml = opge.GetS("e");
             string decEml = String.IsNullOrEmpty(eml) ? "" : Hashing.DecodeUtf8From64(eml);
+            Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
+            foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, md5, eml, vieps);
+            return await SaveSession(fw, c, sid, pid, slot-1, page-1, md5, decEml, vieps, rsids);
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
-            string md5, string email, string visitorIdEmailProviderSequence)
+            string md5, string email, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids)
         {
             string eml = "";
             int slotnum = 0;
+            int pagenum = 0;
             foreach (var s in this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
             {
                 if (s.ToLower() == "stopifemail")
@@ -447,7 +503,20 @@ namespace VisitorIdLib
                         IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
                         if (!String.IsNullOrEmpty(md5)) eml = gc.GetS("Em");
                     }
+
+                    EdwBulkEvent be = new EdwBulkEvent();
+                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                        null, PL.O(new
+                        {
+                            et = "EmailProviderSelected",
+                            pid = "cookie",
+                            slotnum,
+                            pagenum
+                        }));
+                    await fw.EdwWriter.Write(be, 1);
+
                     slotnum++;
+                    pagenum++;
                     continue;
                 }
                 else if (s.ToLower() == "continue")
@@ -488,11 +557,36 @@ namespace VisitorIdLib
                 }
                 else if (s[0] == '@')
                 {
+                    EdwBulkEvent be = new EdwBulkEvent();
+                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                        null, PL.O(new
+                        {
+                            et = "EmailProviderSelected",
+                            pid = s.Substring(1),
+                            slotnum,
+                            pagenum
+                        }));
+                    await fw.EdwWriter.Write(be, 1);
+
                     IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(s.Substring(1)));
                     Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                     string lbm = await fw.Entities.GetEntity(lbmId);
                     eml = (string) await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), true, "e:\\workspace\\scripts\\debug");
+
+                    be = new EdwBulkEvent();
+                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                        null, PL.O(new
+                        {
+                            et = "EmailProviderResponse",
+                            pid = s.Substring(1),
+                            slotnum,
+                            pagenum,
+                            succ = !String.IsNullOrEmpty(eml) ? "1" : "0"
+                        }));
+                    await fw.EdwWriter.Write(be, 1);
+
                     slotnum++;
+                    pagenum++;
                 }
                 else
                 {

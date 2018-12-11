@@ -56,17 +56,17 @@ namespace Utility
 
             public static SL C() { return new SL(); }
 
-            public SL(SL sl) { this.ls.AddRange(sl.ls); }
+            public SL(SL sl) { if (sl != null) this.ls.AddRange(sl.ls); }
 
             public SL(params SL[] sls) { this.ls.AddRange(sls.SelectMany(x => x.ls)); }
 
             public static SL C(params SL[] sls) { return new SL(sls); }
 
-            public SL(IEnumerable<SL> sls) { this.ls.AddRange(sls.SelectMany(x => x.ls)); }
+            public SL(IEnumerable<SL> sls) { if (sls != null) this.ls.AddRange(sls.SelectMany(x => x.ls)); }
 
             public static SL C(IEnumerable<SL> sls) { return new SL(sls); }
 
-            public SL(List<Tuple<string, bool>> sls) { ls.AddRange(sls); }
+            public SL(List<Tuple<string, bool>> sls) { if (sls != null) ls.AddRange(sls); }
 
             public static SL C(List<Tuple<string, bool>> sls) { return new SL(sls); }
 
@@ -88,13 +88,13 @@ namespace Utility
 
             public SL Add(IEnumerable<SL> sls)
             {
-                this.ls.AddRange(sls.SelectMany(x => x.ls));
+                if (sls != null) this.ls.AddRange(sls.SelectMany(x => x.ls));
                 return this;
             }
 
             public SL(IEnumerable<object> l, bool q = true)
             {
-                ls.AddRange(l.Select(x => new Tuple<string, bool>(x.ToString(), q)));
+                if (l != null) ls.AddRange(l.Select(x => new Tuple<string, bool>(x.ToString(), q)));
             }
 
             public static SL C(IEnumerable<object> l, bool q = true)
@@ -195,17 +195,17 @@ namespace Utility
 
             public static PL C() { return new PL(); }
 
-            public PL(PL pl) { this.ps.AddRange(pl.ps); }
+            public PL(PL pl) { if (pl != null) this.ps.AddRange(pl.ps); }
 
             public PL(params PL[] pls) { this.ps.AddRange(pls.SelectMany(x => x.ps)); }
 
             public static PL C(params PL[] pls) { return new PL(pls); }
 
-            public PL(IEnumerable<PL> pls) { this.ps.AddRange(pls.SelectMany(x => x.ps)); }
+            public PL(IEnumerable<PL> pls) { if (pls != null) this.ps.AddRange(pls.SelectMany(x => x.ps)); }
 
             public static PL C(IEnumerable<PL> pls) { return new PL(pls); }
 
-            public PL(List<Tuple<string, string, bool>> lps) { this.ps.AddRange(lps); }
+            public PL(List<Tuple<string, string, bool>> lps) { if (lps != null) this.ps.AddRange(lps); }
 
             public static PL C(List<Tuple<string, string, bool>> lps) { return new PL(lps); }
 
@@ -227,7 +227,7 @@ namespace Utility
 
             public PL Add(IEnumerable<PL> pls)
             {
-                this.ps.AddRange(pls.SelectMany(x => x.ps));
+                if (pls != null) this.ps.AddRange(pls.SelectMany(x => x.ps));
                 return this;
             }
 
