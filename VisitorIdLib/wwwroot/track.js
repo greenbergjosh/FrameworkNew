@@ -1,52 +1,50 @@
 ﻿async function visitorId(url, opaque, future) {
-    var success = 0;
     opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: 0, page: 0, sd: '', succ: 0 };
     while (true) {   
-        var res = await window.genericFetch(url + '?m=VisitorId&op=' + btoa(JSON.stringify(opaque)),
+        var res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
-        if (!(res.url || res.scriptUrl) || res.done) break;
+        if (!(res.config || res.config.url || res.config.scriptUrl) || res.done) break;
 
         var sres = {};
-        if (res.scriptUrl) {
-            await load(res.scriptUrl, 'Segment'+res.slot);
-            for (var x in res.strategy) {
-                var f = res.strategy[x].f;
-                var a = res.strategy[x].a;
-                var exf = getDescendantProp(window[res.globalObject], f);
+        if (res.config.scriptUrl) {
+            await load(res.config.scriptUrl, 'Segment'+res.config.slot);
+            for (var x in res.config.strategy) {
+                var f = res.config.strategy[x].f;
+                var a = res.config.strategy[x].a;
+                var exf = getDescendantProp(window[res.config.globalObject], f);
                 exf(...a);
             }
-            success = 1;
         }
         else {
             sres = await window.handleService(res);
-            success = (res.md5 || res.email) ? 1 : 0;
         }
 
         opaque = {
-            ...opaque, slot: res.slot, page: res.page, sd: res.sesid, succ: success, md5: sres.md5,
-            e: btoa(sres.email), vieps: res.vieps
+            ...opaque, slot: res.config.slot, page: res.config.page, sd: res.config.sesid, eml: sres.email,
+            md5: sres.md5, e: base64UrlSafe(sres.email), vieps: res.vieps
         }; 
         
         if (res.saveSession == 'true') {
-            var res = await window.genericFetch(url + '?m=SaveSession&op=' + btoa(JSON.stringify(opaque)),
+            var res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
-                'json', '');  
+                'json', ''); 
+            opaque.eml = res.email;
+            opaque.md5 = res.md5;
         }
     }
 }
 window[window.VisitorIdObject].visitorId = visitorId;
 
-async function handleService(service) {
-    var response = await window.genericFetch(service.url, service.fetchParms, service.fetchType, service.imgFlag);
-    return (service.transform && response) ?
+async function handleService(res) {
+    var response = await window.genericFetch(res.config.url, res.config.fetchParms, res.config.fetchType, res.config.imgFlag);
+    return (res.config.transform && response) ?
         {
-            email: getDescendantProp(response, service.transform.email) || '',
-            md5: getDescendantProp(response, service.transform.md5) || '',
-            saveSession: service.saveSession,
-            name: service.name
+            email: getDescendantProp(response, res.config.transform.email) || '',
+            md5: getDescendantProp(response, res.config.transform.md5) || '',
+            saveSession: res.config.saveSession
         } :
-        { email: '', md5: '', name: service.name, saveSession: 'false' };
+        { email: '', md5: '', saveSession: 'false' };
 }
 
 async function genericFetch(url, fetchParms, fetchType, imgFlag) {
@@ -71,6 +69,11 @@ async function genericFetch(url, fetchParms, fetchType, imgFlag) {
 }
 //document.querySelector('img').src = 'data:image/gif;base64' 
 // var docArticle = doc.querySelector('article').innerHTML;
+
+function base64UrlSafe(s) {
+    s = btoa(s);
+    return s.replace(/+/, '-').replace(/\//, '_').replace(/=/, '~');
+}
 
 function arrayBufferToBase64(buffer) {
     var binary = '';

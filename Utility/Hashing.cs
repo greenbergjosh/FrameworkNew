@@ -47,6 +47,18 @@ namespace Utility
             //return sb.ToString();
         }
 
+        public static string Base64EncodeForUrl(string s)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(s)).Replace('+', '-').Replace('/', '_').Replace('=', '~').Trim()
+        }
+
+        public static string Base64DecodeFromUrl(string s)
+        {
+            if (String.IsNullOrEmpty(s)) return s;
+            return Encoding.UTF8.GetString(
+                Convert.FromBase64String(s.Replace('-', '+').Replace('_', '/').Replace('~', '=')));
+        }
+
         public static string CalculateMD5Hash(string input)
         {
             String hash;

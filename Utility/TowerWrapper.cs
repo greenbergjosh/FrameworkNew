@@ -87,7 +87,7 @@ namespace Utility
             return towerEmailPlainText;
         }
 
-        public static async Task<IGenericEntity> ProcessTowerMessage(FrameworkWrapper fw, HttpContext context, string towerEncryptionKey)
+        public static async Task<(IGenericEntity opaque, string md5)> ProcessTowerMessage(FrameworkWrapper fw, HttpContext context, string towerEncryptionKey)
         {
             // All this method does in call SaveSession() with the decrypted opaque parm
             string pRawString = "";
@@ -144,26 +144,25 @@ namespace Utility
                     await fw.Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
                 }
 
-                return null;
+                return (opaque: null, md5: "");
             }
 
             try
             {
                 await fw.Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
-                byte[] byt = Convert.FromBase64String(opaque);
-                string jsopaque = System.Text.Encoding.UTF8.GetString(byt, 0, byt.Length);
+                string jsopaque = Utility.Hashing.Base64DecodeFromUrl(opaque);
                 IGenericEntity op = new GenericEntityJson();
                 var opstate = JsonConvert.DeserializeObject(jsopaque);
                 op.InitializeEntity(null, null, opstate);
-                return op;
+                return (opaque: op, md5: emailMd5);
             }
             catch (Exception ex)
             {
                 await fw.Err(1000, "ProcessTowerMessage", "Exception", "OuterException: " + ex.ToString() + "::ip=" + context.Connection.RemoteIpAddress);
             }
 
-            return null;
+            return (opaque: null, md5: "");
         }
     }
 }
