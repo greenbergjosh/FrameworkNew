@@ -81,7 +81,7 @@ namespace Utility
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
         {
-            string errorFilePath = config.GetS("Config/ErrorFilePath");
+            string errorFilePath = Path.GetFullPath(config.GetS("Config/ErrorFilePath"));
 
             return new ErrorSiloLoadBalancedWriter(60,
                 async () => await ErrorSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
