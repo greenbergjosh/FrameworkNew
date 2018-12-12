@@ -423,6 +423,8 @@ namespace VisitorIdLib
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
             string md5, string email, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids)
         {
+            bool isAsync = true;
+
             string eml = "";
             int slotnum = 0;
             int pagenum = 0;
@@ -460,6 +462,7 @@ namespace VisitorIdLib
                 else if (s.ToLower() == "continue")
                 {
                     slotnum++;
+                    if (isAsync) break;
                     eml = "";
                     continue;
                 }
@@ -468,6 +471,7 @@ namespace VisitorIdLib
                     if (!String.IsNullOrEmpty(eml))
                     {
                         slotnum++;
+                        if (isAsync) break;
                         eml = "";
                         continue;
                     }
@@ -485,6 +489,7 @@ namespace VisitorIdLib
                     else
                     {
                         slotnum++;
+                        if (isAsync) break;
                         eml = "";
                         continue;
                     }
@@ -532,6 +537,14 @@ namespace VisitorIdLib
                     await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + slotnum);
                     slotnum++;
                 }
+            }
+
+            if (isAsync && (slotnum < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
+            {
+                // pass this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence]
+                // pass slotnum, pagenum
+                // pass rsids
+                // drop an event into PostingQueue
             }
 
             return eml;
