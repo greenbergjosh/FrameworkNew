@@ -66,7 +66,7 @@ namespace Utility
 
         public static async Task NoValid(object w, string dataFilePath, string errorFilePath)
         {
-            await File.AppendAllTextAsync(dataFilePath, "<<//RECORD::" + DateTime.Now + "::NoValid::" + (string)w + "//>>").ConfigureAwait(false);
+            await File.AppendAllTextAsync(dataFilePath, "<<//RECORD::" + DateTime.Now + "::NoValid::" + w.ToString() + "//>>").ConfigureAwait(false);
             await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::NoValid::" + w.ToString()).ConfigureAwait(false);
         }
 

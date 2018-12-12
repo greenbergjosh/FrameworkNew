@@ -1,19 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Utility
 {
-    public class ErrorSiloEndpoint : IEndpoint
+    class PostingQueueSiloEndpoint : IEndpoint
     {
         public string connectionString;
-        public int sequence = 0;
 
-        public ErrorSiloEndpoint(string connectionString)
+        public PostingQueueSiloEndpoint(string connectionString)
         {
             this.connectionString = connectionString;
         }
         public async Task<bool> Audit()
         {
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
+            string res = await SqlWrapper.InsertPostingQueue(this.connectionString, "Audit", DateTime.Now, "{}").ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return true;
             else return false;
@@ -21,9 +21,9 @@ namespace Utility
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            ErrorLogError e = (ErrorLogError)w;
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, sequence++, e.Severity, e.Process, 
-                e.Message, e.Descriptor, e.Message).ConfigureAwait(false);
+            PostingQueueEntry p = (PostingQueueEntry)w;
+            string res = await SqlWrapper.InsertPostingQueue(this.connectionString, p.PostType, p.PostDate,
+                p.Payload).ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return LoadBalancedWriter.Result.Success;
             else if (result == "walkaway")
@@ -34,7 +34,7 @@ namespace Utility
 
         public override bool Equals(object obj)
         {
-            return ((ErrorSiloEndpoint)obj).connectionString == this.connectionString;
+            return ((PostingQueueSiloEndpoint)obj).connectionString == this.connectionString;
         }
 
         public override int GetHashCode()

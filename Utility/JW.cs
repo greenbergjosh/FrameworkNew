@@ -295,6 +295,11 @@ namespace Utility
                     (quotes != null && quotes.Length > i) ? quotes[i] : null)));
             }
 
+            public static PL O(object o, bool[] quotes)
+            {
+                return PL.O(o, null, quotes);
+            }
+
             public static PL O(object o, List<string> names = null, bool[] quotes = null)
             {
                 if (o is IDictionary<string, object>) throw new Exception("Use PL.D for IDictionary<>");

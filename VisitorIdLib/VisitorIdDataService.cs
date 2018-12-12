@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,9 +16,28 @@ namespace VisitorIdLib
 
         public Guid RsConfigGuid;
         public string TowerEncryptionKey;
-        public Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences = new Dictionary<string, List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>>();
+        public Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences = 
+            new Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>>();
         public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
         public int VisitorIdCookieExpDays = 10;
+
+        //public void test()
+        //{
+        //    int slotnum = 2;
+        //    int pagenum = 3;
+        //    string visitorIdEmailProviderSequence = "abc";
+        //    Dictionary<string, object> rsids = new Dictionary<string, object>() { { "bob", "jones" } };
+
+        //    Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
+        //           PL.O(new
+        //           {
+        //               slotnum,
+        //               pagenum
+        //           }, new bool[] { false, true, true } )
+        //           .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
+        //           .Add(PL.N("rsids", PL.D(rsids))).ToString()), 1).GetAwaiter().GetResult();
+
+        //}
 
         public void Config(FrameworkWrapper fw)
         {
@@ -28,10 +49,13 @@ namespace VisitorIdLib
             foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
                 string afid = afidCfg.GetS("afid");
-                List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)> afidSeqs = new List<(string Domain, List<(string Md5provider, string EmailProviderSeq)>)>();
+                bool isAsync = (afidCfg.GetS("async") == "true");
+                List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)> afidSeqs = 
+                    new List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>();
                 foreach (var afidCfgSeq in  afidCfg.GetL("seqs"))
                 {
                     string domain = afidCfgSeq.GetS("dom");
+                    bool isAsyncDom = !String.IsNullOrEmpty(afidCfgSeq.GetS("async")) ? afidCfgSeq.GetS("async") == "true" : isAsync;
                     List<(string Md5provider, string EmailProviderSeq)> md5seq = new List<(string Md5provider, string EmailProviderSeq)>();
                     foreach (var dgvipm in afidCfgSeq.GetL("seq"))
                     {
@@ -40,7 +64,7 @@ namespace VisitorIdLib
                         md5seq.Add((md5ProviderStrParts[0], 
                             md5ProviderStrParts.Length > 1 ? md5ProviderStrParts[1] : null));
                     }
-                    afidSeqs.Add((domain, md5seq));
+                    afidSeqs.Add((domain, isAsyncDom, md5seq));
                 }
                 VisitorIdMd5ProviderSequences.Add(afid, afidSeqs);
             }
@@ -94,7 +118,7 @@ namespace VisitorIdLib
         //           EmailProvider3
 
         // Domain-specific provider list
-        
+
         public async Task Run(HttpContext context)
         {
             string requestFromPost = "";
@@ -187,27 +211,41 @@ namespace VisitorIdLib
                 EdwBulkEvent be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
                     PL.O(new { qs = qstr, op = opaque, ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury, afid}), this.RsConfigGuid);
+                        h = host, p = path, q = qury, afid}, new bool[] { true, true, false, true, true, true, true }), this.RsConfigGuid);
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                     null, PL.O(new { et = "SessionInitiate", qs = qstr, op = opaque,
                         ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury }));
+                        h = host, p = path, q = qury }, new bool[] { true, true, false, true, true, true, true}));
                 await fw.EdwWriter.Write(be, 1);
             }
-            
+
+            bool isAsync = true;
             List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = null;
             foreach (var kvp in VisitorIdMd5ProviderSequences[afid])
             {
                 if (host != "" && ((host == kvp.Domain) || host.EndsWith("." + kvp.Domain)))
                 {
-                    visitorIdMd5ProviderSequence = kvp.Item2;
+                    visitorIdMd5ProviderSequence = kvp.Item3;
+                    isAsync = kvp.isAsync;
                     break;
                 }
                 else if (kvp.Domain == "default") // allow default option anywhere in list
                 {
-                    if (visitorIdMd5ProviderSequence == null) visitorIdMd5ProviderSequence = kvp.Item2;
+                    if (visitorIdMd5ProviderSequence == null)
+                    {
+                        visitorIdMd5ProviderSequence = kvp.Item3;
+                        isAsync = kvp.isAsync;
+                    }
                 }
             }
+
+            // Update the opaque parm with the newly identified isAsync value so it can
+            // be used for providers that redirect back to use directly which has us call
+            // SaveSession before returning back to the javascript where the opaque parm
+            // is further updated.
+            var opq = JObject.Parse(opaque);
+            opq["isAsync"] = isAsync ? "true" : "false";
+            opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
             try
             {
@@ -231,7 +269,7 @@ namespace VisitorIdLib
                             if (!String.IsNullOrEmpty(md5))
                             {
                                 eml = gc.GetS("Em");
-                                await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, visitorIdEmailProviderSequence, rsids);
+                                await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
                             }
                         }
 
@@ -340,6 +378,7 @@ namespace VisitorIdLib
                             pid,
                             slot = nextIdx + 1,
                             page = nextPage + 1,
+                            isAsync = isAsync ? "true" : "false",
                             vieps = visitorIdEmailProviderSequence
                         },
                         new bool[] { false, true, true, true, true, true });
@@ -359,7 +398,7 @@ namespace VisitorIdLib
         }
 
         public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId, 
-            string pid, int slot, int page, string md5, string email, string visitorIdEmailProviderSequence, 
+            string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, 
             Dictionary<string, object> rsids)
         {
             string ip = c.Ip();
@@ -379,7 +418,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            string em = await DoEmailProviders(fw, c, md5, email, sessionId, visitorIdEmailProviderSequence, rsids);
+            string em = await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -411,20 +450,19 @@ namespace VisitorIdLib
             int slot = Int32.Parse(opge.GetS("slot"));
             int page = Int32.Parse(opge.GetS("page"));
             string pid = opge.GetS("pid");
+            bool isAsync = (opge.GetS("async") == "true");
             string vieps = opge.GetS("vieps");
             string emd5 = md5 ?? opge.GetS("md5");
             string eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));            
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, pid, slot-1, page-1, emd5, eml, vieps, rsids);
+            return await SaveSession(fw, c, sid, pid, slot-1, page-1, emd5, eml, isAsync, vieps, rsids);
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
-            string md5, string email, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids)
         {
-            bool isAsync = true;
-
             string eml = "";
             int slotnum = 0;
             int pagenum = 0;
@@ -541,10 +579,14 @@ namespace VisitorIdLib
 
             if (isAsync && (slotnum < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
-                // pass this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence]
-                // pass slotnum, pagenum
-                // pass rsids
-                // drop an event into PostingQueue
+                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
+                   PL.O(new
+                   {
+                       slotnum,
+                       pagenum
+                   })
+                   .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
+                   .Add(PL.N("rsids", PL.D(rsids))).ToString()), 1);
             }
 
             return eml;
