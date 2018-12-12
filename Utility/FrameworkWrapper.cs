@@ -16,6 +16,7 @@ namespace Utility
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
         public EdwSiloLoadBalancedWriter EdwWriter;
+        public PostingQueueSiloLoadBalancedWriter PostingQueueWriter;
         public ErrorSiloLoadBalancedWriter ErrorWriter;
         public Func<int, string, string, string, Task> Err;
 
@@ -38,6 +39,7 @@ namespace Utility
                 this.RoslynWrapper = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
 
                 this.EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(this.StartupConfiguration);
+                this.PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(this.StartupConfiguration);
                 this.ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.StartupConfiguration);
                 string appName = this.StartupConfiguration.GetS("Config/ErrorLogAppName");
                 int errTimeout = Int32.Parse(this.StartupConfiguration.GetS("Config/ErrorLogTimeout"));
