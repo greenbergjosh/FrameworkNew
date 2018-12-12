@@ -211,11 +211,11 @@ namespace VisitorIdLib
                 EdwBulkEvent be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
                     PL.O(new { qs = qstr, op = opaque, ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury, afid}, new bool[] { true, true, false, true, true, true, true }), this.RsConfigGuid);
+                        h = host, p = path, q = qury, afid, tpid}, new bool[] { true, true, false, true, true, true, true, true }), this.RsConfigGuid);
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                     null, PL.O(new { et = "SessionInitiate", qs = qstr, op = opaque,
                         ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury }, new bool[] { true, true, false, true, true, true, true}));
+                        h = host, p = path, q = qury, tpid }, new bool[] { true, true, false, true, true, true, true, true}));
                 await fw.EdwWriter.Write(be, 1);
             }
 
