@@ -82,8 +82,8 @@ namespace Utility
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
         {
-            string dataFilePath = config.GetS("Config/EdwDataFilePath");
-            string errorFilePath = config.GetS("Config/EdwErrorFilePath");
+            string dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
+            string errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
                 async () => await EdwSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
