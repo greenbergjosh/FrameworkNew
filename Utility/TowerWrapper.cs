@@ -47,7 +47,7 @@ namespace Utility
 
         public static async Task<string> CallTowerEmailApi(HttpContext context, string md5,
             string towerEmailApiUrl, string towerEmailApiKey,
-            Func<int, string, string, string, Task> Err)
+            FrameworkWrapper.ErrorDelegate Err)
         {
             // All this method does is parse the Json return of an HTTP get
             // This API descriptor can be externalized as a Provider

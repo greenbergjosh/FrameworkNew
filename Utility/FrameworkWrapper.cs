@@ -1,12 +1,12 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace Utility
 {
+
     public class FrameworkWrapper
     {
         public string ConnectionString;
@@ -18,7 +18,8 @@ namespace Utility
         public EdwSiloLoadBalancedWriter EdwWriter;
         public PostingQueueSiloLoadBalancedWriter PostingQueueWriter;
         public ErrorSiloLoadBalancedWriter ErrorWriter;
-        public Func<int, string, string, string, Task> Err;
+        public ErrorDelegate Err;
+        public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
 
         public FrameworkWrapper()
         {
@@ -43,10 +44,10 @@ namespace Utility
                 this.ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.StartupConfiguration);
                 string appName = this.StartupConfiguration.GetS("Config/ErrorLogAppName");
                 int errTimeout = Int32.Parse(this.StartupConfiguration.GetS("Config/ErrorLogTimeout"));
-                this.Err = 
+                this.Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
-                        await this.ErrorWriter.Write(new ErrorLogError(severity, 
+                        await this.ErrorWriter.Write(new ErrorLogError(severity,
                             appName ?? this.ConfigurationKey, method, descriptor, message), errTimeout);
                     };
             }
@@ -57,5 +58,7 @@ namespace Utility
                 throw ex;
             }
         }
+
     }
+
 }

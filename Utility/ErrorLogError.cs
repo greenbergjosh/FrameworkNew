@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Utility
+﻿namespace Utility
 {
     public class ErrorLogError
     {
@@ -32,5 +28,13 @@ namespace Utility
                 g = Utility.Hashing.EncodeTo64(Message)
             });
         }
+
     }
+
+    public static class ErrorSeverity
+    {
+        public const int Log = 0;
+        public const int Error = 1000;
+    }
+
 }
