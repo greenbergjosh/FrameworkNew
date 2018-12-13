@@ -11,6 +11,7 @@ namespace Utility
     public class ErrorSiloLoadBalancedWriter : LoadBalancedWriter
     {
         public ErrorSiloLoadBalancedWriter(int endpointPollingInterval,
+            int writeTimeoutMs,
             InitializeEndpointsDelegate initEndpoints,
             PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate td,
@@ -19,7 +20,7 @@ namespace Utility
             NoValidEndpointsDelegate novalid,
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
-            : base(endpointPollingInterval, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
+            : base(endpointPollingInterval, writeTimeoutMs, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
                 selector, novalid, invalid, unhandled)
         { }
 
@@ -81,9 +82,11 @@ namespace Utility
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
         {
+            int writeTimeoutMs = Int32.Parse(config.GetS("Config/ErrorWriteTimeout"));
             string errorFilePath = Path.GetFullPath(config.GetS("Config/ErrorFilePath"));
 
             return new ErrorSiloLoadBalancedWriter(60,
+                writeTimeoutMs,
                 async () => await ErrorSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await ErrorSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
                 async (object w, int timeoutSeconds) => await ErrorSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
