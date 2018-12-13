@@ -44,6 +44,7 @@ namespace Utility
         public UnhandledExceptionDelegate unhandled;
 
         public LoadBalancedWriter(int endpointPollingInterval,
+            int writeTimeoutMs,
             InitializeEndpointsDelegate initializeEndpoints,
             PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate initiateWalkaway,
@@ -54,6 +55,7 @@ namespace Utility
             UnhandledExceptionDelegate unhandled)
         {
             this.endpointPollingInterval = endpointPollingInterval;
+            this.writeTimeoutMs = writeTimeoutMs == 0 ? this.writeTimeoutMs : writeTimeoutMs;
             List<IEndpoint> ps = initializeEndpoints().ConfigureAwait(false)
                 .GetAwaiter().GetResult();
 
