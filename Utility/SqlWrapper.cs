@@ -172,5 +172,45 @@ namespace Utility
 
             return outval;
         }
+
+        // spInsertPostingQueue
+        public static async Task<string> InsertPostingQueue(string connectionString, string postType, 
+            DateTime postDate, string payload, int timeout = 120)
+        {
+            string outval = null;
+
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(connectionString))
+                {
+                    cn.Open();
+                    SqlCommand cmd = cn.CreateCommand();
+                    cmd.CommandText = "[PostingQueue].[spInsertPostingQueue]";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("PostType", postType));
+                    cmd.Parameters.Add(new SqlParameter("PostDate", postDate));
+                    cmd.Parameters.Add(new SqlParameter("Payload", payload));
+                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
+                        .Direction = System.Data.ParameterDirection.Output;
+                    cmd.CommandTimeout = timeout;
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    outval = (string)cmd.Parameters["@Return"].Value;
+                    cn.Close();
+                }
+            }
+            catch (System.Data.SqlClient.SqlException sqlex)
+            {
+                if (sqlex.Message.Contains("Timeout") ||
+                    sqlex.Message.Contains("login failed")
+                    ) outval = "Walkaway";
+            }
+            catch (Exception ex)
+            {
+                outval = $"Exception::{ex.ToString()}";
+            }
+
+            return outval;
+        }
     }
 }

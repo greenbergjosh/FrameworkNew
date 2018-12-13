@@ -30,6 +30,7 @@ namespace Utility
 
         private ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
 
+        public int writeTimeoutMs = 500;
         public int endpointPollingInterval;
         public ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints;
         public NextWalkawayValueDelegate nextWalkawayValue;
