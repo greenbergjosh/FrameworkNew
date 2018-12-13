@@ -22,7 +22,7 @@
 
         opaque = {
             ...opaque, slot: res.config.slot, page: res.config.page, sd: res.config.sesid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email), vieps: res.vieps
+            md5: sres.md5, e: base64UrlSafe(sres.email), isAsync: res.isAsync, vieps: res.vieps
         }; 
         
         if (res.saveSession == 'true') {
