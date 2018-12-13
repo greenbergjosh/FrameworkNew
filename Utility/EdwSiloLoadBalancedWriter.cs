@@ -12,6 +12,7 @@ namespace Utility
     public class EdwSiloLoadBalancedWriter : LoadBalancedWriter
     {
         public EdwSiloLoadBalancedWriter(int endpointPollingInterval,
+            int writeTimeoutMs,
             InitializeEndpointsDelegate initEndpoints,
             PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate td,
@@ -20,7 +21,7 @@ namespace Utility
             NoValidEndpointsDelegate novalid,
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
-            : base(endpointPollingInterval, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
+            : base(endpointPollingInterval, writeTimeoutMs, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
                 selector, novalid, invalid, unhandled) { }
 
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
@@ -82,10 +83,12 @@ namespace Utility
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
         {
+            int writeTimeoutMs = Int32.Parse(config.GetS("Config/EdwWriteTimeout"));
             string dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
             string errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
+                writeTimeoutMs,
                 async () => await EdwSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await EdwSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
                 async (object w, int timeoutSeconds) => await EdwSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
