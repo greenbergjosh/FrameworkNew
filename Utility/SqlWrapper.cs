@@ -36,14 +36,14 @@ namespace Utility
                 await SqlWrapper.ExecuteSql(JsonWrapper.Json(new { InstanceId = o.Item2 }), "", 
                     configSproc, conStr) }, new bool[] { false }));
 
-                if (!StoredProcedures.ContainsKey(o.Item2)) StoredProcedures.Add(o.Item2, new Dictionary<string, string>());
-                var spMap = StoredProcedures[o.Item2];
+                if (!StoredProcedures.ContainsKey(o.Item1)) StoredProcedures.Add(o.Item1, new Dictionary<string, string>());
+                var spMap = StoredProcedures[o.Item1];
                 foreach (var sp in gcon.GetD("Config/DataLayer"))
                 {
                     spMap.Add(sp.Item1, sp.Item2);
                 }
                 
-                Connections.Add(o.Item2, gcon.GetS("Config/ConnectionString"));
+                Connections.Add(o.Item1, gcon.GetS("Config/ConnectionString"));
             }
 
             return gc;
