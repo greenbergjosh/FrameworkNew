@@ -33,10 +33,10 @@ namespace OnPointConsoleLib
                     switch (m)
                     {
                         case "OnPointConsoleLiveFeed":
-                            result = await SaveOnPointConsoleLiveFeed(requestFromPost);
+                            result = await SaveLiveFeed(requestFromPost);
                             break;
                         case "OnPointConsoleLiveEmailEvent":
-                            result = await SaveOnPointConsoleLiveEmailEvent(requestFromPost);
+                            result = await SaveEmailEvent(requestFromPost);
                             break;
                         default:
                             await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
@@ -63,18 +63,21 @@ namespace OnPointConsoleLib
             await context.Response.WriteAsync(resp);
         }
 
-        public async Task<string> SaveOnPointConsoleLiveFeed(string request)
+        public async Task<string> SaveLiveFeed(string request)
         {
             string result = Jw.Json(new { Result = "Failure" });
             try
             {
-                return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "SaveOnPointConsoleLiveFeed",
+                return await SqlWrapper.SqlServerProviderEntry("OnPointConsole",
+                        "SaveLiveFeed",
                         "",
                         request);
             }
             catch (Exception ex)
             {
+                // TODO: add in Meth
+                await this.Fw.Err(1000, nameof(SaveLiveFeed), "Exception", $@"{request}::{ex.ToString()}");
+                /*
                 await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
                                 "OnPointConsoleErrorLog",
                                 Jw.Json(new
@@ -86,22 +89,26 @@ namespace OnPointConsoleLib
                                     Msg = Utility.Hashing.EncodeTo64(ex.ToString())
                                 }),
                                 "");
+                */
             }
             return result;
         }
 
-        public async Task<string> SaveOnPointConsoleLiveEmailEvent(string request)
+        public async Task<string> SaveEmailEvent(string request)
         {
             string result = Jw.Json(new { Result = "Failure" });
             try
             {
-                return await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
-                        "SaveOnPointConsoleLiveEmailEvent",
+
+                //public static async Task<string> SqlServerProviderEntry(string conName, string method, string args, string payload, int timeout = 120)
+                return await SqlWrapper.SqlServerProviderEntry("OnPointConsole",
+                        "SaveEmailEvent",
                         "",
                         request);
             }
             catch (Exception ex)
             {
+                /*
                 await SqlWrapper.SqlServerProviderEntry(this.TowerDataDbConnectionString,
                                 "OnPointConsoleErrorLog",
                                 Jw.Json(new
@@ -113,6 +120,7 @@ namespace OnPointConsoleLib
                                     Msg = Utility.Hashing.EncodeTo64(ex.ToString())
                                 }),
                                 "");
+                 */
             }
             return result;
         }
