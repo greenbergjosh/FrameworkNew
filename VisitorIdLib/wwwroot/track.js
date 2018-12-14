@@ -72,7 +72,7 @@ async function genericFetch(url, fetchParms, fetchType, imgFlag) {
 
 function base64UrlSafe(s) {
     s = btoa(s);
-    return s.replace(/+/, '-').replace(/\//, '_').replace(/=/, '~');
+    return s.replace('+', '-').replace('/', '_').replace('=', '~');
 }
 
 function arrayBufferToBase64(buffer) {
