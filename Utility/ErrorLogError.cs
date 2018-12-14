@@ -37,4 +37,9 @@
         public const int Error = 1000;
     }
 
+    public static class ErrorDescriptor
+    {
+        public const string Exception = "Exception";
+    }
+
 }

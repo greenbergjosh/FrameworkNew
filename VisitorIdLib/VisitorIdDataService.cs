@@ -211,7 +211,7 @@ namespace VisitorIdLib
             }
             catch (Exception e)
             {
-                await fw.Err(ErrorSeverity.Error, nameof(DoVisitorId), "Exception", $"Failed to load state data. Exception: {e.Message} Opaque: {(string.IsNullOrEmpty(opaque) ? "Opaque was empty" : opaque)}");
+                await fw.Err(ErrorSeverity.Error, nameof(DoVisitorId), ErrorDescriptor.Exception, $"Failed to load state data. Exception: {e.Message} Opaque: {(string.IsNullOrEmpty(opaque) ? "Opaque was empty" : opaque)}");
                 throw;
             }
 
