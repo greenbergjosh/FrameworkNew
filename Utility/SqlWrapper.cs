@@ -15,38 +15,48 @@ namespace Utility
         // TODO: This should all be ConcurrentDictionary to become thread-safe
         public static Dictionary<string, string> Connections = new Dictionary<string, string>();
         public static Dictionary<string, Dictionary<string, string>> StoredProcedures = new Dictionary<string, Dictionary<string, string>>();
-        
+
         public static async Task<IGenericEntity> Initialize(string conStr, string configKey, string configSproc)
         {
-            IGenericEntity gc = JsonWrapper.JsonToGenericEntity(
-                JsonWrapper.Json(new { Config = 
-                await SqlWrapper.ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", 
-                    configSproc, conStr) }, new bool[] { false }));
+            string confStr = null;
 
-            StoredProcedures.Add(SqlWrapper.GlobalConfig, new Dictionary<string, string>()
+            try
             {
-                { "SelectConfig", configSproc}
-            });
-            Connections.Add(SqlWrapper.GlobalConfig, conStr);
+                confStr = await ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", configSproc, conStr);
+                var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
 
-            foreach (var o in gc.GetD("Config/ConnectionStrings"))
-            {
-                IGenericEntity gcon = JsonWrapper.JsonToGenericEntity(
-                JsonWrapper.Json(new { Config = 
-                await SqlWrapper.ExecuteSql(JsonWrapper.Json(new { InstanceId = o.Item2 }), "", 
-                    configSproc, conStr) }, new bool[] { false }));
-
-                if (!StoredProcedures.ContainsKey(o.Item1)) StoredProcedures.Add(o.Item1, new Dictionary<string, string>());
-                var spMap = StoredProcedures[o.Item1];
-                foreach (var sp in gcon.GetD("Config/DataLayer"))
+                StoredProcedures.Add(GlobalConfig, new Dictionary<string, string>()
                 {
-                    spMap.Add(sp.Item1, sp.Item2);
-                }
-                
-                Connections.Add(o.Item1, gcon.GetS("Config/ConnectionString"));
-            }
+                    { "SelectConfig", configSproc}
+                });
+                Connections.Add(GlobalConfig, conStr);
 
-            return gc;
+                foreach (var o in gc.GetD("Config/ConnectionStrings"))
+                {
+                    IGenericEntity gcon = JsonWrapper.JsonToGenericEntity(
+                        JsonWrapper.Json(new
+                        {
+                            Config =
+                            await ExecuteSql(JsonWrapper.Json(new { InstanceId = o.Item2 }), "",
+                                configSproc, conStr)
+                        }, new bool[] { false }));
+
+                    if (!StoredProcedures.ContainsKey(o.Item1)) StoredProcedures.Add(o.Item1, new Dictionary<string, string>());
+                    var spMap = StoredProcedures[o.Item1];
+                    foreach (var sp in gcon.GetD("Config/DataLayer"))
+                    {
+                        spMap.Add(sp.Item1, sp.Item2);
+                    }
+
+                    Connections.Add(o.Item1, gcon.GetS("Config/ConnectionString"));
+                }
+
+                return gc;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKey ?? "No key defined"} Config: {confStr ?? "No Config Found"} Original Exception: {e.Message}", e);
+            }
         }
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
@@ -131,7 +141,7 @@ namespace Utility
             return outval;
         }
 
-        public static async Task<string> InsertErrorLog(string connectionString, int sequence, int severity, 
+        public static async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
             string process, string method, string descriptor, string message, int timeout = 120)
         {
             string outval = null;
@@ -174,7 +184,7 @@ namespace Utility
         }
 
         // spInsertPostingQueue
-        public static async Task<string> InsertPostingQueue(string connectionString, string postType, 
+        public static async Task<string> InsertPostingQueue(string connectionString, string postType,
             DateTime postDate, string payload, int timeout = 120)
         {
             string outval = null;

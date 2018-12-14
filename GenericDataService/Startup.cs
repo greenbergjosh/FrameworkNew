@@ -54,25 +54,18 @@ namespace GenericDataService
             TaskScheduler.UnobservedTaskException +=
                 new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
-            //FrameworkWrapper fw = new FrameworkWrapper();
+            FrameworkWrapper fw = new FrameworkWrapper();
 
-            //using (var dynamicContext = new Utility.AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
-            //{
-            //    this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
-            //}
+            using (var dynamicContext = new Utility.AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+            {
+                this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
+            }
 
-            //DataService.Config(fw);
+            DataService.Config(fw);
 
             app.Run(async (context) =>
             {
-                //await this.DataService.Run(context);
-                var resp = "{}";
-
-                context.Response.StatusCode = 200;
-                context.Response.ContentType = "application/json";
-                context.Response.ContentLength = resp.Length;
-
-                await context.Response.WriteAsync(resp);
+                await this.DataService.Run(context);
             });
         }
     }
