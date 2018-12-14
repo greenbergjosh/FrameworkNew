@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Web;
 using Utility;
 using Jw = Utility.JsonWrapper;
 
@@ -16,7 +17,7 @@ namespace VisitorIdLib
 
         public Guid RsConfigGuid;
         public string TowerEncryptionKey;
-        public Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences = 
+        public Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences =
             new Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>>();
         public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
         public int VisitorIdCookieExpDays = 10;
@@ -50,9 +51,9 @@ namespace VisitorIdLib
             {
                 string afid = afidCfg.GetS("afid");
                 bool isAsync = (afidCfg.GetS("async") == "true");
-                List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)> afidSeqs = 
+                List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)> afidSeqs =
                     new List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>();
-                foreach (var afidCfgSeq in  afidCfg.GetL("seqs"))
+                foreach (var afidCfgSeq in afidCfg.GetL("seqs"))
                 {
                     string domain = afidCfgSeq.GetS("dom");
                     bool isAsyncDom = !String.IsNullOrEmpty(afidCfgSeq.GetS("async")) ? afidCfgSeq.GetS("async") == "true" : isAsync;
@@ -61,7 +62,7 @@ namespace VisitorIdLib
                     {
                         string md5ProviderStr = dgvipm.GetS("");
                         string[] md5ProviderStrParts = md5ProviderStr.Split('|');
-                        md5seq.Add((md5ProviderStrParts[0], 
+                        md5seq.Add((md5ProviderStrParts[0],
                             md5ProviderStrParts.Length > 1 ? md5ProviderStrParts[1] : null));
                     }
                     afidSeqs.Add((domain, isAsyncDom, md5seq));
@@ -149,7 +150,7 @@ namespace VisitorIdLib
                                 result = Jw.Json(new { result = "NoMd5" });
                             break;
                         default:
-                            await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost); 
+                            await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
                             break;
                     }
                 }
@@ -185,23 +186,37 @@ namespace VisitorIdLib
 
         public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
         {
-            string opaque64 = c.Get("op", "");
-            string opaque = Utility.Hashing.Base64DecodeFromUrl(opaque64);
-            IGenericEntity opge = Jw.JsonToGenericEntity(opaque);
-            string afid = opge.GetS("afid");
-            string tpid = opge.GetS("tpid");
-            string eml = opge.GetS("eml");
-            string md5 = opge.GetS("md5");
-            int slot = Int32.Parse(opge.GetS("slot"));
-            int page = Int32.Parse(opge.GetS("page"));
-            string sid = opge.GetS("sd");
-            sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
-            string qstr = opge.GetS("qs");
-            Uri u = new Uri(qstr);
-            string host = u.Host ?? "";
-            string path = u.AbsolutePath ?? "";
-            string qury = u.Query ?? "";
-            Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
+            string opaque64, opaque = null, afid, tpid, eml, md5, sid, qstr, host, path, qury ;
+            IGenericEntity opge;
+            int slot, page;
+
+            try
+            {
+                opaque64 = c.Get("op", "");
+                opaque = Hashing.Base64DecodeFromUrl(opaque64);
+                opge = Jw.JsonToGenericEntity(opaque);
+                afid = opge.GetS("afid");
+                tpid = opge.GetS("tpid");
+                eml = opge.GetS("eml");
+                md5 = opge.GetS("md5");
+                slot = Int32.Parse(opge.GetS("slot"));
+                page = Int32.Parse(opge.GetS("page"));
+                sid = opge.GetS("sd");
+                sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
+                qstr = opge.GetS("qs");
+                var u = new Uri(HttpUtility.UrlDecode(qstr));
+                host = u.Host ?? "";
+                path = u.AbsolutePath ?? "";
+                qury = u.Query ?? "";
+            }
+            catch (Exception e)
+            {
+                await fw.Err(ErrorSeverity.Error, nameof(DoVisitorId), "Exception", $"Failed to load state data. Exception: {e.Message} Opaque: {(string.IsNullOrEmpty(opaque) ? "Opaque was empty" : opaque)}");
+                throw;
+            }
+
+            var rsids = new Dictionary<string, object> { { "visid", sid } };
+
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
             // Consider accepting an existing Guid from opaque.rsid and using it or dropping
@@ -210,12 +225,29 @@ namespace VisitorIdLib
             {
                 EdwBulkEvent be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
-                    PL.O(new { qs = qstr, op = opaque, ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury, afid, tpid}, new bool[] { true, true, false, true, true, true, true, true }), this.RsConfigGuid);
-                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                    null, PL.O(new { et = "SessionInitiate", qs = qstr, op = opaque,
+                    PL.O(new
+                    {
+                        qs = qstr,
+                        op = opaque,
                         ip = c.Connection.RemoteIpAddress,
-                        h = host, p = path, q = qury, tpid }, new bool[] { true, true, false, true, true, true, true, true}));
+                        h = host,
+                        p = path,
+                        q = qury,
+                        afid,
+                        tpid
+                    }, new bool[] { true, true, false, true, true, true, true, true }), this.RsConfigGuid);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                    null, PL.O(new
+                    {
+                        et = "SessionInitiate",
+                        qs = qstr,
+                        op = opaque,
+                        ip = c.Connection.RemoteIpAddress,
+                        h = host,
+                        p = path,
+                        q = qury,
+                        tpid
+                    }, new bool[] { true, true, false, true, true, true, true, true }));
                 await fw.EdwWriter.Write(be, 1);
             }
 
@@ -264,7 +296,7 @@ namespace VisitorIdLib
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
                         {
                             IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-                            
+
                             md5 = gc.GetS("Md5");
                             if (!String.IsNullOrEmpty(md5))
                             {
@@ -273,7 +305,7 @@ namespace VisitorIdLib
                             }
                         }
 
-                        EdwBulkEvent be = new EdwBulkEvent();                        
+                        EdwBulkEvent be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
                             {
@@ -397,8 +429,8 @@ namespace VisitorIdLib
             return Jw.Json(new { done = "1", sesid = sid });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId, 
-            string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, 
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId,
+            string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
             Dictionary<string, object> rsids)
         {
             string ip = c.Ip();
@@ -431,7 +463,7 @@ namespace VisitorIdLib
             return Jw.Json(new { email = em, md5 = md5 });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, 
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c,
             IGenericEntity op = null, string md5 = null)
         {
             IGenericEntity opge;
@@ -445,7 +477,7 @@ namespace VisitorIdLib
             {
                 opge = op;
             }
-            
+
             string sid = opge.GetS("sd");
             int slot = Int32.Parse(opge.GetS("slot"));
             int page = Int32.Parse(opge.GetS("page"));
@@ -453,11 +485,11 @@ namespace VisitorIdLib
             bool isAsync = (opge.GetS("async") == "true");
             string vieps = opge.GetS("vieps");
             string emd5 = md5 ?? opge.GetS("md5");
-            string eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));            
+            string eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, pid, slot-1, page-1, emd5, eml, isAsync, vieps, rsids);
+            return await SaveSession(fw, c, sid, pid, slot - 1, page - 1, emd5, eml, isAsync, vieps, rsids);
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
@@ -553,7 +585,7 @@ namespace VisitorIdLib
                     IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
                     Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                     string lbm = await fw.Entities.GetEntity(lbmId);
-                    eml = (string) await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), true, "e:\\workspace\\scripts\\debug");
+                    eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), true, "e:\\workspace\\scripts\\debug");
 
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
