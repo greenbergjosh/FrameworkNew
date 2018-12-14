@@ -22,7 +22,8 @@ namespace Utility
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
             : base(endpointPollingInterval, writeTimeoutMs, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
-                selector, novalid, invalid, unhandled) { }
+                selector, novalid, invalid, unhandled)
+        { }
 
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
@@ -83,12 +84,12 @@ namespace Utility
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
         {
-            int writeTimeoutMs = Int32.Parse(config.GetS("Config/EdwWriteTimeout"));
+            int writeTimeoutSeconds = config.GetS("Config/EdwWriteTimeout").ParseInt() ?? 0;
             string dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
             string errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
-                writeTimeoutMs,
+                writeTimeoutSeconds,
                 async () => await EdwSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await EdwSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
                 async (object w, int timeoutSeconds) => await EdwSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
@@ -104,7 +105,7 @@ namespace Utility
         public static string EdwRs(Guid cfgId, object payld)
         {
             return JsonWrapper.Json(new
-                { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = JsonWrapper.Json(payld), cfg_id = cfgId },
+            { id = Guid.NewGuid(), ts = DateTime.UtcNow, payload = JsonWrapper.Json(payld), cfg_id = cfgId },
                 new bool[] { true, true, false, true });
         }
 

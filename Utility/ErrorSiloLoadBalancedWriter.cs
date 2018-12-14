@@ -82,11 +82,11 @@ namespace Utility
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
         {
-            int writeTimeoutMs = Int32.Parse(config.GetS("Config/ErrorWriteTimeout"));
+            int writeTimeoutSeconds = config.GetS("Config/ErrorWriteTimeout").ParseInt() ?? 0;
             string errorFilePath = Path.GetFullPath(config.GetS("Config/ErrorFilePath"));
 
             return new ErrorSiloLoadBalancedWriter(60,
-                writeTimeoutMs,
+                writeTimeoutSeconds,
                 async () => await ErrorSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await ErrorSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
                 async (object w, int timeoutSeconds) => await ErrorSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),

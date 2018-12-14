@@ -83,11 +83,11 @@ namespace Utility
 
         public static PostingQueueSiloLoadBalancedWriter InitializePostingQueueSiloLoadBalancedWriter(IGenericEntity config)
         {
-            int writeTimeoutMs = Int32.Parse(config.GetS("Config/PostingQueueWriteTimeout"));
+            int writeTimeoutSeconds = config.GetS("Config/PostingQueueWriteTimeout").ParseInt() ?? 0;
             string dataFilePath = config.GetS("Config/PostingQueueDataFilePath");
             string errorFilePath = config.GetS("Config/PostingQueueErrorFilePath");
 
-            return new PostingQueueSiloLoadBalancedWriter(60, writeTimeoutMs,
+            return new PostingQueueSiloLoadBalancedWriter(60, writeTimeoutSeconds,
                 async () => await PostingQueueSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),
                 async () => await PostingQueueSiloLoadBalancedWriter.PollEndpoints(config).ConfigureAwait(false),
                 async (object w, int timeoutSeconds) => await PostingQueueSiloLoadBalancedWriter.InitiateWalkaway(w, errorFilePath, timeoutSeconds).ConfigureAwait(false),
