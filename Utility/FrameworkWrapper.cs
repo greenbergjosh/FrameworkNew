@@ -43,7 +43,7 @@ namespace Utility
                 this.PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(this.StartupConfiguration);
                 this.ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.StartupConfiguration);
                 string appName = this.StartupConfiguration.GetS("Config/ErrorLogAppName");
-                int errTimeout = Int32.Parse(this.StartupConfiguration.GetS("Config/ErrorLogTimeout"));
+                int errTimeout = this.StartupConfiguration.GetS("Config/ErrorLogTimeout").ParseInt() ?? 30;
                 this.Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
@@ -55,7 +55,7 @@ namespace Utility
             {
                 File.AppendAllText("FrameworkStartupError-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
                     $@"{DateTime.Now}::{ex.ToString()}" + Environment.NewLine);
-                throw ex;
+                throw;
             }
         }
 

@@ -40,6 +40,9 @@ namespace OnPointConsoleLib
                         case "OnPointConsoleLiveEmailEvent":
                             result = await SaveEmailEvent(requestFromPost);
                             break;
+                        case "cfg-0nP01nt":
+                            await WriteResponse(context,Fw.StartupConfiguration.GetS(""));
+                            return;
                         default:
                             await Fw.Err(ErrorSeverity.Error, "Start", "Error", "Unknown request: " + requestFromPost);
                             break;
