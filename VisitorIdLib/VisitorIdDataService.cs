@@ -291,6 +291,17 @@ namespace VisitorIdLib
 
                     if (nextTask.ToLower() == "cookie")
                     {
+                        EdwBulkEvent be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderSelected",
+                                pid = "cookie",
+                                slot,
+                                page
+                            }));
+                        await fw.EdwWriter.Write(be, 1);
+
                         string cookieValueFromReq = c.Request.Cookies["vidck"];
 
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
@@ -303,18 +314,7 @@ namespace VisitorIdLib
                                 eml = gc.GetS("Em");
                                 await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
                             }
-                        }
-
-                        EdwBulkEvent be = new EdwBulkEvent();
-                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                            null, PL.O(new
-                            {
-                                et = "Md5ProviderSelected",
-                                pid = "cookie",
-                                slot,
-                                page
-                            }));
-                        await fw.EdwWriter.Write(be, 1);
+                        }                        
 
                         nextIdx++;
                         nextPage++;
