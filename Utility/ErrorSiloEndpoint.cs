@@ -23,7 +23,7 @@ namespace Utility
         {
             ErrorLogError e = (ErrorLogError)w;
             string res = await SqlWrapper.InsertErrorLog(this.connectionString, sequence++, e.Severity, e.Process, 
-                e.Message, e.Descriptor, e.Message).ConfigureAwait(false);
+                e.Method, e.Descriptor, e.Message).ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return LoadBalancedWriter.Result.Success;
             else if (result == "walkaway")
