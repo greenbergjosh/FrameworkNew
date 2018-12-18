@@ -199,8 +199,8 @@ namespace VisitorIdLib
                 tpid = opge.GetS("tpid");
                 eml = opge.GetS("eml");
                 md5 = opge.GetS("md5");
-                slot = Int32.Parse(opge.GetS("slot"));
-                page = Int32.Parse(opge.GetS("page"));
+                slot = Int32.Parse(opge.GetS("slot") ?? "0");
+                page = Int32.Parse(opge.GetS("page") ?? "0");
                 sid = opge.GetS("sd");
                 sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
                 qstr = opge.GetS("qs");
@@ -291,6 +291,17 @@ namespace VisitorIdLib
 
                     if (nextTask.ToLower() == "cookie")
                     {
+                        EdwBulkEvent be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderSelected",
+                                pid = "cookie",
+                                slot,
+                                page
+                            }));
+                        await fw.EdwWriter.Write(be, 1);
+
                         string cookieValueFromReq = c.Request.Cookies["vidck"];
 
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
@@ -303,18 +314,7 @@ namespace VisitorIdLib
                                 eml = gc.GetS("Em");
                                 await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
                             }
-                        }
-
-                        EdwBulkEvent be = new EdwBulkEvent();
-                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                            null, PL.O(new
-                            {
-                                et = "Md5ProviderSelected",
-                                pid = "cookie",
-                                slot,
-                                page
-                            }));
-                        await fw.EdwWriter.Write(be, 1);
+                        }                        
 
                         nextIdx++;
                         nextPage++;
@@ -479,8 +479,8 @@ namespace VisitorIdLib
             }
 
             string sid = opge.GetS("sd");
-            int slot = Int32.Parse(opge.GetS("slot"));
-            int page = Int32.Parse(opge.GetS("page"));
+            int slot = Int32.Parse(opge.GetS("slot") ?? "0");
+            int page = Int32.Parse(opge.GetS("page") ?? "0");
             string pid = opge.GetS("pid");
             bool isAsync = (opge.GetS("async") == "true");
             string vieps = opge.GetS("vieps");
@@ -585,7 +585,7 @@ namespace VisitorIdLib
                     IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
                     Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                     string lbm = await fw.Entities.GetEntity(lbmId);
-                    eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), true, "e:\\workspace\\scripts\\debug");
+                    eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), false, "");
 
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
