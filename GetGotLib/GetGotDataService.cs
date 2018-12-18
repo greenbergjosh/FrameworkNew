@@ -20,6 +20,7 @@ namespace GetGotLib
         // GetGotOld
         public int MAX_TEMPLATES_PER_CALL = 20;
         public int LIMIT_TEMPLATE_META_SEARCH = 20;
+        public string GETGOT_CONFIG = "GetGotConfig";
 
         public string ConnectionString;
         public string ConfigurationKey;
@@ -95,8 +96,17 @@ namespace GetGotLib
 
         public void Config(FrameworkWrapper fw)
         {
-            this.Fw = fw;
-            this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+            File.AppendAllText("GetGotDebug.log", $@"In Config" + Environment.NewLine);
+            try
+            {
+                this.Fw = fw;
+                this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+                File.AppendAllText("GetGotDebug.log", $@"In Config rsconfigguid=" + this.RsConfigGuid.ToString() + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText("GetGotDebug.log", $@"In Config ex=" + ex.ToString() + Environment.NewLine);
+            }
         }
         
         public async Task Test(HttpContext c)
@@ -133,170 +143,135 @@ namespace GetGotLib
 
         public async Task Run(HttpContext context)
         {
-            await Test(context);
+            //await Test(context);
             string requestFromPost = "";
+            File.AppendAllText("GetGotDebug.log", $@"In Run" + Environment.NewLine);
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
             {
                 StreamReader reader = new StreamReader(context.Request.Body);
                 requestFromPost = await reader.ReadToEndAsync();
-
+                File.AppendAllText("GetGotDebug.log", $@"In Run Req=" + requestFromPost + Environment.NewLine);
                 if (!String.IsNullOrEmpty(context.Request.Query["m"]))
                 {
                     string m = context.Request.Query["m"];
+                    File.AppendAllText("GetGotDebug.log", $@"In Run m=" + requestFromPost + Environment.NewLine);
                     switch (m)
                     {
-                        //case "UserSignupEvent":                            
-                        //    result = await UserSignupEvent(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "CreateUser":
-                        //    //id: uuid (app is responsible for generating the id)
-                        //    //h: handle
-                        //    //e: email
-                        //    //p: phone
+                        case "SelectSubCampaignDraft":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
+                        case "CreateImpression":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
+                        case "CreateClick":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //                       Id uniqueidentifier    N'$.u.Id',   
-                        //    //         H varchar(100)		N'$.u.H',
-                        //    //Em varchar(350)		N'$.u.Em',
-                        //    //Ph varchar(30)			N'$.u.Ph',
-                        //    //Dob datetime2(1)	    N'$.u.Dob',
-                        //    //USId uniqueidentifier    N'$.u.USId'
-                        //    //                           $.u.Pwd 
-                        //    result = await CreateUser(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "ValidateUser":
-                        //    //h: handle
-                        //    //p: phone
-                        //    //vc: verification code
+                        case "CreateAction":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await ValidateUser(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "CreateNewPassword":
-                        //    //id: 
-                        //    //vc: verification code
-                        //    //pwd: hashed password
-                        //    //d: device info
+                        case "GenerateInbox":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //t: User token
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await CreateNewPassword(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "UpdateUserProfile":
-                        //    //t: User token
-                        //    //cts: JSON array of JSON objects. Each object represents a contact and will contain at least the following:
-                        //    //fn: firstname
-                        //    //ln: lastname
-                        //    //e: email  char[254] -- I don't think it's necessary to create an array at this point -- ariel 
-                        //    //p: phone char[20] -- same as email - no need for array at this point
-                        //    //dob: date of birth
-                        //    //gender: char[1] -- m/f
+                        case "GetRecentPosts":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await UpdateUserProfile(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "GetContactList":
-                        //    //t: User token
+                        case "CreateUser":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    //cts: A JSON array of JSON objects representing the contacts the user can choose to follow. Each JSON object will contain at least the following:
-                        //    //id: Getgot id
-                        //    //img: image (URL ok)
-                        //    //n: name
-                        //    result = await GetContactList(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "RegisterUser":
-                        //    //t: User token
-                        //    //ids: JSON array of Getgot ids
+                        case "CreateUserSignup":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await RegisterUser(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "GetInterestList":
-                        //    //t: User token
+                        case "SelectInterestGroups":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    //ints: A JSON array of JSON objects representing the interests the user can choose to follow. Each JSON object will contain at least the following:
-                        //    //id: Getgot id
-                        //    //img: image (URL ok)
-                        //    //n: name
-                        //    result = await GetInterestList(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "FollowInterests":
-                        //    //t: User token
-                        //    //ids: JSON array of Getgot interest ids
+                        case "CreateCampaign":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await FollowInterests(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "GetInfluencerList":
-                        //    //t: User token
+                        case "SelectMessageBodyTemplatesByMeta":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    //infs: A JSON array of JSON objects representing the influencers the user can choose to follow. Each JSON object will contain at least the following:
-                        //    //id: Getgot id
-                        //    //img: image (URL ok)
-                        //    //n: name
-                        //    result = await GetInfluencerList(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "FollowInfluencers":
-                        //    //t: User token
-                        //    //ids: JSON array of Getgot influencer ids
+                        case "SelectMessageBodyTemplateQuery":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await FollowInfluencers(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "Login":
-                        //    //e: email
-                        //    //p: phone
-                        //    //pwd: hashed password
-                        //    //d: device info
-                        //    //dt: device type
-                        //    //exp: login expiration(optional)
+                        case "ValidateUser":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code (to be defined, success or error)
-                        //    //m: Status message
-                        //    //t: user token
-                        //    result = await Login(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "ListLoggedInDevices":
-                        //    //t: token
+                        case "CreateSubCampaign":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //dt:[ , , ...]
-                        //    result = await ListLoggedInDevices(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "Logout":
-                        //    //t: token
-                        //    //dt: [optional]
+                        case "UpdatePassword":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //c: Status code(to be defined, success or error)
-                        //    //m: Status message
-                        //    result = await Logout(this.Fw, context, requestFromPost);
-                        //    break;
-                        //case "GetLatestAppVersion":
-                        //    //--none--
+                        case "UserContactList":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
-                        //    //a: Android version number
-                        //    //i: iOS version number
-                        //    result = await GetLatestAppVersion(this.Fw, context, requestFromPost);
-                        //    break;
+                        case "VerifyUser":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
+                        case "FollowUsers":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
+                        case "SelectInterests":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
+                        case "SelectInfluencers":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
+                        case "CreateSubCampaignDraft":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
+
+                        case "SelectCampaign":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
+
+                        case "SelectSubCampaign":
+                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                                m, requestFromPost, "{}", 1);
+                            break;
 
                         default:
                             await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
@@ -515,6 +490,159 @@ namespace GetGotLib
             if (pos.Length > 0) pos.Remove(pos.Length - 1, 1);
 
             return (Pos: pos.ToString(), Neg: neg.ToString());
+        }
+
+        public void Junk()
+        {
+            //case "UserSignupEvent":
+            //    result = await UserSignupEvent(this.Fw, context, requestFromPost);
+            //    break;
+            //case "CreateUser":
+            //    //id: uuid (app is responsible for generating the id)
+            //    //h: handle
+            //    //e: email
+            //    //p: phone
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+
+
+            //    //                       Id uniqueidentifier    N'$.u.Id',   
+            //    //         H varchar(100)		N'$.u.H',
+            //    //Em varchar(350)		N'$.u.Em',
+            //    //Ph varchar(30)			N'$.u.Ph',
+            //    //Dob datetime2(1)	    N'$.u.Dob',
+            //    //USId uniqueidentifier    N'$.u.USId'
+            //    //                           $.u.Pwd 
+            //    result = await CreateUser(this.Fw, context, requestFromPost);
+            //    break;
+            //case "ValidateUser":
+            //    //h: handle
+            //    //p: phone
+            //    //vc: verification code
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    result = await ValidateUser(this.Fw, context, requestFromPost);
+            //    break;
+            //case "CreateNewPassword":
+            //    //id: 
+            //    //vc: verification code
+            //    //pwd: hashed password
+            //    //d: device info
+
+            //    //t: User token
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    result = await CreateNewPassword(this.Fw, context, requestFromPost);
+            //    break;
+            //case "UpdateUserProfile":
+            //    //t: User token
+            //    //cts: JSON array of JSON objects. Each object represents a contact and will contain at least the following:
+            //    //fn: firstname
+            //    //ln: lastname
+            //    //e: email  char[254] -- I don't think it's necessary to create an array at this point -- ariel 
+            //    //p: phone char[20] -- same as email - no need for array at this point
+            //    //dob: date of birth
+            //    //gender: char[1] -- m/f
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    result = await UpdateUserProfile(this.Fw, context, requestFromPost);
+            //    break;
+            //case "GetContactList":
+            //    //t: User token
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    //cts: A JSON array of JSON objects representing the contacts the user can choose to follow. Each JSON object will contain at least the following:
+            //    //id: Getgot id
+            //    //img: image (URL ok)
+            //    //n: name
+            //    result = await GetContactList(this.Fw, context, requestFromPost);
+            //    break;
+            //case "RegisterUser":
+            //    //t: User token
+            //    //ids: JSON array of Getgot ids
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    result = await RegisterUser(this.Fw, context, requestFromPost);
+            //    break;
+            //case "GetInterestList":
+            //    //t: User token
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    //ints: A JSON array of JSON objects representing the interests the user can choose to follow. Each JSON object will contain at least the following:
+            //    //id: Getgot id
+            //    //img: image (URL ok)
+            //    //n: name
+            //    result = await GetInterestList(this.Fw, context, requestFromPost);
+            //    break;
+            //case "FollowInterests":
+            //    //t: User token
+            //    //ids: JSON array of Getgot interest ids
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    result = await FollowInterests(this.Fw, context, requestFromPost);
+            //    break;
+            //case "GetInfluencerList":
+            //    //t: User token
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    //infs: A JSON array of JSON objects representing the influencers the user can choose to follow. Each JSON object will contain at least the following:
+            //    //id: Getgot id
+            //    //img: image (URL ok)
+            //    //n: name
+            //    result = await GetInfluencerList(this.Fw, context, requestFromPost);
+            //    break;
+            //case "FollowInfluencers":
+            //    //t: User token
+            //    //ids: JSON array of Getgot influencer ids
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    result = await FollowInfluencers(this.Fw, context, requestFromPost);
+            //    break;
+            //case "Login":
+            //    //e: email
+            //    //p: phone
+            //    //pwd: hashed password
+            //    //d: device info
+            //    //dt: device type
+            //    //exp: login expiration(optional)
+
+            //    //c: Status code (to be defined, success or error)
+            //    //m: Status message
+            //    //t: user token
+            //    result = await Login(this.Fw, context, requestFromPost);
+            //    break;
+            //case "ListLoggedInDevices":
+            //    //t: token
+
+            //    //dt:[ , , ...]
+            //    result = await ListLoggedInDevices(this.Fw, context, requestFromPost);
+            //    break;
+            //case "Logout":
+            //    //t: token
+            //    //dt: [optional]
+
+            //    //c: Status code(to be defined, success or error)
+            //    //m: Status message
+            //    result = await Logout(this.Fw, context, requestFromPost);
+            //    break;
+            //case "GetLatestAppVersion":
+            //    //--none--
+
+            //    //a: Android version number
+            //    //i: iOS version number
+            //    result = await GetLatestAppVersion(this.Fw, context, requestFromPost);
+            //    break;
+
+
         }
     }
 }
