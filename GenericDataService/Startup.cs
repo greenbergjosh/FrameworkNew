@@ -54,18 +54,34 @@ namespace GenericDataService
             TaskScheduler.UnobservedTaskException +=
                 new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
-            FrameworkWrapper fw = new FrameworkWrapper();
-
-            using (var dynamicContext = new Utility.AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+            try
             {
-                this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
-            }
+                FrameworkWrapper fw = new FrameworkWrapper();
 
-            DataService.Config(fw);
+                using (var dynamicContext = new Utility.AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+                {
+                    this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
+                }
+
+                DataService.Config(fw);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText("DataService.log", $@"Config::{DateTime.Now}::{ex.ToString()}" +
+                            Environment.NewLine);
+            }
 
             app.Run(async (context) =>
             {
-                await this.DataService.Run(context);
+                try
+                {
+                    await this.DataService.Run(context);
+                }
+                catch (Exception ex)
+                {
+                    File.AppendAllText("DataService.log", $@"Run::{DateTime.Now}::{ex.ToString()}" +
+                                Environment.NewLine);
+                }
             });
         }
     }
