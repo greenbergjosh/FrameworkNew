@@ -26,7 +26,7 @@ namespace Utility
 
             try
             {
-                confStr = (await GetConfigs(conStr, configSproc, configKeys)).Fold().ToString();
+                confStr = await GetConfig(conStr, configSproc, configKeys);
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
 
@@ -64,21 +64,18 @@ namespace Utility
             }
         }
 
-        private static async Task<IEnumerable<JObject>> GetConfigs(string conStr, string configSproc, IEnumerable<string> configKeys)
+        private static async Task<string> GetConfig(string conStr, string configSproc, IEnumerable<string> configKeys)
         {
-            var configs = new Dictionary<string, string>();
+            var configs = new Dictionary<string, JObject>();
 
-            foreach (var configKey in configKeys)
-            {
-                await GetConfigStrings(conStr, configSproc, configKey, configs);
-            }
+            foreach (var configKey in configKeys) await GetConfigStrings(conStr, configSproc, configKey, configs);
 
-            return configs.Select(c => JObject.Parse(c.Value));
+            return (configs.Select(c => c.Value)).Fold().ToString();
         }
 
-        private static async Task<Dictionary<string, string>> GetConfigStrings(string conStr, string configSproc, string configKey, Dictionary<string, string> configs)
+        private static async Task<Dictionary<string, JObject>> GetConfigStrings(string conStr, string configSproc, string configKey, Dictionary<string, JObject> configs)
         {
-            if (configs == null) configs = new Dictionary<string, string>();
+            if (configs == null) configs = new Dictionary<string, JObject>();
 
             if (configs.ContainsKey(configKey)) return configs;
 
@@ -86,22 +83,21 @@ namespace Utility
              * We should be able to clean this up if the configSproc could return a collection
              */
             var res = await ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", configSproc, conStr);
+            var conf = JObject.Parse(res);
 
-            if (res.StartsWith("using "))
+            if (conf["using"] != null)
             {
-                var usingListStartIndex = 6;
-                var usingListLength = res.IndexOf("{") - usingListStartIndex;
+                var usings = ((JArray)conf["using"]).Select(u => ((string)u).Trim());
 
-                configs.AddRange(res
-                    .Substring(usingListStartIndex, usingListLength).Split(",", StringSplitOptions.RemoveEmptyEntries)
-                    .Select(async k => await GetConfigStrings(conStr, configSproc, k.Trim(), configs))
+                configs.AddRange(usings
+                    .Select(async k => await GetConfigStrings(conStr, configSproc, k, configs))
                     .SelectMany(c => c.Result)
                     .Select(c => (key: c.Key, value: c.Value))
                     .Where(c => !configs.ContainsKey(c.key))
                 );
-                configs.Add(configKey, res.Substring(usingListLength + usingListStartIndex).Trim());
+                if (conf["config"] != null) configs.Add(configKey, (JObject)conf["config"]);
             }
-            else configs.Add(configKey, res);
+            else configs.Add(configKey, conf);
 
             return configs;
         }
