@@ -47,12 +47,11 @@ namespace Utility
                 this.PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(this.StartupConfiguration);
                 this.ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.StartupConfiguration);
                 string appName = this.StartupConfiguration.GetS("Config/ErrorLogAppName") ?? this.ConfigurationKeys.Join("::");
-                int errTimeout = this.StartupConfiguration.GetS("Config/ErrorLogTimeout").ParseInt() ?? 30;
 
                 this.Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
-                        await this.ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message), errTimeout);
+                        await this.ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
                     };
             }
             catch (Exception ex)

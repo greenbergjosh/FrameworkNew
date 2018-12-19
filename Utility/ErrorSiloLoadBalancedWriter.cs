@@ -67,17 +67,17 @@ namespace Utility
 
         public static async Task NoValid(object w, string errorFilePath)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::NoValid::" + w.ToString()).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::NoValid::{w}{Environment.NewLine}").ConfigureAwait(false);
         }
 
         public static async Task Failure(object w, string errorFilePath)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Failure::" + w.ToString()).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
         }
 
         public static async Task Unhandled(object w, string errorFilePath, Exception ex)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Unhandled::" + w.ToString()).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
         }
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
