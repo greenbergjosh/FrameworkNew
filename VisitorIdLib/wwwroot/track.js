@@ -1,14 +1,14 @@
 ﻿async function visitorId(url, opaque, future) {
-    opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: 0, page: 0, sd: '', succ: 0 };
+    opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: '0', page: '0', sd: '', succ: '0' };
     while (true) {   
         var res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
-        if (!(res.config || res.config.url || res.config.scriptUrl) || res.done) break;
 
+        if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl) )) break;
         var sres = {};
         if (res.config.scriptUrl) {
-            await load(res.config.scriptUrl, 'Segment'+res.config.slot);
+            await load(res.config.ScriptUrl, 'Segment'+res.config.slot);
             for (var x in res.config.strategy) {
                 var f = res.config.strategy[x].f;
                 var a = res.config.strategy[x].a;
@@ -21,11 +21,11 @@
         }
 
         opaque = {
-            ...opaque, slot: res.config.slot, page: res.config.page, sd: res.config.sesid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email), isAsync: res.isAsync, vieps: res.vieps
+            ...opaque, slot: res.slot, page: res.page, sd: res.sesid, eml: sres.email,
+            md5: sres.md5, e: base64UrlSafe(sres.email), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid
         }; 
         
-        if (res.saveSession == 'true') {
+        if (res.config.SaveSession == 'true') {
             var res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', ''); 
@@ -37,12 +37,12 @@
 window[window.VisitorIdObject].visitorId = visitorId;
 
 async function handleService(res) {
-    var response = await window.genericFetch(res.config.url, res.config.fetchParms, res.config.fetchType, res.config.imgFlag);
-    return (res.config.transform && response) ?
+    var response = await window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);
+    return (res.config.Transform && response) ?
         {
-            email: getDescendantProp(response, res.config.transform.email) || '',
-            md5: getDescendantProp(response, res.config.transform.md5) || '',
-            saveSession: res.config.saveSession
+            email: getDescendantProp(response, res.config.Transform.email) || '',
+            md5: getDescendantProp(response, res.config.Transform.md5) || '',
+            saveSession: res.config.SaveSession
         } :
         { email: '', md5: '', saveSession: 'false' };
 }
@@ -72,7 +72,7 @@ async function genericFetch(url, fetchParms, fetchType, imgFlag) {
 
 function base64UrlSafe(s) {
     s = btoa(s);
-    return s.replace('+', '-').replace('/', '_').replace('=', '~');
+    return s.replace("+", '-').replace("/", '_').replace("=", '~');
 }
 
 function arrayBufferToBase64(buffer) {
