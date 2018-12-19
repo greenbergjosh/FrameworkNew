@@ -142,9 +142,9 @@ namespace VisitorIdLib
                             break;
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
-                            if (idx1 % 2 == 0)
+                            if (idx1 == 0)
                                 result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
-                            else if (idx1 % 2 == 1)
+                            else if (idx1 == 1)
                                 result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
