@@ -12,7 +12,7 @@ namespace Utility
     public class EdwSiloLoadBalancedWriter : LoadBalancedWriter
     {
         public EdwSiloLoadBalancedWriter(int endpointPollingInterval,
-            int writeTimeoutMs,
+            int writeTimeoutSec,
             InitializeEndpointsDelegate initEndpoints,
             PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate td,
@@ -21,7 +21,7 @@ namespace Utility
             NoValidEndpointsDelegate novalid,
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
-            : base(endpointPollingInterval, writeTimeoutMs, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
+            : base(endpointPollingInterval, writeTimeoutSec, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
                 selector, novalid, invalid, unhandled)
         { }
 
@@ -68,18 +68,18 @@ namespace Utility
 
         public static async Task NoValid(object w, string dataFilePath, string errorFilePath)
         {
-            await File.AppendAllTextAsync(dataFilePath, "<<//RECORD::" + DateTime.Now + "::NoValid::" + w.ToString() + "//>>").ConfigureAwait(false);
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::NoValid::" + w.ToString()).ConfigureAwait(false);
+            await File.AppendAllTextAsync(dataFilePath, $"<<//RECORD::{DateTime.Now}::NoValid::{w}//>>{Environment.NewLine}").ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::NoValid::{w}{Environment.NewLine}").ConfigureAwait(false);
         }
 
         public static async Task Failure(object w, string errorFilePath)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Failure::" + w.ToString()).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
         }
 
         public static async Task Unhandled(object w, string errorFilePath, Exception ex)
         {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::Unhandled::" + w.ToString()).ConfigureAwait(false);
+            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
         }
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)

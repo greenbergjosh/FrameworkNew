@@ -30,7 +30,7 @@ namespace Utility
 
         private ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
 
-        public int writeTimeoutMs = 500;
+        public int writeTimeoutSec = 120;
         public int endpointPollingInterval;
         public ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints;
         public NextWalkawayValueDelegate nextWalkawayValue;
@@ -44,7 +44,7 @@ namespace Utility
         public UnhandledExceptionDelegate unhandled;
 
         public LoadBalancedWriter(int endpointPollingInterval,
-            int writeTimeoutMs,
+            int writeTimeoutSec,
             InitializeEndpointsDelegate initializeEndpoints,
             PollEndpointsDelegate pollEndpoints,
             InitiateWalkawayDelegate initiateWalkaway,
@@ -55,7 +55,7 @@ namespace Utility
             UnhandledExceptionDelegate unhandled)
         {
             this.endpointPollingInterval = endpointPollingInterval;
-            this.writeTimeoutMs = writeTimeoutMs == 0 ? this.writeTimeoutMs : writeTimeoutMs;
+            this.writeTimeoutSec = writeTimeoutSec == 0 ? this.writeTimeoutSec : writeTimeoutSec;
             List<IEndpoint> ps = initializeEndpoints().ConfigureAwait(false)
                 .GetAwaiter().GetResult();
 
@@ -74,6 +74,11 @@ namespace Utility
             this.failure = failure;
             this.unhandled = unhandled;
             InitiateEndpointPolling();
+        }
+
+        public async Task<LoadBalancedWriter.Result> Write(object w)
+        {
+            return await Write(w, writeTimeoutSec);
         }
 
         public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds)
