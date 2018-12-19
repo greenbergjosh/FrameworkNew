@@ -235,7 +235,7 @@ namespace VisitorIdLib
                         q = qury,
                         afid,
                         tpid
-                    }, new bool[] { true, true, false, true, true, true, true, true }), this.RsConfigGuid);
+                    }, new bool[] { true, false, true, true, true, true, true, true }), this.RsConfigGuid);
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                     null, PL.O(new
                     {
