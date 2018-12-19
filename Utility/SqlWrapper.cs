@@ -5,6 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 
 namespace Utility
 {
@@ -16,13 +20,14 @@ namespace Utility
         public static Dictionary<string, string> Connections = new Dictionary<string, string>();
         public static Dictionary<string, Dictionary<string, string>> StoredProcedures = new Dictionary<string, Dictionary<string, string>>();
 
-        public static async Task<IGenericEntity> Initialize(string conStr, string configKey, string configSproc)
+        public static async Task<IGenericEntity> Initialize(string conStr, string[] configKeys, string configSproc)
         {
             string confStr = null;
 
             try
             {
-                confStr = await ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", configSproc, conStr);
+                confStr = (await GetConfigs(conStr, configSproc, configKeys)).Fold().ToString();
+
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
 
                 StoredProcedures.Add(GlobalConfig, new Dictionary<string, string>()
@@ -55,8 +60,50 @@ namespace Utility
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKey ?? "No key defined"} Config: {confStr ?? "No Config Found"} Original Exception: {e.Message}", e);
+                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {confStr ?? "No Config Found"} Original Exception: {e.Message}", e);
             }
+        }
+
+        private static async Task<IEnumerable<JObject>> GetConfigs(string conStr, string configSproc, IEnumerable<string> configKeys)
+        {
+            var configs = new Dictionary<string, string>();
+
+            foreach (var configKey in configKeys)
+            {
+                await GetConfigStrings(conStr, configSproc, configKey, configs);
+            }
+
+            return configs.Select(c => JObject.Parse(c.Value));
+        }
+
+        private static async Task<Dictionary<string, string>> GetConfigStrings(string conStr, string configSproc, string configKey, Dictionary<string, string> configs)
+        {
+            if (configs == null) configs = new Dictionary<string, string>();
+
+            if (configs.ContainsKey(configKey)) return configs;
+
+            /*
+             * We should be able to clean this up if the configSproc could return a collection
+             */
+            var res = await ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", configSproc, conStr);
+
+            if (res.StartsWith("using "))
+            {
+                var usingListStartIndex = 6;
+                var usingListLength = res.IndexOf("{") - usingListStartIndex;
+
+                configs.AddRange(res
+                    .Substring(usingListStartIndex, usingListLength).Split(",", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(async k => await GetConfigStrings(conStr, configSproc, k.Trim(), configs))
+                    .SelectMany(c => c.Result)
+                    .Select(c => (key: c.Key, value: c.Value))
+                    .Where(c => !configs.ContainsKey(c.key))
+                );
+                configs.Add(configKey, res.Substring(usingListLength + usingListStartIndex).Trim());
+            }
+            else configs.Add(configKey, res);
+
+            return configs;
         }
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
