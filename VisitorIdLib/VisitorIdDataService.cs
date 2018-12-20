@@ -335,6 +335,7 @@ namespace VisitorIdLib
                                     et = "Md5ProviderResponse",
                                     pid = "cookie",
                                     slot,
+                                    succ = "0",
                                     page
                                 }));
                             await fw.EdwWriter.Write(be);
