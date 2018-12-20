@@ -290,7 +290,6 @@ namespace VisitorIdLib
                     var nextTask = visitorIdMd5ProviderSequence[nextIdx].Md5provider;
                     var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[nextIdx].EmailProviderSeq;
 
-                    bool dropResponseEventExplicitly = false;
                     if (nextTask.ToLower() == "cookie")
                     {
                         be = new EdwBulkEvent();
@@ -309,24 +308,12 @@ namespace VisitorIdLib
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
                         {
                             IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-
+                            
                             md5 = gc.GetS("Md5");
-                            if (!String.IsNullOrEmpty(md5))
-                            {
-                                eml = gc.GetS("Em");
-                                await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
-                            }
-                            else
-                            {
-                                dropResponseEventExplicitly = true;
-                            }
-                        }
-                        else
-                        {
-                            dropResponseEventExplicitly = true;
+                            if (!String.IsNullOrEmpty(md5))eml = gc.GetS("Em");
                         }
 
-                        if (dropResponseEventExplicitly)
+                        if (md5.IsNullOrWhitespace())
                         {
                             be = new EdwBulkEvent();
                             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -335,10 +322,12 @@ namespace VisitorIdLib
                                     et = "Md5ProviderResponse",
                                     pid = "cookie",
                                     slot,
-                                    page
+                                    page,
+                                    succ = "0"
                                 }));
                             await fw.EdwWriter.Write(be);
                         }
+                        else await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
 
                         nextIdx++;
                         nextPage++;
