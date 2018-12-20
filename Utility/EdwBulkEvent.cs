@@ -31,7 +31,7 @@ namespace Utility
         {
             RsTypes[EdwType.Event].Add(
                  PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                     .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
+                     .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))  // this rsid is the instance id
                                                        .Add(PL.N("whep", SL.C(whep))))));
         }
 
@@ -40,7 +40,7 @@ namespace Utility
             RsTypes[t].Add(
                 PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
                     .Add(PL.N("payload", PL.C(payload)))
-                    .Add(PL.C("config_id", configId.ToString())));
+                    .Add(PL.C("rsid", configId.ToString()))); // this rsid is the typeid (configid)
         }
 
         public override string ToString()
