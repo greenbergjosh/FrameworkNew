@@ -143,9 +143,9 @@ namespace VisitorIdLib
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
                             if (idx1 == 0)
-                                result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+                                result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "00000000000000000000000000000000" });
                             else if (idx1 == 1)
-                                result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+                                result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "11111111111111111111111111111111" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
                             break;
@@ -189,6 +189,7 @@ namespace VisitorIdLib
             string opaque64, opaque = null, afid, tpid, eml, md5, sid, qstr, host, path, qury ;
             IGenericEntity opge;
             int slot, page;
+            EdwBulkEvent be = null;
 
             try
             {
@@ -223,7 +224,7 @@ namespace VisitorIdLib
             // events to it, in addition to the events we drop specifically for vid
             if (slot == 0)
             {
-                EdwBulkEvent be = new EdwBulkEvent();
+                be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
                     PL.O(new
                     {
@@ -289,9 +290,10 @@ namespace VisitorIdLib
                     var nextTask = visitorIdMd5ProviderSequence[nextIdx].Md5provider;
                     var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[nextIdx].EmailProviderSeq;
 
+                    bool dropResponseEventExplicitly = false;
                     if (nextTask.ToLower() == "cookie")
                     {
-                        EdwBulkEvent be = new EdwBulkEvent();
+                        be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
                             {
@@ -314,7 +316,29 @@ namespace VisitorIdLib
                                 eml = gc.GetS("Em");
                                 await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
                             }
-                        }                        
+                            else
+                            {
+                                dropResponseEventExplicitly = true;
+                            }
+                        }
+                        else
+                        {
+                            dropResponseEventExplicitly = true;
+                        }
+
+                        if (dropResponseEventExplicitly)
+                        {
+                            be = new EdwBulkEvent();
+                            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                                null, PL.O(new
+                                {
+                                    et = "Md5ProviderResponse",
+                                    pid = "cookie",
+                                    slot,
+                                    page
+                                }));
+                            await fw.EdwWriter.Write(be);
+                        }
 
                         nextIdx++;
                         nextPage++;
@@ -392,7 +416,7 @@ namespace VisitorIdLib
                         string pid = nextTask.Substring(1);
                         IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
 
-                        EdwBulkEvent be = new EdwBulkEvent();
+                        be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
                             {
@@ -450,7 +474,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            string em = await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
+            string em = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
 
             c.SetCookie("vidck",
                 Jw.Json(new
