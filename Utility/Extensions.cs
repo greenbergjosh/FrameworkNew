@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Utility
@@ -26,14 +27,9 @@ namespace Utility
             }
         }
 
-        public static JObject Fold(this IEnumerable<JObject> objects)
+        public static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func)
         {
-            return objects.Aggregate((r, c) =>
-            {
-                r.Merge(c);
-
-                return r;
-            });
+            return await source.Aggregate(new Task<TAccumulate>(() => seed), async (a, s) => await func(a.Result, s));
         }
     }
 }
