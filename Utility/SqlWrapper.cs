@@ -26,7 +26,7 @@ namespace Utility
 
             try
             {
-                confStr = await GetConfig(conStr, configSproc, configKeys);
+                confStr = await GetConfigs(conStr, configSproc, configKeys);
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
 
@@ -64,44 +64,42 @@ namespace Utility
             }
         }
 
-        private static async Task<string> GetConfig(string conStr, string configSproc, IEnumerable<string> configKeys)
+        private static async Task<string> GetConfigs(string conStr, string configSproc, IEnumerable<string> configKeys)
         {
-            var configs = new Dictionary<string, JObject>();
+            var loaded = new HashSet<string>();
 
-            foreach (var configKey in configKeys) await GetConfigStrings(conStr, configSproc, configKey, configs);
-
-            return (configs.Select(c => c.Value)).Fold().ToString();
-        }
-
-        private static async Task<Dictionary<string, JObject>> GetConfigStrings(string conStr, string configSproc, string configKey, Dictionary<string, JObject> configs)
-        {
-            if (configs == null) configs = new Dictionary<string, JObject>();
-
-            if (configs.ContainsKey(configKey)) return configs;
-
-            /*
-             * We should be able to clean this up if the configSproc could return a collection
-             */
-            var res = await ExecuteSql(JsonWrapper.Json(new { InstanceId = configKey }), "", configSproc, conStr);
-            var conf = JObject.Parse(res);
-
-            if (conf["using"] != null)
+            async Task<JObject> loadConfig(JObject config, string key)
             {
-                var usings = ((JArray)conf["using"]).Select(u => ((string)u).Trim());
+                if (loaded.Contains(key)) return config;
 
-                configs.AddRange(usings
-                    .Select(async k => await GetConfigStrings(conStr, configSproc, k, configs))
-                    .SelectMany(c => c.Result)
-                    .Select(c => (key: c.Key, value: c.Value))
-                    .Where(c => !configs.ContainsKey(c.key))
-                );
-                if (conf["config"] != null) configs.Add(configKey, (JObject)conf["config"]);
+                loaded.Add(key);
+
+                try
+                {
+                    var c = JObject.Parse(await ExecuteSql(JsonWrapper.Json(new { InstanceId = key }), "", configSproc, conStr));
+
+                    if (c["using"] != null)
+                    {
+                        var usings = ((JArray)c["using"]).Select(u => ((string)u).Trim());
+
+                        await usings.AggregateAsync(config, async (cf, k) => await loadConfig(cf, key));
+                        if (c["config"] != null) config.Merge(c["config"]);
+                    }
+                    else config.Merge(c);
+
+                    return config;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(
+                        $"Failed to merge config {key}. Exception: {ex.Message}",
+                        ex);
+                }
             }
-            else configs.Add(configKey, conf);
 
-            return configs;
+            return (await configKeys.AggregateAsync(new JObject(), async (conf, key) => await loadConfig(conf, key))).ToString();
         }
-
+        
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
             string result = await SqlWrapper.SqlServerProviderEntry(Connections[conName], method, args, payload, timeout);
