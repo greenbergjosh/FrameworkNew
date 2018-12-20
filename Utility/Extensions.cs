@@ -29,7 +29,7 @@ namespace Utility
 
         public static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func)
         {
-            return await source.Aggregate(new Task<TAccumulate>(() => seed), async (a, s) => await func(a.Result, s));
+            return await source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
         }
     }
 }

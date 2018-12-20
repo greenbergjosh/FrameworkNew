@@ -80,9 +80,11 @@ namespace Utility
 
                     if (c["using"] != null)
                     {
-                        var usings = ((JArray)c["using"]).Select(u => ((string)u).Trim());
+                        await ((JArray)c["using"])
+                            .Select(u => ((string)u).Trim())
+                            .Where(u => !loaded.Contains(u))
+                            .AggregateAsync(config, async (cf, k) => await loadConfig(cf, k));
 
-                        await usings.AggregateAsync(config, async (cf, k) => await loadConfig(cf, key));
                         if (c["config"] != null) config.Merge(c["config"]);
                     }
                     else config.Merge(c);
@@ -97,9 +99,9 @@ namespace Utility
                 }
             }
 
-            return (await configKeys.AggregateAsync(new JObject(), async (conf, key) => await loadConfig(conf, key))).ToString();
+            return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await loadConfig(c, k))).ToString();
         }
-        
+
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
             string result = await SqlWrapper.SqlServerProviderEntry(Connections[conName], method, args, payload, timeout);
