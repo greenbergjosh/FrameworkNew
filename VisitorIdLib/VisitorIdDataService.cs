@@ -143,9 +143,9 @@ namespace VisitorIdLib
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
                             if (idx1 == 0)
-                                result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+                                result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "00000000000000000000000000000000" });
                             else if (idx1 == 1)
-                                result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+                                result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "11111111111111111111111111111111" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
                             break;
@@ -450,7 +450,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            string em = await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
+            string em = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
 
             c.SetCookie("vidck",
                 Jw.Json(new
