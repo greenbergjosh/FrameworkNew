@@ -160,7 +160,7 @@ namespace GetGotLib
                     {
                         case "SelectSubCampaignDraft":
                             result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
+                                m, requestFromPost, "", 1);
                             break;
 
                         case "CreateImpression":
