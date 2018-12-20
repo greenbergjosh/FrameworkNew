@@ -142,9 +142,9 @@ namespace VisitorIdLib
                             break;
                         case "TestService":
                             int idx1 = Int32.Parse(context.Request.Query["i"]);
-                            if (idx1 % 2 == 0)
+                            if (idx1 == 0)
                                 result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
-                            else if (idx1 % 2 == 1)
+                            else if (idx1 == 1)
                                 result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
                             else
                                 result = Jw.Json(new { result = "NoMd5" });
@@ -235,7 +235,7 @@ namespace VisitorIdLib
                         q = qury,
                         afid,
                         tpid
-                    }, new bool[] { true, true, false, true, true, true, true, true }), this.RsConfigGuid);
+                    }, new bool[] { true, false, true, true, true, true, true, true }), this.RsConfigGuid);
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                     null, PL.O(new
                     {
@@ -248,7 +248,7 @@ namespace VisitorIdLib
                         q = qury,
                         tpid
                     }, new bool[] { true, true, false, true, true, true, true, true }));
-                await fw.EdwWriter.Write(be, 1);
+                await fw.EdwWriter.Write(be);
             }
 
             bool isAsync = true;
@@ -300,7 +300,7 @@ namespace VisitorIdLib
                                 slot,
                                 page
                             }));
-                        await fw.EdwWriter.Write(be, 1);
+                        await fw.EdwWriter.Write(be);
 
                         string cookieValueFromReq = c.Request.Cookies["vidck"];
 
@@ -401,7 +401,7 @@ namespace VisitorIdLib
                                 slot,
                                 page
                             }));
-                        await fw.EdwWriter.Write(be, 1);
+                        await fw.EdwWriter.Write(be);
 
                         return Jw.Json(new
                         {
@@ -446,7 +446,7 @@ namespace VisitorIdLib
                     page,
                     succ = !String.IsNullOrEmpty(md5) ? "1" : "0"
                 }));
-            await fw.EdwWriter.Write(be, 1);
+            await fw.EdwWriter.Write(be);
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
@@ -523,7 +523,7 @@ namespace VisitorIdLib
                             slotnum,
                             pagenum
                         }));
-                    await fw.EdwWriter.Write(be, 1);
+                    await fw.EdwWriter.Write(be);
 
                     slotnum++;
                     pagenum++;
@@ -580,7 +580,7 @@ namespace VisitorIdLib
                             slotnum,
                             pagenum
                         }));
-                    await fw.EdwWriter.Write(be, 1);
+                    await fw.EdwWriter.Write(be);
 
                     IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
                     Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
@@ -597,7 +597,7 @@ namespace VisitorIdLib
                             pagenum,
                             succ = !String.IsNullOrEmpty(eml) ? "1" : "0"
                         }));
-                    await fw.EdwWriter.Write(be, 1);
+                    await fw.EdwWriter.Write(be);
 
                     slotnum++;
                     pagenum++;
@@ -618,7 +618,7 @@ namespace VisitorIdLib
                        pagenum
                    })
                    .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
-                   .Add(PL.N("rsids", PL.D(rsids))).ToString()), 1);
+                   .Add(PL.N("rsids", PL.D(rsids))).ToString()));
             }
 
             return eml;
