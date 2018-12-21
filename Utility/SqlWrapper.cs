@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 
 namespace Utility
@@ -17,44 +14,31 @@ namespace Utility
         public const string GlobalConfig = "GlobalConfig";
 
         // TODO: This should all be ConcurrentDictionary to become thread-safe
-        public static Dictionary<string, string> Connections = new Dictionary<string, string>();
+        public static Dictionary<string, (string Id, string ConnStr)> Connections = new Dictionary<string, (string Id, string ConnStr)>();
         public static Dictionary<string, Dictionary<string, string>> StoredProcedures = new Dictionary<string, Dictionary<string, string>>();
+        private static string _configConnStr;
+        private static string _configSproc;
 
         public static async Task<IGenericEntity> Initialize(string conStr, string[] configKeys, string configSproc)
         {
             string confStr = null;
 
+            _configConnStr = confStr;
+            _configSproc = configSproc;
+
             try
             {
-                confStr = await GetConfigs(conStr, configSproc, configKeys);
+                confStr = await GetConfigs(_configConnStr, _configSproc, configKeys);
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
 
                 StoredProcedures.Add(GlobalConfig, new Dictionary<string, string>()
                 {
-                    { "SelectConfig", configSproc}
+                    { "SelectConfig", _configSproc}
                 });
-                Connections.Add(GlobalConfig, conStr);
+                Connections.Add(GlobalConfig, (Id: GlobalConfig, ConnStr: _configConnStr));
 
-                foreach (var o in gc.GetD("Config/ConnectionStrings"))
-                {
-                    IGenericEntity gcon = JsonWrapper.JsonToGenericEntity(
-                        JsonWrapper.Json(new
-                        {
-                            Config =
-                            await ExecuteSql(JsonWrapper.Json(new { InstanceId = o.Item2 }), "",
-                                configSproc, conStr)
-                        }, new bool[] { false }));
-
-                    if (!StoredProcedures.ContainsKey(o.Item1)) StoredProcedures.Add(o.Item1, new Dictionary<string, string>());
-                    var spMap = StoredProcedures[o.Item1];
-                    foreach (var sp in gcon.GetD("Config/DataLayer"))
-                    {
-                        spMap.Add(sp.Item1, sp.Item2);
-                    }
-
-                    Connections.Add(o.Item1, gcon.GetS("Config/ConnectionString"));
-                }
+                AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
 
                 return gc;
             }
@@ -64,11 +48,37 @@ namespace Utility
             }
         }
 
+        public static async void AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings)
+        {
+            foreach (var o in connectionStrings)
+            {
+                if (Connections.ContainsKey(o.Item1) && Connections[o.Item1].Id == o.Item2) continue;
+                else if (Connections.ContainsKey(o.Item1)) throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Item1}");
+
+                var gcon = JsonWrapper.JsonToGenericEntity(
+                    JsonWrapper.Json(new
+                    {
+                        Config = await ExecuteSql(JsonWrapper.Json(new { InstanceId = o.Item2 }), "", _configSproc, _configConnStr)
+                    }, new bool[] { false }));
+
+                var spMap = new Dictionary<string, string>();
+
+                StoredProcedures.Add(o.Item1, spMap);
+
+                foreach (var sp in gcon.GetD("Config/DataLayer"))
+                {
+                    spMap.Add(sp.Item1, sp.Item2);
+                }
+
+                Connections.Add(o.Item1, (Id: o.Item2, ConnStr: gcon.GetS("Config/ConnectionString")));
+            }
+        }
+
         private static async Task<string> GetConfigs(string conStr, string configSproc, IEnumerable<string> configKeys)
         {
             var loaded = new HashSet<string>();
 
-            async Task<JObject> loadConfig(JObject config, string key)
+            async Task<JObject> LoadConfig(JObject config, string key)
             {
                 if (loaded.Contains(key)) return config;
 
@@ -83,7 +93,7 @@ namespace Utility
                         await ((JArray)c["using"])
                             .Select(u => ((string)u).Trim())
                             .Where(u => !loaded.Contains(u))
-                            .AggregateAsync(config, async (cf, k) => await loadConfig(cf, k));
+                            .AggregateAsync(config, async (cf, k) => await LoadConfig(cf, k));
 
                         if (c["config"] != null) config.Merge(c["config"]);
                     }
@@ -93,18 +103,16 @@ namespace Utility
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(
-                        $"Failed to merge config {key}. Exception: {ex.Message}",
-                        ex);
+                    throw new Exception($"Failed to merge config {key}. Exception: {ex.Message}", ex);
                 }
             }
 
-            return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await loadConfig(c, k))).ToString();
+            return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k))).ToString();
         }
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
-            string result = await SqlWrapper.SqlServerProviderEntry(Connections[conName], method, args, payload, timeout);
+            string result = await SqlWrapper.SqlServerProviderEntry(Connections[conName].ConnStr, method, args, payload, timeout);
             IGenericEntity gp = new GenericEntityJson();
             var gpstate = JsonConvert.DeserializeObject(result);
             gp.InitializeEntity(rw, config, gpstate);
@@ -118,7 +126,7 @@ namespace Utility
             string sp = null;
             StoredProcedures[conName].TryGetValue(method, out sp);
             if (sp == null) return "";
-            ret = await ExecuteSql(args, payload, sp, Connections[conName], timeout);
+            ret = await ExecuteSql(args, payload, sp, Connections[conName].ConnStr, timeout);
 
             return ret;
         }

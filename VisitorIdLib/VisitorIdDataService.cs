@@ -430,7 +430,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + nextTask);
+                        await fw.Err(1000, "DoVisitorId", "Error", $"Unknown MD5 Provider Task Type: {nextTask} Slot: {slot} Page: {page}");
                         nextIdx++;
                     }
                 }
@@ -617,7 +617,7 @@ namespace VisitorIdLib
                 }
                 else
                 {
-                    await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + slotnum);
+                    await fw.Err(1000, "DoVisitorId", "Error", $"Unknown Email Provider Task Type: {s} Slot: {slotnum} Page: {pagenum}");
                     slotnum++;
                 }
             }

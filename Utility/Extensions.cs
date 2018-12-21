@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Utility
 {
     public static class Extensions
     {
+
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
 
         public static bool IsNullOrWhitespace(this string str) => string.IsNullOrEmpty(str?.Trim());
