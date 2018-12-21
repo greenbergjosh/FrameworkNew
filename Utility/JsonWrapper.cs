@@ -28,10 +28,15 @@ namespace Utility
             int i = 0;
             foreach (PropertyInfo pi in t.GetProperties())
             {
-                if ((quote.Length <= i) || (quote.Length > i && quote[i]))
-                    sb.Append("\"" + pi.Name + "\": \"" + pi.GetValue(o).ToString() + "\",");
+                var val = pi.GetValue(o);
+                if (val == null)
+                {
+                    sb.Append("\"" + pi.Name + "\": null,");
+                }
+                else if ((quote.Length <= i) || (quote.Length > i && quote[i]))
+                    sb.Append("\"" + pi.Name + "\": \"" + val.ToString() + "\",");
                 else
-                    sb.Append("\"" + pi.Name + "\": " + pi.GetValue(o).ToString() + ",");
+                    sb.Append("\"" + pi.Name + "\": " + val.ToString() + ",");
                 i = i + 1;
             }
             sb.Remove(sb.Length - 1, 1);
