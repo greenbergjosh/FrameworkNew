@@ -21,6 +21,7 @@ namespace VisitorIdLib
             new Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>>();
         public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
         public int VisitorIdCookieExpDays = 10;
+        public int SqlTimeoutSec;
 
         //public void test()
         //{
@@ -46,6 +47,7 @@ namespace VisitorIdLib
 
             this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
             this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
+            this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
 
             foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
@@ -310,7 +312,21 @@ namespace VisitorIdLib
                             IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
                             
                             md5 = gc.GetS("Md5");
-                            if (!String.IsNullOrEmpty(md5))eml = gc.GetS("Em");
+                            string csid = gc.GetS("Sid");
+
+                            if (!String.IsNullOrEmpty(md5))
+                            {
+                                eml = gc.GetS("Em");
+                            }
+                            else if (!String.IsNullOrEmpty(csid))
+                            {
+                                IGenericEntity lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
+                                   "LookupBySessionId",
+                                   Jw.Json(new { Sid = csid }),
+                                   "", null, null, this.SqlTimeoutSec);
+                                eml = lookupGe.GetS("Em");
+                                md5 = lookupGe.GetS("Md5");
+                            }
                         }
 
                         if (md5.IsNullOrWhitespace())
@@ -430,7 +446,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + nextTask);
+                        await fw.Err(1000, "DoVisitorId", "Error", $"Unknown MD5 Provider Task Type: {nextTask} Slot: {slot} Page: {page}");
                         nextIdx++;
                     }
                 }
@@ -617,7 +633,7 @@ namespace VisitorIdLib
                 }
                 else
                 {
-                    await fw.Err(1000, "DoVisitorId", "Error", "Unknown Task Type: " + slotnum);
+                    await fw.Err(1000, "DoVisitorId", "Error", $"Unknown Email Provider Task Type: {s} Slot: {slotnum} Page: {pagenum}");
                     slotnum++;
                 }
             }
