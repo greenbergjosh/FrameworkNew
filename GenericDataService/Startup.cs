@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Utility;
 
@@ -84,7 +85,7 @@ namespace GenericDataService
 
                         context.Response.StatusCode = (int)HttpStatusCode.OK;
                         context.Response.ContentType = "application/json";
-                        context.Response.ContentLength = resp.Length;
+                        context.Response.ContentLength = Encoding.UTF8.GetBytes(resp).Length;
                         await context.Response.WriteAsync(resp);
                     }
                     else await this.DataService.Run(context);
