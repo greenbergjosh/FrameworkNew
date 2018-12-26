@@ -28,7 +28,7 @@ namespace Utility
 
             try
             {
-                confStr = await GetConfigs(_configConnStr, _configSproc, configKeys);
+                confStr = await GetConfigs(configKeys);
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
 
@@ -74,7 +74,7 @@ namespace Utility
             }
         }
 
-        private static async Task<string> GetConfigs(string conStr, string configSproc, IEnumerable<string> configKeys)
+        private static async Task<string> GetConfigs(IEnumerable<string> configKeys)
         {
             var loaded = new HashSet<string>();
 
@@ -86,7 +86,7 @@ namespace Utility
 
                 try
                 {
-                    var c = JObject.Parse(await ExecuteSql(JsonWrapper.Json(new { InstanceId = key }), "", configSproc, conStr));
+                    var c = JObject.Parse(await ExecuteSql(JsonWrapper.Json(new { InstanceId = key }), "", _configSproc, _configConnStr));
 
                     if (c["using"] != null)
                     {

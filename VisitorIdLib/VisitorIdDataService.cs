@@ -188,7 +188,7 @@ namespace VisitorIdLib
 
         public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
         {
-            string opaque64, opaque = null, afid, tpid, eml, md5, sid, qstr, host, path, qury ;
+            string opaque64, opaque = null, afid, tpid, eml, md5, sid, qstr, host, path, qury;
             IGenericEntity opge;
             int slot, page;
             EdwBulkEvent be = null;
@@ -310,7 +310,7 @@ namespace VisitorIdLib
                         if (!String.IsNullOrEmpty(cookieValueFromReq))
                         {
                             IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-                            
+
                             md5 = gc.GetS("Md5");
                             string csid = gc.GetS("Sid");
 
@@ -479,17 +479,17 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            string em = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
 
             c.SetCookie("vidck",
                 Jw.Json(new
                 {
                     Sid = sessionId,
                     Md5 = md5,
-                    Em = em
+                    Em = email
                 }), this.VisitorIdCookieExpDays);
 
-            return Jw.Json(new { email = em, md5 = md5 });
+            return Jw.Json(new { email, md5 });
         }
 
         public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c,
@@ -524,6 +524,7 @@ namespace VisitorIdLib
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
             string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids)
         {
+            string cookieEml = "";
             string eml = "";
             int slotnum = 0;
             int pagenum = 0;
@@ -535,14 +536,6 @@ namespace VisitorIdLib
                 }
                 else if (s.ToLower() == "cookie")
                 {
-                    string cookieValueFromReq = context.Request.Cookies["vidck"];
-
-                    if (!String.IsNullOrEmpty(cookieValueFromReq))
-                    {
-                        IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-                        if (!String.IsNullOrEmpty(md5)) eml = gc.GetS("Em");
-                    }
-
                     EdwBulkEvent be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                         null, PL.O(new
@@ -551,6 +544,39 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slotnum,
                             pagenum
+                        }));
+                    await fw.EdwWriter.Write(be);
+
+                    string cookieValueFromReq = context.Request.Cookies["vidck"];
+
+                    if (!String.IsNullOrEmpty(cookieValueFromReq))
+                    {
+                        var gc = Jw.JsonToGenericEntity(cookieValueFromReq);
+                        var csid = gc.GetS("Sid");
+
+                        eml = gc.GetS("Em");
+
+                        if (eml.IsNullOrWhitespace() && !csid.IsNullOrWhitespace())
+                        {
+                            var lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
+                                "LookupBySessionId",
+                                Jw.Json(new { Sid = csid }),
+                                "", null, null, this.SqlTimeoutSec);
+                            eml = lookupGe.GetS("Em");
+                        }
+                    }
+
+                    if (!eml.IsNullOrWhitespace()) cookieEml = eml;
+
+                    be = new EdwBulkEvent();
+                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                        null, PL.O(new
+                        {
+                            et = "EmailProviderResponse",
+                            pid = "cookie",
+                            slotnum,
+                            pagenum,
+                            succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -576,14 +602,14 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        return eml;
+                        return cookieEml;
                     }
                 }
                 else if (s.ToLower() == "breakonsuccess")
                 {
                     if (!String.IsNullOrEmpty(eml))
                     {
-                        return eml;
+                        return cookieEml;
                     }
                     else
                     {
@@ -595,7 +621,7 @@ namespace VisitorIdLib
                 }
                 else if (s.ToLower() == "break")
                 {
-                    return eml;
+                    return cookieEml;
                 }
                 else if (s[0] == '@')
                 {
@@ -615,6 +641,8 @@ namespace VisitorIdLib
                     Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                     string lbm = await fw.Entities.GetEntity(lbmId);
                     eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), false, "");
+
+                    if (!eml.IsNullOrWhitespace()) cookieEml = eml;
 
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -650,7 +678,7 @@ namespace VisitorIdLib
                    .Add(PL.N("rsids", PL.D(rsids))).ToString()));
             }
 
-            return eml;
+            return cookieEml;
         }
     }
 }
