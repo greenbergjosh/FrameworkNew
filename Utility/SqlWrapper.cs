@@ -19,24 +19,24 @@ namespace Utility
         private static string _configConnStr;
         private static string _configSproc;
 
-        public static async Task<IGenericEntity> Initialize(string conStr, string[] configKeys, string configSproc)
+        public static async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configSproc)
         {
-            string confStr = null;
+            string configStr = null;
 
-            _configConnStr = confStr;
+            _configConnStr = connStr;
             _configSproc = configSproc;
 
             try
             {
-                confStr = await GetConfigs(configKeys);
-
-                var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = confStr }, new bool[] { false }));
-
                 StoredProcedures.Add(GlobalConfig, new Dictionary<string, string>()
                 {
                     { "SelectConfig", _configSproc}
                 });
                 Connections.Add(GlobalConfig, (Id: GlobalConfig, ConnStr: _configConnStr));
+
+                configStr = await GetConfigs(configKeys);
+
+                var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = configStr }, new bool[] { false }));
 
                 AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
 
@@ -44,7 +44,7 @@ namespace Utility
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {confStr ?? "No Config Found"} Original Exception: {e.Message}", e);
+                throw new Exception($"Failed to build {nameof(FrameworkWrapper)} ConfigKey: {configKeys?.Join("::") ?? "No instance key(s) defined"} Config: {configStr ?? "No Config Found"} Original Exception: {e.Message}", e);
             }
         }
 
@@ -86,7 +86,8 @@ namespace Utility
 
                 try
                 {
-                    var c = JObject.Parse(await ExecuteSql(JsonWrapper.Json(new { InstanceId = key }), "", _configSproc, _configConnStr));
+                    var confStr = await ExecuteSql(JsonWrapper.Json(new { InstanceId = key }), "", _configSproc, _configConnStr);
+                    var c = JObject.Parse(confStr);
 
                     if (c["using"] != null)
                     {
