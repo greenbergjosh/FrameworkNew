@@ -77,6 +77,8 @@ namespace GenericDataService
 
             app.Run(async (context) =>
             {
+                File.AppendAllText("DataService.log", $@"Handler::{DateTime.Now}::Query[m]::{context.Request.Query["m"]}::QueryString::{context.Request.QueryString}{Environment.NewLine}");
+
                 try
                 {
                     if(context.Request.Query["m"] == "cfg-0nP01nt")
@@ -92,8 +94,7 @@ namespace GenericDataService
                 }
                 catch (Exception ex)
                 {
-                    File.AppendAllText("DataService.log", $@"Run::{DateTime.Now}::{ex.ToString()}" +
-                                Environment.NewLine);
+                    File.AppendAllText("DataService.log", $@"Run::{DateTime.Now}::{ex.ToString()}{Environment.NewLine}");
                 }
             });
         }
