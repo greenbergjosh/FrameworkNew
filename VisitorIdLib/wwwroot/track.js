@@ -38,13 +38,16 @@ window[window.VisitorIdObject].visitorId = visitorId;
 
 async function handleService(res) {
     var response = await window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);
-    return (res.config.Transform && response) ?
-        {
-            email: getDescendantProp(response, res.config.Transform.email) || '',
-            md5: getDescendantProp(response, res.config.Transform.md5) || '',
-            saveSession: res.config.SaveSession
-        } :
-        { email: '', md5: '', saveSession: 'false' };
+
+    if (response) {
+        if (res.config.Transform) {
+            return {
+                email: getDescendantProp(response, res.config.Transform.email) || '',
+                md5: getDescendantProp(response, res.config.Transform.md5) || '',
+                saveSession: res.config.SaveSession
+            };
+        } else return { ...response, saveSession: res.config.SaveSession };
+    } else return { email: '', md5: '', saveSession: 'false' };
 }
 
 async function genericFetch(url, fetchParms, fetchType, imgFlag) {
