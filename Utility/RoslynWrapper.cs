@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Utility
 {
+    
     public class StateWrapper : System.Dynamic.DynamicObject
     {
         public dynamic r = new System.Dynamic.ExpandoObject();
@@ -17,7 +18,7 @@ namespace Utility
 
     public class RoslynWrapper : System.Dynamic.DynamicObject
     {
-        public string DefaultDebugDir;
+        public string DefaultDebugDir = null;
         public ConcurrentDictionary<string, ScriptDescriptor> functions = new ConcurrentDictionary<string, ScriptDescriptor>();
 
         public RoslynWrapper(IEnumerable<ScriptDescriptor> initialScripts, string defaultDebugDir)
@@ -86,7 +87,9 @@ namespace Utility
 
         public async Task<object> Evaluate(string code, object parms, StateWrapper state)
         {
-            return await Evaluate(null, code, parms, state, false, null);
+            var (debug, debugDir) = GetDefaultDebugValues();
+
+            return await Evaluate(null, code, parms, state, debug, debugDir);
         }
 
         public async Task<object> Evaluate(string name, string code, object parms, StateWrapper state, bool debug, string debugDir)
@@ -96,9 +99,28 @@ namespace Utility
             return await RunFunction(sd.Key, parms, state);
         }
 
-        public async Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state, bool debug, string debugDir)
+        public async Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state)
         {
+            var (debug, debugDir) = GetDefaultDebugValues();
+
             return await Evaluate(name.ToString().ToLower(), code, parms, state, debug, debugDir);
+        }
+
+        private (bool debug, string debugDir) GetDefaultDebugValues()
+        {
+            var debug = false;
+
+#if DEBUG
+            if (System.Diagnostics.Debugger.IsAttached && DefaultDebugDir.IsNullOrWhitespace())
+            {
+                debug = true;
+                var di = new DirectoryInfo(DefaultDebugDir);
+
+                if (!di.Exists) di.Create();
+            }
+#endif
+
+            return (debug, DefaultDebugDir);
         }
 
         public Func<object, StateWrapper, Task<object>> this[string fn]

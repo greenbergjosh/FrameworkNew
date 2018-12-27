@@ -77,8 +77,6 @@ namespace GenericDataService
 
             app.Run(async (context) =>
             {
-                File.AppendAllText("DataService.log", $@"Handler::{DateTime.Now}::Query[m]::{context.Request.Query["m"]}::QueryString::{context.Request.QueryString}{Environment.NewLine}");
-
                 try
                 {
                     if(context.Request.Query["m"] == "cfg-0nP01nt")
