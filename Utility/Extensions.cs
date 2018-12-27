@@ -30,5 +30,16 @@ namespace Utility
         {
             return await source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
         }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct
+        {
+            return key != null && d.ContainsKey(key.Value) ? d[key.Value] : default(TValue);
+        }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct
+        {
+            return key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
+        }
+
     }
 }

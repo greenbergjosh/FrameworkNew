@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Utility;
@@ -143,13 +144,34 @@ namespace VisitorIdLib
                             result = await SaveSession(this.Fw, context);
                             break;
                         case "TestService":
-                            int idx1 = Int32.Parse(context.Request.Query["i"]);
-                            if (idx1 == 0)
-                                result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "00000000000000000000000000000000" });
-                            else if (idx1 == 1)
-                                result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "11111111111111111111111111111111" });
-                            else
-                                result = Jw.Json(new { result = "NoMd5" });
+                            var idx1 = context.Request.Query["i"].FirstOrDefault().ParseInt();
+                            var md5s = new Dictionary<int, string>()
+                            {
+                                // OnPointEmailProvider New Md5s
+                                {3,"D2C9A2582C8D49177CB65EB6DEC54DE0" },{4,"AD84C4D935678CF0FBEB7D3B2931B46C" },{5,"B1F65047C45D2ED62E4653989F91C592" },
+                                { 6,"D76390CBCC9F9C1AF07F05FBBE0FE5C6" },{7,"ECF2579E76EF5E9A3CAC4E176FA39263" },{8,"5D23538C43F6D9669B7907DCBABADD9A" },
+                                // OnPointEmailProvider Old Md5s
+                                { 9,"23242543C2ADDB23F48A752433F7801D" },{10,"7E99FDEE2B4CA772B3B22AAB34123508" },
+                                // LegacyEmailProvider
+                                { 11,"92306443ED2DF27B1293C12FF8296350" },{ 12,"28511984A236C6D589DF5D2C1BF43037" },{ 13,"160D388576AB55C4F96AE34DC3575D96" },
+                                { 14,"3AF45A3655103ABAF17194874569DCEB" },{ 15,"6D2E64535729A4E2E7AD7173F4BD9CB2" },{16,"EB385FFCFA3F22F17AB3636B87D554FD" },
+                                { 17,"3218507EE4B18A593C7FCE3C768BAB82" },{18,"3E0E46A40A29D5151D16E40062A5DFB9" }
+                            };
+
+                            switch (idx1)
+                            {
+                                case 0:
+                                    result = Jw.Json(new { t0email = "t0@hotmail.com", t0md5 = "00000000000000000000000000000000" });
+                                    break;
+                                case 1:
+                                    result = Jw.Json(new { t1email = "t1@hotmail.com", t1md5 = "11111111111111111111111111111111" });
+                                    break;
+                                default:
+                                    var md5 = md5s.GetValueOrDefault(idx1);
+
+                                    result = md5.IsNullOrWhitespace() ? Jw.Json(new { result = "NoMd5" }) : Jw.Json(new { md5 });
+                                    break;
+                            }
                             break;
                         default:
                             await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
@@ -640,7 +662,7 @@ namespace VisitorIdLib
                     IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
                     Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                     string lbm = await fw.Entities.GetEntity(lbmId);
-                    eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper(), false, "");
+                    eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());
 
                     if (!eml.IsNullOrWhitespace()) cookieEml = eml;
 
