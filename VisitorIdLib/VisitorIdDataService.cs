@@ -501,7 +501,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, md5, email, sessionId, isAsync, visitorIdEmailProviderSequence, rsids);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids);
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -659,10 +659,20 @@ namespace VisitorIdLib
                         }));
                     await fw.EdwWriter.Write(be);
 
-                    IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
-                    Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
-                    string lbm = await fw.Entities.GetEntity(lbmId);
-                    eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm, new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());
+                    try
+                    {
+                        IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
+                        Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
+                        string lbm = await fw.Entities.GetEntity(lbmId);
+
+                        eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
+                            new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());
+                    }
+                    catch (Exception ex)
+                    {
+                        await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to load LBM {pid}");
+                        throw;
+                    }
 
                     if (!eml.IsNullOrWhitespace()) cookieEml = eml;
 

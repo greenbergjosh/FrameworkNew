@@ -48,7 +48,7 @@ namespace Utility
             }
         }
 
-        public static async void AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings)
+        public static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings)
         {
             foreach (var o in connectionStrings)
             {
@@ -113,7 +113,7 @@ namespace Utility
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
-            string result = await SqlWrapper.SqlServerProviderEntry(Connections[conName].ConnStr, method, args, payload, timeout);
+            string result = await SqlWrapper.SqlServerProviderEntry(conName, method, args, payload, timeout);
             IGenericEntity gp = new GenericEntityJson();
             var gpstate = JsonConvert.DeserializeObject(result);
             gp.InitializeEntity(rw, config, gpstate);
@@ -122,14 +122,22 @@ namespace Utility
 
         public static async Task<string> SqlServerProviderEntry(string conName, string method, string args, string payload, int timeout = 120)
         {
-            string ret = null;
+            try
+            {
+                string ret = null;
+                string sp = null;
+                var connSprocs = StoredProcedures[conName];
 
-            string sp = null;
-            StoredProcedures[conName].TryGetValue(method, out sp);
-            if (sp == null) return "";
-            ret = await ExecuteSql(args, payload, sp, Connections[conName].ConnStr, timeout);
+                connSprocs.TryGetValue(method, out sp);
+                if (sp == null) return "";
+                ret = await ExecuteSql(args, payload, sp, Connections[conName].ConnStr, timeout);
 
-            return ret;
+                return ret;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed {nameof(ExecuteSql)}({conName}, {method}, {args}, {payload})\n\nStoredProcs: {StoredProcedures.Keys.Join("\n")}", e);
+            }
         }
 
         public static async Task<string> ExecuteSql(string args, string payload, string sproc, string connectionString, int timeout = 120)

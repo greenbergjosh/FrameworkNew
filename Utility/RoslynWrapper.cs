@@ -45,6 +45,7 @@ namespace Utility
         public ScriptDescriptor CompileAndCache(ScriptDescriptor sd)
         {
             ScriptDescriptor sdCached;
+
             if (functions.TryGetValue(sd.Key, out sdCached))
             {
                 return sdCached;
@@ -111,7 +112,7 @@ namespace Utility
             var debug = false;
 
 #if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached && DefaultDebugDir.IsNullOrWhitespace())
+            if (System.Diagnostics.Debugger.IsAttached && !DefaultDebugDir.IsNullOrWhitespace())
             {
                 debug = true;
                 var di = new DirectoryInfo(DefaultDebugDir);
