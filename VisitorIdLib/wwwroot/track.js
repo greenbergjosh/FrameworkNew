@@ -1,18 +1,19 @@
 ﻿async function visitorId(url, opaque, future) {
     opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: '0', page: '0', sd: '', succ: '0' };
     while (true) {   
-        var res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
+        let res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
 
         if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl) )) break;
-        var sres = {};
+        let sres = {};
+
         if (res.config.scriptUrl) {
             await load(res.config.ScriptUrl, 'Segment'+res.config.slot);
-            for (var x in res.config.strategy) {
-                var f = res.config.strategy[x].f;
-                var a = res.config.strategy[x].a;
-                var exf = getDescendantProp(window[res.config.globalObject], f);
+            for (let x in res.config.strategy) {
+                let f = res.config.strategy[x].f;
+                let a = res.config.strategy[x].a;
+                let exf = getDescendantProp(window[res.config.globalObject], f);
                 exf(...a);
             }
         }
@@ -26,7 +27,7 @@
         }; 
         
         if (res.config.SaveSession == 'true') {
-            var res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
+            res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', ''); 
             opaque.eml = res.email;
@@ -37,7 +38,7 @@
 window[window.VisitorIdObject].visitorId = visitorId;
 
 async function handleService(res) {
-    var response = await window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);
+    let response = await window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);
 
     if (response) {
         if (res.config.Transform) {
@@ -62,7 +63,8 @@ async function genericFetch(url, fetchParms, fetchType, imgFlag) {
             if (fetchType == "json") return JSON.parse(data);
             else if (fetchType == "base64") return imgFlag + arrayBufferToBase64(data);
             else if (fetchType == "html") {
-                var parser = new DOMParser();
+                let parser = new DOMParser();
+
                 return parser.parseFromString(data, "text/html");
             }
             else return data;
@@ -79,8 +81,8 @@ function base64UrlSafe(s) {
 }
 
 function arrayBufferToBase64(buffer) {
-    var binary = '';
-    var bytes = [].slice.call(new Uint8Array(buffer));
+    let binary = '';
+    let bytes = [].slice.call(new Uint8Array(buffer));
 
     bytes.forEach((b) => binary += String.fromCharCode(b));
 
@@ -88,7 +90,8 @@ function arrayBufferToBase64(buffer) {
 };
 
 function getDescendantProp(obj, desc) {
-    var arr = desc.split('.');
+    let arr = desc.split('.');
+
     while (arr.length) {
         obj = obj[arr.shift()];
     }
@@ -98,36 +101,38 @@ function getDescendantProp(obj, desc) {
 //https://dev.to/timber/wait-for-a-script-to-load-in-javascript-579k
 async function loadScript(url) {
     return new Promise((resolve, reject) => {
-        const script = document.createElement('script')
-        script.type = 'text/javascript'
-        script.async = true
-        script.src = url
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.async = true;
+        script.src = url;
 
-        const el = document.getElementsByTagName('script')[0]
-        el.parentNode.insertBefore(script, el)
+        const el = document.getElementsByTagName('script')[0];
+        el.parentNode.insertBefore(script, el);
 
-        script.addEventListener('load', () => {
-            this.isLoaded = true
-            resolve(script)
-        })
+        script.addEventListener('load',
+            () => {
+                this.isLoaded = true;
+                resolve(script);
+            });
 
-        script.addEventListener('error', () => {
-            reject(new Error('Failed to load.'))
-        })
-    })
+        script.addEventListener('error',
+            () => {
+                reject(new Error('Failed to load.'));
+            });
+    });
 }
 
 async function load(script, global) {
     return new Promise(async (resolve, reject) => {
         if (!this.isLoaded) {
             try {
-                await this.loadScript(script)
-                resolve(window[global])
+                await this.loadScript(script);
+                resolve(window[global]);
             } catch (e) {
-                reject(e)
+                reject(e);
             }
         } else {
-            resolve(window[global])
+            resolve(window[global]);
         }
-    })
+    });
 }
