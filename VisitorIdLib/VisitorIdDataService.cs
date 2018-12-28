@@ -501,7 +501,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -544,7 +544,7 @@ namespace VisitorIdLib
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot, int md5Page)
         {
             string cookieEml = "";
             string eml = "";
@@ -565,7 +565,9 @@ namespace VisitorIdLib
                             et = "EmailProviderSelected",
                             pid = "cookie",
                             slotnum,
-                            pagenum
+                            pagenum,
+                            md5Slot,
+                            md5Page
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -598,6 +600,8 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slotnum,
                             pagenum,
+                            md5Slot,
+                            md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
@@ -655,7 +659,9 @@ namespace VisitorIdLib
                             et = "EmailProviderSelected",
                             pid,
                             slotnum,
-                            pagenum
+                            pagenum,
+                            md5Slot,
+                            md5Page
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -684,6 +690,8 @@ namespace VisitorIdLib
                             pid,
                             slotnum,
                             pagenum,
+                            md5Slot,
+                            md5Page,
                             succ = !String.IsNullOrEmpty(eml) ? "1" : "0"
                         }));
                     await fw.EdwWriter.Write(be);
