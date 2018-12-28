@@ -190,7 +190,7 @@ namespace VisitorIdLib
             }
             catch (Exception ex)
             {
-                await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
+                await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex}");
             }
             await WriteResponse(context, result);
         }
@@ -309,6 +309,13 @@ namespace VisitorIdLib
                 int nextIdx = slot;
                 int nextPage = page;
 
+                void continueToNextSlot()
+                {
+                    nextIdx++;
+                    md5 = "";
+                    eml = "";
+                }
+
                 while (nextIdx < visitorIdMd5ProviderSequence.Count)
                 {
                     var nextTask = visitorIdMd5ProviderSequence[nextIdx].Md5provider;
@@ -373,18 +380,14 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "continue")
                     {
-                        nextIdx++;
-                        md5 = "";
-                        eml = "";
+                        continueToNextSlot();
                         continue;
                     }
                     else if (nextTask.ToLower() == "continueonsuccessmd5")
                     {
                         if (!String.IsNullOrEmpty(md5))
                         {
-                            nextIdx++;
-                            md5 = "";
-                            eml = "";
+                            continueToNextSlot();
                             continue;
                         }
                         else
@@ -396,9 +399,7 @@ namespace VisitorIdLib
                     {
                         if (!String.IsNullOrEmpty(eml))
                         {
-                            nextIdx++;
-                            md5 = "";
-                            eml = "";
+                            continueToNextSlot();
                             continue;
                         }
                         else
@@ -414,9 +415,7 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            nextIdx++;
-                            md5 = "";
-                            eml = "";
+                            continueToNextSlot();
                             continue;
                         }
                     }
@@ -428,9 +427,7 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            nextIdx++;
-                            md5 = "";
-                            eml = "";
+                            continueToNextSlot();
                             continue;
                         }
                     }
@@ -501,7 +498,7 @@ namespace VisitorIdLib
 
             if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot);
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -544,7 +541,7 @@ namespace VisitorIdLib
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot, int md5Page)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot)
         {
             string cookieEml = "";
             string eml = "";
@@ -566,8 +563,7 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slotnum,
                             pagenum,
-                            md5Slot,
-                            md5Page
+                            md5Slot
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -601,7 +597,6 @@ namespace VisitorIdLib
                             slotnum,
                             pagenum,
                             md5Slot,
-                            md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
@@ -660,8 +655,7 @@ namespace VisitorIdLib
                             pid,
                             slotnum,
                             pagenum,
-                            md5Slot,
-                            md5Page
+                            md5Slot
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -691,7 +685,6 @@ namespace VisitorIdLib
                             slotnum,
                             pagenum,
                             md5Slot,
-                            md5Page,
                             succ = !String.IsNullOrEmpty(eml) ? "1" : "0"
                         }));
                     await fw.EdwWriter.Write(be);

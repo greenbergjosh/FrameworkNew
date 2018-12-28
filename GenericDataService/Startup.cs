@@ -10,6 +10,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 using Utility;
 
 namespace GenericDataService
@@ -50,12 +51,6 @@ namespace GenericDataService
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseStaticFiles();
-            app.UseCors("CorsPolicy");
-            
-            TaskScheduler.UnobservedTaskException +=
-                new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
-
             FrameworkWrapper fw = null;
 
             try
@@ -71,15 +66,31 @@ namespace GenericDataService
             }
             catch (Exception ex)
             {
-                File.AppendAllText("DataService.log", $@"Config::{DateTime.Now}::{ex.ToString()}" +
-                            Environment.NewLine);
+                File.AppendAllText("DataService.log", $@"Config::{DateTime.Now}::{ex}{Environment.NewLine}");
+                throw;
             }
+
+            var wwwrootPath = fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
+
+            if (!wwwrootPath.IsNullOrWhitespace())
+            {
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(wwwrootPath),
+                    //RequestPath = "/"
+                });
+            }
+            else app.UseStaticFiles();
+
+            app.UseCors("CorsPolicy");
+
+            TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
             app.Run(async (context) =>
             {
                 try
                 {
-                    if(context.Request.Query["m"] == "cfg-0nP01nt")
+                    if (context.Request.Query["m"] == "cfg-0nP01nt")
                     {
                         var resp = fw.StartupConfiguration.GetS("");
 
