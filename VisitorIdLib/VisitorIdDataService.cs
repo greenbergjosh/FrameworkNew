@@ -670,7 +670,7 @@ namespace VisitorIdLib
                     }
                     catch (Exception ex)
                     {
-                        await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to load LBM {pid}");
+                        await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
                         throw;
                     }
 
