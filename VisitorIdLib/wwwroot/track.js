@@ -1,15 +1,15 @@
 ﻿async function visitorId(url, opaque, future) {
     opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: '0', page: '0', sd: '', succ: '0' };
-    while (true) {   
+    while (true) {
         let res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
 
-        if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl) )) break;
+        if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl))) break;
         let sres = {};
 
         if (res.config.scriptUrl) {
-            await load(res.config.ScriptUrl, 'Segment'+res.config.slot);
+            await load(res.config.ScriptUrl, 'Segment' + res.config.slot);
             for (let x in res.config.strategy) {
                 let f = res.config.strategy[x].f;
                 let a = res.config.strategy[x].a;
@@ -24,14 +24,19 @@
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sesid, eml: sres.email,
             md5: sres.md5, e: base64UrlSafe(sres.email), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid
-        }; 
-        
+        };
+
         if (res.config.SaveSession == 'true') {
             res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
-                'json', ''); 
+                'json', '');
             opaque.eml = res.email;
             opaque.md5 = res.md5;
+
+            if (res.slot <= opaque.slot) debugger;
+
+            opaque.slot = res.slot;
+            opaque.page = res.page;
         }
     }
 }
