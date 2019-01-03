@@ -306,20 +306,17 @@ namespace VisitorIdLib
 
             try
             {
-                int nextIdx = slot;
-                int nextPage = page;
-
                 void continueToNextSlot()
                 {
-                    nextIdx++;
+                    slot++;
                     md5 = "";
                     eml = "";
                 }
 
-                while (nextIdx < visitorIdMd5ProviderSequence.Count)
+                while (slot < visitorIdMd5ProviderSequence.Count)
                 {
-                    var nextTask = visitorIdMd5ProviderSequence[nextIdx].Md5provider;
-                    var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[nextIdx].EmailProviderSeq;
+                    var nextTask = visitorIdMd5ProviderSequence[slot].Md5provider;
+                    var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[slot].EmailProviderSeq;
 
                     if (nextTask.ToLower() == "cookie")
                     {
@@ -371,11 +368,10 @@ namespace VisitorIdLib
                                     succ = "0"
                                 }));
                             await fw.EdwWriter.Write(be);
+                            slot++;
                         }
                         else await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
 
-                        nextIdx++;
-                        nextPage++;
                         continue;
                     }
                     else if (nextTask.ToLower() == "continue")
@@ -456,8 +452,8 @@ namespace VisitorIdLib
                             config = ReplaceToken(s.GetS("Config"), opaque64),
                             sesid = sid,
                             pid,
-                            slot = nextIdx + 1,
-                            page = nextPage + 1,
+                            slot,
+                            page,
                             isAsync = isAsync ? "true" : "false",
                             vieps = visitorIdEmailProviderSequence
                         },
@@ -466,7 +462,7 @@ namespace VisitorIdLib
                     else
                     {
                         await fw.Err(1000, "DoVisitorId", "Error", $"Unknown MD5 Provider Task Type: {nextTask} Slot: {slot} Page: {page}");
-                        nextIdx++;
+                        slot++;
                     }
                 }
             }
@@ -496,9 +492,16 @@ namespace VisitorIdLib
                 }));
             await fw.EdwWriter.Write(be);
 
-            if (String.IsNullOrEmpty(md5)) return Jw.Json(new { Result = "Failure" });
+            if (String.IsNullOrEmpty(md5))
+            {
+                slot++;
+                return Jw.Json(new { Result = "Failure", slot, page });
+            }
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot);
+
+            slot++;
+            page++;
 
             c.SetCookie("vidck",
                 Jw.Json(new
@@ -508,7 +511,7 @@ namespace VisitorIdLib
                     Em = email
                 }), this.VisitorIdCookieExpDays);
 
-            return Jw.Json(new { email, md5 });
+            return Jw.Json(new { email, md5, slot, page });
         }
 
         public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c,
@@ -537,7 +540,7 @@ namespace VisitorIdLib
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, pid, slot - 1, page - 1, emd5, eml, isAsync, vieps, rsids);
+            return await SaveSession(fw, c, sid, pid, slot , page , emd5, eml, isAsync, vieps, rsids);
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
@@ -545,8 +548,8 @@ namespace VisitorIdLib
         {
             string cookieEml = "";
             string eml = "";
-            int slotnum = 0;
-            int pagenum = 0;
+            int slot = 0;
+            int page = 0;
             foreach (var s in this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
             {
                 if (s.ToLower() == "stopifemail")
@@ -561,8 +564,8 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderSelected",
                             pid = "cookie",
-                            slotnum,
-                            pagenum,
+                            slot,
+                            page,
                             md5Slot
                         }));
                     await fw.EdwWriter.Write(be);
@@ -594,20 +597,20 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderResponse",
                             pid = "cookie",
-                            slotnum,
-                            pagenum,
+                            slot,
+                            page,
                             md5Slot,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
 
-                    slotnum++;
-                    pagenum++;
+                    slot++;
+                    page++;
                     continue;
                 }
                 else if (s.ToLower() == "continue")
                 {
-                    slotnum++;
+                    slot++;
                     if (isAsync) break;
                     eml = "";
                     continue;
@@ -616,7 +619,7 @@ namespace VisitorIdLib
                 {
                     if (!String.IsNullOrEmpty(eml))
                     {
-                        slotnum++;
+                        slot++;
                         if (isAsync) break;
                         eml = "";
                         continue;
@@ -634,7 +637,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        slotnum++;
+                        slot++;
                         if (isAsync) break;
                         eml = "";
                         continue;
@@ -653,8 +656,8 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderSelected",
                             pid,
-                            slotnum,
-                            pagenum,
+                            slotnum = slot,
+                            pagenum = page,
                             md5Slot
                         }));
                     await fw.EdwWriter.Write(be);
@@ -682,30 +685,30 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderResponse",
                             pid,
-                            slotnum,
-                            pagenum,
+                            slotnum = slot,
+                            pagenum = page,
                             md5Slot,
                             succ = !String.IsNullOrEmpty(eml) ? "1" : "0"
                         }));
                     await fw.EdwWriter.Write(be);
 
-                    slotnum++;
-                    pagenum++;
+                    slot++;
+                    page++;
                 }
                 else
                 {
-                    await fw.Err(1000, "DoVisitorId", "Error", $"Unknown Email Provider Task Type: {s} Slot: {slotnum} Page: {pagenum}");
-                    slotnum++;
+                    await fw.Err(1000, "DoVisitorId", "Error", $"Unknown Email Provider Task Type: {s} Slot: {slot} Page: {page}");
+                    slot++;
                 }
             }
 
-            if (isAsync && (slotnum < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
+            if (isAsync && (slot < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
                 await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
                    PL.O(new
                    {
-                       slotnum,
-                       pagenum
+                       slotnum = slot,
+                       pagenum = page
                    })
                    .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
                    .Add(PL.N("rsids", PL.D(rsids))).ToString()));
