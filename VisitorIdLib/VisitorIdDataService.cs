@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Utility;
+using Extensions = Newtonsoft.Json.Linq.Extensions;
 using Jw = Utility.JsonWrapper;
 
 namespace VisitorIdLib
@@ -59,7 +60,7 @@ namespace VisitorIdLib
                 foreach (var afidCfgSeq in afidCfg.GetL("seqs"))
                 {
                     string domain = afidCfgSeq.GetS("dom");
-                    bool isAsyncDom = !String.IsNullOrEmpty(afidCfgSeq.GetS("async")) ? afidCfgSeq.GetS("async") == "true" : isAsync;
+                    bool isAsyncDom = !afidCfgSeq.GetS("async").IsNullOrWhitespace() ? afidCfgSeq.GetS("async") == "true" : isAsync;
                     List<(string Md5provider, string EmailProviderSeq)> md5seq = new List<(string Md5provider, string EmailProviderSeq)>();
                     foreach (var dgvipm in afidCfgSeq.GetL("seq"))
                     {
@@ -132,16 +133,20 @@ namespace VisitorIdLib
                 StreamReader reader = new StreamReader(context.Request.Body);
                 requestFromPost = await reader.ReadToEndAsync();
 
-                if (!String.IsNullOrEmpty(context.Request.Query["m"]))
+                if (!String.IsNullOrWhiteSpace(context.Request.Query["m"]))
                 {
                     string m = context.Request.Query["m"];
+
                     switch (m)
                     {
                         case "VisitorId":
                             result = await DoVisitorId(this.Fw, context);
+#if DEBUG
+                            if (System.Diagnostics.Debugger.IsAttached) result = result.Replace("visitor-identification.net", context.Request.Host.Value);
+#endif
                             break;
                         case "SaveSession":
-                            result = await SaveSession(this.Fw, context);
+                            result = await SaveSession(this.Fw, context, ((string)context.Request.Query["pq"]).ParseBool() ?? false);
                             break;
                         case "TestService":
                             var idx1 = context.Request.Query["i"].FirstOrDefault().ParseInt();
@@ -155,7 +160,7 @@ namespace VisitorIdLib
                                 // LegacyEmailProvider
                                 { 11,"92306443ED2DF27B1293C12FF8296350" },{ 12,"28511984A236C6D589DF5D2C1BF43037" },{ 13,"160D388576AB55C4F96AE34DC3575D96" },
                                 { 14,"3AF45A3655103ABAF17194874569DCEB" },{ 15,"6D2E64535729A4E2E7AD7173F4BD9CB2" },{16,"EB385FFCFA3F22F17AB3636B87D554FD" },
-                                { 17,"3218507EE4B18A593C7FCE3C768BAB82" },{18,"3E0E46A40A29D5151D16E40062A5DFB9" }
+                                { 17,"3218507EE4B18A593C7FCE3C768BAB82" },{18,"3E0E46A40A29D5151D16E40062A5DFB0" }
                             };
 
                             switch (idx1)
@@ -178,10 +183,10 @@ namespace VisitorIdLib
                             break;
                     }
                 }
-                else if (!String.IsNullOrEmpty(context.Request.Query["eqs"]))
+                else if (!String.IsNullOrWhiteSpace(context.Request.Query["eqs"]))
                 {
                     (IGenericEntity op, string md5) = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
-                    if (!String.IsNullOrEmpty(md5)) result = await SaveSession(this.Fw, context, op, md5);
+                    if (!String.IsNullOrWhiteSpace(md5)) result = await SaveSession(this.Fw, context, true, op, md5);
                 }
                 else
                 {
@@ -227,7 +232,7 @@ namespace VisitorIdLib
                 slot = Int32.Parse(opge.GetS("slot") ?? "0");
                 page = Int32.Parse(opge.GetS("page") ?? "0");
                 sid = opge.GetS("sd");
-                sid = String.IsNullOrEmpty(sid) ? Guid.NewGuid().ToString() : sid;
+                sid = sid.IsNullOrWhitespace() ? Guid.NewGuid().ToString() : sid;
                 qstr = opge.GetS("qs");
                 var u = new Uri(HttpUtility.UrlDecode(qstr));
                 host = u.Host ?? "";
@@ -236,7 +241,7 @@ namespace VisitorIdLib
             }
             catch (Exception e)
             {
-                await fw.Err(ErrorSeverity.Error, nameof(DoVisitorId), ErrorDescriptor.Exception, $"Failed to load state data. Exception: {e.Message} Opaque: {(string.IsNullOrEmpty(opaque) ? "Opaque was empty" : opaque)}");
+                await fw.Err(ErrorSeverity.Error, nameof(DoVisitorId), ErrorDescriptor.Exception, $"Failed to load state data. Exception: {e.Message} Opaque: {(opaque.IsNullOrWhitespace() ? "Opaque was empty" : opaque)}");
                 throw;
             }
 
@@ -333,18 +338,18 @@ namespace VisitorIdLib
 
                         string cookieValueFromReq = c.Request.Cookies["vidck"];
 
-                        if (!String.IsNullOrEmpty(cookieValueFromReq))
+                        if (!cookieValueFromReq.IsNullOrWhitespace())
                         {
                             IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
 
                             md5 = gc.GetS("Md5");
                             string csid = gc.GetS("Sid");
 
-                            if (!String.IsNullOrEmpty(md5))
+                            if (!md5.IsNullOrWhitespace())
                             {
                                 eml = gc.GetS("Em");
                             }
-                            else if (!String.IsNullOrEmpty(csid))
+                            else if (!csid.IsNullOrWhitespace())
                             {
                                 IGenericEntity lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
                                    "LookupBySessionId",
@@ -370,7 +375,17 @@ namespace VisitorIdLib
                             await fw.EdwWriter.Write(be);
                             slot++;
                         }
-                        else await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids);
+                        else
+                        {
+                            var res = Jw.JsonToGenericEntity(await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, false));
+                            var rs = res.GetS("slot").ParseInt().Value;
+                            var rp = res.GetS("page").ParseInt().Value;
+
+                            if (rs <= slot) throw new Exception("Slot disordered after SaveSession");
+
+                            slot = rs;
+                            page = rp;
+                        }
 
                         continue;
                     }
@@ -381,7 +396,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "continueonsuccessmd5")
                     {
-                        if (!String.IsNullOrEmpty(md5))
+                        if (!md5.IsNullOrWhitespace())
                         {
                             continueToNextSlot();
                             continue;
@@ -393,7 +408,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "continueonsuccessemail")
                     {
-                        if (!String.IsNullOrEmpty(eml))
+                        if (!eml.IsNullOrWhitespace())
                         {
                             continueToNextSlot();
                             continue;
@@ -405,7 +420,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "breakonsuccessmd5")
                     {
-                        if (!String.IsNullOrEmpty(md5))
+                        if (!md5.IsNullOrWhitespace())
                         {
                             return Jw.Json(new { done = "1", sesid = sid });
                         }
@@ -417,7 +432,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "breakonsuccessemail")
                     {
-                        if (!String.IsNullOrEmpty(eml))
+                        if (!eml.IsNullOrWhitespace())
                         {
                             return Jw.Json(new { done = "1", sesid = sid });
                         }
@@ -475,10 +490,11 @@ namespace VisitorIdLib
 
         public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId,
             string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
-            Dictionary<string, object> rsids)
+            Dictionary<string, object> rsids, bool sendMd5ToPostingQueue)
         {
             string ip = c.Ip();
             string userAgent = c.UserAgent();
+            var success = !md5.IsNullOrWhitespace();
 
             EdwBulkEvent be = new EdwBulkEvent();
             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -488,17 +504,31 @@ namespace VisitorIdLib
                     pid,
                     slot,
                     page,
-                    succ = !String.IsNullOrEmpty(md5) ? "1" : "0"
+                    succ = success ? "0" : "1"
                 }));
             await fw.EdwWriter.Write(be);
 
-            if (String.IsNullOrEmpty(md5))
+            if (!success)
             {
                 slot++;
+                page++;
                 return Jw.Json(new { Result = "Failure", slot, page });
             }
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot);
+            if (sendMd5ToPostingQueue)
+            {
+                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                    PL.O(new
+                    {
+                        md5Slot = slot,
+                        md5Page = page,
+                        sessionId,
+                        pid,
+                        md5
+                    }).ToString()));
+            }
+
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
 
             slot++;
             page++;
@@ -514,8 +544,7 @@ namespace VisitorIdLib
             return Jw.Json(new { email, md5, slot, page });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c,
-            IGenericEntity op = null, string md5 = null)
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
         {
             IGenericEntity opge;
             if (op == null)
@@ -540,11 +569,11 @@ namespace VisitorIdLib
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, pid, slot , page , emd5, eml, isAsync, vieps, rsids);
+            return await SaveSession(fw, c, sid, pid, slot, page, emd5, eml, isAsync, vieps, rsids, sendMd5ToPostingQueue);
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot, int md5Page)
         {
             string cookieEml = "";
             string eml = "";
@@ -554,7 +583,7 @@ namespace VisitorIdLib
             {
                 if (s.ToLower() == "stopifemail")
                 {
-                    if (!String.IsNullOrEmpty(email)) return email;
+                    if (!email.IsNullOrWhitespace()) return email;
                 }
                 else if (s.ToLower() == "cookie")
                 {
@@ -566,13 +595,14 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slot,
                             page,
-                            md5Slot
+                            md5Slot,
+                            md5Page
                         }));
                     await fw.EdwWriter.Write(be);
 
                     string cookieValueFromReq = context.Request.Cookies["vidck"];
 
-                    if (!String.IsNullOrEmpty(cookieValueFromReq))
+                    if (!cookieValueFromReq.IsNullOrWhitespace())
                     {
                         var gc = Jw.JsonToGenericEntity(cookieValueFromReq);
                         var csid = gc.GetS("Sid");
@@ -600,12 +630,13 @@ namespace VisitorIdLib
                             slot,
                             page,
                             md5Slot,
+                            md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
 
                     slot++;
-                    page++;
+                    if (!eml.IsNullOrWhitespace()) page++;
                     continue;
                 }
                 else if (s.ToLower() == "continue")
@@ -617,7 +648,7 @@ namespace VisitorIdLib
                 }
                 else if (s.ToLower() == "continueonsuccess")
                 {
-                    if (!String.IsNullOrEmpty(eml))
+                    if (!eml.IsNullOrWhitespace())
                     {
                         slot++;
                         if (isAsync) break;
@@ -631,7 +662,7 @@ namespace VisitorIdLib
                 }
                 else if (s.ToLower() == "breakonsuccess")
                 {
-                    if (!String.IsNullOrEmpty(eml))
+                    if (!eml.IsNullOrWhitespace())
                     {
                         return cookieEml;
                     }
@@ -656,9 +687,10 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderSelected",
                             pid,
-                            slotnum = slot,
-                            pagenum = page,
-                            md5Slot
+                            slot,
+                            page,
+                            md5Slot,
+                            md5Page
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -666,15 +698,34 @@ namespace VisitorIdLib
                     {
                         IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
                         Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
+                        var sendMd5ToPostingQueue = emlProvider.GetS("Config/SaveResult").ParseBool() ?? false;
                         string lbm = await fw.Entities.GetEntity(lbmId);
 
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
                             new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());
+
+                        if (!eml.IsNullOrWhitespace() && sendMd5ToPostingQueue)
+                        {
+                            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                                PL.O(new
+                                {
+                                    emailSlot = slot,
+                                    emailPage = page,
+                                    md5Slot,
+                                    md5Page,
+                                    sessionId,
+                                    pid,
+                                    md5,
+                                    eml
+                                }).ToString()));
+                        }
+
                     }
                     catch (Exception ex)
                     {
                         await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
-                        throw;
+                        slot++;
+                        continue;
                     }
 
                     if (!eml.IsNullOrWhitespace()) cookieEml = eml;
@@ -685,10 +736,11 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderResponse",
                             pid,
-                            slotnum = slot,
-                            pagenum = page,
+                            slot,
+                            page,
                             md5Slot,
-                            succ = !String.IsNullOrEmpty(eml) ? "1" : "0"
+                            md5Page,
+                            succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -707,8 +759,10 @@ namespace VisitorIdLib
                 await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
                    PL.O(new
                    {
-                       slotnum = slot,
-                       pagenum = page
+                       slot,
+                       page,
+                       md5Slot,
+                       md5Page
                    })
                    .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
                    .Add(PL.N("rsids", PL.D(rsids))).ToString()));
