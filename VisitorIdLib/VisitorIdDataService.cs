@@ -496,7 +496,7 @@ namespace VisitorIdLib
                     pid,
                     slot,
                     page,
-                    succ = success ? "0" : "1"
+                    succ = success ? "1" : "0"
                 }));
             await fw.EdwWriter.Write(be);
 
