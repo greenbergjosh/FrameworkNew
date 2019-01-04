@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
@@ -15,8 +16,10 @@ namespace SimpleImportExport
         public static async Task Main(string[] args)
         {
             Fw = new FrameworkWrapper();
-            var jobId = Guid.Parse(Fw.StartupConfiguration.GetS("Config/Jobs/" + args[1]));
+            var jobId = Guid.Parse(Fw.StartupConfiguration.GetS("Config/Jobs/" + args[0]));
             var sqlTimeoutSec = Fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
+            ServicePointManager.DefaultConnectionLimit = 
+                Fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
             var jobCfg = await Fw.Entities.GetEntityGe(jobId);
 
             if (jobCfg.GetS("Config/JobType") == "FtpImport")
@@ -42,14 +45,22 @@ namespace SimpleImportExport
                                    "", sqlTimeoutSec);
                         if (shouldDownload == "1")
                         {
-                            string destFile = destPath + "\\" + file;
+                            string destFile = destDir + "\\" + destPath + "\\" + file;
                             destFiles.Add(destFile);
-                            tasks.Add(Utility.ProtocolClient.DownloadFileFtp(srcPath, file, destFile,
+                            Console.WriteLine($@"{srcPath}, {file}, {destFile},
+                                 {ftpHost}, {ftpUserName}, {ftpPassword} ");
+                            tasks.Add(Utility.ProtocolClient.DownloadFileFtp(destDir + "\\" + destPath, file, file,
                                 ftpHost, ftpUserName, ftpPassword));
+
+                            if ((destFiles.Count % ServicePointManager.DefaultConnectionLimit) == 0)
+                            {
+                                await Task.WhenAll(tasks);
+                                tasks = new List<Task>();
+                            }   
                         }
                     }
                     await Task.WhenAll(tasks);
-
+                 
                     foreach (var file in destFiles)
                     {
                         FileInfo fi = new FileInfo(file);
