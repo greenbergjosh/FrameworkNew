@@ -16,6 +16,7 @@
     <PackageReference Include="Renci.SshNet.Async" Version="1.2.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="System.Reactive" Version="4.1.2" />
+    <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
   </ItemGroup>
 
 </Project>

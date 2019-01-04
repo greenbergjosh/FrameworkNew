@@ -17,9 +17,16 @@ namespace QuickTester
 {
     class Program
     {
+        static void Test1()
+        {
+            //IGenericEntity gc = new GenericEntityJson();
+            //string result = PL.C()
+            //var gcstate = JsonConvert.DeserializeObject(result);
+            //gc.InitializeEntity(null, null, gcstate);
+        }
         static void Main(string[] args)
         {
-
+            Test1();
             var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
             var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
             var query = QueryHelpers.ParseQuery(uri.Query);
