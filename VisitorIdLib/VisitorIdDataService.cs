@@ -336,29 +336,21 @@ namespace VisitorIdLib
                             }));
                         await fw.EdwWriter.Write(be);
 
-                        string cookieValueFromReq = c.Request.Cookies["vidck"];
+                        var cookie = GetCookieData(c);
 
-                        if (!cookieValueFromReq.IsNullOrWhitespace())
+                        md5 = cookie.md5;
+                        eml = cookie.em;
+
+                        if (!cookie.sid.IsNullOrWhitespace() && md5.IsNullOrWhitespace())
                         {
-                            IGenericEntity gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-
-                            md5 = gc.GetS("Md5");
-                            string csid = gc.GetS("Sid");
-
-                            if (!md5.IsNullOrWhitespace())
-                            {
-                                eml = gc.GetS("Em");
-                            }
-                            else if (!csid.IsNullOrWhitespace())
-                            {
-                                IGenericEntity lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
-                                   "LookupBySessionId",
-                                   Jw.Json(new { Sid = csid }),
-                                   "", null, null, this.SqlTimeoutSec);
-                                eml = lookupGe.GetS("Em");
-                                md5 = lookupGe.GetS("Md5");
-                            }
+                            IGenericEntity lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
+                               "LookupBySessionId",
+                               Jw.Json(new { Sid = cookie.sid }),
+                               "", null, null, this.SqlTimeoutSec);
+                            eml = lookupGe.GetS("Em");
+                            md5 = lookupGe.GetS("Md5");
                         }
+
 
                         if (md5.IsNullOrWhitespace())
                         {
@@ -403,7 +395,7 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return Jw.Json(new { done = "1", sesid = sid });
+                            return Jw.Json(new { done = "1", sid });
                         }
                     }
                     else if (nextTask.ToLower() == "continueonsuccessemail")
@@ -415,14 +407,14 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return Jw.Json(new { done = "1", sesid = sid });
+                            return Jw.Json(new { done = "1", sid });
                         }
                     }
                     else if (nextTask.ToLower() == "breakonsuccessmd5")
                     {
                         if (!md5.IsNullOrWhitespace())
                         {
-                            return Jw.Json(new { done = "1", sesid = sid });
+                            return Jw.Json(new { done = "1", sid });
                         }
                         else
                         {
@@ -434,7 +426,7 @@ namespace VisitorIdLib
                     {
                         if (!eml.IsNullOrWhitespace())
                         {
-                            return Jw.Json(new { done = "1", sesid = sid });
+                            return Jw.Json(new { done = "1", sid });
                         }
                         else
                         {
@@ -444,7 +436,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "break")
                     {
-                        return Jw.Json(new { done = "1", sesid = sid });
+                        return Jw.Json(new { done = "1", sid });
                     }
                     else if (nextTask[0] == '@')
                     {
@@ -465,7 +457,7 @@ namespace VisitorIdLib
                         return Jw.Json(new
                         {
                             config = ReplaceToken(s.GetS("Config"), opaque64),
-                            sesid = sid,
+                            sid,
                             pid,
                             slot,
                             page,
@@ -485,10 +477,10 @@ namespace VisitorIdLib
             {
                 await fw.Err(1000, "DoVisitorId", "Exception", ex.ToString());
             }
-            return Jw.Json(new { done = "1", sesid = sid });
+            return Jw.Json(new { done = "1", sid });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sessionId,
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
             Dictionary<string, object> rsids, bool sendMd5ToPostingQueue)
         {
@@ -522,13 +514,13 @@ namespace VisitorIdLib
                     {
                         md5Slot = slot,
                         md5Page = page,
-                        sessionId,
+                        sid,
                         pid,
                         md5
                     }).ToString()));
             }
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sessionId, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
 
             slot++;
             page++;
@@ -536,9 +528,9 @@ namespace VisitorIdLib
             c.SetCookie("vidck",
                 Jw.Json(new
                 {
-                    Sid = sessionId,
-                    Md5 = md5,
-                    Em = email
+                    sid,
+                    md5,
+                    em = email
                 }), this.VisitorIdCookieExpDays);
 
             return Jw.Json(new { email, md5, slot, page });
@@ -572,7 +564,24 @@ namespace VisitorIdLib
             return await SaveSession(fw, c, sid, pid, slot, page, emd5, eml, isAsync, vieps, rsids, sendMd5ToPostingQueue);
         }
 
-        public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sessionId,
+        private (string md5, string em, string sid) GetCookieData(HttpContext context)
+        {
+            var cookieValueFromReq = context.Request.Cookies["vidck"];
+
+            if (!cookieValueFromReq.IsNullOrWhitespace())
+            {
+                var gc = Jw.JsonToGenericEntity(cookieValueFromReq);
+                var sid = gc.GetS("sid");
+                var em = gc.GetS("em");
+                var md5 = gc.GetS("md5");
+
+                return (md5: md5, em: em, sid: sid);
+            }
+
+            return (md5: null, em: null, sid: null);
+        }
+
+        public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
             string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot, int md5Page)
         {
             string cookieEml = "";
@@ -600,23 +609,17 @@ namespace VisitorIdLib
                         }));
                     await fw.EdwWriter.Write(be);
 
-                    string cookieValueFromReq = context.Request.Cookies["vidck"];
+                    var cookie = GetCookieData(context);
 
-                    if (!cookieValueFromReq.IsNullOrWhitespace())
+                    eml = cookie.em;
+
+                    if (eml.IsNullOrWhitespace() && !cookie.sid.IsNullOrWhitespace())
                     {
-                        var gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-                        var csid = gc.GetS("Sid");
-
-                        eml = gc.GetS("Em");
-
-                        if (eml.IsNullOrWhitespace() && !csid.IsNullOrWhitespace())
-                        {
-                            var lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
-                                "LookupBySessionId",
-                                Jw.Json(new { Sid = csid }),
-                                "", null, null, this.SqlTimeoutSec);
-                            eml = lookupGe.GetS("Em");
-                        }
+                        var lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
+                            "LookupBySessionId",
+                            Jw.Json(new { Sid = cookie.sid }),
+                            "", null, null, this.SqlTimeoutSec);
+                        eml = lookupGe.GetS("Em");
                     }
 
                     if (!eml.IsNullOrWhitespace()) cookieEml = eml;
@@ -713,7 +716,7 @@ namespace VisitorIdLib
                                     emailPage = page,
                                     md5Slot,
                                     md5Page,
-                                    sessionId,
+                                    sid,
                                     pid,
                                     md5,
                                     eml
@@ -759,6 +762,8 @@ namespace VisitorIdLib
                 await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
                    PL.O(new
                    {
+                       rsids,
+                       sid,
                        slot,
                        page,
                        md5Slot,
