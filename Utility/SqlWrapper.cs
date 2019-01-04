@@ -38,7 +38,7 @@ namespace Utility
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = configStr }, new bool[] { false }));
 
-                AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
+                await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
 
                 return gc;
             }
