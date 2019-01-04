@@ -136,7 +136,7 @@ namespace Utility
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed {nameof(ExecuteSql)}({conName}, {method}, {args}, {payload})\n\nStoredProcs: {StoredProcedures.Keys.Join("\n")}", e);
+                throw new Exception($"Failed {nameof(ExecuteSql)}({conName}, {method}, {args}, {payload})", e);
             }
         }
 
