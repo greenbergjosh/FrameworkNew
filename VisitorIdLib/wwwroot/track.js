@@ -22,7 +22,7 @@
         }
 
         opaque = {
-            ...opaque, slot: res.slot, page: res.page, sd: res.sesid, eml: sres.email,
+            ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
             md5: sres.md5, e: base64UrlSafe(sres.email), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid
         };
 
@@ -40,7 +40,7 @@
         }
     }
 }
-window[window.VisitorIdObject].visitorId = visitorId;
+window[window.visitorIdObject].visitorId = visitorId;
 
 async function handleService(res) {
     let response = await window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);
