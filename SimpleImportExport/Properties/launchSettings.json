@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SimpleImportExport": {
+      "commandName": "Project",
+      "commandLineArgs": "TowerImport"
+    }
+  }
+}
