@@ -8,8 +8,8 @@ namespace SimpleImportExport
         public Pattern(IGenericEntity ge)
         {
             Rx = new Regex(ge.GetS("Pattern"), RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            SourceRelativePath = ge.GetS("SrcPath");
-            DestinationRelativePath = ge.GetS("DestPath");
+            SourceRelativePath = ge.GetS("SourcePath");
+            DestinationRelativePath = ge.GetS("DestinationPath");
         }
 
         public Regex Rx { get; }

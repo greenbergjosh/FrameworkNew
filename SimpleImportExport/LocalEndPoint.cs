@@ -14,14 +14,14 @@ namespace SimpleImportExport
         {
             var baseDir = ge.GetS("Path");
 
-#if DEBUG
-            if (Debugger.IsAttached)
-            {
-                baseDir = baseDir.Replace(
-                    "\\\\ftpback-bhs6-85.ip-66-70-176.net\\ns557038.ip-66-70-182.net",
-                    "\\\\localhost\\c$\\Users\\OnPoint Global\\Documents\\dev\\Workspace\\NetworkMocks\\OVH-NAS");
-            }
-#endif
+            //#if DEBUG
+            //            if (Debugger.IsAttached)
+            //            {
+            //                baseDir = baseDir.Replace(
+            //                    "\\\\ftpback-bhs6-85.ip-66-70-176.net\\ns557038.ip-66-70-182.net",
+            //                    "\\\\localhost\\c$\\Users\\OnPoint Global\\Documents\\dev\\Workspace\\NetworkMocks\\OVH-NAS");
+            //            }
+            //#endif
             BaseDir = new DirectoryInfo(baseDir);
         }
 
@@ -36,18 +36,22 @@ namespace SimpleImportExport
 
         public override async Task<long> SendStream((string srcPath, string destPath, string name) file, Endpoint source)
         {
-            using (var f = File.OpenWrite(Path.Combine(BaseDir.FullName, file.destPath.Replace("/", "\\"))))
+            var destFile = new FileInfo(Path.Combine(BaseDir.FullName, file.destPath.Replace("/", "\\")));
+
+            if(!destFile.Directory.Exists) destFile.Directory.Create();
+
+            using (var f = File.OpenWrite(destFile.FullName))
             using (var srcStream = await source.GetStream(file.srcPath))
             {
                 await srcStream.CopyToAsync(f);
 
-                return srcStream.Length;
+                return f.Length;
             }
         }
 
         public override async Task<IEnumerable<(string srcPath, string destPath, string name)>> GetFiles()
         {
-            if (Patterns == null) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name)));
+            if (!Patterns.Any()) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name)));
 
             var files = new List<(string srcPath, string destPath, string name)>();
 
@@ -73,10 +77,20 @@ namespace SimpleImportExport
 
         public override async Task Move(string fileRelativePath, string relativeBasePath)
         {
-            var src = Path.Combine(BaseDir.FullName, fileRelativePath);
-            var dest = Path.Combine(BaseDir.FullName, relativeBasePath, fileRelativePath);
+            var src = new FileInfo(Path.Combine(BaseDir.FullName, fileRelativePath));
+            var dest = new FileInfo(Path.Combine(BaseDir.FullName, relativeBasePath, fileRelativePath));
 
-            await Task.Run(()=> File.Move(src,dest));
+            await Task.Run(() =>
+            {
+                if (!dest.Directory.Exists) dest.Directory.Create();
+
+                src.MoveTo(dest.FullName);
+            });
+        }
+
+        public override string ToString()
+        {
+            return BaseDir.FullName;
         }
     }
 }
