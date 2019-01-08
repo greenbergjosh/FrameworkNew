@@ -447,10 +447,9 @@ namespace Utility
             request.Credentials = new NetworkCredential(userName, password);
             request.UseBinary = true;
 
-            using (var response = (FtpWebResponse)(await request.GetResponseAsync()))
-            {
-                return response.GetResponseStream();
-            }
+            var response = (FtpWebResponse)(await request.GetResponseAsync());
+
+            return response.GetResponseStream();
         }
 
         public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password)

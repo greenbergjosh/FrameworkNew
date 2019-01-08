@@ -16,7 +16,7 @@ namespace SimpleImportExport
     {
         protected Endpoint(IGenericEntity ge)
         {
-            Patterns = ge.GetL("Patterns")?.Select(p => new Pattern(p));
+            Patterns = ge.GetL("Patterns")?.Select(p => new Pattern(p)) ?? new Pattern[0];
         }
 
         public abstract EndpointType Type { get; }
@@ -27,6 +27,6 @@ namespace SimpleImportExport
         public abstract Task Move(string fileRelativePath, string relativeBasePath);
         protected IEnumerable<Pattern> Patterns { get; }
 
-        protected string CombineUrl(params string[] list) => list.Select(i => i.TrimEnd('/')).Where(i=>!i.IsNullOrWhitespace()).Join("/");
+        protected string CombineUrl(params string[] list) => list.Select(i => i?.Trim('/')).Where(i=>!i.IsNullOrWhitespace()).Join("/");
     }
 }
