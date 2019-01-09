@@ -119,9 +119,7 @@ namespace Utility
                 {
                     await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
 
-                    var uri = new Uri(result);
-                    var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
-                    var query = QueryHelpers.ParseQuery(uri.Query);
+                    var query = QueryHelpers.ParseQuery(result);
                     opaque = query.ContainsKey("label") ? query["label"][0] : opaque;
                     emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : emailMd5;
                 }
