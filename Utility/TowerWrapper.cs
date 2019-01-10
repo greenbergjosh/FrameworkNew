@@ -87,6 +87,13 @@ namespace Utility
             return towerEmailPlainText;
         }
 
+        public static string Base64FromEqs(string rawstring)
+        {
+           string[] a = rawstring.Split("  ");
+           a[a.Length - 1] = a[a.Length - 1].PadRight(a[a.Length - 1].Length + PadCount(a[a.Length - 1]), '=');
+           return String.Join("\r\n", a).Replace('-', '+').Replace('_', '/');
+        }
+
         public static async Task<(IGenericEntity opaque, string md5)> ProcessTowerMessage(FrameworkWrapper fw, HttpContext context, string towerEncryptionKey)
         {
             // All this method does in call SaveSession() with the decrypted opaque parm
@@ -100,10 +107,7 @@ namespace Utility
 
             try
             {
-                string[] a = rawstring.Split("  ");
-                a[a.Length - 1] = a[a.Length - 1].PadRight(a[a.Length - 1].Length + PadCount(a[a.Length - 1]), '=');
-                pRawString = String.Join("\r\n", a);
-                pRawString = pRawString.Replace('-', '+').Replace('_', '/');
+                pRawString = Base64FromEqs(rawstring);
             }
             catch (Exception ex)
             {
@@ -119,9 +123,7 @@ namespace Utility
                 {
                     await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
 
-                    var uri = new Uri(result);
-                    var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
-                    var query = QueryHelpers.ParseQuery(uri.Query);
+                    var query = QueryHelpers.ParseQuery(result);
                     opaque = query.ContainsKey("label") ? query["label"][0] : opaque;
                     emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : emailMd5;
                 }
