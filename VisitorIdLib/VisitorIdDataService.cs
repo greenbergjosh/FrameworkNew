@@ -175,7 +175,7 @@ namespace VisitorIdLib
                                 default:
                                     var md5 = md5s.GetValueOrDefault(idx1);
 
-                                    result = md5.IsNullOrWhitespace() ? Jw.Json(new { result = "NoMd5" }) : Jw.Json(new { md5 });
+                                    result = md5.IsNullOrWhitespace() ? Jw.Json(new { md5 = "" }) : Jw.Json(new { md5 });
                                     break;
                             }
                             break;
