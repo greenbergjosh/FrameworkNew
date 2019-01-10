@@ -40,6 +40,7 @@
     public static class ErrorDescriptor
     {
         public const string Exception = "Exception";
+        public const string Log = "Log";
     }
 
 }
