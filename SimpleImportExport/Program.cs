@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
 using Jw = Utility.JsonWrapper;
@@ -15,98 +13,130 @@ namespace SimpleImportExport
 
         public static async Task Main(string[] args)
         {
-            Fw = new FrameworkWrapper();
-            var jobId = Guid.Parse(Fw.StartupConfiguration.GetS("Config/Jobs/" + args[0]));
-            var sqlTimeoutSec = Fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
-            ServicePointManager.DefaultConnectionLimit = 
-                Fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
-            var jobCfg = await Fw.Entities.GetEntityGe(jobId);
+            var jobName = args[0];
 
-            if (jobCfg.GetS("Config/JobType") == "FtpImport")
+            try
             {
-                string ftpHost = jobCfg.GetS("Config/FtpHost");
-                string ftpUserName = jobCfg.GetS("Config/FtpUserName");
-                string ftpPassword = jobCfg.GetS("Config/FtpPassword");
-                string destDir = jobCfg.GetS("Config/DestinationDir");
-                foreach (var ptn in jobCfg.GetL("Config/FilePatterns"))
-                {
-                    string filePattern = ptn.GetS("FilePattern");
-                    string srcPath = ptn.GetS("SrcPath");
-                    string destPath = ptn.GetS("DestPath");
+                Fw = new FrameworkWrapper();
+                var jobIdStr = Fw.StartupConfiguration.GetS("Config/Jobs/" + jobName);
 
-                    var tasks = new List<Task>();
-                    List<string> files = await Utility.ProtocolClient.FtpGetFiles(srcPath, ftpHost, ftpUserName, ftpPassword);
-                    List<string> destFiles = new List<string>();
-                    foreach (var file in files)
+                if (!Guid.TryParse(jobIdStr, out var jobId))
+                {
+                    await Fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"Invalid Job Id: {jobName}:{jobIdStr}");
+                    Console.WriteLine("Invalid Job Id");
+                    return;
+                }
+
+                var sqlTimeoutSec = Fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
+                ServicePointManager.DefaultConnectionLimit = Fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
+                var jobCfg = await Fw.Entities.GetEntityGe(jobId);
+
+                var src = GetEnpointConfig(jobCfg, "Source");
+                var dest = GetEnpointConfig(jobCfg, "Destination");
+                var jobPost = jobCfg.GetS("Config/JobPostProcess");
+                var srcPost = FilePostProcess(jobCfg.GetS("Config/Source/PostProcess"), jobName);
+                var destPost = FilePostProcess(jobCfg.GetS("Config/Destination/PostProcess"), jobName);
+                var srcFiles = (await src.GetFiles()).ToArray();
+
+                await Fw.Err(ErrorSeverity.Log, $"{nameof(Program)}", ErrorDescriptor.Log, $"{jobName}\tFound {srcFiles.Length} on {src}");
+
+                foreach (var f in srcFiles)
+                {
+                    try
                     {
-                        string shouldDownload = await SqlWrapper.SqlServerProviderEntry("SimpleImportExport",
-                                   "ShouldDownload",
-                                   Jw.Json(new { JobId = jobId, FileName = file }),
-                                   "", sqlTimeoutSec);
+                        var shouldDownload = await SqlWrapper.SqlServerProviderEntry("SimpleImportExport", "spShouldTransfer", Jw.Json(new { JobId = jobId, FileName = f.name }), "", sqlTimeoutSec);
+
                         if (shouldDownload == "1")
                         {
-                            string destFile = destDir + "\\" + destPath + "\\" + file;
-                            destFiles.Add(destFile);
-                            Console.WriteLine($@"{srcPath}, {file}, {destFile},
-                                 {ftpHost}, {ftpUserName}, {ftpPassword} ");
-                            tasks.Add(Utility.ProtocolClient.DownloadFileFtp(destDir + "\\" + destPath, file, file,
-                                ftpHost, ftpUserName, ftpPassword));
+                            await Fw.Err(ErrorSeverity.Log, $"{nameof(Program)}", ErrorDescriptor.Log, $"{jobName}\tCopying {f.name}:\n\tFrom: {src}\n\tTo: {dest}\n\t{f.srcPath} -> {f.destPath}");
 
-                            if ((destFiles.Count % ServicePointManager.DefaultConnectionLimit) == 0)
-                            {
-                                await Task.WhenAll(tasks);
-                                tasks = new List<Task>();
-                            }   
+                            var fileSize = await dest.SendStream(f, src);
+                            var sargs = Jw.Json(new { JobId = jobId, FileName = f.name, FileSize = fileSize, FileLineCount = 0 });
+                            var res = await SqlWrapper.SqlToGenericEntity("SimpleImportExport", "LogTransfer", sargs, "", timeout: sqlTimeoutSec);
+
+                            if (res.GetS("Result") != "Success") throw new Exception($"Sql exception logging download: {res.GetS("Message")} Args: {sargs}");
+
+                            await srcPost(f.srcPath, src);
+                            await destPost(f.destPath, dest);
                         }
                     }
-                    await Task.WhenAll(tasks);
-                 
-                    foreach (var file in destFiles)
+                    catch (Exception e)
                     {
-                        FileInfo fi = new FileInfo(file);
-                        int lineCount = await Utility.UnixWrapper.LineCount(file);
-                        await SqlWrapper.SqlServerProviderEntry("SimpleImportExport",
-                                   "LogDownload",
-                                   Jw.Json(new { JobId = jobId, FileName = file, FileSize = fi.Length, FileLineCount = lineCount }),
-                                   "", sqlTimeoutSec);
-                        new FileInfo(file).MoveTo(file + ".done");
+                        await Fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"{jobName}\tError processing {f.name}: {e}");
                     }
-                } 
+                }
+
+                if (srcFiles.Any())
+                {
+                    try
+                    {
+                        await JobPostProcess(jobPost, jobName);
+                    }
+                    catch (Exception e)
+                    {
+                        await Fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"{jobName}\tError Post Processing: {e}");
+                    }
+                }
+
+                await Fw.Err(ErrorSeverity.Log, $"{nameof(Program)}", ErrorDescriptor.Log, $"{jobName}\tCompleted");
             }
-            else if (jobCfg.GetS("Config/JobType") == "FtpExport")
+            catch (Exception e)
             {
-                string ftpHost = jobCfg.GetS("Config/FtpHost");
-                string ftpUserName = jobCfg.GetS("Config/FtpUserName");
-                string ftpPassword = jobCfg.GetS("Config/FtpPassword");
-                string srcDir = jobCfg.GetS("Config/SourceDir");                
-                string destDir = jobCfg.GetS("Config/DestinationDir");
-                List<string> patterns = new List<string>();
-                foreach (var ptn in jobCfg.GetL("Config/SourcePatterns"))
-                {
-                    patterns.Add(ptn.GetS(""));
-                }
-
-                List<FileInfo> filesToUpload = new List<FileInfo>();
-                DirectoryInfo di = new DirectoryInfo(srcDir);
-                foreach (var file in di.GetFiles())
-                {
-                    foreach (var ptn in patterns)
-                    {
-                        if (Regex.Match(file.Name, ptn).Success)
-                            filesToUpload.Add(file);
-                    }
-                }
-
-                foreach (var file in filesToUpload)
-                {
-                    await ProtocolClient.UploadFile(file.FullName, file.Name, ftpHost, ftpUserName, ftpPassword);
-                    await SqlWrapper.SqlServerProviderEntry("SimpleImportExport",
-                                   "LogUpload",
-                                   Jw.Json(new { JobId = jobId, FileName = file }),
-                                   "", sqlTimeoutSec);
-                    file.Delete();
-                }
+                await Fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"{jobName}\tFailed to load: {e}");
             }
         }
+
+        private static async Task JobPostProcess(string postProcessCmd, string jobName)
+        {
+            if (postProcessCmd?.StartsWith("Http:Get:") == true)
+            {
+                var url = postProcessCmd.Substring(9);
+
+                await Fw.Err(ErrorSeverity.Log, $"{nameof(JobPostProcess)}:Http:Get", ErrorDescriptor.Log, $"{jobName}\t{url}");
+                await ProtocolClient.HttpGetAsync(url, 30);
+            }
+        }
+
+        private static Func<string, Endpoint, Task> FilePostProcess(string postProcessCmd, string jobName)
+        {
+            if (postProcessCmd == "Delete")
+            {
+                return async (fileRelativePath, endpoint) =>
+                {
+                    await Fw.Err(ErrorSeverity.Log, $"{nameof(FilePostProcess)}:Delete", ErrorDescriptor.Log, $"{jobName}\t{fileRelativePath}");
+                    await endpoint.Delete(fileRelativePath);
+                };
+            }
+
+            if (postProcessCmd?.StartsWith("Move:") == true)
+            {
+                var toRelativePath = postProcessCmd.Substring(5);
+
+                return async (fileRelativePath, endpoint) =>
+                {
+                    await Fw.Err(ErrorSeverity.Log, $"{nameof(FilePostProcess)}:Move", ErrorDescriptor.Log, $"{jobName}\t{fileRelativePath} -> {toRelativePath}");
+                    await endpoint.Move(fileRelativePath, toRelativePath);
+                };
+            }
+
+            return async (s, endpoint) => await Task.CompletedTask;
+        }
+
+        private static Endpoint GetEnpointConfig(IGenericEntity jobCfg, string name)
+        {
+            var ge = jobCfg.GetE($"Config/{name}");
+            var type = (EndpointType)Enum.Parse(typeof(EndpointType), ge.GetS("Type"));
+
+            switch (type)
+            {
+                case EndpointType.Local:
+                    return new LocalEndPoint(ge);
+                case EndpointType.Ftp:
+                    return new FtpEndPoint(ge);
+                default:
+                    throw new ArgumentOutOfRangeException($"Invalid Endpoint Type {type}. Must be {EndpointType.Local} or {EndpointType.Ftp}");
+            }
+        }
+
     }
 }

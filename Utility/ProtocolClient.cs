@@ -34,13 +34,13 @@ namespace Utility
             }
         }
 
-        public static async Task<object> DownloadPage(string QueryString, 
+        public static async Task<object> DownloadPage(string QueryString,
             string basicAuthString,
             Func<string, Task<string>> zipEntryTester,
             Dictionary<string, Func<string, Task<object>>> zipEntryProcessors,
             double timeoutSeconds = 180.0, bool decompress = false,
             int maxConnectionsPerServer = 5)
-            
+
         {
             object resp = null;
             string responseBody = String.Empty;
@@ -119,13 +119,13 @@ namespace Utility
         {
             string responseBody = String.Empty;
             HttpClient client = null;
-            
+
             HttpClientHandler handler = new HttpClientHandler()
             {
                 MaxConnectionsPerServer = maxConnectionsPerServer
             };
             client = new HttpClient(handler);
-          
+
             client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
             if (basicAuthString != null)
@@ -147,7 +147,7 @@ namespace Utility
                     await response.CopyToAsync(fs);
                 }
 
-                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, 
+                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors,
                     workingDirectory, workingDirectory);
             }
             catch (Exception exGetStream)
@@ -174,7 +174,7 @@ namespace Utility
             string ufn = Guid.NewGuid().ToString();
             Dictionary<string, object> rs = new Dictionary<string, object>();
             try
-            {                
+            {
                 await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn);
 
                 DirectoryInfo dir = new DirectoryInfo(fileDestinationDirectory + "\\" + ufn);
@@ -199,43 +199,35 @@ namespace Utility
             return rs;
         }
 
-        public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password)
+        public static async Task UploadStream(string fileName, Stream stream, string host,
+            string userName, string password)
         {
-            FtpWebRequest ftpReq = null;
-            string filename = "ftp://" + host + "//" + targetFile;
-            ftpReq = (FtpWebRequest)WebRequest.Create(filename);
+            var ftpReq = (FtpWebRequest)WebRequest.Create("ftp://" + host + "/" + fileName);
             ftpReq.UseBinary = true;
             ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
             ftpReq.Credentials = new NetworkCredential(userName, password);
 
-            //byte[] b = File.ReadAllBytes(sourceFile);
-
-            //ftpReq.ContentLength = b.Length;
-            //using (Stream s = ftpReq.GetRequestStream())
-            //{
-            //    await s.WriteAsync(b, 0, b.Length);
-            //}
-
-            using (var f = File.OpenRead(sourceFile))
+            using (var s = ftpReq.GetRequestStream())
             {
-                using (Stream s = ftpReq.GetRequestStream())
+                ftpReq.ContentLength = stream.Length;
+                while (true)
                 {
-                    ftpReq.ContentLength = f.Length;
-                    while (true)
-                    {
-                        byte[] buf = new byte[1000000];
-                        int numRead = await f.ReadAsync(buf);
-                        if (numRead > 0) await s.WriteAsync(buf, 0, numRead);
-                        else break;
-                    }
-                }  
+                    byte[] buf = new byte[1000000];
+                    int numRead = await stream.ReadAsync(buf);
+
+                    if (numRead > 0) await s.WriteAsync(buf, 0, numRead);
+                    else break;
+                }
             }
 
-            FtpWebResponse ftpResp = (FtpWebResponse)(await ftpReq.GetResponseAsync());
+            await ftpReq.GetResponseAsync();
+        }
 
-            if (ftpResp != null)
+        public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password)
+        {
+            using (var f = File.OpenRead(sourceFile))
             {
-                string s = ftpResp.StatusDescription;
+                await UploadStream(targetFile, f, host, userName, password);
             }
         }
 
@@ -425,27 +417,46 @@ namespace Utility
             }
         }
 
+        public static async Task DownloadFilesFtp(string destRoot, string sourceRoot, string userName, string password, IEnumerable<string> fileNames)
+        {
+            using (var c = new WebClient())
+            {
+                c.Credentials = new NetworkCredential(userName, password);
+
+                foreach (var f in fileNames)
+                {
+                    try
+                    {
+                        await c.DownloadFileTaskAsync(@"ftp://" + sourceRoot + @"/" + f, destRoot + @"\" + f);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public static async Task<Stream> GetFtpFileStream(string sourceFile, string host, string userName, string password)
+        {
+            var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + sourceFile));
+
+            request.ServicePoint.ConnectionLimit = 10;
+            request.Method = WebRequestMethods.Ftp.DownloadFile;
+            request.Credentials = new NetworkCredential(userName, password);
+            request.UseBinary = true;
+
+            var response = (FtpWebResponse)(await request.GetResponseAsync());
+
+            return response.GetResponseStream();
+        }
+
         public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password)
         {
-            FtpWebResponse response = null;
-
-            try
+            using (var stream = await GetFtpFileStream(sourceFile, host, userName, password))
             {
-                var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + sourceFile));
-
-                request.ServicePoint.ConnectionLimit = 10;
-                request.Method = WebRequestMethods.Ftp.DownloadFile;
-                request.Credentials = new NetworkCredential(userName, password);
-                request.UseBinary = true;
-                response = (FtpWebResponse)(await request.GetResponseAsync());
-
-                var responseStream = response.GetResponseStream();
-
-                await responseStream.CopyToAsync(writeStream);
-            }
-            finally
-            {
-                response?.Close();
+                await stream.CopyToAsync(writeStream);
             }
         }
 
@@ -576,14 +587,14 @@ namespace Utility
         {
             Dictionary<string, string> parms = new Dictionary<string, string>();
             foreach (var di in ge.GetD("parms")) parms.Add(di.Item1, di.Item2);
-            string resp = await HttpPostAsync(ge.GetS("uri"), parms, 
-                !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60, 
+            string resp = await HttpPostAsync(ge.GetS("uri"), parms,
+                !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60,
                 ge.GetS("mediaType") ?? "");
             return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { result = resp }));
         }
 
-        public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms, 
-            double timeoutSeconds=60, string mediaType="", int maxConnections = 5)
+        public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms,
+            double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5)
         {
             string responseBody = null;
 
@@ -606,7 +617,7 @@ namespace Utility
                 {
                     responseBody = await response.Content.ReadAsStringAsync();
                 }
-            }               
+            }
 
             return responseBody;
         }
@@ -640,7 +651,7 @@ namespace Utility
             return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { success = resp.Item1, result = resp.Item2 }));
         }
 
-        public static async Task<Tuple<bool, string>> HttpGetAsync(string path, double timeoutSeconds=60)
+        public static async Task<Tuple<bool, string>> HttpGetAsync(string path, double timeoutSeconds = 60)
         {
             using (HttpClient client = new HttpClient())
             {
