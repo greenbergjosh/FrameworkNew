@@ -546,19 +546,19 @@ namespace VisitorIdLib
             return Jw.Json(new { email, md5, slot, page });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
+        public (string sid,
+                int slot,
+                int page,
+                string pid,
+                bool isAsync,
+                string vieps,
+                string emd5,
+                string eml,
+                Dictionary<string,
+                object> rsids)
+            ValsFromOpaqueBase64OrOpaque(string opaque64, IGenericEntity op = null)
         {
-            IGenericEntity opge;
-            if (op == null)
-            {
-                string opaque64 = c.Get("op", "");
-                string opaque = Utility.Hashing.Base64DecodeFromUrl(opaque64);
-                opge = Jw.JsonToGenericEntity(opaque);
-            }
-            else
-            {
-                opge = op;
-            }
+            IGenericEntity opge = op == null ? Jw.JsonToGenericEntity(Utility.Hashing.Base64DecodeFromUrl(opaque64)) : op;
 
             string sid = opge.GetS("sd");
             int slot = Int32.Parse(opge.GetS("slot") ?? "0");
@@ -566,12 +566,14 @@ namespace VisitorIdLib
             string pid = opge.GetS("pid");
             bool isAsync = (opge.GetS("async") == "true");
             string vieps = opge.GetS("vieps");
-            string emd5 = md5 ?? opge.GetS("md5");
+            string emd5 = opge.GetS("md5");
             string eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, pid, slot, page, emd5, eml, isAsync, vieps, rsids, sendMd5ToPostingQueue);
+            return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids);
+        }
+
         }
 
         private (string md5, string em, string sid) GetCookieData(HttpContext context)
