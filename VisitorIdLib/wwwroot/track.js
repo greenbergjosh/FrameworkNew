@@ -33,11 +33,10 @@
             opaque.eml = res.email;
             opaque.md5 = res.md5;
 
-            if (res.slot <= opaque.slot) debugger;
-
-            opaque.slot = res.slot;
-            opaque.page = res.page;
         }
+
+        opaque.slot++;
+        opaque.page++;
     }
 }
 window[window.visitorIdObject].visitorId = visitorId;
