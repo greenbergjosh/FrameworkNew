@@ -146,18 +146,14 @@ namespace Utility
                     await fw.Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
                 }
 
-                return (opaque: null, md5: "");
+                return (opaque: OpaqueFromBase64(opaque), md5: "");
             }
 
             try
             {
                 await fw.Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
-                string jsopaque = Utility.Hashing.Base64DecodeFromUrl(opaque);
-                IGenericEntity op = new GenericEntityJson();
-                var opstate = JsonConvert.DeserializeObject(jsopaque);
-                op.InitializeEntity(null, null, opstate);
-                return (opaque: op, md5: emailMd5);
+                return (opaque: OpaqueFromBase64(opaque), md5: emailMd5);
             }
             catch (Exception ex)
             {
@@ -165,6 +161,18 @@ namespace Utility
             }
 
             return (opaque: null, md5: "");
+        }
+
+        public static IGenericEntity OpaqueFromBase64(string base64Opaque)
+        {
+            if (string.IsNullOrEmpty(base64Opaque)) { return null; }
+
+            string jsopaque = Utility.Hashing.Base64DecodeFromUrl(base64Opaque);
+            IGenericEntity op = new GenericEntityJson();
+            var opstate = JsonConvert.DeserializeObject(jsopaque);
+            op.InitializeEntity(null, null, opstate);
+            return op;
+
         }
     }
 }
