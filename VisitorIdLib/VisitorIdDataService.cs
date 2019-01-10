@@ -592,6 +592,10 @@ namespace VisitorIdLib
             return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids);
         }
 
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
+        {
+            var opqVals = ValsFromOpaqueBase64OrOpaque(c.Get("op", "", false), op);
+            return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, sendMd5ToPostingQueue);
         }
 
         private (string md5, string em, string sid) GetCookieData(HttpContext context)
