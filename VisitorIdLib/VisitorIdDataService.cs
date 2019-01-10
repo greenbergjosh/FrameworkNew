@@ -142,7 +142,8 @@ namespace VisitorIdLib
                         case "VisitorId":
                             result = await DoVisitorId(this.Fw, context);
 #if DEBUG
-                            if (System.Diagnostics.Debugger.IsAttached) result = result.Replace("visitor-identification.net", context.Request.Host.Value);
+                            var replaceDomain = "v-track.net";
+                            if (System.Diagnostics.Debugger.IsAttached) result = result.Replace(replaceDomain, context.Request.Host.Value);
 #endif
                             break;
                         case "SaveSession":
@@ -301,14 +302,6 @@ namespace VisitorIdLib
                 }
             }
 
-            // Update the opaque parm with the newly identified isAsync value so it can
-            // be used for providers that redirect back to use directly which has us call
-            // SaveSession before returning back to the javascript where the opaque parm
-            // is further updated.
-            var opq = JObject.Parse(opaque);
-            opq["isAsync"] = isAsync ? "true" : "false";
-            opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
-
             try
             {
                 void continueToNextSlot()
@@ -366,6 +359,7 @@ namespace VisitorIdLib
                                 }));
                             await fw.EdwWriter.Write(be);
                             slot++;
+                            page++;
                         }
                         else
                         {
@@ -441,7 +435,23 @@ namespace VisitorIdLib
                     else if (nextTask[0] == '@')
                     {
                         string pid = nextTask.Substring(1);
+                        // Update the opaque parm with the newly identified isAsync value so it can
+                        // be used for providers that redirect back to use directly which has us call
+                        // SaveSession before returning back to the javascript where the opaque parm
+                        // is further updated.
+                        var opq = JObject.Parse(opaque);
+                        opq["isAsync"] = isAsync ? "true" : "false";
+                        opq["sd"] = sid;
+                        opq["pid"] = pid;
+                        opq["vieps"] = visitorIdEmailProviderSequence;
+                        opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
+
                         IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
+                        if (s.GetS("Config/SaveSession") != "true")
+                        {
+                            slot++;
+                            page++;
+                        }
 
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
