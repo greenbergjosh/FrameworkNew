@@ -187,7 +187,25 @@ namespace VisitorIdLib
                 else if (!String.IsNullOrWhiteSpace(context.Request.Query["eqs"]))
                 {
                     (IGenericEntity op, string md5) = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
-                    if (!String.IsNullOrWhiteSpace(md5)) result = await SaveSession(this.Fw, context, true, op, md5);
+                    if (String.IsNullOrWhiteSpace(md5))
+                    {
+                        var opqVals = ValsFromOpaqueBase64OrOpaque("", op);
+                        EdwBulkEvent be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, opqVals.rsids,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderResponse",
+                                pid = opqVals.pid,
+                                slot = opqVals.slot,
+                                page = opqVals.page,
+                                succ = "0"
+                            }));
+                        await this.Fw.EdwWriter.Write(be);
+                    }
+                    else
+                    {
+                        result = await SaveSession(this.Fw, context, true, op, md5);
+                    }
                 }
                 else
                 {
