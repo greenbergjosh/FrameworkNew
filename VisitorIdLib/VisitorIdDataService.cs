@@ -201,6 +201,7 @@ namespace VisitorIdLib
                                 succ = "0"
                             }));
                         await this.Fw.EdwWriter.Write(be);
+                        result = Jw.Json(new { email = "", md5 = "", slot = opqVals.slot, page = opqVals.page });
                     }
                     else
                     {
@@ -376,21 +377,13 @@ namespace VisitorIdLib
                                     succ = "0"
                                 }));
                             await fw.EdwWriter.Write(be);
-                            slot++;
-                            page++;
                         }
                         else
                         {
-                            var res = Jw.JsonToGenericEntity(await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, false));
-                            var rs = res.GetS("slot").ParseInt().Value;
-                            var rp = res.GetS("page").ParseInt().Value;
-
-                            if (rs <= slot) throw new Exception("Slot disordered after SaveSession");
-
-                            slot = rs;
-                            page = rp;
+                            await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, false);
                         }
-
+                        continueToNextSlot();
+                        page++;
                         continue;
                     }
                     else if (nextTask.ToLower() == "continue")
@@ -462,15 +455,11 @@ namespace VisitorIdLib
                         opq["sd"] = sid;
                         opq["pid"] = pid;
                         opq["vieps"] = visitorIdEmailProviderSequence;
+                        opq["slot"] = slot;
+                        opq["page"] = page;
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
                         IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
-                        if (s.GetS("Config/SaveSession") != "true")
-                        {
-                            slot++;
-                            page++;
-                        }
-
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
@@ -497,7 +486,7 @@ namespace VisitorIdLib
                     else
                     {
                         await fw.Err(1000, "DoVisitorId", "Error", $"Unknown MD5 Provider Task Type: {nextTask} Slot: {slot} Page: {page}");
-                        slot++;
+                        continueToNextSlot();
                     }
                 }
             }
@@ -530,8 +519,6 @@ namespace VisitorIdLib
 
             if (!success)
             {
-                slot++;
-                page++;
                 return Jw.Json(new { Result = "Failure", slot, page });
             }
 
@@ -549,9 +536,6 @@ namespace VisitorIdLib
             }
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
-
-            slot++;
-            page++;
 
             c.SetCookie("vidck",
                 Jw.Json(new
