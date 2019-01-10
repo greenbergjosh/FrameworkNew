@@ -142,7 +142,8 @@ namespace VisitorIdLib
                         case "VisitorId":
                             result = await DoVisitorId(this.Fw, context);
 #if DEBUG
-                            if (System.Diagnostics.Debugger.IsAttached) result = result.Replace("visitor-identification.net", context.Request.Host.Value);
+                            var replaceDomain = "v-track.net";
+                            if (System.Diagnostics.Debugger.IsAttached) result = result.Replace(replaceDomain, context.Request.Host.Value);
 #endif
                             break;
                         case "SaveSession":
