@@ -8,12 +8,12 @@
         if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl))) break;
         let sres = {};
 
-        if (res.config.scriptUrl) {
+        if (res.config.ScriptUrl) {
             await load(res.config.ScriptUrl, 'Segment' + res.config.slot);
-            for (let x in res.config.strategy) {
-                let f = res.config.strategy[x].f;
-                let a = res.config.strategy[x].a;
-                let exf = getDescendantProp(window[res.config.globalObject], f);
+            for (let x in res.config.Strategy) {
+                let f = res.config.Strategy[x].f;
+                let a = res.config.Strategy[x].a;
+                let exf = getDescendantProp(window[res.config.GlobalObject], f);
                 exf(...a);
             }
         }
