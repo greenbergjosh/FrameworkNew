@@ -119,17 +119,22 @@ namespace Utility
             {
                 byte[] key = Utility.Hashing.StringToByteArray(towerEncryptionKey);
                 string result = Decrypt(pRawString, key);
-                if (result.Contains("md5_email"))
+                if (result.Contains("md5_email") || result.Contains("label"))
                 {
-                    await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
 
                     var query = QueryHelpers.ParseQuery(result);
+                    // Tower may return a response omitting the md5_email if either there is no
+                    // association, or they've been queried too many times with a specific cookie
                     opaque = query.ContainsKey("label") ? query["label"][0] : opaque;
                     emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : emailMd5;
-                }
-                else
-                {
-                    await fw.Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                    if (string.IsNullOrWhiteSpace(emailMd5))
+                    {
+                        await fw.Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                    }
+                    else
+                    {
+                        await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                    }
                 }
             }
             catch (Exception ex)
@@ -146,18 +151,14 @@ namespace Utility
                     await fw.Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
                 }
 
-                return (opaque: null, md5: "");
+                return (opaque: OpaqueFromBase64(opaque), md5: "");
             }
 
             try
             {
                 await fw.Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
-                string jsopaque = Utility.Hashing.Base64DecodeFromUrl(opaque);
-                IGenericEntity op = new GenericEntityJson();
-                var opstate = JsonConvert.DeserializeObject(jsopaque);
-                op.InitializeEntity(null, null, opstate);
-                return (opaque: op, md5: emailMd5);
+                return (opaque: OpaqueFromBase64(opaque), md5: emailMd5);
             }
             catch (Exception ex)
             {
@@ -165,6 +166,18 @@ namespace Utility
             }
 
             return (opaque: null, md5: "");
+        }
+
+        public static IGenericEntity OpaqueFromBase64(string base64Opaque)
+        {
+            if (string.IsNullOrEmpty(base64Opaque)) { return null; }
+
+            string jsopaque = Utility.Hashing.Base64DecodeFromUrl(base64Opaque);
+            IGenericEntity op = new GenericEntityJson();
+            var opstate = JsonConvert.DeserializeObject(jsopaque);
+            op.InitializeEntity(null, null, opstate);
+            return op;
+
         }
     }
 }
