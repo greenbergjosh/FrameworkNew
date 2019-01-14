@@ -69,5 +69,27 @@ namespace Utility
                 ctx.Request.Headers["User-Agent"].ToString() :
                 "";
         }
+
+        // based off of: https://referencesource.microsoft.com/#System.Web/WorkerRequest.cs,ab8517882440da8b
+        public static bool IsLocal (this HttpContext ctx)
+        {
+            var connection = ctx.Connection;
+
+            var remoteAddress = connection.RemoteIpAddress.ToString();
+
+            // if unknown, assume not local
+            if (String.IsNullOrEmpty(remoteAddress))
+               return false;
+
+            // check if localhost
+            if (remoteAddress == "127.0.0.1" || remoteAddress == "::1")
+               return true;
+
+            // compare with local address
+            if (remoteAddress == connection.LocalIpAddress.ToString())
+               return true;
+
+            return false;
+        }
     }
 }
