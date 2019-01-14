@@ -18,6 +18,8 @@ namespace Utility
 
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
 
+        public static uint? ParseUInt(this string str) => uint.TryParse(str, out var i) ? i : (uint?)null;
+
         public static bool? ParseBool(this string str)
         {
             if (!bool.TryParse(str, out var i))
