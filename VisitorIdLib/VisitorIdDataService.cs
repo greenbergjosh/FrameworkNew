@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -130,24 +131,48 @@ namespace VisitorIdLib
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
             {
-                StreamReader reader = new StreamReader(context.Request.Body);
-                requestFromPost = await reader.ReadToEndAsync();
+                using (var reader = new StreamReader(context.Request.Body))
+                {
+                    requestFromPost = await reader.ReadToEndAsync();
+                }
 
                 if (!String.IsNullOrWhiteSpace(context.Request.Query["m"]))
                 {
                     string m = context.Request.Query["m"];
+                    var cookie = GetCookieData(context);
 
                     switch (m)
                     {
                         case "VisitorId":
-                            result = await DoVisitorId(this.Fw, context);
+                            var resDV = await DoVisitorId(this.Fw, context);
+
+                            result = resDV.Result;
+
+                            context.SetCookie("vidck", Jw.Json(new
+                            {
+                                sid = resDV.Sid.IfNullOrWhitespace(cookie.sid),
+                                md5 = resDV.Md5.IfNullOrWhitespace(cookie.md5),
+                                em = resDV.Email.IfNullOrWhitespace(cookie.em)
+                            }), this.VisitorIdCookieExpDays);
+
 #if DEBUG
                             var replaceDomain = "v-track.net";
                             if (System.Diagnostics.Debugger.IsAttached) result = result.Replace(replaceDomain, context.Request.Host.Value);
 #endif
+
                             break;
                         case "SaveSession":
-                            result = await SaveSession(this.Fw, context, ((string)context.Request.Query["pq"]).ParseBool() ?? false);
+                            var resSS = await SaveSession(this.Fw, context, ((string)context.Request.Query["pq"]).ParseBool() ?? false);
+
+                            result = resSS.Result;
+
+                            context.SetCookie("vidck", Jw.Json(new
+                            {
+                                sid = resSS.Sid.IfNullOrWhitespace(cookie.sid),
+                                md5 = resSS.Md5.IfNullOrWhitespace(cookie.md5),
+                                em = resSS.Email.IfNullOrWhitespace(cookie.em)
+                            }), this.VisitorIdCookieExpDays);
+
                             break;
                         case "TestService":
                             var idx1 = context.Request.Query["i"].FirstOrDefault().ParseInt();
@@ -205,7 +230,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        result = await SaveSession(this.Fw, context, true, op, md5);
+                        result = (await SaveSession(this.Fw, context, true, op, md5)).Result;
                     }
                 }
                 else
@@ -233,7 +258,7 @@ namespace VisitorIdLib
             return tokenized.Replace("[=OPAQUE=]", opaque);
         }
 
-        public async Task<string> DoVisitorId(FrameworkWrapper fw, HttpContext c)
+        public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c)
         {
             string opaque64, opaque = null, afid, tpid, eml, md5, sid, qstr, host, path, qury;
             IGenericEntity opge;
@@ -400,7 +425,7 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return Jw.Json(new { done = "1", sid });
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, sid);
                         }
                     }
                     else if (nextTask.ToLower() == "continueonsuccessemail")
@@ -412,14 +437,14 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return Jw.Json(new { done = "1", sid });
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, sid);
                         }
                     }
                     else if (nextTask.ToLower() == "breakonsuccessmd5")
                     {
                         if (!md5.IsNullOrWhitespace())
                         {
-                            return Jw.Json(new { done = "1", sid });
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, sid);
                         }
                         else
                         {
@@ -431,7 +456,7 @@ namespace VisitorIdLib
                     {
                         if (!eml.IsNullOrWhitespace())
                         {
-                            return Jw.Json(new { done = "1", sid });
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, sid);
                         }
                         else
                         {
@@ -441,7 +466,8 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "break")
                     {
-                        return Jw.Json(new { done = "1", sid });
+
+                        return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, sid);
                     }
                     else if (nextTask[0] == '@')
                     {
@@ -471,7 +497,7 @@ namespace VisitorIdLib
                             }));
                         await fw.EdwWriter.Write(be);
 
-                        return Jw.Json(new
+                        return new VisitorIdResponse(Jw.Json(new
                         {
                             config = ReplaceToken(s.GetS("Config"), opaque64),
                             sid,
@@ -481,7 +507,7 @@ namespace VisitorIdLib
                             isAsync = isAsync ? "true" : "false",
                             vieps = visitorIdEmailProviderSequence
                         },
-                        new bool[] { false, true, true, true, true, true });
+                        new bool[] { false, true, true, true, true, true }), md5, eml, sid); 
                     }
                     else
                     {
@@ -494,10 +520,11 @@ namespace VisitorIdLib
             {
                 await fw.Err(1000, "DoVisitorId", "Exception", ex.ToString());
             }
-            return Jw.Json(new { done = "1", sid });
+
+            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, sid);
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
+        public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
             Dictionary<string, object> rsids, bool sendMd5ToPostingQueue)
         {
@@ -519,7 +546,7 @@ namespace VisitorIdLib
 
             if (!success)
             {
-                return Jw.Json(new { Result = "Failure", slot, page });
+                return new VisitorIdResponse(Jw.Json(new { Result = "Failure", slot, page }), md5, email, sid);
             }
 
             if (sendMd5ToPostingQueue)
@@ -537,15 +564,7 @@ namespace VisitorIdLib
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
 
-            c.SetCookie("vidck",
-                Jw.Json(new
-                {
-                    sid,
-                    md5,
-                    em = email
-                }), this.VisitorIdCookieExpDays);
-
-            return Jw.Json(new { email, md5, slot, page });
+            return new VisitorIdResponse(Jw.Json(new { email, md5, slot, page }), md5, email, sid);
         }
 
         public (string sid,
@@ -576,7 +595,7 @@ namespace VisitorIdLib
             return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids);
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
+        public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
         {
             var opqVals = ValsFromOpaqueBase64OrOpaque(c.Get("op", "", false), op);
             return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, sendMd5ToPostingQueue);
