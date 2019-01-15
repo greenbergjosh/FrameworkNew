@@ -175,7 +175,7 @@ namespace VisitorIdLib
                                 default:
                                     var md5 = md5s.GetValueOrDefault(idx1);
 
-                                    result = md5.IsNullOrWhitespace() ? Jw.Json(new { result = "NoMd5" }) : Jw.Json(new { md5 });
+                                    result = md5.IsNullOrWhitespace() ? Jw.Json(new { md5 = "" }) : Jw.Json(new { md5 });
                                     break;
                             }
                             break;
@@ -187,7 +187,26 @@ namespace VisitorIdLib
                 else if (!String.IsNullOrWhiteSpace(context.Request.Query["eqs"]))
                 {
                     (IGenericEntity op, string md5) = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
-                    if (!String.IsNullOrWhiteSpace(md5)) result = await SaveSession(this.Fw, context, true, op, md5);
+                    if (String.IsNullOrWhiteSpace(md5))
+                    {
+                        var opqVals = ValsFromOpaqueBase64OrOpaque("", op);
+                        EdwBulkEvent be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, opqVals.rsids,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderResponse",
+                                pid = opqVals.pid,
+                                slot = opqVals.slot,
+                                page = opqVals.page,
+                                succ = "0"
+                            }));
+                        await this.Fw.EdwWriter.Write(be);
+                        result = Jw.Json(new { email = "", md5 = "", slot = opqVals.slot, page = opqVals.page });
+                    }
+                    else
+                    {
+                        result = await SaveSession(this.Fw, context, true, op, md5);
+                    }
                 }
                 else
                 {
@@ -358,21 +377,13 @@ namespace VisitorIdLib
                                     succ = "0"
                                 }));
                             await fw.EdwWriter.Write(be);
-                            slot++;
-                            page++;
                         }
                         else
                         {
-                            var res = Jw.JsonToGenericEntity(await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, false));
-                            var rs = res.GetS("slot").ParseInt().Value;
-                            var rp = res.GetS("page").ParseInt().Value;
-
-                            if (rs <= slot) throw new Exception("Slot disordered after SaveSession");
-
-                            slot = rs;
-                            page = rp;
+                            await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, false);
                         }
-
+                        continueToNextSlot();
+                        page++;
                         continue;
                     }
                     else if (nextTask.ToLower() == "continue")
@@ -444,15 +455,11 @@ namespace VisitorIdLib
                         opq["sd"] = sid;
                         opq["pid"] = pid;
                         opq["vieps"] = visitorIdEmailProviderSequence;
+                        opq["slot"] = slot;
+                        opq["page"] = page;
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
                         IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
-                        if (s.GetS("Config/SaveSession") != "true")
-                        {
-                            slot++;
-                            page++;
-                        }
-
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
@@ -479,7 +486,7 @@ namespace VisitorIdLib
                     else
                     {
                         await fw.Err(1000, "DoVisitorId", "Error", $"Unknown MD5 Provider Task Type: {nextTask} Slot: {slot} Page: {page}");
-                        slot++;
+                        continueToNextSlot();
                     }
                 }
             }
@@ -512,8 +519,6 @@ namespace VisitorIdLib
 
             if (!success)
             {
-                slot++;
-                page++;
                 return Jw.Json(new { Result = "Failure", slot, page });
             }
 
@@ -532,9 +537,6 @@ namespace VisitorIdLib
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
 
-            slot++;
-            page++;
-
             c.SetCookie("vidck",
                 Jw.Json(new
                 {
@@ -546,19 +548,19 @@ namespace VisitorIdLib
             return Jw.Json(new { email, md5, slot, page });
         }
 
-        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
+        public (string sid,
+                int slot,
+                int page,
+                string pid,
+                bool isAsync,
+                string vieps,
+                string emd5,
+                string eml,
+                Dictionary<string,
+                object> rsids)
+            ValsFromOpaqueBase64OrOpaque(string opaque64, IGenericEntity op = null)
         {
-            IGenericEntity opge;
-            if (op == null)
-            {
-                string opaque64 = c.Get("op", "");
-                string opaque = Utility.Hashing.Base64DecodeFromUrl(opaque64);
-                opge = Jw.JsonToGenericEntity(opaque);
-            }
-            else
-            {
-                opge = op;
-            }
+            IGenericEntity opge = op == null ? Jw.JsonToGenericEntity(Utility.Hashing.Base64DecodeFromUrl(opaque64)) : op;
 
             string sid = opge.GetS("sd");
             int slot = Int32.Parse(opge.GetS("slot") ?? "0");
@@ -566,12 +568,18 @@ namespace VisitorIdLib
             string pid = opge.GetS("pid");
             bool isAsync = (opge.GetS("async") == "true");
             string vieps = opge.GetS("vieps");
-            string emd5 = md5 ?? opge.GetS("md5");
+            string emd5 = opge.GetS("md5");
             string eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return await SaveSession(fw, c, sid, pid, slot, page, emd5, eml, isAsync, vieps, rsids, sendMd5ToPostingQueue);
+            return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids);
+        }
+
+        public async Task<string> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
+        {
+            var opqVals = ValsFromOpaqueBase64OrOpaque(c.Get("op", "", false), op);
+            return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, sendMd5ToPostingQueue);
         }
 
         private (string md5, string em, string sid) GetCookieData(HttpContext context)
