@@ -90,6 +90,7 @@ namespace GenericDataService
             {
                 try
                 {
+#if DEBUG
                     if (context.Request.Query["m"] == "cfg-0nP01nt")
                     {
                         var resp = fw.StartupConfiguration.GetS("");
@@ -99,7 +100,9 @@ namespace GenericDataService
                         context.Response.ContentLength = Encoding.UTF8.GetBytes(resp).Length;
                         await context.Response.WriteAsync(resp);
                     }
-                    else await this.DataService.Run(context);
+                    else
+#endif
+                        await this.DataService.Run(context);
                 }
                 catch (Exception ex)
                 {
