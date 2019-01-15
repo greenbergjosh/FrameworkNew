@@ -4,6 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Runtime.InteropServices;
+using System.Security;
+using Microsoft.Management.Infrastructure;
+using Microsoft.Management.Infrastructure.Options;
 using Utility;
 
 namespace SystemHealthChecks
@@ -123,7 +126,7 @@ namespace SystemHealthChecks
             out ulong lpTotalNumberOfBytes,
             out ulong lpTotalNumberOfFreeBytes);
 
-        private static (ulong free, ulong used, ulong capacity) GetDriveUsageDetails(string path)
+        private static (ulong free, ulong used, ulong capacity) GetDriveUsageDetails1(string path)
         {
             const ulong div = 1048576L; // Math.Pow(1024,2)
             var d = GetDiskFreeSpaceEx(path, out var freeBytes, out var totalBytes, out var totalFreeBytes);
@@ -137,6 +140,29 @@ namespace SystemHealthChecks
             }
 
             return (free: freeBytes / div, used: (totalBytes - freeBytes) / div, capacity: totalBytes / div);
+        }
+
+        private static (ulong free, ulong used, ulong capacity) GetDriveUsageDetails(string path)
+        {
+            return (0, 0, 0);
+            string computer = "Computer_B";
+            string domain = "Domain1";
+            string username = "User1";
+
+            var plaintextpassword = "";
+            var securepassword = new SecureString();
+
+            foreach (var c in plaintextpassword)
+            {
+                securepassword.AppendChar(c);
+            }
+
+            CimCredential Credentials = new CimCredential(PasswordAuthenticationMechanism.Default, domain, username, securepassword);
+
+            WSManSessionOptions SessionOptions = new WSManSessionOptions();
+            SessionOptions.AddDestinationCredentials(Credentials);
+
+            CimSession Session = CimSession.Create(computer, SessionOptions);
         }
 
     }
