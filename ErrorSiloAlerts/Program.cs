@@ -17,20 +17,29 @@ namespace ErrorSiloAlerts
             try
             {
                 fw = new FrameworkWrapper();
-                var lastSeqIds = await SqlWrapper.SqlToGenericEntity("History", "LastSeqIds", "", "");
-                var emails = new List<MailMessage>();
 
-                emails.AddRange(await GetEmailAlertDescriptorEvents(lastSeqIds.GetS("EmailAlerts").ParseLong() ?? 0));
+                var minTimestampDays = fw.StartupConfiguration.GetS("Config/MinimumTimestampDays").ParseInt() ?? 5;
+                var smtpRelay = fw.StartupConfiguration.GetS("Config/SmtpRelay");
+                var smtpPort = fw.StartupConfiguration.GetS("Config/SmtpPort").ParseInt() ?? 0;
 
-                using (var smtp = new SmtpClient("", 0))
+                var lastSeqIds = (await SqlWrapper.SqlToGenericEntity("History", "LastSeqIds", "", "")).GetL("").ToDictionary(d => d.GetS("ConfigName"), d => d.GetS("LastSeqId").ParseLong().Value);
+                var emails = new List<(string configName, long lastSeqId, MailMessage msg)>();
+
+                emails.AddRange(await GetEmailAlertDescriptorEvents(lastSeqIds, DateTime.Today.AddDays(minTimestampDays * -1)));
+
+                using (var smtp = new SmtpClient(smtpRelay, smtpPort))
                 {
                     smtp.EnableSsl = true;
 
-                    foreach (var m in emails)
+                    foreach (var (configName, lastSeqId, msg) in emails)
                     {
                         try
                         {
-                            smtp.Send(m);
+                            smtp.Send(msg);
+                            var res = await SqlWrapper.SqlToGenericEntity("History", "InsertAlertsSent", Jw.Json(new { configName, lastSeqId }), "");
+                            var err = res.GetS("ErrorMessage");
+
+                            if (!err.IsNullOrWhitespace()) await fw.Err(ErrorSeverity.Error, nameof(Main), ErrorDescriptor.Exception, $"InsertAlertsSent failed: {err} Config: {configName} LastSeqId: {lastSeqIds}");
                         }
                         catch (Exception e)
                         {
@@ -47,17 +56,19 @@ namespace ErrorSiloAlerts
             }
         }
 
-        private static async Task<IEnumerable<MailMessage>> GetEmailAlertDescriptorEvents(long lastSeqId)
+        private static async Task<IEnumerable<(string configName, long lastSeqId, MailMessage msg)>> GetEmailAlertDescriptorEvents(Dictionary<string, long> lastSeqIds, DateTime minTimestamp)
         {
             // ToDo: Refactor to do in a single pass
             var config = fw.StartupConfiguration.GetE("Config/EmailAlerts");
-            var rawEmailAlerts = await SqlWrapper.SqlToGenericEntity("ErrorWarehouse", "EmailAlerts", Jw.Json(new { lastSeqId }), "");
-            var configGroup = new Dictionary<string, (IGenericEntity config, List<IGenericEntity> alerts)>();
-            var emails = new List<MailMessage>();
+            var configuredGroupNames = config.GetD("").Select(d => d.Item1);
+            var minLastSeqId = lastSeqIds.Where(s => configuredGroupNames.Contains(s.Key)).Select(s => (long?)s.Value).Min() ?? 0;
+            var rawEmailAlerts = await SqlWrapper.SqlToGenericEntity("ErrorWarehouse", "EmailAlerts", Jw.Json(new { lastSeqId = minLastSeqId, minTimestamp }), "");
+            var configGroup = new Dictionary<string, (IGenericEntity config, List<(long seqId, IGenericEntity log)> logs)>();
+            var emails = new List<(string configName, long lastSeqId, MailMessage msg)>();
 
-            foreach (var alert in rawEmailAlerts.GetL(""))
+            foreach (var log in rawEmailAlerts.GetL(""))
             {
-                var configName = alert.GetS("Method");
+                var configName = log.GetS("Method");
                 var alertConfig = config.GetE(configName);
 
                 if (alertConfig == null)
@@ -66,16 +77,20 @@ namespace ErrorSiloAlerts
                     alertConfig = config.GetE(configName);
                 }
 
-                if (!configGroup.ContainsKey(configName)) configGroup.Add(configName, (config: alertConfig, alerts: new List<IGenericEntity>()));
+                var seqId = log.GetS("Id").ParseLong();
 
-                configGroup[configName].alerts.Add(alert);
+                if (!seqId.HasValue || seqId.Value <= lastSeqIds.GetValueOrDefault(configName, 0)) continue;
+
+                if (!configGroup.ContainsKey(configName)) configGroup.Add(configName, (config: alertConfig, logs: new List<(long seqId, IGenericEntity log)>()));
+
+                configGroup[configName].logs.Add((seqId.Value, log));
             }
 
             foreach (var pgk in configGroup.Keys)
             {
                 var pg = configGroup[pgk];
-                var dataGroupPath = pg.config.GetS("GroupBy") ?? "Method";
-                string GetDataGroup(IGenericEntity e) => e.GetS(dataGroupPath);
+                var dataGroupPath = pg.config.GetS("GroupBy");
+                string GetDataGroup(IGenericEntity log, IGenericEntity logData) => dataGroupPath == null ? log.GetS("Method") : logData.GetS(dataGroupPath);
                 var dataGroups = new Dictionary<string, (string body, List<string> items)>();
                 var bodyTemplate = pg.config.GetS("BodyTemplate");
                 var itemTemplate = pg.config.GetS("BodyItemTemplate");
@@ -83,15 +98,24 @@ namespace ErrorSiloAlerts
                 var from = pg.config.GetS("From");
                 var to = pg.config.GetS("To");
                 var subject = pg.config.GetS("Subject");
+                var lastSeqId = lastSeqIds.GetValueOrDefault(pgk, 0);
 
-                foreach (var alert in pg.alerts)
+                foreach (var (seqId, log) in pg.logs)
                 {
-                    var dataGroup = GetDataGroup(alert);
+                    if (seqId > lastSeqId) lastSeqId = seqId;
+                    var logData = Jw.JsonToGenericEntity(log.GetS("Message"));
+                    var timestamp = log.GetS("Timestamp").ParseDate().Value;
 
-                    if (!dataGroups.ContainsKey(dataGroup)) dataGroups.Add(dataGroup, (body: bodyTemplate.Replace("Group", dataGroup), items: new List<string>()));
+                    var dataGroup = GetDataGroup(log, logData);
 
-                    if (alert.GetS("ErrorMsg").IsNullOrWhitespace()) dataGroups[dataGroup].items.Add(ReplaceTokens(itemTemplate, alert));
-                    else dataGroups[dataGroup].items.Add(ReplaceTokens(itemFailedTemplate, alert));
+                    if (!dataGroups.ContainsKey(dataGroup)) dataGroups.Add(dataGroup, (body: bodyTemplate.Replace("[Group]", dataGroup), items: new List<string>()));
+
+                    dataGroups[dataGroup].items.AddRange(logData.GetL("Alerts").Select(a =>
+                    {
+                        return a.GetS("ErrorMsg").IsNullOrWhitespace()
+                            ? ReplaceTokens(itemTemplate, a, timestamp)
+                            : ReplaceTokens(itemFailedTemplate, a, timestamp);
+                    }));
                 }
 
                 var body = dataGroups.Values.Aggregate("",
@@ -101,20 +125,20 @@ namespace ErrorSiloAlerts
                         return s;
                     });
 
-                emails.Add(new MailMessage(from, to, subject, body));
+                emails.Add((configName: pgk, lastSeqId, msg: new MailMessage(from, to, subject, body) { IsBodyHtml = true }));
             }
 
             return emails;
         }
 
-        private static string ReplaceTokens(string template, IGenericEntity entity)
+        private static string ReplaceTokens(string template, IGenericEntity entity, DateTime timestamp)
         {
             foreach (var key in entity.GetD("").Select(p => p.Item1))
             {
                 template = template.Replace($"[{key}]", entity.GetS(key));
             }
 
-            return template;
+            return template.Replace("[Timestamp]", $"{timestamp:yy-MM-dd HH:mm:ss}");
         }
 
     }

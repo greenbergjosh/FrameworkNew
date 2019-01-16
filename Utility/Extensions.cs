@@ -16,6 +16,8 @@ namespace Utility
 
         public static bool Contains(this string source, string value, StringComparison comparisonType) => source.IndexOf(value, comparisonType) > -1;
 
+        public static DateTime? ParseDate(this string str) => DateTime.TryParse(str, out var i) ? i : (DateTime?)null;
+
         public static long? ParseLong(this string str) => long.TryParse(str, out var i) ? i : (long?)null;
 
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
