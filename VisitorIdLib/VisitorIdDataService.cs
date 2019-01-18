@@ -551,7 +551,7 @@ namespace VisitorIdLib
 
             if (sendMd5ToPostingQueue)
             {
-                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
                     PL.O(new
                     {
                         md5Slot = slot,
