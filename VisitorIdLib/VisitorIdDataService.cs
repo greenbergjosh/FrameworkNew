@@ -11,6 +11,7 @@ using System.Web;
 using Utility;
 using Extensions = Newtonsoft.Json.Linq.Extensions;
 using Jw = Utility.JsonWrapper;
+using Vutil = Utility.VisitorIdUtil;
 
 namespace VisitorIdLib
 {
@@ -214,7 +215,7 @@ namespace VisitorIdLib
                     (IGenericEntity op, string md5) = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
                     if (String.IsNullOrWhiteSpace(md5))
                     {
-                        var opqVals = ValsFromOpaqueBase64OrOpaque("", op);
+                        var opqVals = ValsFromOpaque(op);
                         EdwBulkEvent be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, opqVals.rsids,
                             null, PL.O(new
@@ -551,7 +552,7 @@ namespace VisitorIdLib
 
             if (sendMd5ToPostingQueue)
             {
-                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
                     PL.O(new
                     {
                         md5Slot = slot,
@@ -567,7 +568,8 @@ namespace VisitorIdLib
             return new VisitorIdResponse(Jw.Json(new { email, md5, slot, page }), md5, email, sid);
         }
 
-        public (string sid,
+        public static (
+                string sid,
                 int slot,
                 int page,
                 string pid,
@@ -577,10 +579,8 @@ namespace VisitorIdLib
                 string eml,
                 Dictionary<string,
                 object> rsids)
-            ValsFromOpaqueBase64OrOpaque(string opaque64, IGenericEntity op = null)
+            ValsFromOpaque(IGenericEntity opge)
         {
-            IGenericEntity opge = op == null ? Jw.JsonToGenericEntity(Utility.Hashing.Base64DecodeFromUrl(opaque64)) : op;
-
             string sid = opge.GetS("sd");
             int slot = Int32.Parse(opge.GetS("slot") ?? "0");
             int page = Int32.Parse(opge.GetS("page") ?? "0");
@@ -597,7 +597,7 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
         {
-            var opqVals = ValsFromOpaqueBase64OrOpaque(c.Get("op", "", false), op);
+            var opqVals = ValsFromOpaque(op ?? Vutil.OpaqueFromBase64(c.Get("op", "", false)));
             return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, sendMd5ToPostingQueue);
         }
 
