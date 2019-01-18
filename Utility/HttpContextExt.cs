@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Utility
@@ -69,5 +71,26 @@ namespace Utility
                 ctx.Request.Headers["User-Agent"].ToString() :
                 "";
         }
+
+        // Slightly modified versions of:
+        // https://weblog.west-wind.com/posts/2017/Sep/14/Accepting-Raw-Request-Body-Content-in-ASPNET-Core-API-Controllers
+        public static async Task<string> GetRawBodyStringAsync(this HttpContext ctx, Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+
+            using (StreamReader reader = new StreamReader(ctx.Request.Body, encoding))
+                return await reader.ReadToEndAsync();
+        }
+
+        public static async Task<byte[]> GetRawBodyBytesAsync(this HttpContext ctx)
+        {
+            using (var ms = new MemoryStream(2048))
+            {
+                await ctx.Request.Body.CopyToAsync(ms);
+                return ms.ToArray();
+            }
+        }
+
     }
 }
