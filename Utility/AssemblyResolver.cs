@@ -38,7 +38,28 @@ namespace Utility
 
             this.loadContext = AssemblyLoadContext.GetLoadContext(this.Assembly);
             this.loadContext.Resolving += OnResolving;
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler((object sender, ResolveEventArgs args) => ResolveAssemblyFromPath(sender, args, path));
         }
+
+
+        // Modified From: https://stackoverflow.com/questions/5260404/resolve-assembly-references-from-another-folder
+        public static Assembly ResolveAssemblyFromPath(object sender, ResolveEventArgs args, string assemblyPath)
+        {
+            try
+            {
+                AssemblyName referencedAssembly = Array.Find<AssemblyName>(Assembly.GetExecutingAssembly().GetReferencedAssemblies(), a => a.Name == args.Name);
+                string copiedDependencyAssemblyPath = Path.Combine(new FileInfo(assemblyPath).Directory.FullName, args.Name.Substring(0, args.Name.IndexOf(",")) + ".dll");
+
+                return referencedAssembly != null ? Assembly.LoadFrom(referencedAssembly.CodeBase) :
+                       File.Exists(copiedDependencyAssemblyPath) ? Assembly.LoadFrom(copiedDependencyAssemblyPath) :
+                       null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
 
         public Assembly Assembly { get; }
 

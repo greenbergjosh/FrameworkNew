@@ -117,6 +117,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GenericServiceLibs", "Gener
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemHealthChecks", "SystemHealthChecks\SystemHealthChecks.csproj", "{34694A20-ADB7-4839-A4F5-1D994632A7FA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TraverseDataLib", "TraverseDataLib\TraverseDataLib.csproj", "{60ED57C5-A626-4BB4-9077-181AF9DAA87E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -424,6 +426,12 @@ Global
 		{34694A20-ADB7-4839-A4F5-1D994632A7FA}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{34694A20-ADB7-4839-A4F5-1D994632A7FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34694A20-ADB7-4839-A4F5-1D994632A7FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -468,6 +476,7 @@ Global
 		{9909896A-7A5F-4E49-B42F-84F227A94678} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 		{FB9BB359-EE6A-4D13-A626-A3EFF1D042A7} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
 		{11A87BB7-7218-4420-9EDD-FA4C581F9E25} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
+		{60ED57C5-A626-4BB4-9077-181AF9DAA87E} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .
