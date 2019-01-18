@@ -16,7 +16,13 @@ namespace Utility
 
         public static bool Contains(this string source, string value, StringComparison comparisonType) => source.IndexOf(value, comparisonType) > -1;
 
+        public static DateTime? ParseDate(this string str) => DateTime.TryParse(str, out var i) ? i : (DateTime?)null;
+
+        public static long? ParseLong(this string str) => long.TryParse(str, out var i) ? i : (long?)null;
+
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
+
+        public static uint? ParseUInt(this string str) => uint.TryParse(str, out var i) ? i : (uint?)null;
 
         public static bool? ParseBool(this string str)
         {
@@ -47,7 +53,7 @@ namespace Utility
         public static IEnumerable<string> Matches(this string str, Regex rx) => rx.Matches(str).Cast<Match>().Select(m => m.Value);
 
         #endregion
-        
+
         public static string Join(this IEnumerable<string> coll, string separator) => string.Join(separator, coll.ToArray());
 
         public static void AddRange<TK, TV>(this Dictionary<TK, TV> dic, IEnumerable<(TK key, TV value)> collection)

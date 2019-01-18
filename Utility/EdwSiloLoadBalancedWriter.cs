@@ -84,6 +84,10 @@ namespace Utility
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
         {
+            var siloConns = config.GetL("Config/EdwSilos");
+
+            if (!siloConns.Any()) return null;
+
             int writeTimeoutSeconds = config.GetS("Config/EdwWriteTimeout").ParseInt() ?? 0;
             string dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
             string errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));

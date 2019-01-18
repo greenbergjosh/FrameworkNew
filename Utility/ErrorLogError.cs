@@ -34,6 +34,7 @@
     public static class ErrorSeverity
     {
         public const int Log = 0;
+        public const int Alert = 750;
         public const int Error = 1000;
     }
 
@@ -41,6 +42,18 @@
     {
         public const string Exception = "Exception";
         public const string Log = "Log";
+        public const string EmailAlert = "EmailAlert";
     }
 
+    public class EmailAlertPayloadItem
+    {
+        public EmailAlertPayloadItem(string label, string errorMsg)
+        {
+            Label = label;
+            ErrorMsg = errorMsg;
+        }
+
+        public string Label { get; }
+        public string ErrorMsg { get; }
+    }
 }
