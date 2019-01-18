@@ -90,8 +90,7 @@ namespace GenericDataService
             {
                 try
                 {
-#if DEBUG
-                    if (context.Request.Query["m"] == "cfg-0nP01nt")
+                    if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
                         var resp = fw.StartupConfiguration.GetS("");
 
@@ -101,7 +100,6 @@ namespace GenericDataService
                         await context.Response.WriteAsync(resp);
                     }
                     else
-#endif
                         await this.DataService.Run(context);
                 }
                 catch (Exception ex)
