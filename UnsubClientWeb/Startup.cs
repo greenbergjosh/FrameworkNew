@@ -17,7 +17,7 @@ namespace UnsubClientWeb
 {
     public class Startup
     {
-        public string ConnectionString;
+        private FrameworkWrapper Fw;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -33,11 +33,7 @@ namespace UnsubClientWeb
                 app.UseDeveloperExceptionPage();
             }
 
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-            ConnectionString = configuration.GetConnectionString("DefaultConnection");
+            Fw = new FrameworkWrapper();
 
             app.Run(async (context) =>
             {
@@ -49,29 +45,25 @@ namespace UnsubClientWeb
                     StreamReader reader = new StreamReader(context.Request.Body);
                     requestFromPost = await reader.ReadToEndAsync();
 
-                    IGenericEntity dtve = new GenericEntityJson();
-                    var dtv = JsonConvert.DeserializeObject(requestFromPost);
-                    dtve.InitializeEntity(null, null, dtv);
+                    var dtv = Jw.JsonToGenericEntity(requestFromPost);
+                    
+                    // AppName = "UnsubClient"
+                    var nw = new UnsubLib.UnsubLib(Fw);
 
-                    UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubClient", this.ConnectionString);
-                    switch (dtve.GetS("m"))
+                    switch (dtv.GetS("m"))
                     {
                         case "IsUnsub":
                             result = await nw.ServerIsUnsub(requestFromPost);
                             break;
-
                         case "IsUnsubList":
                             result = await nw.ServerIsUnsubList(requestFromPost);
                             break;
-
                         case "GetCampaigns":
                             result = await nw.GetCampaigns();
                             break;
-
                         case "ForceUnsub":
                             result = await nw.ServerForceUnsub(requestFromPost);
                             break;
-
                         default:
                             File.AppendAllText("UnsubClient.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" +
                                 Environment.NewLine);

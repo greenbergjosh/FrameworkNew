@@ -19,7 +19,7 @@ namespace UnsubJobServer
 {
     public class Startup
     {
-        public string ConnectionString;
+        private FrameworkWrapper _fw;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -55,11 +55,7 @@ namespace UnsubJobServer
             var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
             var pathToContentRoot = Path.GetDirectoryName(pathToExe);
 
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                        .SetBasePath(pathToContentRoot)
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-            ConnectionString = configuration.GetConnectionString("DefaultConnection");
+            _fw = new FrameworkWrapper();
 
             app.Run(async (context) =>
             {
@@ -82,7 +78,9 @@ namespace UnsubJobServer
                     var dtv = JsonConvert.DeserializeObject(requestFromPost);
                     dtve.InitializeEntity(null, null, dtv);
 
-                    UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubJobServer", this.ConnectionString);
+                    // AppName = "UnsubJobServer"
+                    var nw = new UnsubLib.UnsubLib(_fw);
+
                     switch (dtve.GetS("m"))
                     {
                         case "LoadUnsubFiles":

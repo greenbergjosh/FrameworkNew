@@ -1,47 +1,30 @@
 ﻿using System;
-using UnsubLib;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using System.Collections.Generic;
 using Utility;
-using Fs = Utility.FileSystem;
-using Pw = Utility.ParallelWrapper;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Net;
 
 namespace UnsubJob
 {
     class Program
     {
+        private static FrameworkWrapper Fw = new FrameworkWrapper();
+
         public static async Task Main(string[] args)
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-            string cs = configuration.GetConnectionString("DefaultConnection");
+            await Fw.Log(nameof(Main), "Starting...");
 
-            await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Tracking", "Starting...");
-
-            UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubJob", cs);
+            // AppName = "UnsubJob"
+            var nw = new UnsubLib.UnsubLib(Fw);
             IGenericEntity networks = null;
 
             try
             {
-                await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                    $"Main", "Tracking", $"Starting CleanUnusedFiles");
-
+                await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
                 await nw.CleanUnusedFiles();
-
-                await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                    $"Main", "Tracking", $"Completed CleanUnusedFiles");
+                await Fw.Log(nameof(Main), "Completed CleanUnusedFiles");
             }
             catch (Exception exClean)
             {
-                await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
-                    $"Main", "Exception", $"CleanUnusedFiles:: " + exClean.ToString());
+                await Fw.Error(nameof(Main), $"CleanUnusedFiles:: {exClean}");
             }
 
             try
@@ -49,55 +32,47 @@ namespace UnsubJob
                 string singleNetworkName = null;
                 if (args.Length > 0 && !String.IsNullOrEmpty(args[0]))
                     singleNetworkName = args[0];
-                    
+
                 networks = await nw.GetNetworks(singleNetworkName);
             }
             catch (Exception exGetNetworks)
             {
-                await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
-                           "Main",
-                           "Exception", "GetNetworksAndCreateLockFiles: " + exGetNetworks.ToString());
+                await Fw.Error(nameof(Main), $"GetNetworksAndCreateLockFiles: {exGetNetworks}");
                 return;
-            }            
+            }
 
             foreach (var n in networks.GetL(""))
             {
-                await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Tracking", $"Starting({n.GetS("Name")})...");
+                var name = n.GetS("Name");
 
-                string unsubMethod = n.GetS("Credentials/UnsubMethod");
+                await Fw.Log(nameof(Main), $"Starting({name})...");
+
+                var unsubMethod = n.GetS("Credentials/UnsubMethod");
+
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
                     try
                     {
-                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Tracking", $"Starting ScheduledUnsubJob({n.GetS("Name")})...");
+                        await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
                         await nw.ScheduledUnsubJob(n);
-                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Tracking", $"Completed ScheduledUnsubJob({n.GetS("Name")})...");
+                        await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
                     }
                     catch (Exception exScheduledUnsub)
                     {
-                        await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
-                            "Main", "Exception",
-                            $"ScheduledUnsubJob failed({n.GetS("Name")}): " +  exScheduledUnsub.ToString());
+                        await Fw.Error(nameof(Main), $"ScheduledUnsubJob failed({name}): {exScheduledUnsub}");
                     }
 
                     if (n.GetS("AlsoDoManualDirectory") == "True")
                     {
                         try
                         {
-                            await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                                "Main", "Tracking", $"Starting AlsoDoManualDirectory({n.GetS("Name")})...");
+                            await Fw.Log(nameof(Main), $"Starting AlsoDoManualDirectory({name})...");
                             await nw.ManualDirectory(n);
-                            await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                                "Main", "Tracking", $"Completed AlsoDoManualDirectory({n.GetS("Name")})...");
+                            await Fw.Log(nameof(Main), $"Completed AlsoDoManualDirectory({name})...");
                         }
                         catch (Exception exScheduledUnsub)
                         {
-                            await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
-                                "Main", "Exception",
-                                $"AlsoDoManualDirectory failed({n.GetS("Name")}): " + exScheduledUnsub.ToString());
+                            await Fw.Error(nameof(Main), $"AlsoDoManualDirectory failed({name}): {exScheduledUnsub}");
                         }
                     }
                 }
@@ -105,31 +80,24 @@ namespace UnsubJob
                 {
                     try
                     {
-                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                                "Main", "Tracking", $"Starting ManualDirectory({n.GetS("Name")})...");
+                        await Fw.Log(nameof(Main), $"Starting ManualDirectory({name})...");
                         await nw.ManualDirectory(n);
-                        await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                                "Main", "Tracking", $"Completed ManualDirectory({n.GetS("Name")})...");
+                        await Fw.Log(nameof(Main), $"Completed ManualDirectory({name})...");
                     }
                     catch (Exception exScheduledUnsub)
                     {
-                        await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
-                                "Main", "Exception",
-                                $"ManualDirectory failed({n.GetS("Name")}): " + exScheduledUnsub.ToString());
+                        await Fw.Error(nameof(Main), $"ManualDirectory failed({name}): {exScheduledUnsub}");
                     }
                 }
                 else
                 {
-                    await SqlWrapper.InsertErrorLog(cs, 1000, "UnsubJob",
-                            "Main", "Error", "Unknown UnsubMethod type: " + unsubMethod);
+                    await Fw.Error(nameof(Main), $"Unknown UnsubMethod type: {unsubMethod}");
                 }
 
-                await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Tracking", $"Completed({n.GetS("Name")})...");
+                await Fw.Log(nameof(Main), $"Completed({name})...");
             }
 
-            await SqlWrapper.InsertErrorLog(cs, 1, "UnsubJob",
-                           "Main", "Tracking", $"...Stopping");
+            await Fw.Log(nameof(Main), "...Stopping");
         }
 
         public void Nothing()
