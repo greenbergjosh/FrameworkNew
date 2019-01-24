@@ -18,7 +18,7 @@ namespace UnsubServerWeb
 {
     public class Startup
     {
-        public string ConnectionString;
+        private FrameworkWrapper _fw;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -46,11 +46,7 @@ namespace UnsubServerWeb
             File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::Starting..." + Environment.NewLine);
             applicationLifetime.ApplicationStopping.Register(OnShutdown);
 
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json")
-                        .Build();
-            ConnectionString = configuration.GetConnectionString("DefaultConnection");
+            _fw = new FrameworkWrapper();
 
             app.Run(async (context) =>
             {
@@ -67,7 +63,9 @@ namespace UnsubServerWeb
                     var dtv = JsonConvert.DeserializeObject(requestFromPost);
                     dtve.InitializeEntity(null, null, dtv);
 
-                    UnsubLib.UnsubLib nw = new UnsubLib.UnsubLib("UnsubServer", this.ConnectionString);
+                    // AppName = "UnsubServer"
+                    var nw = new UnsubLib.UnsubLib(_fw);
+
                     switch (dtve.GetS("m"))
                     {
                         case "IsUnsub":
