@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Utility;
 using System.Threading.Tasks;
 
@@ -14,7 +16,8 @@ namespace UnsubJob
 
             // AppName = "UnsubJob"
             var nw = new UnsubLib.UnsubLib(Fw);
-            IGenericEntity networks = null;
+            IEnumerable<IGenericEntity> networks = null;
+            string networkCampaignId = null;
 
             try
             {
@@ -29,11 +32,17 @@ namespace UnsubJob
 
             try
             {
-                string singleNetworkName = null;
-                if (args.Length > 0 && !String.IsNullOrEmpty(args[0]))
-                    singleNetworkName = args[0];
+                var singleNetworkName = args?.FirstOrDefault().IfNullOrWhitespace(null);
 
-                networks = await nw.GetNetworks(singleNetworkName);
+                networks = (await nw.GetNetworks(singleNetworkName))?.GetL("");
+
+                if (!networks.Any())
+                {
+                    await Fw.Error(nameof(Main), $"Network(s) not found {args.Join(" ")}");
+                    return;
+                }
+
+                if (singleNetworkName != null) networkCampaignId = args.Skip(1).FirstOrDefault().IfNullOrWhitespace(null);
             }
             catch (Exception exGetNetworks)
             {
@@ -41,7 +50,7 @@ namespace UnsubJob
                 return;
             }
 
-            foreach (var n in networks.GetL(""))
+            foreach (var n in networks)
             {
                 var name = n.GetS("Name");
 
@@ -54,7 +63,7 @@ namespace UnsubJob
                     try
                     {
                         await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
-                        await nw.ScheduledUnsubJob(n);
+                        await nw.ScheduledUnsubJob(n, networkCampaignId);
                         await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
                     }
                     catch (Exception exScheduledUnsub)

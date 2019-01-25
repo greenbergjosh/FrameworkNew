@@ -108,7 +108,7 @@ namespace Utility
             return resp;
         }
 
-        public static async Task<object> DownloadUnzipUnbuffered(string QueryString,
+        public static async Task<Dictionary<string, object>> DownloadUnzipUnbuffered(string QueryString,
             string basicAuthString,
             Func<FileInfo, Task<string>> zipEntryTester,
             Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors,
