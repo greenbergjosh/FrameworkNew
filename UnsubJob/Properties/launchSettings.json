@@ -1,7 +1,8 @@
 {
   "profiles": {
     "UnsubJob": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "Amobee 1054"
     }
   }
 }

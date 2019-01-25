@@ -15,10 +15,13 @@ using Pw = Utility.ParallelWrapper;
 using Fs = Utility.FileSystem;
 using Sql = Utility.SqlWrapper;
 using Utility;
+using Utility.Selenium;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 
 namespace UnsubLib
 {
@@ -93,7 +96,7 @@ namespace UnsubLib
             MaxDiffFilePercentage = float.Parse(config.GetS("Config/MaxDiffFilePercentage"));
             SortBufferSize = config.GetS("Config/SortBufferSize");
 
-            if (int.TryParse(config.GetS("Config/SortBufferSize"), out var to)) FileCopyTimeout = to;
+            if (int.TryParse(config.GetS("Config/FileCopyTimeout"), out var to)) FileCopyTimeout = to;
             else FileCopyTimeout = DefaultFileCopyTimeout;
 
             ServicePointManager.DefaultConnectionLimit = MaxConnections;
@@ -247,21 +250,48 @@ namespace UnsubLib
             dir.Delete(true);
         }
 
-        public async Task ScheduledUnsubJob(IGenericEntity network)
+        public async Task ScheduledUnsubJob(IGenericEntity network, string networkCampaignId = null)
         {
             // Get campaigns
             var networkName = network.GetS("Name");
-            var cse = await GetCampaignsScheduledJobs(network);
-
-            // Get uris of files to download - maintain campaign association
             IDictionary<string, List<IGenericEntity>> uris = new Dictionary<string, List<IGenericEntity>>();
-            try
+            IGenericEntity cse;
+
+            if (!networkCampaignId.IsNullOrWhitespace())
             {
-                uris = await GetUnsubUris(network, cse);
+                var campaign = (await Sql.SqlToGenericEntity(Conn, "SelectNetworkCampaigns", Jw.Json(new { NetworkId = network.GetS("Id") }), ""))
+                    .GetL("")?.FirstOrDefault(c => c.GetS("NetworkCampaignId") == networkCampaignId);
+
+                if (campaign == null)
+                {
+                    await _fw.Error(nameof(ScheduledUnsubJob), $"{network} campaign {network} has not been merged into database, this is required for single reprocessing");
+                    return;
+                }
+
+                var uri = await GetSuppressionFileUri(network, networkCampaignId, network.GetS("Credentials/Parallelism").ParseInt() ?? 5);
+
+                if (uri.IsNullOrWhitespace())
+                {
+                    await _fw.Error(nameof(ScheduledUnsubJob), $"{network} campaign {network} returned invalid suppression url: {uri.IfNullOrWhitespace("null")}");
+                    return;
+                }
+
+                cse = Jw.JsonToGenericEntity($"[{campaign.GetS("")}]");
+                uris.Add(uri, new List<IGenericEntity>() { campaign });
             }
-            catch (Exception exGetUnsubUris)
+            else
             {
-                await _fw.Error(nameof(ScheduledUnsubJob), $"GetUnsubUris({networkName}):{exGetUnsubUris}");
+                cse = await GetCampaignsScheduledJobs(network);
+
+                // Get uris of files to download - maintain campaign association
+                try
+                {
+                    uris = await GetUnsubUris(network, cse);
+                }
+                catch (Exception exGetUnsubUris)
+                {
+                    await _fw.Error(nameof(ScheduledUnsubJob), $"GetUnsubUris({networkName}):{exGetUnsubUris}");
+                }
             }
 
             await _fw.Log(nameof(ScheduledUnsubJob), $"ScheduledUnsubJob({networkName}) Calling ProcessUnsubFiles");
@@ -379,7 +409,7 @@ namespace UnsubLib
         public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IGenericEntity campaigns)
         {
             var networkName = network.GetS("Name");
-            var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
+            var parallelism = network.GetS("Credentials/Parallelism").ParseInt() ?? 5;
             var uris = new ConcurrentDictionary<string, List<IGenericEntity>>();
 
             await Pw.ForEachAsync(campaigns.GetL(""), parallelism, async c =>
@@ -1170,7 +1200,9 @@ namespace UnsubLib
         public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
         {
             var c = await Sql.SqlToGenericEntity(Conn, "SelectNetworkCampaign", Jw.Json(new { CId = campaignId }), "");
-            var fileId = c.GetS("MostRecentUnsubFileId").ToLower();
+            var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
+
+            if (fileId == null) return null;
 
             return await GetFileFromFileId(fileId, ext, destDir, cacheSize);
         }
@@ -1194,6 +1226,12 @@ namespace UnsubLib
                     emailMd5 = Hashing.CalculateMD5Hash(emailMd5.ToLower());
                 }
                 var fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
+
+                if (fileName.IsNullOrWhitespace())
+                {
+                    await _fw.Error(nameof(IsUnsub), $"Unsub file missing for campaign id {campaignId}");
+                    return Jw.Json(new { Result = false, Error = "Missing unsub file" });
+                }
 
                 var result = await UnixWrapper.BinarySearchSortedMd5File(
                     SearchDirectory,
@@ -1241,9 +1279,18 @@ namespace UnsubLib
                 }
 
                 var fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
+
+                if (fileName.IsNullOrWhitespace())
+                {
+                    await _fw.Error(nameof(IsUnsubList), $"Unsub file missing for campaign id {campaignId}");
+
+                    return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
+                }
+
                 emailMd5.Sort();
 
                 var enrtr = emailMd5.GetEnumerator();
+
                 enrtr.MoveNext();
 
                 const Int32 BufferSize = 128;
@@ -1251,14 +1298,24 @@ namespace UnsubLib
                 using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
                 {
                     String line;
+
                     while ((line = streamReader.ReadLine()) != null)
                     {
                         if (enrtr.Current == null) break;
                         while (true)
                         {
                             var cmp = enrtr.Current.ToUpper().CompareTo(line.ToUpper());
-                            if (cmp == 0) { enrtr.MoveNext(); break; }
-                            else if (cmp < 0) { notFound.Add(enrtr.Current); enrtr.MoveNext(); }
+
+                            if (cmp == 0)
+                            {
+                                enrtr.MoveNext();
+                                break;
+                            }
+                            else if (cmp < 0)
+                            {
+                                notFound.Add(enrtr.Current);
+                                enrtr.MoveNext();
+                            }
                             else break;
                         }
                     }
@@ -1301,8 +1358,7 @@ namespace UnsubLib
         }
 
 
-        public async Task<string> GetSuppressionFileUri(
-            IGenericEntity network, string networkCampaignId, int maxConnections)
+        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string networkCampaignId, int maxConnections)
         {
             string uri = null;
             var networkName = network.GetS("Name");
@@ -1335,16 +1391,14 @@ namespace UnsubLib
                 else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net")))
                 {
                     uri = "";
-                    //await _fw.Log(nameof(GetSuppressionFileUri), "Calling GetEzepoUnsubFileUri: " + usuri.ToString());
+                    await _fw.Log(nameof(GetSuppressionFileUri), "Calling GetEzepoUnsubFileUri: " + usuri.ToString());
 
-                    //string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
+                    string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
 
-                    //await _fw.Log(nameof(GetSuppressionFileUri), "Completed GetEzepoUnsubFileUri: " + usuri.ToString());
+                    await _fw.Log(nameof(GetSuppressionFileUri), "Completed GetEzepoUnsubFileUri: " + usuri.ToString());
 
-                    //if (ezepoUnsubUrl != "")
-                    //    uri = ezepoUnsubUrl;
-                    //else
-                    //    await _fw.Error(nameof(GetSuppressionFileUri), "Empty ezepo url: " + usuri.ToString());
+                    if (ezepoUnsubUrl != "") uri = ezepoUnsubUrl;
+                    else await _fw.Error(nameof(GetSuppressionFileUri), "Empty ezepo url: " + usuri.ToString());
                 }
                 else if ((networkType == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
                 {
@@ -1423,62 +1477,78 @@ namespace UnsubLib
             //chromeOptions.AddUserProfilePreference("intl.accept_languages", "nl");
             //chromeOptions.AddUserProfilePreference("disable-popup-blocking", "true");
             //var driver = new ChromeDriver(this.SeleniumChromeDriverPath, chromeOptions);
-            using (var driver = new ChromeDriver(SeleniumChromeDriverPath))
+            try
             {
-                driver.Navigate().GoToUrl(url);
-                driver.FindElement(By.XPath("//button[.='Download All Data']")).Click();
-                IWebElement dwnldLink = null;
-                var retryCount = 0;
-                var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-                while (retryCount < 5)
+                using (var driver = new ChromeDriver(SeleniumChromeDriverPath))
                 {
-                    try
-                    {
-                        dwnldLink = driver.FindElement(By.Id("downloadlink"));
-                        if (dwnldLink.Displayed) break;
-                        else throw new Exception();
-                    }
-                    catch (Exception ex)
-                    {
-                        await Task.Delay(retryWalkaway[retryCount] * 1000);
-                    }
-                }
+                    await driver.GoToUrlAndWaitForDocument(url, TimeSpan.FromSeconds(30));
 
-                if (dwnldLink != null)
-                {
-                    //dwnldLink.Click();
-                    fileUrl = dwnldLink.GetAttribute("href");
+                    var button = await driver.FindElementWhenDisplayed(By.XPath("//button[.='Download All Data']"), TimeSpan.FromSeconds(30));
+
+                    if (button == null) throw new Exception("Failed to retrieve 'Download All Data' button");
+
+                    button.Click();
+                    IWebElement dwnldLink = null;
+                    var retryCount = 0;
+                    var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+                    while (retryCount < 5)
+                    {
+                        try
+                        {
+                            dwnldLink = driver.FindElement(By.Id("downloadlink"));
+                            if (dwnldLink.Displayed) break;
+                            else throw new Exception();
+                        }
+                        catch (Exception ex)
+                        {
+                            await Task.Delay(retryWalkaway[retryCount] * 1000);
+                        }
+                    }
+
+                    if (dwnldLink != null)
+                    {
+                        //dwnldLink.Click();
+                        fileUrl = dwnldLink.GetAttribute("href");
+                    }
+
+                    driver.Quit();
                 }
             }
+            catch (Exception e)
+            {
+                await _fw.Error(nameof(GetEzepoUnsubFileUri), $"Selenium failed {e.UnwrapForLog()}");
+            }
+
             return fileUrl;
         }
 
         public async Task<IDictionary<string, object>> DownloadSuppressionFiles(IGenericEntity network, string unsubUrl)
         {
-            object dr = null;
+            IDictionary<string, object> dr = null;
             var networkName = network.GetS("Name");
             var networkType = network.GetS($"Credentials/NetworkType");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
-            if (networkType == "Amobee")
+            if (unsubUrl.Contains("s3.amazonaws.com"))
+            {
+                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl,
+                    null,
+                    ZipTester,
+                    new Dictionary<string, Func<FileInfo, Task<object>>>()
+                    {
+                        { MD5HANDLER, Md5ZipHandler },
+                        { PLAINTEXTHANDLER, PlainTextHandler },
+                        { DOMAINHANDLER, DomainZipHandler },
+                        { UNKNOWNHANDLER, UnknownTypeHandler }
+                    },
+                    ClientWorkingDirectory,
+                    30 * 60,
+                    parallelism);
+            }
+            else if (networkType == "Amobee")
             {
                 var unsubCentralUserName = network.GetS("Credentials/UnsubCentralUserName");
                 var unsubCentralPassword = network.GetS("Credentials/UnsubCentralPassword");
-
-                // This version is too slow - switched to unbuffered
-                //dr = await Utility.ProtocolClient.DownloadPage(unsubUrl,
-                //    unsubCentralUserName + ":" + unsubCentralPassword,
-                //    ZipTester,
-                //    new Dictionary<string, Func<string, Task<object>>>()
-                //    {
-                //        { MD5HANDLER, Md5ZipHandler },
-                //        { PLAINTEXTHANDLER, PlainTextHandler },
-                //        { DOMAINHANDLER, DomainZipHandler },
-                //        { UNKNOWNHANDLER, UnknownTypeHandler }
-                //    },
-                //    30 * 60,
-                //    true,
-                //    10);
 
                 dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl,
                     unsubCentralUserName + ":" + unsubCentralPassword,
@@ -1496,21 +1566,6 @@ namespace UnsubLib
             }
             else if (networkType == "Madrivo")
             {
-                // This version is too slow - switched to unbuffered
-                //dr = await Utility.ProtocolClient.DownloadPage(unsubUrl,
-                //    null,
-                //    ZipTester,
-                //    new Dictionary<string, Func<string, Task<object>>>()
-                //    {
-                //         { MD5HANDLER, Md5ZipHandler },
-                //         { PLAINTEXTHANDLER, PlainTextHandler },
-                //         { DOMAINHANDLER, DomainZipHandler },
-                //         { UNKNOWNHANDLER, UnknownTypeHandler }
-                //    },
-                //    30 * 60,
-                //    true,
-                //    10);
-
                 dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl,
                     null,
                     ZipTester,
@@ -1527,10 +1582,12 @@ namespace UnsubLib
             }
             else
             {
-                await _fw.Error(nameof(DownloadSuppressionFiles), networkName);
+                await _fw.Error(nameof(DownloadSuppressionFiles), $"No download logic for {networkName} {unsubUrl}");
             }
 
-            return (IDictionary<string, object>)dr;
+            if (dr?.Any() == false) await _fw.Error(nameof(DownloadSuppressionFiles), $"No file downloaded {networkName} {unsubUrl}");
+
+            return dr;
         }
 
         public async Task<string> ZipTester(FileInfo f)
