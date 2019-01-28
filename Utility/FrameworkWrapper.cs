@@ -40,7 +40,7 @@ namespace Utility
                 this.StartupConfiguration = SqlWrapper.Initialize(this.ConnectionString, this.ConfigurationKeys, this.SelectConfigSproc).GetAwaiter().GetResult();
                 this.Entities = new ConfigEntityRepo(SqlWrapper.GlobalConfig);
                 List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
-                string scriptsPath = this.StartupConfiguration.GetS("Config/RoslynScriptsPath");
+                string scriptsPath = Path.GetFullPath(this.StartupConfiguration.GetS("Config/RoslynScriptsPath"));
                 this.RoslynWrapper = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
 
                 this.EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(this.StartupConfiguration);
