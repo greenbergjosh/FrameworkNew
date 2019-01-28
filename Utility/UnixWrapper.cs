@@ -26,11 +26,15 @@ namespace Utility
                     {
                         var exitCode = await ProcessWrapper.StartProcess(
                             exeUnzip,
-                            $"\"{zipFileName}\" -d {UnzippedDirectory}",
+                            $"\"{zipFileName}\" -d \"{UnzippedDirectory}\"",
                             ZipFileDirectory,
                             timeout,
                             outs,
                             errs).ConfigureAwait(continueOnCapturedContext: false);
+
+                        var err = errs.ToString();
+
+                        if(!err.IsNullOrWhitespace()) throw new Exception($"Unzip failed: {err}");
                     }
                 }
             }
