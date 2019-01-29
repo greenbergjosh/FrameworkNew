@@ -21,7 +21,6 @@ using System.Linq;
 using System.Net;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
 
 namespace UnsubLib
 {
@@ -1359,10 +1358,8 @@ namespace UnsubLib
         {
             string uri = null;
             var networkName = network.GetS("Name");
-            var networkType = network.GetS($"Credentials/NetworkType");
             var apiKey = network.GetS($"Credentials/NetworkApiKey");
             var apiUrl = network.GetS($"Credentials/NetworkApiUrl");
-            var optizmoToken = network.GetS($"Credentials/OptizmoToken");
 
             IDictionary<string, string> parms = new Dictionary<string, string>()
             {
@@ -1373,51 +1370,25 @@ namespace UnsubLib
 
             var suppDetails = await ProtocolClient.HttpPostAsync(apiUrl, parms, 60, "", maxConnections);
             var xml = new XmlDocument();
+            var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
+            {
+                new UnsubFileProviders.UnsubCentral(_fw),
+                new UnsubFileProviders.Ezepo(_fw,SeleniumChromeDriverPath),
+                new UnsubFileProviders.Optizmo(_fw),
+                new UnsubFileProviders.MidEnity(_fw)
+            };
 
             try
             {
                 xml.LoadXml(suppDetails);
                 var xn = xml.SelectSingleNode("/dataset/data/suppurl");
                 var usuri = new Uri(xn.FirstChild.Value);
-                var usurl = HttpUtility.ParseQueryString(usuri.Query);
 
-                if ((networkType == "Amobee") && (usuri.ToString().Contains("go.unsubcentral.com")) && (usurl["key"] != null) && (usurl["s"] != null))
+                uri = fileLocationProviders.Select(p => p.GetFileUrl(network, usuri).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
+
+                if (uri.IsNullOrWhitespace())
                 {
-                    uri = "https://api.unsubcentral.com/api/service/keys/" + usurl["key"] + "?s=" + usurl["s"] + "&format=hash&zipped=true";
-                }
-                else if ((networkName == "Amobee") && (usuri.ToString().Contains("ezepo.net")))
-                {
-                    uri = "";
-                    await _fw.Trace(nameof(GetSuppressionFileUri), "Calling GetEzepoUnsubFileUri: " + usuri.ToString());
-
-                    string ezepoUnsubUrl = await GetEzepoUnsubFileUri(usuri.ToString());
-
-                    await _fw.Trace(nameof(GetSuppressionFileUri), "Completed GetEzepoUnsubFileUri: " + usuri.ToString());
-
-                    if (ezepoUnsubUrl != "") uri = ezepoUnsubUrl;
-                    else await _fw.Error(nameof(GetSuppressionFileUri), "Empty ezepo url: " + usuri.ToString());
-                }
-                else if ((networkType == "Amobee") && (usuri.ToString().Contains("mailer.optizmo.net")))
-                {
-                    await _fw.Trace(nameof(GetSuppressionFileUri), $"Calling GetOptizmoUnsubFileUri: {usuri}");
-
-                    var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(usuri.AbsolutePath, optizmoToken);
-
-                    await _fw.Trace(nameof(GetSuppressionFileUri), $"Completed GetOptizmoUnsubFileUri: {usuri}");
-
-                    if (optizmoUnsubUrl != "")
-                        uri = optizmoUnsubUrl;
-                    else
-                        await _fw.Error(nameof(GetSuppressionFileUri), $"Empty otizmo url: {usuri}");
-                }
-                else if ((networkType == "Madrivo") && (usuri.ToString().Contains("api.midenity.com")))
-                {
-                    uri = usuri.ToString();
-                }
-                else
-                {
-                    await _fw.Error(nameof(GetSuppressionFileUri), $"Unknown unsub file source: {suppDetails}");
-                    throw new Exception("Unknown unsub file source.");
+                    await _fw.Error(nameof(GetSuppressionFileUri), $"Failed to retrieve unsub file from: {networkName} {usuri}");
                 }
             }
             catch (Exception findUnsubException)
@@ -1429,158 +1400,31 @@ namespace UnsubLib
             return uri;
         }
 
-        public async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
-        {
-            var optizmoUnsubUrl = "";
-            var pathParts = url.Split('/');
-            //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
-            var optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
-            optizmoUrl.Append(pathParts[pathParts.Length - 1]);
-            optizmoUrl.Append($"?token={optizmoToken}&format=md5");
-            //503 Service Unavailable
-            Tuple<bool, string> aojson = null;
-            var retryCount = 0;
-            var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-            while (retryCount < 5)
-            {
-                aojson = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
-                if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
-                {
-                    if (aojson.Item2.Contains("503 Service Unavailable"))
-                    {
-                        await Task.Delay(retryWalkaway[retryCount] * 1000);
-                        retryCount += 1;
-                        continue;
-                    }
-                    IGenericEntity te = new GenericEntityJson();
-                    var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
-                    te.InitializeEntity(null, null, ts);
-                    if (te.GetS("download_link") != null)
-                    {
-                        optizmoUnsubUrl = te.GetS("download_link");
-                    }
-                }
-                break;
-            }
-
-            return optizmoUnsubUrl;
-        }
-
-        public async Task<string> GetEzepoUnsubFileUri(string url)
-        {
-            var fileUrl = "";
-            //var chromeOptions = new ChromeOptions();
-            //chromeOptions.AddUserProfilePreference("download.default_directory", @"e:\workspace\unsub");
-            //chromeOptions.AddUserProfilePreference("intl.accept_languages", "nl");
-            //chromeOptions.AddUserProfilePreference("disable-popup-blocking", "true");
-            //var driver = new ChromeDriver(this.SeleniumChromeDriverPath, chromeOptions);
-            try
-            {
-                using (var driver = new ChromeDriver(SeleniumChromeDriverPath))
-                {
-                    await driver.GoToUrlAndWaitForDocument(url, TimeSpan.FromSeconds(30));
-
-                    var button = await driver.FindElementWhenDisplayed(By.XPath("//button[.='Download All Data']"), TimeSpan.FromSeconds(30));
-
-                    if (button == null) throw new Exception("Failed to retrieve 'Download All Data' button");
-
-                    button.Click();
-                    IWebElement dwnldLink = null;
-                    var retryCount = 0;
-                    var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-                    while (retryCount < 5)
-                    {
-                        try
-                        {
-                            dwnldLink = driver.FindElement(By.Id("downloadlink"));
-                            if (dwnldLink.Displayed) break;
-                            else throw new Exception();
-                        }
-                        catch (Exception ex)
-                        {
-                            await Task.Delay(retryWalkaway[retryCount] * 1000);
-                        }
-                    }
-
-                    if (dwnldLink != null)
-                    {
-                        //dwnldLink.Click();
-                        fileUrl = dwnldLink.GetAttribute("href");
-                    }
-
-                    driver.Quit();
-                }
-            }
-            catch (Exception e)
-            {
-                await _fw.Error(nameof(GetEzepoUnsubFileUri), $"Selenium failed {e.UnwrapForLog()}");
-            }
-
-            return fileUrl;
-        }
-
         public async Task<IDictionary<string, object>> DownloadSuppressionFiles(IGenericEntity network, string unsubUrl)
         {
             IDictionary<string, object> dr = null;
             var networkName = network.GetS("Name");
             var networkType = network.GetS($"Credentials/NetworkType");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
+            string authString = null;
 
-            if (unsubUrl.Contains("s3.amazonaws.com"))
-            {
-                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl,
-                    null,
-                    ZipTester,
-                    new Dictionary<string, Func<FileInfo, Task<object>>>()
-                    {
-                        { MD5HANDLER, Md5ZipHandler },
-                        { PLAINTEXTHANDLER, PlainTextHandler },
-                        { DOMAINHANDLER, DomainZipHandler },
-                        { UNKNOWNHANDLER, UnknownTypeHandler }
-                    },
-                    ClientWorkingDirectory,
-                    30 * 60,
-                    parallelism);
-            }
-            else if (networkType == "Amobee")
+            if (networkType == "Amobee" && !unsubUrl.Contains("s3.amazonaws.com"))
             {
                 var unsubCentralUserName = network.GetS("Credentials/UnsubCentralUserName");
                 var unsubCentralPassword = network.GetS("Credentials/UnsubCentralPassword");
 
-                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl,
-                    unsubCentralUserName + ":" + unsubCentralPassword,
-                    ZipTester,
-                    new Dictionary<string, Func<FileInfo, Task<object>>>()
-                    {
-                        { MD5HANDLER, Md5ZipHandler },
-                        { PLAINTEXTHANDLER, PlainTextHandler },
-                        { DOMAINHANDLER, DomainZipHandler },
-                        { UNKNOWNHANDLER, UnknownTypeHandler }
-                    },
-                    ClientWorkingDirectory,
-                    30 * 60,
-                    parallelism);
+                authString = unsubCentralUserName + ":" + unsubCentralPassword;
             }
-            else if (networkType == "Madrivo")
-            {
-                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl,
-                    null,
-                    ZipTester,
-                    new Dictionary<string, Func<FileInfo, Task<object>>>()
-                    {
-                        { MD5HANDLER, Md5ZipHandler },
-                        { PLAINTEXTHANDLER, PlainTextHandler },
-                        { DOMAINHANDLER, DomainZipHandler },
-                        { UNKNOWNHANDLER, UnknownTypeHandler }
-                    },
-                    ClientWorkingDirectory,
-                    30 * 60,
-                    parallelism);
-            }
-            else
-            {
-                await _fw.Error(nameof(DownloadSuppressionFiles), $"No download logic for {networkName} {unsubUrl}");
-            }
+
+            dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
+                new Dictionary<string, Func<FileInfo, Task<object>>>()
+                {
+                    { MD5HANDLER, Md5ZipHandler },
+                    { PLAINTEXTHANDLER, PlainTextHandler },
+                    { DOMAINHANDLER, DomainZipHandler },
+                    { UNKNOWNHANDLER, UnknownTypeHandler }
+                },
+                ClientWorkingDirectory, 30 * 60, parallelism);
 
             if (dr?.Any() == false) await _fw.Error(nameof(DownloadSuppressionFiles), $"No file downloaded {networkName} {unsubUrl}");
 
