@@ -20,6 +20,7 @@ namespace GenericWindowsService
 {
     public class Startup
     {
+
         public void ConfigureServices(IServiceCollection services)
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::ConfigureServices...{Environment.NewLine}");
@@ -33,6 +34,7 @@ namespace GenericWindowsService
         private void OnShutdown()
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::OnShutdown()" + Environment.NewLine);
+            if(Program.HasOnStop) Program.Service.OnStop();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,12 +65,7 @@ namespace GenericWindowsService
                 {
                     if (context.Request.Query["m"] == "cfg-0nP01nt")
                     {
-                        var resp = Program.Fw.StartupConfiguration.GetS("");
-
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength = Encoding.UTF8.GetBytes(resp).Length;
-                        await context.Response.WriteAsync(resp);
+                        await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.GetS(""), Encoding.UTF8);
                     }
                     else await Program.Service.HandleHttpRequest(context);
                 }
@@ -77,6 +74,8 @@ namespace GenericWindowsService
                     File.AppendAllText(Program.LogPath, $@"Run::{DateTime.Now}::{ex.ToString()}{Environment.NewLine}");
                 }
             });
+
+            if(Program.HasOnStart) Program.Service.OnStart();
         }
 
     }

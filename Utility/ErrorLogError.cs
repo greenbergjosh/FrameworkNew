@@ -42,6 +42,7 @@
     {
         public const string Exception = "Exception";
         public const string Log = "Log";
+        public const string Trace = "Trace";
         public const string EmailAlert = "EmailAlert";
     }
 

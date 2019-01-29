@@ -14,6 +14,8 @@ namespace GenericWindowsService
         public const string LogPath = "GenericWindowsService.log";
         public static FrameworkWrapper Fw;
         public static dynamic Service;
+        public static bool HasOnStart = false;
+        public static bool HasOnStop = false;
 
         private static void Main(string[] args)
         {
@@ -34,6 +36,18 @@ namespace GenericWindowsService
 
                 if (methods.All(m => m.Name != "HandleHttpRequest")) throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
 
+                var onStart = methods.FirstOrDefault(m => m.Name == "OnStart");
+
+                if (onStart!=null && onStart.GetParameters().Length != 0) throw new Exception("Dynamic service OnStart method cannot have any parameters");
+                else if (onStart != null) HasOnStart = true;
+
+                var OnStop = methods.FirstOrDefault(m => m.Name == "OnStop");
+
+                if (OnStop != null && OnStop.GetParameters().Length != 0) throw new Exception("Dynamic service OnStop method cannot have any parameters");
+                else if (OnStop != null) HasOnStop = true;
+
+                if (methods.All(m => m.Name == "OnStop")) throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
+
                 var configFunc = methods.FirstOrDefault(m => m.Name == "Config");
 
                 if (configFunc != null)
@@ -42,7 +56,7 @@ namespace GenericWindowsService
 
                     if (parms.Length == 2 && parms[0].ParameterType == typeof(string[]) && parms[1].ParameterType == typeof(FrameworkWrapper)) Service.Config(args, Fw);
                     else if (parms.Length == 1 && parms[1].ParameterType == typeof(FrameworkWrapper)) Service.Config(Fw);
-                    else throw new Exception($"Dynamic service Config method requires signature Config(string[], {nameof(FrameworkWrapper)}) method");
+                    else throw new Exception($"Dynamic service Config method requires signature Config({nameof(FrameworkWrapper)}) method");
                 }
 
                 File.AppendAllText(LogPath, $"{DateTime.Now}::CreateWebHostBuilder...{Environment.NewLine}");

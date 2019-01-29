@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 
 namespace Utility.Selenium
 {
@@ -28,7 +27,7 @@ namespace Utility.Selenium
             return element;
         }
 
-        public static async Task GoToUrlAndWaitForDocument(this ChromeDriver driver, string url, TimeSpan timeout, TimeSpan? pollingInterval = null)
+        public static async Task GoToUrlAndWaitForDocument(this IWebDriver driver, string url, TimeSpan timeout, TimeSpan? pollingInterval = null)
         {
             driver.Navigate().GoToUrl(url);
 
