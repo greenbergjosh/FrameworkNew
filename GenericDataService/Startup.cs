@@ -40,8 +40,7 @@ namespace GenericDataService
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
         {
-            File.AppendAllText("DataService.log", $@"{DateTime.Now}::{args.ToString()}::{args.ToString()}" +
-                            Environment.NewLine);
+            File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -76,8 +75,7 @@ namespace GenericDataService
             {
                 app.UseStaticFiles(new StaticFileOptions
                 {
-                    FileProvider = new PhysicalFileProvider(wwwrootPath),
-                    //RequestPath = "/"
+                    FileProvider = new PhysicalFileProvider(wwwrootPath)
                 });
             }
             else app.UseStaticFiles();
@@ -92,12 +90,7 @@ namespace GenericDataService
                 {
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
-                        var resp = fw.StartupConfiguration.GetS("");
-
-                        context.Response.StatusCode = (int)HttpStatusCode.OK;
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength = Encoding.UTF8.GetBytes(resp).Length;
-                        await context.Response.WriteAsync(resp);
+                        await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
                     }
                     else
                         await this.DataService.Run(context);

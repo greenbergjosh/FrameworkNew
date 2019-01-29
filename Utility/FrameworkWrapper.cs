@@ -64,6 +64,7 @@ namespace Utility
 
         // ToDo: Email Alert
         public async Task Log(string method, string message) => await Err(ErrorSeverity.Log, method, ErrorDescriptor.Log, message);
+        public async Task Trace(string method, string message) => await Err(ErrorSeverity.Log, method, ErrorDescriptor.Trace, message);
         public async Task Error(string method, string message) => await Err(ErrorSeverity.Error, method, ErrorDescriptor.Exception, message);
 
     }

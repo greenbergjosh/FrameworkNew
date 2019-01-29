@@ -3,6 +3,7 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -90,6 +91,14 @@ namespace Utility
                 await ctx.Request.Body.CopyToAsync(ms);
                 return ms.ToArray();
             }
+        }
+
+        public static async Task WriteSuccessRespAsync(this HttpContext ctx, string response, Encoding enc = null)
+        {
+            ctx.Response.StatusCode = 200;
+            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
+            await ctx.Response.WriteAsync(response);
         }
 
         // based off of: https://referencesource.microsoft.com/#System.Web/WorkerRequest.cs,ab8517882440da8b

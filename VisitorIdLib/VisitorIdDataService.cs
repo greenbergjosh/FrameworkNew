@@ -132,10 +132,7 @@ namespace VisitorIdLib
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
             {
-                using (var reader = new StreamReader(context.Request.Body))
-                {
-                    requestFromPost = await reader.ReadToEndAsync();
-                }
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 if (!String.IsNullOrWhiteSpace(context.Request.Query["m"]))
                 {
@@ -243,15 +240,7 @@ namespace VisitorIdLib
             {
                 await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex}");
             }
-            await WriteResponse(context, result);
-        }
-
-        public async Task WriteResponse(HttpContext context, string resp)
-        {
-            context.Response.StatusCode = 200;
-            context.Response.ContentType = "application/json";
-            context.Response.ContentLength = resp.Length;
-            await context.Response.WriteAsync(resp);
+            await context.WriteSuccessRespAsync(result);
         }
 
         public static string ReplaceToken(string tokenized, string opaque)
@@ -508,7 +497,7 @@ namespace VisitorIdLib
                             isAsync = isAsync ? "true" : "false",
                             vieps = visitorIdEmailProviderSequence
                         },
-                        new bool[] { false, true, true, true, true, true }), md5, eml, sid); 
+                        new bool[] { false, true, true, true, true, true }), md5, eml, sid);
                     }
                     else
                     {
