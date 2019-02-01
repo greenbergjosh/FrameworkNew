@@ -8,19 +8,16 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
-using System.Xml;
 using Jw = Utility.JsonWrapper;
 using Pw = Utility.ParallelWrapper;
 using Fs = Utility.FileSystem;
 using Sql = Utility.SqlWrapper;
 using Utility;
-using Utility.Selenium;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+using System.Threading;
+using UnsubLib.NetworkProviders;
 
 namespace UnsubLib
 {
@@ -253,6 +250,8 @@ namespace UnsubLib
         {
             // Get campaigns
             var networkName = network.GetS("Name");
+            var networkProvider = NetworkProviders.Factory.GetInstance(_fw, network);
+
             IDictionary<string, List<IGenericEntity>> uris = new Dictionary<string, List<IGenericEntity>>();
             IGenericEntity cse;
 
@@ -280,12 +279,16 @@ namespace UnsubLib
             }
             else
             {
-                cse = await GetCampaignsScheduledJobs(network);
+                cse = await GetCampaignsScheduledJobs(network, networkProvider);
 
                 // Get uris of files to download - maintain campaign association
                 try
                 {
-                    uris = await GetUnsubUris(network, cse);
+                    uris = await GetUnsubUris(network, cse, networkProvider);
+                }
+                catch (HaltingException e)
+                {
+                    throw;
                 }
                 catch (Exception exGetUnsubUris)
                 {
@@ -300,8 +303,7 @@ namespace UnsubLib
             await _fw.Log(nameof(ScheduledUnsubJob), $"ScheduledUnsubJob({networkName}) Completed ProcessUnsubFiles");
         }
 
-        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris,
-            IGenericEntity network, IGenericEntity cse)
+        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IGenericEntity cse)
         {
             var networkName = network.GetS("Name");
 
@@ -384,58 +386,83 @@ namespace UnsubLib
             }
         }
 
-        public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network)
+        public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider)
         {
             var networkName = network.GetS("Name");
-            IGenericEntity cse = new GenericEntityJson();
-            var id = network.GetS("Id");
-            var key = network.GetS($"Credentials/NetworkApiKey");
-            var url = network.GetS($"Credentials/NetworkApiUrl");
+            var networkId = network.GetS("Id");
+            var localNetworkFilePath = $"{LocalNetworkFilePath}/{networkName}-{networkId}.json";
 
-            try
+            await _fw.Log(nameof(GetCampaignsScheduledJobs), $"UseLocalNetworkFiles = {UseLocalNetworkFile}");
+
+            IGenericEntity campaigns;
+
+            if (UseLocalNetworkFile)
             {
-                cse = await GetNetworkCampaigns(id, key, url);
+                await _fw.Trace(nameof(GetCampaignsScheduledJobs), $@"Reading Local Network File: {localNetworkFilePath}");
+                campaigns = Jw.JsonToGenericEntity(File.ReadAllText($@"{LocalNetworkFilePath}\{networkId}.xml"));
             }
-            catch (Exception exCampaigns)
+            else
             {
-                await _fw.Error(nameof(GetCampaignsScheduledJobs), $"GetNetworkCampaigns({networkName}):: {id}::{key}::{url}{exCampaigns}");
-                throw new Exception($"Failed to get {networkName} campaigns");
+                campaigns = await networkProvider.GetCampaigns(network);
+
+                File.WriteAllText(localNetworkFilePath, campaigns.GetS(""));
             }
 
-            return cse;
+            return campaigns;
         }
 
-        public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IGenericEntity campaigns)
+        public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IGenericEntity campaigns, INetworkProvider networkProvider)
         {
             var networkName = network.GetS("Name");
             var parallelism = network.GetS("Credentials/Parallelism").ParseInt() ?? 5;
             var uris = new ConcurrentDictionary<string, List<IGenericEntity>>();
+            var cancelToken = new CancellationTokenSource();
+            Task task = null;
 
-            await Pw.ForEachAsync(campaigns.GetL(""), parallelism, async c =>
+            try
             {
-                try
+                task = campaigns.GetL("").ForEachAsync(parallelism, cancelToken.Token, async c =>
                 {
                     var campaignId = c.GetS("NetworkCampaignId");
 
-                    await _fw.Trace(nameof(GetUnsubUris), $"Calling GetSuppressionFileUri({networkName}):: for campaign {campaignId}");
-
-                    var uri = await GetSuppressionFileUri(network, campaignId, parallelism);
-
-                    await _fw.Trace(nameof(GetUnsubUris), $"Completed GetSuppressionFileUri({networkName}):: for campaign {campaignId}");
-
-                    if (!String.IsNullOrEmpty(uri))
+                    try
                     {
-                        if (uris.ContainsKey(uri)) uris[uri].Add(c);
-                        else uris.TryAdd(uri, new List<IGenericEntity>() { c });
-                    }
-                }
-                catch (Exception exCampaign)
-                {
-                    var campaignId = c?.GetS("NetworkCampaignId").IfNullOrWhitespace("unknown");
+                        if (cancelToken.IsCancellationRequested) return;
 
-                    await _fw.Error(nameof(GetUnsubUris), $"GetSuppressionFileUri({networkName}):: {network.GetS("Id")}::Failed to retrieve unsubscribe Id for {campaignId} {exCampaign}");
+                        await _fw.Trace(nameof(GetUnsubUris), $"Calling GetSuppressionFileUri({networkName}):: for campaign {campaignId}");
+
+                        var uri = await GetSuppressionFileUri(network, campaignId, networkProvider, parallelism);
+
+                        await _fw.Trace(nameof(GetUnsubUris), $"Completed GetSuppressionFileUri({networkName}):: for campaign {campaignId}");
+
+                        if (!String.IsNullOrEmpty(uri))
+                        {
+                            if (uris.ContainsKey(uri)) uris[uri].Add(c);
+                            else uris.TryAdd(uri, new List<IGenericEntity>() { c });
+                        }
+                    }
+                    catch (HaltingException)
+                    {
+                        cancelToken.Cancel();
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        await _fw.Error(nameof(GetUnsubUris), $"GetSuppressionFileUri({networkName}):: {network.GetS("Id")}::Failed to retrieve unsubscribe Id for {campaignId} {e}");
+                    }
+                });
+
+                await task;
+            }
+            catch (Exception)
+            {
+                foreach (var e in task.Exception.InnerExceptions)
+                {
+                    if (e is HaltingException) throw e;
                 }
-            });
+
+                await _fw.Error(nameof(GetUnsubUris), $"Parallelism threw unhandled exception {task.Exception.UnwrapForLog()}");
+            }
 
             return uris;
         }
@@ -451,24 +478,18 @@ namespace UnsubLib
 
             await Pw.ForEachAsync(uris, parallelism, async uri =>
             {
+                var logCtx = $"campaigns: {uri.Value.Select(v => v.GetS("id")).Join(":")}";
+
                 try
                 {
-                    var sb = new StringBuilder();
-
-                    foreach (var c in uri.Value)
-                    {
-                        sb.Append(c.GetS("Id") + ":");
-                    }
-                    await _fw.Trace(nameof(DownloadUnsubFiles), $"Iteration({networkName}):: for url {uri.Key} for campaigns {sb}");
+                    await _fw.Trace(nameof(DownloadUnsubFiles), $"Iteration({networkName}):: for url {uri.Key} for {logCtx}");
 
                     IDictionary<string, object> cf = new Dictionary<string, object>();
                     if (networkUnsubMethod == "ScheduledUnsubJob")
                     {
                         await _fw.Trace(nameof(DownloadUnsubFiles), $"Calling DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
 
-                        cf = await DownloadSuppressionFiles(
-                                network,
-                                uri.Key);
+                        cf = await DownloadSuppressionFiles(network, uri.Key, logCtx);
 
                         await _fw.Trace(nameof(DownloadUnsubFiles), $"Completed DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
                     }
@@ -481,10 +502,10 @@ namespace UnsubLib
                                 ZipTester,
                                 new Dictionary<string, Func<FileInfo, Task<object>>>()
                                 {
-                                    { MD5HANDLER, Md5ZipHandler },
-                                    { PLAINTEXTHANDLER, PlainTextHandler },
-                                    { DOMAINHANDLER, DomainZipHandler },
-                                    { UNKNOWNHANDLER, UnknownTypeHandler }
+                                    { MD5HANDLER, f => Md5ZipHandler(f, logCtx) },
+                                    { PLAINTEXTHANDLER, f => PlainTextHandler(f, logCtx) },
+                                    { DOMAINHANDLER, f => DomainZipHandler(f, logCtx) },
+                                    { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
                                 ClientWorkingDirectory);
@@ -609,7 +630,7 @@ namespace UnsubLib
                 }
                 catch (Exception exFile)
                 {
-                    await _fw.Error(nameof(DownloadUnsubFiles), $"OuterCatch({networkName}):: {uri.Key}::{exFile}");
+                    await _fw.Error(nameof(DownloadUnsubFiles), $"OuterCatch({networkName})::{uri.Key}::{logCtx}::{exFile}");
                 }
             });
 
@@ -1326,50 +1347,10 @@ namespace UnsubLib
             return Jw.Json("NotUnsub", notFound);
         }
 
-        public async Task<IGenericEntity> GetNetworkCampaigns(string networkId, string apiKey, string apiUrl)
-        {
-            IDictionary<string, string> parms = new Dictionary<string, string>()
-            {
-                { "apikey", apiKey },
-                { "apiFunc", "getcampaigns" }
-            };
-
-            string campaignXml = null;
-
-            await _fw.Log(nameof(GetNetworkCampaigns), $"UseLocalNetworkFiles = {UseLocalNetworkFile}");
-
-            if (!UseLocalNetworkFile)
-            {
-                await _fw.Log(nameof(GetNetworkCampaigns), "Getting campaigns from Network");
-                campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
-                File.WriteAllText(LocalNetworkFilePath + "\\" + networkId + ".xml", campaignXml);
-            }
-            else
-            {
-                await _fw.Trace(nameof(GetNetworkCampaigns), $@"Reading Local Network File: {LocalNetworkFilePath}\{networkId}.xml");
-                campaignXml = File.ReadAllText($@"{LocalNetworkFilePath}\{networkId}.xml");
-            }
-
-            return await Sql.SqlToGenericEntity(Conn, "MergeNetworkCampaigns", Jw.Json(new { NetworkId = networkId }), campaignXml);
-        }
-
-
-        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string networkCampaignId, int maxConnections)
+        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string networkCampaignId, INetworkProvider networkProvider, int maxConnections)
         {
             string uri = null;
             var networkName = network.GetS("Name");
-            var apiKey = network.GetS($"Credentials/NetworkApiKey");
-            var apiUrl = network.GetS($"Credentials/NetworkApiUrl");
-
-            IDictionary<string, string> parms = new Dictionary<string, string>()
-            {
-                { "apikey", apiKey },
-                { "apiFunc", "getsuppression" },
-                { "campaignid", networkCampaignId }
-            };
-
-            var suppDetails = await ProtocolClient.HttpPostAsync(apiUrl, parms, 60, "", maxConnections);
-            var xml = new XmlDocument();
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
             {
                 new UnsubFileProviders.UnsubCentral(_fw),
@@ -1380,53 +1361,57 @@ namespace UnsubLib
 
             try
             {
-                xml.LoadXml(suppDetails);
-                var xn = xml.SelectSingleNode("/dataset/data/suppurl");
-                var usuri = new Uri(xn.FirstChild.Value);
+                var locationUrl = await networkProvider.GetSuppresionLocationUrl(network, networkCampaignId);
 
-                uri = fileLocationProviders.Select(p => p.GetFileUrl(network, usuri).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
+                uri = locationUrl == null
+                    ? null
+                    : fileLocationProviders.Select(p => p.GetFileUrl(network, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                 if (uri.IsNullOrWhitespace())
                 {
-                    await _fw.Error(nameof(GetSuppressionFileUri), $"Failed to retrieve unsub file from: {networkName} {usuri}");
+                    await _fw.Error(nameof(GetSuppressionFileUri), $"Failed to retrieve unsub file from: {networkName}:{networkCampaignId} {locationUrl}");
                 }
             }
-            catch (Exception findUnsubException)
+            catch (HaltingException)
             {
-                await _fw.Error(nameof(GetSuppressionFileUri), $"Exception finding unsub file source: {suppDetails}::{findUnsubException}");
-                throw new Exception("Exception finding unsub file source.");
+                throw;
+            }
+            catch (Exception e)
+            {
+                await _fw.Error(nameof(GetSuppressionFileUri), $"Exception finding unsub file source: {networkName}::{networkCampaignId}::{e}");
             }
 
             return uri;
         }
 
-        public async Task<IDictionary<string, object>> DownloadSuppressionFiles(IGenericEntity network, string unsubUrl)
+        public async Task<IDictionary<string, object>> DownloadSuppressionFiles(IGenericEntity network, string unsubUrl, string logContext)
         {
             IDictionary<string, object> dr = null;
             var networkName = network.GetS("Name");
             var networkType = network.GetS($"Credentials/NetworkType");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
-            string authString = null;
+            var uri = new Uri(unsubUrl);
+            string authString = network.GetD("Credentials/DomainAuthStrings").FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
-            if (networkType == "Amobee" && !unsubUrl.Contains("s3.amazonaws.com"))
-            {
-                var unsubCentralUserName = network.GetS("Credentials/UnsubCentralUserName");
-                var unsubCentralPassword = network.GetS("Credentials/UnsubCentralPassword");
+            //if (networkType == "Amobee" && !unsubUrl.Contains("s3.amazonaws.com"))
+            //{
+            //    var unsubCentralUserName = network.GetS("Credentials/UnsubCentralUserName");
+            //    var unsubCentralPassword = network.GetS("Credentials/UnsubCentralPassword");
 
-                authString = unsubCentralUserName + ":" + unsubCentralPassword;
-            }
+            //    authString = unsubCentralUserName + ":" + unsubCentralPassword;
+            //}
 
             dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
                 new Dictionary<string, Func<FileInfo, Task<object>>>()
                 {
-                    { MD5HANDLER, Md5ZipHandler },
-                    { PLAINTEXTHANDLER, PlainTextHandler },
-                    { DOMAINHANDLER, DomainZipHandler },
-                    { UNKNOWNHANDLER, UnknownTypeHandler }
+                    { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
+                    { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
+                    { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
+                    { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
                 },
                 ClientWorkingDirectory, 30 * 60, parallelism);
 
-            if (dr?.Any() == false) await _fw.Error(nameof(DownloadSuppressionFiles), $"No file downloaded {networkName} {unsubUrl}");
+            if (dr?.Any() == false) await _fw.Error(nameof(DownloadSuppressionFiles), $"No file downloaded {networkName} {unsubUrl} {logContext}");
 
             return dr;
         }
@@ -1491,30 +1476,30 @@ namespace UnsubLib
             return UNKNOWNHANDLER;
         }
 
-        public async Task<object> Md5ZipHandler(FileInfo f)
+        public async Task<object> Md5ZipHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
-        public async Task<object> PlainTextHandler(FileInfo f)
+        public async Task<object> PlainTextHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
-        public async Task<object> DomainZipHandler(FileInfo f)
+        public async Task<object> DomainZipHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
             return fileName;
         }
 
-        public async Task<object> UnknownTypeHandler(FileInfo fi)
+        public async Task<object> UnknownTypeHandler(FileInfo fi, string logContext)
         {
-            await _fw.Error(nameof(UnknownTypeHandler), $"Unknown file type: {fi.FullName}");
+            await _fw.Error(nameof(UnknownTypeHandler), $"Unknown file type: {fi.FullName} { logContext}");
             return new object();
         }
     }
