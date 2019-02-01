@@ -44,12 +44,11 @@ namespace UnsubLib.UnsubFileProviders
             optizmoUrl.Append(pathParts[pathParts.Length - 1]);
             optizmoUrl.Append($"?token={optizmoToken}&format=md5");
             //503 Service Unavailable
-            Tuple<bool, string> aojson = null;
             var retryCount = 0;
             var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
             while (retryCount < 5)
             {
-                aojson = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), 60 * 30);
+                var aojson = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), null, 60 * 30);
                 if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
                 {
                     if (aojson.Item2.Contains("503 Service Unavailable"))

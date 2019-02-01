@@ -36,7 +36,7 @@ namespace Utility
     public static class ErrorSeverity
     {
         public const int Log = 0;
-        public const int Alert = 750;
+        public const int Warn = 750;
         public const int Error = 1000;
         public const int Fatal = 3000;
     }

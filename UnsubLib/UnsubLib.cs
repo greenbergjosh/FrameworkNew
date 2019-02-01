@@ -266,7 +266,7 @@ namespace UnsubLib
                     return;
                 }
 
-                var uri = await GetSuppressionFileUri(network, networkCampaignId, network.GetS("Credentials/Parallelism").ParseInt() ?? 5);
+                var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider, network.GetS("Credentials/Parallelism").ParseInt() ?? 5);
 
                 if (uri.IsNullOrWhitespace())
                 {
@@ -424,6 +424,7 @@ namespace UnsubLib
                 task = campaigns.GetL("").ForEachAsync(parallelism, cancelToken.Token, async c =>
                 {
                     var campaignId = c.GetS("NetworkCampaignId");
+                    var unsubRelationshipId = c.GetS("NetworkUnsubRelationshipId");
 
                     try
                     {
@@ -431,7 +432,7 @@ namespace UnsubLib
 
                         await _fw.Trace(nameof(GetUnsubUris), $"Calling GetSuppressionFileUri({networkName}):: for campaign {campaignId}");
 
-                        var uri = await GetSuppressionFileUri(network, campaignId, networkProvider, parallelism);
+                        var uri = await GetSuppressionFileUri(network, unsubRelationshipId, networkProvider, parallelism);
 
                         await _fw.Trace(nameof(GetUnsubUris), $"Completed GetSuppressionFileUri({networkName}):: for campaign {campaignId}");
 
@@ -473,10 +474,12 @@ namespace UnsubLib
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
+            await _fw.Log(nameof(DownloadUnsubFiles), $"Starting file downloads for {networkName}");
+
             var ncf = new ConcurrentDictionary<string, string>();
             var ndf = new ConcurrentDictionary<string, string>();
 
-            await Pw.ForEachAsync(uris, parallelism, async uri =>
+            await uris.ForEachAsync(parallelism, async uri =>
             {
                 var logCtx = $"campaigns: {uri.Value.Select(v => v.GetS("id")).Join(":")}";
 
@@ -516,8 +519,8 @@ namespace UnsubLib
                     if (cf.ContainsKey(MD5HANDLER))
                     {
                         var fmd5 = cf[MD5HANDLER].ToString().ToLower();
-
                         var fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt").Length;
+
                         await _fw.Trace(nameof(DownloadUnsubFiles), $"RemoveNonAsciiFromFile({networkName}):: for file {fmd5}({fileSize})");
 
                         await UnixWrapper.RemoveNonAsciiFromFile(ClientWorkingDirectory,
@@ -533,15 +536,7 @@ namespace UnsubLib
 
                         await _fw.Trace(nameof(DownloadUnsubFiles), $"SortFile({networkName}):: for file {fmd5}({fileSize})");
 
-                        await UnixWrapper.SortFile(
-                            ClientWorkingDirectory,
-                            fmd5 + ".txt.cl2",
-                            fmd5 + ".txt.srt",
-                            false,
-                            true,
-                            300000,
-                            4,
-                            SortBufferSize);
+                        await UnixWrapper.SortFile(ClientWorkingDirectory, fmd5 + ".txt.cl2", fmd5 + ".txt.srt", false, true, 300000, 4, SortBufferSize);
 
                         fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt").Length;
 
@@ -563,9 +558,7 @@ namespace UnsubLib
                             await ProtocolClient.UploadFile(
                                 ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt",
                                 FileCacheFtpServerPath + "/" + fmd5 + ".txt.srt",
-                                FileCacheFtpServer,
-                                FileCacheFtpUser,
-                                FileCacheFtpPassword);
+                                FileCacheFtpServer, FileCacheFtpUser, FileCacheFtpPassword);
 
                             await _fw.Trace(nameof(DownloadUnsubFiles), $"Completed UploadToFtp({networkName}):: for file {fmd5}");
 
@@ -633,6 +626,8 @@ namespace UnsubLib
                     await _fw.Error(nameof(DownloadUnsubFiles), $"OuterCatch({networkName})::{uri.Key}::{logCtx}::{exFile}");
                 }
             });
+
+            await _fw.Log(nameof(DownloadUnsubFiles), $"Finished file downloads for {networkName}");
 
             return new Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>(ncf, ndf);
         }
@@ -1176,7 +1171,7 @@ namespace UnsubLib
         {
             var tcs = new TaskCompletionSource<bool>();
             var watcher = new FileSystemWatcher(finalFile.Directory.FullName) { EnableRaisingEvents = true };
-            var timer = new Timer(FileCopyTimeout) { AutoReset = false };
+            var timer = new System.Timers.Timer(FileCopyTimeout) { AutoReset = false };
 
             void dispose()
             {
@@ -1347,7 +1342,7 @@ namespace UnsubLib
             return Jw.Json("NotUnsub", notFound);
         }
 
-        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string networkCampaignId, INetworkProvider networkProvider, int maxConnections)
+        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)
         {
             string uri = null;
             var networkName = network.GetS("Name");
@@ -1361,7 +1356,7 @@ namespace UnsubLib
 
             try
             {
-                var locationUrl = await networkProvider.GetSuppresionLocationUrl(network, networkCampaignId);
+                var locationUrl = await networkProvider.GetSuppresionLocationUrl(network, unsubRelationshipId);
 
                 uri = locationUrl == null
                     ? null
@@ -1369,7 +1364,7 @@ namespace UnsubLib
 
                 if (uri.IsNullOrWhitespace())
                 {
-                    await _fw.Error(nameof(GetSuppressionFileUri), $"Failed to retrieve unsub file from: {networkName}:{networkCampaignId} {locationUrl}");
+                    await _fw.Error(nameof(GetSuppressionFileUri), $"Failed to retrieve unsub file from: {networkName}:{unsubRelationshipId} {locationUrl}");
                 }
             }
             catch (HaltingException)
@@ -1378,7 +1373,7 @@ namespace UnsubLib
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(GetSuppressionFileUri), $"Exception finding unsub file source: {networkName}::{networkCampaignId}::{e}");
+                await _fw.Error(nameof(GetSuppressionFileUri), $"Exception finding unsub file source: {networkName}::{unsubRelationshipId}::{e}");
             }
 
             return uri;
@@ -1388,19 +1383,10 @@ namespace UnsubLib
         {
             IDictionary<string, object> dr = null;
             var networkName = network.GetS("Name");
-            var networkType = network.GetS($"Credentials/NetworkType");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             var uri = new Uri(unsubUrl);
             string authString = network.GetD("Credentials/DomainAuthStrings").FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
-
-            //if (networkType == "Amobee" && !unsubUrl.Contains("s3.amazonaws.com"))
-            //{
-            //    var unsubCentralUserName = network.GetS("Credentials/UnsubCentralUserName");
-            //    var unsubCentralPassword = network.GetS("Credentials/UnsubCentralPassword");
-
-            //    authString = unsubCentralUserName + ":" + unsubCentralPassword;
-            //}
-
+            
             dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
                 new Dictionary<string, Func<FileInfo, Task<object>>>()
                 {
