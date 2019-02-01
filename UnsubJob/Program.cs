@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Utility;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace UnsubJob
 {
@@ -65,6 +66,11 @@ namespace UnsubJob
                         await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
                         await nw.ScheduledUnsubJob(n, networkCampaignId);
                         await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
+                    }
+                    catch (UnsubLib.NetworkProviders.HaltingException e)
+                    {
+                        await Fw.Alert(nameof(UnsubJob), "Unsub Fatal Error", $"Network fatal error for {name}: {e.UnwrapForLog()}");
+                        continue;
                     }
                     catch (Exception exScheduledUnsub)
                     {
