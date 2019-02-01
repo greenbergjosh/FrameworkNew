@@ -113,6 +113,11 @@ namespace Utility
 
         #region Collections
 
+        public static void ForEach<T>(this IEnumerable<T> coll, Action<T> body)
+        {
+            if (coll != null) foreach (var i in coll) body.Invoke(i);
+        }
+
         public static void AddRange<TK, TV>(this Dictionary<TK, TV> dic, IEnumerable<(TK key, TV value)> collection)
         {
             foreach (var i in collection)

@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Internal;
 using Fs = Utility.FileSystem;
 
 namespace Utility
@@ -646,18 +648,22 @@ namespace Utility
 
         public static async Task<IGenericEntity> HttpGetAsync(FrameworkWrapper fw, IGenericEntity ge)
         {
-            Tuple<bool, string> resp = await HttpGetAsync(ge.GetS("uri"),
-                !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);
+            var resp = await HttpGetAsync(ge.GetS("uri"), null, !String.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);
             return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { success = resp.Item1, result = resp.Item2 }));
         }
 
-        public static async Task<Tuple<bool, string>> HttpGetAsync(string path, double timeoutSeconds = 60)
+        public static async Task<(bool success, string body)> HttpGetAsync(string path, IEnumerable<(string key, string value)> headers = null, double timeoutSeconds = 60)
         {
             using (HttpClient client = new HttpClient())
             {
                 client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
-                HttpResponseMessage response = await client.GetAsync(path);
-                return new Tuple<bool, string>(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+
+                headers?.ForEach(h => client.DefaultRequestHeaders.Add(h.key, h.value));
+
+                using (var response = await client.GetAsync(path))
+                {
+                    return (success: response.IsSuccessStatusCode, body: await response.Content.ReadAsStringAsync());
+                }
             }
         }
     }

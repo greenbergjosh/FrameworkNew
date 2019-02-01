@@ -93,7 +93,7 @@ namespace SimpleImportExport
                 var url = postProcessCmd.Substring(9);
 
                 await Fw.Err(ErrorSeverity.Log, $"{nameof(JobPostProcess)}:Http:Get", ErrorDescriptor.Log, $"{jobName}\t{url}");
-                await ProtocolClient.HttpGetAsync(url, 30);
+                await ProtocolClient.HttpGetAsync(url, null, 30);
             }
         }
 
