@@ -17,7 +17,7 @@ namespace Utility
             ConName = conName;
         }
 
-        public async Task<string> GetEntity(Guid id)
+        public async Task<string> GetEntity(Guid id, DataLayerClient client)
         {
             return await _entities.GetOrAdd(id, async _ =>
             {
@@ -28,10 +28,10 @@ namespace Utility
             });
         }
 
-        public async Task<IGenericEntity> GetEntityGe(Guid id)
+        public async Task<IGenericEntity> GetEntityGe(Guid id, DataLayerClient client)
         {
             IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(JsonWrapper.Json(new { Config = await GetEntity(id) },
+            var gpstate = JsonConvert.DeserializeObject(JsonWrapper.Json(new { Config = await GetEntity(id, client) },
                 new bool[] { false }));
             gp.InitializeEntity(null, null, gpstate);
             return gp;
