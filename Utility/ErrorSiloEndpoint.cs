@@ -6,14 +6,16 @@ namespace Utility
     {
         public string connectionString;
         public int sequence = 0;
+        public DataLayerClient dataLayerClient;
 
-        public ErrorSiloEndpoint(string connectionString)
+        public ErrorSiloEndpoint(string dataLayerType, string connectionString)
         {
             this.connectionString = connectionString;
+            this.dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
         public async Task<bool> Audit()
         {
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
+            string res = await dataLayerClient.InsertErrorLog(this.connectionString, 0, 1, "ErrorLogAudit", "", "", "").ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return true;
             else return false;
@@ -22,7 +24,7 @@ namespace Utility
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
             ErrorLogError e = (ErrorLogError)w;
-            string res = await SqlWrapper.InsertErrorLog(this.connectionString, sequence++, e.Severity, e.Process, 
+            string res = await dataLayerClient.InsertErrorLog(this.connectionString, sequence++, e.Severity, e.Process,
                 e.Method, e.Descriptor, e.Message).ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return LoadBalancedWriter.Result.Success;

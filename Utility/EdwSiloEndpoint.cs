@@ -12,10 +12,12 @@ namespace Utility
     public class EdwSiloEndpoint : IEndpoint
     {
         public string connectionString;
+        public DataLayerClient dataLayerClient;
 
-        public EdwSiloEndpoint(string connectionString)
+        public EdwSiloEndpoint(string dataLayerType, string connectionString)
         {
             this.connectionString = connectionString;
+            this.dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
         public async Task<bool> Audit()
         {
@@ -29,7 +31,7 @@ namespace Utility
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            string res = await SqlWrapper.InsertEdwPayload(this.connectionString, w.ToString(), timeoutSeconds)
+            string res = await this.dataLayerClient.InsertEdwPayload(this.connectionString, w.ToString(), timeoutSeconds)
                 .ConfigureAwait(false);
             string result = res.ToLower();
             if (result == "success") return LoadBalancedWriter.Result.Success;
