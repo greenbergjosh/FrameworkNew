@@ -21,7 +21,7 @@ namespace Utility
         {
             return await _entities.GetOrAdd(id, async _ =>
             {
-                return await SqlWrapper.SqlServerProviderEntry(this.ConName,
+                return await client.RetrieveEntry(this.ConName,
                                 "SelectConfig",
                                 JsonWrapper.Json(new { InstanceId = id }),
                                 "");
