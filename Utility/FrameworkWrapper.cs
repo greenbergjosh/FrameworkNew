@@ -10,9 +10,11 @@ namespace Utility
 
     public class FrameworkWrapper
     {
-        public string ConnectionString;
         public string[] ConfigurationKeys;
         public string SelectConfigSproc;
+        public DataLayerClient RootDataLayerClient;
+        public Dictionary<string, (string Id, DataLayerClient DataLayerClient, string ConnStr)> Connections;
+        public Dictionary<string, Dictionary<string, string>> StoredFunctions;
         public ConfigEntityRepo Entities;
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
@@ -30,15 +32,17 @@ namespace Utility
                             .SetBasePath(Directory.GetCurrentDirectory())
                             .AddJsonFile("appsettings.json")
                             .Build();
-                this.ConnectionString = configuration.GetConnectionString("DefaultConnection");
+                this.RootDataLayerClient = DataLayerClientFactory.DataStoreInstance(configuration.GetValue<String>("ConnectionString:DataLayerType"));
                 this.ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
+                this.Connections = new Dictionary<string, (string Id, DataLayerClient DataLayerClient, string ConnStr)>();
+                this.StoredFunctions = new Dictionary<string, Dictionary<string, string>>();
 
                 if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
 
                 this.SelectConfigSproc = configuration.GetValue<String>("Application:SelectConfigSproc");
 
-                this.StartupConfiguration = SqlWrapper.Initialize(this.ConnectionString, this.ConfigurationKeys, this.SelectConfigSproc).GetAwaiter().GetResult();
-                this.Entities = new ConfigEntityRepo(SqlWrapper.GlobalConfig);
+                this.StartupConfiguration = RootDataLayerClient.Initialize(configuration.GetValue<String>("ConnectionString:ConnectionString"), this.ConfigurationKeys, this.SelectConfigSproc, this.Connections, this.StoredFunctions).GetAwaiter().GetResult();
+                this.Entities = new ConfigEntityRepo(RootDataLayerClient.GlobalConfig);
                 List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
                 string scriptsPath = Path.GetFullPath(this.StartupConfiguration.GetS("Config/RoslynScriptsPath"));
                 this.RoslynWrapper = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
