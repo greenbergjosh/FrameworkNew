@@ -28,14 +28,14 @@ namespace Utility
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
             List<IEndpoint> endpoints = new List<IEndpoint>();
-            foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("")));
+            foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return endpoints;
         }
 
         public static async Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
         {
             List<IEndpoint> endpoints = new List<IEndpoint>();
-            foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("")));
+            foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return endpoints;
         }
 
