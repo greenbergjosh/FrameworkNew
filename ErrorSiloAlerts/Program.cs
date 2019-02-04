@@ -22,7 +22,7 @@ namespace ErrorSiloAlerts
                 var smtpRelay = fw.StartupConfiguration.GetS("Config/SmtpRelay");
                 var smtpPort = fw.StartupConfiguration.GetS("Config/SmtpPort").ParseInt() ?? 0;
 
-                var lastSeqIds = (await SqlWrapper.SqlToGenericEntity("History", "LastSeqIds", "", "")).GetL("").ToDictionary(d => d.GetS("ConfigName"), d => d.GetS("LastSeqId").ParseLong().Value);
+                var lastSeqIds = (await fw.RootDataLayerClient.GenericEntityFromEntry("History", "LastSeqIds", "", "")).GetL("").ToDictionary(d => d.GetS("ConfigName"), d => d.GetS("LastSeqId").ParseLong().Value);
                 var emails = new List<(string configName, long lastSeqId, MailMessage msg)>();
 
                 emails.AddRange(await GetEmailAlertDescriptorEvents(lastSeqIds, DateTime.Today.AddDays(minTimestampDays * -1)));
@@ -36,7 +36,7 @@ namespace ErrorSiloAlerts
                         try
                         {
                             smtp.Send(msg);
-                            var res = await SqlWrapper.SqlToGenericEntity("History", "InsertAlertsSent", Jw.Json(new { configName, lastSeqId }), "");
+                            var res = await fw.RootDataLayerClient.GenericEntityFromEntry("History", "InsertAlertsSent", Jw.Json(new { configName, lastSeqId }), "");
                             var err = res.GetS("ErrorMessage");
 
                             if (!err.IsNullOrWhitespace()) await fw.Err(ErrorSeverity.Error, nameof(Main), ErrorDescriptor.Exception, $"InsertAlertsSent failed: {err} Config: {configName} LastSeqId: {lastSeqIds}");
@@ -62,7 +62,7 @@ namespace ErrorSiloAlerts
             var config = fw.StartupConfiguration.GetE("Config/EmailAlerts");
             var configuredGroupNames = config.GetD("").Select(d => d.Item1);
             var minLastSeqId = lastSeqIds.Where(s => configuredGroupNames.Contains(s.Key)).Select(s => (long?)s.Value).Min() ?? 0;
-            var rawEmailAlerts = await SqlWrapper.SqlToGenericEntity("ErrorWarehouse", "EmailAlerts", Jw.Json(new { lastSeqId = minLastSeqId, minTimestamp }), "");
+            var rawEmailAlerts = await fw.RootDataLayerClient.GenericEntityFromEntry("ErrorWarehouse", "EmailAlerts", Jw.Json(new { lastSeqId = minLastSeqId, minTimestamp }), "");
             var configGroup = new Dictionary<string, (IGenericEntity config, List<(long seqId, IGenericEntity log)> logs)>();
             var emails = new List<(string configName, long lastSeqId, MailMessage msg)>();
 

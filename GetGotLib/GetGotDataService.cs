@@ -159,117 +159,117 @@ namespace GetGotLib
                     switch (m)
                     {
                         case "SelectSubCampaignDraft":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "", 1);
                             break;
 
                         case "CreateImpression":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateClick":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateAction":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "GenerateInbox":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "GetRecentPosts":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateUser":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateUserSignup":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectInterestGroups":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateCampaign":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectMessageBodyTemplatesByMeta":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectMessageBodyTemplateQuery":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "ValidateUser":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateSubCampaign":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "UpdatePassword":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "UserContactList":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "VerifyUser":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "FollowUsers":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectInterests":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectInfluencers":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "CreateSubCampaignDraft":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectCampaign":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
                         case "SelectSubCampaign":
-                            result = await SqlWrapper.SqlServerProviderEntry(GETGOT_CONFIG,
+                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
                                 m, requestFromPost, "{}", 1);
                             break;
 
@@ -308,7 +308,7 @@ namespace GetGotLib
             int oidx = Int32.Parse(r.GetS("o"));
             int iidx = Int32.Parse(r.GetS("i"));
 
-            string cRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+            string cRes = await Fw.RootDataLayerClient.RetrieveEntry(this.GetGotDbConnectionString,
                     "SelectCampaign",
                     Jw.Json(new
                     {
@@ -328,7 +328,7 @@ namespace GetGotLib
 
             if (!String.IsNullOrEmpty(queryId))
             {
-                string queryRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+                string queryRes = await Fw.RootDataLayerClient.RetrieveEntry(this.GetGotDbConnectionString,
                     "SelectMessageBodyTemplateQuery",
                     Jw.Json(new
                     {
@@ -423,7 +423,7 @@ namespace GetGotLib
         public async Task<IGenericEntity> SelectMessageBodyTemplatesByMeta(string meta, string advertiserId)
         {
             (var pos, var neg) = SplitMetaString(meta, ' ');
-            string metaRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+            string metaRes = await Fw.RootDataLayerClient.RetrieveEntry(this.GetGotDbConnectionString,
                 "SelectMessageBodyTemplatesByMeta",
                 Jw.Json(new
                 {
