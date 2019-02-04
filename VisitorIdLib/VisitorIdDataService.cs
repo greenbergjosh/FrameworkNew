@@ -381,7 +381,7 @@ namespace VisitorIdLib
 
                         if (!cookie.sid.IsNullOrWhitespace() && md5.IsNullOrWhitespace())
                         {
-                            IGenericEntity lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
+                            IGenericEntity lookupGe = await fw.RootDataLayerClient.GenericEntityFromEntry("VisitorId",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookie.sid }),
                                "", null, null, this.SqlTimeoutSec);
@@ -486,7 +486,7 @@ namespace VisitorIdLib
                         opq["page"] = page;
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
-                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
+                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid), fw.RootDataLayerClient);
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
@@ -652,7 +652,7 @@ namespace VisitorIdLib
 
                     if (eml.IsNullOrWhitespace() && !cookie.sid.IsNullOrWhitespace())
                     {
-                        var lookupGe = await SqlWrapper.SqlToGenericEntity("VisitorId",
+                        var lookupGe = await fw.RootDataLayerClient.GenericEntityFromEntry("VisitorId",
                             "LookupBySessionId",
                             Jw.Json(new { Sid = cookie.sid }),
                             "", null, null, this.SqlTimeoutSec);
@@ -736,10 +736,10 @@ namespace VisitorIdLib
 
                     try
                     {
-                        IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
+                        IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid), fw.RootDataLayerClient);
                         Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                         var sendMd5ToPostingQueue = emlProvider.GetS("Config/SaveResult").ParseBool() ?? false;
-                        string lbm = await fw.Entities.GetEntity(lbmId);
+                        string lbm = await fw.Entities.GetEntity(lbmId, fw.RootDataLayerClient);
 
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
                             new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());

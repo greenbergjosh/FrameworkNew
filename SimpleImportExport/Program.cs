@@ -29,7 +29,7 @@ namespace SimpleImportExport
 
                 var sqlTimeoutSec = Fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
                 ServicePointManager.DefaultConnectionLimit = Fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
-                var jobCfg = await Fw.Entities.GetEntityGe(jobId);
+                var jobCfg = await Fw.Entities.GetEntityGe(jobId, Fw.RootDataLayerClient);
 
                 var src = GetEnpointConfig(jobCfg, "Source");
                 var dest = GetEnpointConfig(jobCfg, "Destination");
@@ -44,7 +44,7 @@ namespace SimpleImportExport
                 {
                     try
                     {
-                        var shouldDownload = await SqlWrapper.SqlServerProviderEntry("SimpleImportExport", "spShouldTransfer", Jw.Json(new { JobId = jobId, FileName = f.name }), "", sqlTimeoutSec);
+                        var shouldDownload = await Fw.RootDataLayerClient.RetrieveEntry("SimpleImportExport", "spShouldTransfer", Jw.Json(new { JobId = jobId, FileName = f.name }), "", sqlTimeoutSec);
 
                         if (shouldDownload == "1")
                         {
@@ -52,7 +52,7 @@ namespace SimpleImportExport
 
                             var fileSize = await dest.SendStream(f, src);
                             var sargs = Jw.Json(new { JobId = jobId, FileName = f.name, FileSize = fileSize, FileLineCount = 0 });
-                            var res = await SqlWrapper.SqlToGenericEntity("SimpleImportExport", "LogTransfer", sargs, "", timeout: sqlTimeoutSec);
+                            var res = await Fw.RootDataLayerClient.GenericEntityFromEntry("SimpleImportExport", "LogTransfer", sargs, "", timeout: sqlTimeoutSec);
 
                             if (res.GetS("Result") != "Success") throw new Exception($"Sql exception logging download: {res.GetS("Message")} Args: {sargs}");
 
