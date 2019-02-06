@@ -52,7 +52,13 @@ namespace VisitorIdLib
             this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
             this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
+            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
+                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+            ConfigProviders(this.Fw);
+        }
 
+        public VisitorIdDataService ConfigProviders(FrameworkWrapper fw)
+        {
             foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
                 string afid = afidCfg.GetS("afid");
@@ -85,8 +91,7 @@ namespace VisitorIdLib
                 }
                 VisitorIdEmailProviderSequences.Add(emProviderSeqName, dseq);
             }
-            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
-                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+            return this;
         }
 
         //SessionInitiate, ProviderXAttempt, ProviderXCapture, ..., EmailCaptureFromWebsite
