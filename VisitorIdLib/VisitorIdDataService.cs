@@ -52,7 +52,13 @@ namespace VisitorIdLib
             this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
             this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
+            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
+                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+            ConfigProviders(this.Fw);
+        }
 
+        public VisitorIdDataService ConfigProviders(FrameworkWrapper fw)
+        {
             foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
                 string afid = afidCfg.GetS("afid");
@@ -85,8 +91,7 @@ namespace VisitorIdLib
                 }
                 VisitorIdEmailProviderSequences.Add(emProviderSeqName, dseq);
             }
-            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
-                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+            return this;
         }
 
         //SessionInitiate, ProviderXAttempt, ProviderXCapture, ..., EmailCaptureFromWebsite
@@ -734,11 +739,11 @@ namespace VisitorIdLib
                         string lbm = await fw.Entities.GetEntity(lbmId);
 
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                            new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());
+                            new { context, md5, provider = emlProvider, err = fw.Err }, new StateWrapper());
 
                         if (!eml.IsNullOrWhitespace() && sendMd5ToPostingQueue)
                         {
-                            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                            await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
                                 PL.O(new
                                 {
                                     emailSlot = slot,
@@ -756,7 +761,7 @@ namespace VisitorIdLib
                     }
                     catch (Exception ex)
                     {
-                        await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
+                        await fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
                         slot++;
                         continue;
                     }
@@ -790,7 +795,7 @@ namespace VisitorIdLib
 
             if (isAsync && (slot < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
-                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
                    PL.O(new
                    {
                        rsids,
