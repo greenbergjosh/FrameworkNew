@@ -66,8 +66,7 @@ namespace CountdownGenerator
 
             try
             {
-                StreamReader reader = new StreamReader(context.Request.Body);
-                requestFromPost = await reader.ReadToEndAsync();
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 string imageName = context.Request.Query["i"];
                 int dx = Int32.TryParse(context.Request.Query["dx"], out dx) == false ? 0 : dx;
