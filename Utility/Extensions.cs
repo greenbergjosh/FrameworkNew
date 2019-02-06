@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Utility
 {
     public static class Extensions
     {
         #region string
+
+        public static string Join(this IEnumerable<string> coll, string separator) => string.Join(separator, coll.ToArray());
 
         public static bool IsNullOrWhitespace(this string str) => string.IsNullOrEmpty(str?.Trim());
 
@@ -54,7 +59,64 @@ namespace Utility
 
         #endregion
 
-        public static string Join(this IEnumerable<string> coll, string separator) => string.Join(separator, coll.ToArray());
+        #region Exceptions
+
+        public static string UnwrapForLog(this Exception ex, bool outputStack = true)
+        {
+            var result = new StringBuilder();
+            var stack = ex.StackTrace;
+            result.AppendLine(ex.Message);
+
+            while (ex.InnerException != null)
+            {
+                ex = ex.InnerException;
+                result.AppendLine("\t" + ex.Message);
+                stack = ex.StackTrace;
+            }
+
+            if (outputStack)
+            {
+                result.AppendLine(stack.Replace("   ", "\t"));
+            }
+
+            return result.ToString();
+        }
+
+        public static string UnwrapForLog(this AggregateException aggEx, bool outputStack = true)
+        {
+            var result = new StringBuilder();
+
+            for (var i = 0; i < aggEx.InnerExceptions.Count; i++)
+            {
+                var ex = aggEx.InnerExceptions[i];
+                var stack = ex.StackTrace;
+
+                result.AppendLine($"[{i}] : {ex.Message}");
+
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                    result.AppendLine("\t" + ex.Message);
+                    stack = ex.StackTrace;
+                }
+
+                if (outputStack)
+                {
+                    result.AppendLine(stack.Replace("   ", "\t"));
+                }
+            }
+
+            return result.ToString();
+        }
+
+        #endregion
+
+        #region Collections
+
+        public static void ForEach<T>(this IEnumerable<T> coll, Action<T> body)
+        {
+            if (coll != null) foreach (var i in coll) body.Invoke(i);
+        }
 
         public static void AddRange<TK, TV>(this Dictionary<TK, TV> dic, IEnumerable<(TK key, TV value)> collection)
         {
@@ -62,11 +124,6 @@ namespace Utility
             {
                 dic.Add(i.key, i.value);
             }
-        }
-
-        public static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func)
-        {
-            return await source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
         }
 
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct
@@ -77,6 +134,13 @@ namespace Utility
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct
         {
             return key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
+        }
+
+        #endregion
+
+        public static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func)
+        {
+            return await source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
         }
 
     }

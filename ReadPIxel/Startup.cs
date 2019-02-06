@@ -68,8 +68,7 @@ namespace ReadPixel
 
             try
             {
-                StreamReader reader = new StreamReader(context.Request.Body);
-                requestFromPost = await reader.ReadToEndAsync();
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 string pixelValue = context.Request.Query["pxl"];
                 if (!String.IsNullOrEmpty(pixelValue))

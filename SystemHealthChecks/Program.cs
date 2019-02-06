@@ -23,7 +23,7 @@ namespace SystemHealthChecks
 
                 if (!alertPayload.IsNullOrWhitespace())
                 {
-                    await fw.Err(ErrorSeverity.Alert, nameof(LowDiskSpaceChecks), ErrorDescriptor.EmailAlert, alertPayload);
+                    await fw.Err(ErrorSeverity.Warn, nameof(LowDiskSpaceChecks), ErrorDescriptor.EmailAlert, alertPayload);
                 }
             }
             catch (Exception e)

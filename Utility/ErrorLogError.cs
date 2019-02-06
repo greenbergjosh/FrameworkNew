@@ -1,4 +1,6 @@
-﻿namespace Utility
+﻿using System.Collections.Generic;
+
+namespace Utility
 {
     public class ErrorLogError
     {
@@ -34,15 +36,28 @@
     public static class ErrorSeverity
     {
         public const int Log = 0;
-        public const int Alert = 750;
+        public const int Warn = 750;
         public const int Error = 1000;
+        public const int Fatal = 3000;
     }
 
     public static class ErrorDescriptor
     {
+        public const string Fatal = "Fatal";
         public const string Exception = "Exception";
         public const string Log = "Log";
+        public const string Trace = "Trace";
         public const string EmailAlert = "EmailAlert";
+    }
+
+    public class EmailAlertPayload
+    {
+        public EmailAlertPayload(IEnumerable<EmailAlertPayloadItem> alerts)
+        {
+            Alerts = alerts;
+        }
+
+        public IEnumerable<EmailAlertPayloadItem> Alerts { get; }
     }
 
     public class EmailAlertPayloadItem
