@@ -19,20 +19,19 @@ namespace UnsubLib.UnsubFileProviders
             _seleniumChromeDriverPath = seleniumChromeDriverPath;
         }
 
+        public bool CanHandle(IGenericEntity network, Uri uri) => uri.ToString().Contains("ezepo.net");
+
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {
-            if (uri.ToString().Contains("ezepo.net"))
-            {
-                await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
+            await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
 
-                var ezepoUnsubUrl = await GetEzepoUnsubFileUri(uri.ToString());
+            var ezepoUnsubUrl = await GetEzepoUnsubFileUri(uri.ToString());
 
-                await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {ezepoUnsubUrl}");
+            await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {ezepoUnsubUrl}");
 
-                if (ezepoUnsubUrl != "") return ezepoUnsubUrl;
+            if (ezepoUnsubUrl != "") return ezepoUnsubUrl;
 
-                await _fw.Error(_logMethod, $"Empty Ezepo url: {uri}");
-            }
+            await _fw.Error(_logMethod, $"Empty Ezepo url: {uri}");
 
             return null;
         }

@@ -43,6 +43,9 @@ namespace UnsubLib.NetworkProviders
             {
                 var networkName = network.GetS("Name");
                 var networkId = network.GetS("Id");
+                var relationshipPath = network.GetS("Credentials/UnsubRelationshipPath");
+                var campaignIdPath = network.GetS("Credentials/CampaignIdPath");
+                var campaignNamePath = network.GetS("Credentials/CampaignNamePath");
                 var url = BuildUrl(network.GetS("Credentials/BaseUrl"), network.GetS("Credentials/GetCampaignsPath"), network.GetS("Credentials/NetworkApiKey"), network.GetS("Credentials/NetworkAffiliateId"));
                 string respBody = null;
 
@@ -57,16 +60,18 @@ namespace UnsubLib.NetworkProviders
 
                     respBody = resp.body;
 
-                    return await Sql.SqlToGenericEntity("Unsub", "MergeNetworkCampaignsXml",
+                    var res = await Sql.SqlToGenericEntity("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,
-                            PayloadType = "xml",
-                            DataPath = "/dataset/data",
-                            CampaignIdPath = "campaignid",
-                            NamePath = "name",
-                            RelationshipPath = "campaignid"
+                            PayloadType = "json",
+                            DataPath = "$.data",
+                            CampaignIdPath = campaignIdPath,
+                            NamePath = campaignNamePath,
+                            RelationshipPath = relationshipPath
                         }), respBody);
+
+                    return res;
                 }
                 catch (HaltingException) { throw; }
                 catch (HttpRequestException e)
@@ -76,7 +81,7 @@ namespace UnsubLib.NetworkProviders
                 catch (Exception e)
                 {
                     await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::{respBody ?? "null"}::{e}");
-                    throw new Exception($"Failed to get {networkName} campaigns");
+                    throw new Exception($"Failed to get {networkName} campaigns", e);
                 }
             }
 
@@ -84,7 +89,7 @@ namespace UnsubLib.NetworkProviders
             {
                 var networkName = network.GetS("Name");
                 var networkId = network.GetS("Id");
-                var downloadUrlPath = network.GetS("DownloadUrlPath");
+                var downloadUrlPath = network.GetS("Credentials/DownloadUrlPath");
                 var url = BuildUrl(network.GetS("Credentials/BaseUrl"), network.GetS("Credentials/GetSuppressionPath"),
                     network.GetS("Credentials/NetworkApiKey"), network.GetS("Credentials/NetworkAffiliateId"), unsubRelationshipId);
                 string respBody = null;
@@ -114,7 +119,12 @@ namespace UnsubLib.NetworkProviders
 
             private string BuildUrl(string baseUrl, string path, string apiKey, string affiliateId, string unsubRelationshipId = null, Dictionary<string, string> qs = null)
             {
-                var url = $"{baseUrl}{path}?api_key={apiKey}&affiliate_id={affiliateId}";
+                var url = $"{baseUrl}{path}";
+
+                if (!url.Contains("?")) url += "?";
+                else url += "&";
+
+                url += $"api_key={apiKey}&affiliate_id={affiliateId}";
 
                 if (qs?.Any() == true) url += qs.Select(p => $"&{p.Key}={p.Value}").Join("&");
 
@@ -155,7 +165,7 @@ namespace UnsubLib.NetworkProviders
                     campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
-                    return await Sql.SqlToGenericEntity("Unsub", "MergeNetworkCampaignsXml",
+                    var res = await Sql.SqlToGenericEntity("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,
@@ -166,6 +176,8 @@ namespace UnsubLib.NetworkProviders
                             RelationshipPath = "campaignid"
                         }),
                         campaignXml);
+
+                    return res;
                 }
                 catch (HttpRequestException e)
                 {

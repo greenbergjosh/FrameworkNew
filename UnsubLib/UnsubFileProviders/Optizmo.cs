@@ -17,58 +17,65 @@ namespace UnsubLib.UnsubFileProviders
             _fw = fw;
         }
 
+        public bool CanHandle(IGenericEntity network, Uri uri) => uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace();
+
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {
-            if (uri.ToString().Contains("mailer.optizmo.net"))
-            {
-                await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
+            await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
 
-                var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(uri.AbsolutePath, network.GetS($"Credentials/OptizmoToken"));
+            var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(uri.AbsolutePath, network.GetS($"Credentials/OptizmoToken"));
 
-                await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {optizmoUnsubUrl}");
+            await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {optizmoUnsubUrl}");
 
-                if (optizmoUnsubUrl != "") return optizmoUnsubUrl;
+            if (optizmoUnsubUrl != "") return optizmoUnsubUrl;
 
-                await _fw.Error(_logMethod, $"Empty Optizmo url: {uri}");
-            }
+            await _fw.Error(_logMethod, $"Empty Optizmo url: {uri}");
 
             return null;
         }
 
         public async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
         {
-            var optizmoUnsubUrl = "";
-            var pathParts = url.Split('/');
-            //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
-            var optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
-            optizmoUrl.Append(pathParts[pathParts.Length - 1]);
-            optizmoUrl.Append($"?token={optizmoToken}&format=md5");
-            //503 Service Unavailable
-            var retryCount = 0;
-            var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-            while (retryCount < 5)
+            try
             {
-                var aojson = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), null, 60 * 30);
-                if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
+                var optizmoUnsubUrl = "";
+                var pathParts = url.Split('/');
+                //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
+                var optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
+                optizmoUrl.Append(pathParts[pathParts.Length - 1]);
+                optizmoUrl.Append($"?token={optizmoToken}&format=md5");
+                //503 Service Unavailable
+                var retryCount = 0;
+                var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
+                while (retryCount < 5)
                 {
-                    if (aojson.Item2.Contains("503 Service Unavailable"))
+                    var aojson = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), null, 60 * 30);
+                    if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
                     {
-                        await Task.Delay(retryWalkaway[retryCount] * 1000);
-                        retryCount += 1;
-                        continue;
+                        if (aojson.Item2.Contains("503 Service Unavailable"))
+                        {
+                            await Task.Delay(retryWalkaway[retryCount] * 1000);
+                            retryCount += 1;
+                            continue;
+                        }
+                        IGenericEntity te = new GenericEntityJson();
+                        var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
+                        te.InitializeEntity(null, null, ts);
+                        if (te.GetS("download_link") != null)
+                        {
+                            optizmoUnsubUrl = te.GetS("download_link");
+                        }
                     }
-                    IGenericEntity te = new GenericEntityJson();
-                    var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
-                    te.InitializeEntity(null, null, ts);
-                    if (te.GetS("download_link") != null)
-                    {
-                        optizmoUnsubUrl = te.GetS("download_link");
-                    }
+                    break;
                 }
-                break;
-            }
 
-            return optizmoUnsubUrl;
+                return optizmoUnsubUrl;
+            }
+            catch (Exception e)
+            {
+                await _fw.Error(_logMethod, $"Unhandled exception getting unsub link: {e.UnwrapForLog()}");
+                return null;
+            }
         }
 
     }
