@@ -38,7 +38,7 @@ namespace TraverseDataLib
                     {
                         case "TraverseResponse":
                             var ge = await TraverseResponse(context);
-                            VisitorIdResponse vidResp = await new VisitorIdDataService()
+                            VisitorIdResponse vidResp = await new VisitorIdDataService().ConfigProviders(this.Fw)
                                 .SaveSession(this.Fw, context, true, false, Vutil.OpaqueFromBase64(ge.GetS("advertiserProperties.op")), ge.GetS("emailMd5Lower"));
                             result = Jw.Json(vidResp);
                             resultHttpStatus = StatusCodes.Status202Accepted;
