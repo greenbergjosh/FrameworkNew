@@ -138,19 +138,21 @@ namespace Utility
             }
 
             string ufn = Guid.NewGuid().ToString();
-            Dictionary<string, object> rs = new Dictionary<string, object>();
+            var fileName = ufn + ".tmp";
+            var rs = new Dictionary<string, object>();
+
             try
             {
                 //client.BaseAddress = new Uri(Url);
-                Stream response = await client.GetStreamAsync(QueryString);
-                var fileName = ufn + ".tmp";
-                using (var fs = new FileStream(workingDirectory + "\\" + fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var response = await client.GetStreamAsync(QueryString))
                 {
-                    await response.CopyToAsync(fs);
+                    using (var fs = new FileStream(workingDirectory + "\\" + fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        await response.CopyToAsync(fs);
+                    }
                 }
 
-                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors,
-                    workingDirectory, workingDirectory);
+                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
             }
             catch (Exception exGetStream)
             {

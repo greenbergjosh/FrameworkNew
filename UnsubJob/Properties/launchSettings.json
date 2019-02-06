@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "Amobee 40"
+      "commandLineArgs": "Amobee"
     }
   }
 }

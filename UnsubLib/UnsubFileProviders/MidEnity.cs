@@ -14,9 +14,11 @@ namespace UnsubLib.UnsubFileProviders
             _fw = fw;
         }
 
+        public bool CanHandle(IGenericEntity network, Uri uri) => uri.ToString().Contains("api.midenity.com");
+
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {
-            var res = uri.ToString().Contains("api.midenity.com") ? uri.ToString() : null;
+            var res = uri.ToString();
 
             await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {res}");
 
