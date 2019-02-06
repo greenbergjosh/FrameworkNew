@@ -67,6 +67,8 @@ namespace Utility
 
                 foreach (var sp in gcon.GetD("Config/DataLayer"))
                 {
+                    if (spMap.ContainsKey(sp.Item1) && spMap[sp.Item1] == sp.Item2) continue;
+                    else if (spMap.ContainsKey(sp.Item1)) throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Item1}, with existing value: {spMap[sp.Item1]}, new value: {sp.Item2}");
                     spMap.Add(sp.Item1, sp.Item2);
                 }
 
