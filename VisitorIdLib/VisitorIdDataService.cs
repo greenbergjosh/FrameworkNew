@@ -563,7 +563,7 @@ namespace VisitorIdLib
                     }).ToString()));
             }
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page);
 
             return new VisitorIdResponse(Jw.Json(new { email, md5, slot, page }), md5, email, sid);
         }
@@ -619,7 +619,7 @@ namespace VisitorIdLib
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot, int md5Page)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, string md5Pid, int md5Slot, int md5Page)
         {
             string cookieEml = "";
             string eml = "";
@@ -641,6 +641,7 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page
                         }));
@@ -669,6 +670,7 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
@@ -729,6 +731,7 @@ namespace VisitorIdLib
                             pid,
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page
                         }));
@@ -751,6 +754,7 @@ namespace VisitorIdLib
                                 {
                                     emailSlot = slot,
                                     emailPage = page,
+                                    md5Pid,
                                     md5Slot,
                                     md5Page,
                                     sid,
@@ -778,6 +782,7 @@ namespace VisitorIdLib
                             pid,
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
@@ -803,6 +808,7 @@ namespace VisitorIdLib
                        sid,
                        slot,
                        page,
+                       md5Pid,
                        md5Slot,
                        md5Page
                    })
