@@ -750,11 +750,11 @@ namespace VisitorIdLib
                         string lbm = await fw.Entities.GetEntity(lbmId);
 
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                            new { context, md5, provider = emlProvider, err = Fw.Err }, new StateWrapper());
+                            new { context, md5, provider = emlProvider, err = fw.Err }, new StateWrapper());
 
                         if (!eml.IsNullOrWhitespace() && sendMd5ToPostingQueue)
                         {
-                            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                            await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
                                 PL.O(new
                                 {
                                     emailSlot = slot,
@@ -772,7 +772,7 @@ namespace VisitorIdLib
                     }
                     catch (Exception ex)
                     {
-                        await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
+                        await fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
                         slot++;
                         continue;
                     }
@@ -806,7 +806,7 @@ namespace VisitorIdLib
 
             if (isAsync && (slot < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
-                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
                    PL.O(new
                    {
                        rsids,
