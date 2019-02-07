@@ -673,7 +673,7 @@ namespace VisitorIdLib
                     {
                         cookieEml = eml;
                         //PostVisitorIdToConsole(email, "VisitorId-cookie", pixelDomain, clientIp, userAgent);
-                        PostVisitorIdToConsole(email, "visitorid", pixelDomain, clientIp, userAgent);
+                        PostVisitorIdToConsole(eml, "cookie", pixelDomain, clientIp, userAgent);
                     }
 
                     be = new EdwBulkEvent();
@@ -764,7 +764,7 @@ namespace VisitorIdLib
                         if (!eml.IsNullOrWhitespace())
                         {
                             //PostVisitorIdToConsole(email, $"VisitorId-{pid}", pixelDomain, clientIp, userAgent);
-                            PostVisitorIdToConsole(email, "visitorid", pixelDomain, clientIp, userAgent);
+                            PostVisitorIdToConsole(eml, pid, pixelDomain, clientIp, userAgent);
 
                             if (sendMd5ToPostingQueue)
                             {
@@ -839,7 +839,7 @@ namespace VisitorIdLib
             return cookieEml;
         }
 
-        public void PostVisitorIdToConsole(string plainTextEmail, string emailSource, string domain, string clientIp, string userAgent)
+        public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
 
@@ -857,7 +857,8 @@ namespace VisitorIdLib
                                 email = plainTextEmail,
                                 user_ip = clientIp,
                                 user_agent = userAgent,
-                                email_source = emailSource,
+                                email_source = "visitorid",
+                                provider,
                                 isFinal = "true",
                                 label_domain = domain
                             })
