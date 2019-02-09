@@ -24,9 +24,7 @@ namespace OnPointConsoleLib
 
             try
             {
-                var reader = new StreamReader(context.Request.Body);
-
-                requestFromPost = await reader.ReadToEndAsync();
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 if (!String.IsNullOrEmpty(context.Request.Query["m"]))
                 {
@@ -55,15 +53,7 @@ namespace OnPointConsoleLib
                 await Fw.Err(ErrorSeverity.Error, "Start", "Exception", $@"{requestFromPost}::{ex}");
             }
 
-            await WriteResponse(context, result);
-        }
-
-        public async Task WriteResponse(HttpContext context, string resp)
-        {
-            context.Response.StatusCode = (int) HttpStatusCode.OK;
-            context.Response.ContentType = "application/json";
-            context.Response.ContentLength = resp.Length;
-            await context.Response.WriteAsync(resp);
+            await context.WriteSuccessRespAsync(result);
         }
 
         public async Task<string> SaveLiveFeed(string request)

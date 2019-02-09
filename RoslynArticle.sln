@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataService", "DataService\DataService.csproj", "{60E068D0-1AC7-4176-94C1-E075638EF8CD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlRegularExpressions", "SqlRegularExpressions\SqlRegularExpressions.csproj", "{3B4842DC-B8F0-4508-8837-6DC4BE76256C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyGlobalSuppressionFtpExporter", "DailyGlobalSuppressionFtpExporter\DailyGlobalSuppressionFtpExporter.csproj", "{71CF6435-449C-4EE4-850B-2DB2642D60D1}"
@@ -123,6 +121,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TraverseDataLib", "Traverse
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{0947F777-FC11-4FD5-99C8-643EDAEAFDB4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility.Selenium", "Utility.Selenium\Utility.Selenium.csproj", "{7353EB06-1E14-4424-9D7F-1B230A02E777}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,12 +130,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{60E068D0-1AC7-4176-94C1-E075638EF8CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60E068D0-1AC7-4176-94C1-E075638EF8CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{60E068D0-1AC7-4176-94C1-E075638EF8CD}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{60E068D0-1AC7-4176-94C1-E075638EF8CD}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{60E068D0-1AC7-4176-94C1-E075638EF8CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60E068D0-1AC7-4176-94C1-E075638EF8CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B4842DC-B8F0-4508-8837-6DC4BE76256C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B4842DC-B8F0-4508-8837-6DC4BE76256C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B4842DC-B8F0-4508-8837-6DC4BE76256C}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -442,6 +436,12 @@ Global
 		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60ED57C5-A626-4BB4-9077-181AF9DAA87E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -489,6 +489,7 @@ Global
 		{34694A20-ADB7-4839-A4F5-1D994632A7FA} = {0947F777-FC11-4FD5-99C8-643EDAEAFDB4}
 		{831448C5-FCE2-46D4-96D5-1B08C74F5D66} = {0947F777-FC11-4FD5-99C8-643EDAEAFDB4}
 		{60ED57C5-A626-4BB4-9077-181AF9DAA87E} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{7353EB06-1E14-4424-9D7F-1B230A02E777} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		VisualSVNWorkingCopyRoot = .

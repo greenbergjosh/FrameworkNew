@@ -452,8 +452,8 @@ namespace GetGotLib
             {
                 if (clientPostPart.Trim().Length > 0)
                 {
-                    var getRet = await Utility.ProtocolClient.HttpGetAsync(clientUrlPart, 2);
-                    if (getRet.Item1) ret = getRet.Item2;
+                    var getRet = await Utility.ProtocolClient.HttpGetAsync(clientUrlPart, null, 2);
+                    if (getRet.Item1) ret = getRet.body;
                 }
                 else
                 {
