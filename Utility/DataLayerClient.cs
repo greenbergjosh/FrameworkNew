@@ -14,20 +14,18 @@ namespace Utility
         public abstract string GlobalConfig { get; }
         // TODO: This should all be ConcurrentDictionary to become thread-safe
 
-        Dictionary<string, (string Id, DataLayerClient Client, string ConnStr)> Connections;
-        Dictionary<string, Dictionary<string, string>> StoredFunctions;
+        Dictionary<string, (string Id, DataLayerClient Client, string ConnStr)> Connections = new Dictionary<string, (string Id, DataLayerClient Client, string ConnStr)>();
+        Dictionary<string, Dictionary<string, string>> StoredFunctions = new Dictionary<string, Dictionary<string, string>>();
 
         private string _configConnStr;
         private string _configFunction;
 
-        public async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configFunction, Dictionary<string, (string Id, DataLayerClient Client, string ConnStr)> connections,  Dictionary<string, Dictionary<string, string>> storedFunctions)
+        public async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configFunction )
         {
             string configStr = null;
 
             _configConnStr = connStr;
             _configFunction = configFunction;
-            Connections = connections;
-            StoredFunctions = storedFunctions;
 
             try
             {
