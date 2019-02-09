@@ -20,6 +20,8 @@ namespace VisitorIdLib
         public FrameworkWrapper Fw;
 
         public Guid RsConfigGuid;
+        public string OnPointConsoleUrl;
+        public string OnPointConsoleDomainId;
         public string TowerEncryptionKey;
         public Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences =
             new Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>>();
@@ -50,9 +52,17 @@ namespace VisitorIdLib
             this.Fw = fw;
 
             this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+            this.OnPointConsoleUrl = fw.StartupConfiguration.GetS("Config/OnPointConsoleUrl");
+            this.OnPointConsoleDomainId = fw.StartupConfiguration.GetS("Config/OnPointConsoleDomainId");
             this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
+            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
+                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+            ConfigProviders(this.Fw);
+        }
 
+        public VisitorIdDataService ConfigProviders(FrameworkWrapper fw)
+        {
             foreach (var afidCfg in fw.StartupConfiguration.GetL("Config/VisitorIdMd5ProviderSequences"))
             {
                 string afid = afidCfg.GetS("afid");
@@ -85,8 +95,7 @@ namespace VisitorIdLib
                 }
                 VisitorIdEmailProviderSequences.Add(emProviderSeqName, dseq);
             }
-            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
-                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
+            return this;
         }
 
         //SessionInitiate, ProviderXAttempt, ProviderXCapture, ..., EmailCaptureFromWebsite
@@ -132,10 +141,7 @@ namespace VisitorIdLib
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
             {
-                using (var reader = new StreamReader(context.Request.Body))
-                {
-                    requestFromPost = await reader.ReadToEndAsync();
-                }
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 if (!String.IsNullOrWhiteSpace(context.Request.Query["m"]))
                 {
@@ -163,7 +169,7 @@ namespace VisitorIdLib
 
                             break;
                         case "SaveSession":
-                            var resSS = await SaveSession(this.Fw, context, ((string)context.Request.Query["pq"]).ParseBool() ?? false);
+                            var resSS = await SaveSession(this.Fw, context, ((string)context.Request.Query["pq"]).ParseBool() ?? false, true);
 
                             result = resSS.Result;
 
@@ -231,7 +237,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        result = (await SaveSession(this.Fw, context, true, op, md5)).Result;
+                        result = (await SaveSession(this.Fw, context, true, false, op, md5)).Result;
                     }
                 }
                 else
@@ -243,15 +249,7 @@ namespace VisitorIdLib
             {
                 await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex}");
             }
-            await WriteResponse(context, result);
-        }
-
-        public async Task WriteResponse(HttpContext context, string resp)
-        {
-            context.Response.StatusCode = 200;
-            context.Response.ContentType = "application/json";
-            context.Response.ContentLength = resp.Length;
-            await context.Response.WriteAsync(resp);
+            await context.WriteSuccessRespAsync(result);
         }
 
         public static string ReplaceToken(string tokenized, string opaque)
@@ -406,7 +404,7 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, false);
+                            await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, host, false, true);
                         }
                         continueToNextSlot();
                         page++;
@@ -508,7 +506,7 @@ namespace VisitorIdLib
                             isAsync = isAsync ? "true" : "false",
                             vieps = visitorIdEmailProviderSequence
                         },
-                        new bool[] { false, true, true, true, true, true }), md5, eml, sid); 
+                        new bool[] { false, true, true, true, true, true }), md5, eml, sid);
                     }
                     else
                     {
@@ -527,10 +525,9 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
-            Dictionary<string, object> rsids, bool sendMd5ToPostingQueue)
+            Dictionary<string, object> rsids, string pixelDomain, bool sendMd5ToPostingQueue, bool hasClientContext)
         {
             string ip = c.Ip();
-            string userAgent = c.UserAgent();
             var success = !md5.IsNullOrWhitespace();
 
             EdwBulkEvent be = new EdwBulkEvent();
@@ -563,7 +560,15 @@ namespace VisitorIdLib
                     }).ToString()));
             }
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, slot, page);
+            string clientIp = null, userAgent = null;
+
+            if (hasClientContext)
+            {
+                clientIp = c.Connection.RemoteIpAddress?.ToString();
+                userAgent = c.UserAgent();
+            }
+
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent);
 
             return new VisitorIdResponse(Jw.Json(new { email, md5, slot, page }), md5, email, sid);
         }
@@ -578,7 +583,8 @@ namespace VisitorIdLib
                 string emd5,
                 string eml,
                 Dictionary<string,
-                object> rsids)
+                object> rsids,
+                string host)
             ValsFromOpaque(IGenericEntity opge)
         {
             string sid = opge.GetS("sd");
@@ -589,16 +595,19 @@ namespace VisitorIdLib
             string vieps = opge.GetS("vieps");
             string emd5 = opge.GetS("md5");
             string eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
+            var qstr = opge.GetS("qs");
+            var u = new Uri(HttpUtility.UrlDecode(qstr));
+            var host = u.Host ?? "";
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids);
+            return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids, host);
         }
 
-        public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, IGenericEntity op = null, string md5 = null)
+        public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, bool hasClientContext, IGenericEntity op = null, string md5 = null)
         {
             var opqVals = ValsFromOpaque(op ?? Vutil.OpaqueFromBase64(c.Get("op", "", false)));
-            return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, sendMd5ToPostingQueue);
+            return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, sendMd5ToPostingQueue, hasClientContext);
         }
 
         private (string md5, string em, string sid) GetCookieData(HttpContext context)
@@ -619,7 +628,7 @@ namespace VisitorIdLib
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, int md5Slot, int md5Page)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, string md5Pid, int md5Slot, int md5Page, string pixelDomain, string clientIp, string userAgent)
         {
             string cookieEml = "";
             string eml = "";
@@ -641,25 +650,31 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page
                         }));
                     await fw.EdwWriter.Write(be);
 
-                    var cookie = GetCookieData(context);
+                    var cookieData = GetCookieData(context);
 
-                    eml = cookie.em;
+                    eml = cookieData.em;
 
-                    if (eml.IsNullOrWhitespace() && !cookie.sid.IsNullOrWhitespace())
+                    if (eml.IsNullOrWhitespace() && !cookieData.sid.IsNullOrWhitespace())
                     {
                         var lookupGe = await fw.RootDataLayerClient.GenericEntityFromEntry("VisitorId",
                             "LookupBySessionId",
-                            Jw.Json(new { Sid = cookie.sid }),
+                            Jw.Json(new { Sid = cookieData.sid }),
                             "", null, null, this.SqlTimeoutSec);
                         eml = lookupGe.GetS("Em");
                     }
 
-                    if (!eml.IsNullOrWhitespace()) cookieEml = eml;
+                    if (!eml.IsNullOrWhitespace())
+                    {
+                        cookieEml = eml;
+                        //PostVisitorIdToConsole(email, "VisitorId-cookie", pixelDomain, clientIp, userAgent);
+                        PostVisitorIdToConsole(eml, "cookie", pixelDomain, clientIp, userAgent);
+                    }
 
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -669,6 +684,7 @@ namespace VisitorIdLib
                             pid = "cookie",
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
@@ -729,6 +745,7 @@ namespace VisitorIdLib
                             pid,
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page
                         }));
@@ -744,13 +761,19 @@ namespace VisitorIdLib
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
                             new { context, md5, dataLayerClient = fw.RootDataLayerClient, provider = emlProvider, err = Fw.Err }, new StateWrapper());
 
-                        if (!eml.IsNullOrWhitespace() && sendMd5ToPostingQueue)
+                        if (!eml.IsNullOrWhitespace())
                         {
-                            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                            //PostVisitorIdToConsole(email, $"VisitorId-{pid}", pixelDomain, clientIp, userAgent);
+                            PostVisitorIdToConsole(eml, pid, pixelDomain, clientIp, userAgent);
+
+                            if (sendMd5ToPostingQueue)
+                            {
+                            await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
                                 PL.O(new
                                 {
                                     emailSlot = slot,
                                     emailPage = page,
+                                    md5Pid,
                                     md5Slot,
                                     md5Page,
                                     sid,
@@ -758,12 +781,12 @@ namespace VisitorIdLib
                                     md5,
                                     eml
                                 }).ToString()));
+                            }
                         }
-
                     }
                     catch (Exception ex)
                     {
-                        await Fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
+                        await fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
                         slot++;
                         continue;
                     }
@@ -778,6 +801,7 @@ namespace VisitorIdLib
                             pid,
                             slot,
                             page,
+                            md5Pid,
                             md5Slot,
                             md5Page,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
@@ -796,13 +820,15 @@ namespace VisitorIdLib
 
             if (isAsync && (slot < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
-                await Fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
+                // ToDo: For this to work we need to remove the dependency on HttpContext
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
                    PL.O(new
                    {
                        rsids,
                        sid,
                        slot,
                        page,
+                       md5Pid,
                        md5Slot,
                        md5Page
                    })
@@ -812,5 +838,42 @@ namespace VisitorIdLib
 
             return cookieEml;
         }
+
+        public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent)
+        {
+            if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
+
+            var task = new Func<Task>(async () =>
+            {
+                try
+                {
+                    await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
+                        Jw.Json(new
+                        {
+                            header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
+                            body = Jw.Json(new
+                            {
+                                domain_id = OnPointConsoleDomainId,
+                                email = plainTextEmail,
+                                user_ip = clientIp,
+                                user_agent = userAgent,
+                                email_source = "visitorid",
+                                provider,
+                                isFinal = "true",
+                                label_domain = domain
+                            })
+                        }, new bool[] { false, false }), "application/json");
+
+                    await Fw.Log(nameof(PostVisitorIdToConsole), $"Successfully posted {plainTextEmail} to Console");
+                }
+                catch (Exception e)
+                {
+                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {plainTextEmail} to Console: {e.UnwrapForLog()}");
+                }
+            });
+
+            Task.Run(task);
+        }
+
     }
 }

@@ -197,10 +197,10 @@ namespace DataService
             string requestFromPost = "";
             string resp = Jw.Json(new { Error = "SeeLogs" });
             var result = "ok";
+
             try
             {
-                StreamReader reader = new StreamReader(context.Request.Body);
-                requestFromPost = await reader.ReadToEndAsync();
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 if (!String.IsNullOrEmpty(context.Request.Query["m"]))
                 {

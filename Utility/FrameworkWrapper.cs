@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Utility
 {
@@ -62,6 +63,20 @@ namespace Utility
             }
         }
 
+        public async Task Log(string method, string message) => await Err(ErrorSeverity.Log, method, ErrorDescriptor.Log, message);
+        public async Task Trace(string method, string message) => await Err(ErrorSeverity.Log, method, ErrorDescriptor.Trace, message);
+        public async Task Error(string method, string message) => await Err(ErrorSeverity.Error, method, ErrorDescriptor.Exception, message);
+        public async Task Fatal(string method, string message) => await Err(ErrorSeverity.Fatal, method, ErrorDescriptor.Fatal, message);
+
+        public async Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log)
+        {
+            await Alert(method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
+        }
+
+        public async Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log)
+        {
+            await Err(severity, method, ErrorDescriptor.Log, JsonConvert.SerializeObject(payload));
+        }
     }
 
 }
