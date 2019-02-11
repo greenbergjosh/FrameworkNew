@@ -17,6 +17,7 @@ namespace VisitorIdLib
 {
     public class VisitorIdDataService
     {
+        const string DataLayerName = "VisitorId";
         public FrameworkWrapper Fw;
 
         public Guid RsConfigGuid;
@@ -822,7 +823,7 @@ namespace VisitorIdLib
             if (isAsync && (slot < this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
                 // ToDo: For this to work we need to remove the dependency on HttpContext
-                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorId", DateTime.Now,
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry(DataLayerName, DateTime.Now,
                    PL.O(new
                    {
                        rsids,
