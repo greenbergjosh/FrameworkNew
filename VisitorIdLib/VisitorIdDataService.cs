@@ -788,6 +788,7 @@ namespace VisitorIdLib
                     {
                         await fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {pid}. Exception: {ex}");
                         slot++;
+                        page++;
                         continue;
                     }
 
