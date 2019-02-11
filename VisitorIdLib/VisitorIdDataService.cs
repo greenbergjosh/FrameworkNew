@@ -571,7 +571,7 @@ namespace VisitorIdLib
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent);
 
-            return new VisitorIdResponse(Jw.Json(new { email, md5, slot, page }), md5, email, sid);
+            return new VisitorIdResponse(Jw.Json(new { slot, page }), md5, email, sid);
         }
 
         public static (
