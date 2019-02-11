@@ -13,6 +13,8 @@ namespace TraverseDataLib
 {
     public class TraverseDataService
     {
+
+        const string DataLayerName = "TraverseResponse";
         public FrameworkWrapper Fw;
         public int SqlTimeoutSec;
 
@@ -38,8 +40,9 @@ namespace TraverseDataLib
                     {
                         case "TraverseResponse":
                             var ge = await TraverseResponse(context);
-                            VisitorIdResponse vidResp = await new VisitorIdDataService().ConfigProviders(this.Fw)
-                                .SaveSession(this.Fw, context, true, false, Vutil.OpaqueFromBase64(ge.GetS("advertiserProperties.op")), ge.GetS("emailMd5Lower"));
+                            var vid = new VisitorIdDataService().ConfigProviders(this.Fw);
+                            VisitorIdResponse vidResp = await vid.SaveSession(this.Fw, context, true, false, Vutil.OpaqueFromBase64(ge.GetS("advertiserProperties.op")), ge.GetS("emailMd5Lower"));
+                            await vid.SaveSessionEmailMd5(this.Fw, vidResp, DataLayerName);
                             result = Jw.Json(vidResp);
                             resultHttpStatus = StatusCodes.Status202Accepted;
                             break;
