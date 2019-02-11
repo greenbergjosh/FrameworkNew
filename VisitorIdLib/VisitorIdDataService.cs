@@ -841,6 +841,20 @@ namespace VisitorIdLib
             return cookieEml;
         }
 
+        public async Task SaveSessionEmailMd5 (FrameworkWrapper fw, VisitorIdResponse vidResp, string connection = DataLayerName)
+        {
+            if ( !string.IsNullOrWhiteSpace(vidResp.Email) )
+            {
+                await fw.RootDataLayerClient.GenericEntityFromEntry(connection,
+                "SaveSessionIdEmailMd5",
+                JsonWrapper.Json(new { vidResp.Sid, vidResp.Email, vidResp.Md5 }),
+                "");
+
+                await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {vidResp.Sid}, Email: {vidResp.Email}, Md5: {vidResp.Md5}");
+            }
+
+        }
+
         public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
