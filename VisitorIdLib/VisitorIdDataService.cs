@@ -759,7 +759,7 @@ namespace VisitorIdLib
                         string lbm = await fw.Entities.GetEntity(lbmId, fw.RootDataLayerClient);
 
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                            new { context, md5, dataLayerClient = fw.RootDataLayerClient, provider = emlProvider, err = Fw.Err }, new StateWrapper());
+                            new { context, md5, dataLayerClient = fw.RootDataLayerClient, provider = emlProvider, err = fw.Err }, new StateWrapper());
 
                         if (!eml.IsNullOrWhitespace())
                         {
