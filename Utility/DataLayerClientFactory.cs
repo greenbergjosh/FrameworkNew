@@ -7,7 +7,8 @@ namespace Utility
     public class DataLayerClientFactory
     {
         public static Dictionary<string, Func<DataLayerClient>> supportedClients = new Dictionary<string, Func<DataLayerClient>>() {
-            { "SqlServer",  () => { return new SqlServerDataLayerClient(); } }
+            { "SqlServer",  () => { return new SqlServerDataLayerClient(); } },
+            { "PostgreSQL", () => { return new PostgreSqlDataLayerClient(); } },
         };
 
         public static DataLayerClient DataStoreInstance(string clientName)
