@@ -59,7 +59,7 @@ namespace Utility
                 var gcon = JsonWrapper.JsonToGenericEntity(
                     JsonWrapper.Json(new
                     {
-                        Config = await CallStoredFunction(JsonWrapper.Json(new { InstanceId = o.Item2 }), "", _configFunction, _configConnStr)
+                        Config = await CallStoredFunction(JsonWrapper.Json(new { InstanceId = o.Item2 }), "{}", _configFunction, _configConnStr)
                     }, new bool[] { false }));
 
                 var spMap = new Dictionary<string, string>();
@@ -90,7 +90,7 @@ namespace Utility
 
                 try
                 {
-                    var confStr = await CallStoredFunction(JsonWrapper.Json(new { InstanceId = key }), "", _configFunction, _configConnStr);
+                    var confStr = await CallStoredFunction(JsonWrapper.Json(new { InstanceId = key }), "{}", _configFunction, _configConnStr);
                     var c = JObject.Parse(confStr);
 
                     if (c["using"] != null)
