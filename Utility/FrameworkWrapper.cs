@@ -38,7 +38,11 @@ namespace Utility
 
                 this.SelectConfigSproc = configuration.GetValue<String>("Application:SelectConfigSproc");
 
-                this.StartupConfiguration = RootDataLayerClient.Initialize(configuration.GetValue<String>("ConnectionString:ConnectionString"), this.ConfigurationKeys, this.SelectConfigSproc).GetAwaiter().GetResult();
+                this.StartupConfiguration = RootDataLayerClient.Initialize(
+                    configuration.GetValue<String>("ConnectionString:ConnectionString"),
+                    this.ConfigurationKeys,
+                    configuration.GetValue<String>("ConnectionString:DataLayer:SelectConfigFunction")
+                ).GetAwaiter().GetResult();
                 this.Entities = new ConfigEntityRepo(RootDataLayerClient.GlobalConfig);
                 List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
                 string scriptsPath = Path.GetFullPath(this.StartupConfiguration.GetS("Config/RoslynScriptsPath"));
