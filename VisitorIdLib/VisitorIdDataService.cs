@@ -383,7 +383,7 @@ namespace VisitorIdLib
                             IGenericEntity lookupGe = await fw.RootDataLayerClient.GenericEntityFromEntry("VisitorId",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookie.sid }),
-                               "", null, null, this.SqlTimeoutSec);
+                               "{}", null, null, this.SqlTimeoutSec);
                             eml = lookupGe.GetS("Em");
                             md5 = lookupGe.GetS("Md5");
                         }
