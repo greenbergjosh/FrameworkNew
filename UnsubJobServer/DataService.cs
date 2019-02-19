@@ -12,7 +12,7 @@ namespace UnsubJobServer
 
         public void Config(FrameworkWrapper fw)
         {
-            _fw = new FrameworkWrapper();
+            _fw = fw;
         }
 
         public async Task HandleHttpRequest(HttpContext context)
