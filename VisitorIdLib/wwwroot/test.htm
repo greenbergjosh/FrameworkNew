@@ -12,12 +12,13 @@
                     w.visitorIdObject = n;
                     w[n] = {};
                     i = d.createElement(t);
+                    i.id = "visIdTag";
+                    i.createAttribute("u", u);
+                    i.createAttribute("o", o);
+                    i.createAttribute("f", f);
                     i.async = 1;
                     i.src = u + j;
                     d.head.appendChild(i);
-                    i.onload = async function () {
-                        await w[n].visitorId(u, o, f);
-                    };
                 });
         })(window, document, 'DOMContentLoaded', 'script', '//visitor-identification.net', '/track.js', 'visid', { afid: '00000000-0000-0000-0000-000000000001', tpid: '', rsid: {} });
     </script>
