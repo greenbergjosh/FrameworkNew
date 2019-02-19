@@ -123,6 +123,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility.Selenium", "Utility.Selenium\Utility.Selenium.csproj", "{7353EB06-1E14-4424-9D7F-1B230A02E777}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickagyDataLib", "ClickagyDataLib\ClickagyDataLib.csproj", "{484CC235-20C7-474C-BC45-CA8AE47217C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -442,6 +444,12 @@ Global
 		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7353EB06-1E14-4424-9D7F-1B230A02E777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{484CC235-20C7-474C-BC45-CA8AE47217C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{484CC235-20C7-474C-BC45-CA8AE47217C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{484CC235-20C7-474C-BC45-CA8AE47217C3}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{484CC235-20C7-474C-BC45-CA8AE47217C3}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{484CC235-20C7-474C-BC45-CA8AE47217C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{484CC235-20C7-474C-BC45-CA8AE47217C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -490,9 +498,10 @@ Global
 		{831448C5-FCE2-46D4-96D5-1B08C74F5D66} = {0947F777-FC11-4FD5-99C8-643EDAEAFDB4}
 		{60ED57C5-A626-4BB4-9077-181AF9DAA87E} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{7353EB06-1E14-4424-9D7F-1B230A02E777} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
+		{484CC235-20C7-474C-BC45-CA8AE47217C3} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal

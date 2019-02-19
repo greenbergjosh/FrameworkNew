@@ -61,6 +61,8 @@ namespace GenericDataService
                     this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
 
+                if(DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
+
                 DataService.Config(fw);
             }
             catch (Exception ex)

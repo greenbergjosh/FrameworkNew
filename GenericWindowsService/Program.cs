@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Utility;
 
 namespace GenericWindowsService
@@ -33,8 +34,15 @@ namespace GenericWindowsService
                 if (listenerUrl.IsNullOrWhitespace()) throw new Exception("HttpListenerUrl not defined in config");
 
                 var methods = ((object)Service).GetType().GetMethods().Where(m => m.IsPublic).ToArray();
+                var handleHttp = methods.FirstOrDefault(m => m.Name == "HandleHttpRequest");
 
-                if (methods.All(m => m.Name != "HandleHttpRequest")) throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
+                if (handleHttp == null) throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
+                else
+                {
+                    var parms = handleHttp.GetParameters();
+
+                    if (parms.Length < 1 || parms[0].ParameterType == typeof(HttpContext) || parms.Length > 1) throw new Exception("Dynamic service method HandleHttpRequest(HttpContext) has invalid signature");
+                }
 
                 var onStart = methods.FirstOrDefault(m => m.Name == "OnStart");
 
