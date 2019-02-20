@@ -101,6 +101,20 @@ namespace Utility
             await ctx.Response.WriteAsync(response);
         }
 
+        public static void AddCorsAccessForOriginHost(this HttpContext ctx)
+        {
+            // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio
+            // .netcore 2.2 makes this process more explicit (domains should be specified), so let's just echo the
+            // requesting origin back, circumventing the problem. Feel free to add other methods as necessary below.
+            if (ctx.Request.Headers.ContainsKey("Origin"))
+            {
+                ctx.Request.Headers.TryGetValue("Origin", out StringValues originHost);
+                ctx.Response.Headers.Add("Access-Control-Allow-Origin", originHost);
+                ctx.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+                ctx.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            }
+        }
+
         // based off of: https://referencesource.microsoft.com/#System.Web/WorkerRequest.cs,ab8517882440da8b
         public static bool IsLocal (this HttpContext ctx)
         {
