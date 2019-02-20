@@ -14,9 +14,9 @@
                     w[n] = {};
                     i = d.createElement(t);
                     i.id = "visIdTag";
-                    i.createAttribute("u", u);
-                    i.createAttribute("o", o);
-                    i.createAttribute("f", f);
+                    i.setAttribute("u", u);
+                    i.setAttribute("o", JSON.stringify(o));
+                    i.setAttribute("f", f);
                     i.async = 1;
                     i.src = u + j;
                     d.head.appendChild(i);
