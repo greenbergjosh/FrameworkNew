@@ -84,6 +84,8 @@ namespace GenericDataService
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
                     }
                     else
+                        if (!string.IsNullOrWhiteSpace(fw.StartupConfiguration.GetS("Config/Cors")))
+                            context.AddCorsAccessForOriginHost(fw.StartupConfiguration.GetE("Config/Cors"));
                         await this.DataService.Run(context);
                 }
                 catch (Exception ex)
