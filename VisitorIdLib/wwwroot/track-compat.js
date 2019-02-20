@@ -52,7 +52,7 @@ function _visitorId() {
                             return window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)), {
                                 method: 'GET',
                                 mode: 'cors',
-                                credentials: 'omit',
+                                credentials: 'include',
                                 cache: 'no-cache',
                                 redirect: 'follow',
                                 referrer: 'no-referrer'
@@ -119,7 +119,7 @@ function _visitorId() {
                             return window.genericFetch(url + '?m=SaveSession&pq=' + (res.config.SaveResult || 0) + '&op=' + base64UrlSafe(JSON.stringify(opaque)), {
                                 method: 'GET',
                                 mode: 'cors',
-                                credentials: 'omit',
+                                credentials: 'include',
                                 cache: 'no-cache',
                                 redirect: 'follow',
                                 referrer: 'no-referrer'
