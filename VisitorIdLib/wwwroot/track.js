@@ -140,11 +140,3 @@ async function load(script, global) {
         }
     });
 }
-
-await (async function () {
-    var tag = document.getElementById("visIdTag");
-    var u = tag.getAttribute("u");
-    var o = tag.getAttribute("o");
-    var f = tag.getAttribute("f");
-    await visitorId(u, o, f);
-})();
