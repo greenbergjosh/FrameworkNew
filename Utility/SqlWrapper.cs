@@ -115,11 +115,9 @@ namespace Utility
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
-            string result = await SqlWrapper.SqlServerProviderEntry(conName, method, args, payload, timeout);
-            IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(result);
-            gp.InitializeEntity(rw, config, gpstate);
-            return gp;
+            var result = await SqlWrapper.SqlServerProviderEntry(conName, method, args, payload, timeout);
+
+            return result.IsNullOrWhitespace() ? null : JsonWrapper.JsonToGenericEntity(result);
         }
 
         public static async Task<string> SqlServerProviderEntry(string conName, string method, string args, string payload, int timeout = 120)

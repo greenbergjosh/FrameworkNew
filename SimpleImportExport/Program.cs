@@ -31,14 +31,14 @@ namespace SimpleImportExport
                 ServicePointManager.DefaultConnectionLimit = Fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
                 var jobCfg = await Fw.Entities.GetEntityGe(jobId);
 
-                var src = GetEnpointConfig(jobCfg, "Source");
-                var dest = GetEnpointConfig(jobCfg, "Destination");
+                var src = await GetEnpointConfig(jobCfg, "Source");
+                var dest = await GetEnpointConfig(jobCfg, "Destination");
                 var jobPost = jobCfg.GetS("Config/JobPostProcess");
                 var srcPost = FilePostProcess(jobCfg.GetS("Config/Source/PostProcess"), jobName);
                 var destPost = FilePostProcess(jobCfg.GetS("Config/Destination/PostProcess"), jobName);
                 var srcFiles = (await src.GetFiles()).ToArray();
 
-                await Fw.Err(ErrorSeverity.Log, $"{nameof(Program)}", ErrorDescriptor.Log, $"{jobName}\tFound {srcFiles.Length} on {src}");
+                await Fw.Log($"{nameof(Program)}", $"{jobName}\tFound {srcFiles.Length} on {src}");
 
                 foreach (var f in srcFiles)
                 {
@@ -122,19 +122,28 @@ namespace SimpleImportExport
             return async (s, endpoint) => await Task.CompletedTask;
         }
 
-        private static Endpoint GetEnpointConfig(IGenericEntity jobCfg, string name)
+        private static async  Task<Endpoint> GetEnpointConfig(IGenericEntity jobCfg, string name)
         {
             var ge = jobCfg.GetE($"Config/{name}");
-            var type = (EndpointType)Enum.Parse(typeof(EndpointType), ge.GetS("Type"));
 
-            switch (type)
+            try
             {
-                case EndpointType.Local:
-                    return new LocalEndPoint(ge);
-                case EndpointType.Ftp:
-                    return new FtpEndPoint(ge);
-                default:
-                    throw new ArgumentOutOfRangeException($"Invalid Endpoint Type {type}. Must be {EndpointType.Local} or {EndpointType.Ftp}");
+                var type = (EndpointType)Enum.Parse(typeof(EndpointType), ge.GetS("Type"));
+
+                switch (type)
+                {
+                    case EndpointType.Local:
+                        return new LocalEndPoint(ge);
+                    case EndpointType.Ftp:
+                        return new FtpEndPoint(ge);
+                    default:
+                        throw new ArgumentOutOfRangeException($"Invalid Endpoint Type {type}. Must be {EndpointType.Local} or {EndpointType.Ftp}");
+                }
+            }
+            catch (Exception e)
+            {
+                await Fw.Error(nameof(GetEnpointConfig), $"Failed to load endpoint: {ge.GetS("")}");
+                throw;
             }
         }
 

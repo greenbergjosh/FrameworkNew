@@ -101,6 +101,14 @@ namespace Utility
             await ctx.Response.WriteAsync(response);
         }
 
+        public static async Task WriteFailureRespAsync(this HttpContext ctx, string response, Encoding enc = null)
+        {
+            ctx.Response.StatusCode = 500;
+            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
+            await ctx.Response.WriteAsync(response);
+        }
+
         // based off of: https://referencesource.microsoft.com/#System.Web/WorkerRequest.cs,ab8517882440da8b
         public static bool IsLocal (this HttpContext ctx)
         {
