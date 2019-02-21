@@ -250,7 +250,6 @@ namespace VisitorIdLib
                 await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex}");
             }
 
-            context.AddCorsAccessForOriginHost(); // see comment in fn implementation for details on why
             await context.WriteSuccessRespAsync(result);
         }
 
