@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Utility;
 using Jw = Utility.JsonWrapper;
 
@@ -15,6 +16,7 @@ namespace OnPointConsoleLib
         public void Config(FrameworkWrapper fw)
         {
             Fw = fw;
+            var a = JsonConvert.DeserializeObject("{}");
         }
 
         public async Task Run(HttpContext context)

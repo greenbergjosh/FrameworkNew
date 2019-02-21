@@ -46,7 +46,7 @@ namespace GenericWindowsService
 
                 var onStart = methods.FirstOrDefault(m => m.Name == "OnStart");
 
-                if (onStart!=null && onStart.GetParameters().Length != 0) throw new Exception("Dynamic service OnStart method cannot have any parameters");
+                if (onStart != null && onStart.GetParameters().Length != 0) throw new Exception("Dynamic service OnStart method cannot have any parameters");
                 else if (onStart != null) HasOnStart = true;
 
                 var OnStop = methods.FirstOrDefault(m => m.Name == "OnStop");
@@ -94,7 +94,7 @@ namespace GenericWindowsService
             {
                 var fw = new FrameworkWrapper();
 
-                using (var dynamicContext = new AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+                using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {
                     Service = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
