@@ -22,15 +22,6 @@ namespace GenericDataService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-            });
-
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -83,8 +74,6 @@ namespace GenericDataService
             }
             else app.UseStaticFiles();
 
-            app.UseCors("CorsPolicy");
-
             TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
             app.Run(async (context) =>
@@ -96,6 +85,8 @@ namespace GenericDataService
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
                     }
                     else
+                        if (!string.IsNullOrWhiteSpace(fw.StartupConfiguration.GetS("Config/Cors")))
+                            context.AddCorsAccessForOriginHost(fw.StartupConfiguration.GetE("Config/Cors"));
                         await this.DataService.Run(context);
                 }
                 catch (Exception ex)
