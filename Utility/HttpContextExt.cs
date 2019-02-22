@@ -102,6 +102,14 @@ namespace Utility
             await ctx.Response.WriteAsync(response);
         }
 
+        public static async Task WriteFailureRespAsync(this HttpContext ctx, string response, Encoding enc = null)
+        {
+            ctx.Response.StatusCode = 500;
+            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
+            await ctx.Response.WriteAsync(response);
+        }
+
         public static void AddCorsAccessForOriginHost(this HttpContext ctx, IGenericEntity ge)
         {
             // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ namespace GenericDataService
             {
                 fw = new FrameworkWrapper();
 
-                using (var dynamicContext = new Utility.AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+                using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d=>d.GetS(""))))
                 {
                     this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }

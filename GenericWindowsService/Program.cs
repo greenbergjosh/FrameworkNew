@@ -121,7 +121,7 @@ namespace GenericWindowsService
             {
                 var fw = new FrameworkWrapper();
 
-                using (var dynamicContext = new AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+                using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {
                     Service = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
