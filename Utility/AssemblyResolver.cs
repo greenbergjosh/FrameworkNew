@@ -14,17 +14,18 @@ namespace Utility
     public class AssemblyResolver : IDisposable
     {
         public static object _dllCacheLock = new object();
-        public static ConcurrentDictionary<string, Assembly> _dllCache 
+        public static ConcurrentDictionary<string, Assembly> _dllCache
             = new ConcurrentDictionary<string, Assembly>();
-        public static ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache 
-            = new ConcurrentDictionary<Tuple<string, string, string>, MethodInfo>(); 
+        public static ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache
+            = new ConcurrentDictionary<Tuple<string, string, string>, MethodInfo>();
 
         private readonly ICompilationAssemblyResolver assemblyResolver;
         private readonly DependencyContext dependencyContext;
         private readonly AssemblyLoadContext loadContext;
 
-        public AssemblyResolver(string path)
+        public AssemblyResolver(string path, IEnumerable<string> additionalAssemblyPaths)
         {
+            path = Path.GetFullPath(path);
             this.Assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
             this.dependencyContext = DependencyContext.Load(this.Assembly);
 
@@ -38,21 +39,47 @@ namespace Utility
 
             this.loadContext = AssemblyLoadContext.GetLoadContext(this.Assembly);
             this.loadContext.Resolving += OnResolving;
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler((object sender, ResolveEventArgs args) => ResolveAssemblyFromPath(sender, args, path));
+            var assemblyDirs = new List<DirectoryInfo> { new FileInfo(path).Directory };
+
+            if (additionalAssemblyPaths?.Any() == true)
+            {
+                assemblyDirs.AddRange(additionalAssemblyPaths.Select(p =>
+                {
+                    try { return new DirectoryInfo(Path.GetFullPath(p)); }
+                    catch (Exception) { return null; }
+                }).Where(p => p != null));
+            }
+
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => ResolveAssemblyFromPath(sender, args, assemblyDirs);
         }
 
 
         // Modified From: https://stackoverflow.com/questions/5260404/resolve-assembly-references-from-another-folder
-        public static Assembly ResolveAssemblyFromPath(object sender, ResolveEventArgs args, string assemblyPath)
+        public static Assembly ResolveAssemblyFromPath(object sender, ResolveEventArgs args, IEnumerable<DirectoryInfo> assemblyDirs)
         {
             try
             {
-                AssemblyName referencedAssembly = Array.Find<AssemblyName>(Assembly.GetExecutingAssembly().GetReferencedAssemblies(), a => a.Name == args.Name);
-                string copiedDependencyAssemblyPath = Path.Combine(new FileInfo(assemblyPath).Directory.FullName, args.Name.Substring(0, args.Name.IndexOf(",")) + ".dll");
+                var referencedAssembly = Array.Find(Assembly.GetExecutingAssembly().GetReferencedAssemblies(), a => a.Name == args.Name);
 
-                return referencedAssembly != null ? Assembly.LoadFrom(referencedAssembly.CodeBase) :
-                       File.Exists(copiedDependencyAssemblyPath) ? Assembly.LoadFrom(copiedDependencyAssemblyPath) :
-                       null;
+                if (referencedAssembly != null) return Assembly.LoadFrom(referencedAssembly.CodeBase);
+
+                var libFileName = args.Name.Substring(0, args.Name.IndexOf(",")) + ".dll";
+
+                foreach (var d in assemblyDirs)
+                {
+                    try
+                    {
+                        var copiedDependencyAssemblyPath = Path.Combine(d.FullName, libFileName);
+
+                        if (File.Exists(copiedDependencyAssemblyPath)) return Assembly.LoadFrom(copiedDependencyAssemblyPath);
+                    }
+                    catch (Exception e)
+                    {
+                        
+                    }
+                }
+
+                return null;
             }
             catch (Exception)
             {
@@ -119,27 +146,27 @@ namespace Utility
             }
         }
 
-        public static MethodInfo GetMethod(string dllPath, string className, string methodName)
+        public static MethodInfo GetMethod(string dllPath, string className, string methodName, IEnumerable<string> assemblyPaths)
         {
             MethodInfo mi;
             var t = new Tuple<string, string, string>(dllPath, className, methodName);
             if (_cache.TryGetValue(t, out mi)) return mi;
 
             Assembly a;
-            lock(_dllCacheLock)
+            lock (_dllCacheLock)
             {
                 a = _dllCache.GetOrAdd(dllPath, _ =>
                 {
-                    using (var dynamicContext = new Utility.AssemblyResolver(dllPath))
+                    using (var dynamicContext = new Utility.AssemblyResolver(dllPath, assemblyPaths))
                     {
                         return dynamicContext.Assembly;
                     }
                 });
             }
-            
+
             return _cache.GetOrAdd(t, _ =>
             {
-                    return a.GetType(className).GetMethod(methodName);
+                return a.GetType(className).GetMethod(methodName);
             });
         }
     }
