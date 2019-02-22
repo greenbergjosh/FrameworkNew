@@ -115,14 +115,10 @@ namespace Utility
             return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k))).ToString();
         }
 
-        // TODO: Can't this just be a GenericEntity helper function?
         public async Task<IGenericEntity> GenericEntityFromEntry(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
-            string result = await RetrieveEntry(conName, method, args, payload, timeout);
-            IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(result);
-            gp.InitializeEntity(rw, config, gpstate);
-            return gp;
+            var result = await RetrieveEntry(conName, method, args, payload, timeout);
+            return result.IsNullOrWhitespace() ? null : JsonWrapper.JsonToGenericEntity(result);
         }
 
         public async Task<string> RetrieveEntry(string conName, string method, string args, string payload, int timeout = 120)
