@@ -45,8 +45,12 @@ namespace Utility
                 ).GetAwaiter().GetResult();
                 this.Entities = new ConfigEntityRepo(RootDataLayerClient.GlobalConfig);
                 List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
-                string scriptsPath = Path.GetFullPath(this.StartupConfiguration.GetS("Config/RoslynScriptsPath"));
-                this.RoslynWrapper = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+                var scriptsPath = this.StartupConfiguration.GetS("Config/RoslynScriptsPath");
+
+                if (!scriptsPath.IsNullOrWhitespace())
+                {
+                    this.RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                }
 
                 this.EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(this.StartupConfiguration);
                 this.PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(this.StartupConfiguration);
@@ -67,20 +71,13 @@ namespace Utility
             }
         }
 
-        public async Task Log(string method, string message) => await Err(ErrorSeverity.Log, method, ErrorDescriptor.Log, message);
-        public async Task Trace(string method, string message) => await Err(ErrorSeverity.Log, method, ErrorDescriptor.Trace, message);
-        public async Task Error(string method, string message) => await Err(ErrorSeverity.Error, method, ErrorDescriptor.Exception, message);
-        public async Task Fatal(string method, string message) => await Err(ErrorSeverity.Fatal, method, ErrorDescriptor.Fatal, message);
+        public Task Log(string method, string message) => Err(ErrorSeverity.Log, method, ErrorDescriptor.Log, message);
+        public Task Trace(string method, string message) => Err(ErrorSeverity.Log, method, ErrorDescriptor.Trace, message);
+        public Task Error(string method, string message) => Err(ErrorSeverity.Error, method, ErrorDescriptor.Exception, message);
+        public Task Fatal(string method, string message) => Err(ErrorSeverity.Fatal, method, ErrorDescriptor.Fatal, message);
 
-        public async Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log)
-        {
-            await Alert(method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
-        }
-
-        public async Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log)
-        {
-            await Err(severity, method, ErrorDescriptor.Log, JsonConvert.SerializeObject(payload));
-        }
+        public Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log) => Alert(method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
+        public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
     }
 
 }
