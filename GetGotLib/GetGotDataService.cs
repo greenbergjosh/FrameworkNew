@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Utility;
@@ -12,15 +13,13 @@ namespace GetGotLib
 {
     public class GetGotDataService
     {
-        public FrameworkWrapper Fw;
+        public FrameworkWrapper Fw = null;
         public Guid RsConfigGuid;
-
-
 
         // GetGotOld
         public int MAX_TEMPLATES_PER_CALL = 20;
         public int LIMIT_TEMPLATE_META_SEARCH = 20;
-        public string GETGOT_CONFIG = "GetGotConfig";
+        public string Conn = "GetGotConfig";
 
         public string ConnectionString;
         public string ConfigurationKey;
@@ -96,19 +95,18 @@ namespace GetGotLib
 
         public void Config(FrameworkWrapper fw)
         {
-            File.AppendAllText("GetGotDebug.log", $@"In Config" + Environment.NewLine);
             try
             {
                 this.Fw = fw;
                 this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
-                File.AppendAllText("GetGotDebug.log", $@"In Config rsconfigguid=" + this.RsConfigGuid.ToString() + Environment.NewLine);
             }
             catch (Exception ex)
             {
-                File.AppendAllText("GetGotDebug.log", $@"In Config ex=" + ex.ToString() + Environment.NewLine);
+                Fw?.Error(nameof(Config), ex.UnwrapForLog());
+                throw;
             }
         }
-        
+
         public async Task Test(HttpContext c)
         {
             //Dictionary<string, string> spMap = new Dictionary<string, string>()
@@ -144,149 +142,81 @@ namespace GetGotLib
         public async Task Run(HttpContext context)
         {
             //await Test(context);
-            string requestFromPost = "";
-            File.AppendAllText("GetGotDebug.log", $@"In Run" + Environment.NewLine);
+            var requestFromPost = "";
             var result = Jw.Json(new { Error = "SeeLogs" });
+
             try
             {
-                StreamReader reader = new StreamReader(context.Request.Body);
-                requestFromPost = await reader.ReadToEndAsync();
-                File.AppendAllText("GetGotDebug.log", $@"In Run Req=" + requestFromPost + Environment.NewLine);
-                if (!String.IsNullOrEmpty(context.Request.Query["m"]))
+                requestFromPost = await context.GetRawBodyStringAsync();
+
+                Fw.Trace(nameof(Run), $"Request: {requestFromPost}");
+                var req = Jw.JsonToGenericEntity(requestFromPost);
+                var sid = req.GetS("p/sid");
+                var identity = req.GetS("i");
+                var sessionInit = req.GetS("p/s");
+                var eventData = req.GetS("p/e");
+                var failed = false;
+                EdwBulkEvent be = null;
+
+                if (!sessionInit.IsNullOrWhitespace())
                 {
-                    string m = context.Request.Query["m"];
-                    File.AppendAllText("GetGotDebug.log", $@"In Run m=" + requestFromPost + Environment.NewLine);
-                    switch (m)
+                    be = new EdwBulkEvent();
+                    sid = req.GetS("p/s/sid");
+
+                    be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow, PL.FromJsonString(sessionInit), RsConfigGuid);
+                }
+
+                if (!eventData.IsNullOrWhitespace())
+                {
+                    if (!sid.IsNullOrWhitespace())
                     {
-                        case "SelectSubCampaignDraft":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "", 1);
-                            break;
+                        if (be == null) be = new EdwBulkEvent();
 
-                        case "CreateImpression":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateClick":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateAction":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "GenerateInbox":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "GetRecentPosts":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateUser":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateUserSignup":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectInterestGroups":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateCampaign":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectMessageBodyTemplatesByMeta":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectMessageBodyTemplateQuery":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "ValidateUser":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateSubCampaign":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "UpdatePassword":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "UserContactList":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "VerifyUser":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "FollowUsers":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectInterests":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectInfluencers":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "CreateSubCampaignDraft":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectCampaign":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        case "SelectSubCampaign":
-                            result = await Fw.RootDataLayerClient.RetrieveEntry(GETGOT_CONFIG,
-                                m, requestFromPost, "{}", 1);
-                            break;
-
-                        default:
-                            await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
-                            break;
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { "ggsess", sid } }, null, PL.FromJsonString(eventData));
+                    }
+                    else
+                    {
+                        await Fw.Error(nameof(Run), $"Request missing sid: {requestFromPost}");
+                        failed = true;
                     }
                 }
-                else
+
+                // purposely fire and forget
+                if (be != null) Fw.EdwWriter.Write(be);
+
+                if (!failed)
                 {
-                    await this.Fw.Err(1000, "Start", "Tracking", "Unknown request: " + requestFromPost);
+                    var results = new Dictionary<string, string>();
+
+                    foreach (var p in req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid"))
+                    {
+                        var res = await SqlWrapper.SqlToGenericEntity(Conn, p.Item1, identity, p.Item2);
+
+                        if (res == null) await Fw.Error(p.Item1, "Empty DB response");
+                        else
+                        {
+                            var error = res.GetS("Error");
+
+                            if (!error.IsNullOrWhitespace())
+                            {
+                                await Fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
+                                failed = true;
+                                break;
+                            }
+                        }
+
+                        results.Add(p.Item1, res.GetS(""));
+                    }
+
+                    if (!failed && results.Any()) result = JsonConvert.SerializeObject(results);
+                    else if (!failed) result = result = Jw.Json(new { Result = "Success" });
                 }
             }
             catch (Exception ex)
             {
-                await this.Fw.Err(1000, "Start", "Exception", $@"{requestFromPost}::{ex.ToString()}");
+                await Fw.Error(nameof(Run), $"{requestFromPost}: {ex.UnwrapForLog()}");
             }
+
             await WriteResponse(context, result);
         }
 
@@ -297,6 +227,7 @@ namespace GetGotLib
             context.Response.ContentLength = resp.Length;
             await context.Response.WriteAsync(resp);
         }
+
         public async Task<string> CreateCampaign(IGenericEntity r)
         {
             return "";
@@ -308,7 +239,7 @@ namespace GetGotLib
             int oidx = Int32.Parse(r.GetS("o"));
             int iidx = Int32.Parse(r.GetS("i"));
 
-            string cRes = await Fw.RootDataLayerClient.RetrieveEntry(this.GetGotDbConnectionString,
+            string cRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
                     "SelectCampaign",
                     Jw.Json(new
                     {
@@ -328,7 +259,7 @@ namespace GetGotLib
 
             if (!String.IsNullOrEmpty(queryId))
             {
-                string queryRes = await Fw.RootDataLayerClient.RetrieveEntry(this.GetGotDbConnectionString,
+                string queryRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
                     "SelectMessageBodyTemplateQuery",
                     Jw.Json(new
                     {
@@ -423,7 +354,7 @@ namespace GetGotLib
         public async Task<IGenericEntity> SelectMessageBodyTemplatesByMeta(string meta, string advertiserId)
         {
             (var pos, var neg) = SplitMetaString(meta, ' ');
-            string metaRes = await Fw.RootDataLayerClient.RetrieveEntry(this.GetGotDbConnectionString,
+            string metaRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
                 "SelectMessageBodyTemplatesByMeta",
                 Jw.Json(new
                 {
