@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -15,6 +16,10 @@ namespace SignalApiLib
         private const string Key = "498937C1-6FCA-45B6-9C86-49D4999BB5C7";
         private const string ConsoleUrl = "https://forms.direct-market.com/PostExtra/pe";
         private readonly string _logCtx = $"{nameof(Fluent)}.{nameof(HandleRequest)}";
+        private readonly IEnumerable<ExportProviders.IPostingQueueProvider> _postingQueueExports = new[]
+        {
+            new ExportProviders.Console()
+        };
 
         public Fluent(FrameworkWrapper fw)
         {
@@ -30,18 +35,20 @@ namespace SignalApiLib
                 if (b["k"].ToString() != Key) return null;
 
                 var token = b["p"];
-                JArray payload;
-                Task consoleTask;
+                IEnumerable<SourceData> payloads;
 
-                if (token is JObject)
-                {
-                    payload = new JArray { token };
-                    consoleTask = PostToConsole((JObject)token);
-                }
+                if (token is JObject jobj) payloads = new[] { Mutate(jobj) };
                 else if (token is JArray)
                 {
-                    payload = (JArray)token;
-                    consoleTask = PostToConsole(payload);
+                    var original = ((JArray)token).Select(p => new { orig = p, jobj = p as JObject }).ToArray();
+                    var bad = original.Where(p => p.jobj == null).ToArray();
+
+                    if (bad.Any())
+                    {
+                        await _fw.Error(_logCtx, $"Invalid items in array:\r\n\r\nBad items:\r\n{bad.Select(p => p.orig.ToString()).Join("\r\n")}\r\n\r\nFull payload:\r\n{token}");
+                    }
+
+                    payloads = original.Where(p => p.jobj != null).Select(p => Mutate(p.jobj));
                 }
                 else
                 {
@@ -49,17 +56,41 @@ namespace SignalApiLib
                     return null;
                 }
 
-                var localDbTask = SqlWrapper.SqlToGenericEntity("Fluent", "SaveData", "", payload.ToString());
+                payloads = payloads.Where(p => p.em?.Contains("@") == true).ToArray();
 
-                await Task.WhenAll(localDbTask, consoleTask);
+                if (payloads.Any())
+                {
+                    var localDbTask = SqlWrapper.SqlToGenericEntity("Fluent", "SaveData", "", JsonConvert.SerializeObject(payloads));
+                    var pqTask = PostToQueue(payloads);
 
-                if (localDbTask.Result.GetS("Result") == "Success") { return localDbTask.Result.GetS(""); }
+                    await Task.WhenAll(localDbTask, pqTask);
 
-                await _fw.Error(_logCtx, $"DB failure. Response: {localDbTask.Result.GetS("")}");
+                    if (localDbTask.Result.GetS("Result") == "Success")
+                    {
+                        return localDbTask.Result.GetS("");
+                    }
+
+                    await _fw.Error(_logCtx, $"DB failure. Response: {localDbTask.Result.GetS("")}");
+                }
             }
             else await _fw.Error(_logCtx, $"Invalid json body: {requestFromPost}");
 
             return null;
+        }
+
+        private SourceData Mutate(JObject s) => new SourceData { em = s["em"].ToString(), src = "fluent"};
+
+        private async Task PostToQueue(IEnumerable<SourceData> payloads)
+        {
+            var posts = _postingQueueExports.SelectMany(p => payloads, (p, d) => p.GetPostingQueueData(d)).Where(qd => qd != null).ToArray();
+
+            if (posts.Any())
+            {
+                var now = DateTime.Now;
+                var entries = posts.Select(p => new PostingQueueEntry(p.Key, now, p.Payload));
+
+                var res = await _fw.PostingQueueWriter.Write(entries);
+            }
         }
 
         private async Task PostToConsole(JObject payload)
@@ -67,10 +98,11 @@ namespace SignalApiLib
             var email = payload["em"]?.ToString();
 
             if (email.IsNullOrWhitespace()) return;
+            string res = null;
 
             try
             {
-                await ProtocolClient.HttpPostAsync(ConsoleUrl,
+                res = await ProtocolClient.HttpPostAsync(ConsoleUrl,
                     JsonConvert.SerializeObject(new
                     {
                         header = new { svc = 1, p = -1 },
@@ -83,7 +115,7 @@ namespace SignalApiLib
                             //phone_home = null,
                             email
                         }
-                    }), "application/json");
+                    }), "application/json", 15);
             }
             catch (Exception e)
             {
@@ -95,7 +127,7 @@ namespace SignalApiLib
         {
             try
             {
-                await payload.AsJEnumerable().Select(p=>(JObject)p).ForEachAsync(3, PostToConsole);
+                await payload.AsJEnumerable().Select(p => p as JObject).Where(p => p != null).ForEachAsync(5, PostToConsole);
             }
             catch (Exception e)
             {
