@@ -254,7 +254,7 @@ namespace Utility
                 using (SqlConnection cn = new SqlConnection(connectionString))
                 {
                     cn.Open();
-                    SqlCommand cmd = cn.CreateCommand();
+                    var cmd = cn.CreateCommand();
                     cmd.CommandText = "[PostingQueue].[spInsertPostingQueue]";
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -266,7 +266,6 @@ namespace Utility
                     cmd.CommandTimeout = timeout;
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                     outval = (string)cmd.Parameters["@Return"].Value;
-                    cn.Close();
                 }
             }
             catch (System.Data.SqlClient.SqlException sqlex)
@@ -277,10 +276,44 @@ namespace Utility
             }
             catch (Exception ex)
             {
+                outval = $"Exception::{ex}";
+            }
+
+            return outval;
+        }
+
+        public static async Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120)
+        {
+            string outval = null;
+
+            try
+            {
+                using (var cn = new SqlConnection(connectionString))
+                {
+                    cn.Open();
+                    var cmd = cn.CreateCommand();
+                    cmd.CommandText = "[PostingQueue].[spBulkInsertPostingQueue]";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("Payload", payload));
+                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
+                        .Direction = System.Data.ParameterDirection.Output;
+                    cmd.CommandTimeout = timeout;
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    outval = (string)cmd.Parameters["@Return"].Value;
+                }
+            }
+            catch (SqlException sqlex)
+            {
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) outval = "Walkaway";
+            }
+            catch (Exception ex)
+            {
                 outval = $"Exception::{ex.ToString()}";
             }
 
             return outval;
         }
+
     }
 }
