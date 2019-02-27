@@ -633,7 +633,7 @@ namespace Utility
             http.Accept = mediaType;
             http.ContentType = mediaType;
             http.Method = "POST";
-            http.Timeout = timeoutSeconds;
+            http.Timeout = timeoutSeconds * 1000;
 
             ASCIIEncoding encoding = new ASCIIEncoding();
             Byte[] bytes = encoding.GetBytes(content);

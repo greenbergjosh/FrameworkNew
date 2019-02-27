@@ -14,7 +14,7 @@ namespace Utility
         // Should allow location of unix utilities to be configured
         public static string exeUnzip = @"C:\Program Files\Git\usr\bin\unzip";
 
-        public static async Task UnzipZip(string ZipFileDirectory, string zipFileName, 
+        public static async Task UnzipZip(string ZipFileDirectory, string zipFileName,
             string UnzippedDirectory, int timeout = 1000 * 60 * 5)
         {
             //Directory.CreateDirectory(UnzippedDirectory);
@@ -34,7 +34,7 @@ namespace Utility
 
                         var err = errs.ToString();
 
-                        if(!err.IsNullOrWhitespace()) throw new Exception($"Unzip failed: {err}");
+                        if (!err.IsNullOrWhitespace()) throw new Exception($"Unzip failed: {err}");
                     }
                 }
             }
@@ -46,13 +46,13 @@ namespace Utility
 
         public static string exeSort = @"C:\Program Files\Git\usr\bin\sort";
 
-        public static async Task SortFile(string sourcePath, string inputFile, 
+        public static async Task SortFile(string sourcePath, string inputFile,
             string outputFile, bool caseSensitive, bool unique,
             int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "")
         {
             var exitCode = await ProcessWrapper.StartProcess(
                         exeSort,
-                        $"--parallel={parallel} {inputFile}" 
+                        $"--parallel={parallel} {inputFile}"
                             + (String.IsNullOrEmpty(mem) ? "" : (" --buffer-size=" + mem))
                             + $" --output={outputFile}"
                             + (caseSensitive ? "" : " -f") + (unique ? " -u" : ""),
@@ -90,8 +90,8 @@ namespace Utility
                 Process pProcess = new Process();
                 pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
                 pProcess.StartInfo.Verb = "runas";
-                pProcess.StartInfo.Arguments = "/c " + 
-                    Fs.QuotePathParts(exeTr) + $" -cd '\\11\\12\\15\\40-\\176' < " + 
+                pProcess.StartInfo.Arguments = "/c " +
+                    Fs.QuotePathParts(exeTr) + $" -cd '\\11\\12\\15\\40-\\176' < " +
                     Fs.QuotePathParts(inf) + " > " + Fs.QuotePathParts(outf);
                 pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 pProcess.StartInfo.UseShellExecute = true;
@@ -103,7 +103,7 @@ namespace Utility
             catch (Exception ex)
             {
                 throw;
-            } 
+            }
         }
 
         public static string exeGrep = @"C:\Program Files\Git\usr\bin\grep";
@@ -150,6 +150,50 @@ namespace Utility
             }
         }
 
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
+        {
+            const int bufferSize = 128;
+            var notFound = new List<string>();
+            var found = new List<string>();
+
+            keys.Sort();
+
+            using (var enrtr = keys.GetEnumerator())
+            {
+                enrtr.MoveNext();
+
+                using (var fileStream = File.OpenRead(filePath))
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, bufferSize))
+                {
+                    String line;
+
+                    while ((line = await streamReader.ReadLineAsync()) != null)
+                    {
+                        if (enrtr.Current == null) break;
+                        while (true)
+                        {
+                            var cmp = String.Compare(enrtr.Current, line, StringComparison.CurrentCultureIgnoreCase);
+
+                            if (cmp == 0)
+                            {
+                                enrtr.MoveNext();
+                                found.Add(enrtr.Current);
+                                break;
+                            }
+                            else if (cmp < 0)
+                            {
+                                notFound.Add(enrtr.Current);
+                                enrtr.MoveNext();
+                            }
+                            else break;
+                        }
+                    }
+                }
+            }
+
+            return (found, notFound);
+        }
+
         public static async Task<bool> BinarySearchSortedMd5File(string sourcePath, string file, string key)
         {
             string lkey = key.ToLower();
@@ -170,7 +214,7 @@ namespace Utility
                 long numRec = fLength / lLength;
 
                 long bottom = 0;
-                long top = numRec-1;
+                long top = numRec - 1;
                 while (bottom <= top)
                 {
                     long cur = (top + bottom) / 2;
@@ -221,7 +265,7 @@ namespace Utility
 
         public static string exeUniq = @"C:\Program Files\Git\usr\bin\uniq";
 
-        public static async Task<bool> Unique(string oldFile, string newFile, string sourcePath,  int timeout = 1000 * 60 * 5)
+        public static async Task<bool> Unique(string oldFile, string newFile, string sourcePath, int timeout = 1000 * 60 * 5)
         {
             StreamWriter swOut = new StreamWriter(sourcePath + "\\" + newFile, true);
             bool timedOut = false;

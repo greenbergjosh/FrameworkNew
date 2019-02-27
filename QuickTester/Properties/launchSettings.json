@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "QuickTester": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\OnPoint Global\\Google Drive\\devp\\UnixToolsTesting\\catted.srt\" \"C:\\Users\\OnPoint Global\\Google Drive\\devp\\UnixToolsTesting\\catted_md5s.srt\""
+    }
+  }
+}

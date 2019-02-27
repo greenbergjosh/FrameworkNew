@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
 using Utility;
 
 namespace GenericWindowsService
 {
-    class Program
+    internal class Program
     {
         public const string LogPath = "GenericWindowsService.log";
         public static FrameworkWrapper Fw;
@@ -28,25 +28,51 @@ namespace GenericWindowsService
         {
             try
             {
-                var listenerUrl = Fw.StartupConfiguration.GetS("HttpListenerUrl");
+                var listenerUrl = Fw.StartupConfiguration.GetS("Config/HttpListenerUrl");
 
-                if (listenerUrl.IsNullOrWhitespace()) throw new Exception("HttpListenerUrl not defined in config");
+                if (listenerUrl.IsNullOrWhitespace())
+                {
+                    throw new Exception("HttpListenerUrl not defined in config");
+                }
 
                 var methods = ((object)Service).GetType().GetMethods().Where(m => m.IsPublic).ToArray();
+                var handleHttp = methods.FirstOrDefault(m => m.Name == "HandleHttpRequest");
 
-                if (methods.All(m => m.Name != "HandleHttpRequest")) throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
+                if (handleHttp == null)
+                {
+                    throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
+                }
+                else
+                {
+                    var parms = handleHttp.GetParameters();
+
+                    if (parms.Length < 1 || parms[0].ParameterType != typeof(HttpContext) || parms.Length > 1)
+                    {
+                        throw new Exception("Dynamic service method HandleHttpRequest(HttpContext) has invalid signature");
+                    }
+                }
 
                 var onStart = methods.FirstOrDefault(m => m.Name == "OnStart");
 
-                if (onStart!=null && onStart.GetParameters().Length != 0) throw new Exception("Dynamic service OnStart method cannot have any parameters");
-                else if (onStart != null) HasOnStart = true;
+                if (onStart != null && onStart.GetParameters().Length != 0)
+                {
+                    throw new Exception("Dynamic service OnStart method cannot have any parameters");
+                }
+                else if (onStart != null)
+                {
+                    HasOnStart = true;
+                }
 
-                var OnStop = methods.FirstOrDefault(m => m.Name == "OnStop");
+                var onStop = methods.FirstOrDefault(m => m.Name == "OnStop");
 
-                if (OnStop != null && OnStop.GetParameters().Length != 0) throw new Exception("Dynamic service OnStop method cannot have any parameters");
-                else if (OnStop != null) HasOnStop = true;
-
-                if (methods.All(m => m.Name == "OnStop")) throw new Exception("Dynamic service requires HandleHttpRequest(HttpContext) method");
+                if (onStop != null && onStop.GetParameters().Length != 0)
+                {
+                    throw new Exception("Dynamic service OnStop method cannot have any parameters");
+                }
+                else if (onStop != null)
+                {
+                    HasOnStop = true;
+                }
 
                 var configFunc = methods.FirstOrDefault(m => m.Name == "Config");
 
@@ -54,9 +80,18 @@ namespace GenericWindowsService
                 {
                     var parms = configFunc.GetParameters();
 
-                    if (parms.Length == 2 && parms[0].ParameterType == typeof(string[]) && parms[1].ParameterType == typeof(FrameworkWrapper)) Service.Config(args, Fw);
-                    else if (parms.Length == 1 && parms[1].ParameterType == typeof(FrameworkWrapper)) Service.Config(Fw);
-                    else throw new Exception($"Dynamic service Config method requires signature Config({nameof(FrameworkWrapper)}) method");
+                    if (parms.Length == 2 && parms[0].ParameterType == typeof(string[]) && parms[1].ParameterType == typeof(FrameworkWrapper))
+                    {
+                        Service.Config(args, Fw);
+                    }
+                    else if (parms.Length == 1 && parms[0].ParameterType == typeof(FrameworkWrapper))
+                    {
+                        Service.Config(Fw);
+                    }
+                    else
+                    {
+                        throw new Exception($"Dynamic service Config method requires signature Config({nameof(FrameworkWrapper)}) method");
+                    }
                 }
 
                 File.AppendAllText(LogPath, $"{DateTime.Now}::CreateWebHostBuilder...{Environment.NewLine}");
@@ -86,7 +121,7 @@ namespace GenericWindowsService
             {
                 var fw = new FrameworkWrapper();
 
-                using (var dynamicContext = new AssemblyResolver(Path.GetFullPath(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"))))
+                using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {
                     Service = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
