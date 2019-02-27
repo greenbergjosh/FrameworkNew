@@ -64,7 +64,7 @@ namespace OnPointConsoleLib
 
             try
             {
-                return await Fw.RootDataLayerClient.RetrieveEntry("OnPointConsole", "SaveLiveFeed", "", request);
+                return await Fw.Data.RetrieveEntry("OnPointConsole", "SaveLiveFeed", "", request);
             }
             catch (Exception ex)
             {
@@ -79,7 +79,7 @@ namespace OnPointConsoleLib
 
             try
             {
-                return await Fw.RootDataLayerClient.RetrieveEntry("OnPointConsole", "SaveEmailEvent", "", request);
+                return await Fw.Data.RetrieveEntry("OnPointConsole", "SaveEmailEvent", "", request);
             }
             catch (Exception ex)
             {

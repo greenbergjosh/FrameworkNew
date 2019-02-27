@@ -16,6 +16,7 @@ namespace Utility
             this.connectionString = connectionString;
             this.dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
+
         public async Task<bool> Audit()
         {
             string res = await dataLayerClient.InsertPostingQueue(this.connectionString, "Audit", DateTime.Now, "{}").ConfigureAwait(false);
@@ -28,19 +29,23 @@ namespace Utility
         {
             string res;
 
-            if (w is PostingQueueEntry p) res = await SqlWrapper.InsertPostingQueue(this.connectionString, p.PostType, p.PostDate, p.Payload);
-            else if (w is IEnumerable<PostingQueueEntry> c) res = await SqlWrapper.BulkInsertPostingQueue(this.connectionString, JsonConvert.SerializeObject(c));
+            if (w is PostingQueueEntry p) res = await dataLayerClient.InsertPostingQueue(this.connectionString, p.PostType, p.PostDate, p.Payload);
+            else if (w is IEnumerable<PostingQueueEntry> c) res = await dataLayerClient.BulkInsertPostingQueue(this.connectionString, JsonConvert.SerializeObject(c));
             else throw new Exception($"Invalid posting queue payload type ${w?.GetType().FullName ?? "null"}");
 
             res = res.ToLower();
 
-            if (res == "success") return LoadBalancedWriter.Result.Success;
-
-            if (res == "walkaway") return LoadBalancedWriter.Result.Walkaway;
-
-            if (res == "removeendpoint") return LoadBalancedWriter.Result.RemoveEndpoint;
-
-            return LoadBalancedWriter.Result.Failure;
+            switch (res)
+            {
+                case "success":
+                    return LoadBalancedWriter.Result.Success;
+                case "walkaway":
+                    return LoadBalancedWriter.Result.Walkaway;
+                case "removeendpoint":
+                    return LoadBalancedWriter.Result.RemoveEndpoint;
+                default:
+                    return LoadBalancedWriter.Result.Failure;
+            }
         }
 
         public override bool Equals(object obj)

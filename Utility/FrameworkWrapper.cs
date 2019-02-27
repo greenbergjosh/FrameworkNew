@@ -13,7 +13,7 @@ namespace Utility
     {
         public string[] ConfigurationKeys;
         public string SelectConfigSproc;
-        public DataLayerClient RootDataLayerClient;
+        public DataLayerClient Data;
         public ConfigEntityRepo Entities;
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
@@ -31,19 +31,19 @@ namespace Utility
                             .SetBasePath(Directory.GetCurrentDirectory())
                             .AddJsonFile("appsettings.json")
                             .Build();
-                this.RootDataLayerClient = DataLayerClientFactory.DataStoreInstance(configuration.GetValue<String>("ConnectionString:DataLayerType"));
+                this.Data = DataLayerClientFactory.DataStoreInstance(configuration.GetValue<String>("ConnectionString:DataLayerType"));
                 this.ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
 
                 if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
 
                 this.SelectConfigSproc = configuration.GetValue<String>("Application:SelectConfigSproc");
 
-                this.StartupConfiguration = RootDataLayerClient.Initialize(
+                this.StartupConfiguration = Data.Initialize(
                     configuration.GetValue<String>("ConnectionString:ConnectionString"),
                     this.ConfigurationKeys,
                     configuration.GetValue<String>("ConnectionString:DataLayer:SelectConfigFunction")
                 ).GetAwaiter().GetResult();
-                this.Entities = new ConfigEntityRepo(RootDataLayerClient.GlobalConfig);
+                this.Entities = new ConfigEntityRepo(Data.GlobalConfig);
                 List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
                 var scriptsPath = this.StartupConfiguration.GetS("Config/RoslynScriptsPath");
 

@@ -126,13 +126,14 @@ namespace GetGotLib
             int oidx = Int32.Parse(r.GetS("o"));
             int iidx = Int32.Parse(r.GetS("i"));
 
-            string cRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                    "SelectCampaign",
-                    JsonWrapper.Json(new
-                    {
-                        Id = cid
-                    }),
-                    "", 240);
+            //string cRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+            //        "SelectCampaign",
+            //        JsonWrapper.Json(new
+            //        {
+            //            Id = cid
+            //        }),
+            //        "", 240);
+            string cRes = "";
 
             IGenericEntity c = new GenericEntityJson();
             c.InitializeEntity(null, null, JsonConvert.DeserializeObject(cRes));
@@ -146,13 +147,14 @@ namespace GetGotLib
 
             if (!String.IsNullOrEmpty(queryId))
             {
-                string queryRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                    "SelectMessageBodyTemplateQuery",
-                    JsonWrapper.Json(new
-                    {
-                        Id = queryId
-                    }),
-                    "", 240);
+                //string queryRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+                //    "SelectMessageBodyTemplateQuery",
+                //    JsonWrapper.Json(new
+                //    {
+                //        Id = queryId
+                //    }),
+                //    "", 240);
+                string queryRes = "";
                 IGenericEntity queryge = new GenericEntityJson();
                 queryge.InitializeEntity(null, null, JsonConvert.DeserializeObject(queryRes));
                 queryParts = queryge.GetL("QueryJson");
@@ -241,16 +243,17 @@ namespace GetGotLib
         public async Task<IGenericEntity> SelectMessageBodyTemplatesByMeta(string meta, string advertiserId)
         {
             (var pos, var neg) = SplitMetaString(meta, ' ');
-            string metaRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                "SelectMessageBodyTemplatesByMeta",
-                JsonWrapper.Json(new
-                {
-                    AId = advertiserId,
-                    Pos = pos,
-                    Neg = neg,
-                    Lim = this.LIMIT_TEMPLATE_META_SEARCH
-                }),
-                "", 240);
+            //string metaRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
+            //    "SelectMessageBodyTemplatesByMeta",
+            //    JsonWrapper.Json(new
+            //    {
+            //        AId = advertiserId,
+            //        Pos = pos,
+            //        Neg = neg,
+            //        Lim = this.LIMIT_TEMPLATE_META_SEARCH
+            //    }),
+            //    "", 240);
+            string metaRes = "";
             IGenericEntity metage = new GenericEntityJson();
             metage.InitializeEntity(null, null, JsonConvert.DeserializeObject(metaRes));
             return metage;

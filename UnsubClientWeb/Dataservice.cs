@@ -39,7 +39,7 @@ namespace UnsubClientWeb
                         result = await nw.ServerIsUnsubList(requestFromPost);
                         break;
                     case "GetCampaigns":
-                        result = await nw.GetCampaigns();
+                        result = (await nw.GetCampaigns())?.GetS("") ?? result;
                         break;
                     case "ForceUnsub":
                         result = await nw.ServerForceUnsub(requestFromPost);

@@ -14,7 +14,7 @@ namespace GetGotLib
 {
     public class GetGotDataService
     {
-        public FrameworkWrapper Fw = null;
+        public FrameworkWrapper _fw = null;
         public Guid RsConfigGuid;
         public string Conn = "GetGotConfig";
 
@@ -22,12 +22,12 @@ namespace GetGotLib
         {
             try
             {
-                this.Fw = fw;
+                this._fw = fw;
                 this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
             }
             catch (Exception ex)
             {
-                Fw?.Error(nameof(Config), ex.UnwrapForLog());
+                _fw?.Error(nameof(Config), ex.UnwrapForLog());
                 throw;
             }
         }
@@ -41,7 +41,7 @@ namespace GetGotLib
             {
                 requestFromPost = await context.GetRawBodyStringAsync();
 
-                Fw.Trace(nameof(Run), $"Request: {requestFromPost}");
+                _fw.Trace(nameof(Run), $"Request: {requestFromPost}");
                 var req = Jw.JsonToGenericEntity(requestFromPost);
                 var failed = await HandleEdwEvents(req, requestFromPost);
 
@@ -71,16 +71,16 @@ namespace GetGotLib
                                         // validate code,validate username, validate password, create user, if chosen exists handle exists generate one based on it
                                         break;
                                     default:
-                                        var res = await SqlWrapper.SqlToGenericEntity(Conn, p.Item1, identity, p.Item2);
+                                        var res = await _fw.Data.ExecuteMethod(Conn, p.Item1, identity, p.Item2);
 
-                                        if (res == null) await Fw.Error(p.Item1, "Empty DB response");
+                                        if (res == null) await _fw.Error(p.Item1, "Empty DB response");
                                         else
                                         {
                                             var error = res.GetS("Error");
 
                                             if (!error.IsNullOrWhitespace())
                                             {
-                                                await Fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
+                                                await _fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
                                                 failed = true;
                                                 break;
                                             }
@@ -92,7 +92,7 @@ namespace GetGotLib
                             }
                             catch (Exception e)
                             {
-                                await Fw.Error(nameof(Run), $"Unhandled function exception: {e.UnwrapForLog()}");
+                                await _fw.Error(nameof(Run), $"Unhandled function exception: {e.UnwrapForLog()}");
                             }
 
                             results.Add(p.Item1, fresult);
@@ -104,7 +104,7 @@ namespace GetGotLib
             }
             catch (Exception ex)
             {
-                await Fw.Error(nameof(Run), $"{requestFromPost}: {ex.UnwrapForLog()}");
+                await _fw.Error(nameof(Run), $"{requestFromPost}: {ex.UnwrapForLog()}");
             }
 
             await WriteResponse(context, result);
@@ -128,7 +128,7 @@ namespace GetGotLib
                 }
                 else
                 {
-                    await Fw.Error(nameof(HandleEdwEvents), $"EDW session init missing sid: {requestFromPost}");
+                    await _fw.Error(nameof(HandleEdwEvents), $"EDW session init missing sid: {requestFromPost}");
                     return false;
                 }
             }
@@ -143,13 +143,13 @@ namespace GetGotLib
                 }
                 else
                 {
-                    await Fw.Error(nameof(HandleEdwEvents), $"Request missing sid: {requestFromPost}");
+                    await _fw.Error(nameof(HandleEdwEvents), $"Request missing sid: {requestFromPost}");
                     return false;
                 }
             }
 
             // purposely fire and forget
-            if (be != null) Fw.EdwWriter.Write(be);
+            if (be != null) _fw.EdwWriter.Write(be);
 
             return true;
         }

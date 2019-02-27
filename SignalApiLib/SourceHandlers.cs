@@ -60,7 +60,7 @@ namespace SignalApiLib
 
                 if (payloads.Any())
                 {
-                    var localDbTask = SqlWrapper.SqlToGenericEntity("Fluent", "SaveData", "", JsonConvert.SerializeObject(payloads));
+                    var localDbTask = _fw.Data.ExecuteMethod("Fluent", "SaveData", "", JsonConvert.SerializeObject(payloads));
                     var pqTask = PostToQueue(payloads);
 
                     await Task.WhenAll(localDbTask, pqTask);
