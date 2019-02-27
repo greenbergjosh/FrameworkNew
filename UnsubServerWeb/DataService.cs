@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -29,17 +27,19 @@ namespace UnsubServerWeb
 
                 var dtve = JsonWrapper.JsonToGenericEntity(requestFromPost);
                 var nw = new UnsubLib.UnsubLib(_fw);
+                var method = dtve.GetS("m");
 
-                switch (dtve.GetS("m"))
+                // Leaving out the await was on purpose, let's not hold up the call for trace logging
+                _fw.Trace($"Router:{method}", dtve.GetS(""));
+
+                switch (method)
                 {
                     case "IsUnsub":
                         result = await nw.IsUnsub(dtve);
                         break;
-
                     case "IsUnsubList":
                         result = await nw.IsUnsubList(dtve);
                         break;
-
                     case "ForceUnsub":
                         result = await nw.ForceUnsub(dtve);
                         break;

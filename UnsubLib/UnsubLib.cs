@@ -40,13 +40,10 @@ namespace UnsubLib
         public long SearchFileCacheSize;
         public string UnsubServerUri;
         public string UnsubJobServerUri;
-        public string DtExecPath;
         public int MaxConnections;
         public int MaxParallelism;
         public string SeleniumChromeDriverPath;
         public string FileCacheFtpServerPath;
-        public int MinDiffFileSize;
-        public float MaxDiffFilePercentage;
         public string SortBufferSize;
         public int FileCopyTimeout;
         private FrameworkWrapper _fw;
@@ -78,7 +75,6 @@ namespace UnsubLib
             SearchFileCacheSize = Int64.Parse(config.GetS("Config/SearchFileCacheSize"));
             UnsubServerUri = config.GetS("Config/UnsubServerUri");
             UnsubJobServerUri = config.GetS("Config/UnsubJobServerUri");
-            DtExecPath = config.GetS("Config/DtExecPath");
             CallLocalLoadUnsubFiles = config.GetB("Config/CallLocalLoadUnsubFiles");
             UseLocalNetworkFile = config.GetB("Config/UseLocalNetworkFile");
             LocalNetworkFilePath = config.GetS("Config/LocalNetworkFilePath");
@@ -88,8 +84,6 @@ namespace UnsubLib
             MaxConnections = Int32.Parse(config.GetS("Config/MaxConnections"));
             SeleniumChromeDriverPath = config.GetS("Config/SeleniumChromeDriverPath");
             FileCacheFtpServerPath = config.GetS("Config/FileCacheFtpServerPath");
-            MinDiffFileSize = Int32.Parse(config.GetS("Config/MinDiffFileSize"));
-            MaxDiffFilePercentage = float.Parse(config.GetS("Config/MaxDiffFilePercentage"));
             SortBufferSize = config.GetS("Config/SortBufferSize");
 
             if (int.TryParse(config.GetS("Config/FileCopyTimeout"), out var to)) FileCopyTimeout = to;
@@ -977,6 +971,7 @@ namespace UnsubLib
         {
             try
             {
+                // ToDo: Change to SelectNetworkCampaigns and pass {"Base64Payload": true}
                 return await Sql.SqlServerProviderEntry(Conn, "SelectNetworkCampaignsWithPayload", "", "");
             }
             catch (Exception ex)
@@ -1030,11 +1025,12 @@ namespace UnsubLib
                 else if (!String.IsNullOrEmpty(FileCacheFtpServer))
                 {
                     newFileSize = await ProtocolClient.FtpGetFileSize(
-                            FileCacheFtpServerPath + "/" + fileName,
-                            FileCacheFtpServer,
-                            FileCacheFtpUser,
-                            FileCacheFtpPassword);
+                        FileCacheFtpServerPath + "/" + fileName,
+                        FileCacheFtpServer,
+                        FileCacheFtpUser,
+                        FileCacheFtpPassword);
                 }
+
                 if (newFileSize > cacheSize)
                 {
                     await _fw.Error(nameof(MakeRoom), $"File larger than cache: {fileName}");
@@ -1061,6 +1057,11 @@ namespace UnsubLib
                     }
                 }
             }
+            catch (FileNotFoundException ex)
+            {
+                await _fw.Error(nameof(MakeRoom), $"File not in cache: {fileName}:{ex.UnwrapForLog()}");
+                return false;
+            }
             catch (Exception makeRoomException)
             {
                 await _fw.Error(nameof(MakeRoom), fileName + "::" + makeRoomException.ToString());
@@ -1076,7 +1077,6 @@ namespace UnsubLib
             var success = false;
             var fileName = fileId + ext;
             var dfileName = destFileName == null ? fileName : destFileName;
-            var tempFile = new FileInfo($"{destDir}\\{dfileName}{tempSuffix}");
             var finalFile = new FileInfo($"{destDir}\\{dfileName}");
 
             if (!String.IsNullOrEmpty(FileCacheFtpServer) || !String.IsNullOrEmpty(FileCacheDirectory))
@@ -1087,15 +1087,21 @@ namespace UnsubLib
                 if (files.Length == 1) return fileName;
                 else if (files.Length == 0)
                 {
+                    var tempFile = new FileInfo($"{destDir}\\{dfileName}{tempSuffix}");
                     var fileCopyInProgress = false;
 
                     try
                     {
                         tempFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None).Dispose();
                     }
-                    catch (IOException)
+                    catch (IOException ex)
                     {
-                        fileCopyInProgress = true;
+                        if (ex.Message.Contains("already exists")) fileCopyInProgress = true;
+                        else
+                        {
+                            await _fw.Error(nameof(GetFileFromFileId), $"Unknown error with temp file: {fileName} {ex.UnwrapForLog()}");
+                            throw;
+                        }
                     }
 
                     if (fileCopyInProgress)
@@ -1110,40 +1116,50 @@ namespace UnsubLib
 
                         if (!success)
                         {
+                            tempFile.Delete();
                             await _fw.Error(nameof(GetFileFromFileId), $"Could not make room for file: {fileName}");
                             throw new Exception("Could not make room for file.");
                         }
 
-                        if (!String.IsNullOrEmpty(FileCacheDirectory))
+                        try
                         {
-                            var cacheFile = new FileInfo($"{FileCacheDirectory}\\{fileName}");
-
-                            await Task.Run(() => cacheFile.CopyTo(tempFile.FullName, true)).ConfigureAwait(false);
-                            tempFile.MoveTo(finalFile.FullName);
-                        }
-                        else if (!String.IsNullOrEmpty(FileCacheFtpServer))
-                        {
-                            using (var fs = tempFile.Open(FileMode.Open, FileAccess.Write, FileShare.None))
+                            if (!String.IsNullOrEmpty(FileCacheDirectory))
                             {
-                                await ProtocolClient.DownloadFileFtp(
-                                    fs,
-                                    FileCacheFtpServerPath + "/" + fileName,
-                                    FileCacheFtpServer,
-                                    FileCacheFtpUser,
-                                    FileCacheFtpPassword
-                                );
+                                var cacheFile = new FileInfo($"{FileCacheDirectory}\\{fileName}");
+
+                                cacheFile.CopyTo(tempFile.FullName, true);
+                                tempFile.MoveTo(finalFile.FullName);
+                            }
+                            else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                            {
+                                using (var fs = tempFile.Open(FileMode.Open, FileAccess.Write, FileShare.None))
+                                {
+                                    await ProtocolClient.DownloadFileFtp(
+                                        fs,
+                                        FileCacheFtpServerPath + "/" + fileName,
+                                        FileCacheFtpServer,
+                                        FileCacheFtpUser,
+                                        FileCacheFtpPassword
+                                    );
+                                }
+
+                                tempFile.MoveTo(finalFile.FullName);
                             }
 
-                            tempFile.MoveTo(finalFile.FullName);
+                            files = di.GetFiles(dfileName);
+
+                            if (files.Length == 1) return dfileName;
+                            else
+                            {
+                                await _fw.Error(nameof(GetFileFromFileId), $"Could not find file in cache: {fileName}");
+                                throw new Exception("Could not find file in cache: " + fileName);
+                            }
                         }
-
-                        files = di.GetFiles(dfileName);
-
-                        if (files.Length == 1) return dfileName;
-                        else
+                        catch (Exception)
                         {
-                            await _fw.Error(nameof(GetFileFromFileId), $"Could not find file in cache: {fileName}");
-                            throw new Exception("Could not find file in cache: " + fileName);
+                            tempFile.Refresh();
+                            if (tempFile.Exists) tempFile.Delete();
+                            throw;
                         }
                     }
                 }
@@ -1238,16 +1254,20 @@ namespace UnsubLib
 
         public async Task<string> IsUnsub(IGenericEntity dtve)
         {
-            var campaignId = "";
-            var emailMd5 = "";
+            var campaignId = dtve.GetS("CampaignId");
+            var md5 = dtve.GetS("EmailMd5");
+            var email = dtve.GetS("Email");
+            var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
+
             try
             {
-                campaignId = dtve.GetS("CampaignId");
-                emailMd5 = dtve.GetS("EmailMd5");
-                if (emailMd5.Contains("@"))
+                if (!email.IsNullOrWhitespace()) md5 = Hashing.CalculateMD5Hash(email.ToLower());
+                else if (md5?.Contains("@") == true)
                 {
-                    emailMd5 = Hashing.CalculateMD5Hash(emailMd5.ToLower());
+                    email = md5;
+                    md5 = Hashing.CalculateMD5Hash(md5.ToLower());
                 }
+
                 var fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
 
                 if (fileName.IsNullOrWhitespace())
@@ -1256,16 +1276,20 @@ namespace UnsubLib
                     return Jw.Json(new { Result = false, Error = "Missing unsub file" });
                 }
 
-                var result = await UnixWrapper.BinarySearchSortedMd5File(
-                    SearchDirectory,
-                    fileName,
-                    emailMd5);
+                var isUnsub = await UnixWrapper.BinarySearchSortedMd5File(SearchDirectory, fileName, md5);
 
-                return Jw.Json(new { Result = result });
+                if (!isUnsub && globalSupp)
+                {
+                    var res = await SqlWrapper.SqlToGenericEntity(Conn, "IsSuppressed", Jw.Json(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
+
+                    isUnsub = res.GetS("Result").ParseBool() ?? true;
+                }
+
+                return Jw.Json(new { Result = isUnsub });
             }
             catch (Exception ex)
             {
-                await _fw.Error(nameof(IsUnsub), $"Search failed: {campaignId}::{emailMd5}::{ex}");
+                await _fw.Error(nameof(IsUnsub), $"Search failed: {campaignId}::{md5}::{ex}");
                 throw new Exception("Search failed.");
             }
         }
@@ -1284,21 +1308,30 @@ namespace UnsubLib
 
         public async Task<string> IsUnsubList(IGenericEntity dtve)
         {
-            var campaignId = "";
-            var emailMd5 = new List<string>();
-            var notFound = new List<string>();
+            var md5s = new List<string>();
+            var requestMd5s = new List<string>();
+            var requestemails = new Dictionary<string, string>();
+            var campaignId = dtve.GetS("CampaignId");
+            var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
 
             try
             {
-                campaignId = dtve.GetS("CampaignId");
                 foreach (var y in dtve.GetL("EmailMd5"))
                 {
-                    var emailFixed = y.GetS("");
-                    if (emailFixed.Contains("@"))
+                    var md5 = y.GetS("");
+
+                    if (md5.Contains("@"))
                     {
-                        emailFixed = Hashing.CalculateMD5Hash(emailFixed.ToLower());
+                        var email = Hashing.CalculateMD5Hash(md5.ToLower());
+
+                        md5s.Add(email);
+                        requestemails.Add(md5, email);
                     }
-                    emailMd5.Add(emailFixed);
+                    else
+                    {
+                        requestMd5s.Add(md5);
+                        md5s.Add(md5);
+                    }
                 }
 
                 var fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
@@ -1310,47 +1343,24 @@ namespace UnsubLib
                     return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
                 }
 
-                emailMd5.Sort();
+                var notFound = (await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), md5s)).notFound;
 
-                var enrtr = emailMd5.GetEnumerator();
-
-                enrtr.MoveNext();
-
-                const Int32 BufferSize = 128;
-                using (var fileStream = File.OpenRead(fileName))
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+                if (globalSupp)
                 {
-                    String line;
+                    var gsEmails = requestemails.Where(kvp => notFound.Contains(kvp.Key)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    var gsMd5s = notFound.Where(m => !gsEmails.ContainsKey(m));
+                    var res = await SqlWrapper.SqlToGenericEntity(Conn, "AreSuppressed", Jw.Json(new { md5s = gsMd5s, emails = gsEmails.Values }), "");
 
-                    while ((line = streamReader.ReadLine()) != null)
-                    {
-                        if (enrtr.Current == null) break;
-                        while (true)
-                        {
-                            var cmp = enrtr.Current.ToUpper().CompareTo(line.ToUpper());
-
-                            if (cmp == 0)
-                            {
-                                enrtr.MoveNext();
-                                break;
-                            }
-                            else if (cmp < 0)
-                            {
-                                notFound.Add(enrtr.Current);
-                                enrtr.MoveNext();
-                            }
-                            else break;
-                        }
-                    }
+                    notFound = res.GetL("notFound").Select(g=>g.GetS("")).ToList();
                 }
+
+                return Jw.Json("NotUnsub", notFound);
             }
             catch (Exception ex)
             {
                 await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex}");
                 throw new Exception("Search failed.");
             }
-
-            return Jw.Json("NotUnsub", notFound);
         }
 
         public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)
@@ -1412,7 +1422,7 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             var uri = new Uri(unsubUrl);
-            string authString = network.GetD("Credentials/DomainAuthStrings").FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
+            var authString = network.GetD("Credentials/DomainAuthStrings").FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
             dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
                 new Dictionary<string, Func<FileInfo, Task<object>>>()

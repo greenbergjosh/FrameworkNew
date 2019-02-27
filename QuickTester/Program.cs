@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json.Linq;
 
 namespace QuickTester
 {
@@ -24,8 +26,131 @@ namespace QuickTester
             //var gcstate = JsonConvert.DeserializeObject(result);
             //gc.InitializeEntity(null, null, gcstate);
         }
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
+            var js = Jw.JsonToGenericEntity("{\"a\":[1,2,3]}");
+            var vals = js.GetL("a").Select(g => g.GetS(""));
+
+            string h = null;
+            var plObj = new { a = 1, b = "1", c = "abc", e = DateTime.UtcNow, f = true, g = 1.01, i = new { a = 2 }, d = new[] { 1, 2, 3 } };
+
+            var uid = Guid.NewGuid();
+            var tms = DateTime.UtcNow;
+            PL payload = PL.O(plObj, new[] { false, true, true });
+            var configId = Guid.NewGuid();
+
+            var ljw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+                .Add(PL.N("payload", PL.C(payload)))
+                .Add(PL.C("rsid", configId.ToString())).ToString();
+
+            var j = JsonConvert.SerializeObject(plObj);
+            payload = PL.FromJsonString(j);
+
+            //var jw = PL.C("whatev", j, false);
+            var jw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+                .Add(PL.N("payload", PL.C(payload)))
+                .Add(PL.C("rsid", configId.ToString())).ToString();
+
+            return;
+            var nl = Environment.NewLine;
+            //var unsubFile = new FileInfo(Path.GetFullPath(args[0]));
+            //var opFile = new FileInfo(Path.Combine(unsubFile.DirectoryName, $"{unsubFile.Name.Replace(unsubFile.Extension, "")}_md5s{unsubFile.Extension}"));
+            //var totalMd5s = unsubFile.Length / 34;
+            //var rand = new Random();
+            //var randomlines = new SortedDictionary<int, object>();
+            //var randMin = 0;
+            //var randMax = 0;
+
+            //for (int j = 0; j < 10; j++)
+            //{
+            //    randMin = (int)Math.Round(totalMd5s * j * 0.1, MidpointRounding.AwayFromZero);
+            //    randMax = (int)Math.Round(totalMd5s * (j + 1) * 0.1, MidpointRounding.AwayFromZero);
+
+            //    if ((randMax - randMin) < 1000) throw new Exception("Range too small");
+
+            //    while (randomlines.Count < (j + 1) * 5000)
+            //    {
+            //        var r = rand.Next(randMin, randMax);
+
+            //        if (!randomlines.ContainsKey(r)) randomlines.Add(r, null);
+            //    }
+            //}
+
+            //if (opFile.Exists) opFile.Delete();
+            //var md5s = new List<string>();
+
+            //using (var rle = randomlines.GetEnumerator())
+            //using (var fs = unsubFile.OpenText())
+            //{
+            //    rle.MoveNext();
+            //    string line;
+            //    var fileIndex = 0;
+
+            //    while ((line = await fs.ReadLineAsync()) != null)
+            //    {
+            //        if (fileIndex == rle.Current.Key)
+            //        {
+            //            md5s.Add(line);
+            //            rle.MoveNext();
+            //        }
+            //        fileIndex++;
+            //    }
+            //}
+
+            //for (int j = 0; j < 2000; j++)
+            //{
+            //    md5s.Add(Utility.Crypto.Random.GenerateRandomString(32, 32, Utility.Crypto.Random.hex));
+            //}
+
+            //md5s.Sort();
+
+            //using (var fw = opFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            //{
+            //    await fw.WriteAsync(Encoding.ASCII.GetBytes(md5s.Join(nl)));
+            //}
+
+            //return;
+
+            var checkFile = new FileInfo(Path.GetFullPath(args[1]));
+            var searchFile = new FileInfo(Path.GetFullPath(args[0]));
+            var outputFile = new FileInfo(Path.Combine(checkFile.DirectoryName, $"{checkFile.Name.Replace(checkFile.Extension, "")}_results{checkFile.Extension}"));
+            string md5Str;
+
+            Console.WriteLine($"Getting MD5 list from {checkFile.FullName}");
+            using (var fs = checkFile.OpenText())
+            {
+                md5Str = await fs.ReadToEndAsync();
+            }
+
+            var md5s = md5Str.Split(new[] { ',', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(m => m.Trim()).ToList();
+            var res = (found: new List<string>(), notFound: new List<string>());
+
+            var sw = Stopwatch.StartNew();
+
+            await md5s.ForEachAsync(10, async md5 =>
+            {
+                var f = await UnixWrapper.BinarySearchSortedMd5File(searchFile.DirectoryName, searchFile.Name, md5);
+
+                if (f) res.found.Add(md5);
+                else res.notFound.Add(md5);
+            });
+
+            sw.Stop();
+
+            Console.WriteLine($"Processed in {sw.Elapsed.TotalSeconds}s ~{(int)(md5s.Count / sw.Elapsed.TotalSeconds)} records/s");
+
+            if (outputFile.Exists) outputFile.Delete();
+
+            using (var fs = outputFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                await fs.WriteAsync(Encoding.ASCII.GetBytes($"Found:{nl}"));
+                await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
+                await fs.WriteAsync(Encoding.ASCII.GetBytes($"{nl}Not Found:{nl}"));
+                await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
+            }
+
+            return;
+
             Test1();
             var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
             var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
@@ -48,26 +173,26 @@ namespace QuickTester
                     i++;
                   }
                   p.cn.ParentNode.RemoveChild(p.cn);""""";
-        //for (int ij = 0; ij < 100; ij++)
-        //    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
-        //        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
+            //for (int ij = 0; ij < 100; ij++)
+            //    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
+            //        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
 
 
-        string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
+            string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
             string result = SqlWrapper.SqlServerProviderEntry(constr, "SelectConfig", JsonWrapper.Json(new { InstanceId = "3B93EB28-79B6-489E-95D1-6EAA392536B5" }), "").GetAwaiter().GetResult();
 
             string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
             IGenericEntity gp = new GenericEntityJson();
             var gpstate = JsonConvert.DeserializeObject(json);
             gp.InitializeEntity(null, null, gpstate);
-            
+
             foreach (var t in gp.GetD("x"))
             {
                 string nm = t.Item1;
                 string vl = t.Item2;
             }
 
-            
+
 
 
             //var result = (JObject)JsonConvert.DeserializeObject(json);
@@ -90,15 +215,15 @@ namespace QuickTester
             //    string s = (string)mi.Invoke(null, parms);
             //}
 
-            MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll", 
-                "Utility.FileSystem", "QuotePathParts");
+            MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
+                "Utility.FileSystem", "QuotePathParts", null);
             object[] parms = new object[]
                 {
                     @"c:\program files\long line\abc\efg.txt"
                 };
             string s = (string)mi.Invoke(null, parms);
             mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
-                "Utility.FileSystem", "QuotePathParts");
+                "Utility.FileSystem", "QuotePathParts", null);
             s = (string)mi.Invoke(null, parms);
 
             int zz = 0;
@@ -304,52 +429,52 @@ namespace QuickTester
             return Sum(xs.ToArray());
         }
 
-        
 
-    //    public enum RsType
-    //    {
-    //        Immediate = 0,
-    //        Checked,
-    //        CheckedDetail
-    //    }
 
-    //    public static IList<PL> events = new List<PL>();
-    //    public static List<PL> ims = new List<PL>();
-    //    public static List<PL> cks = new List<PL>();
-    //    public static List<PL> cds = new List<PL>();
+        //    public enum RsType
+        //    {
+        //        Immediate = 0,
+        //        Checked,
+        //        CheckedDetail
+        //    }
 
-    //    public static Dictionary<RsType, List<PL>> RsTypes = new Dictionary<RsType, List<PL>>()
-    //        { { RsType.Immediate, ims }, {RsType.Checked, cks}, {RsType.CheckedDetail, cds} };
+        //    public static IList<PL> events = new List<PL>();
+        //    public static List<PL> ims = new List<PL>();
+        //    public static List<PL> cks = new List<PL>();
+        //    public static List<PL> cds = new List<PL>();
 
-    //    public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
-    //        List<string> whep, PL payload)
-    //    {
-    //       events.Add(
-    //            PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-    //                .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
-    //                                                  .Add(PL.N("whep", SL.C(whep))))));
-    //    }
+        //    public static Dictionary<RsType, List<PL>> RsTypes = new Dictionary<RsType, List<PL>>()
+        //        { { RsType.Immediate, ims }, {RsType.Checked, cks}, {RsType.CheckedDetail, cds} };
 
-    //    public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
-    //    {
-    //        RsTypes[t].Add(
-    //            PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-    //                .Add(PL.N("payload", PL.C(payload)))
-    //                .Add(PL.C("config_id", configId.ToString())));
+        //    public static void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
+        //        List<string> whep, PL payload)
+        //    {
+        //       events.Add(
+        //            PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+        //                .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))
+        //                                                  .Add(PL.N("whep", SL.C(whep))))));
+        //    }
 
-    //    }
+        //    public static void AddRS(RsType t, Guid uid, DateTime tms, PL payload, Guid configId)
+        //    {
+        //        RsTypes[t].Add(
+        //            PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+        //                .Add(PL.N("payload", PL.C(payload)))
+        //                .Add(PL.C("config_id", configId.ToString())));
 
-    //    public static string EdwBulk()
-    //    {
-    //        return PL.C().Add("E", false, events)
-    //            .Add("IM", false, ims)
-    //            .Add("CK", true, cks)
-    //            .Add("CD", true, cds)
-    //            .ToString();
-    //    }
+        //    }
+
+        //    public static string EdwBulk()
+        //    {
+        //        return PL.C().Add("E", false, events)
+        //            .Add("IM", false, ims)
+        //            .Add("CK", true, cks)
+        //            .Add("CD", true, cds)
+        //            .ToString();
+        //    }
     }
 
-    
+
 
     public class Tester
     {
@@ -376,7 +501,7 @@ namespace QuickTester
         }
 
     }
-   
+
     //public interface IJ { }
 
     //public class A : IJ
