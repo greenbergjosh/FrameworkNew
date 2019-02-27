@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Jw = Utility.JsonWrapper;
 using Pw = Utility.ParallelWrapper;
 using Fs = Utility.FileSystem;
-using Sql = Utility.SqlWrapper;
 using Utility;
 using System.Globalization;
 using System.Linq;
@@ -102,7 +101,7 @@ namespace UnsubLib
         {
             await _fw.Trace(nameof(GetNetworks), $"Before SelectNetwork {singleNetworkName ?? "null"}");
 
-            var network = await Sql.SqlToGenericEntity(Conn, "SelectNetwork",
+            var network = await _fw.Data.ExecuteMethod(Conn, "SelectNetwork",
                     singleNetworkName != null ? Jw.Json(new { NetworkName = singleNetworkName }) : "{}", "");
 
             await _fw.Trace(nameof(GetNetworks), $"After SelectNetwork: {network.GetS("")} {singleNetworkName ?? "null"}");
@@ -148,7 +147,7 @@ namespace UnsubLib
 
             await _fw.Err(ErrorSeverity.Log, nameof(ForceUnsub), ErrorDescriptor.Log, $"Starting ForceUnsub: {forceName}");
 
-            var network = await Sql.SqlToGenericEntity(Conn, "SelectNetwork", "{}", "");
+            var network = await _fw.Data.ExecuteMethod(Conn, "SelectNetwork", "{}", "");
 
             foreach (var n in network.GetL(""))
             {
@@ -208,7 +207,7 @@ namespace UnsubLib
 
             await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"ManualJob({networkName}) Campaigns: {campaignsJson}");
 
-            var campaigns = await Sql.SqlToGenericEntity(Conn, "MergeNetworkCampaignsManual",
+            var campaigns = await _fw.Data.ExecuteMethod(Conn, "MergeNetworkCampaignsManual",
                     Jw.Json(new { NetworkId = network.GetS("Id").ToLower() }), campaignsJson.ToString());
 
             if (campaigns.GetS("Result") == "NoData")
@@ -271,7 +270,7 @@ namespace UnsubLib
             }
             else
             {
-                var campaign = (await Sql.SqlToGenericEntity(Conn, "SelectNetworkCampaigns", Jw.Json(new { NetworkId = network.GetS("Id") }), ""))
+                var campaign = (await _fw.Data.ExecuteMethod(Conn, "SelectNetworkCampaigns", Jw.Json(new { NetworkId = network.GetS("Id") }), ""))
                     .GetL("")?.FirstOrDefault(c => c.GetS("NetworkCampaignId") == networkCampaignId);
 
                 if (campaign == null)
@@ -365,7 +364,7 @@ namespace UnsubLib
                         campaignsWithPositiveDelta.Add(cmp.Key, cmp.Value);
                 }
 
-                await Sql.SqlServerProviderEntry(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
+                await _fw.Data.ExecuteMethod(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
             }
             catch (Exception exUpdateCampaigns)
             {
@@ -701,7 +700,7 @@ namespace UnsubLib
 
         public async Task CleanUnusedFiles()
         {
-            var campaigns = await Sql.SqlToGenericEntity(Conn, "SelectNetworkCampaigns", "{}", ""); var refdFiles = new HashSet<string>();
+            var campaigns = await _fw.Data.ExecuteMethod(Conn, "SelectNetworkCampaigns", "{}", ""); var refdFiles = new HashSet<string>();
 
             foreach (var c in campaigns.GetL(""))
             {
@@ -810,7 +809,7 @@ namespace UnsubLib
 
         public async Task<IGenericEntity> GetNetworkConfiguration(string conString, string networkName)
         {
-            return await Sql.SqlToGenericEntity(Conn, "SelectNetwork", Jw.Json(new { NetworkName = networkName }), "");
+            return await _fw.Data.ExecuteMethod(Conn, "SelectNetwork", Jw.Json(new { NetworkName = networkName }), "");
         }
 
         public async Task<string> LoadUnsubFiles(IGenericEntity dtve)
@@ -858,7 +857,7 @@ namespace UnsubLib
 
                         var wd = ServerWorkingDirectory.Replace("\\", "\\\\");
                         await _fw.Log(nameof(LoadUnsubFiles), $"Calling spUploadDomainUnsubFile: {campaignId}::{wd}::{fileId}::{tmpFileName}");
-                        await Sql.SqlServerProviderEntry(Conn, "UploadDomainUnsubFile", Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }), "");
+                        await _fw.Data.ExecuteMethod(Conn, "UploadDomainUnsubFile", Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }), "");
                         await _fw.Log(nameof(LoadUnsubFiles), $"Called spUploadDomainUnsubFile: {campaignId}::{wd}::{fileId}::{tmpFileName}");
 
                         Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + tmpFileName);
@@ -940,7 +939,7 @@ namespace UnsubLib
 
                             var wd = ServerWorkingDirectory.Replace("\\", "\\\\");
 
-                            await Sql.SqlServerProviderEntry(Conn, "UploadDiffFile", Jw.Json(new { Ws = wd, Fn = diffname }), "");
+                            await _fw.Data.ExecuteMethod(Conn, "UploadDiffFile", Jw.Json(new { Ws = wd, Fn = diffname }), "");
                             await _fw.Trace(nameof(LoadUnsubFiles), $"After BulkInsert: {oldf}::{newf}");
                         }
                     }
@@ -967,17 +966,17 @@ namespace UnsubLib
             return result;
         }
 
-        public async Task<string> GetCampaigns()
+        public async Task<IGenericEntity> GetCampaigns()
         {
             try
             {
                 // ToDo: Change to SelectNetworkCampaigns and pass {"Base64Payload": true}
-                return await Sql.SqlServerProviderEntry(Conn, "SelectNetworkCampaignsWithPayload", "", "");
+                return await _fw.Data.ExecuteMethod(Conn, "SelectNetworkCampaignsWithPayload", "", "");
             }
             catch (Exception ex)
             {
                 await _fw.Error(nameof(GetCampaigns), ex.ToString());
-                return Jw.Json(new { Error = "Exception" });
+                return null;
             }
         }
 
@@ -1238,7 +1237,7 @@ namespace UnsubLib
 
         public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
         {
-            var c = await Sql.SqlToGenericEntity(Conn, "SelectNetworkCampaign", Jw.Json(new { CId = campaignId }), "");
+            var c = await _fw.Data.ExecuteMethod(Conn, "SelectNetworkCampaign", Jw.Json(new { CId = campaignId }), "");
             var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
 
             if (fileId == null) return null;
@@ -1280,7 +1279,7 @@ namespace UnsubLib
 
                 if (!isUnsub && globalSupp)
                 {
-                    var res = await SqlWrapper.SqlToGenericEntity(Conn, "IsSuppressed", Jw.Json(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
+                    var res = await _fw.Data.ExecuteMethod(Conn, "IsSuppressed", Jw.Json(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
 
                     isUnsub = res.GetS("Result").ParseBool() ?? true;
                 }
@@ -1349,7 +1348,7 @@ namespace UnsubLib
                 {
                     var gsEmails = requestemails.Where(kvp => notFound.Contains(kvp.Key)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                     var gsMd5s = notFound.Where(m => !gsEmails.ContainsKey(m));
-                    var res = await SqlWrapper.SqlToGenericEntity(Conn, "AreSuppressed", Jw.Json(new { md5s = gsMd5s, emails = gsEmails.Values }), "");
+                    var res = await _fw.Data.ExecuteMethod(Conn, "AreSuppressed", Jw.Json(new { md5s = gsMd5s, emails = gsEmails.Values }), "");
 
                     notFound = res.GetL("notFound").Select(g=>g.GetS("")).ToList();
                 }

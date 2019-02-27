@@ -116,7 +116,7 @@ namespace Utility
         }
 
         // TODO: Can't this just be a GenericEntity helper function?
-        public async Task<IGenericEntity> GenericEntityFromEntry(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        public async Task<IGenericEntity> ExecuteMethod(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
             string result = await RetrieveEntry(conName, method, args, payload, timeout);
             IGenericEntity gp = new GenericEntityJson();
@@ -169,6 +169,12 @@ namespace Utility
         {
             throw new NotImplementedException();
         }
+
+        virtual public Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
 }
