@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Utility.DataLayer;
 
 namespace Utility
 {
@@ -6,7 +7,7 @@ namespace Utility
     {
         public string connectionString;
         public int sequence = 0;
-        public DataLayerClient dataLayerClient;
+        public IDataLayerClient dataLayerClient;
 
         public ErrorSiloEndpoint(string dataLayerType, string connectionString)
         {

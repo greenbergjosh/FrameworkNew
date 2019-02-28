@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utility;
+using Utility.DataLayer;
 
 namespace SignalApiLib
 {
@@ -60,7 +61,7 @@ namespace SignalApiLib
 
                 if (payloads.Any())
                 {
-                    var localDbTask = _fw.Data.ExecuteMethod("Fluent", "SaveData", "", JsonConvert.SerializeObject(payloads));
+                    var localDbTask = Data.CallFn("Fluent", "SaveData", "", JsonConvert.SerializeObject(payloads));
                     var pqTask = PostToQueue(payloads);
 
                     await Task.WhenAll(localDbTask, pqTask);

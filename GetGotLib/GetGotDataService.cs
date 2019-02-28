@@ -2,12 +2,10 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Utility;
+using Utility.DataLayer;
 using Jw = Utility.JsonWrapper;
 
 namespace GetGotLib
@@ -16,7 +14,8 @@ namespace GetGotLib
     {
         public FrameworkWrapper _fw = null;
         public Guid RsConfigGuid;
-        public string Conn = "GetGotConfig";
+        public int Parallelism;
+        public string Conn = "GetGot";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -24,6 +23,7 @@ namespace GetGotLib
             {
                 this._fw = fw;
                 this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+                this.Parallelism = fw.StartupConfiguration.GetS("Config/RsConfigGuid").ParseInt() ?? 1;
             }
             catch (Exception ex)
             {
@@ -43,63 +43,67 @@ namespace GetGotLib
 
                 _fw.Trace(nameof(Run), $"Request: {requestFromPost}");
                 var req = Jw.JsonToGenericEntity(requestFromPost);
-                var failed = await HandleEdwEvents(req, requestFromPost);
+                var allOk = await HandleEdwEvents(req, requestFromPost);
 
-                if (!failed)
+                if (allOk)
                 {
                     var identity = req.GetS("i");
                     var results = new Dictionary<string, string>();
+                    var funcs = req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid");
 
-                    await req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid")
-                        .ForEachAsync(5, async p =>
+                    // ToDo: make allOk thread safe with cancellationtoken
+                    async Task HandleFunc(Tuple<string, string> p)
+                    {
+                        var fresult = "{ \"errcode\": -1, \"errmsg\": \"Unknown error\" }";
+
+                        try
                         {
-                            var fresult = "{ \"errcode\": -1, \"errmsg\": \"Unknown error\" }";
-
-                            try
+                            switch (p.Item1)
                             {
-                                switch (p.Item1)
-                                {
-                                    case "sendcode":
-                                        // validate email/phone then send email/text
-                                        // { "res": "success" } || { "errcode": 56, “errmsg”:”Improperly formatted email or phone” }
-                                        break;
-                                    case "submitcnfmcode":
-                                        // maybe could work as pure db
-                                        // {"errcode":"55","errmsg":"Code incorrect"}
-                                        break;
-                                    case "createpass":
-                                        // validate code,validate username, validate password, create user, if chosen exists handle exists generate one based on it
-                                        break;
-                                    default:
-                                        var res = await _fw.Data.ExecuteMethod(Conn, p.Item1, identity, p.Item2);
+                                case "sendcode":
+                                    // validate email/phone then send email/text
+                                    // { "res": "success" } || { "errcode": 56, “errmsg”:”Improperly formatted email or phone” }
+                                    break;
+                                case "submitcnfmcode":
+                                    // maybe could work as pure db
+                                    // {"errcode":"55","errmsg":"Code incorrect"}
+                                    break;
+                                case "createpass":
+                                    // validate code,validate username, validate password, create user, if chosen exists handle exists generate one based on it
+                                    break;
+                                default:
+                                    var res = await Data.CallFn(Conn, p.Item1, identity, p.Item2);
 
-                                        if (res == null) await _fw.Error(p.Item1, "Empty DB response");
-                                        else
+                                    if (res == null) await _fw.Error(p.Item1, "Empty DB response");
+                                    else
+                                    {
+                                        var error = res.GetS("Error");
+
+                                        if (!error.IsNullOrWhitespace())
                                         {
-                                            var error = res.GetS("Error");
-
-                                            if (!error.IsNullOrWhitespace())
-                                            {
-                                                await _fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
-                                                failed = true;
-                                                break;
-                                            }
+                                            await _fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
+                                            allOk = false;
+                                            break;
                                         }
+                                    }
 
-                                        fresult = res.GetS("");
-                                        break;
-                                }
+                                    fresult = res.GetS("");
+                                    break;
                             }
-                            catch (Exception e)
-                            {
-                                await _fw.Error(nameof(Run), $"Unhandled function exception: {e.UnwrapForLog()}");
-                            }
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error(nameof(Run), $"Unhandled function exception: {e.UnwrapForLog()}");
+                        }
 
-                            results.Add(p.Item1, fresult);
-                        });
+                        results.Add(p.Item1, fresult);
+                    }
 
-                    if (!failed && results.Any()) result = JsonConvert.SerializeObject(results);
-                    else if (!failed) result = result = Jw.Json(new { Result = "Success" });
+                    if (Parallelism < 2) foreach (var p in funcs) await HandleFunc(p);
+                    else await funcs.ForEachAsync(Parallelism, HandleFunc);
+
+                    if (allOk && results.Any()) result = JsonConvert.SerializeObject(results);
+                    else if (allOk) result = result = Jw.Json(new { Result = "Success" });
                 }
             }
             catch (Exception ex)

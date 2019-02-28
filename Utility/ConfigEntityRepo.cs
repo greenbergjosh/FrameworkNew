@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.DataLayer;
 
 namespace Utility
 {
@@ -17,23 +18,17 @@ namespace Utility
             ConName = conName;
         }
 
-        public async Task<string> GetEntity(Guid id, DataLayerClient client)
+        public async Task<string> GetEntity(Guid id)
         {
-            return await _entities.GetOrAdd(id, async _ =>
-            {
-                return await client.RetrieveEntry(this.ConName,
-                                "SelectConfig",
-                                JsonWrapper.Json(new { InstanceId = id }),
-                                "");
-            });
+            return await _entities.GetOrAdd(id, async _ => await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonWrapper.Json(new { InstanceId = id }), ""));
         }
 
-        public async Task<IGenericEntity> GetEntityGe(Guid id, DataLayerClient client)
+        public async Task<IGenericEntity> GetEntityGe(Guid id)
         {
             IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(JsonWrapper.Json(new { Config = await GetEntity(id, client) },
-                new bool[] { false }));
+            var gpstate = JsonConvert.DeserializeObject(JsonWrapper.Json(new { Config = await GetEntity(id) }, new [] { false }));
             gp.InitializeEntity(null, null, gpstate);
+
             return gp;
         }
     }

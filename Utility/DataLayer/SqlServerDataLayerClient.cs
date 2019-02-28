@@ -1,20 +1,14 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
-namespace Utility
+namespace Utility.DataLayer
 {
-    public class SqlServerDataLayerClient : DataLayerClient
+    public class SqlServerDataLayerClient : IDataLayerClient
     {
 
-        override public string GlobalConfig { get { return "GlobalConfig"; } }
-
-        override public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
+        public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
         {
             string outval = null;
 
@@ -38,7 +32,7 @@ namespace Utility
             return outval;
         }
 
-        override public async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
+        public async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
         {
             string outval = null;
 
@@ -75,7 +69,7 @@ namespace Utility
             return outval;
         }
 
-        override public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
+        public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
             string process, string method, string descriptor, string message, int timeout = 120)
         {
             string outval = null;
@@ -118,7 +112,7 @@ namespace Utility
         }
 
         // spInsertPostingQueue
-        override public async Task<string> InsertPostingQueue(string connectionString, string postType,
+        public async Task<string> InsertPostingQueue(string connectionString, string postType,
             DateTime postDate, string payload, int timeout = 120)
         {
             string outval = null;
@@ -156,5 +150,39 @@ namespace Utility
 
             return outval;
         }
+
+        public async Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120)
+        {
+            string outval = null;
+
+            try
+            {
+                using (var cn = new SqlConnection(connectionString))
+                {
+                    cn.Open();
+                    var cmd = cn.CreateCommand();
+                    cmd.CommandText = "[PostingQueue].[spBulkInsertPostingQueue]";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("Payload", payload));
+                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
+                        .Direction = System.Data.ParameterDirection.Output;
+                    cmd.CommandTimeout = timeout;
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    outval = (string)cmd.Parameters["@Return"].Value;
+                }
+            }
+            catch (SqlException sqlex)
+            {
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) outval = "Walkaway";
+            }
+            catch (Exception ex)
+            {
+                outval = $"Exception::{ex.ToString()}";
+            }
+
+            return outval;
+        }
+
     }
 }
