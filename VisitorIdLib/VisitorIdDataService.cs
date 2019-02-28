@@ -159,7 +159,8 @@ namespace VisitorIdLib
                             {
                                 sid = resDV.Sid.IfNullOrWhitespace(cookie.sid),
                                 md5 = resDV.Md5.IfNullOrWhitespace(cookie.md5),
-                                em = resDV.Email.IfNullOrWhitespace(cookie.em)
+                                em = resDV.Email.IfNullOrWhitespace(cookie.em),
+                                lv = DateTime.UtcNow.ToString()
                             }), this.VisitorIdCookieExpDays);
 
 #if DEBUG
@@ -177,7 +178,8 @@ namespace VisitorIdLib
                             {
                                 sid = resSS.Sid.IfNullOrWhitespace(cookie.sid),
                                 md5 = resSS.Md5.IfNullOrWhitespace(cookie.md5),
-                                em = resSS.Email.IfNullOrWhitespace(cookie.em)
+                                em = resSS.Email.IfNullOrWhitespace(cookie.em),
+                                lv = DateTime.UtcNow.ToString()
                             }), this.VisitorIdCookieExpDays);
 
                             break;
@@ -221,6 +223,8 @@ namespace VisitorIdLib
                     (IGenericEntity op, string md5) = await TowerWrapper.ProcessTowerMessage(this.Fw, context, this.TowerEncryptionKey);
                     if (String.IsNullOrWhiteSpace(md5))
                     {
+                        var cookie = GetCookieData(context);
+                        var recency = GetRecencyFromLastVisit(cookie.lv);
                         var opqVals = ValsFromOpaque(op);
                         EdwBulkEvent be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, opqVals.rsids,
@@ -230,7 +234,11 @@ namespace VisitorIdLib
                                 pid = opqVals.pid,
                                 slot = opqVals.slot,
                                 page = opqVals.page,
-                                succ = "0"
+                                succ = "0",
+                                recency.r1,
+                                recency.r7,
+                                recency.r30,
+                                recency.rAny
                             }));
                         await this.Fw.EdwWriter.Write(be);
                         result = Jw.Json(new { email = "", md5 = "", slot = opqVals.slot, page = opqVals.page });
@@ -359,6 +367,8 @@ namespace VisitorIdLib
                 {
                     var nextTask = visitorIdMd5ProviderSequence[slot].Md5provider;
                     var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[slot].EmailProviderSeq;
+                    var cookie = GetCookieData(c);
+                    var recency = GetRecencyFromLastVisit(cookie.lv);
 
                     if (nextTask.ToLower() == "cookie")
                     {
@@ -369,11 +379,14 @@ namespace VisitorIdLib
                                 et = "Md5ProviderSelected",
                                 pid = "cookie",
                                 slot,
-                                page
+                                page,
+                                recency.r1,
+                                recency.r7,
+                                recency.r30,
+                                recency.rAny
                             }));
                         await fw.EdwWriter.Write(be);
 
-                        var cookie = GetCookieData(c);
 
                         md5 = cookie.md5;
                         eml = cookie.em;
@@ -399,13 +412,17 @@ namespace VisitorIdLib
                                     pid = "cookie",
                                     slot,
                                     page,
-                                    succ = "0"
+                                    succ = "0",
+                                    recency.r1,
+                                    recency.r7,
+                                    recency.r30,
+                                    recency.rAny
                                 }));
                             await fw.EdwWriter.Write(be);
                         }
                         else
                         {
-                            await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, host, false, true);
+                            await SaveSession(fw, c, sid, "cookie", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, rsids, host, false, true, cookie.lv);
                         }
                         continueToNextSlot();
                         page++;
@@ -483,6 +500,7 @@ namespace VisitorIdLib
                         opq["vieps"] = visitorIdEmailProviderSequence;
                         opq["slot"] = slot;
                         opq["page"] = page;
+                        opq["lv"] = DateTime.UtcNow.ToString();
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
                         IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
@@ -493,7 +511,11 @@ namespace VisitorIdLib
                                 et = "Md5ProviderSelected",
                                 pid,
                                 slot,
-                                page
+                                page,
+                                recency.r1,
+                                recency.r7,
+                                recency.r30,
+                                recency.rAny
                             }));
                         await fw.EdwWriter.Write(be);
 
@@ -526,10 +548,11 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
-            Dictionary<string, object> rsids, string pixelDomain, bool sendMd5ToPostingQueue, bool hasClientContext)
+            Dictionary<string, object> rsids, string pixelDomain, bool sendMd5ToPostingQueue, bool hasClientContext, string lastVisit)
         {
             string ip = c.Ip();
             var success = !md5.IsNullOrWhitespace();
+            var recency = GetRecencyFromLastVisit(lastVisit);
 
             EdwBulkEvent be = new EdwBulkEvent();
             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -539,7 +562,11 @@ namespace VisitorIdLib
                     pid,
                     slot,
                     page,
-                    succ = success ? "1" : "0"
+                    succ = success ? "1" : "0",
+                    recency.r1,
+                    recency.r7,
+                    recency.r30,
+                    recency.rAny
                 }));
             await fw.EdwWriter.Write(be);
 
@@ -569,7 +596,7 @@ namespace VisitorIdLib
                 userAgent = c.UserAgent();
             }
 
-            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent);
+            email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent, lastVisit);
 
             return new VisitorIdResponse(Jw.Json(new { email, md5, slot, page }), md5, email, sid);
         }
@@ -585,7 +612,8 @@ namespace VisitorIdLib
                 string eml,
                 Dictionary<string,
                 object> rsids,
-                string host)
+                string host,
+                string lv)
             ValsFromOpaque(IGenericEntity opge)
         {
             string sid = opge.GetS("sd");
@@ -599,31 +627,29 @@ namespace VisitorIdLib
             var qstr = opge.GetS("qs");
             var u = new Uri(HttpUtility.UrlDecode(qstr));
             var host = u.Host ?? "";
+            var lv = opge.GetS("lv");
             Dictionary<string, object> rsids = new Dictionary<string, object> { { "visid", sid } };
             foreach (var rsid in opge.GetD("rsid")) rsids.Add(rsid.Item1, rsid.Item2);
 
-            return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids, host);
+            return (sid, slot, page, pid, isAsync, vieps, emd5, eml, rsids, host, lv);
         }
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, bool hasClientContext, IGenericEntity op = null, string md5 = null)
         {
             var opqVals = ValsFromOpaque(op ?? Vutil.OpaqueFromBase64(c.Get("op", "", false)));
-            return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, sendMd5ToPostingQueue, hasClientContext);
+            return await SaveSession(fw, c, opqVals.sid, opqVals.pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.emd5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, sendMd5ToPostingQueue, hasClientContext, opqVals.lv);
         }
 
-        private (string md5, string em, string sid) GetCookieData(HttpContext context)
+        private (string md5, string em, string sid, string lv) GetCookieData(HttpContext context)
         {
             var cookieValueFromReq = context.Request.Cookies["vidck"];
 
-            if (!cookieValueFromReq.IsNullOrWhitespace())
-            {
-                var gc = Jw.JsonToGenericEntity(cookieValueFromReq);
-                var sid = gc.GetS("sid");
-                var em = gc.GetS("em");
-                var md5 = gc.GetS("md5");
+            if (cookieValueFromReq.IsNullOrWhitespace())
+                return (md5: null, em: null, sid: null, lv : null);
 
-                return (md5: md5, em: em, sid: sid);
-            }
+            var gc = Jw.JsonToGenericEntity(cookieValueFromReq);
+            return (md5: gc.GetS("md5"), em: gc.GetS("em"), sid: gc.GetS("sid"), lv: gc.GetS("lv"));
+        }
 
         private (int r1, int r7, int r30, int rAny) GetRecencyFromLastVisit(string lastVisitStr)
         {
@@ -636,12 +662,13 @@ namespace VisitorIdLib
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, string md5Pid, int md5Slot, int md5Page, string pixelDomain, string clientIp, string userAgent)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, string md5Pid, int md5Slot, int md5Page, string pixelDomain, string clientIp, string userAgent, string lastVisit)
         {
             string cookieEml = "";
             string eml = "";
             int slot = 0;
             int page = 0;
+            var recency = GetRecencyFromLastVisit(lastVisit);
             foreach (var s in this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
             {
                 if (s.ToLower() == "stopifemail")
@@ -660,11 +687,20 @@ namespace VisitorIdLib
                             page,
                             md5Pid,
                             md5Slot,
-                            md5Page
+                            md5Page,
+                            recency.r1,
+                            recency.r7,
+                            recency.r30,
+                            recency.rAny
                         }));
                     await fw.EdwWriter.Write(be);
 
                     var cookieData = GetCookieData(context);
+
+                    // see if we're more up to date from the cookie
+                    (recency, lastVisit) = Convert.ToDateTime(cookieData.lv) > Convert.ToDateTime(lastVisit) ?
+                        (GetRecencyFromLastVisit(cookieData.lv), cookieData.lv) :
+                        (recency, lastVisit);
 
                     eml = cookieData.em;
 
@@ -681,7 +717,7 @@ namespace VisitorIdLib
                     {
                         cookieEml = eml;
                         //PostVisitorIdToConsole(email, "VisitorId-cookie", pixelDomain, clientIp, userAgent);
-                        PostVisitorIdToConsole(eml, "cookie", pixelDomain, clientIp, userAgent);
+                        PostVisitorIdToConsole(eml, "cookie", pixelDomain, clientIp, userAgent, lastVisit);
                     }
 
                     be = new EdwBulkEvent();
@@ -695,7 +731,11 @@ namespace VisitorIdLib
                             md5Pid,
                             md5Slot,
                             md5Page,
-                            succ = eml.IsNullOrWhitespace() ? "0" : "1"
+                            succ = eml.IsNullOrWhitespace() ? "0" : "1",
+                            recency.r1,
+                            recency.r7,
+                            recency.r30,
+                            recency.rAny
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -755,7 +795,11 @@ namespace VisitorIdLib
                             page,
                             md5Pid,
                             md5Slot,
-                            md5Page
+                            md5Page,
+                            recency.r1,
+                            recency.r7,
+                            recency.r30,
+                            recency.rAny
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -772,7 +816,7 @@ namespace VisitorIdLib
                         if (!eml.IsNullOrWhitespace())
                         {
                             //PostVisitorIdToConsole(email, $"VisitorId-{pid}", pixelDomain, clientIp, userAgent);
-                            PostVisitorIdToConsole(eml, pid, pixelDomain, clientIp, userAgent);
+                            PostVisitorIdToConsole(eml, pid, pixelDomain, clientIp, userAgent, lastVisit);
 
                             if (sendMd5ToPostingQueue)
                             {
@@ -787,7 +831,11 @@ namespace VisitorIdLib
                                     sid,
                                     pid,
                                     md5,
-                                    eml
+                                    eml,
+                                    recency.r1,
+                                    recency.r7,
+                                    recency.r30,
+                                    recency.rAny
                                 }).ToString()));
                             }
                         }
@@ -812,7 +860,11 @@ namespace VisitorIdLib
                             md5Pid,
                             md5Slot,
                             md5Page,
-                            succ = eml.IsNullOrWhitespace() ? "0" : "1"
+                            succ = eml.IsNullOrWhitespace() ? "0" : "1",
+                            recency.r1,
+                            recency.r7,
+                            recency.r30,
+                            recency.rAny
                         }));
                     await fw.EdwWriter.Write(be);
 
@@ -838,7 +890,11 @@ namespace VisitorIdLib
                        page,
                        md5Pid,
                        md5Slot,
-                       md5Page
+                       md5Page,
+                       recency.r1,
+                       recency.r7,
+                       recency.r30,
+                       recency.rAny
                    })
                    .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
                    .Add(PL.N("rsids", PL.D(rsids))).ToString()));
@@ -847,9 +903,10 @@ namespace VisitorIdLib
             return cookieEml;
         }
 
-        public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent)
+        public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
+            var recency = GetRecencyFromLastVisit(lastVisit);
 
             var task = new Func<Task>(async () =>
             {
@@ -868,7 +925,11 @@ namespace VisitorIdLib
                                 email_source = "visitorid",
                                 provider,
                                 isFinal = "true",
-                                label_domain = domain
+                                label_domain = domain,
+                                recency.r1,
+                                recency.r7,
+                                recency.r30,
+                                recency.rAny
                             })
                         }, new bool[] { false, false }), "application/json");
 
