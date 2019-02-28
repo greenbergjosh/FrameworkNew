@@ -34,12 +34,14 @@ namespace GetGotLib
 
         public async Task Run(HttpContext context)
         {
-            var requestFromPost = "";
+            string bodyForError = null;
             var result = Jw.Json(new { Error = "SeeLogs" });
 
             try
             {
-                requestFromPost = await context.GetRawBodyStringAsync();
+                var requestFromPost = await context.GetRawBodyStringAsync();
+
+                bodyForError = $"\r\nBody:\r\n{requestFromPost}";
 
                 _fw.Trace(nameof(Run), $"Request: {requestFromPost}");
                 var req = Jw.JsonToGenericEntity(requestFromPost);
@@ -61,39 +63,36 @@ namespace GetGotLib
                             switch (p.Item1)
                             {
                                 case "sendcode":
-                                    // validate email/phone then send email/text
-                                    // { "res": "success" } || { "errcode": 56, “errmsg”:”Improperly formatted email or phone” }
+                                    fresult = await SendCode(p.Item2);
                                     break;
                                 case "submitcnfmcode":
-                                    // maybe could work as pure db
-                                    // {"errcode":"55","errmsg":"Code incorrect"}
+                                    fresult = await ValidateConfirmationCode(p.Item2);
                                     break;
                                 case "createpass":
-                                    // validate code,validate username, validate password, create user, if chosen exists handle exists generate one based on it
+                                    fresult = await CommitUserRegistration(p.Item2);
                                     break;
                                 default:
-                                    var res = await Data.CallFn(Conn, p.Item1, identity, p.Item2);
-
-                                    if (res == null) await _fw.Error(p.Item1, "Empty DB response");
-                                    else
-                                    {
-                                        var error = res.GetS("Error");
-
-                                        if (!error.IsNullOrWhitespace())
-                                        {
-                                            await _fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
-                                            allOk = false;
-                                            break;
-                                        }
-                                    }
-
-                                    fresult = res.GetS("");
+                                    fresult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
                                     break;
                             }
                         }
                         catch (Exception e)
                         {
-                            await _fw.Error(nameof(Run), $"Unhandled function exception: {e.UnwrapForLog()}");
+                            var identityStr = identity == null ? "null" : $"\r\n{identity}\r\n";
+                            var payloadStr = p.Item2 == null ? "null" : $"\r\n{p.Item2}\r\n";
+                            var funcContext = $"\r\nName: {p.Item1}\r\nIdentity: {identityStr}\r\nArgs: {payloadStr}";
+
+                            var fe = e as FunctionException;
+
+                            if (fe == null) await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
+                            else
+                            {
+                                var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
+
+                                await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                            }
+
+                            if (fe?.HaltExecution == true) allOk = false;
                         }
 
                         results.Add(p.Item1, fresult);
@@ -106,9 +105,9 @@ namespace GetGotLib
                     else if (allOk) result = result = Jw.Json(new { Result = "Success" });
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await _fw.Error(nameof(Run), $"{requestFromPost}: {ex.UnwrapForLog()}");
+                await _fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
             }
 
             await WriteResponse(context, result);
@@ -118,42 +117,36 @@ namespace GetGotLib
         {
             var sessionInit = req.GetS("p/s");
             var eventData = req.GetS("p/e");
-            var sid = req.GetS("p/sid");
-            EdwBulkEvent be = null;
+            var sid = req.GetS("p/s/sid") ?? req.GetS("p/sid");
+            var postRs = !sessionInit.IsNullOrWhitespace();
+            var postEvent = !eventData.IsNullOrWhitespace();
 
-            if (!sessionInit.IsNullOrWhitespace())
+            if ((postRs || postEvent) && sid.IsNullOrWhitespace())
             {
-                be = new EdwBulkEvent();
-                sid = req.GetS("p/s/sid");
-
-                if (!sid.IsNullOrWhitespace())
-                {
-                    be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow, PL.FromJsonString(sessionInit), RsConfigGuid);
-                }
-                else
-                {
-                    await _fw.Error(nameof(HandleEdwEvents), $"EDW session init missing sid: {requestFromPost}");
-                    return false;
-                }
+                await _fw.Error(nameof(HandleEdwEvents), $"Request missing sid:\r\n{requestFromPost}");
+                return false;
             }
 
-            if (!eventData.IsNullOrWhitespace())
+            async Task Post()
             {
-                if (!sid.IsNullOrWhitespace())
+                try
                 {
-                    if (be == null) be = new EdwBulkEvent();
+                    var be = new EdwBulkEvent();
 
-                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { "ggsess", sid } }, null, PL.FromJsonString(eventData));
+                    // ToDo: Check if 'iid' exists, if not, lookup by 'iun'
+                    if (postRs) be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow, PL.FromJsonString(sessionInit), RsConfigGuid);
+                    if (postEvent) be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { "ggsess", sid } }, null, PL.FromJsonString(eventData));
+
+                    await _fw.EdwWriter.Write(be);
                 }
-                else
+                catch (Exception e)
                 {
-                    await _fw.Error(nameof(HandleEdwEvents), $"Request missing sid: {requestFromPost}");
-                    return false;
+                    await _fw.Error($"{nameof(HandleEdwEvents)}().{nameof(Post)}()", $"Failed to post to edw: {e.UnwrapForLog()}\r\n\r\nBody:\r\n{requestFromPost}");
                 }
             }
 
             // purposely fire and forget
-            if (be != null) _fw.EdwWriter.Write(be);
+            if (postRs || postEvent) Post();
 
             return true;
         }
@@ -166,5 +159,51 @@ namespace GetGotLib
             await context.Response.WriteAsync(resp);
         }
 
+        public async Task<string> ExecuteDbFunc(string name, string payload, string identity)
+        {
+            var res = await Data.CallFn(Conn, name, identity ?? Jw.Empty, payload);
+
+            if (res == null) throw new FunctionException("Empty DB response");
+
+            var error = res.GetS("Error");
+
+            if (!error.IsNullOrWhitespace()) throw new FunctionException(res.GetS(""));
+
+            return res.GetS("");
+        }
+
+        public async Task<string> SendCode(string payload)
+        {
+            // validate email/phone then send email/text
+            // { "res": "success" } || { "errcode": 56, “errmsg”:”Improperly formatted email or phone” }
+
+            // ToDo: Make it real
+            return "{ \"res\": \"success\" }";
+        }
+
+        public async Task<string> ValidateConfirmationCode(string payload)
+        {
+            // maybe could work as pure db
+            // {"errcode":"55","errmsg":"Code incorrect"}
+            var pl = Jw.JsonToGenericEntity(payload);
+
+            // ToDo: Make it real
+            return pl.GetS("code") == "123456" ? "{ \"res\": \"success\" }" : "{ \"errcode\": \"55\", \"errmsg\": \"Code incorrect\"}";
+        }
+
+        public async Task<string> CommitUserRegistration(string payload)
+        {
+            // validate code,validate username, validate password, create user, if chosen exists handle exists generate one based on it
+            throw new NotImplementedException();
+        }
+
+        private class FunctionException : Exception
+        {
+            public FunctionException(string message) : base(message) { }
+
+            public FunctionException(string message, Exception innerException) : base(message, innerException) { }
+
+            public bool HaltExecution { get; }
+        }
     }
 }

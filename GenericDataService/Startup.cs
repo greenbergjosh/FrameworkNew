@@ -15,6 +15,7 @@ namespace GenericDataService
     public class Startup
     {
         public dynamic DataService;
+        private IGenericEntity _cors = null;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -44,12 +45,14 @@ namespace GenericDataService
             {
                 fw = new FrameworkWrapper();
 
-                using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d=>d.GetS(""))))
+                _cors = fw.StartupConfiguration.GetE("Config/Cors");
+
+                using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
                     this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
 
-                if(DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
+                if (DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
 
                 DataService.Config(fw);
             }
@@ -79,11 +82,12 @@ namespace GenericDataService
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        return;
                     }
-                    else
-                        if (!string.IsNullOrWhiteSpace(fw.StartupConfiguration.GetS("Config/Cors")))
-                            context.AddCorsAccessForOriginHost(fw.StartupConfiguration.GetE("Config/Cors"));
-                        await this.DataService.Run(context);
+
+                    if (_cors != null) context.AddCorsAccessForOriginHost(_cors);
+
+                    await DataService.Run(context);
                 }
                 catch (Exception ex)
                 {
