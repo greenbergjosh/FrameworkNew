@@ -626,7 +626,14 @@ namespace VisitorIdLib
                 return (md5: md5, em: em, sid: sid);
             }
 
-            return (md5: null, em: null, sid: null);
+        private (int r1, int r7, int r30, int rAny) GetRecencyFromLastVisit(string lastVisitStr)
+        {
+            DateTime lastVisit = Convert.ToDateTime(lastVisitStr);
+            TimeSpan sinceLastVisit = DateTime.UtcNow - lastVisit;
+            return (r1: sinceLastVisit.TotalHours < 24 ? 1 : 0,
+                    r7: sinceLastVisit.TotalHours < 24 * 7 ? 1 : 0,
+                    r30: sinceLastVisit.TotalHours < 24 * 30 ? 1 : 0,
+                    rAny: (Convert.ToDateTime(lastVisit) > DateTime.MinValue) ? 1 : 0 );
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
