@@ -32,16 +32,16 @@ namespace Utility
                             .AddJsonFile("appsettings.json")
                             .Build();
 
+                ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
+
+                if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
+
                 StartupConfiguration = Data.Initialize(
                     configuration.GetValue<string>("ConnectionString:ConnectionString"),
                     configuration.GetValue<string>("ConnectionString:DataLayerType"),
                     ConfigurationKeys,
                     configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"))
                     .GetAwaiter().GetResult();
-
-                ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
-
-                if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
 
                 SelectConfigSproc = configuration.GetValue<string>("Application:SelectConfigSproc");
 
