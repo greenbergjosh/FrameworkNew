@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 using Utility;
-
+using Utility.DataLayer;
 using Jw = Utility.JsonWrapper;
 
 namespace UnsubLib.NetworkProviders
@@ -59,7 +59,7 @@ namespace UnsubLib.NetworkProviders
 
                     respBody = resp.body;
                     
-                    var res = await _fw.Data.ExecuteMethod("Unsub", "MergeNetworkCampaigns",
+                    var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,
@@ -164,7 +164,7 @@ namespace UnsubLib.NetworkProviders
                     campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
-                    var res = await _fw.Data.ExecuteMethod("Unsub", "MergeNetworkCampaigns",
+                    var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,

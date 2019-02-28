@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Utility.DataLayer;
 
 namespace Utility
 {
     class PostingQueueSiloEndpoint : IEndpoint
     {
         public string connectionString;
-        public DataLayerClient dataLayerClient;
+        public IDataLayerClient dataLayerClient;
 
         public PostingQueueSiloEndpoint(string dataLayerType, string connectionString)
         {

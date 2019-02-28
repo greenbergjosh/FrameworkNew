@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Utility;
+using Utility.DataLayer;
 using Extensions = Newtonsoft.Json.Linq.Extensions;
 using Jw = Utility.JsonWrapper;
 using Vutil = Utility.VisitorIdUtil;
@@ -381,7 +382,7 @@ namespace VisitorIdLib
 
                         if (!cookie.sid.IsNullOrWhitespace() && md5.IsNullOrWhitespace())
                         {
-                            IGenericEntity lookupGe = await fw.Data.ExecuteMethod("VisitorId",
+                            IGenericEntity lookupGe = await Data.CallFn("VisitorId",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookie.sid }),
                                "{}", null, null, this.SqlTimeoutSec);
@@ -486,7 +487,7 @@ namespace VisitorIdLib
                         opq["page"] = page;
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
-                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid), fw.Data);
+                        IGenericEntity s = await fw.Entities.GetEntityGe(new Guid(pid));
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                             null, PL.O(new
@@ -664,7 +665,7 @@ namespace VisitorIdLib
 
                     if (eml.IsNullOrWhitespace() && !cookieData.sid.IsNullOrWhitespace())
                     {
-                        var lookupGe = await fw.Data.ExecuteMethod("VisitorId",
+                        var lookupGe = await Data.CallFn("VisitorId",
                             "LookupBySessionId",
                             Jw.Json(new { Sid = cookieData.sid }),
                             "", null, null, this.SqlTimeoutSec);
@@ -755,13 +756,13 @@ namespace VisitorIdLib
 
                     try
                     {
-                        IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid), fw.Data);
+                        IGenericEntity emlProvider = await fw.Entities.GetEntityGe(new Guid(pid));
                         Guid lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
                         var sendMd5ToPostingQueue = emlProvider.GetS("Config/SaveResult").ParseBool() ?? false;
-                        string lbm = await fw.Entities.GetEntity(lbmId, fw.Data);
+                        string lbm = await fw.Entities.GetEntity(lbmId);
 
                         eml = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                            new { context, md5, dataLayerClient = fw.Data, provider = emlProvider, err = fw.Err }, new StateWrapper());
+                            new { context, md5, provider = emlProvider, err = fw.Err }, new StateWrapper());
 
                         if (!eml.IsNullOrWhitespace())
                         {
@@ -846,7 +847,7 @@ namespace VisitorIdLib
         {
             if ( !string.IsNullOrWhiteSpace(vidResp.Email) )
             {
-                await fw.Data.ExecuteMethod(connection,
+                await Data.CallFn(connection,
                 "SaveSessionIdEmailMd5",
                 JsonWrapper.Json(new { vidResp.Sid, vidResp.Email, vidResp.Md5 }),
                 "");
