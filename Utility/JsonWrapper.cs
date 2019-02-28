@@ -9,6 +9,8 @@ namespace Utility
 {
     public static class JsonWrapper
     {
+        public const string Empty = "{}";
+
         public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
         {
             IGenericEntity gp = new GenericEntityJson();
