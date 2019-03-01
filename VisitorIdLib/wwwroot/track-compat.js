@@ -104,7 +104,7 @@ function _visitorId() {
                                 sd: res.sid,
                                 eml: sres.email,
                                 md5: sres.md5,
-                                e: base64UrlSafe(sres.email),
+                                e: base64UrlSafe(sres.email || ''),
                                 isAsync: res.isAsync,
                                 vieps: res.vieps,
                                 pid: res.pid
@@ -184,7 +184,7 @@ function _handleService() {
                             });
 
                         case 8:
-                            return _context3.abrupt("return", _objectSpread({}, response, {
+                            return _context3.abrupt("return", _objectSpread({}, JSON.parse(response), {
                                 saveSession: res.config.SaveSession
                             }));
 
