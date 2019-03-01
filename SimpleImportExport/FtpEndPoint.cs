@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
 
@@ -64,7 +65,12 @@ namespace SimpleImportExport
             throw new System.NotImplementedException();
         }
 
-        public override Task Move(string fileRelativePath, string relativeBasePath)
+        public override Task Rename(string fileRelativePath, Regex pattern, string patternReplace, bool overwrite)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override Task Move(string fileRelativePath, string relativeBasePath, bool overwrite)
         {
             throw new System.NotImplementedException();
         }

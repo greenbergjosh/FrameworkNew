@@ -28,7 +28,7 @@ namespace ClickagyDataLib
 
         public async Task<string> HandleHttpRequest(HttpContext ctx)
         {
-
+            throw new NotImplementedException();
         }
 
     }
