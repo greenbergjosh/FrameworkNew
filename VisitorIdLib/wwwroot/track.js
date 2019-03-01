@@ -23,7 +23,7 @@
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid
+            md5: sres.md5, e: base64UrlSafe(sres.email||''), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid
         };
 
         if (res.config.SaveSession == 'true') {
@@ -51,7 +51,7 @@ async function handleService(res) {
                 md5: getDescendantProp(response, res.config.Transform.md5) || '',
                 saveSession: res.config.SaveSession
             };
-        } else return { ...response, saveSession: res.config.SaveSession };
+        } else return { ...JSON.parse(response), saveSession: res.config.SaveSession };
     } else return { email: '', md5: '', saveSession: 'false' };
 }
 
