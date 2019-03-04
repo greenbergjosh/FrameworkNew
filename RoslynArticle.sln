@@ -85,8 +85,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClickagyDataLib", "Clickagy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FluentApiLib", "FluentApiLib\FluentApiLib.csproj", "{EE7CFB06-96DE-4E65-9C61-DFE4E7B97FC0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AddressService", "AddressService", "{8B280772-2B63-4B1E-A8F4-95A148F21EC1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
