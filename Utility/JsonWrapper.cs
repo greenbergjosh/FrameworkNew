@@ -11,6 +11,8 @@ namespace Utility
     {
         public const string Empty = "{}";
 
+        public static string Serialize(object value) => JsonConvert.SerializeObject(value);
+
         public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
         {
             IGenericEntity gp = new GenericEntityJson();

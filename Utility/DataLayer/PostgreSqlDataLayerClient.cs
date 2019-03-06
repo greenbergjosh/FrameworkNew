@@ -29,23 +29,23 @@ namespace Utility.DataLayer
         }
 
        public async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
-        {
-            string outval = null;
+       {
+           string result = null;
 
             try
             {
                 using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
                 {
                     cn.Open();
-                    using (var cmd = new NpgsqlCommand($"SELECT silo.data.p_submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
+                    using (var cmd = new NpgsqlCommand($"SELECT data.p_submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
                     {
                         cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, payload);
-                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
+                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
                         cmd.CommandTimeout = timeout;
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        outval = (string)cmd.Parameters["@Return"].Value;
+                        var outval = (bool)cmd.Parameters["@Return"].Value;
                         // Remove this once the function is changed to be consistent with what we expect ("Success" for no errors)
-                        if (outval == "200 ok") { outval = "Success"; }
+                        result = outval ? "Success" : "Failure";
                         cn.Close();
                     }
                 }
@@ -54,14 +54,14 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) outval = "Walkaway";
+                    ) result = "Walkaway";
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.UnwrapForLog()}";
+                result = $"Exception::{ex.UnwrapForLog()}";
             }
 
-            return outval;
+            return result;
         }
 
        public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
@@ -74,7 +74,7 @@ namespace Utility.DataLayer
                 using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
                 {
                     cn.Open();
-                    using (var cmd = new NpgsqlCommand($"SELECT silo.error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout })
+                    using (var cmd = new NpgsqlCommand($"SELECT error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout })
                     {
                         cmd.Parameters.AddWithValue("@sequence", NpgsqlTypes.NpgsqlDbType.Integer, sequence);
                         cmd.Parameters.AddWithValue("@severity", NpgsqlTypes.NpgsqlDbType.Integer, severity);
@@ -113,7 +113,7 @@ namespace Utility.DataLayer
                 using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
                 {
                     cn.Open();
-                    using (var cmd = new NpgsqlCommand($"SELECT silo.posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout })
+                    using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout })
                     {
                         cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Varchar, postType);
                         cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.Timestamp, postDate);

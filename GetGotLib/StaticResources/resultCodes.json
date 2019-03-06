@@ -1,0 +1,12 @@
+{
+  "en": {
+    "0": "Success",
+    "1": "Unhandled exception",
+    "2": "Server resource exception - Some external resource such as the DB or required API is down",
+    "50": "Bad or missing SID - this should never be shown as such",
+    "100": "Function unhandled exception",
+    "101": "Incorrect confirmation code",
+    "102": "Badly formatted contact",
+    "103":  "Sending message to contact is not supported" 
+  }
+}

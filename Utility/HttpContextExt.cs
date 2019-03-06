@@ -94,18 +94,18 @@ namespace Utility
             }
         }
 
-        public static async Task WriteSuccessRespAsync(this HttpContext ctx, string response, Encoding enc = null)
+        public static async Task WriteSuccessRespAsync(this HttpContext ctx, string response, Encoding enc = null, string contentType = "application/json")
         {
             ctx.Response.StatusCode = 200;
-            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentType = contentType;
             ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
             await ctx.Response.WriteAsync(response);
         }
 
-        public static async Task WriteFailureRespAsync(this HttpContext ctx, string response, Encoding enc = null)
+        public static async Task WriteFailureRespAsync(this HttpContext ctx, string response, Encoding enc = null, string contentType = "application/json")
         {
             ctx.Response.StatusCode = 500;
-            ctx.Response.ContentType = "application/json";
+            ctx.Response.ContentType = contentType;
             ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
             await ctx.Response.WriteAsync(response);
         }
