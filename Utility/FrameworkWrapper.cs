@@ -22,6 +22,7 @@ namespace Utility
         public ErrorSiloLoadBalancedWriter ErrorWriter;
         public ErrorDelegate Err;
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
+        public bool TraceLogging = true;
 
         public FrameworkWrapper()
         {
@@ -62,6 +63,7 @@ namespace Utility
                 Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
+                        if(!TraceLogging && descriptor == ErrorDescriptor.Trace) return;
                         await ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
                     };
             }
