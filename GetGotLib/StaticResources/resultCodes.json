@@ -7,6 +7,10 @@
     "100": "Function unhandled exception",
     "101": "Incorrect confirmation code",
     "102": "Badly formatted contact",
-    "103":  "Sending message to contact is not supported" 
+    "103": "Sending message to contact is not supported",
+    "104": "Password rule violation",
+    "105": "Handle rule violation",
+    "106": "Invalid login",
+    "107":  "Account exists" 
   }
 }

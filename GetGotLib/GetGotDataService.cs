@@ -56,13 +56,13 @@ namespace GetGotLib
 
             try
             {
-                var requestFromPost = await context.GetRawBodyStringAsync();
+                var requestBody = await context.GetRawBodyStringAsync();
 
-                bodyForError = $"\r\nBody:\r\n{requestFromPost}";
+                bodyForError = $"\r\nBody:\r\n{requestBody}";
 
-                _fw.Trace(nameof(Run), $"Request ({requestId}): {requestFromPost}");
-                var req = Jw.JsonToGenericEntity(requestFromPost);
-                var (result, sid) = await HandleEdwEvents(req, requestFromPost);
+                _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                var req = Jw.JsonToGenericEntity(requestBody);
+                var (result, sid) = await HandleEdwEvents(req, requestBody);
 
                 rc = result;
 
@@ -88,10 +88,18 @@ namespace GetGotLib
                                     await SendCode(p.Item2);
                                     break;
                                 case "createpass":
-                                    fResult = await CommitUserRegistration(p.Item2, sid, requestFromPost);
+                                    fResult = await CommitUserRegistration(p.Item2, sid, requestBody);
                                     break;
                                 case "login":
                                     fResult = await Login(p.Item2);
+                                    break;
+                                case "genhandles":
+                                    var ge = Jw.JsonToGenericEntity(p.Item2);
+                                    var handle = ge.GetS("handle");
+                                    var cfg = ge.GetL("cfg").Select(c => (digits: c.GetS("digits").ParseInt().Value, count: c.GetS("count").ParseInt().Value));
+                                    var res = GenerateAltHandles(handle, cfg);
+
+                                    fResult = Jw.Serialize(res);
                                     break;
                                 default:
                                     fResult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
@@ -126,7 +134,7 @@ namespace GetGotLib
 
                         var pl = PL.C("r", fResultCode);
 
-                        if (fResult != null && fResult != Jw.Empty) pl = pl.Add(PL.C("o", fResult, false));
+                        if (fResult != null && fResult != Jw.Empty) pl = pl.Add(PL.C("p", fResult, false));
 
                         return (p.Item1, pl.ToString());
                     }
@@ -246,24 +254,23 @@ namespace GetGotLib
         public async Task<string> CommitUserRegistration(string payload, string sid, string requestBody)
         {
             var pl = Jw.JsonToGenericEntity(payload);
-            var handle = pl.GetS("n");
-            var contact = ValidateContact(pl.GetS("u"));
-            var password = pl.GetS("p") ?? "";
-            var code = pl.GetS("c").ParseInt() ?? -1;
+            var handle = pl?.GetS("n")?.Trim();
+            var contact = ValidateContact(pl?.GetS("u"));
+            var password = pl?.GetS("p") ?? "";
+            var code = pl?.GetS("c").ParseInt() ?? -1;
 
             var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Empty, Jw.Serialize(new { u = contact.Cleaned, code }));
             var rc = res?.GetS("r");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.ToString() ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.GetS("") ?? "null"}");
 
-            if (ValidatePasswordRules(password)) throw new FunctionException(104, "Password doesn't satisfy rules");
+            if (!ValidatePasswordRules(password)) throw new FunctionException(104, "Password doesn't satisfy rules");
 
             if (handle.IsNullOrWhitespace()) throw new FunctionException(105, "Handle is empty");
 
-            var handleAlternatives = new List<string>();
+            var handleAlternatives = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) });
 
-            // ToDo: handle alternatives
-
+            var deviceName = pl.GetS("d");
             var email = contact.Type == ContactType.Email ? contact.Cleaned : null;
             var phone = contact.Type == ContactType.USPhone ? contact.Cleaned : null;
             // Fake data
@@ -272,23 +279,27 @@ namespace GetGotLib
             // end Fake data
             var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(requestBody));
 
-            res = await Data.CallFn(Conn, "CreateUser", Jw.Empty, Jw.Serialize(new { handle, handleAlts = handleAlternatives, email, phone, sid, sourceId = srcId, saltHash, initHash }));
+            res = await Data.CallFn(Conn, "CreateUser", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { handle, handleAlts = handleAlternatives, email, phone, sid, sourceId = srcId, saltHash, initHash }));
 
             rc = res?.GetS("r");
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error creating user: {res?.ToString() ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error creating user: {res?.GetS("") ?? "null"}");
 
-            var uid = res?.GetS("uid");
+            var uid = res.GetS("p/uid").ParseGuid()?.ToString();
+            sid = res.GetS("p/seid");
+            srcId = res.GetS("p/srcid");
+            initHash = res.GetS("p/inithash");
+            saltHash = res.GetS("p/salthash");
+
+            if (uid.IsNullOrWhitespace()) throw new FunctionException(100, $"DB create user returned invalid or empty uid: {res.GetS("") ?? "null"}");
+
             var pwdHash = GeneratePasswordHash(password, new[] { sid, srcId, initHash, uid, saltHash });
 
-            res = await Data.CallFn(Conn, "SavePassword", Jw.Empty, Jw.Serialize(new { uid, pwdHash }));
+            res = await Data.CallFn(Conn, "SetInitialPassword", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { uid, pwdHash }));
 
             rc = res?.GetS("r");
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error saving password: {res?.ToString() ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error saving password: {res?.GetS("") ?? "null"}");
 
-            // Purposefully F&F
-            Data.CallFn(Conn, "ExpireConfirmationCode", Jw.Empty, Jw.Serialize(new { u = contact.Cleaned, code }));
-
-            return await Login(uid, pwdHash);
+            return await Login(uid, pwdHash, deviceName);
         }
 
         private async Task<string> Login(string payload)
@@ -296,34 +307,65 @@ namespace GetGotLib
             var ge = Jw.JsonToGenericEntity(payload);
             var password = ge?.GetS("p") ?? "";
 
-            if (ValidatePasswordRules(password)) throw new FunctionException(106, "Password doesn't satisfy rules");
+            if (!ValidatePasswordRules(password)) throw new FunctionException(106, "Password doesn't satisfy rules");
 
-            var contact = ValidateContact(ge?.GetS("u"));
+            var contact = ValidateContact(ge.GetS("u"));
+            var deviceName = ge.GetS("d");
             var email = contact.Type == ContactType.Email ? contact.Cleaned : null;
             var phone = contact.Type == ContactType.USPhone ? contact.Cleaned : null;
             var handle = contact.Type == ContactType.Unknown ? contact.Raw : null;
-            var res = await Data.CallFn(Conn, "GetUserDetails", Jw.Empty, Jw.Serialize(new { email, phone, handle }));
+            var res = await Data.CallFn(Conn, "GetUserLoginDetails", Jw.Empty, Jw.Serialize(new { email, phone, handle }));
             var rc = res?.GetS("r");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.ToString() ?? "null"}");
-            var uid = res.GetS("uid");
-            var seid = res.GetS("seid");
-            var srcId = res.GetS("sourceId");
-            var initHash = res.GetS("initHash");
-            var saltHash = res.GetS("saltHash");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
+            var uid = res.GetS("p/uid");
+            var seid = res.GetS("p/seid");
+            var srcId = res.GetS("p/srcid");
+            var initHash = res.GetS("p/inithash");
+            var saltHash = res.GetS("p/salthash");
             var passwordHash = GeneratePasswordHash(password, new[] { seid, srcId, initHash, uid, saltHash });
 
-            return await Login(uid, passwordHash);
+            return await Login(uid, passwordHash, deviceName);
         }
 
-        private async Task<string> Login(string uid, string passwordHash)
+        private async Task<string> Login(string uid, string passwordHash, string deviceName)
         {
-            var res = await Data.CallFn(Conn, "GetAuthToken", Jw.Empty, Jw.Serialize(new { uid, passwordHash }));
+            var res = await Data.CallFn(Conn, "GetAuthToken", Jw.Empty, Jw.Serialize(new { uid, passwordHash, deviceName }));
             var rc = res?.GetS("r");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.ToString() ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
 
             return res.GetS("p");
+        }
+
+        private IEnumerable<string> GenerateAltHandles(string handle, IEnumerable<(int digits, int count)> cfg)
+        {
+            var separator = handle.Last().ToString().ParseInt().HasValue ? "_" : "";
+
+            return cfg.SelectMany(c =>
+            {
+                if (c.count == 0) return new string[0];
+
+                if (c.count < 0)
+                {
+                    var start = (int)Math.Pow(10, c.digits - 1);
+                    var end = (int)Math.Pow(10, c.digits);
+                    var l = new List<string>();
+
+                    for (int i = start; i < end; i++)
+                    {
+                        l.Add($"{handle}{separator}{i}");
+                    }
+
+                    return l;
+                }
+                else
+                {
+                    var size = c.digits * c.count;
+
+                    return Random.GenerateRandomString(size, size, Random.Digits).Split(c.digits).Distinct().Select(r => $"{handle}{separator}{r}");
+                }
+            });
         }
 
         // This is intentionally convoluted, tread lightly
@@ -332,9 +374,9 @@ namespace GetGotLib
             var s = new[]
             {
                 Hashing.StringToByteArray(Regex.Matches(salts[0], "[0-9a-f]+").Select(m => m.Value).Join("")).Take(10),
-                Hashing.StringToByteArray(Regex.Matches(salts[3], "[0-9a-f]+").Select(m => m.Value).Join("")).Take(6),
-                Hashing.StringToByteArray(salts[1]),
-                Hashing.StringToByteArray(Regex.Matches(salts[2], "[0-9a-f]+").Select(m => m.Value).Join("")),
+                Hashing.StringToByteArray(Regex.Matches(salts[1], "[0-9a-f]+").Select(m => m.Value).Join("")).Take(6),
+                Hashing.StringToByteArray(salts[2]),
+                Hashing.StringToByteArray(Regex.Matches(salts[3], "[0-9a-f]+").Select(m => m.Value).Join("")),
                 Hashing.StringToByteArray(salts[4])
             }.SelectMany(b => b).Take(32).ToArray();
             var pbkdf2 = new Rfc2898DeriveBytes(password, s, 10000);
