@@ -107,7 +107,8 @@ function _visitorId() {
                                 e: base64UrlSafe(sres.email || ''),
                                 isAsync: res.isAsync,
                                 vieps: res.vieps,
-                                pid: res.pid
+                                pid: res.pid,
+                                lv: res.lv
                             });
 
                             if (!(res.config.SaveSession == 'true')) {
