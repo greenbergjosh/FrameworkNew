@@ -1,10 +1,10 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace Utility
 {
@@ -23,40 +23,43 @@ namespace Utility
         public ErrorDelegate Err;
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
 
-        public FrameworkWrapper()
+        public FrameworkWrapper(string[] commandLineArgs = null)
         {
             try
             {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
+                var configuration = new ConfigurationBuilder()
                             .SetBasePath(Directory.GetCurrentDirectory())
                             .AddJsonFile("appsettings.json")
                             .Build();
-                this.ConnectionString = configuration.GetConnectionString("DefaultConnection");
-                this.ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
+                ConnectionString = configuration.GetConnectionString("DefaultConnection");
+                ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
 
-                if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
+                if (!ConfigurationKeys.Any())
+                {
+                    ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
+                }
 
-                this.SelectConfigSproc = configuration.GetValue<String>("Application:SelectConfigSproc");
+                SelectConfigSproc = configuration.GetValue<string>("Application:SelectConfigSproc");
 
-                this.StartupConfiguration = SqlWrapper.Initialize(this.ConnectionString, this.ConfigurationKeys, this.SelectConfigSproc).GetAwaiter().GetResult();
-                this.Entities = new ConfigEntityRepo(SqlWrapper.GlobalConfig);
-                List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
-                var scriptsPath = this.StartupConfiguration.GetS("Config/RoslynScriptsPath");
+                StartupConfiguration = SqlWrapper.Initialize(ConnectionString, ConfigurationKeys, SelectConfigSproc, commandLineArgs).GetAwaiter().GetResult();
+                Entities = new ConfigEntityRepo(SqlWrapper.GlobalConfig);
+                var scripts = new List<ScriptDescriptor>();
+                var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
-                    this.RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
                 }
 
-                this.EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(this.StartupConfiguration);
-                this.PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(this.StartupConfiguration);
-                this.ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.StartupConfiguration);
-                string appName = this.StartupConfiguration.GetS("Config/ErrorLogAppName") ?? this.ConfigurationKeys.Join("::");
+                EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(StartupConfiguration);
+                PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(StartupConfiguration);
+                ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(StartupConfiguration);
+                var appName = StartupConfiguration.GetS("Config/ErrorLogAppName") ?? ConfigurationKeys.Join("::");
 
-                this.Err =
+                Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
-                        await this.ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
+                        await ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
                     };
             }
             catch (Exception ex)

@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace Utility
 {
@@ -19,7 +20,7 @@ namespace Utility
         private static string _configConnStr;
         private static string _configSproc;
 
-        public static async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configSproc)
+        public static async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configSproc, string[] commandLineArgs)
         {
             string configStr = null;
 
@@ -34,7 +35,7 @@ namespace Utility
                 });
                 Connections.Add(GlobalConfig, (Id: GlobalConfig, ConnStr: _configConnStr));
 
-                configStr = await GetConfigs(configKeys);
+                configStr = await GetConfigs(configKeys, commandLineArgs);
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = configStr }, new bool[] { false }));
 
@@ -76,7 +77,7 @@ namespace Utility
             }
         }
 
-        private static async Task<string> GetConfigs(IEnumerable<string> configKeys)
+        private static async Task<string> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs)
         {
             var loaded = new HashSet<string>();
 
@@ -110,7 +111,14 @@ namespace Utility
                 }
             }
 
-            return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k))).ToString();
+            var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
+            var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs ?? Array.Empty<string>()).Build();
+            foreach(var kvp in commandLineConfig.AsEnumerable())
+            {
+                resolvedConfig[kvp.Key] = kvp.Value;
+            }
+
+            return resolvedConfig.ToString();
         }
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
