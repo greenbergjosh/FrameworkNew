@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
@@ -19,6 +15,7 @@ namespace GenericDataService
     public class Startup
     {
         public dynamic DataService;
+        private IGenericEntity _cors = null;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -47,6 +44,8 @@ namespace GenericDataService
             try
             {
                 fw = new FrameworkWrapper();
+
+                _cors = fw.StartupConfiguration.GetE("Config/Cors");
 
                 using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d=>d.GetS(""))))
                 {
@@ -83,11 +82,12 @@ namespace GenericDataService
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        return;
                     }
-                    else
-                        if (!string.IsNullOrWhiteSpace(fw.StartupConfiguration.GetS("Config/Cors")))
-                            context.AddCorsAccessForOriginHost(fw.StartupConfiguration.GetE("Config/Cors"));
-                        await this.DataService.Run(context);
+
+                    if (_cors != null) context.AddCorsAccessForOriginHost(_cors);
+
+                    await DataService.Run(context);
                 }
                 catch (Exception ex)
                 {
