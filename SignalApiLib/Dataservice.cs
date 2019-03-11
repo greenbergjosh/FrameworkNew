@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Utility;
 using Jw = Utility.JsonWrapper;
 
-namespace FluentApiLib
+namespace SignalApiLib
 {
     public class DataService
     {
@@ -17,7 +17,7 @@ namespace FluentApiLib
             _fw = fw;
             _sourceHandlers = new Dictionary<string, object>
             {
-                {"fluent", new SourceHandlers.Fluent(_fw)}
+                {"fluent", new Fluent(_fw)}
             };
         }
 
