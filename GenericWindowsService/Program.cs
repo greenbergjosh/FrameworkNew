@@ -20,7 +20,7 @@ namespace GenericWindowsService
         private static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-            Fw = LoadFramework();
+            Fw = LoadFramework(args);
             ValidateAndConfigureService(args).Build().Run();
         }
 
@@ -29,7 +29,7 @@ namespace GenericWindowsService
             try
             {
                 var listenerUrl = Fw.StartupConfiguration.GetS("Config/HttpListenerUrl");
-
+                
                 if (listenerUrl.IsNullOrWhitespace())
                 {
                     throw new Exception("HttpListenerUrl not defined in config");
@@ -115,11 +115,11 @@ namespace GenericWindowsService
             }
         }
 
-        private static FrameworkWrapper LoadFramework()
+        private static FrameworkWrapper LoadFramework(string[] commandLineArgs)
         {
             try
             {
-                var fw = new FrameworkWrapper();
+                var fw = new FrameworkWrapper(commandLineArgs);
 
                 using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Utility
 {
-    
+
     public class StateWrapper : System.Dynamic.DynamicObject
     {
         public dynamic r = new System.Dynamic.ExpandoObject();
@@ -24,7 +24,7 @@ namespace Utility
         public RoslynWrapper(IEnumerable<ScriptDescriptor> initialScripts, string defaultDebugDir)
         {
             DefaultDebugDir = defaultDebugDir;
-            foreach (ScriptDescriptor sd in initialScripts)
+            foreach (var sd in initialScripts)
             {
                 CompileAndCache(sd);
             }
@@ -44,14 +44,13 @@ namespace Utility
         // Probably just a bool argument called forceRecompile
         public ScriptDescriptor CompileAndCache(ScriptDescriptor sd)
         {
-            ScriptDescriptor sdCached;
 
-            if (functions.TryGetValue(sd.Key, out sdCached))
+            if (functions.TryGetValue(sd.Key, out var sdCached))
             {
                 return sdCached;
             }
 
-            ScriptOptions scriptOptions = ScriptOptions.Default
+            var scriptOptions = ScriptOptions.Default
                     .AddReferences(
                         Assembly.GetAssembly(typeof(System.Dynamic.DynamicObject)),  // System.Code
                         Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
@@ -60,6 +59,7 @@ namespace Utility
                         Assembly.GetAssembly(typeof(Utility.JsonWrapper))
                         )
                     .AddImports("System.Dynamic", "System.Xml");
+
             if (sd.Debug)
             {
                 scriptOptions = scriptOptions
@@ -67,11 +67,12 @@ namespace Utility
                     .WithFileEncoding(System.Text.Encoding.UTF8)
                     .WithEmitDebugInformation(true);
             }
+
             var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
             scriptc.Compile();
             functions[sd.Key] = sd;
             sd.Script = scriptc.CreateDelegate();
-            
+
             return functions[sd.Key];
         }
 
@@ -86,25 +87,25 @@ namespace Utility
             return srcFile;
         }
 
-        public async Task<object> Evaluate(string code, object parms, StateWrapper state)
+        public Task<object> Evaluate(string code, object parms, StateWrapper state)
         {
             var (debug, debugDir) = GetDefaultDebugValues();
 
-            return await Evaluate(null, code, parms, state, debug, debugDir);
+            return Evaluate(null, code, parms, state, debug, debugDir);
         }
 
-        public async Task<object> Evaluate(string name, string code, object parms, StateWrapper state, bool debug, string debugDir)
+        public Task<object> Evaluate(string name, string code, object parms, StateWrapper state, bool debug, string debugDir)
         {
-            ScriptDescriptor sd = new ScriptDescriptor(null, name, code, debug, debugDir);
+            var sd = new ScriptDescriptor(null, name, code, debug, debugDir);
             sd = CompileAndCache(sd);
-            return await RunFunction(sd.Key, parms, state);
+            return RunFunction(sd.Key, parms, state);
         }
 
-        public async Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state)
+        public Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state)
         {
             var (debug, debugDir) = GetDefaultDebugValues();
 
-            return await Evaluate(name.ToString().ToLower(), code, parms, state, debug, debugDir);
+            return Evaluate(name.ToString().ToLower(), code, parms, state, debug, debugDir);
         }
 
         private (bool debug, string debugDir) GetDefaultDebugValues()
@@ -117,42 +118,33 @@ namespace Utility
                 debug = true;
                 var di = new DirectoryInfo(DefaultDebugDir);
 
-                if (!di.Exists) di.Create();
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
             }
 #endif
 
             return (debug, DefaultDebugDir);
         }
 
-        public Func<object, StateWrapper, Task<object>> this[string fn]
-        {
-            get
-            {
-                return CreateFunction(fn);
-            }
-        }
+        public Func<object, StateWrapper, Task<object>> this[string fn] => CreateFunction(fn);
 
-        public Func<object, StateWrapper, Task<object>> this[Guid fn]
-        {
-            get
-            {
-                return CreateFunction(fn.ToString().ToLower());
-            }
-        }
+        public Func<object, StateWrapper, Task<object>> this[Guid fn] => CreateFunction(fn.ToString().ToLower());
 
         public Func<object, StateWrapper, Task<object>> CreateFunction(string fname)
         {
-            Type type = this.GetType();
-            MethodInfo methodInfo = type.GetMethod("RunFunction");
-            ParameterInfo[] parameters = methodInfo.GetParameters();
-            object[] parametersArray = new object[3];
+            var type = GetType();
+            var methodInfo = type.GetMethod("RunFunction");
+            var parameters = methodInfo.GetParameters();
+            var parametersArray = new object[3];
             parametersArray[0] = fname;
-            return (async (object parms, StateWrapper sw) =>
+            return ((object parms, StateWrapper sw) =>
             {
                 parametersArray[1] = parms;
                 parametersArray[2] = sw;
-                Task<object> r = (Task<object>)methodInfo.Invoke(this, parametersArray);
-                return await r;
+                var r = (Task<object>)methodInfo.Invoke(this, parametersArray);
+                return r;
             });
         }
 
@@ -161,7 +153,7 @@ namespace Utility
             var globals = (state == null) ? new Globals { f = this, s = new StateWrapper() }
                                           : new Globals { f = this, s = state };
             globals.st.Push(StackFrame.CreateStackFrame(parms));
-            object result = await functions[fname].Script(globals);
+            var result = await functions[fname].Script(globals);
             globals.st.Pop();
             return result;
         }
