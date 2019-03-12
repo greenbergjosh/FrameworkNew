@@ -592,6 +592,9 @@ namespace VisitorIdLib
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent, lastVisit);
 
+            if (!string.IsNullOrWhiteSpace(email))
+                PostMd5LeadDataToConsole(md5, pid);
+
             return new VisitorIdResponse(Jw.Json(new { slot, page, lv = lastVisit }), md5, email, sid);
         }
 
@@ -896,10 +899,59 @@ namespace VisitorIdLib
 
         }
 
+        public async void PostMd5LeadDataToConsole(string md5, string provider)
+        {
+            var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
+            var result = await Fw.RootDataLayerClient.RetrieveEntry("VisitorId", "LookupLeadByMd5", Jw.Json(new { md5 = md5 }), "{}",this.SqlTimeoutSec);
+            if (result == "{}") // TODO: remove and use Alberto's constant (awaiting merge)
+            {
+                await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} from pid: {provider}");
+                return;
+            }
+
+            var ge = JsonWrapper.JsonToGenericEntity(result);
+            var body = Jw.Json(new
+            {
+                domain_id = OnPointConsoleDomainId,
+                email = ge.GetS("Email"),
+                first_name = ge.GetS("Email"),
+                last_name = ge.GetS("LastName"),
+                zip_code = ge.GetS("Zip"),
+                original_optin_date = ge.GetS("OptInDate"),
+                original_optin_domain = ge.GetS("OptInDomain"),
+                ip_address = ge.GetS("IP"),
+                provider
+            });
+            PostDataToConsole(ge.GetS("Email"), header, body);
+            await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} from pid: {provider}, as: {ge.GetS("Email")}");
+        }
+
         public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
             var recency = GetRecencyFromLastVisit(lastVisit);
+            var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
+            var body = Jw.Json(new
+            {
+                domain_id = OnPointConsoleDomainId,
+                email = plainTextEmail,
+                user_ip = clientIp,
+                user_agent = userAgent,
+                email_source = "visitorid",
+                provider,
+                isFinal = "true",
+                label_domain = domain,
+                recency.r1,
+                recency.r7,
+                recency.r30,
+                recency.rAny
+            });
+            PostDataToConsole(plainTextEmail, header, body);
+        }
+
+        public void PostDataToConsole(string key, string header, string body)
+        {
+            if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
 
             var task = new Func<Task>(async () =>
             {
@@ -908,32 +960,17 @@ namespace VisitorIdLib
                     await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
                         Jw.Json(new
                         {
-                            header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false }),
-                            body = Jw.Json(new
-                            {
-                                domain_id = OnPointConsoleDomainId,
-                                email = plainTextEmail,
-                                user_ip = clientIp,
-                                user_agent = userAgent,
-                                email_source = "visitorid",
-                                provider,
-                                isFinal = "true",
-                                label_domain = domain,
-                                recency.r1,
-                                recency.r7,
-                                recency.r30,
-                                recency.rAny
-                            })
+                            header,
+                            body
                         }, new bool[] { false, false }), "application/json");
 
-                    await Fw.Log(nameof(PostVisitorIdToConsole), $"Successfully posted {plainTextEmail} to Console");
+                    await Fw.Log(nameof(PostVisitorIdToConsole), $"Successfully posted {key} to Console");
                 }
                 catch (Exception e)
                 {
-                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {plainTextEmail} to Console: {e.UnwrapForLog()}");
+                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {key} to Console: {e.UnwrapForLog()}");
                 }
             });
-
             Task.Run(task);
         }
 
