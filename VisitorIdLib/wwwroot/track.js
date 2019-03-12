@@ -13,6 +13,7 @@
             for (let x in res.config.Strategy) {
                 let f = res.config.Strategy[x].f;
                 let a = res.config.Strategy[x].a;
+                if (f == undefined) continue;
                 let exf = getDescendantProp(window[res.config.GlobalObject], f);
                 exf(...a);
             }
