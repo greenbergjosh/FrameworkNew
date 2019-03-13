@@ -958,20 +958,21 @@ namespace VisitorIdLib
 
             var task = new Func<Task>(async () =>
             {
+                string postData = "";
                 try
                 {
-                    await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,
-                        Jw.Json(new
-                        {
-                            header,
-                            body
-                        }, new bool[] { false, false }), "application/json");
+                    postData = Jw.Json(new
+                    {
+                        header,
+                        body
+                    }, new bool[] { false, false });
+                    await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,postData, "application/json");
 
                     await Fw.Log(nameof(PostVisitorIdToConsole), $"Successfully posted {key} to Console");
                 }
                 catch (Exception e)
                 {
-                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {key} to Console: {e.UnwrapForLog()}");
+                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {key} to Console with data {postData}. Exception: {e.UnwrapForLog()}");
                 }
             });
             Task.Run(task);
