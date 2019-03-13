@@ -27,7 +27,6 @@ namespace VisitorIdLib
         public Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>> VisitorIdMd5ProviderSequences =
             new Dictionary<string, List<(string Domain, bool isAsync, List<(string Md5provider, string EmailProviderSeq)>)>>();
         public Dictionary<string, List<string>> VisitorIdEmailProviderSequences = new Dictionary<string, List<string>>();
-        public int VisitorIdCookieExpDays = 45;
         public int SqlTimeoutSec;
 
         //public void test()
@@ -57,8 +56,6 @@ namespace VisitorIdLib
             this.OnPointConsoleDomainId = fw.StartupConfiguration.GetS("Config/OnPointConsoleDomainId");
             this.TowerEncryptionKey = fw.StartupConfiguration.GetS("Config/TowerEncryptionKey");
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
-            this.VisitorIdCookieExpDays = Int32.TryParse(fw.StartupConfiguration.GetS("Config/VisitorIdCookieExpDays"), out this.VisitorIdCookieExpDays)
-                ? this.VisitorIdCookieExpDays : 10;  // ugly, should add a GetS that takes/returns a default value
             ConfigProviders(this.Fw);
         }
 
@@ -162,7 +159,7 @@ namespace VisitorIdLib
                                 md5 = resDV.Md5.IfNullOrWhitespace(cookie.md5),
                                 em = resDV.Email.IfNullOrWhitespace(cookie.em),
                                 lv = DateTime.UtcNow.ToString()
-                            }), this.VisitorIdCookieExpDays);
+                            }), new DateTime(2038, 1, 19));
 
 #if DEBUG
                             var replaceDomain = "v-track.net";
@@ -181,7 +178,7 @@ namespace VisitorIdLib
                                 md5 = resSS.Md5.IfNullOrWhitespace(cookie.md5),
                                 em = resSS.Email.IfNullOrWhitespace(cookie.em),
                                 lv = DateTime.UtcNow.ToString()
-                            }), this.VisitorIdCookieExpDays);
+                            }), new DateTime(2038, 1, 19));
 
                             break;
                         case "TestService":
