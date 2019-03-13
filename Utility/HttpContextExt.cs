@@ -40,7 +40,12 @@ namespace Utility
         }
 
 
-        public static void SetCookie(this HttpContext ctx, string key, string value, int? expireTime)
+        public static void SetCookie(this HttpContext ctx, string key, string value, int expiresInMinsFromNow)
+        {
+            SetCookie(ctx, key, value, DateTime.UtcNow + TimeSpan.FromMinutes(expiresInMinsFromNow));
+        }
+
+        public static void SetCookie(this HttpContext ctx, string key, string value, DateTime? expireTime = null)
         {
             CookieOptions option = new CookieOptions();
             option.Path = "/";
@@ -48,7 +53,7 @@ namespace Utility
             option.HttpOnly = false;
 
             if (expireTime.HasValue)
-                option.Expires = DateTime.Now.AddMinutes(expireTime.Value);
+                option.Expires = expireTime.Value;
             else
                 option.Expires = DateTime.Now.AddMilliseconds(10);
 
