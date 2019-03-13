@@ -647,24 +647,18 @@ namespace VisitorIdLib
 
         private (int r1, int r7, int r30, int rAny) GetRecencyFromLastVisit(string lastVisitStr)
         {
-            DateTime lastVisit = new DateTime();
             var defaultR = (r1: 0, r7: 0, r30: 0, rAny: 0);
-            if (String.IsNullOrEmpty(lastVisitStr)) return defaultR;
-
-            try
+            if (!DateTime.TryParse(lastVisitStr, out var lastVisit))
             {
-                lastVisit = Convert.ToDateTime(lastVisitStr);
-            }
-            catch (Exception e)
-            {
-                Fw.Log(nameof(GetRecencyFromLastVisit), $"Unable to convert last visit time from string to DateTime:{lastVisitStr}");
+                Fw.Log(nameof(GetRecencyFromLastVisit), $"Unable to convert last visit time from string to DateTime: {lastVisitStr}");
                 return defaultR;
             }
+
             TimeSpan sinceLastVisit = DateTime.UtcNow - lastVisit;
             return (r1: sinceLastVisit.TotalHours < 24 ? 1 : 0,
                     r7: sinceLastVisit.TotalHours < 24 * 7 ? 1 : 0,
                     r30: sinceLastVisit.TotalHours < 24 * 30 ? 1 : 0,
-                    rAny: (Convert.ToDateTime(lastVisit) > DateTime.MinValue) ? 1 : 0 );
+                    rAny: lastVisit > DateTime.MinValue ? 1 : 0 );
         }
 
         public async Task<string> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
