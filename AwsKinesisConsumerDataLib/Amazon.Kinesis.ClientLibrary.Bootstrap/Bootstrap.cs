@@ -368,16 +368,17 @@ namespace Amazon.Kinesis.ClientLibrary.Bootstrap
                 var c = string.Join(" ", cmd.Select(f => "\"" + f + "\""));
 
                 // Start the KCL.
-                proc = new Process
+                proc = new Process();
+
+                var startInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = cmd[0],
-                        Arguments = string.Join(" ", cmd.Skip(1)),
-                        UseShellExecute = false,
-                        RedirectStandardError = true
-                    }
+                    FileName = cmd[0],
+                    Arguments = string.Join(" ", cmd.Skip(1)),
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
                 };
+                _fw.StartupConfiguration.GetD("Config/EnvironmentVariables").ForEach(x => startInfo.EnvironmentVariables[x.Item1] = x.Item2);
+                proc.StartInfo = startInfo;
 
                 proc.ErrorDataReceived += JavaProcess_ErrorDataReceived;
                 proc.Start();
