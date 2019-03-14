@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Diagnostics;
@@ -21,7 +22,14 @@ namespace GenericWindowsService
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
             Fw = LoadFramework(args);
-            ValidateAndConfigureService(args).Build().Run();
+            if (args.Contains("console"))
+            {
+                ValidateAndConfigureService(args).Build().Run();
+            }
+            else
+            {
+                ValidateAndConfigureService(args).Build().RunAsService();
+            }
         }
 
         private static IWebHostBuilder ValidateAndConfigureService(string[] args)
