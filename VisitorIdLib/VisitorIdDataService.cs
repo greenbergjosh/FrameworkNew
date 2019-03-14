@@ -300,7 +300,6 @@ namespace VisitorIdLib
             if (slot == 0)
             {
                 var cookie = GetCookieData(c);
-                var recency = GetRecencyFromLastVisit(cookie.lv);
                 lv = cookie.lv ?? "";
                 be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow,
@@ -313,8 +312,9 @@ namespace VisitorIdLib
                         p = path,
                         q = qury,
                         afid,
-                        tpid
-                    }, new bool[] { true, false, true, true, true, true, true, true }), this.RsConfigGuid);
+                        tpid,
+                        lv
+                    }, new bool[] { true, false, true, true, true, true, true, true, true }), this.RsConfigGuid);
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                     null, PL.O(new
                     {
@@ -325,13 +325,8 @@ namespace VisitorIdLib
                         h = host,
                         p = path,
                         q = qury,
-                        tpid,
-                        lv,
-                        recency.r1,
-                        recency.r7,
-                        recency.r30,
-                        recency.rAny
-                    }, new bool[] { true, true, false, true, true, true, true, true, true, true, true, true, true }));
+                        tpid
+                    }, new bool[] { true, true, false, true, true, true, true, true }));
                 await fw.EdwWriter.Write(be);
             }
 
@@ -543,7 +538,6 @@ namespace VisitorIdLib
         {
             string ip = c.Ip();
             var success = !md5.IsNullOrWhitespace();
-            var recency = GetRecencyFromLastVisit(lastVisit);
 
             EdwBulkEvent be = new EdwBulkEvent();
             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -572,10 +566,7 @@ namespace VisitorIdLib
                         sid,
                         pid,
                         md5,
-                        recency.r1,
-                        recency.r7,
-                        recency.r30,
-                        recency.rAny
+                        lastVisit
                     }).ToString()));
             }
 
@@ -669,7 +660,6 @@ namespace VisitorIdLib
             string eml = "";
             int slot = 0;
             int page = 0;
-            var recency = GetRecencyFromLastVisit(lastVisit);
             foreach (var s in this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
             {
                 if (s.ToLower() == "stopifemail")
@@ -693,11 +683,6 @@ namespace VisitorIdLib
                     await fw.EdwWriter.Write(be);
 
                     var cookieData = GetCookieData(context);
-
-                    // see if we're more up to date from the cookie
-                    (recency, lastVisit) = Convert.ToDateTime(cookieData.lv) > Convert.ToDateTime(lastVisit) ?
-                        (GetRecencyFromLastVisit(cookieData.lv), cookieData.lv) :
-                        (recency, lastVisit);
 
                     eml = cookieData.em;
 
@@ -821,10 +806,7 @@ namespace VisitorIdLib
                                     pid,
                                     md5,
                                     eml,
-                                    recency.r1,
-                                    recency.r7,
-                                    recency.r30,
-                                    recency.rAny
+                                    lastVisit
                                 }).ToString()));
                             }
                         }
@@ -877,10 +859,7 @@ namespace VisitorIdLib
                        md5Pid,
                        md5Slot,
                        md5Page,
-                       recency.r1,
-                       recency.r7,
-                       recency.r30,
-                       recency.rAny
+                       lastVisit
                    })
                    .Add(PL.N("seq", SL.C(this.VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
                    .Add(PL.N("rsids", PL.D(rsids))).ToString()));
@@ -933,7 +912,6 @@ namespace VisitorIdLib
         public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
-            var recency = GetRecencyFromLastVisit(lastVisit);
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
             var body = Jw.Json(new
             {
@@ -945,10 +923,7 @@ namespace VisitorIdLib
                 provider,
                 isFinal = "true",
                 label_domain = domain,
-                recency.r1,
-                recency.r7,
-                recency.r30,
-                recency.rAny
+                lastVisit
             });
             PostDataToConsole(plainTextEmail, header, body);
         }
