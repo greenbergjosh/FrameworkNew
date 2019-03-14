@@ -38,7 +38,7 @@ namespace AwsKinesisConsumerDataLib
 
         private void RunBootstrap()
         {
-            var kclArgs = new string[] { "-p", AppDomain.CurrentDomain.BaseDirectory + "Consumer.properties", "--jar-folder", AppDomain.CurrentDomain.BaseDirectory + "jars" };
+            var kclArgs = new string[] { "-p", _fw.StartupConfiguration.GetS("Config/DataServiceRootDirectory") + "Consumer.properties", "--jar-folder", AppDomain.CurrentDomain.BaseDirectory + "jars" };
 
             _fw.Trace("RunBootstrap", $"AwsKinesisConsumerWindowsService started with arguments: [{string.Join(",", kclArgs)}]");
 
