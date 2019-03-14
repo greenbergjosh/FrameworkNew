@@ -650,7 +650,8 @@ namespace VisitorIdLib
             var defaultR = (r1: 0, r7: 0, r30: 0, rAny: 0);
             if (!DateTime.TryParse(lastVisitStr, out var lastVisit))
             {
-                Fw.Log(nameof(GetRecencyFromLastVisit), $"Unable to convert last visit time from string to DateTime: {lastVisitStr}");
+                if (!string.IsNullOrWhiteSpace(lastVisitStr)) // only log "useful" bad dates
+                    Fw.Log(nameof(GetRecencyFromLastVisit), $"Unable to convert last visit time from string to DateTime: {lastVisitStr}");
                 return defaultR;
             }
 
