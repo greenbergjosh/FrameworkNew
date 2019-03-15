@@ -33,6 +33,7 @@ namespace Utility
         T Run<T>(string fname);
         T Get<T>(string path, string fname);
 
+        void Set(string path, object value);
         string GetS(string path);
         string RunS(string fname);
         string GetS(string path, string fname);

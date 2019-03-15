@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
+using Random = Utility.Crypto.Random;
 
 namespace QuickTester
 {
@@ -26,8 +27,42 @@ namespace QuickTester
             //var gcstate = JsonConvert.DeserializeObject(result);
             //gc.InitializeEntity(null, null, gcstate);
         }
+
+        private static (string path, string propName)? SplitPropertyPath(string fullPath)
+        {
+            if (fullPath.IsNullOrWhitespace()) return null;
+
+            fullPath = $"$/{fullPath}";
+
+            var parts = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            return ($"{parts.Take(parts.Length - 1).Join(".")}", parts.Last());
+        }
+
         static async Task Main(string[] args)
         {
+            var sww = Stopwatch.StartNew();
+            
+            for (int k = 0; k < 10000; k++)
+            {
+                Guid.NewGuid();
+            }
+
+            sww.Stop();
+            Console.WriteLine(sww.Elapsed.TotalSeconds);
+            sww.Restart();
+
+            for (int k = 0; k < 10000; k++)
+            {
+                Random.Number<int>();
+            }
+
+            sww.Stop();
+            Console.WriteLine(sww.Elapsed.TotalSeconds);
+            Console.ReadLine();
+
+            return;
+
             var js = Jw.JsonToGenericEntity("{\"a\":[1,2,3]}");
             var vals = js.GetL("a").Select(g => g.GetS(""));
 
