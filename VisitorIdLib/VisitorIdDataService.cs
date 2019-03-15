@@ -906,8 +906,8 @@ namespace VisitorIdLib
                 ip_address = ge.GetS("IP"),
                 provider
             });
-            PostDataToConsole(ge.GetS("Email"), header, body);
             await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} from pid: {provider}, as: {ge.GetS("Email")}");
+            PostDataToConsole(ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
         }
 
         public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
@@ -926,10 +926,10 @@ namespace VisitorIdLib
                 label_domain = domain,
                 lastVisit
             });
-            PostDataToConsole(plainTextEmail, header, body);
+            PostDataToConsole(plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
         }
 
-        public void PostDataToConsole(string key, string header, string body)
+        public void PostDataToConsole(string key, string header, string body, string caller)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
 
@@ -945,11 +945,11 @@ namespace VisitorIdLib
                     }, new bool[] { false, false });
                     await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,postData, "application/json");
 
-                    await Fw.Log(nameof(PostVisitorIdToConsole), $"Successfully posted {key} to Console");
+                    await Fw.Log(caller, $"Successfully posted {key} to Console");
                 }
                 catch (Exception e)
                 {
-                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {key} to Console with data {postData}. Exception: {e.UnwrapForLog()}");
+                    await Fw.Error(caller, $"Failed to post {key} to Console with data {postData}. Exception: {e.UnwrapForLog()}");
                 }
             });
             Task.Run(task);
