@@ -216,7 +216,8 @@ namespace GetGotLib
                     var (code, accountName) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
 
                     if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code);
-                    else ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
+                    else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
+                    else throw new FunctionException(100,$"Unhandled exception getting confirmation code: {contact.Cleaned}");
                     break;
                 default:
                     throw new FunctionException(103, $"{contact.Type} not supported");
@@ -233,7 +234,7 @@ namespace GetGotLib
 
             if (!userName.IsNullOrWhitespace()) return (null, userName);
 
-            throw new FunctionException(100, $"Bad DB response, no code nor username");
+            throw new FunctionException(100, $"Bad DB response, no code nor username: {res.GetS("")}");
         }
 
         private Contact ValidateContact(string contactStr)
