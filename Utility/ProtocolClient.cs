@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -633,7 +634,7 @@ namespace Utility
             http.Accept = mediaType;
             http.ContentType = mediaType;
             http.Method = "POST";
-            http.Timeout = timeoutSeconds;
+            http.Timeout = timeoutSeconds * 1000;
 
             ASCIIEncoding encoding = new ASCIIEncoding();
             Byte[] bytes = encoding.GetBytes(content);
@@ -668,5 +669,23 @@ namespace Utility
                 }
             }
         }
+
+        public static void SendMail(string smtpRelay, int smtpPort, string from, string to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false) =>
+            SendMail(smtpRelay, smtpPort, from, new[] {to}, subject, body);
+
+        public static void SendMail(string smtpRelay, int smtpPort, string from, IEnumerable<string> to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
+        {
+            using (var smtp = new SmtpClient(smtpRelay, smtpPort))
+            {
+                smtp.EnableSsl = useSsl;
+                var msg = new MailMessage(from,to.Join(","),subject,body)
+                {
+                    IsBodyHtml = bodyIsHtml
+                };
+
+                smtp.Send(msg);
+            }
+        }
+
     }
 }

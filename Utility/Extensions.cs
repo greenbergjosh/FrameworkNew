@@ -27,6 +27,8 @@ namespace Utility
 
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
 
+        public static Guid? ParseGuid(this string str) => Guid.TryParse(str, out var i) ? i : (Guid?)null;
+
         public static uint? ParseUInt(this string str) => uint.TryParse(str, out var i) ? i : (uint?)null;
 
         public static bool? ParseBool(this string str)
@@ -74,7 +76,7 @@ namespace Utility
                 stack = ex.StackTrace;
             }
 
-            if (outputStack)
+            if (outputStack && stack != null)
             {
                 result.AppendLine(stack.Replace("   ", "\t"));
             }
@@ -112,6 +114,21 @@ namespace Utility
         #endregion
 
         #region Collections
+
+        public static IEnumerable<string> Split(this string str, int size)
+        {
+            var skip = 0;
+            var res = new List<string>();
+            var cstr = str.Select(c => c.ToString()).ToArray();
+
+            while (skip < str.Length)
+            {
+                res.Add(cstr.Skip(skip).Take(size).Join(""));
+                skip += size;
+            }
+
+            return res;
+        }
 
         public static void ForEach<T>(this IEnumerable<T> coll, Action<T> body)
         {

@@ -261,6 +261,36 @@ namespace Utility
             return new PL(n, v, q);
         }
 
+        public static PL C(string n, int v)
+        {
+            return new PL(n, v.ToString(), false);
+        }
+
+        public static PL C(string n, short v)
+        {
+            return new PL(n, v.ToString(), false);
+        }
+
+        public static PL C(string n, long v)
+        {
+            return new PL(n, v.ToString(), false);
+        }
+
+        public static PL C(string n, bool v)
+        {
+            return new PL(n, v.ToString(), false);
+        }
+
+        public static PL C(string n, decimal v)
+        {
+            return new PL(n, v.ToString(), false);
+        }
+
+        public static PL C(string n, double v)
+        {
+            return new PL(n, v.ToString(), false);
+        }
+
         public PL Add(params PL[] pls)
         {
             this.ps.AddRange(pls.SelectMany(x => x.ps));

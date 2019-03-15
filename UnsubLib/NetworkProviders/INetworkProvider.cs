@@ -5,8 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 using Utility;
-
-using Sql = Utility.SqlWrapper;
+using Utility.DataLayer;
 using Jw = Utility.JsonWrapper;
 
 namespace UnsubLib.NetworkProviders
@@ -59,8 +58,8 @@ namespace UnsubLib.NetworkProviders
                     if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
 
                     respBody = resp.body;
-
-                    var res = await Sql.SqlToGenericEntity("Unsub", "MergeNetworkCampaigns",
+                    
+                    var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,
@@ -165,7 +164,7 @@ namespace UnsubLib.NetworkProviders
                     campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
-                    var res = await Sql.SqlToGenericEntity("Unsub", "MergeNetworkCampaigns",
+                    var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,

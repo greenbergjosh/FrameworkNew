@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Utility
 {
@@ -8,6 +9,7 @@ namespace Utility
     {
         public string PostType;
         public DateTime PostDate;
+        [JsonConverter(typeof(RawJsonConverter))]
         public string Payload;
 
 

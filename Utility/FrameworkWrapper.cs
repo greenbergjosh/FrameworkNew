@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Utility.DataLayer;
 
 namespace Utility
 {
@@ -13,7 +14,6 @@ namespace Utility
     {
         public string[] ConfigurationKeys;
         public string SelectConfigSproc;
-        public DataLayerClient RootDataLayerClient;
         public ConfigEntityRepo Entities;
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
@@ -22,51 +22,54 @@ namespace Utility
         public ErrorSiloLoadBalancedWriter ErrorWriter;
         public ErrorDelegate Err;
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
+        public bool TraceLogging = true;
 
         public FrameworkWrapper()
         {
             try
             {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
+                var configuration = new ConfigurationBuilder()
                             .SetBasePath(Directory.GetCurrentDirectory())
                             .AddJsonFile("appsettings.json")
                             .Build();
-                this.RootDataLayerClient = DataLayerClientFactory.DataStoreInstance(configuration.GetValue<String>("ConnectionString:DataLayerType"));
-                this.ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
+
+                ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
 
                 if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
 
-                this.SelectConfigSproc = configuration.GetValue<String>("Application:SelectConfigSproc");
+                StartupConfiguration = Data.Initialize(
+                    configuration.GetValue<string>("ConnectionString:ConnectionString"),
+                    configuration.GetValue<string>("ConnectionString:DataLayerType"),
+                    ConfigurationKeys,
+                    configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"))
+                    .GetAwaiter().GetResult();
 
-                this.StartupConfiguration = RootDataLayerClient.Initialize(
-                    configuration.GetValue<String>("ConnectionString:ConnectionString"),
-                    this.ConfigurationKeys,
-                    configuration.GetValue<String>("ConnectionString:DataLayer:SelectConfigFunction")
-                ).GetAwaiter().GetResult();
-                this.Entities = new ConfigEntityRepo(RootDataLayerClient.GlobalConfig);
-                List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
-                var scriptsPath = this.StartupConfiguration.GetS("Config/RoslynScriptsPath");
+                SelectConfigSproc = configuration.GetValue<string>("Application:SelectConfigSproc");
+
+                Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
+                var scripts = new List<ScriptDescriptor>();
+                var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
-                    this.RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
+                    RoslynWrapper = new RoslynWrapper(scripts, Path.GetFullPath(Path.Combine(scriptsPath, "debug")));
                 }
 
-                this.EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(this.StartupConfiguration);
-                this.PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(this.StartupConfiguration);
-                this.ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(this.StartupConfiguration);
-                string appName = this.StartupConfiguration.GetS("Config/ErrorLogAppName") ?? this.ConfigurationKeys.Join("::");
+                EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(StartupConfiguration);
+                PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(StartupConfiguration);
+                ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(StartupConfiguration);
+                var appName = StartupConfiguration.GetS("Config/ErrorLogAppName") ?? ConfigurationKeys.Join("::");
 
-                this.Err =
+                Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
-                        await this.ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
+                        if(!TraceLogging && descriptor == ErrorDescriptor.Trace) return;
+                        await ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
                     };
             }
             catch (Exception ex)
             {
-                File.AppendAllText("FrameworkStartupError-" + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    $@"{DateTime.Now}::{ex.ToString()}" + Environment.NewLine);
+                File.AppendAllText($"FrameworkStartupError-{DateTime.Now:yyyyMMddHHmmss}", $@"{DateTime.Now}::{ex.UnwrapForLog()}" + Environment.NewLine);
                 throw;
             }
         }

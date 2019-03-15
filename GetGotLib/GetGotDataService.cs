@@ -1,579 +1,434 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Utility;
+using Utility.DataLayer;
 using Jw = Utility.JsonWrapper;
+using Random = Utility.Crypto.Random;
 
 namespace GetGotLib
 {
     public class GetGotDataService
     {
-        public FrameworkWrapper Fw = null;
-        public Guid RsConfigGuid;
+        private FrameworkWrapper _fw = null;
+        private Guid _rsConfigGuid;
+        private string Conn = "GetGot";
+        private string _smtpRelay = null;
+        private int _smtpPort = -1;
+        private string _emailFromAddress = null;
 
-        // GetGotOld
-        public int MAX_TEMPLATES_PER_CALL = 20;
-        public int LIMIT_TEMPLATE_META_SEARCH = 20;
-        public string Conn = "GetGotConfig";
-
-        public string ConnectionString;
-        public string ConfigurationKey;
-
-        public string GetGotDbConnectionString;
-
-        public static Dictionary<string, string> ApiSamples = new Dictionary<string, string>()
-        {
-            { "CreateCampaign",
-                @"{
-                    ""m"":""CreateCampaign"",
-                    ""CampaignId"":""82c46a22-0d3f-4b55-84eb-60252f1b023f"",
-                    ""InfluencerUserId"":""829a8a27-45a7-4396-99d3-c8a087aecb91"",
-                    ""AdvertiserUserId"":""0ea87a82-d06a-41e1-9522-fced60a62099"",
-                    ""FromSubCampaignId"":"""",
-                    ""Payload"": {
-                        ""MessageBodyTemplateQueryVerbose"":
-                            [
-                                {""MessageBodyTemplateQueryId"":""41487182-a6df-429c-8f5f-3e9f203e93ea""},
-                                {""UrlToMessageBodyTemplateQuery"":""//retailerservice.com/gettemplatequery""},
-                                {""ExternalId"":""12345""},
-                                {""Id"":""1a0855f2-c7be-4eef-93b9-71339e5637a2""},
-                                {""Name"":""TestTemplateOne""},
-                                {""Meta"":""makeup christmas""},
-                                {""Meta"":""red !holiday""},
-                                {""UrlToHtml"":""//retailerservice.com/gettemplatehtml""},
-                                {""UrlToId"":""//retailerservice.com/gettemplateid""},
-                                {""UrlToName"":""//retailerservice.com/gettemplatename""},
-                                {""UrlToMeta"":""//retailerservice.com/gettemplatemeta""},
-                                {""DefaultId"":""5ca2bdea-befc-42a9-b6fa-8521b07f9cad""},
-                                {""DefaultName"":""DefaultTestTemplateOne""},
-                                {""DefaultMeta"":""holiday""}
-                            ],
-                        ""MessageBodyTemplateQueryId"":""41487182-a6df-429c-8f5f-3e9f203e93ea"",
-                        ""MessageBodyTemplateQueryUrl"":""//retailerservice.com/gettemplatequery"",
-                        ""MessageBodyTemplateQuery"":
-                            [
-                                ""exid(12345)"",
-                                ""id(1a0855f2-c7be-4eef-93b9-71339e5637a2)"",
-                                ""nm(TestTemplateOne)"",
-                                ""meta(makeup christmas)"",
-                                ""meta(red !holiday)"",
-                                ""htmurl(//retailerservice.com/gettemplatehtml)"",
-                                ""idurl(//retailerservice.com/gettemplateid)"",
-                                ""nmurl(//retailerservice.com/gettemplatename)"",
-                                ""metaurl(//retailerservice.com/gettemplatemeta)"",
-                                ""defid(5ca2bdea-befc-42a9-b6fa-8521b07f9cad)"",
-                                ""defnm(DefaultTestTemplateOne)"",
-                                ""defmeta(holiday)"",
-                                ""htm(base64 html goes here)""
-                            ],
-                        ""TemplatePartTokens"":
-                            [
-                                {
-                                    ""N"":"""",
-                                    ""V"":"""",
-                                    ""T"":""string|url|img|rurl""
-                                }
-                            ]
-                    }
-                }"
-            },
-            {"GetCampaignTemplates",
-                @"{
-                    ""m"":""GetCampaignTemplates"",
-                    ""c"":""82c46a22-0d3f-4b55-84eb-60252f1b023f"",
-                    ""o"":""0"",
-                    ""i"":""0""
-                }"
-            }
-        };
-        // GetGotOld End
 
         public void Config(FrameworkWrapper fw)
         {
             try
             {
-                this.Fw = fw;
-                this.RsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+                _fw = fw;
+                _rsConfigGuid = new Guid(fw.StartupConfiguration.GetS("Config/RsConfigGuid"));
+                _smtpRelay = fw.StartupConfiguration.GetS("Config/SmtpRelay");
+                _emailFromAddress = fw.StartupConfiguration.GetS("Config/EmailFrom");
+                var port = fw.StartupConfiguration.GetS("Config/SmtpPort").ParseInt();
+
+                if (!port.HasValue) throw new Exception("Missing or invalid config value for SmtpPort");
+                if (_smtpRelay.IsNullOrWhitespace()) throw new Exception("Missing or invalid config value for SmtpRelay");
+                if (_emailFromAddress.IsNullOrWhitespace()) throw new Exception("Missing or invalid config value for EmailFrom");
+
+                _smtpPort = port.Value;
+                _fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
             }
             catch (Exception ex)
             {
-                Fw?.Error(nameof(Config), ex.UnwrapForLog());
+                _fw?.Error(nameof(Config), ex.UnwrapForLog());
                 throw;
             }
         }
 
-        public async Task Test(HttpContext c)
-        {
-            //Dictionary<string, string> spMap = new Dictionary<string, string>()
-            //{//[dbo].[spSelectMessageBodyTemplateQuery]
-            //    { "SelectConfig", "[dbo].[spSelectConfig]" },
-            //    { "GetGotDbErrorLog", "[dbo].[spInsertErrorLog]" },
-            //    { "SelectMessageBodyTemplatesByMeta", "[dbo].[spSelectMessageBodyTemplatesByMeta]" },
-            //    { "SelectMessageBodyTemplateQuery", "[dbo].[spSelectMessageBodyTemplateQuery]" }
-            //};
-
-            //string scRes = ApiSamples["CreateCampaign"];
-
-            //IGenericEntity ge = new GenericEntityJson();
-
-
-
-            //ge.InitializeEntity(null, null, JsonConvert.DeserializeObject(scRes));
-            //var queryParts = ge.GetL("Payload/MessageBodyTemplateQuery").ToList();
-            //for (int i = 0; i < queryParts.Count; i++)
-            //{
-            //    var queryPart = queryParts[i].GetS("");
-
-            //    string[] splitQueryPart = queryPart.Split('(');
-            //    string queryPartType = splitQueryPart[0];
-            //    string queryPartBody = queryPart.Substring(queryPartType.Length + 1,
-            //        queryPart.Length - queryPartType.Length - 2);
-
-            //    int x = 1;
-
-            //}
-        }
-
         public async Task Run(HttpContext context)
         {
-            //await Test(context);
-            var requestFromPost = "";
-            var result = Jw.Json(new { Error = "SeeLogs" });
+            string bodyForError = null;
+            var requestId = Guid.NewGuid().ToString();
+            var rc = RC.Unhandled;
+            var fResults = new Dictionary<string, string>();
 
             try
             {
-                requestFromPost = await context.GetRawBodyStringAsync();
+                var requestBody = await context.GetRawBodyStringAsync();
 
-                Fw.Trace(nameof(Run), $"Request: {requestFromPost}");
-                var req = Jw.JsonToGenericEntity(requestFromPost);
-                var sid = req.GetS("p/sid");
-                var identity = req.GetS("i");
-                var sessionInit = req.GetS("p/s");
-                var eventData = req.GetS("p/e");
-                var failed = false;
-                EdwBulkEvent be = null;
+                bodyForError = $"\r\nBody:\r\n{requestBody}";
 
-                if (!sessionInit.IsNullOrWhitespace())
+                _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                var req = Jw.JsonToGenericEntity(requestBody);
+                var (result, sid) = await HandleEdwEvents(req, requestBody);
+
+                rc = result;
+
+                if (rc == RC.Success)
                 {
-                    be = new EdwBulkEvent();
-                    sid = req.GetS("p/s/sid");
+                    var identity = req.GetS("i");
+                    var funcs = req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid").ToArray();
+                    var cancellation = new CancellationTokenSource();
 
-                    be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow, PL.FromJsonString(sessionInit), RsConfigGuid);
-                }
-
-                if (!eventData.IsNullOrWhitespace())
-                {
-                    if (!sid.IsNullOrWhitespace())
+                    // ToDo: make allOk thread safe with cancellationtoken
+                    async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                     {
-                        if (be == null) be = new EdwBulkEvent();
+                        if (cancellation.Token.IsCancellationRequested) return (p.Item1, null);
 
-                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { "ggsess", sid } }, null, PL.FromJsonString(eventData));
-                    }
-                    else
-                    {
-                        await Fw.Error(nameof(Run), $"Request missing sid: {requestFromPost}");
-                        failed = true;
-                    }
-                }
+                        string fResult = null;
+                        var fResultCode = 100;
 
-                // purposely fire and forget
-                if (be != null) Fw.EdwWriter.Write(be);
-
-                if (!failed)
-                {
-                    var results = new Dictionary<string, string>();
-
-                    foreach (var p in req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid"))
-                    {
-                        var res = await SqlWrapper.SqlToGenericEntity(Conn, p.Item1, identity, p.Item2);
-
-                        if (res == null) await Fw.Error(p.Item1, "Empty DB response");
-                        else
+                        try
                         {
-                            var error = res.GetS("Error");
-
-                            if (!error.IsNullOrWhitespace())
+                            switch (p.Item1)
                             {
-                                await Fw.Error(p.Item1, $"DB Error: {res.GetS("")}");
-                                failed = true;
-                                break;
+                                case "sendcode":
+                                    await SendCode(p.Item2);
+                                    break;
+                                case "createpass":
+                                    fResult = await CommitUserRegistration(p.Item2, sid, requestBody);
+                                    break;
+                                case "login":
+                                    fResult = await Login(p.Item2);
+                                    break;
+                                case "genhandles":
+                                    var ge = Jw.JsonToGenericEntity(p.Item2);
+                                    var handle = ge.GetS("handle");
+                                    var cfg = ge.GetL("cfg").Select(c => (digits: c.GetS("digits").ParseInt().Value, count: c.GetS("count").ParseInt().Value));
+                                    var res = GenerateAltHandles(handle, cfg);
+
+                                    fResult = Jw.Serialize(res);
+                                    break;
+                                default:
+                                    fResult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
+                                    break;
+                            }
+                            fResultCode = 0;
+                        }
+                        catch (Exception e)
+                        {
+                            var identityStr = identity == null ? "null" : $"\r\n{identity}\r\n";
+                            var payloadStr = p.Item2 == null ? "null" : $"\r\n{p.Item2}\r\n";
+                            var funcContext = $"\r\nName: {p.Item1}\r\nIdentity: {identityStr}\r\nArgs: {payloadStr}\r\nRequestId: {requestId}";
+
+                            var fe = e as FunctionException;
+
+                            if (fe == null) await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
+                            else
+                            {
+                                var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
+
+                                await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+
+                                fResultCode = fe.ResultCode;
+                            }
+
+                            if (fe?.HaltExecution == true)
+                            {
+                                rc = RC.FunctionHalting;
+                                // cancel the token
                             }
                         }
 
-                        results.Add(p.Item1, res.GetS(""));
+                        var pl = PL.C("r", fResultCode);
+
+                        if (fResult != null && fResult != Jw.Empty) pl = pl.Add(PL.C("p", fResult, false));
+
+                        return (p.Item1, pl.ToString());
                     }
 
-                    if (!failed && results.Any()) result = JsonConvert.SerializeObject(results);
-                    else if (!failed) result = result = Jw.Json(new { Result = "Success" });
+                    var tasks = funcs.Select(HandleFunc).ToArray();
+
+#if DEBUG
+                    foreach (var t in tasks) await t;
+#else
+                    await Task.WhenAll(tasks);
+#endif
+
+                    fResults.AddRange(tasks.Select(t => t.Result).Where(r => r.result != null));
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await Fw.Error(nameof(Run), $"{requestFromPost}: {ex.UnwrapForLog()}");
+                await _fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
             }
+            var body = PL.C("r", rc);
 
-            await WriteResponse(context, result);
+            fResults.ForEach(p => body.Add(PL.C(p.Key, p.Value, false)));
+
+            var resp = body.ToString();
+
+            _fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            await context.WriteSuccessRespAsync(resp);
         }
 
-        public async Task WriteResponse(HttpContext context, string resp)
+        private async Task<(int result, string sid)> HandleEdwEvents(IGenericEntity req, string requestFromPost)
         {
-            context.Response.StatusCode = 200;
-            context.Response.ContentType = "application/json";
-            context.Response.ContentLength = resp.Length;
-            await context.Response.WriteAsync(resp);
-        }
+            var sessionInit = req.GetS("p/s");
+            var eventData = req.GetS("p/e");
+            var sid = req.GetS("p/s/sid") ?? req.GetS("p/sid");
+            var postRs = !sessionInit.IsNullOrWhitespace();
+            var postEvent = !eventData.IsNullOrWhitespace();
 
-        public async Task<string> CreateCampaign(IGenericEntity r)
-        {
-            return "";
-        }
-
-        public async Task<List<string>> GetCampaignTemplates(IGenericEntity r)
-        {
-            string cid = r.GetS("c");
-            int oidx = Int32.Parse(r.GetS("o"));
-            int iidx = Int32.Parse(r.GetS("i"));
-
-            string cRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                    "SelectCampaign",
-                    Jw.Json(new
-                    {
-                        Id = cid
-                    }),
-                    "", 240);
-
-            IGenericEntity c = new GenericEntityJson();
-            c.InitializeEntity(null, null, JsonConvert.DeserializeObject(cRes));
-
-            IEnumerable<IGenericEntity> queryParts = null;
-
-            var queryId = c.GetS("Payload/MessageBodyTemplateQueryId");
-            var queryUrl = c.GetS("Payload/MessageBodyTemplateQueryUrl");
-            var query = c.GetL("Payload/MessageBodyTemplateQuery");
-            var advertiserId = c.GetS("Payload/AdvertiserUserId");
-
-            if (!String.IsNullOrEmpty(queryId))
+            if ((postRs || postEvent) && sid.IsNullOrWhitespace())
             {
-                string queryRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                    "SelectMessageBodyTemplateQuery",
-                    Jw.Json(new
-                    {
-                        Id = queryId
-                    }),
-                    "", 240);
-                IGenericEntity queryge = new GenericEntityJson();
-                queryge.InitializeEntity(null, null, JsonConvert.DeserializeObject(queryRes));
-                queryParts = queryge.GetL("QueryJson");
-            }
-            else if (!String.IsNullOrEmpty(queryUrl))
-            {
-                IGenericEntity urlge = await GetValueFromClientPair(queryUrl);
-                queryParts = urlge.GetL("QueryJson");
-            }
-            else if (query != null)
-            {
-                queryParts = query;
+                await _fw.Error(nameof(HandleEdwEvents), $"Request missing sid:\r\n{requestFromPost}");
+                return (RC.InvalidSID, null);
             }
 
-            List<string> templates = new List<string>();
-
-            if (queryParts == null)
+            async Task Post()
             {
-                templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'00000000-0000-0000-0000-000000000000'}}");
-                return templates;
-            }
-
-            foreach (var eQueryPart in queryParts)
-            {
-                var queryPart = eQueryPart.GetS("");
-                (string queryPartType, string queryPartBody) = queryPart.SplitOnChar('(');
-                queryPartBody = (queryPartBody.Length == 0) ? "" :
-                    queryPartBody.Substring(0, queryPartBody.Length - 1);
-
-                switch (queryPartType)
+                try
                 {
-                    case "id":
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{queryPartBody}'}}");
-                        break;
-                    case "exid":
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'exid':'{queryPartBody}', 'advid':'{advertiserId}'}}");
-                        break;
-                    case "nm":
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'nm':'{queryPartBody}', 'advid':'{advertiserId}'}}");
-                        break;
-                    case "meta":
-                        IGenericEntity metage = await SelectMessageBodyTemplatesByMeta(queryPartBody, advertiserId);
-                        foreach (var metageitem in metage.GetL(""))
-                            templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{metageitem}'}}");
-                        break;
-                    case "idurl":
-                        string id = await GetValueFromClientPair(queryPartBody, "id");
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{id}'}}");
-                        break;
-                    case "nmurl":
-                        string nm = await GetValueFromClientPair(queryPartBody, "nm");
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'nm':'{nm}', 'advid':'{advertiserId}'}}");
-                        break;
-                    case "exidurl":
-                        string exid = await GetValueFromClientPair(queryPartBody, "exid");
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'exid':'{exid}', 'advid':'{advertiserId}'}}");
-                        break;
-                    case "metaurl":
-                        IGenericEntity metaurlge = await SelectMessageBodyTemplatesByMeta(queryPartBody, advertiserId);
-                        foreach (var metageitem in metaurlge.GetL(""))
-                            templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{metageitem}'}}");
-                        break;
-                    case "defnm":
-                        templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'nm':'{queryPartBody}', " +
-                            "'advid':'00000000-0000-0000-0000-000000000000'}");
-                        break;
-                    case "defmeta":
-                        IGenericEntity defmetage = await SelectMessageBodyTemplatesByMeta(queryPartBody, "00000000-0000-0000-0000-000000000000");
-                        foreach (var metageitem in defmetage.GetL(""))
-                            templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'{metageitem}'}}");
-                        break;
-                    case "exhost":
-                        templates.Add(queryPartBody);
-                        break;
+                    var be = new EdwBulkEvent();
+
+                    // ToDo: Check if 'iid' exists, if not, lookup by 'iun'
+                    if (postRs) be.AddRS(EdwBulkEvent.EdwType.Immediate, new Guid(sid), DateTime.UtcNow, PL.FromJsonString(sessionInit), _rsConfigGuid);
+                    if (postEvent) be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { "ggsess", sid } }, null, PL.FromJsonString(eventData));
+
+                    await _fw.EdwWriter.Write(be);
+                }
+                catch (Exception e)
+                {
+                    await _fw.Error($"{nameof(HandleEdwEvents)}().{nameof(Post)}()", $"Failed to post to edw: {e.UnwrapForLog()}\r\n\r\nBody:\r\n{requestFromPost}");
                 }
             }
 
-            if (templates.Count == 0)
+            // purposely fire and forget
+            if (postRs || postEvent) Post();
+
+            return (RC.Success, sid);
+        }
+
+        public async Task SendCode(string payload)
+        {
+            var ge = Jw.JsonToGenericEntity(payload);
+            var contact = ValidateContact(ge.GetS("u"));
+
+            switch (contact.Type)
             {
-                templates.Add($"//getgot.com/api {{'m':'GetTemplate', 'id':'00000000-0000-0000-0000-000000000000'}}");
+                case ContactType.Email:
+                    var (code, accountName) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+
+                    if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code);
+                    else ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
+                    break;
+                default:
+                    throw new FunctionException(103, $"{contact.Type} not supported");
+            }
+        }
+
+        private Contact ValidateContact(string contactStr)
+        {
+            var contact = new Contact(contactStr);
+
+            if (contact.Type == ContactType.Unknown) throw new FunctionException(102, $"Unable to extract contact type: {contactStr}");
+
+            return contact;
+        }
+
+        private async Task<(string code, string accountName)> GetAvailableConfirmationCode(string args)
+        {
+            var randomCodes = Random.Numbers(10000, 999999, 6);
+            const int maxRetries = 3;
+            var tried = 0;
+
+            while (tried < maxRetries)
+            {
+                var res = await Data.CallFn(Conn, "GetAvailableConfirmationCode", args, Jw.Serialize(randomCodes));
+                var code = res.GetS("code");
+
+                if (!code.IsNullOrWhitespace()) return (code.PadLeft(6, '0'), null);
+                var userName = res.GetS("userName");
+
+                if (!userName.IsNullOrWhitespace()) return (null, userName);
+
+                tried++;
             }
 
-            return templates;
+            throw new FunctionException(100, $"Exceeded {nameof(maxRetries)} of {maxRetries} in {nameof(GetAvailableConfirmationCode)}");
         }
 
-        public async Task<IGenericEntity> SelectMessageBodyTemplatesByMeta(string meta, string advertiserId)
+        public async Task<string> CommitUserRegistration(string payload, string sid, string requestBody)
         {
-            (var pos, var neg) = SplitMetaString(meta, ' ');
-            string metaRes = await SqlWrapper.SqlServerProviderEntry(this.GetGotDbConnectionString,
-                "SelectMessageBodyTemplatesByMeta",
-                Jw.Json(new
-                {
-                    AId = advertiserId,
-                    Pos = pos,
-                    Neg = neg,
-                    Lim = this.LIMIT_TEMPLATE_META_SEARCH
-                }),
-                "", 240);
-            IGenericEntity metage = new GenericEntityJson();
-            metage.InitializeEntity(null, null, JsonConvert.DeserializeObject(metaRes));
-            return metage;
+            var pl = Jw.JsonToGenericEntity(payload);
+            var handle = pl?.GetS("n")?.Trim();
+            var contact = ValidateContact(pl?.GetS("u"));
+            var password = pl?.GetS("p") ?? "";
+            var code = pl?.GetS("c").ParseInt() ?? -1;
+
+            var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Empty, Jw.Serialize(new { u = contact.Cleaned, code }));
+            var rc = res?.GetS("r");
+
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.GetS("") ?? "null"}");
+
+            if (!ValidatePasswordRules(password)) throw new FunctionException(104, "Password doesn't satisfy rules");
+
+            if (handle.IsNullOrWhitespace()) throw new FunctionException(105, "Handle is empty");
+
+            var handleAlternatives = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) });
+
+            var deviceName = pl.GetS("d");
+            var email = contact.Type == ContactType.Email ? contact.Cleaned : null;
+            var phone = contact.Type == ContactType.USPhone ? contact.Cleaned : null;
+            // Fake data
+            var srcId = Guid.NewGuid().ToString();
+            var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
+            // end Fake data
+            var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(requestBody));
+
+            res = await Data.CallFn(Conn, "CreateUser", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { handle, handleAlts = handleAlternatives, email, phone, sid, sourceId = srcId, saltHash, initHash }));
+
+            rc = res?.GetS("r");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error creating user: {res?.GetS("") ?? "null"}");
+
+            var uid = res.GetS("p/uid").ParseGuid()?.ToString();
+            sid = res.GetS("p/seid");
+            srcId = res.GetS("p/srcid");
+            initHash = res.GetS("p/inithash");
+            saltHash = res.GetS("p/salthash");
+
+            if (uid.IsNullOrWhitespace()) throw new FunctionException(100, $"DB create user returned invalid or empty uid: {res.GetS("") ?? "null"}");
+
+            var pwdHash = GeneratePasswordHash(password, new[] { sid, srcId, initHash, uid, saltHash });
+
+            res = await Data.CallFn(Conn, "SetInitialPassword", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { uid, pwdHash }));
+
+            rc = res?.GetS("r");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error saving password: {res?.GetS("") ?? "null"}");
+
+            return await Login(uid, pwdHash, deviceName);
         }
 
-        public async Task<string> GetValueFromClientPair(string queryPart, string key)
+        private async Task<string> Login(string payload)
         {
-            IGenericEntity rge = await GetValueFromClientPair(queryPart);
-            return rge.GetS(key);
+            var ge = Jw.JsonToGenericEntity(payload);
+            var password = ge?.GetS("p") ?? "";
+
+            if (!ValidatePasswordRules(password)) throw new FunctionException(106, "Password doesn't satisfy rules");
+
+            var contact = ValidateContact(ge.GetS("u"));
+            var deviceName = ge.GetS("d");
+            var email = contact.Type == ContactType.Email ? contact.Cleaned : null;
+            var phone = contact.Type == ContactType.USPhone ? contact.Cleaned : null;
+            var handle = contact.Type == ContactType.Unknown ? contact.Raw : null;
+            var res = await Data.CallFn(Conn, "GetUserLoginDetails", Jw.Empty, Jw.Serialize(new { email, phone, handle }));
+            var rc = res?.GetS("r");
+
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
+            var uid = res.GetS("p/uid");
+            var seid = res.GetS("p/seid");
+            var srcId = res.GetS("p/srcid");
+            var initHash = res.GetS("p/inithash");
+            var saltHash = res.GetS("p/salthash");
+            var passwordHash = GeneratePasswordHash(password, new[] { seid, srcId, initHash, uid, saltHash });
+
+            return await Login(uid, passwordHash, deviceName);
         }
 
-        public async Task<IGenericEntity> GetValueFromClientPair(string queryPart)
+        private async Task<string> Login(string uid, string passwordHash, string deviceName)
         {
-            (string clientUrlPart, string clientPostPart) = queryPart.SplitOnChar(' ');
-            string ret = "{}";
-            try
+            var res = await Data.CallFn(Conn, "GetAuthToken", Jw.Empty, Jw.Serialize(new { uid, passwordHash, deviceName }));
+            var rc = res?.GetS("r");
+
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
+
+            return res.GetS("p");
+        }
+
+        private IEnumerable<string> GenerateAltHandles(string handle, IEnumerable<(int digits, int count)> cfg)
+        {
+            var separator = handle.Last().ToString().ParseInt().HasValue ? "_" : "";
+
+            return cfg.SelectMany(c =>
             {
-                if (clientPostPart.Trim().Length > 0)
+                if (c.count == 0) return new string[0];
+
+                if (c.count < 0)
                 {
-                    var getRet = await Utility.ProtocolClient.HttpGetAsync(clientUrlPart, null, 2);
-                    if (getRet.Item1) ret = getRet.body;
+                    var start = (int)Math.Pow(10, c.digits - 1);
+                    var end = (int)Math.Pow(10, c.digits);
+                    var l = new List<string>();
+
+                    for (int i = start; i < end; i++)
+                    {
+                        l.Add($"{handle}{separator}{i}");
+                    }
+
+                    return l;
                 }
                 else
                 {
-                    ret = await Utility.ProtocolClient.HttpPostAsync(clientUrlPart, clientPostPart, "application/json", 2);
+                    var size = c.digits * c.count;
+
+                    return Random.GenerateRandomString(size, size, Random.Digits).Split(c.digits).Distinct().Select(r => $"{handle}{separator}{r}");
                 }
-                IGenericEntity rge = new GenericEntityJson();
-                rge.InitializeEntity(null, null, JsonConvert.DeserializeObject(ret));
-                return rge;
-            }
-            catch (Exception exCallRetailer)
-            {
-
-            }
-
-            IGenericEntity dge = new GenericEntityJson();
-            dge.InitializeEntity(null, null, JsonConvert.DeserializeObject("{}"));
-            return dge;
+            });
         }
 
-        public static (string Pos, string Neg) SplitMetaString(string s, char c)
+        // This is intentionally convoluted, tread lightly
+        private string GeneratePasswordHash(string password, string[] salts)
         {
-            if (s == null) return (Pos: null, Neg: null);
-            if (s == "") return (Pos: null, Neg: null);
-            string[] metas = s.Split(c);
-            if (metas.Length == 0) return (Pos: null, Neg: null);
-            StringBuilder pos = new StringBuilder();
-            StringBuilder neg = new StringBuilder();
-            foreach (var meta in metas)
+            var s = new[]
             {
-                if (meta.Trim()[0] == '!') neg.Append(meta.Trim().Substring(1) + " ");
-                else pos.Append(meta.Trim() + " ");
-            }
-            if (neg.Length > 0) neg.Remove(neg.Length - 1, 1);
-            if (pos.Length > 0) pos.Remove(pos.Length - 1, 1);
+                Hashing.StringToByteArray(Regex.Matches(salts[0], "[0-9a-f]+").Select(m => m.Value).Join("")).Take(10),
+                Hashing.StringToByteArray(Regex.Matches(salts[1], "[0-9a-f]+").Select(m => m.Value).Join("")).Take(6),
+                Hashing.StringToByteArray(salts[2]),
+                Hashing.StringToByteArray(Regex.Matches(salts[3], "[0-9a-f]+").Select(m => m.Value).Join("")),
+                Hashing.StringToByteArray(salts[4])
+            }.SelectMany(b => b).Take(32).ToArray();
+            var pbkdf2 = new Rfc2898DeriveBytes(password, s, 10000);
 
-            return (Pos: pos.ToString(), Neg: neg.ToString());
+            return Convert.ToBase64String(pbkdf2.GetBytes(20));
         }
 
-        public void Junk()
+        private bool ValidatePasswordRules(string password)
         {
-            //case "UserSignupEvent":
-            //    result = await UserSignupEvent(this.Fw, context, requestFromPost);
-            //    break;
-            //case "CreateUser":
-            //    //id: uuid (app is responsible for generating the id)
-            //    //h: handle
-            //    //e: email
-            //    //p: phone
+            password = password ?? "";
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
+            return password.Length >= 8;
+        }
 
+        private async Task<string> ExecuteDbFunc(string name, string payload, string identity)
+        {
+            var res = await Data.CallFn(Conn, name, identity.IfNullOrWhitespace(Jw.Empty), payload);
 
-            //    //                       Id uniqueidentifier    N'$.u.Id',   
-            //    //         H varchar(100)		N'$.u.H',
-            //    //Em varchar(350)		N'$.u.Em',
-            //    //Ph varchar(30)			N'$.u.Ph',
-            //    //Dob datetime2(1)	    N'$.u.Dob',
-            //    //USId uniqueidentifier    N'$.u.USId'
-            //    //                           $.u.Pwd 
-            //    result = await CreateUser(this.Fw, context, requestFromPost);
-            //    break;
-            //case "ValidateUser":
-            //    //h: handle
-            //    //p: phone
-            //    //vc: verification code
+            if (res == null) throw new FunctionException(100, "Empty DB response");
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    result = await ValidateUser(this.Fw, context, requestFromPost);
-            //    break;
-            //case "CreateNewPassword":
-            //    //id: 
-            //    //vc: verification code
-            //    //pwd: hashed password
-            //    //d: device info
+            var r = res.GetS("r")?.ParseInt();
 
-            //    //t: User token
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    result = await CreateNewPassword(this.Fw, context, requestFromPost);
-            //    break;
-            //case "UpdateUserProfile":
-            //    //t: User token
-            //    //cts: JSON array of JSON objects. Each object represents a contact and will contain at least the following:
-            //    //fn: firstname
-            //    //ln: lastname
-            //    //e: email  char[254] -- I don't think it's necessary to create an array at this point -- ariel 
-            //    //p: phone char[20] -- same as email - no need for array at this point
-            //    //dob: date of birth
-            //    //gender: char[1] -- m/f
+            if (!r.HasValue) throw new FunctionException(100, $"Invalid db response {res.GetS("")}");
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    result = await UpdateUserProfile(this.Fw, context, requestFromPost);
-            //    break;
-            //case "GetContactList":
-            //    //t: User token
+            if (r.Value != 0) throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    //cts: A JSON array of JSON objects representing the contacts the user can choose to follow. Each JSON object will contain at least the following:
-            //    //id: Getgot id
-            //    //img: image (URL ok)
-            //    //n: name
-            //    result = await GetContactList(this.Fw, context, requestFromPost);
-            //    break;
-            //case "RegisterUser":
-            //    //t: User token
-            //    //ids: JSON array of Getgot ids
+            return res.GetS("p");
+        }
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    result = await RegisterUser(this.Fw, context, requestFromPost);
-            //    break;
-            //case "GetInterestList":
-            //    //t: User token
+        private class FunctionException : Exception
+        {
+            public FunctionException(int resultCode, string message) : base(message)
+            {
+                ResultCode = resultCode;
+            }
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    //ints: A JSON array of JSON objects representing the interests the user can choose to follow. Each JSON object will contain at least the following:
-            //    //id: Getgot id
-            //    //img: image (URL ok)
-            //    //n: name
-            //    result = await GetInterestList(this.Fw, context, requestFromPost);
-            //    break;
-            //case "FollowInterests":
-            //    //t: User token
-            //    //ids: JSON array of Getgot interest ids
+            public FunctionException(int resultCode, string message, Exception innerException) : base(message, innerException)
+            {
+                ResultCode = resultCode;
+            }
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    result = await FollowInterests(this.Fw, context, requestFromPost);
-            //    break;
-            //case "GetInfluencerList":
-            //    //t: User token
+            public int ResultCode { get; }
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    //infs: A JSON array of JSON objects representing the influencers the user can choose to follow. Each JSON object will contain at least the following:
-            //    //id: Getgot id
-            //    //img: image (URL ok)
-            //    //n: name
-            //    result = await GetInfluencerList(this.Fw, context, requestFromPost);
-            //    break;
-            //case "FollowInfluencers":
-            //    //t: User token
-            //    //ids: JSON array of Getgot influencer ids
+            public bool HaltExecution { get; }
+        }
 
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    result = await FollowInfluencers(this.Fw, context, requestFromPost);
-            //    break;
-            //case "Login":
-            //    //e: email
-            //    //p: phone
-            //    //pwd: hashed password
-            //    //d: device info
-            //    //dt: device type
-            //    //exp: login expiration(optional)
-
-            //    //c: Status code (to be defined, success or error)
-            //    //m: Status message
-            //    //t: user token
-            //    result = await Login(this.Fw, context, requestFromPost);
-            //    break;
-            //case "ListLoggedInDevices":
-            //    //t: token
-
-            //    //dt:[ , , ...]
-            //    result = await ListLoggedInDevices(this.Fw, context, requestFromPost);
-            //    break;
-            //case "Logout":
-            //    //t: token
-            //    //dt: [optional]
-
-            //    //c: Status code(to be defined, success or error)
-            //    //m: Status message
-            //    result = await Logout(this.Fw, context, requestFromPost);
-            //    break;
-            //case "GetLatestAppVersion":
-            //    //--none--
-
-            //    //a: Android version number
-            //    //i: iOS version number
-            //    result = await GetLatestAppVersion(this.Fw, context, requestFromPost);
-            //    break;
-
-
+        private static class RC
+        {
+            public static int Success = 0;
+            public static int Unhandled = 1;
+            public static int FunctionHalting = 2;
+            public static int InvalidSID = 50;
         }
     }
 }

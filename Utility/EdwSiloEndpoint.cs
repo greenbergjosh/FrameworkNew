@@ -6,13 +6,14 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Utility;
+using Utility.DataLayer;
 
 namespace Utility
 {
     public class EdwSiloEndpoint : IEndpoint
     {
         public string connectionString;
-        public DataLayerClient dataLayerClient;
+        public IDataLayerClient dataLayerClient;
 
         public EdwSiloEndpoint(string dataLayerType, string connectionString)
         {
