@@ -11,6 +11,7 @@
     "104": "Password rule violation",
     "105": "Handle rule violation",
     "106": "Invalid login",
-    "107":  "Account exists" 
+    "107": "Account exists",
+    "108":  "Exhausted unique handle attempts" 
   }
 }
