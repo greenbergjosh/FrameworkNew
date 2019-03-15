@@ -119,6 +119,11 @@ namespace Utility
             return (T)Get(path, fname);
         }
 
+        public virtual void Set(string path, object value)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual string GetS(string path)
         {
             object s = Get(path);

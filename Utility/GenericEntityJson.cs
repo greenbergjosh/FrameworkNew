@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Utility
 {
@@ -28,11 +29,38 @@ namespace Utility
             return path;
         }
 
-        public override object this[string path]
+        private (string path, string propName)? SplitPropertyPath(string fullPath)
         {
-            get
+            if (fullPath.IsNullOrWhitespace()) return null;
+
+            fullPath = $"$/{fullPath}";
+
+            var parts = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            return ($"{parts.Take(parts.Length - 1).Join(".")}", parts.Last());
+        }
+
+        public override object this[string path] => _root.SelectToken(ConvertPath(path));
+
+        public override void Set(string path, object value)
+        {
+            var cpath = SplitPropertyPath(path);
+
+            if (cpath != null && _root.SelectToken(cpath?.path) is JObject parent)
             {
-                return _root.SelectToken(ConvertPath(path));
+                JToken tok = null;
+
+                if (value is string vStr && !vStr.IsNullOrWhitespace())
+                {
+                    try { tok = JToken.Parse(vStr); }
+                    catch (Exception) { tok = vStr; }
+                }
+                else tok = JToken.FromObject(value);
+
+                var prop = parent.Property(cpath.Value.propName);
+
+                if (prop == null) parent.Add(cpath.Value.propName, tok);
+                else prop.Value = tok;
             }
         }
 
@@ -59,7 +87,7 @@ namespace Utility
             entity.InitializeEntity(this.rw, null, _root.SelectToken(ConvertPath(path)));
             foreach (var je in entity._root.AsJEnumerable())
             {
-                yield return new Tuple<string, string>(((JProperty)je).Name, 
+                yield return new Tuple<string, string>(((JProperty)je).Name,
                     ((JProperty)je).Value.ToString());
             }
         }
