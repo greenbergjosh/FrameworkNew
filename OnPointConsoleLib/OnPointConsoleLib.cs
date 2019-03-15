@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Utility;
+using Utility.DataLayer;
 using Jw = Utility.JsonWrapper;
 
 namespace OnPointConsoleLib
@@ -64,7 +65,7 @@ namespace OnPointConsoleLib
 
             try
             {
-                return await Fw.RootDataLayerClient.RetrieveEntry("OnPointConsole", "SaveLiveFeed", "", request);
+                return await Data.CallFnString("OnPointConsole", "SaveLiveFeed", "", request);
             }
             catch (Exception ex)
             {
@@ -79,7 +80,7 @@ namespace OnPointConsoleLib
 
             try
             {
-                return await Fw.RootDataLayerClient.RetrieveEntry("OnPointConsole", "SaveEmailEvent", "", request);
+                return await Data.CallFnString("OnPointConsole", "SaveEmailEvent", "", request);
             }
             catch (Exception ex)
             {

@@ -18,6 +18,7 @@ namespace Utility.Crypto
             'ü', 'ý', 'þ', 'ÿ'
         };
 
+        public const string Digits = "0123456789";
         public const string hex = "0123456789abcdef";
         public const string HEX = "0123456789ABCDEF";
 
@@ -109,7 +110,21 @@ namespace Utility.Crypto
 
             RNG().GetBytes(randomBytes);
 
-            return (T) map.Convert(randomBytes);
+            return (T)map.Convert(randomBytes);
+        }
+
+        private static int BytesToIntInRange(int min, int max, byte[] bytes)
+        {
+            var randomInt = bytes.Sum(b => b);
+
+            if (min >= 0) return (randomInt % (max - min)) + min;
+
+            var uMin = ConvertIntToUIntRange(min);
+            var uMax = ConvertIntToUIntRange(max);
+            var uRandom = ConvertIntToUIntRange(randomInt);
+            var uRandomInRange = (uRandom % (uMax - uMin)) + uMin;
+
+            return ConvertUIntToIntRange(uRandomInRange);
         }
 
         public static int Number(int min, int max)
@@ -128,16 +143,36 @@ namespace Utility.Crypto
 
             RNG().GetBytes(randomBytes);
 
-            var randomInt = randomBytes.Sum(b => b);
+            return BytesToIntInRange(min, max, randomBytes);
+        }
 
-            if (min >= 0) return (randomInt % (max - min)) + min;
+        public static int[] Numbers(int min, int max, int count)
+        {
+            if (count < 1) throw new ArgumentException("count must be greater than 0");
+            var res = new List<int>();
 
-            var uMin = ConvertIntToUIntRange(min);
-            var uMax = ConvertIntToUIntRange(max);
-            var uRandom = ConvertIntToUIntRange(randomInt);
-            var uRandomInRange = (uRandom % (uMax - uMin)) + uMin;
+            if (min == max) for (int i = 0; i < count; i++) res.Add(min);
 
-            return ConvertUIntToIntRange(uRandomInRange);
+            if (min > max)
+            {
+                var t = min;
+
+                min = max;
+                max = t;
+            }
+
+            var randomBytes = new byte[4 * count];
+
+            RNG().GetBytes(randomBytes);
+
+            for (int i = 0; i < count; i++)
+            {
+                var bytes = randomBytes.Skip(i * 4).Take(4).ToArray();
+
+                res.Add(BytesToIntInRange(min, max, bytes));
+            }
+
+            return res.ToArray();
         }
 
         public static byte Number(byte min, byte max)

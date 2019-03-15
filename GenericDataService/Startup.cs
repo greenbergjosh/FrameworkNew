@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
@@ -19,6 +15,7 @@ namespace GenericDataService
     public class Startup
     {
         public dynamic DataService;
+        private IGenericEntity _cors = null;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -62,12 +59,12 @@ namespace GenericDataService
             {
                 fw = new FrameworkWrapper();
 
-                using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d=>d.GetS(""))))
+                using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
                     this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
 
-                if(DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
+                if (DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
 
                 DataService.Config(fw);
             }
@@ -88,7 +85,7 @@ namespace GenericDataService
             }
             else app.UseStaticFiles();
 
-            app.UseCors("CorsPolicy");
+	    app.UseCors("CorsPolicy");
 
             TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
@@ -99,6 +96,7 @@ namespace GenericDataService
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        return;
                     }
                     else
                     {
