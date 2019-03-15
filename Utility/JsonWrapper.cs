@@ -15,8 +15,9 @@ namespace Utility
 
         public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
         {
-            IGenericEntity gp = new GenericEntityJson();
+            var gp = new GenericEntityJson();
             var gpstate = JsonConvert.DeserializeObject(json);
+
             gp.InitializeEntity(rw, config, gpstate);
             return gp;
         }
