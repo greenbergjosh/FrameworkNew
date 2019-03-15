@@ -949,7 +949,7 @@ namespace VisitorIdLib
                 }
                 catch (Exception e)
                 {
-                    await Fw.Error(caller, $"Failed to post {key} to Console with data {postData}. Exception: {e.UnwrapForLog()}");
+                    await Fw.Error(caller, $"Failed to post {key} to Console endpoint: {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
                 }
             });
             Task.Run(task);
