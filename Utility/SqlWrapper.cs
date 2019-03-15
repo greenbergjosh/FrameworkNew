@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace Utility
 {
@@ -19,7 +20,7 @@ namespace Utility
         private static string _configConnStr;
         private static string _configSproc;
 
-        public static async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configSproc)
+        public static async Task<IGenericEntity> Initialize(string connStr, string[] configKeys, string configSproc, string[] commandLineArgs)
         {
             string configStr = null;
 
@@ -34,7 +35,7 @@ namespace Utility
                 });
                 Connections.Add(GlobalConfig, (Id: GlobalConfig, ConnStr: _configConnStr));
 
-                configStr = await GetConfigs(configKeys);
+                configStr = await GetConfigs(configKeys, commandLineArgs);
 
                 var gc = JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { Config = configStr }, new bool[] { false }));
 
@@ -76,7 +77,7 @@ namespace Utility
             }
         }
 
-        private static async Task<string> GetConfigs(IEnumerable<string> configKeys)
+        private static async Task<string> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs)
         {
             var loaded = new HashSet<string>();
 
@@ -110,7 +111,14 @@ namespace Utility
                 }
             }
 
-            return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k))).ToString();
+            var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
+            var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs ?? Array.Empty<string>()).Build();
+            foreach(var kvp in commandLineConfig.AsEnumerable())
+            {
+                resolvedConfig[kvp.Key] = kvp.Value;
+            }
+
+            return resolvedConfig.ToString();
         }
 
         public static async Task<IGenericEntity> SqlToGenericEntity(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
@@ -254,7 +262,7 @@ namespace Utility
                 using (SqlConnection cn = new SqlConnection(connectionString))
                 {
                     cn.Open();
-                    SqlCommand cmd = cn.CreateCommand();
+                    var cmd = cn.CreateCommand();
                     cmd.CommandText = "[PostingQueue].[spInsertPostingQueue]";
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -266,7 +274,6 @@ namespace Utility
                     cmd.CommandTimeout = timeout;
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                     outval = (string)cmd.Parameters["@Return"].Value;
-                    cn.Close();
                 }
             }
             catch (System.Data.SqlClient.SqlException sqlex)
@@ -277,10 +284,44 @@ namespace Utility
             }
             catch (Exception ex)
             {
+                outval = $"Exception::{ex}";
+            }
+
+            return outval;
+        }
+
+        public static async Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120)
+        {
+            string outval = null;
+
+            try
+            {
+                using (var cn = new SqlConnection(connectionString))
+                {
+                    cn.Open();
+                    var cmd = cn.CreateCommand();
+                    cmd.CommandText = "[PostingQueue].[spBulkInsertPostingQueue]";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("Payload", payload));
+                    cmd.Parameters.Add("@Return", System.Data.SqlDbType.NVarChar, -1)
+                        .Direction = System.Data.ParameterDirection.Output;
+                    cmd.CommandTimeout = timeout;
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                    outval = (string)cmd.Parameters["@Return"].Value;
+                }
+            }
+            catch (SqlException sqlex)
+            {
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) outval = "Walkaway";
+            }
+            catch (Exception ex)
+            {
                 outval = $"Exception::{ex.ToString()}";
             }
 
             return outval;
         }
+
     }
 }
