@@ -887,7 +887,7 @@ namespace VisitorIdLib
         {
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
             var result = await Data.CallFnString("VisitorId", "LookupLeadByMd5", Jw.Json(new { md5 = md5 }), "{}",this.SqlTimeoutSec);
-            if (result == "{}") // TODO: remove and use Alberto's constant (awaiting merge)
+            if (result == Jw.Empty)
             {
                 await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} from pid: {provider}");
                 return;
