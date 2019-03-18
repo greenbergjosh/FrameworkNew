@@ -567,7 +567,7 @@ namespace VisitorIdLib
                         sid,
                         pid,
                         md5,
-                        lastVisit
+                        lastVisit = lastVisit ?? ""
                     }).ToString()));
             }
 
@@ -582,7 +582,7 @@ namespace VisitorIdLib
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent, lastVisit);
 
             if (!string.IsNullOrWhiteSpace(email))
-                PostMd5LeadDataToConsole(md5, pixelDomain, pid);
+                PostMd5LeadDataToConsole(fw, md5, pixelDomain, pid);
 
             return new VisitorIdResponse(Jw.Json(new { slot, page, lv = lastVisit }), md5, email, sid);
         }
@@ -700,7 +700,7 @@ namespace VisitorIdLib
                     {
                         cookieEml = eml;
                         //PostVisitorIdToConsole(email, "VisitorId-cookie", pixelDomain, clientIp, userAgent);
-                        PostVisitorIdToConsole(eml, "cookie", pixelDomain, clientIp, userAgent, lastVisit);
+                        PostVisitorIdToConsole(fw, eml, "cookie", pixelDomain, clientIp, userAgent, lastVisit);
                     }
 
                     be = new EdwBulkEvent();
@@ -791,7 +791,7 @@ namespace VisitorIdLib
                         if (!eml.IsNullOrWhitespace())
                         {
                             //PostVisitorIdToConsole(email, $"VisitorId-{pid}", pixelDomain, clientIp, userAgent);
-                            PostVisitorIdToConsole(eml, pid, pixelDomain, clientIp, userAgent, lastVisit);
+                            PostVisitorIdToConsole(fw, eml, pid, pixelDomain, clientIp, userAgent, lastVisit);
 
                             if (sendMd5ToPostingQueue)
                             {
@@ -883,13 +883,13 @@ namespace VisitorIdLib
 
         }
 
-        public async void PostMd5LeadDataToConsole(string md5, string domain, string provider)
+        public async void PostMd5LeadDataToConsole(FrameworkWrapper fw, string md5, string domain, string provider)
         {
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
             var result = await Data.CallFnString("VisitorId", "LookupLeadByMd5", Jw.Json(new { md5 = md5 }), "{}",this.SqlTimeoutSec);
-            if (result == Jw.Empty)
+            if (result == null || result == Jw.Empty)
             {
-                await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}");
+                await fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}");
                 return;
             }
 
@@ -907,11 +907,11 @@ namespace VisitorIdLib
                 label_domain = domain,
                 provider
             });
-            await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}, as: {ge.GetS("Email")}");
-            PostDataToConsole(ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
+            await fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}, as: {ge.GetS("Email")}");
+            PostDataToConsole(fw, ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
         }
 
-        public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
+        public void PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
@@ -927,10 +927,10 @@ namespace VisitorIdLib
                 label_domain = domain,
                 lastVisit
             });
-            PostDataToConsole(plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
+            PostDataToConsole(fw, plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
         }
 
-        public void PostDataToConsole(string key, string header, string body, string caller)
+        public void PostDataToConsole(FrameworkWrapper fw, string key, string header, string body, string caller)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
 
@@ -946,11 +946,11 @@ namespace VisitorIdLib
                     }, new bool[] { false, false });
                     await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,postData, "application/json");
 
-                    await Fw.Log(caller, $"Successfully posted {key} to Console");
+                    await fw.Log(caller, $"Successfully posted {key} to Console");
                 }
                 catch (Exception e)
                 {
-                    await Fw.Error(caller, $"Failed to post {key} to Console endpoint: {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
+                    await fw.Error(caller, $"Failed to post {key} to Console endpoint: {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
                 }
             });
             Task.Run(task);
