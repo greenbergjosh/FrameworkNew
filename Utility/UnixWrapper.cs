@@ -152,43 +152,175 @@ namespace Utility
 
         public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
         {
-            const int bufferSize = 128;
+            const int bufferSize = 2048;
             var notFound = new List<string>();
             var found = new List<string>();
+            var unsubFile = new FileInfo(filePath);
 
             keys.Sort();
 
             using (var enrtr = keys.GetEnumerator())
+            using (var fs = unsubFile.OpenRead())
+            //using (var sr = new StreamReader(fs, Encoding.UTF8, true, bufferSize))
             {
                 enrtr.MoveNext();
 
-                using (var fileStream = File.OpenRead(filePath))
-                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, bufferSize))
+                var lineLength = 0;
+                var buffer = new byte[34];
+                var end = fs.Length;
+
+                await fs.ReadAsync(buffer, 0, 34);
+
+                if (buffer[32] == 10) lineLength = 33;
+                else if (buffer[32] == 13 && buffer[33] == 10) lineLength = 34;
+                else throw new Exception("Unexpected line termination character");
+
+                var lineCount = end / (decimal)lineLength;
+
+                if (lineCount != Math.Ceiling(lineCount)) throw new Exception("Inconsistent line length in file");
+
+                end -= lineLength;
+
+                buffer = new byte[32];
+
+                var top = 0L;
+                var offsetThreshold = lineLength * 3;
+
+                bool EOS(long index)
                 {
-                    String line;
+                    return index > end;
+                }
 
-                    while ((line = await streamReader.ReadLineAsync()) != null)
+                bool? SortedBelow(string line, string key)
+                {
+                    var c = line.CompareTo(key);
+
+                    return c > 0 ? false : c < 0 ? true : null as bool?;
+                }
+
+                async Task<string> GetIndexValue(long index)
+                {
+                    fs.Seek(index, SeekOrigin.Begin);
+
+                    await fs.ReadAsync(buffer, 0, 32);
+
+                    return Encoding.UTF8.GetString(buffer, 0, 32);
+                }
+
+                async Task<(bool? found, long index, bool? descend)> BinaryJumps()
+                {
+                    var descend = true;
+                    var bottom = end;
+
+                    while (!EOS(top))
                     {
-                        if (enrtr.Current == null) break;
-                        while (true)
-                        {
-                            var cmp = String.Compare(enrtr.Current, line, StringComparison.CurrentCultureIgnoreCase);
+                        var lines = (bottom - top) / lineLength;
+                        var index = (((int)Math.Floor(lines / 2M)) * lineLength) + top;
+                        var line = await GetIndexValue(index);
+                        var d = SortedBelow(line, enrtr.Current);
 
-                            if (cmp == 0)
-                            {
-                                enrtr.MoveNext();
-                                found.Add(enrtr.Current);
-                                break;
-                            }
-                            else if (cmp < 0)
-                            {
-                                notFound.Add(enrtr.Current);
-                                enrtr.MoveNext();
-                            }
-                            else break;
+                        if (d == null) return (true, index, null);
+
+                        descend = d.Value;
+
+                        // ToDo: See if moving end index improves performance
+                        if (descend)
+                        {
+                            var ni = index;
+
+                            if (bottom - ni <= offsetThreshold) return (null, index, descend);
+
+                            top = ni;
+                        }
+                        else
+                        {
+                            var ni = index - 1;
+
+                            if (ni - top <= offsetThreshold) return (null, index, descend);
+
+                            bottom = ni;
                         }
                     }
+
+                    return (false, -1, null);
                 }
+
+                async Task<bool> search(long index, bool descend)
+                {
+                    string line = null;
+
+                    while (!EOS(index) && (line = await GetIndexValue(index)) != null)
+                    {
+                        var d = SortedBelow(line, enrtr.Current);
+
+                        if (d == null) return true;
+
+                        if (d == false)
+                        {
+                            if (descend)
+                            {
+                                top = index;
+
+                                return false;
+                            }
+                            else index -= lineLength;
+                        }
+                        else if (descend) index += lineLength;
+                        else return false;
+                    }
+
+                    return false;
+                }
+
+                while (!EOS(top) && enrtr.Current != null)
+                {
+                    var r = await BinaryJumps();
+
+                    if (r.found == true) found.Add(enrtr.Current);
+                    else if (r.found == false) notFound.Add(enrtr.Current);
+                    else if (r.index > -1)
+                    {
+                        if (await search(r.index, r.descend.Value)) found.Add(enrtr.Current);
+                        else notFound.Add(enrtr.Current);
+                    }
+                    else
+                    {
+                        while (enrtr.Current != null)
+                        {
+                            notFound.Add(enrtr.Current);
+                            enrtr.MoveNext();
+                        }
+                    }
+
+                    enrtr.MoveNext();
+                }
+
+                //String line;
+
+                //while ((line = await streamReader.ReadLineAsync()) != null)
+                //{
+                //    if (enrtr.Current == null) break;
+                //    while (true)
+                //    {
+                //        if (enrtr.Current == null) break;
+
+                //        var cmp = String.CompareOrdinal(enrtr.Current, line);
+
+                //        if (cmp == 0)
+                //        {
+                //            enrtr.MoveNext();
+                //            found.Add(enrtr.Current);
+                //            break;
+                //        }
+                //        else if (cmp < 0)
+                //        {
+                //            notFound.Add(enrtr.Current);
+                //            enrtr.MoveNext();
+                //        }
+                //        else break;
+                //    }
+                //}
+
             }
 
             return (found, notFound);

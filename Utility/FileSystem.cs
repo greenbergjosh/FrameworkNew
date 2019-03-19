@@ -51,6 +51,14 @@ namespace Utility
         //    }
         //}
 
+        public static async Task<string> ReadFileTextAsync(string path)
+        {
+            using (var fs = File.OpenText(path))
+            {
+                return  await fs.ReadToEndAsync();
+            }
+        }
+
         public static string QuotePathParts(string path)
         {
             StringBuilder quotedPath = new StringBuilder("");

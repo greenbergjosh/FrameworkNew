@@ -5,13 +5,33 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace Utility
 {
     public static class Extensions
     {
         #region string
+
+        // Split string into strings of a max size
+        public static IEnumerable<string> Split(this string str, int size)
+        {
+            var skip = 0;
+            var res = new List<string>();
+            var cstr = str.Select(c => c.ToString()).ToArray();
+
+            while (skip < str.Length)
+            {
+                res.Add(cstr.Skip(skip).Take(size).Join(""));
+                skip += size;
+            }
+
+            return res;
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> coll, Action<T> body)
+        {
+            if (coll != null) foreach (var i in coll) body.Invoke(i);
+        }
 
         public static string Join(this IEnumerable<string> coll, string separator) => string.Join(separator, coll.ToArray());
 
@@ -115,24 +135,77 @@ namespace Utility
 
         #region Collections
 
-        public static IEnumerable<string> Split(this string str, int size)
+        public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<T> initialSet, params IEnumerable<T>[] sets)
         {
-            var skip = 0;
-            var res = new List<string>();
-            var cstr = str.Select(c => c.ToString()).ToArray();
+            var finalSet = initialSet.Select(x => new[] { x });
 
-            while (skip < str.Length)
+            foreach (var set in sets)
             {
-                res.Add(cstr.Skip(skip).Take(size).Join(""));
-                skip += size;
+                var cp = finalSet.SelectMany(fs => set, (fs, s) => new {fs, s});
+
+                finalSet = cp.Select(x =>
+                {
+                    var a = new T[x.fs.Length+1];
+
+                    x.fs.CopyTo(a,0);
+                    a[x.fs.Length] = x.s;
+
+                    return a;
+                } );
             }
 
-            return res;
+            return finalSet;
         }
 
-        public static void ForEach<T>(this IEnumerable<T> coll, Action<T> body)
+        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size)
         {
-            if (coll != null) foreach (var i in coll) body.Invoke(i);
+            return Batch(source, size, x => x);
+        }
+
+        // Split a collection into batches of a max size
+        //https://github.com/morelinq/MoreLINQ/blob/master/MoreLinq/Batch.cs
+        public static IEnumerable<TResult> Batch<TSource, TResult>(this IEnumerable<TSource> source, int size,
+            Func<IEnumerable<TSource>, TResult> resultSelector)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
+            if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+
+            return _();
+
+            IEnumerable<TResult> _()
+            {
+                TSource[] bucket = null;
+                var count = 0;
+
+                foreach (var item in source)
+                {
+                    if (bucket == null)
+                    {
+                        bucket = new TSource[size];
+                    }
+
+                    bucket[count++] = item;
+
+                    // The bucket is fully buffered before it's yielded
+                    if (count != size)
+                    {
+                        continue;
+                    }
+
+                    yield return resultSelector(bucket);
+
+                    bucket = null;
+                    count = 0;
+                }
+
+                // Return the last bucket with all remaining elements
+                if (bucket != null && count > 0)
+                {
+                    Array.Resize(ref bucket, count);
+                    yield return resultSelector(bucket);
+                }
+            }
         }
 
         public static void AddRange<TK, TV>(this Dictionary<TK, TV> dic, IEnumerable<(TK key, TV value)> collection)
