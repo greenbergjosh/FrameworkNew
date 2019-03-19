@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Diagnostics;
@@ -20,8 +21,15 @@ namespace GenericWindowsService
         private static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-            Fw = LoadFramework();
-            ValidateAndConfigureService(args).Build().Run();
+            Fw = LoadFramework(args);
+            if (args.Contains("console"))
+            {
+                ValidateAndConfigureService(args).Build().Run();
+            }
+            else
+            {
+                ValidateAndConfigureService(args).Build().RunAsService();
+            }
         }
 
         private static IWebHostBuilder ValidateAndConfigureService(string[] args)
@@ -29,7 +37,7 @@ namespace GenericWindowsService
             try
             {
                 var listenerUrl = Fw.StartupConfiguration.GetS("Config/HttpListenerUrl");
-
+                
                 if (listenerUrl.IsNullOrWhitespace())
                 {
                     throw new Exception("HttpListenerUrl not defined in config");
@@ -115,11 +123,11 @@ namespace GenericWindowsService
             }
         }
 
-        private static FrameworkWrapper LoadFramework()
+        private static FrameworkWrapper LoadFramework(string[] commandLineArgs)
         {
             try
             {
-                var fw = new FrameworkWrapper();
+                var fw = new FrameworkWrapper(commandLineArgs);
 
                 using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {

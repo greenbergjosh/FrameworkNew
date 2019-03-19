@@ -582,7 +582,7 @@ namespace VisitorIdLib
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent, lastVisit);
 
             if (!string.IsNullOrWhiteSpace(email))
-                PostMd5LeadDataToConsole(md5, pid);
+                PostMd5LeadDataToConsole(md5, pixelDomain, pid);
 
             return new VisitorIdResponse(Jw.Json(new { slot, page, lv = lastVisit }), md5, email, sid);
         }
@@ -883,13 +883,13 @@ namespace VisitorIdLib
 
         }
 
-        public async void PostMd5LeadDataToConsole(string md5, string provider)
+        public async void PostMd5LeadDataToConsole(string md5, string domain, string provider)
         {
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
             var result = await Data.CallFnString("VisitorId", "LookupLeadByMd5", Jw.Json(new { md5 = md5 }), "{}",this.SqlTimeoutSec);
             if (result == Jw.Empty)
             {
-                await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} from pid: {provider}");
+                await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}");
                 return;
             }
 
@@ -904,10 +904,11 @@ namespace VisitorIdLib
                 original_optin_date = ge.GetS("OptInDate"),
                 original_optin_domain = ge.GetS("OptInDomain"),
                 ip_address = ge.GetS("IP"),
+                label_domain = domain,
                 provider
             });
-            PostDataToConsole(ge.GetS("Email"), header, body);
-            await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} from pid: {provider}, as: {ge.GetS("Email")}");
+            await Fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}, as: {ge.GetS("Email")}");
+            PostDataToConsole(ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
         }
 
         public void PostVisitorIdToConsole(string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
@@ -926,10 +927,10 @@ namespace VisitorIdLib
                 label_domain = domain,
                 lastVisit
             });
-            PostDataToConsole(plainTextEmail, header, body);
+            PostDataToConsole(plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
         }
 
-        public void PostDataToConsole(string key, string header, string body)
+        public void PostDataToConsole(string key, string header, string body, string caller)
         {
             if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
 
@@ -945,11 +946,11 @@ namespace VisitorIdLib
                     }, new bool[] { false, false });
                     await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,postData, "application/json");
 
-                    await Fw.Log(nameof(PostVisitorIdToConsole), $"Successfully posted {key} to Console");
+                    await Fw.Log(caller, $"Successfully posted {key} to Console");
                 }
                 catch (Exception e)
                 {
-                    await Fw.Error(nameof(PostVisitorIdToConsole), $"Failed to post {key} to Console with data {postData}. Exception: {e.UnwrapForLog()}");
+                    await Fw.Error(caller, $"Failed to post {key} to Console endpoint: {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
                 }
             });
             Task.Run(task);
