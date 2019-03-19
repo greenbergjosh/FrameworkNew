@@ -24,7 +24,7 @@ namespace Utility
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
         public bool TraceLogging = true;
 
-        public FrameworkWrapper()
+        public FrameworkWrapper(string[] commandLineArgs = null)
         {
             try
             {
@@ -41,7 +41,8 @@ namespace Utility
                     configuration.GetValue<string>("ConnectionString:ConnectionString"),
                     configuration.GetValue<string>("ConnectionString:DataLayerType"),
                     ConfigurationKeys,
-                    configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"))
+                    configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"),
+                    commandLineArgs)
                     .GetAwaiter().GetResult();
 
                 SelectConfigSproc = configuration.GetValue<string>("Application:SelectConfigSproc");
