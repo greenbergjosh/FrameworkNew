@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -20,6 +21,15 @@ namespace Utility
 
             gp.InitializeEntity(rw, config, gpstate);
             return gp;
+        }
+
+        public static (string path, string propName) GetPropertyPathParts(string fullPath)
+        {
+            if (fullPath.IsNullOrWhitespace()) return (null,null);
+
+            var parts = fullPath.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+            return ($"{parts.Take(parts.Length - 1).Join(".")}", parts.Last());
         }
 
         public static string Json(object o, params bool[] quote)
