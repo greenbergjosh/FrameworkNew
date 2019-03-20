@@ -86,17 +86,19 @@ namespace Utility.DataLayer
                 {
                     var confStr = await _configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = key }), "{}", _configFunction, _configConn.ConnStr);
                     var c = JObject.Parse(confStr);
+                    JObject mergeConfig = null;
 
-                    if (c["using"] != null)
+                    if (c["using"] is JArray usng)
                     {
-                        await ((JArray)c["using"])
-                            .Select(u => ((string)u).Trim())
+                        await usng.Select(u => ((string)u).Trim())
                             .Where(u => !loaded.Contains(u))
                             .AggregateAsync(config, async (cf, k) => await LoadConfig(cf, k));
 
-                        if (c["config"] != null) config.Merge(c["config"]);
+                        mergeConfig = c["config"] as JObject;
                     }
-                    else config.Merge(c);
+                    else mergeConfig = c;
+
+                    MergeConfigs(config, mergeConfig);
 
                     return config;
                 }
@@ -114,6 +116,128 @@ namespace Utility.DataLayer
 
             return resolvedConfig.ToString();
         }
+
+        private static void MergeConfigs(JObject config, JObject mergeConfig)
+        {
+            if (mergeConfig == null) return;
+
+            var mergeRoot = mergeConfig.Parent == null ? mergeConfig : (JObject) mergeConfig.DeepClone();
+
+            var paths = FindRemovePaths(mergeRoot);
+
+            paths.ForEach(p =>
+            {
+                var prop = ((JObject)mergeRoot.SelectToken(p.path)).Property(p.propName);
+                var newToken = new JProperty(prop.Name.Remove(0, 1), prop.Value);
+
+                prop.Value.Parent.Replace(newToken);
+            });
+
+            paths.ForEach(p => ((JObject)config.SelectToken(p.path))?.Remove(p.propName.Remove(0, 1)));
+
+            config.Merge(mergeRoot);
+        }
+
+        private static IEnumerable<(string path, string propName)> FindRemovePaths(JObject root)
+        {
+            var paths = new List<(string path, string propName)>();
+
+            foreach (var prop in root.Properties())
+            {
+                if (prop.Name.StartsWith("~")) paths.Add((prop.Parent.Path, prop.Name));
+
+                if (prop.Value is JObject jo) paths.AddRange(FindRemovePaths(jo));
+                else if (prop.Value is JArray ja) paths.AddRange(FindRemovePaths(ja));
+            }
+
+            return paths;
+        }
+
+        private static IEnumerable<(string path, string propName)> FindRemovePaths(JArray root)
+        {
+            var paths = new List<(string path, string propName)>();
+
+            foreach (var jai in root.Children())
+            {
+                if (jai is JObject jo) paths.AddRange(FindRemovePaths(jo));
+                else if (jai is JArray ja) paths.AddRange(FindRemovePaths(ja));
+            }
+
+            return paths;
+        }
+
+        //private static IEnumerable<(string path, string propName)> FindRemovePaths(JObject mergeConfig)
+        //{
+        //    var paths = new List<(string path, string propName)>();
+        //    var node = mergeConfig.Properties().FirstOrDefault();
+
+        //    while (node != null)
+        //    {
+        //        void next()
+        //        {
+        //            if (node.Next != null) node = (JProperty)node.Next;
+        //            else if (node.Parent != mergeConfig && !(node.Parent.Parent is JObject) ) node = (JProperty)node.Parent.Next;
+        //            else
+        //            {
+        //                // Parent is probably an item in an array
+        //            }
+        //        }
+
+        //        JObject FindNextJObjectinJArray(JArray ja)
+        //        {
+        //            var first = ja.First;
+
+        //            while (first != null && !(first is JObject))
+        //            {
+        //                // Find object
+        //                first = null;
+        //            }
+
+        //            var o = first as JObject;
+
+        //            if (o == null) next();
+        //            else if (o.Properties().Any()) node = o.Properties().First();
+        //            else
+        //            {
+
+        //            }
+        //            // Fake
+        //            return null;
+        //        }
+
+        //        void dig()
+        //        {
+        //            JObject nextJObject = null;
+
+        //            while (nextJObject == null)
+        //            {
+
+        //            }
+
+        //            if (node.Value is JObject jo) node = jo.Properties().FirstOrDefault();
+        //            else if (node.Value is JArray ja)
+        //            {
+        //                node = FindNextJObjectinJArray(ja);
+        //            }
+        //            else
+        //            {
+
+        //            }
+        //        }
+
+        //        if (node.Name.StartsWith("~"))
+        //        {
+        //            paths.Add((node.Parent.Path, node.Name.Trim('~')));
+        //            next();
+        //            continue;
+        //        }
+
+        //        dig();
+        //    }
+
+
+        //    return paths;
+        //}
 
         public static async Task<IGenericEntity> CallFn(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
