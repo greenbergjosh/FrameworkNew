@@ -21,7 +21,7 @@ namespace GenericWindowsService
         private static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-            Fw = LoadFramework(args);
+            Fw = LoadFramework();
             if (args.Contains("console"))
             {
                 ValidateAndConfigureService(args).Build().Run();
@@ -123,11 +123,11 @@ namespace GenericWindowsService
             }
         }
 
-        private static FrameworkWrapper LoadFramework(string[] commandLineArgs)
+        private static FrameworkWrapper LoadFramework()
         {
             try
             {
-                var fw = new FrameworkWrapper(commandLineArgs);
+                var fw = new FrameworkWrapper();
 
                 using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {

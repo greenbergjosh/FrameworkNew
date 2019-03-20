@@ -23,8 +23,8 @@ namespace Utility
         public ErrorDelegate Err;
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
         public bool TraceLogging = true;
-
-        public FrameworkWrapper()
+		
+		public FrameworkWrapper()
         {
             try
             {
@@ -74,13 +74,15 @@ namespace Utility
             }
         }
 
-        public Task Log(string method, string message) => Err(ErrorSeverity.Log, method, ErrorDescriptor.Log, message);
-        public Task Trace(string method, string message) => Err(ErrorSeverity.Log, method, ErrorDescriptor.Trace, message);
-        public Task Error(string method, string message) => Err(ErrorSeverity.Error, method, ErrorDescriptor.Exception, message);
-        public Task Fatal(string method, string message) => Err(ErrorSeverity.Fatal, method, ErrorDescriptor.Fatal, message);
+        public string LogMethodPrefix { get; set; } = "";
 
-        public Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log) => Alert(method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
-        public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
+        public Task Log(string method, string message) => Err(ErrorSeverity.Log, LogMethodPrefix + method, ErrorDescriptor.Log, message);
+        public Task Trace(string method, string message) => Err(ErrorSeverity.Log, LogMethodPrefix + method, ErrorDescriptor.Trace, message);
+        public Task Error(string method, string message) => Err(ErrorSeverity.Error, LogMethodPrefix + method, ErrorDescriptor.Exception, message);
+        public Task Fatal(string method, string message) => Err(ErrorSeverity.Fatal, LogMethodPrefix + method, ErrorDescriptor.Fatal, message);
+
+        public Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log) => Alert(LogMethodPrefix + method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
+        public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, LogMethodPrefix + method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
     }
 
 }
