@@ -39,30 +39,27 @@ namespace QuickTester
             Func<List<(string email, string md5)>, Task<(TimeSpan elapsed, int found, int notFound)>> fileSearch;
             Func<List<string>, Task<int>> globalSearch;
 
-            if (global)
+            if (global && batchSize == 1)
             {
-                if (batchSize == 1)
+                globalSearch = async b =>
                 {
-                    globalSearch = async b =>
-                    {
-                        var email = b.First();
-                        var res = await Data.CallFn("", "IsSuppressed", Jw.Json(new { email }), "");
+                    var email = b.First();
+                    var res = await Data.CallFn("Unsub", "IsSuppressed", Jw.Json(new { email }), "");
 
 
-                        return res.GetS("Result").ParseBool() == true ? 1 : 0;
-                    };
-                }
-                else
+                    return res.GetS("Result").ParseBool() == true ? 1 : 0;
+                };
+            }
+            else if (global)
+            {
+                globalSearch = async b =>
                 {
-                    globalSearch = async b =>
-                    {
-                        var res = await Data.CallFn("", "AreSuppressed", Jw.Json(new { emails = b }), "");
+                    var res = await Data.CallFn("Unsub", "AreSuppressed", Jw.Json(new { emails = b }), "");
 
-                        var found = res.GetL("found").Select(g => g.GetS("")).ToList();
+                    var found = res.GetL("found").Select(g => g.GetS("")).ToList();
 
-                        return found.Count;
-                    };
-                }
+                    return found.Count;
+                };
             }
             else globalSearch = b => Task.FromResult(0);
 
@@ -131,10 +128,9 @@ namespace QuickTester
         static async Task Main(string[] args)
         {
             var batchSizes = new[] { 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
-            //var batchSizes = new[] { 21, 144, 987, 6765, 46368, 317811 }.Select(x => x.ToString());
             var tf = new[] { "true", "false" };
-            var cp = batchSizes.CartesianProduct(new[] { "false" }, new[] { "false" }).ToArray();
-            List<(string name, int batchSize, bool global, bool sync)> tests = new List<(string name, int batchSize, bool global, bool sync)> { ("_current", 1, true, false) };
+            var cp = batchSizes.CartesianProduct(new[] { "true" }, new[] { "true" }).ToArray();
+            List<(string name, int batchSize, bool global, bool sync)> tests = new List<(string name, int batchSize, bool global, bool sync)>();// { ("_current", 1, true, true) };
 
             tests.AddRange(cp.Select(x =>
             {
