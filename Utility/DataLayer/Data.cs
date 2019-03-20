@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using Jw = Utility.JsonWrapper;
 
@@ -18,7 +19,7 @@ namespace Utility.DataLayer
         private static Connection _configConn;
         private static string _configFunction;
 
-        public static async Task<IGenericEntity> Initialize(string connStr, string dataLayerType, string[] configKeys, string configFunction)
+        public static async Task<IGenericEntity> Initialize(string connStr, string dataLayerType, string[] configKeys, string configFunction, string[] commandLineArgs)
         {
             string configStr = null;
 
@@ -31,7 +32,7 @@ namespace Utility.DataLayer
                 _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
                 Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
 
-                configStr = await GetConfigs(configKeys);
+                configStr = await GetConfigs(configKeys, commandLineArgs);
 
                 var gc = Jw.JsonToGenericEntity(Jw.Json(new { Config = configStr }, new bool[] { false }));
 
@@ -71,7 +72,7 @@ namespace Utility.DataLayer
             }
         }
 
-        private static async Task<string> GetConfigs(IEnumerable<string> configKeys)
+        private static async Task<string> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs)
         {
             var loaded = new HashSet<string>();
 
@@ -106,8 +107,14 @@ namespace Utility.DataLayer
                     throw new Exception($"Failed to merge config {key}. Exception: {ex.Message}", ex);
                 }
             }
+            var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
+            var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs ?? Array.Empty<string>()).Build();
+            foreach(var kvp in commandLineConfig.AsEnumerable())
+            {
+                resolvedConfig[kvp.Key] = kvp.Value;
+            }
 
-            return (await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k))).ToString();
+            return resolvedConfig.ToString();
         }
 
         private static void MergeConfigs(JObject config, JObject mergeConfig)
