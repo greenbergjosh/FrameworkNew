@@ -16,12 +16,14 @@ namespace TraverseDataLib
 
         const string DataLayerName = "TraverseResponse";
         public FrameworkWrapper Fw;
+        public VisitorIdDataService Vid;
         public int SqlTimeoutSec;
 
         public void Config(FrameworkWrapper fw)
         {
             this.Fw = fw;
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
+            this.Vid = new VisitorIdDataService().ConfigProviders(this.Fw);
         }
 
         public async Task Run(HttpContext context)
@@ -40,9 +42,8 @@ namespace TraverseDataLib
                     {
                         case "TraverseResponse":
                             var ge = await TraverseResponse(context);
-                            var vid = new VisitorIdDataService().ConfigProviders(this.Fw);
-                            VisitorIdResponse vidResp = await vid.SaveSession(this.Fw, context, true, false, Vutil.OpaqueFromBase64(ge.GetS("advertiserProperties.op")), ge.GetS("emailMd5Lower"));
-                            await vid.SaveSessionEmailMd5(this.Fw, vidResp, DataLayerName);
+                            VisitorIdResponse vidResp = await Vid.SaveSession(this.Fw, context, true, false, Vutil.OpaqueFromBase64(ge.GetS("advertiserProperties.op")), ge.GetS("emailMd5Lower"));
+                            await Vid.SaveSessionEmailMd5(this.Fw, vidResp, DataLayerName);
                             result = Jw.Json(vidResp);
                             resultHttpStatus = StatusCodes.Status202Accepted;
                             break;
