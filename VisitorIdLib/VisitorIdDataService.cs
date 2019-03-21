@@ -913,11 +913,15 @@ namespace VisitorIdLib
 
         public void PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
-            if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
+            var onPointConsoleDomainId = fw.StartupConfiguration.GetS("Config/OnPointConsoleDomainId");
+            if (onPointConsoleDomainId.IsNullOrWhitespace())
+            {
+                fw.Error(nameof(PostVisitorIdToConsole), $"Console domain id is not set, still posting to Console for email {plainTextEmail}");
+            }
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
             var body = Jw.Json(new
             {
-                domain_id = OnPointConsoleDomainId,
+                domain_id = onPointConsoleDomainId,
                 email = plainTextEmail,
                 user_ip = clientIp,
                 user_agent = userAgent,
@@ -932,7 +936,13 @@ namespace VisitorIdLib
 
         public void PostDataToConsole(FrameworkWrapper fw, string key, string header, string body, string caller)
         {
-            if (this.OnPointConsoleUrl.IsNullOrWhitespace()) return;
+
+            var onPointConsoleUrl = fw.StartupConfiguration.GetS("Config/OnPointConsoleUrl");
+            if (onPointConsoleUrl.IsNullOrWhitespace())
+            {
+                fw.Error(caller, $"Console endpoint is not set. Failed to post {key} to Console  with data {body}");
+                return;
+            }
 
             var task = new Func<Task>(async () =>
             {
@@ -944,13 +954,13 @@ namespace VisitorIdLib
                         header,
                         body
                     }, new bool[] { false, false });
-                    await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl,postData, "application/json");
+                    await ProtocolClient.HttpPostAsync(onPointConsoleUrl, postData, "application/json");
 
                     await fw.Log(caller, $"Successfully posted {key} to Console");
                 }
                 catch (Exception e)
                 {
-                    await fw.Error(caller, $"Failed to post {key} to Console endpoint: {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
+                    await fw.Error(caller, $"Failed to post {key} to Console endpoint: {onPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
                 }
             });
             Task.Run(task);
