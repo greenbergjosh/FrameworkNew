@@ -1,0 +1,86 @@
+{
+  "Test0": { "Entity" : { "Evaluate": { "Constant": "Any constant evaluated now"} } },
+  "Test1": { "Entity" : { "Evaluate": { "Code": "Actual C# code here to be evaluated now" } } },
+  "Test2": { "Entity" : { "Evaluate": { "EntityId": 15 } } },
+  "ConfigurationEntities": [
+    {
+      "Id": "",
+      "EntityTypeId": "<GUID representing this type - all types are in the GenericEntity *monad*>",
+      "Name": "<Common name for this type>",
+      "Description": "<A description for this type>"
+    },
+    {  
+      "Id": "",
+      "EntityTypeVersionId": "<GUID representing the version of the type - allows versioning of type signature>",
+      "EntityTypeId": "<FK GUID to entity type>",
+      "Subjectively": [{ "SomeEntityTypeAsName": "SomeEntityTypeId", "etc":"etc" }],
+      "InputParameters": [
+        { "Name": "<Name of inut parameter>", "Required": "<Whether input parameter is required>" }
+      ],
+      "ReturnValues": [
+        { "Name": "Result", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] }
+      ]
+    },
+    {
+      "Id": "<GUID representing an entity, instance of an entity type (all of which are instances of GenericEntity)>",
+      "VariantSelector": "<An entity that can be used to select the specific variant of the entity - all EntityType entities are variant aware>",
+      "EntitySharedState": "<Arbitrary shared state shared by all variants of this entity - itself an entity>"
+    },
+    {
+      "Id": "",
+      "EntityVariantId": "<GUID representing a particular variant of some entity - all entities have at least one variant>",
+      "EntityId": "<FK GUID to entity>",
+      "VariantDescriptor": "Additional information that can be used by VariantSelector when selecting a variant - itself an entity",
+      "EntityVariantSharedState": "<Arbitrary shared state shared by all versions of this variant - itself an entity>"
+    },
+    {
+      "Id": "",
+      "EntityVariantVersionId": "<GUID representing a particular variant version>",
+      "EntityVariantId": "<FK GUID to entity variant>",
+      "EntityTypeVersionId": "<FK GUID to entity type version>",
+      "Subjectively": [{ "SomeEntityTypeAsName": "SomeEntityId", "etc":"etc" }],
+      "TimestampUTC": "<creation date>",
+      "EntityVersionBranchId": "<name of version branch - aids in selection of proper version when running a given branch>",
+      "ChangeAuditDetails": { "details": "<who created this variant version, from what server, etc.>" },
+      "Name": "<Common name for this entity>",
+      "Services": [
+        { "QuotedEntity": { 
+            "Name": "IO",
+            "Evaluate": {
+              "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477"
+            }
+          }
+        }
+      ],
+      "EvaluateA": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider, Framework.Core",
+        "Implementation": "Framework.Core.Languages.E.Evaluatable, Evaluate"
+      },
+      "EvaluateB": {
+        "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+        "ActualParameters": { 
+          "QuotedEntity": { "QuotedEntity" : { "Evaluate":  { "Constant": "Get" } } },
+          "Entity": { "Entity" : { "Evaluate":  { "Constant": "__IO__" } } },
+          "InputParameterMap": { "__InputParameter": "PrimaryEntityId" },
+          "ArrayOfQuotedEntities": [],
+          "ArrayOfEntities": []
+        }
+      },
+      "EvaluateC": { "Constant": "Any constant evaluated now"},
+      "EvaluateD": { "Code": "Actual C# code here to be evaluated now" }
+    }
+  ]
+}
+
+{ "QuotedEntity": { 
+    "Name": "MemoryGet",
+    "Evaluate": {
+      "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
+      "ActualParameters": { 
+        "Method": { "Entity" : { "Evaluate":  { "Constant": "Get" } } },
+        "Partition": { "Entity" : { "Evaluate":  { "Constant": "__IO__" } } }
+      }
+    }
+  }
+}
