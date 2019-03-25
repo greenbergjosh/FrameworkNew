@@ -8,6 +8,9 @@ using Utility;
 using VisitorIdLib;
 using Jw = Utility.JsonWrapper;
 using Vutil = Utility.VisitorIdUtil;
+using System.Runtime.Caching;
+using Utility.DataLayer;
+using Newtonsoft.Json;
 
 namespace TraverseDataLib
 {
@@ -18,12 +21,30 @@ namespace TraverseDataLib
         public FrameworkWrapper Fw;
         public VisitorIdDataService Vid;
         public int SqlTimeoutSec;
+        static MemoryCache pidSidMd5Cache;
+        List<Guid> md5ExcludeList;
+        static int excludeSpanDays;
 
         public void Config(FrameworkWrapper fw)
         {
             this.Fw = fw;
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
             this.Vid = new VisitorIdDataService().ConfigProviders(this.Fw);
+            pidSidMd5Cache = MemoryCache.Default;
+            this.md5ExcludeList = Md5ExcludeList();
+            excludeSpanDays = fw.StartupConfiguration.GetS("Config/ExcludeSpanDays").IsNullOrWhitespace() ?
+                30 :
+                (int)fw.StartupConfiguration.GetS("Config/ExcludeSpanDays").ParseInt();
+            PrimeCache().GetAwaiter().GetResult();
+        }
+
+        public static bool ExistsOrAddToMemoryCache(PidSidMd5 pidSidMd5, double cacheTimeInDays)
+        {
+            var cacheName = $"{pidSidMd5.Pid}.{pidSidMd5.Sid}.{pidSidMd5.Md5}";
+
+            if (pidSidMd5Cache[cacheName] != null) { return true; }
+            pidSidMd5Cache.Set(cacheName, pidSidMd5, new CacheItemPolicy() { AbsoluteExpiration = DateTimeOffset.Now.AddDays(cacheTimeInDays) });
+            return false;
         }
 
         public async Task Run(HttpContext context)
@@ -41,9 +62,17 @@ namespace TraverseDataLib
                     switch (m)
                     {
                         case "TraverseResponse":
-                            var ge = await TraverseResponse(context);
-                            VisitorIdResponse vidResp = await Vid.SaveSession(this.Fw, context, true, false, Vutil.OpaqueFromBase64(ge.GetS("advertiserProperties.op")), ge.GetS("emailMd5Lower"));
-                            await Vid.SaveSessionEmailMd5(this.Fw, vidResp, DataLayerName);
+                            var (fullBodyGe, opaqueGe) = await TraverseResponseAsGe(context);
+                            var opqVals = VisitorIdDataService.ValsFromOpaque(opaqueGe);
+                            var pidSidMd5 = new PidSidMd5() { Pid = opqVals.pid, Sid = opqVals.sid, Md5 = fullBodyGe.GetS("emailMd5Lower"), FirstSeen = DateTime.UtcNow };
+
+                            VisitorIdResponse vidResp = new VisitorIdResponse("", "", "", "");
+                            if (! ExistsOrAddToMemoryCache(pidSidMd5, excludeSpanDays) &&
+                                ! await ExistsOrAddToDbCache(pidSidMd5))
+                            {
+                                await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS("emailMd5Lower")}");
+                                vidResp = await Vid.SaveSession(this.Fw, context, true, false, opaqueGe, fullBodyGe.GetS("emailMd5Lower"));
+                            }
                             result = Jw.Json(vidResp);
                             resultHttpStatus = StatusCodes.Status202Accepted;
                             break;
@@ -65,6 +94,14 @@ namespace TraverseDataLib
 
         }
 
+        List<Guid> Md5ExcludeList ()
+        {
+            IEnumerable<IGenericEntity> excludeListGe = Fw.StartupConfiguration.GetL("Config/Md5ExcludeList");
+            List<Guid> md5List = new List<Guid>();
+            excludeListGe.ForEach(x => md5List.Add(new Guid(x.GetS(""))));
+            return md5List;
+        }
+
         public async Task WriteResponse(int StatusCode, HttpContext context, string resp)
         {
             context.Response.StatusCode = StatusCode;
@@ -73,7 +110,33 @@ namespace TraverseDataLib
             await context.Response.WriteAsync(resp);
         }
 
-        public async Task<IGenericEntity> TraverseResponse(HttpContext c)
+        async Task PrimeCache()
+        {
+            IGenericEntity recentMd5s = await GetRecentResponseMd5s();
+
+            foreach (var datedMd5 in recentMd5s.GetL(""))
+            {
+                var pidSidMd5 = new PidSidMd5() { Pid = datedMd5.GetS("Pid"), Sid = datedMd5.GetS("Sid"), Md5 = datedMd5.GetS("Md5"), FirstSeen = Convert.ToDateTime(datedMd5.GetS("FirstSeen")) };
+                var age = (DateTime.UtcNow - pidSidMd5.FirstSeen).TotalDays;
+                var remaining = (double)excludeSpanDays - age;
+                if (remaining <= 0)
+                    continue;
+                ExistsOrAddToMemoryCache(pidSidMd5, remaining);
+            }
+        }
+
+        async Task<IGenericEntity> GetRecentResponseMd5s ()
+        {
+            return await Data.CallFn("TraverseResponse", "LookupRecentMd5Responses", JsonConvert.SerializeObject(new { days_ago = excludeSpanDays, exclude_list = this.md5ExcludeList }), Jw.Empty);
+        }
+
+
+        public async Task<bool> ExistsOrAddToDbCache(PidSidMd5 pidSidMd5)
+        {
+            return await Vid.ProviderSessionMd5Exists(this.Fw, pidSidMd5.Pid, pidSidMd5.Sid, pidSidMd5.Md5);
+        }
+
+        public async Task<(IGenericEntity fullBodyGe, IGenericEntity opaqueGe)> TraverseResponseAsGe(HttpContext c)
         {
             /* From:https://traversedata.github.io/activity-identification-notification#consuming-identification-notifications 
                As of: 1/16/2019
@@ -90,8 +153,28 @@ namespace TraverseDataLib
                
                VisitorId sticks opaque into the path: 'advertiserProperties.op'
                 
-                */
-            return Jw.JsonToGenericEntity(await c.GetRawBodyStringAsync());
+            */
+            string fullBody = await c.GetRawBodyStringAsync();
+            IGenericEntity fullBodyGe = null;
+            IGenericEntity opaqueGe = null;
+            try
+            {
+                fullBodyGe = Jw.JsonToGenericEntity(fullBody);
+                opaqueGe = Vutil.OpaqueFromBase64(fullBodyGe.GetS("advertiserProperties.op"));
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Unable to parse values passed in from Traverse response: {fullBody}. Exception: {e.Message}", e);
+            }
+            return (fullBodyGe, opaqueGe);
+        }
+
+        public class PidSidMd5
+        {
+            public string Pid { get; set; }
+            public string Sid { get; set; }
+            public string Md5 { get; set; }
+            public DateTime FirstSeen { get; set; }
         }
 
 
