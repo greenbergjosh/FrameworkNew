@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Utility\Utility.csproj" />
     <ProjectReference Include="..\VisitorIdLib\VisitorIdLib.csproj">
       <Private>true</Private>
