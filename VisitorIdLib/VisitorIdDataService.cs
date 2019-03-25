@@ -581,7 +581,9 @@ namespace VisitorIdLib
 
             email = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? "" : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, pid, slot, page, pixelDomain, clientIp, userAgent, lastVisit);
 
-            if (!string.IsNullOrWhiteSpace(email))
+            if ( ! email.IsNullOrWhitespace() &&
+                 ! md5.IsNullOrWhitespace() &&
+                 ! pid.IsNullOrWhitespace())
                 PostMd5LeadDataToConsole(fw, md5, pixelDomain, pid);
 
             return new VisitorIdResponse(Jw.Json(new { slot, page, lv = lastVisit }), md5, email, sid);
@@ -881,6 +883,48 @@ namespace VisitorIdLib
                 await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {vidResp.Sid}, Email: {vidResp.Email}, Md5: {vidResp.Md5}");
             }
 
+        }
+
+        public async Task<bool> ProviderSessionMd5Exists(FrameworkWrapper fw, string pid, string sid, string md5)
+        {
+            if (pid.IsNullOrWhitespace() ||
+                sid.IsNullOrWhitespace() ||
+                md5.IsNullOrWhitespace() ||
+                ! Guid.TryParse(pid, out Guid parsedPidGuid))
+            {
+                return false; // callers just go about their business
+            }
+            var result = await Data.CallFnString("VisitorId", "ProviderSessionMd5Check", "", Jw.Json(new { pid, vid = sid, md5 }));
+            IGenericEntity geResult;
+            try
+            {
+                geResult = Jw.JsonToGenericEntity(result);
+            }
+            catch (Exception e)
+            {
+                await fw.Error(nameof(ProviderSessionMd5Exists), $"Unable to deserialize output of database function for pid {pid}, sid {sid}, md5 {md5} : DB returned {result} to Json: {e.StackTrace}");
+                return true;
+            }
+            if (geResult.GetS("r") == "dup")
+            {
+                await fw.Trace(nameof(ProviderSessionMd5Exists), $"Md5 Provider {pid} previously supplied md5 {md5} for session {sid}");
+                return true;
+            }
+            else if (geResult.GetS("r") == "new" )
+            {
+                await fw.Trace(nameof(ProviderSessionMd5Exists), $"Md5 Provider {pid} supplied new md5 {md5} for session {sid}");
+                return false;
+            }
+            else if (geResult.GetS("r") == "err" )
+            {
+                await fw.Error(nameof(ProviderSessionMd5Exists), $"Error checking for record on Md5 Provider {pid} for md5 {md5} for session {sid}: {geResult.GetS("msg")}");
+                return true; // count this as a dupe since we don't want to add another Md5ProviderResponse to the EDW
+            }
+            else
+            {
+                await fw.Error(nameof(ProviderSessionMd5Exists), $"Error checking for record on Md5 Provider {pid} for md5 {md5} for session {sid}: Unexpected response from database");
+                return true; // count this as a dupe since we don't want to add another Md5ProviderResponse to the EDW
+            }
         }
 
         public async void PostMd5LeadDataToConsole(FrameworkWrapper fw, string md5, string domain, string provider)
