@@ -85,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FluentApiLib", "FluentApiLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwsKinesisConsumerDataLib", "AwsKinesisConsumerDataLib\AwsKinesisConsumerDataLib.csproj", "{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Channel.Admin.Dashboard", "ChannelAdminDashboard\Channel.Admin.Dashboard.csproj", "{29257159-9ACC-4ACE-A12A-009B8A125AD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Channel.Admin.Dashboard", "ChannelAdminDashboard\Channel.Admin.Dashboard.csproj", "{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -298,12 +298,12 @@ Global
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Release|Any CPU.Build.0 = Release|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E9C0C6A-334B-4723-AD7E-E9F30AE29229}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -335,7 +335,7 @@ Global
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal
