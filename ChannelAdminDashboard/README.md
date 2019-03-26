@@ -7,7 +7,9 @@ An admin panel for editing and managing LBMs, configured reports,
 * Install node and npm
 * In this directory, run `npm intall` to download dependencies
 * Run `npm run build` to run the webpack bundler
-* Run the project in VisualStudio(?)
+* Run the project in VisualStudio or
+  * `msbuild Channel.Admin.Dashboard.csproj -property:Configuration=Debug`
+  * `dotnet run`
 
 This should open a web browser to localhost:3000 where the admin
 will be visible.
