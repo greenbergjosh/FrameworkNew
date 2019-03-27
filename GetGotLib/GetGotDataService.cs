@@ -68,7 +68,7 @@ namespace GetGotLib
 
                 if (rc == RC.Success)
                 {
-                    var identity = req.GetS("i");
+                    var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
                     var funcs = req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid").ToArray();
                     var cancellation = new CancellationTokenSource();
 
@@ -90,6 +90,11 @@ namespace GetGotLib
                                     break;
                                 case "createpass":
                                     fResult = await CommitUserRegistration(p.Item2, sid, requestBody);
+                                    break;
+                                case "rstpswd":
+                                    await ResetPassword(p.Item2, identity);
+
+                                    fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
                                     break;
                                 case "login":
                                     fResult = await Login(p.Item2);
@@ -213,28 +218,32 @@ namespace GetGotLib
             switch (contact.Type)
             {
                 case ContactType.Email:
-                    var (code, accountName) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+                    var (code, accountName, res) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
 
-                    if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code);
+                    if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
                     else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
-                    else throw new FunctionException(100,$"Unhandled exception getting confirmation code: {contact.Cleaned}");
+                    else throw new FunctionException(100, $"Unhandled exception getting confirmation code: {contact.Cleaned}");
                     break;
                 default:
                     throw new FunctionException(103, $"{contact.Type} not supported");
             }
         }
 
-        private async Task<(string code, string accountName)> GetAvailableConfirmationCode(string args)
+        private async Task<(string code, string accountName, IGenericEntity)> GetAvailableConfirmationCode(string args)
         {
             var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => args, () => Jw.Serialize(Random.Numbers(10000, 999999, 6)));
+            var rc = res.GetS("r").ParseInt() ?? 100;
+
+            if (rc != 0) throw new FunctionException(rc, $"DB failure generating conf code: {res.GetS("")}");
+
             var code = res.GetS("code");
 
-            if (!code.IsNullOrWhitespace()) return (code.PadLeft(6, '0'), null);
+            if (!code.IsNullOrWhitespace()) return (code.PadLeft(6, '0'), null, res);
             var userName = res.GetS("userName");
 
-            if (!userName.IsNullOrWhitespace()) return (null, userName);
+            if (!userName.IsNullOrWhitespace()) return (null, userName, res);
 
-            throw new FunctionException(100, $"Bad DB response, no code nor username: {res.GetS("")}");
+            throw new FunctionException(100, $"Bad DB response generating conf code, no code nor username: {res.GetS("")}");
         }
 
         private Contact ValidateContact(string contactStr)
@@ -268,6 +277,33 @@ namespace GetGotLib
             }
 
             throw new FunctionException(100, $"Exceeded {nameof(maxRetries)} of {maxRetries} for {method}");
+        }
+
+        public async Task ResetPassword(string payload, string identity)
+        {
+            var ge = Jw.JsonToGenericEntity(payload);
+            var contact = new Contact(ge.GetS("u"));
+            var res = await Data.CallFn(Conn, "ContactMatches", identity, contact.ToJson());
+            var valid = res.GetS("valid").ParseBool() ?? false;
+
+            if (!valid) return;
+
+            switch (contact.Type)
+            {
+                case ContactType.Email:
+                    var (code, accountName, cres) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+
+                    if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Password Reset", code.PadLeft(6, '0'));
+                    else throw new FunctionException(100, $"Bad DB response generating password rest code {cres.GetS("")}");
+                    break;
+                default:
+                    throw new FunctionException(103, $"{contact.Type} not supported");
+            }
+        }
+
+        public async Task SendSMS(Contact contact, string message)
+        {
+            throw new FunctionException(103, "SMS not supported");
         }
 
         public async Task<IGenericEntity> CommitUserRegistration(string payload, string sid, string requestBody)
@@ -428,7 +464,12 @@ namespace GetGotLib
 
         private async Task<IGenericEntity> ExecuteDbFunc(string name, string payload, string identity)
         {
-            var res = await Data.CallFn(Conn, name, identity.IfNullOrWhitespace(Jw.Empty), payload);
+            var fc = name?.FirstOrDefault();
+
+            // If first char is not lower case a-z then function is private
+            if (fc > 122 || fc < 97) throw new FunctionException(100, $"{name.IfNullOrWhitespace("[empty]")} is an invalid or private function");
+
+            var res = await Data.CallFn(Conn, name, identity, payload);
 
             if (res == null) throw new FunctionException(100, "Empty DB response");
 

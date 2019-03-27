@@ -42,6 +42,19 @@ namespace GetGotLib
             }
         }
 
+        public string ToJson()
+        {
+            switch (Type)
+            {
+                case ContactType.Email:
+                    return JsonWrapper.Serialize(new {email = Cleaned});
+                case ContactType.USPhone:
+                    return JsonWrapper.Serialize(new { phone = Cleaned });
+                default:
+                    return JsonWrapper.Empty;
+            }
+        }
+
         public ContactType Type { get; } = ContactType.Unknown;
 
         public string Cleaned { get; }

@@ -239,8 +239,10 @@ namespace Utility.DataLayer
         //    return paths;
         //}
 
-        public static async Task<IGenericEntity> CallFn(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
+            args = args.IfNullOrWhitespace(Jw.Empty);
+            payload = payload.IfNullOrWhitespace(Jw.Empty);
             var res = await CallFnString(conName, method, args, payload, timeout);
 
             return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
