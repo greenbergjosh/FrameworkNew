@@ -21,6 +21,8 @@ namespace GetGotLib
         private string _smtpRelay = null;
         private int _smtpPort = -1;
         private string _emailFromAddress = null;
+        private const int MinConfCode = 10000;
+        private const int MaxConfCode = 999999;
 
 
         public void Config(FrameworkWrapper fw)
@@ -85,16 +87,19 @@ namespace GetGotLib
                             switch (p.Item1)
                             {
                                 case "sendcode":
-                                    await SendCode(p.Item2);
+                                    await SendCode(p.Item2, requestId);
                                     fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
                                     break;
                                 case "createpass":
                                     fResult = await CommitUserRegistration(p.Item2, sid, requestBody);
                                     break;
                                 case "rstpswd":
-                                    await ResetPassword(p.Item2, identity);
+                                    await SendResetPasswordCode(p.Item2, requestId);
 
                                     fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
+                                    break;
+                                case "newpswd":
+                                    fResult = await SetNewPassword(p.Item2);
                                     break;
                                 case "login":
                                     fResult = await Login(p.Item2);
@@ -210,7 +215,7 @@ namespace GetGotLib
             return (RC.Success, sid);
         }
 
-        public async Task SendCode(string payload)
+        public async Task SendCode(string payload, string reqId)
         {
             var ge = Jw.JsonToGenericEntity(payload);
             var contact = ValidateContact(ge.GetS("u"));
@@ -222,7 +227,11 @@ namespace GetGotLib
 
                     if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
                     else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
-                    else throw new FunctionException(100, $"Unhandled exception getting confirmation code: {contact.Cleaned}");
+                    else
+                    {
+                        await _fw.Error(nameof(SendCode), $"Unhandled exception getting confirmation code: {reqId} {contact.Cleaned} {res.GetS("")}");
+                        return;
+                    }
                     break;
                 default:
                     throw new FunctionException(103, $"{contact.Type} not supported");
@@ -231,7 +240,7 @@ namespace GetGotLib
 
         private async Task<(string code, string accountName, IGenericEntity)> GetAvailableConfirmationCode(string args)
         {
-            var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => args, () => Jw.Serialize(Random.Numbers(10000, 999999, 6)));
+            var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => args, () => Jw.Serialize(Random.Numbers(MinConfCode, MaxConfCode, 6)));
             var rc = res.GetS("r").ParseInt() ?? 100;
 
             if (rc != 0) throw new FunctionException(rc, $"DB failure generating conf code: {res.GetS("")}");
@@ -279,22 +288,22 @@ namespace GetGotLib
             throw new FunctionException(100, $"Exceeded {nameof(maxRetries)} of {maxRetries} for {method}");
         }
 
-        public async Task ResetPassword(string payload, string identity)
+        public async Task SendResetPasswordCode(string payload, string reqId)
         {
             var ge = Jw.JsonToGenericEntity(payload);
             var contact = new Contact(ge.GetS("u"));
-            var res = await Data.CallFn(Conn, "ContactMatches", identity, contact.ToJson());
-            var valid = res.GetS("valid").ParseBool() ?? false;
-
-            if (!valid) return;
 
             switch (contact.Type)
             {
                 case ContactType.Email:
-                    var (code, accountName, cres) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+                    var (code, accountName, cres) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned, pwdReset = true }));
 
                     if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Password Reset", code.PadLeft(6, '0'));
-                    else throw new FunctionException(100, $"Bad DB response generating password rest code {cres.GetS("")}");
+                    else
+                    {
+                        await _fw.Error(nameof(SendResetPasswordCode), $"Bad DB response generating password rest code: {reqId} {contact.Cleaned} {cres.GetS("")}");
+                        return;
+                    }
                     break;
                 default:
                     throw new FunctionException(103, $"{contact.Type} not supported");
@@ -304,6 +313,32 @@ namespace GetGotLib
         public async Task SendSMS(Contact contact, string message)
         {
             throw new FunctionException(103, "SMS not supported");
+        }
+
+        private async Task VerifyConfCode(Contact contact, int code)
+        {
+            if (code < MinConfCode || code > MaxConfCode) throw new FunctionException(101, $"Code outside of range {code}");
+
+            var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Empty, Jw.Serialize(new { u = contact.Cleaned, code }));
+            var rc = res?.GetS("r");
+
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.GetS("") ?? "null"}");
+        }
+
+        public async Task<IGenericEntity> SetNewPassword(string payload)
+        {
+            var pl = Jw.JsonToGenericEntity(payload);
+            var contact = new Contact(pl?.GetS("u"));
+            var password = pl?.GetS("p") ?? "";
+            var code = pl?.GetS("c").ParseInt() ?? -1;
+
+            if (!ValidatePasswordRules(password)) throw new FunctionException(104, "Password doesn't satisfy rules");
+
+            await VerifyConfCode(contact, code);
+
+            var (uid, pwdHash) = await GetPasswordHashFromContact(contact, password);
+
+            return await Data.CallFn(Conn, "ChangePassword", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { uid, pwdHash }));
         }
 
         public async Task<IGenericEntity> CommitUserRegistration(string payload, string sid, string requestBody)
@@ -318,10 +353,7 @@ namespace GetGotLib
 
             if (handle.IsNullOrWhitespace()) throw new FunctionException(105, "Handle is empty");
 
-            var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Empty, Jw.Serialize(new { u = contact.Cleaned, code }));
-            var rc = res?.GetS("r");
-
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.GetS("") ?? "null"}");
+            await VerifyConfCode(contact, code);
 
             var email = contact.Type == ContactType.Email ? contact.Cleaned : null;
             var phone = contact.Type == ContactType.USPhone ? contact.Cleaned : null;
@@ -334,7 +366,7 @@ namespace GetGotLib
             var altHandles = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) }).ToArray();
             var handlesAttempted = altHandles.Length + 1;
 
-            res = await RetryDbCallOnFailure("CreateUser", 10, () => args, () => Jw.Serialize(new { handle, handleAlts = altHandles, email, phone, sid, sourceId = srcId, saltHash, initHash }), (i, result, resultCode) =>
+            var res = await RetryDbCallOnFailure("CreateUser", 10, () => args, () => Jw.Serialize(new { handle, handleAlts = altHandles, email, phone, sid, sourceId = srcId, saltHash, initHash }), (i, result, resultCode) =>
             {
                 if (resultCode == 108)
                 {
@@ -346,7 +378,7 @@ namespace GetGotLib
                 throw new FunctionException(resultCode ?? 100, $"Error creating user: {result?.GetS("") ?? "null"}");
             });
 
-            rc = res?.GetS("r");
+            var rc = res?.GetS("r");
 
             if (rc == "108") throw new FunctionException(108, $"Failed to find unique handle, {handlesAttempted} attempted");
 
@@ -375,6 +407,22 @@ namespace GetGotLib
             return res;
         }
 
+        private async Task<(string uid, string password)> GetPasswordHashFromContact(Contact contact, string password)
+        {
+            var res = await Data.CallFn(Conn, "GetUserLoginDetails", payload: contact.ToJson());
+            var rc = res?.GetS("r");
+
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error getting login details: {res?.GetS("") ?? "null"}");
+
+            var uid = res.GetS("uid");
+            var seid = res.GetS("seid");
+            var srcId = res.GetS("srcid");
+            var initHash = res.GetS("inithash");
+            var saltHash = res.GetS("salthash");
+
+            return (uid, GeneratePasswordHash(password, new[] { seid, srcId, initHash, uid, saltHash }));
+        }
+
         private async Task<IGenericEntity> Login(string payload)
         {
             var ge = Jw.JsonToGenericEntity(payload);
@@ -384,19 +432,7 @@ namespace GetGotLib
 
             var contact = new Contact(ge.GetS("u"));
             var deviceName = ge.GetS("d");
-            var email = contact.Type == ContactType.Email ? contact.Cleaned : null;
-            var phone = contact.Type == ContactType.USPhone ? contact.Cleaned : null;
-            var handle = contact.Type == ContactType.Unknown ? contact.Raw : null;
-            var res = await Data.CallFn(Conn, "GetUserLoginDetails", Jw.Empty, Jw.Serialize(new { email, phone, handle }));
-            var rc = res?.GetS("r");
-
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
-            var uid = res.GetS("uid");
-            var seid = res.GetS("seid");
-            var srcId = res.GetS("srcid");
-            var initHash = res.GetS("inithash");
-            var saltHash = res.GetS("salthash");
-            var passwordHash = GeneratePasswordHash(password, new[] { seid, srcId, initHash, uid, saltHash });
+            var (uid, passwordHash) = await GetPasswordHashFromContact(contact, password);
 
             return await Login(uid, passwordHash, deviceName);
         }
