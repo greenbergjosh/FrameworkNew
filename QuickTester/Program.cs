@@ -29,7 +29,7 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
-        static async Task<(TimeSpan overall, IEnumerable<(TimeSpan elapsed, int found, int notFound)> batches)> RunBatches(string testName, string filePath, IEnumerable<string> emails, int batchSize, bool global, bool sync)
+        static async Task<(TimeSpan overall, IEnumerable<(TimeSpan elapsed, int found, int notFound)> batches)> RunBatches(string testName, string filePath, IEnumerable<string> emails, int batchSize, bool global, bool sync, bool v1)
         {
             var batches = emails.Select(e => (email: e, md5: Hashing.CalculateMD5Hash(e.Trim().ToLower()))).Batch(batchSize).Select(b => b.ToList()).ToArray();
             var stats = new List<(TimeSpan elapsed, int found, int notFound)>();
@@ -46,17 +46,17 @@ namespace QuickTester
                     var email = b.First();
                     var res = await Data.CallFn("Unsub", "IsSuppressed", Jw.Json(new { email }), "");
 
-
                     return res.GetS("Result").ParseBool() == true ? 1 : 0;
                 };
             }
             else if (global)
             {
+                // Not registering or not working
                 globalSearch = async b =>
                 {
-                    var res = await Data.CallFn("Unsub", "AreSuppressed", Jw.Json(new { emails = b }), "");
+                    var res = await Data.CallFn("Unsub", "AreSuppressed", Jw.Serialize(new { emails = b }), "");
 
-                    var found = res.GetL("found").Select(g => g.GetS("")).ToList();
+                    var found = res.GetL("found/emails").Select(g => g.GetS("e")).ToList();
 
                     return found.Count;
                 };
@@ -83,11 +83,17 @@ namespace QuickTester
             else
             {
                 var batchCompleted = 0;
+                var throttler = new SemaphoreSlim(100);
+                Func<string, List<string>, Task<(List<string> found, List<string> notFound)>> binSrch;
+
+                if (v1) binSrch = UnixWrapper.BinarySearchSortedMd5File;
+                else binSrch = UnixWrapper.BinarySearchSortedMd5FileV2;
 
                 fileSearch = async b =>
                 {
+                    await throttler.WaitAsync();
                     var swb = Stopwatch.StartNew();
-                    var r = await UnixWrapper.BinarySearchSortedMd5File(unsubFile.FullName, b.Select(e => e.md5).ToList());
+                    var r = await binSrch(unsubFile.FullName, b.Select(e => e.md5).ToList());
                     var notFound = from e in b
                                    join n in r.notFound on e.md5 equals n
                                    select e.email;
@@ -95,20 +101,22 @@ namespace QuickTester
 
                     swb.Stop();
 
-                    Interlocked.Add(ref batchCompleted, 1);
+                    Interlocked.Increment(ref batchCompleted);
 
                     Console.WriteLine($"{testName} Batch {batchCompleted}/{batchCnt}");
+
+                    throttler.Release();
 
                     return (swb.Elapsed, r.found.Count + gr, r.notFound.Count - gr);
                 };
             }
 
+            Console.WriteLine($"Starting {testName} {batchCnt} batches");
+
             var swg = Stopwatch.StartNew();
 
             if (sync)
             {
-                Console.WriteLine($"Starting {testName} {batchCnt} batches");
-
                 for (int i = 0; i < batchCnt; i++)
                 {
                     var r = await fileSearch(batches[i]);
@@ -118,7 +126,12 @@ namespace QuickTester
                     Console.WriteLine($"{testName} Batch {i + 1}/{batchCnt}");
                 }
             }
-            else stats = (await Task.WhenAll(batches.Select(fileSearch))).ToList();
+            else
+            {
+                var tasks = batches.Select(fileSearch);
+
+                stats = (await Task.WhenAll(tasks)).ToList();
+            }
 
             swg.Stop();
 
@@ -127,10 +140,14 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
-            var batchSizes = new[] { 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
+            var fc = "a".FirstOrDefault();
+
+            return;
+            var batchSizes = new[] { 13, 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
+            //var batchSizes = new[] { 2584 }.Select(x => x.ToString());
             var tf = new[] { "true", "false" };
-            var cp = batchSizes.CartesianProduct(new[] { "true" }, new[] { "true" }).ToArray();
-            List<(string name, int batchSize, bool global, bool sync)> tests = new List<(string name, int batchSize, bool global, bool sync)>();// { ("_current", 1, true, true) };
+            var cp = batchSizes.CartesianProduct(new[] { "true" }, new[] { "false" }, new[] { "false" }).ToArray();
+            List<(string name, int batchSize, bool global, bool sync, bool v1)> tests = new List<(string name, int batchSize, bool global, bool sync, bool v1)>();// { ("_current", 1, true, true, false) };
 
             tests.AddRange(cp.Select(x =>
             {
@@ -138,10 +155,12 @@ namespace QuickTester
                 var size = p[0].ParseInt().Value;
                 var global = p[1].ParseBool().Value;
                 var sync = p[2].ParseBool().Value;
+                var v1 = p[3].ParseBool().Value;
                 var g = global ? "G" : "L";
                 var sy = sync ? "S" : "P";
+                var v = v1 ? "V1" : "V2";
 
-                return ($"{size}-{g}-{sy}", size, global, sync);
+                return ($"{size}-{g}-{sy}-{v}", size, global, sync, v1);
             }));
 
             var emails = new List<string>();
@@ -166,8 +185,9 @@ namespace QuickTester
 
             //return;
 
-            var unsub = new UnsubLib.UnsubLib(new FrameworkWrapper());
-            var opDir = new DirectoryInfo("C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/perfOP");
+            var fw = new FrameworkWrapper();
+            //var unsub = new UnsubLib.UnsubLib(fw);
+            var opDir = new DirectoryInfo($"C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/perfOP-{DateTime.Now:M-d-HH-mm}");
 
             if (opDir.Exists)
             {
@@ -182,13 +202,13 @@ namespace QuickTester
 
             using (var ow = of.CreateText())
             {
-                ow.WriteLine("name,batchSize,global,sync,batchCount,totalSeconds,emails/s,found,notFound,avgBatchCompletionMS");
+                ow.WriteLine("name,batchSize,global,sync,batchCount,totalSeconds,emails/s,found,notFound,avgBatchCompletionSec");
                 var filePath = "C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/search/99d39a3b-49e3-4ef7-a8a0-e856ec657ea1.txt.srt";
                 //var filePath = "C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/performanceTestMD5s.txt";
 
                 foreach (var t in tests)
                 {
-                    var r = await RunBatches(t.name, filePath, emails, t.batchSize, t.global, t.sync);
+                    var r = await RunBatches(t.name, filePath, emails, t.batchSize, t.global, t.sync, t.v1);
                     var df = new FileInfo(Path.Combine(opDir.FullName, $"{t.name}.txt"));
                     var found = 0;
                     var notFound = 0;
@@ -205,7 +225,7 @@ namespace QuickTester
                         }
                     }
 
-                    ow.WriteLine($"{t.name},{t.batchSize},{t.global},{t.sync},{(int)Math.Ceiling(emails.Count / (double)t.batchSize)},{r.overall.TotalSeconds},\"{emails.Count / r.overall.TotalSeconds:##,###.###}\",{found},{notFound},\"{(int)Math.Ceiling(r.batches.Select(ts => ts.elapsed.TotalMilliseconds).Average()):##,###}\"");
+                    ow.WriteLine($"{t.name},{t.batchSize},{t.global},{t.sync},{(int)Math.Ceiling(emails.Count / (double)t.batchSize)},{r.overall.TotalSeconds},\"{emails.Count / r.overall.TotalSeconds:##,###.###}\",{found},{notFound},\"{(int)Math.Ceiling(r.batches.Select(ts => ts.elapsed.TotalSeconds).Average()):##,###}\"");
                 }
             }
 

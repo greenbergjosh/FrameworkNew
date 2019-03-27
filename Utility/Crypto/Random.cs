@@ -78,7 +78,7 @@ namespace Utility.Crypto
 
             RNG().GetBytes(randomBytes);
 
-            var randomInt = randomBytes.Take(maxLengthByteCount).Sum(b => b);
+            var randomInt = BitConverter.ToInt32(randomBytes.Take(maxLengthByteCount).ToArray());
             var randomLength = minLength == maxLength ? minLength : (randomInt % (maxLength - minLength)) + minLength;
 
             for (var bi = maxLengthByteCount; bi < randomBytes.Length; bi++)
@@ -115,9 +115,9 @@ namespace Utility.Crypto
 
         private static int BytesToIntInRange(int min, int max, byte[] bytes)
         {
-            var randomInt = bytes.Sum(b => b);
+            var randomInt = BitConverter.ToInt32(bytes);
 
-            if (min >= 0) return (randomInt % (max - min)) + min;
+            if (min >= 0) return (Math.Abs(randomInt) % (max - min)) + min;
 
             var uMin = ConvertIntToUIntRange(min);
             var uMax = ConvertIntToUIntRange(max);
@@ -151,7 +151,11 @@ namespace Utility.Crypto
             if (count < 1) throw new ArgumentException("count must be greater than 0");
             var res = new List<int>();
 
-            if (min == max) for (int i = 0; i < count; i++) res.Add(min);
+            if (min == max)
+            {
+                for (int i = 0; i < count; i++) res.Add(min);
+                return res.ToArray();
+            }
 
             if (min > max)
             {
@@ -210,7 +214,7 @@ namespace Utility.Crypto
 
             RNG().GetBytes(randomBytes);
 
-            var randomInt = randomBytes.Sum(b => b);
+            var randomInt = BitConverter.ToInt32(randomBytes);
 
             return Convert.ToInt16((randomInt % (max - min)) + min);
         }
