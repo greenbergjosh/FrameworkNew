@@ -150,9 +150,68 @@ namespace Utility
             }
         }
 
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5FileV2(string filePath, List<string> keys)
+        {
+            var notFound = new List<string>();
+            var found = new List<string>();
+            var unsubFile = new FileInfo(filePath);
+
+            using (var fs = unsubFile.OpenRead())
+            {
+                var lineLength = 0;
+                var buffer = new byte[34];
+                var end = fs.Length;
+
+                await fs.ReadAsync(buffer, 0, 34);
+
+                if (buffer[32] == 10) lineLength = 33;
+                else if (buffer[32] == 13 && buffer[33] == 10) lineLength = 34;
+                else throw new Exception("Unexpected line termination character");
+
+                var lineCount = end / (decimal) lineLength;
+
+                if (lineCount != Math.Ceiling(lineCount)) throw new Exception("Inconsistent line length in file");
+
+                var fLength = unsubFile.Length;
+
+                buffer = new byte[32];
+
+                foreach (var md5 in keys)
+                {
+                    var numRec = fLength / lineLength;
+                    var bottom = 0L;
+                    var top = numRec - 1;
+                    var f = false;
+
+                    while (bottom <= top)
+                    {
+                        var cur = (top + bottom) / 2;
+
+                        fs.Seek(lineLength * cur, SeekOrigin.Begin);
+
+                        await fs.ReadAsync(buffer, 0, 32);
+
+                        var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(md5);
+
+                        if (cmp < 0) bottom = cur + 1;
+                        else if (cmp > 0) top = cur - 1;
+                        else
+                        {
+                            f = true;
+                            break;
+                        }
+                    }
+
+                    if(f) found.Add(md5);
+                    else notFound.Add(md5);
+                }
+            }
+
+            return (found, notFound);
+        }
+
         public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
         {
-            const int bufferSize = 2048;
             var notFound = new List<string>();
             var found = new List<string>();
             var unsubFile = new FileInfo(filePath);
@@ -161,7 +220,6 @@ namespace Utility
 
             using (var enrtr = keys.GetEnumerator())
             using (var fs = unsubFile.OpenRead())
-            //using (var sr = new StreamReader(fs, Encoding.UTF8, true, bufferSize))
             {
                 enrtr.MoveNext();
 
@@ -294,33 +352,6 @@ namespace Utility
 
                     enrtr.MoveNext();
                 }
-
-                //String line;
-
-                //while ((line = await streamReader.ReadLineAsync()) != null)
-                //{
-                //    if (enrtr.Current == null) break;
-                //    while (true)
-                //    {
-                //        if (enrtr.Current == null) break;
-
-                //        var cmp = String.CompareOrdinal(enrtr.Current, line);
-
-                //        if (cmp == 0)
-                //        {
-                //            enrtr.MoveNext();
-                //            found.Add(enrtr.Current);
-                //            break;
-                //        }
-                //        else if (cmp < 0)
-                //        {
-                //            notFound.Add(enrtr.Current);
-                //            enrtr.MoveNext();
-                //        }
-                //        else break;
-                //    }
-                //}
-
             }
 
             return (found, notFound);

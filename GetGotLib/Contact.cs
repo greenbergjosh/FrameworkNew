@@ -17,6 +17,7 @@ namespace GetGotLib
     {
         private Regex _emailRx = new Regex(@"[^@]+@[^@]+\.[^@.]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static string[] USPhoneRemoveChars = " +()-\u05BE\u1806\u2010\u2011\u2012\u2013\u2014\u2015\u207B\u208B\u2212\uFE58\uFE63\uFF0D".Select(c => c.ToString()).ToArray();
+        private string _json = null;
 
         public Contact(string contact)
         {
@@ -44,15 +45,26 @@ namespace GetGotLib
 
         public string ToJson()
         {
-            switch (Type)
+            if (_json == null)
             {
-                case ContactType.Email:
-                    return JsonWrapper.Serialize(new {email = Cleaned});
-                case ContactType.USPhone:
-                    return JsonWrapper.Serialize(new { phone = Cleaned });
-                default:
-                    return JsonWrapper.Empty;
+                switch (Type)
+                {
+                    case ContactType.Unknown:
+                        _json = JsonWrapper.Serialize(new { handle = Raw });
+                        break;
+                    case ContactType.Email:
+                        _json = JsonWrapper.Serialize(new {email = Cleaned});
+                        break;
+                    case ContactType.USPhone:
+                        _json = JsonWrapper.Serialize(new {phone = Cleaned});
+                        break;
+                    default:
+                        _json = JsonWrapper.Empty;
+                        break;
+                }
             }
+
+            return _json;
         }
 
         public ContactType Type { get; } = ContactType.Unknown;
