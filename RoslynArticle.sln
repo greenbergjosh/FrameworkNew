@@ -85,6 +85,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalApiLib", "SignalApiLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwsKinesisConsumerDataLib", "AwsKinesisConsumerDataLib\AwsKinesisConsumerDataLib.csproj", "{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGreatWallOfDataLib", "TheGreatWallOfDataLib\TheGreatWallOfDataLib.csproj", "{079A16A3-B443-49B7-9CF6-3444D0841214}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -296,6 +298,12 @@ Global
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Release|Any CPU.Build.0 = Release|Any CPU
+		{079A16A3-B443-49B7-9CF6-3444D0841214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{079A16A3-B443-49B7-9CF6-3444D0841214}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{079A16A3-B443-49B7-9CF6-3444D0841214}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{079A16A3-B443-49B7-9CF6-3444D0841214}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{079A16A3-B443-49B7-9CF6-3444D0841214}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{079A16A3-B443-49B7-9CF6-3444D0841214}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -325,9 +333,10 @@ Global
 		{7353EB06-1E14-4424-9D7F-1B230A02E777} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 		{EE7CFB06-96DE-4E65-9C61-DFE4E7B97FC0} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{079A16A3-B443-49B7-9CF6-3444D0841214} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,9 @@
+{
+  "en": {
+    "0": "Success",
+    "1": "Unhandled exception",
+    "2": "Server resource exception - Some external resource such as the DB or required API is down",
+    "100": "Function unhandled exception",
+    "106": "Invalid auth"
+  }
+}
