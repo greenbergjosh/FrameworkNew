@@ -6,6 +6,7 @@ import createPersistPlugin from "@rematch/persist"
 import createSelectPlugin from "@rematch/select"
 
 import { globalConfig } from "./global-config"
+import { adminConfig } from "./admin-config"
 import { iam } from "./iam"
 import { navigation } from "./navigation"
 import { reports } from "./reports"
@@ -13,6 +14,7 @@ import * as Store from "./store.types"
 
 const _store = Rematch.init({
   models: ({
+    adminConfig,
     globalConfig,
     iam,
     navigation,

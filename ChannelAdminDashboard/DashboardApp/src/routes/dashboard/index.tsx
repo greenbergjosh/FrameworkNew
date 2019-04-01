@@ -30,6 +30,7 @@ export function Dashboard(props: Props): JSX.Element {
   const [state, dispatch] = useRematch(store, (s) => ({
     iam: s.iam,
     paths: s.navigation.routes,
+    adminConfig: s.adminConfig,
   }))
 
   const handleLogout = React.useCallback(() => {
@@ -87,6 +88,17 @@ export function Dashboard(props: Props): JSX.Element {
                 )
               })
           })(props.subroutes)}
+          {
+            state.adminConfig.components.map(({routable, id, title}) =>
+            !routable
+              ? null
+              : <Menu.Item key={id}>
+                <span>{title}</span>
+              </Menu.Item>
+            )
+          }
+          <Menu.Divider />
+
         </Menu>
       </Layout.Sider>
 
