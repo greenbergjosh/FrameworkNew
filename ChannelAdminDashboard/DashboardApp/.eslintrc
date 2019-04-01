@@ -55,11 +55,13 @@
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/array-type": 0,
     "import/no-default-export": 0,
+    "import/named": 0,
     "no-use-before-define": 0,
     "no-useless-constructor": 0,
     "react-hooks/exhaustive-deps": 1,
     "react-hooks/rules-of-hooks": 2,
-    "react/prop-types": 0
+    "react/prop-types": 0,
+    "react/display-name": 0
   },
   "settings": {
     "import/extensions": [".js", ".jsx", ".ts", ".tsx"],

@@ -20,9 +20,9 @@ import image from "../../images/go-get-em-coffee-mug.jpg"
 import { store } from "../../state/store"
 import styles from "./landing.module.css"
 import * as Reach from "@reach/router"
-import { RouteMeta } from "../../state/navigation"
+import { RouteMeta, RouteProps } from "../../state/navigation"
 
-interface Props extends Reach.RouteComponentProps, RouteMeta {}
+interface Props extends RouteProps {}
 
 export function Landing(props: Props) {
   const [state, dispatch] = useRematch(store, (s) => ({
@@ -66,13 +66,17 @@ export function Landing(props: Props) {
                         className={styles.loginFormArea}>
                         <Form.Item>
                           <Input
-                            prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
+                            prefix={
+                              <Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />
+                            }
                             placeholder="Username"
                           />
                         </Form.Item>
                         <Form.Item>
                           <Input
-                            prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
+                            prefix={
+                              <Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />
+                            }
                             type="password"
                             placeholder="Password"
                           />
@@ -100,7 +104,11 @@ export function Landing(props: Props) {
                     </Divider>
 
                     <Row>
-                      <Button block={true} htmlType="button" icon="google" onClick={attemptLogin}>
+                      <Button
+                        block={true}
+                        htmlType="button"
+                        icon="google"
+                        onClick={attemptLogin}>
                         Sign In With Google
                       </Button>
                     </Row>
@@ -124,7 +132,8 @@ export function Landing(props: Props) {
                         <HorizontalSpace size={25} />
 
                         <div>
-                          <Typography.Text className={styles.welcomeBackText}>{`Welcome back, ${
+                          <Typography.Text
+                            className={styles.welcomeBackText}>{`Welcome back, ${
                             profile.name
                           }!`}</Typography.Text>
                         </div>
