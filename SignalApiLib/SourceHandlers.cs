@@ -32,7 +32,7 @@ namespace SignalApiLib
 
             if (body is JObject b)
             {
-                if (b["k"].ToString() != Key) return null;
+                if (b["k"]?.ToString() != Key) throw new Exception($"Key does not match: {b["k"] ?? "null"}");
 
                 var token = b["p"];
                 IEnumerable<SourceData> payloads;
@@ -78,7 +78,7 @@ namespace SignalApiLib
             return null;
         }
 
-        private SourceData Mutate(JObject s) => new SourceData { em = s["em"].ToString(), src = "fluent"};
+        private SourceData Mutate(JObject s) => new SourceData { em = s["em"].ToString(), src = "fluent" };
 
         private async Task PostToQueue(IEnumerable<SourceData> payloads)
         {
