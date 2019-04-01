@@ -18,7 +18,7 @@ namespace TheGreatWallOfDataLib.Scopes
         private static readonly (string scope, (string funcName, ApiFunc func)[] funcs)[] __ = new[]
         {
             ("config", new [] {
-                ("merge", (ApiFunc) Config.Merge)
+                ("merge", new ApiFunc(async (fw, p, i) => await Config.Merge(fw, "config", p, i)))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
