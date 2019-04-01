@@ -36,19 +36,27 @@ export type AppSelectors = {
     : void
 }
 
+// export type AppSelectors = {
+//   [K in keyof AppModels]: AppModels[K] extends { selectors: {} }
+//     ? {}
+//     : AppModels[K] extends { selectors: object }
+//     ? AppModels[K]["selectors"]
+//     : void
+// }
+
 /**
  * This utility type makes it easier to annotate the Props
  * type parameter in `React.Component<P,S>` or `React.FunctionComponent<P>`
  * for components that are connected the the store. It merges
- * [[Props]] and [[PropseMappedFromState]] and finally merges in
+ * [[Props]] and [[PropsMappedFromState]] and finally merges in
  * the `dispatch` prop with the [[AppDispatch]] type
  *
  * @example
  * React.SFC<OwnProps, ReturnType<typeof mapStateToProps>
  */
 export type Connect<
-  Props extends Record<string, any>,
-  PropsMappedFromState extends Record<string, any>
+  Props extends Record<string, unknown>,
+  PropsMappedFromState extends Record<string, unknown>
 > = Props & PropsMappedFromState & { dispatch: AppDispatch }
 
 /**
@@ -57,31 +65,11 @@ export type Connect<
  * autocompletion againt the interfaces already defined
  * and registered
  */
-export interface AppModel<S, R, E, PublicSelectors = {}> {
+export interface AppModel<S, R, E, PublicSelectors = Record<string, never>> {
   state: S
-  reducers: R
-  effects: E | ((dispatch: AppDispatch) => E)
+  reducers?: R
+  effects?: E | ((dispatch: AppDispatch) => E)
   selectors?: AppModelToSelectorFactory<S, AppState, PublicSelectors>
-}
-
-/**
- * ---- AppModelWithSelectors<S, R, E, PublicSelectors> -----
- *
- * A utility type for annotating the type/interface of
- * a rematch model config that implements some selectors,
- * enabling typechecking and autocompletion againt the
- * interfaces already defined and registered
- */
-export interface AppModelWithSelectors<
-  S,
-  R extends Record<string, (...args: any[]) => S>,
-  E extends Record<string, (...args: any[]) => any>,
-  PublicSelectors
-> {
-  state: S
-  reducers: R
-  effects: (dispatch: AppDispatch) => E | E
-  selectors: AppModelToSelectorFactory<S, AppState, PublicSelectors>
 }
 
 export type AppModelToSelectorFactory<
@@ -89,13 +77,13 @@ export type AppModelToSelectorFactory<
   RootState extends Record<string, any>,
   PublicSelectors
 > = (
-  slice: <T>(selfSelectFn: (ownState: ModelState) => T) => (root: AppState) => T,
+  slice: <T>(selfSelectFn: (ownState: ModelState) => T) => (root: RootState) => T,
   createSelector: typeof Reselect["createSelector"]
 ) => { [K in keyof PublicSelectors]: (rootSelectors: AppSelectors) => PublicSelectors[K] }
 
-export type PrivateEffect2Public<PrivateEff extends (...args: any[]) => any> = PrivateEff extends (
-  payload?: infer P
-) => infer R
+export type PrivateEffect2Public<
+  PrivateEff extends (...args: any[]) => any
+> = PrivateEff extends (payload?: infer P) => infer R
   ? (payload?: P) => R
   : PrivateEff extends () => infer R
   ? () => R
@@ -129,12 +117,16 @@ export type PrivateReducer2Public<
 
 export type ReducerConfigs = { [K in keyof AppModels]: AppModels[K]["reducers"] }
 export type EffectConfigs = { [K in keyof AppModels]: AppModels[K]["effects"] }
-export type PublicEffects = { [K in keyof EffectConfigs]: PrivateEffects2Public<EffectConfigs[K]> }
+export type PublicEffects = {
+  [K in keyof EffectConfigs]: PrivateEffects2Public<EffectConfigs[K]>
+}
 export type PublicReducers = {
   [K in keyof ReducerConfigs]: ReducerConfig2PublicReducers<ReducerConfigs[K]>
 }
 export type _PublicReducers = { [K in keyof ReducerConfigs]: ReducerConfigs[K] }
 
 type ReducerConfig2PublicReducers<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? PrivateReducer2Public<T[K]> : never
+  [K in keyof T]: T[K] extends (...args: any[]) => any
+    ? PrivateReducer2Public<T[K]>
+    : never
 }

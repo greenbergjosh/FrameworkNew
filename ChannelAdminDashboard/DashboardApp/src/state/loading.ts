@@ -1,9 +1,12 @@
 /**
- * This stuff adds the interface for the @rematch/loading plugin,
+ * This model is provided by the @rematch/loading plugin,
  * which provides a loading model that maintains boolean flags for
  * each model and for each model's effects, allowing any part of the
  * application to easily observe what models or effects are currently
  * awaiting some asynchronous task.
+ *
+ * This file just provides type annotations for the loading model,
+ * not implementation
  */
 
 import * as Store from "./store.types"

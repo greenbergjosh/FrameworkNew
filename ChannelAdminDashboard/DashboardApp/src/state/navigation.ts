@@ -6,8 +6,10 @@ import { Dashboard } from "../routes/dashboard"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { Reports } from "../routes/dashboard/routes/reports"
 import { Report } from "../routes/dashboard/routes/reports/routes/report"
-import { LbmEditor } from "../routes/dashboard/routes/lbm-editor"
+import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config-admin"
 import { Option } from "fp-ts/lib/Option"
+import { ConfigIndex } from "../routes/dashboard/routes/global-config-admin/routes/config-index"
+import { ConfigEditor } from "../routes/dashboard/routes/global-config-admin/routes/config-index/routes/config-editor"
 
 declare module "./store.types" {
   interface AppModels {
@@ -30,6 +32,7 @@ export interface Effects {
     opts: Option<Reach.NavigateOptions<LocationState>>,
     rootState: Store.AppState
   ): void
+
   goToDashboard<LocationState = void>(
     opts: Option<Reach.NavigateOptions<LocationState>>,
     rootState: Store.AppState
@@ -47,6 +50,7 @@ export interface RouteMeta {
   iconType: string
   /** the url relative to parent's abs url */
   rel: string
+  shouldAppearInSideNav: boolean
   subroutes: Array<RouteMeta>
 }
 
@@ -60,6 +64,7 @@ const home: RouteMeta = {
   displayName: "Home",
   iconType: "home",
   rel: "/",
+  shouldAppearInSideNav: false,
   subroutes: [],
 }
 
@@ -69,6 +74,7 @@ const dashboard: RouteMeta = {
   displayName: "Dashboard",
   iconType: "dashboard",
   rel: "dashboard",
+  shouldAppearInSideNav: false,
   subroutes: [
     {
       abs: "/dashboard",
@@ -76,6 +82,7 @@ const dashboard: RouteMeta = {
       displayName: "Summary",
       iconType: "dashboard",
       rel: "/",
+      shouldAppearInSideNav: true,
       subroutes: [],
     },
     {
@@ -84,6 +91,7 @@ const dashboard: RouteMeta = {
       displayName: "Reports",
       iconType: "table",
       rel: "reports",
+      shouldAppearInSideNav: true,
       subroutes: [
         {
           abs: "/dashboard/reports/visitorId",
@@ -91,6 +99,7 @@ const dashboard: RouteMeta = {
           displayName: "Visitor ID",
           iconType: "bar-chart",
           rel: "visitorId",
+          shouldAppearInSideNav: true,
           subroutes: [],
         },
         {
@@ -99,17 +108,39 @@ const dashboard: RouteMeta = {
           displayName: "Test Report",
           iconType: "bar-chart",
           rel: "test",
+          shouldAppearInSideNav: true,
           subroutes: [],
         },
       ],
     },
     {
-      abs: "/dashboard/lbm-editor",
-      component: LbmEditor,
-      displayName: "LBM Editor",
+      abs: "/dashboard/global-configs",
+      component: GlobalConfigAdmin,
+      displayName: "Global Configs",
       iconType: "code",
-      rel: "lbm-editor",
-      subroutes: [],
+      rel: "global-configs",
+      shouldAppearInSideNav: true,
+      subroutes: [
+        {
+          abs: "/dashboard/global-configs",
+          component: ConfigIndex,
+          displayName: "Configs",
+          iconType: "code",
+          rel: "/",
+          shouldAppearInSideNav: false,
+          subroutes: [
+            {
+              abs: "/dashboard/global-configs/:configId",
+              component: ConfigEditor,
+              displayName: "Editor",
+              iconType: "code",
+              rel: ":configId",
+              shouldAppearInSideNav: false,
+              subroutes: [],
+            },
+          ],
+        },
+      ],
     },
   ],
 }
@@ -127,7 +158,11 @@ export const navigation: Store.AppModel<State, Reducers, Effects> = {
         () => Reach.navigate(dashboard.abs),
         (opts) => Reach.navigate(dashboard.abs, opts)
       ),
+
     goToLanding: (opts) =>
-      opts.foldL(() => Reach.navigate(home.abs), (opts) => Reach.navigate(home.abs, opts)),
+      opts.foldL(
+        () => Reach.navigate(home.abs),
+        (opts) => Reach.navigate(home.abs, opts)
+      ),
   }),
 }
