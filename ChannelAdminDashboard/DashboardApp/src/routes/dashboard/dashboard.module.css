@@ -1,0 +1,61 @@
+.fullHeight {
+  height: 100vh;
+}
+
+.horizontalMenu > * {
+  float: right;
+}
+
+.image {
+  filter: brightness(0.7) contrast(90%);
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.sidebar {
+  width: 100vw !important;
+  max-width: 400px !important;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 200;
+  text-align: center;
+}
+
+.topToolbar {
+  background-color: #fff;
+  height: 64px;
+  padding: 0;
+}
+
+.trigger {
+  font-size: 18px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 32px;
+  background: rgba(255, 255, 255, 0);
+  margin: 16px;
+  transition: transform ease-in-out;
+}
+
+.logo * {
+  color: #fff !important;
+  font-weight: 300 !important;
+}
+
+.logo.logoCollapsed {
+  transform: scale(0.5);
+}
