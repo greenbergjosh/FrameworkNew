@@ -11,15 +11,13 @@ import { navigation } from "./navigation"
 import { reports } from "./reports"
 import * as Store from "./store.types"
 
-// ignoring types from Rematch because they're impossible to work with
-// @ts-ignore
 const _store = Rematch.init({
-  models: {
+  models: ({
     globalConfig,
     iam,
     navigation,
     reports,
-  },
+  } as unknown) as Rematch.Models, // Rematch types are difficult to work with :(
   plugins: [
     createLoadingPlugin(),
     createPersistPlugin({ storage, whitelist: [] }),
@@ -27,6 +25,7 @@ const _store = Rematch.init({
   ],
 })
 
+// exporting a customized version of the store with better type annotations
 export const store = {
   ..._store,
   getState: _store.getState as () => Store.AppState,
