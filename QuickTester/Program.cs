@@ -140,11 +140,8 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
-            var fc = "a".FirstOrDefault();
-
-            return;
-            var batchSizes = new[] { 13, 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
-            //var batchSizes = new[] { 2584 }.Select(x => x.ToString());
+            //var batchSizes = new[] { 13, 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
+            var batchSizes = new[] { 2584 }.Select(x => x.ToString());
             var tf = new[] { "true", "false" };
             var cp = batchSizes.CartesianProduct(new[] { "true" }, new[] { "false" }, new[] { "false" }).ToArray();
             List<(string name, int batchSize, bool global, bool sync, bool v1)> tests = new List<(string name, int batchSize, bool global, bool sync, bool v1)>();// { ("_current", 1, true, true, false) };
@@ -174,6 +171,11 @@ namespace QuickTester
                     if (!l.IsNullOrWhitespace()) emails.Add(l.Trim().ToLower());
                 }
             }
+
+            var batch = emails.Batch(2584).First();
+            var pl = Jw.Serialize(new {CampaignId = "934FA978-376D-4C2A-8FE6-02FE10CC7AAB", GlobalSuppression = true, EmailMd5 = batch.ToArray()});
+
+            return;
 
             //using (var ow = File.CreateText("C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/performanceTestMD5s.txt"))
             //{

@@ -1322,9 +1322,11 @@ namespace UnsubLib
 
                     if (md5.Contains("@"))
                     {
-                        var email = Hashing.CalculateMD5Hash(md5.ToLower());
+                        var email = md5;
 
-                        md5s.Add(email);
+                        md5 = Hashing.CalculateMD5Hash(email.ToLower());
+
+                        md5s.Add(md5);
                         requestemails.Add(md5, email);
                     }
                     else
