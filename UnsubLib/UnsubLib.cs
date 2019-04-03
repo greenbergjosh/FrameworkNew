@@ -1326,8 +1326,11 @@ namespace UnsubLib
 
                         md5 = Hashing.CalculateMD5Hash(email.ToLower());
 
-                        md5s.Add(md5);
-                        requestemails.Add(md5, email);
+                        if (!requestemails.ContainsKey(md5))
+                        {
+                            md5s.Add(md5);
+                            requestemails.Add(md5, email);
+                        }
                     }
                     else
                     {
@@ -1362,7 +1365,7 @@ namespace UnsubLib
             }
             catch (Exception ex)
             {
-                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex}");
+                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex.UnwrapForLog()}");
                 throw new Exception("Search failed.");
             }
         }
