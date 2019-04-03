@@ -15,17 +15,8 @@ import * as Reselect from "reselect"
  *
  */
 export interface AppModels {}
-export type ReducerConfigs = { [K in keyof AppModels]: AppModels[K]["reducers"] }
-export type EffectConfigs = { [K in keyof AppModels]: AppModels[K]["effects"] }
-/**
- * The root state of the store
- */
-export type AppState = { [K in keyof AppModels]: AppModels[K]["state"] }
-/**
- * The dispatch function / object enhanced and returned by `Rematch.init`
- */
-export type AppDispatch = EffectConfigs & ReducerConfigs & Rematch.RematchDispatch
-
+export type AppReducers = { [K in keyof AppModels]: AppModels[K]["reducers"] }
+export type AppEffects = { [K in keyof AppModels]: AppModels[K]["effects"] }
 /**
  * groups all selectors by model name, creating the interface for [[store.select]]
  */
@@ -36,6 +27,14 @@ export type AppSelectors = {
     ? AppModels[K]["selectors"]
     : void
 }
+/**
+ * The root state of the store
+ */
+export type AppState = { [K in keyof AppModels]: AppModels[K]["state"] }
+/**
+ * The dispatch function / object enhanced and returned by `Rematch.init`
+ */
+export type AppDispatch = AppEffects & AppReducers & Rematch.RematchDispatch
 
 /**
  * This utility type makes it easier to annotate the Props
