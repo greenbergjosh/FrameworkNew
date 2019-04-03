@@ -27,7 +27,7 @@ function toggleSiderCollapsed(): void {
 export function Dashboard(props: Props): JSX.Element {
   const { siderCollapsed } = useAtom(atom)
 
-  const [state, dispatch] = useRematch(store, (s) => ({
+  const [state, dispatch] = useRematch((s) => ({
     iam: s.iam,
     paths: s.navigation.routes,
     adminConfig: s.adminConfig,

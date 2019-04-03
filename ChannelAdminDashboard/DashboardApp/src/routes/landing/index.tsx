@@ -17,15 +17,13 @@ import React from "react"
 import { HorizontalSpace } from "../../components/horizontal-space"
 import { useRematch } from "../../hooks/use-rematch"
 import image from "../../images/go-get-em-coffee-mug.jpg"
-import { store } from "../../state/store"
 import styles from "./landing.module.css"
-import * as Reach from "@reach/router"
-import { RouteMeta, RouteProps } from "../../state/navigation"
+import { RouteProps } from "../../state/navigation"
 
 interface Props extends RouteProps {}
 
 export function Landing(props: Props) {
-  const [state, dispatch] = useRematch(store, (s) => ({
+  const [{ iam }, dispatch] = useRematch((s) => ({
     iam: s.iam,
   }))
 
@@ -48,7 +46,7 @@ export function Landing(props: Props) {
 
           <Col className={styles.fullHeight} xs={24} md={12} lg={8}>
             <Layout className={styles.fullHeight}>
-              {state.iam.profile.foldL(
+              {iam.profile.foldL(
                 () => (
                   <Layout.Content className={styles.sidebarRightContent}>
                     <Row>
