@@ -15,7 +15,8 @@ import * as Reselect from "reselect"
  *
  */
 export interface AppModels {}
-
+export type ReducerConfigs = { [K in keyof AppModels]: AppModels[K]["reducers"] }
+export type EffectConfigs = { [K in keyof AppModels]: AppModels[K]["effects"] }
 /**
  * The root state of the store
  */
@@ -23,7 +24,7 @@ export type AppState = { [K in keyof AppModels]: AppModels[K]["state"] }
 /**
  * The dispatch function / object enhanced and returned by `Rematch.init`
  */
-export type AppDispatch = PublicEffects & PublicReducers & Rematch.RematchDispatch
+export type AppDispatch = EffectConfigs & ReducerConfigs & Rematch.RematchDispatch
 
 /**
  * groups all selectors by model name, creating the interface for [[store.select]]
@@ -35,14 +36,6 @@ export type AppSelectors = {
     ? AppModels[K]["selectors"]
     : void
 }
-
-// export type AppSelectors = {
-//   [K in keyof AppModels]: AppModels[K] extends { selectors: {} }
-//     ? {}
-//     : AppModels[K] extends { selectors: object }
-//     ? AppModels[K]["selectors"]
-//     : void
-// }
 
 /**
  * This utility type makes it easier to annotate the Props
@@ -65,11 +58,34 @@ export type Connect<
  * autocompletion againt the interfaces already defined
  * and registered
  */
-export interface AppModel<S, R, E, PublicSelectors = Record<string, never>> {
+export interface AppModel<
+  S,
+  R extends object,
+  E extends object,
+  PublicSelectors = Record<string, never>
+> {
   state: S
-  reducers?: R
-  effects?: E | ((dispatch: AppDispatch) => E)
+  reducers?: PublicReducers2ReducerConfig<S, R>
+  effects?:
+    | PublicEffects2EffectConfg<E>
+    | ((dispatch: AppDispatch) => PublicEffects2EffectConfg<E>)
   selectors?: AppModelToSelectorFactory<S, AppState, PublicSelectors>
+}
+
+type PublicReducers2ReducerConfig<S, Reducers extends object> = {
+  [R in keyof Reducers]: Reducers[R] extends (...args: infer Args) => S
+    ? (state: S, ...args: Args) => S
+    : never
+}
+
+type PublicEffects2EffectConfg<Effects extends object> = {
+  [K in keyof Effects]: Effects[K] extends (payload: infer P, meta: infer M) => infer R
+    ? (payload: P, rootState: AppState, meta: M) => R
+    : Effects[K] extends (payload: infer P) => infer R
+    ? (payload: P, rootState: AppState) => R
+    : Effects[K] extends () => infer R
+    ? (_: void, rootState: AppState) => R
+    : never
 }
 
 export type AppModelToSelectorFactory<
@@ -80,53 +96,3 @@ export type AppModelToSelectorFactory<
   slice: <T>(selfSelectFn: (ownState: ModelState) => T) => (root: RootState) => T,
   createSelector: typeof Reselect["createSelector"]
 ) => { [K in keyof PublicSelectors]: (rootSelectors: AppSelectors) => PublicSelectors[K] }
-
-export type PrivateEffect2Public<
-  PrivateEff extends (...args: any[]) => any
-> = PrivateEff extends (payload?: infer P) => infer R
-  ? (payload?: P) => R
-  : PrivateEff extends () => infer R
-  ? () => R
-  : PrivateEff extends (payload: infer P) => infer R
-  ? (payload: P) => R
-  : PrivateEff extends (payload: void, root: any) => infer R
-  ? () => R
-  : PrivateEff extends (payload: infer P, root: any, meta?: infer M) => infer R
-  ? (payload: P, meta?: M) => R
-  : PrivateEff extends (payload: infer P, root: any) => infer R
-  ? (payload: P) => R
-  : PrivateEff extends (payload: infer P, root: any, meta: infer M) => infer R
-  ? (payload: P, meta: M) => R
-  : never
-
-export type PrivateEffects2Public<PrivateEffs> = {
-  [K in keyof PrivateEffs]: PrivateEffs[K] extends (...args: any[]) => any
-    ? PrivateEffect2Public<PrivateEffs[K]>
-    : never
-}
-
-export type PrivateReducer2Public<
-  PrivateReducer extends (...args: any[]) => any
-> = PrivateReducer extends () => any
-  ? () => void
-  : PrivateReducer extends (state: any) => any
-  ? () => void
-  : PrivateReducer extends (state: any, payload: infer P) => any
-  ? (payload: P) => void
-  : never
-
-export type ReducerConfigs = { [K in keyof AppModels]: AppModels[K]["reducers"] }
-export type EffectConfigs = { [K in keyof AppModels]: AppModels[K]["effects"] }
-export type PublicEffects = {
-  [K in keyof EffectConfigs]: PrivateEffects2Public<EffectConfigs[K]>
-}
-export type PublicReducers = {
-  [K in keyof ReducerConfigs]: ReducerConfig2PublicReducers<ReducerConfigs[K]>
-}
-export type _PublicReducers = { [K in keyof ReducerConfigs]: ReducerConfigs[K] }
-
-type ReducerConfig2PublicReducers<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any
-    ? PrivateReducer2Public<T[K]>
-    : never
-}
