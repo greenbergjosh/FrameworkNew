@@ -29,13 +29,11 @@ export interface Reducers {}
 
 export interface Effects {
   goToLanding<LocationState = void>(
-    opts: Option<Reach.NavigateOptions<LocationState>>,
-    rootState: Store.AppState
+    opts: Option<Reach.NavigateOptions<LocationState>>
   ): void
 
   goToDashboard<LocationState = void>(
-    opts: Option<Reach.NavigateOptions<LocationState>>,
-    rootState: Store.AppState
+    opts: Option<Reach.NavigateOptions<LocationState>>
   ): void
 }
 

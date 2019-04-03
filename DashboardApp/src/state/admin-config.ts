@@ -17,11 +17,9 @@ export interface State {
   components: Array<AdminComponent>
 }
 
-export interface Reducers {
-}
+export interface Reducers {}
 
-export interface Effects {
-}
+export interface Effects {}
 
 export const adminConfig: Store.AppModel<State, Reducers, Effects> = {
   state: {
