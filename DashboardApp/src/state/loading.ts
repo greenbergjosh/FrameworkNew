@@ -18,7 +18,7 @@ declare module "./store.types" {
 }
 
 export type EffsLoading = {
-  [K in keyof Store.EffectConfigs]: { [KK in keyof Store.EffectConfigs[K]]: boolean }
+  [K in keyof Store.AppEffects]: { [KK in keyof Store.AppEffects[K]]: boolean }
 }
 
 export type ModelsLoading = { [K in keyof Store.AppModels]: boolean }
