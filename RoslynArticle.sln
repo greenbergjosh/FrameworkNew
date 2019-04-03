@@ -85,7 +85,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalApiLib", "SignalApiLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwsKinesisConsumerDataLib", "AwsKinesisConsumerDataLib\AwsKinesisConsumerDataLib.csproj", "{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheGreatWallOfDataLib", "TheGreatWallOfDataLib\TheGreatWallOfDataLib.csproj", "{079A16A3-B443-49B7-9CF6-3444D0841214}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGreatWallOfDataLib", "TheGreatWallOfDataLib\TheGreatWallOfDataLib.csproj", "{079A16A3-B443-49B7-9CF6-3444D0841214}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailReports", "EmailReports\EmailReports.csproj", "{473221BA-2366-4A24-B6AF-7600F7EEA230}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -304,6 +306,12 @@ Global
 		{079A16A3-B443-49B7-9CF6-3444D0841214}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{079A16A3-B443-49B7-9CF6-3444D0841214}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{079A16A3-B443-49B7-9CF6-3444D0841214}.Release|Any CPU.Build.0 = Release|Any CPU
+		{473221BA-2366-4A24-B6AF-7600F7EEA230}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{473221BA-2366-4A24-B6AF-7600F7EEA230}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{473221BA-2366-4A24-B6AF-7600F7EEA230}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{473221BA-2366-4A24-B6AF-7600F7EEA230}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{473221BA-2366-4A24-B6AF-7600F7EEA230}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{473221BA-2366-4A24-B6AF-7600F7EEA230}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -334,9 +342,10 @@ Global
 		{EE7CFB06-96DE-4E65-9C61-DFE4E7B97FC0} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{079A16A3-B443-49B7-9CF6-3444D0841214} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{473221BA-2366-4A24-B6AF-7600F7EEA230} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal
