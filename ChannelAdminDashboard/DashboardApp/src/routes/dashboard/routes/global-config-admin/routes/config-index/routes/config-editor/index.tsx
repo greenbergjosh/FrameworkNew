@@ -65,7 +65,6 @@ interface Props extends RouteProps {
 }
 
 export const ConfigEditor = React.memo(function ConfigEditor(props: Props) {
-  console.log("editor rendered", props.configId)
   const { configDrafts, configsEditing } = useAtom(atom)
   const [{ config }] = useRematch(
     (s) => ({
