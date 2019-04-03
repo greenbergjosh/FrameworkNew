@@ -29,11 +29,6 @@ export interface Effects {}
 export interface Selectors {
   configTypes(state: Store.AppState): Array<Config["Type"]>
 }
-console.log(
-  ConfigurationArrayCodec.encode(
-    ConfigurationArrayCodec.decode(GlobalConfig.Config).getOrElse([])
-  )
-)
 export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
     configs: ConfigurationArrayCodec.decode(GlobalConfig.Config).getOrElse([]),

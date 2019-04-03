@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
+import { store } from "../state/store"
 
 /* ---------- HELPERS -------------- */
 function ObjectIs(x: unknown, y: unknown): boolean {
@@ -30,25 +31,29 @@ export function isShallowEqual(a: unknown, b: unknown): boolean {
  * as determined by a shallow equality comparison using `Object.is`
  */
 export function useRematch<Selected>(
-  rematchStore: typeof import("../state/store").store,
-  selectState: (state: import("../state/store.types").AppState) => Selected
+  selectState: (state: import("../state/store.types").AppState) => Selected,
+  deps: Array<unknown> = []
 ): [Selected, import("../state/store.types").AppDispatch] {
-  const [currSelectedState, setCurrSelectedState] = useState(() =>
-    selectState(rematchStore.getState())
+  const [selectedState, setCurrSelectedState] = useState(() =>
+    selectState(store.getState())
   )
 
+  const nextSelectedState = useMemo(() => selectState(store.getState()), deps)
   useEffect(() => {
-    const unsubscribe = rematchStore.subscribe(function useRematchSubscription() {
-      const nextSelectedState = selectState(rematchStore.getState())
-      if (!isShallowEqual(currSelectedState, nextSelectedState)) {
-        setCurrSelectedState(nextSelectedState)
+    if (nextSelectedState !== selectedState) {
+      setCurrSelectedState(nextSelectedState)
+    }
+    const unsubscribe = store.subscribe(function useRematchSubscription() {
+      const _nextSelectedState = selectState(store.getState())
+      if (!isShallowEqual(selectedState, _nextSelectedState)) {
+        setCurrSelectedState(_nextSelectedState)
       }
     })
 
     return function onUnmount() {
       unsubscribe()
     }
-  }, [currSelectedState, rematchStore, selectState, setCurrSelectedState])
+  }, deps)
 
-  return [currSelectedState, rematchStore.dispatch]
+  return [selectedState, store.dispatch]
 }
