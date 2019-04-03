@@ -17,7 +17,7 @@ export interface State {
 
 export interface Reducers {
   reset(): State
-  update(state: State, update: Partial<State>): State
+  update(updater: Partial<State>): State
 }
 
 export interface Effects {}

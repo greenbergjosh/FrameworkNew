@@ -8,7 +8,6 @@ import * as Reach from "@reach/router"
 
 import { useRematch } from "../../hooks/use-rematch"
 import { RouteProps, RouteMeta } from "../../state/navigation"
-import { store } from "../../state/store"
 import styles from "./dashboard.module.css"
 
 interface Props extends RouteProps {}
