@@ -7,6 +7,7 @@ declare module "./store.types" {
       state: State
       reducers: Reducers
       effects: Effects
+      selectors: Selectors
     }
   }
 }
@@ -16,18 +17,20 @@ export interface State {
 }
 
 export interface Reducers {
-  reset(): State
-  update(updater: Partial<State>): State
+  reset(): void
+  update(updater: Partial<State>): void
 }
 
 export interface Effects {}
+
+export interface Selectors {}
 
 export interface Profile {
   id: string
   name: string
 }
 
-export const iam: Store.AppModel<State, Reducers, Effects> = {
+export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
     profile: none,
   },
@@ -36,4 +39,5 @@ export const iam: Store.AppModel<State, Reducers, Effects> = {
     update: (state, updater): State => ({ ...state, ...updater }),
   },
   effects: () => ({}),
+  selectors: () => ({}),
 }

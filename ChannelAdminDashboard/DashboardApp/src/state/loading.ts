@@ -13,7 +13,12 @@ import * as Store from "./store.types"
 
 declare module "./store.types" {
   interface AppModels {
-    loading: LoadingModel
+    loading: {
+      state: { effects: EffsLoading; models: ModelsLoading }
+      reducers: {}
+      effects: {}
+      selectors: {}
+    }
   }
 }
 
@@ -22,9 +27,3 @@ export type EffsLoading = {
 }
 
 export type ModelsLoading = { [K in keyof Store.AppModels]: boolean }
-
-export interface LoadingModel {
-  state: { effects: EffsLoading; models: ModelsLoading }
-  reducers: {}
-  effects: {}
-}
