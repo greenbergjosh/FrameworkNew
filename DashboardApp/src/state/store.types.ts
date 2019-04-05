@@ -15,6 +15,15 @@ import * as Reselect from "reselect"
  *
  */
 export interface AppModels {}
+
+export type AppModelConfigs = {
+  [K in keyof AppModels]: AppModel<
+    AppModels[K]["state"],
+    AppModels[K]["reducers"],
+    AppModels[K]["effects"],
+    AppModels[K]["selectors"]
+  >
+}
 export type AppReducers = { [K in keyof AppModels]: AppModels[K]["reducers"] }
 export type AppEffects = { [K in keyof AppModels]: AppModels[K]["effects"] }
 /**
@@ -61,20 +70,20 @@ export interface AppModel<
   S,
   R extends object,
   E extends object,
-  PublicSelectors = Record<string, never>
+  PublicSelectors extends object
 > {
   state: S
-  reducers?: PublicReducers2ReducerConfig<S, R>
-  effects?:
+  reducers: {
+    [K in keyof R]: R[K] extends () => void
+      ? (state: S) => void
+      : R[K] extends (payload: infer P) => void
+      ? (state: S, payload: P) => void
+      : never
+  }
+  effects:
     | PublicEffects2EffectConfg<E>
     | ((dispatch: AppDispatch) => PublicEffects2EffectConfg<E>)
-  selectors?: AppModelToSelectorFactory<S, AppState, PublicSelectors>
-}
-
-type PublicReducers2ReducerConfig<S, Reducers extends object> = {
-  [R in keyof Reducers]: Reducers[R] extends (...args: infer Args) => S
-    ? (state: S, ...args: Args) => S
-    : never
+  selectors: AppModelToSelectorFactory<S, PublicSelectors>
 }
 
 type PublicEffects2EffectConfg<Effects extends object> = {
@@ -87,11 +96,7 @@ type PublicEffects2EffectConfg<Effects extends object> = {
     : never
 }
 
-export type AppModelToSelectorFactory<
-  ModelState extends Record<string, any>,
-  RootState extends Record<string, any>,
-  PublicSelectors
-> = (
-  slice: <T>(selfSelectFn: (ownState: ModelState) => T) => (root: RootState) => T,
+export type AppModelToSelectorFactory<ModelState, PublicSelectors> = (
+  slice: <T>(selfSelectFn: (ownState: ModelState) => T) => (root: AppState) => T,
   createSelector: typeof Reselect["createSelector"]
 ) => { [K in keyof PublicSelectors]: (rootSelectors: AppSelectors) => PublicSelectors[K] }

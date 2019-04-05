@@ -1,27 +1,28 @@
-import storage from "redux-persist/lib/storage"
-
 import Rematch from "@rematch/core"
 import createLoadingPlugin from "@rematch/loading"
 import createPersistPlugin from "@rematch/persist"
 import createSelectPlugin from "@rematch/select"
-
-import { globalConfig } from "./global-config"
+import storage from "redux-persist/lib/storage"
+import { Omit } from "utility-types"
 import { adminConfig } from "./admin-config"
+import { globalConfig } from "./global-config"
 import { iam } from "./iam"
 import { navigation } from "./navigation"
 import { reports } from "./reports"
 import * as Store from "./store.types"
 
+const appModels: Omit<Store.AppModelConfigs, "loading"> = {
+  adminConfig,
+  globalConfig,
+  iam,
+  navigation,
+  reports,
+}
+
 const _store = Rematch.init({
-  models: ({
-    adminConfig,
-    globalConfig,
-    iam,
-    navigation,
-    reports,
-  } as unknown) as Rematch.Models, // Rematch types are difficult to work with :(
+  models: (appModels as unknown) as Rematch.Models, // Rematch types are difficult to work with :(
   plugins: [
-    createLoadingPlugin(),
+    createLoadingPlugin({}),
     createPersistPlugin({ storage, whitelist: [] }),
     createSelectPlugin(),
   ],
