@@ -1,104 +1,110 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosError } from "axios"
 import { Option } from "fp-ts/lib/Option"
 import { Either, left } from "fp-ts/lib/Either"
-import { Task } from "fp-ts/lib/Task"
 import { identity } from "fp-ts/lib/function"
+import { Type } from "io-ts"
+import { failure } from "io-ts/lib/PathReporter"
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE"
 
-export interface Request<a> {
+// export class BadUrl {
+//   public readonly _tag: "BadUrl" = "BadUrl"
+//   public constructor(public readonly value: string) {}
+// }
+
+// export class Timeout {
+//   public readonly _tag: "Timeout" = "Timeout"
+// }
+
+// export class NetworkError {
+//   public readonly _tag: "NetworkError" = "NetworkError"
+//   public constructor(public readonly value: string) {}
+// }
+
+// export class BadStatus {
+//   public readonly _tag: "BadStatus" = "BadStatus"
+//   public constructor(public readonly response: HttpResponse<string>) {}
+// }
+
+// export class BadPayload {
+//   public readonly _tag: "BadPayload" = "BadPayload"
+//   public constructor(
+//     public readonly value: string,
+//     public readonly response: HttpResponse<string>
+//   ) {}
+// }
+
+export function BadStatus(response: HttpResponse<string>): HttpError {
+  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
+    return onBadStatus(response)
+  }
+}
+export function BadPayload(value: string, response: HttpResponse<string>): HttpError {
+  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
+    return onBadPayload(value, response)
+  }
+}
+export function BadUrl(value: string): HttpError {
+  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
+    return onBadUrl(value)
+  }
+}
+export function NetworkError(value: string): HttpError {
+  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
+    return onNetworkError(value)
+  }
+}
+export function Timeout(req: HttpRequest<unknown>): HttpError {
+  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
+    return onTimeout(req)
+  }
+}
+
+export type HttpError = <R>(
+  onBadStatus: (res: HttpResponse<string>) => R,
+  onBadPayload: (message: string, res: HttpResponse<string>) => R,
+  onBadUrl: (message: string) => R,
+  onNetworkError: (message: string) => R,
+  onTimeout: (req: HttpRequest<unknown>) => R
+) => R
+
+// export type HttpError = BadUrl | Timeout | NetworkError | BadStatus | BadPayload
+
+export interface HttpRequest<A> {
   method: Method
   headers: { [key: string]: string }
   url: string
   body?: unknown
-  expect: Expect<a>
+  expect: Type<A, any, unknown>
   timeout: Option<number>
   withCredentials: boolean
 }
 
-export type Expect<a> = (value: unknown) => Either<string, a>
-
-export class BadUrl {
-  public readonly _tag: "BadUrl" = "BadUrl"
-  public constructor(public readonly value: string) {}
-}
-
-export class Timeout {
-  public readonly _tag: "Timeout" = "Timeout"
-}
-
-export class NetworkError {
-  public readonly _tag: "NetworkError" = "NetworkError"
-  public constructor(public readonly value: string) {}
-}
-
-export class BadStatus {
-  public readonly _tag: "BadStatus" = "BadStatus"
-  public constructor(public readonly response: Response<string>) {}
-}
-
-export class BadPayload {
-  public readonly _tag: "BadPayload" = "BadPayload"
-  public constructor(public readonly value: string, public readonly response: Response<string>) {}
-}
-
-export type HttpError = BadUrl | Timeout | NetworkError | BadStatus | BadPayload
-
-export interface Response<body> {
+export interface HttpResponse<Body> {
   url: string
   status: {
     code: number
     message: string
   }
   headers: { [key: string]: string }
-  body: body
+  body: Body
 }
 
-export function toTask<a>(req: Request<a>): Task<Either<HttpError, a>> {
-  return new Task(() =>
-    getPromiseAxiosResponse({
-      method: req.method,
-      headers: req.headers,
-      url: req.url,
-      data: req.body,
-      timeout: req.timeout.fold(undefined, identity),
-      withCredentials: req.withCredentials,
-    })
-      .then((res) => axiosResponseToEither(res, req.expect))
-      .catch((e) => axiosErrorToEither<a>(e))
-  )
+export function request<A>(req: HttpRequest<A>): Promise<Either<HttpError, A>> {
+  return getPromiseAxiosResponse({
+    method: req.method,
+    headers: req.headers,
+    url: req.url,
+    data: req.body,
+    timeout: req.timeout.fold(undefined, identity),
+    withCredentials: req.withCredentials,
+  })
+    .then((res) => axiosResponseToEither(res, req.expect))
+    .catch((e) => axiosErrorToEither<A>(e))
 }
-
-// export function expectJson<a>(decoder: Decoder<a>): Expect<a> {
-//   return decoder.decode
-// }
-
-// export function get<a>(url: string, decoder: Decoder<a>): Request<a> {
-//   return {
-//     method: "GET",
-//     headers: {},
-//     url,
-//     body: undefined,
-//     expect: expectJson(decoder),
-//     timeout: none,
-//     withCredentials: false,
-//   }
-// }
-
-// export function post<a>(url: string, body: unknown, decoder: Decoder<a>): Request<a> {
-//   return {
-//     method: "POST",
-//     headers: {},
-//     url,
-//     body,
-//     expect: expectJson(decoder),
-//     timeout: none,
-//     withCredentials: false,
-//   }
-// }
 
 // --------------- HELPERS -------------------
-function axiosResponseToResponse(res: AxiosResponse): Response<string> {
+function axiosResponseToResponse(res: AxiosResponse): HttpResponse<string> {
   return {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     url: res.config.url!,
@@ -111,23 +117,32 @@ function axiosResponseToResponse(res: AxiosResponse): Response<string> {
   }
 }
 
-function axiosResponseToEither<a>(res: AxiosResponse, expect: Expect<a>): Either<HttpError, a> {
-  return expect(res.data).mapLeft((errors) => new BadPayload(errors, axiosResponseToResponse(res)))
+function axiosResponseToEither<A>(
+  res: AxiosResponse,
+  expect: Type<A, any, unknown>
+): Either<HttpError, A> {
+  // console.log("res data >>>>>>", res.data)
+  return expect
+    .decode(res.data)
+    .mapLeft((errors) => failure(errors).join("\n"))
+    .mapLeft((errMsg) => BadPayload(errMsg, axiosResponseToResponse(res)))
 }
 
-function axiosErrorToEither<a>(e: AxiosError): Either<HttpError, a> {
+function axiosErrorToEither<A>(e: AxiosError): Either<HttpError, A> {
   if (e.response != null) {
     const res = e.response
     switch (res.status) {
       case 404:
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return left(new BadUrl(res.config.url!))
+        return left(BadUrl(res.config.url!))
       default:
-        return left(new BadStatus(axiosResponseToResponse(res)))
+        return left(BadStatus(axiosResponseToResponse(res)))
     }
   }
 
-  return e.code === "ECONNABORTED" ? left(new Timeout()) : left(new NetworkError(e.message))
+  return e.code === "ECONNABORTED"
+    ? left(Timeout(e.request))
+    : left(NetworkError(e.message))
 }
 
 function getPromiseAxiosResponse(config: AxiosRequestConfig): Promise<AxiosResponse> {
