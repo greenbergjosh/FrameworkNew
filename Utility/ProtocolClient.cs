@@ -670,21 +670,59 @@ namespace Utility
             }
         }
 
-        public static void SendMail(string smtpRelay, int smtpPort, string from, string to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false) =>
-            SendMail(smtpRelay, smtpPort, from, new[] {to}, subject, body);
-
-        public static void SendMail(string smtpRelay, int smtpPort, string from, IEnumerable<string> to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
+        public static void SendMail(string smtpRelay, int smtpPort, MailMessage msg, bool useSsl = false)
         {
             using (var smtp = new SmtpClient(smtpRelay, smtpPort))
             {
                 smtp.EnableSsl = useSsl;
-                var msg = new MailMessage(from,to.Join(","),subject,body)
-                {
-                    IsBodyHtml = bodyIsHtml
-                };
-
                 smtp.Send(msg);
             }
+        }
+
+        public static IEnumerable<(T reference, Exception ex)> SendMail<T>(string smtpRelay, int smtpPort, IEnumerable<(T reference, MailMessage msg)> messages, bool useSsl = false)
+        {
+            using (var smtp = new SmtpClient(smtpRelay, smtpPort))
+            {
+                var results = new List<(T reference, Exception ex)>();
+
+                smtp.EnableSsl = useSsl;
+                foreach (var msg in messages)
+                {
+                    try
+                    {
+                        smtp.Send(msg.msg);
+                        results.Add((msg.reference, null));
+                    }
+                    catch (Exception e)
+                    {
+                        results.Add((msg.reference, e));
+                    }
+                }
+
+                return results;
+            }
+        }
+
+        public static void SendMail(string smtpRelay, int smtpPort, string from, string to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
+        {
+            var msg = new MailMessage(from, to, subject, body) { IsBodyHtml = bodyIsHtml };
+
+            SendMail(smtpRelay, smtpPort, msg, useSsl);
+        }
+
+        public static void SendMail(string smtpRelay, int smtpPort, string from, IEnumerable<string> to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
+        {
+            var msg = new MailMessage()
+            {
+                IsBodyHtml = bodyIsHtml,
+                From = new MailAddress(from),
+                Subject = subject,
+                Body = body
+            };
+
+            to.ForEach(t => msg.To.Add(t));
+
+            SendMail(smtpRelay, smtpPort, msg, useSsl);
         }
 
     }

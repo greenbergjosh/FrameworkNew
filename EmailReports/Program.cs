@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Utility;
@@ -13,6 +16,7 @@ namespace EmailReports
     public class Program
     {
         private static FrameworkWrapper _fw = null;
+        private static List<Action> _dispose = new List<Action>();
 
         static async Task Main(string[] args)
         {
@@ -84,22 +88,21 @@ namespace EmailReports
             {
                 try
                 {
-                    using (var smtp = new SmtpClient(smtpRelay, smtpPort))
+
+                    ProtocolClient.SendMail(smtpRelay, smtpPort, mail, smtpSsl);
+                    await _fw.Log("Sent", JsonWrapper.Serialize(new
                     {
-                        smtp.EnableSsl = smtpSsl;
-                        smtp.Send(mail);
-                        await _fw.Log("Sent", JsonWrapper.Serialize(new
-                        {
-                            Job = jobName,
-                            Config = JToken.Parse(jconf.GetS(""))
-                        }));
-                    }
+                        Job = jobName,
+                        Config = JToken.Parse(jconf.GetS(""))
+                    }));
                 }
                 catch (Exception e)
                 {
                     await _fw.Error(nameof(Main), $"Failed to send email: Job: {jobName} {e.UnwrapForLog()}");
                 }
             }
+
+            _dispose.ForEach(d => d());
         }
 
         private static async Task<MailMessage> RunJob(string jobName, string bodyTmpl, string hdrTmpl, string itemTmpl, string itemValueTmpl, IGenericEntity job)
@@ -115,13 +118,17 @@ namespace EmailReports
                 var fromStr = job.GetS("From");
                 var from = ParseAddress(fromStr);
                 var toStr = job.GetS("To");
-                var to = ParseAddress(toStr);
+                var to = ParseAddresses(toStr).ToArray();
                 var subject = job.GetS("Subject");
+                var outputStr = job.GetS("Output");
+                var output = job.GetE("Output");
+                var outPutType = output?.GetS("Type")?.ToLower();
+                var csvThreshold = job.GetS("CsvThreshold").ParseInt() ?? 20;
 
-                bodyTmpl = (job.GetS("BodyTemplate")).IfNullOrWhitespace(bodyTmpl);
-                hdrTmpl = (job.GetS("HeaderTemplate")).IfNullOrWhitespace(hdrTmpl);
-                itemTmpl = (job.GetS("ItemTemplate")).IfNullOrWhitespace(itemTmpl);
-                itemValueTmpl = (job.GetS("ItemValueTemplate")).IfNullOrWhitespace(itemValueTmpl);
+                bodyTmpl = (output.GetS("BodyTemplate")).IfNullOrWhitespace(bodyTmpl);
+                hdrTmpl = (output.GetS("HeaderTemplate")).IfNullOrWhitespace(hdrTmpl);
+                itemTmpl = (output.GetS("ItemTemplate")).IfNullOrWhitespace(itemTmpl);
+                itemValueTmpl = (output.GetS("ItemValueTemplate")).IfNullOrWhitespace(itemValueTmpl);
 
                 #region validation
                 if (from == null)
@@ -130,9 +137,9 @@ namespace EmailReports
                     isConfValid = false;
                 }
 
-                if (to == null)
+                if (!to.Any())
                 {
-                    await _fw.Error(nameof(RunJob), $"Invalid to address. Job: {jobName} To: {toStr.IfNullOrWhitespace("null")}");
+                    await _fw.Error(nameof(RunJob), $"Invalid to addresses. Job: {jobName} To: {toStr.IfNullOrWhitespace("null")}");
                     isConfValid = false;
                 }
 
@@ -171,6 +178,16 @@ namespace EmailReports
                 #endregion
 
                 var res = await Data.CallFn(conn, func, args, payload);
+
+#if TRACE
+                var fn = $"{DateTime.Now:MM-dd-HH-mm-ss}";
+
+                using (var fs = File.CreateText(Path.Join(Directory.GetCurrentDirectory(), $"{fn}.json")))
+                {
+                    fs.Write(res.GetS(""));
+                }
+#endif
+
                 var resSet = res?.GetE(resultPath);
                 var resStr = resSet?.GetS("")?.Trim();
 
@@ -189,19 +206,82 @@ namespace EmailReports
                 }
 
                 var props = items.First().GetD("").Select(t => t.Item1).ToArray();
-                var body = bodyTmpl
-                    .Replace("[Headers]", props.Select(p => hdrTmpl.Replace("[Prop]", HtmlEscape(p))).Join(""))
-                    .Replace("[Items]", items.Select(i =>
-                    {
-                        return itemTmpl.Replace("[Values]", props.Select(p => itemValueTmpl.Replace("[Value]", HtmlEscape(i.GetS(p)))).Join(""));
-                    }).Join(""));
+                var ptf = job.GetD("PropertyToField")?.ToArray();
+                var fieldNames = ptf?.Any() == true ? props.Select(p => ptf.FirstOrDefault(f => f.Item1 == p)?.Item2 ?? p).ToArray() : props;
 
-                return new MailMessage(from, to)
+                var msg = new MailMessage()
                 {
-                    IsBodyHtml = true,
                     Subject = subject,
-                    Body = body
+                    From = @from
                 };
+
+                to.ForEach(e => msg.To.Add(e));
+
+                if (outPutType == "csv" || items.Length > csvThreshold)
+                {
+                    var nameFunc = output.GetS("NameFunc");
+                    var attName = $"{jobName}-{DateTime.Now:yy-MM-dd HH-mm}.csv";
+
+                    if (!nameFunc.IsNullOrWhitespace())
+                    {
+                        try
+                        {
+                            attName = (string)await _fw.RoslynWrapper.Evaluate(nameFunc, new { a = "" }, new StateWrapper());
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error(nameof(RunJob), $"Failed to execute NameFunc: Job: {jobName} Func: {nameFunc} Err: {e.UnwrapForLog()}");
+                        }
+                    }
+
+                    var strm = new MemoryStream();
+                    var sw = new StreamWriter(strm, Encoding.UTF8);
+
+                    _dispose.Add(() => sw.Close());
+
+                    string CsvEscape(string str)
+                    {
+                        str = str.Contains(",") || str.Contains("\"") ? $"\"{str.Replace("\"", "\"\"")}\"" : str;
+
+                        return str.Replace("\r", "\t").Replace("\n", "\t");
+                    }
+
+                    sw.WriteLine(fieldNames.Select(CsvEscape).Join(","));
+
+                    items.ForEach(v => sw.WriteLine(props.Select(p => CsvEscape(v.GetS(p))).Join(",")));
+
+                    sw.Flush();
+
+                    strm.Position = 0;
+
+#if TRACE
+                    using (var fs = File.CreateText(Path.Join(Directory.GetCurrentDirectory(), attName))) strm.CopyTo(fs.BaseStream);
+
+                    strm.Position = 0;
+#endif
+
+                    msg.Attachments.Add(new Attachment(strm, attName));
+                }
+                else
+                {
+                    var body = bodyTmpl
+                        .Replace("[Headers]", fieldNames.Select(p => hdrTmpl.Replace("[Prop]", HtmlEscape(p))).Join(""))
+                        .Replace("[Items]", items.Select(i =>
+                        {
+                            return itemTmpl.Replace("[Values]", props.Select(p => itemValueTmpl.Replace("[Value]", HtmlEscape(i.GetS(p)))).Join(""));
+                        }).Join(""));
+
+#if TRACE
+                    using (var fs = File.CreateText(Path.Join(Directory.GetCurrentDirectory(), $"{fn}.html")))
+                    {
+                        fs.Write(body);
+                    }
+#endif
+                    msg.IsBodyHtml = true;
+                    msg.Body = body;
+                }
+
+                return msg;
             }
             catch (Exception e)
             {
@@ -219,11 +299,23 @@ namespace EmailReports
         {
             try
             {
-                return new MailAddress(addr);
+                return new MailAddress(addr.Trim());
             }
             catch (Exception e)
             {
                 return null;
+            }
+        }
+
+        private static IEnumerable<MailAddress> ParseAddresses(string addr)
+        {
+            try
+            {
+                return addr.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(e => new MailAddress(e.Trim()));
+            }
+            catch (Exception e)
+            {
+                return new MailAddress[0];
             }
         }
 

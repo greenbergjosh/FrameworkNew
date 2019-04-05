@@ -2,7 +2,7 @@
   "profiles": {
     "EmailReports": {
       "commandName": "Project",
-      "commandLineArgs": "TestSproc"
+      "commandLineArgs": "ConsoleSignalIntersection"
     }
   }
 }

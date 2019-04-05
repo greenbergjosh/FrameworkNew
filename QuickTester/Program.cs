@@ -140,6 +140,13 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
+
+            var rs = new RoslynWrapper(new ScriptDescriptor[0], Path.Combine(Directory.GetCurrentDirectory(), "rsDebug"));
+
+            var ret = await rs.Evaluate("return $\"ConsoleSignalIntersection-{ System.DateTime.Now:yy - MM - dd HH - mm}.csv\";", new { a = "" }, new StateWrapper());
+
+            return;
+
             //var batchSizes = new[] { 13, 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
             var batchSizes = new[] { 2584 }.Select(x => x.ToString());
             var tf = new[] { "true", "false" };
@@ -173,7 +180,7 @@ namespace QuickTester
             }
 
             var batch = emails.Batch(2584).First();
-            var pl = Jw.Serialize(new {CampaignId = "934FA978-376D-4C2A-8FE6-02FE10CC7AAB", GlobalSuppression = true, EmailMd5 = batch.ToArray()});
+            var pl = Jw.Serialize(new { CampaignId = "934FA978-376D-4C2A-8FE6-02FE10CC7AAB", GlobalSuppression = true, EmailMd5 = batch.ToArray() });
 
             return;
 
