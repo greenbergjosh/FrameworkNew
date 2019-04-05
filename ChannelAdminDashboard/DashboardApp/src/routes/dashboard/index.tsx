@@ -9,6 +9,7 @@ import * as Reach from "@reach/router"
 import { useRematch } from "../../hooks/use-rematch"
 import { RouteProps, RouteMeta } from "../../state/navigation"
 import styles from "./dashboard.module.css"
+import { GoogleAuth } from "../../components/auth/GoogleAuth"
 
 interface Props extends RouteProps {}
 
@@ -29,7 +30,6 @@ export function Dashboard(props: Props): JSX.Element {
   const [state, dispatch] = useRematch((s) => ({
     iam: s.iam,
     paths: s.navigation.routes,
-    adminConfig: s.adminConfig,
   }))
 
   const handleLogout = React.useCallback(() => {
@@ -87,15 +87,6 @@ export function Dashboard(props: Props): JSX.Element {
                 )
               })
           })(props.subroutes)}
-          {
-            state.adminConfig.components.map(({routable, id, title}) =>
-            !routable
-              ? null
-              : <Menu.Item key={id}>
-                <span>{title}</span>
-              </Menu.Item>
-            )
-          }
           <Menu.Divider />
 
         </Menu>
@@ -113,22 +104,23 @@ export function Dashboard(props: Props): JSX.Element {
             </Col>
 
             <Col push={20} span={2}>
-              <Dropdown
-                overlay={
-                  <Menu
-                    onClick={({ key }) =>
-                      key === "logout" ? handleLogout() : () => null
-                    }>
-                    <Menu.Item key="logout">
-                      <Icon type="logout" />
-                      <span>Logout</span>
-                    </Menu.Item>
-                  </Menu>
-                }
-                placement="bottomCenter"
-                trigger={["click"]}>
-                <Button icon="user" shape="circle" />
-              </Dropdown>
+              <GoogleAuth />
+              {/*<Dropdown*/}
+                {/*overlay={*/}
+                  {/*<Menu*/}
+                    {/*onClick={({ key }) =>*/}
+                      {/*key === "logout" ? handleLogout() : () => null*/}
+                    {/*}>*/}
+                    {/*<Menu.Item key="logout">*/}
+                      {/*<Icon type="logout" />*/}
+                      {/*<span>Logout</span>*/}
+                    {/*</Menu.Item>*/}
+                  {/*</Menu>*/}
+                {/*}*/}
+                {/*placement="bottomCenter"*/}
+                {/*trigger={["click"]}>*/}
+                {/*<Button icon="user" shape="circle" />*/}
+              {/*</Dropdown>*/}
             </Col>
           </Row>
         </Layout.Header>

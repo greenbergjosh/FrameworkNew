@@ -1,24 +1,15 @@
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Col,
-  Divider,
-  Form,
-  Icon,
-  Input,
-  Layout,
-  Row,
-  Typography,
-} from "antd"
-import { none, some } from "fp-ts/lib/Option"
 import React from "react"
+import { none, some } from "fp-ts/lib/Option"
+import { Avatar, Button, Checkbox, Col, Divider, Form, Icon, Input, Layout, Row, Typography } from "antd"
 
 import { HorizontalSpace } from "../../components/horizontal-space"
+import { GoogleAuth } from "../../components/auth/GoogleAuth"
+
+import { RouteProps } from "../../state/navigation"
 import { useRematch } from "../../hooks/use-rematch"
+
 import image from "../../images/go-get-em-coffee-mug.jpg"
 import styles from "./landing.module.css"
-import { RouteProps } from "../../state/navigation"
 
 interface Props extends RouteProps {}
 
@@ -84,14 +75,8 @@ export function Landing(props: Props) {
                           <a className={styles.loginFormForgot} href="/">
                             Forgot password
                           </a>
-                          <Button
-                            block={true}
-                            // TODO: remove coersion when `antd` release fix in next version
-                            type={("primary" as unknown) as undefined}
-                            htmlType="button"
-                            onClick={() => alert("Not implemented")}>
-                            Log in
-                          </Button>
+
+                          <GoogleAuth />
                           Or <a href="/">register now!</a>
                         </Form.Item>
                       </Form>
@@ -102,13 +87,7 @@ export function Landing(props: Props) {
                     </Divider>
 
                     <Row>
-                      <Button
-                        block={true}
-                        htmlType="button"
-                        icon="google"
-                        onClick={attemptLogin}>
-                        Sign In With Google
-                      </Button>
+                      <GoogleAuth />
                     </Row>
                   </Layout.Content>
                 ),
