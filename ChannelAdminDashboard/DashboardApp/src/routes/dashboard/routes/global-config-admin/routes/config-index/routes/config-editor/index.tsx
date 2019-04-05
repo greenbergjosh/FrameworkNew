@@ -98,7 +98,7 @@ export const ConfigEditor = React.memo(function ConfigEditor(props: Props) {
   )
 })
 
-const activeEditorSettings: NotNil<MonacoEditorProps["options"]> = {
+const activeEditorSettings: NonNullable<MonacoEditorProps["options"]> = {
   // model: null,
   // value: undefined,
   language: "csharp",

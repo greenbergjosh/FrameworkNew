@@ -17,6 +17,7 @@ declare module "./store.types" {
       state: State
       reducers: Reducers
       effects: Effects
+      selectors: Selectors
     }
   }
 }
@@ -24,6 +25,8 @@ declare module "./store.types" {
 export interface State {
   routes: Array<RouteMeta>
 }
+
+export interface Selectors {}
 
 export interface Reducers {}
 
@@ -143,7 +146,7 @@ const dashboard: RouteMeta = {
   ],
 }
 
-export const navigation: Store.AppModel<State, Reducers, Effects> = {
+export const navigation: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
     routes: [home, dashboard],
   },
@@ -163,4 +166,5 @@ export const navigation: Store.AppModel<State, Reducers, Effects> = {
         (opts) => Reach.navigate(home.abs, opts)
       ),
   }),
+  selectors: () => ({}),
 }

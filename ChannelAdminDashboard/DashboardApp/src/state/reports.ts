@@ -6,6 +6,7 @@ declare module "./store.types" {
       state: State
       reducers: Reducers
       effects: Effects
+      selectors: Selectors
     }
   }
 }
@@ -16,10 +17,14 @@ export interface Reducers {}
 
 export interface Effects {}
 
-export const reports: Store.AppModel<State, Reducers, Effects> = {
+export interface Selectors {}
+
+export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {},
 
   reducers: {},
 
   effects: {},
+
+  selectors: () => ({}),
 }
