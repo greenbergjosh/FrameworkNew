@@ -4,32 +4,34 @@ import { createOptionFromNullable } from "io-ts-types/lib/fp-ts/createOptionFrom
 import { lensesFromInterface } from "io-ts-types/lib/monocle-ts/lensesFromInterface"
 import { fromEquals } from "fp-ts/lib/Setoid"
 
-export interface Config extends iots.TypeOf<typeof ConfigCodec> {}
-export type ConfigType = iots.TypeOf<typeof ConfigTypeCodec>
+export type Config = iots.TypeOf<typeof ConfigCodec>
+export type ConfigMeta = iots.TypeOf<typeof ConfigMetaCodec>
+export type ConfigType = string
 
-export const ConfigTypeCodec = iots.union([
-  iots.literal("AdminUser"),
-  iots.literal("ConnectionString"),
-  iots.literal("LBM"),
-  iots.literal("SimpleImportExportFtpExportJobConfig"),
-  iots.literal("SimpleImportExportFtpImportJobConfig"),
-  iots.literal("SimpleImportExportJob"),
-  iots.literal("StartupConfig"),
-  iots.literal("StartUpConfig"),
-  iots.literal("VisitorIdAffiliate"),
-  iots.literal("VisitorIdEmailProvider"),
-  iots.literal("VisitorIdMd5Provider"),
-  iots.literal("VisitorIdPublisher"),
-])
+export const ConfigMetaCodec = iots.type(
+  {
+    config: iots.null,
+    // created: createOptionFromNullable(DateFromISOString),
+    id: iots.string,
+    name: iots.string,
+    type: iots.string,
+  },
+  "GlobalConfig.ConfigMeta"
+)
 
-export const ConfigCodec = iots.interface({
-  Config: createOptionFromNullable(iots.string),
-  created: createOptionFromNullable(DateFromISOString),
-  Id: iots.string,
-  Name: iots.string,
-  Type: ConfigTypeCodec,
-})
+export const ConfigCodec = iots.type(
+  {
+    config: createOptionFromNullable(iots.string),
+    // created: createOptionFromNullable(DateFromISOString),
+    id: iots.string,
+    name: iots.string,
+    type: iots.string,
+  },
+  "GlobalConfig.Config"
+)
 
 export const ConfigurationArrayCodec = iots.array(ConfigCodec)
+export const ConfigurationMetaArrayCodec = iots.array(ConfigMetaCodec)
 export const ConfigLens = lensesFromInterface(ConfigCodec)
-export const configTypeSetoid = fromEquals<ConfigType>((a, b) => a === b)
+export const ConfigMetaLens = lensesFromInterface(ConfigMetaCodec)
+export const setoidConfigType = fromEquals<ConfigType>((a, b) => a === b)

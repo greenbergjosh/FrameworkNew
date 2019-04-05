@@ -7,10 +7,10 @@ import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
 
 import { useRematch } from "../../hooks/use-rematch"
-import { RouteProps, RouteMeta } from "../../state/navigation"
+import { RouteMeta, WithRouteProps } from "../../state/navigation"
 import styles from "./dashboard.module.css"
 
-interface Props extends RouteProps {}
+interface Props {}
 
 const atom = Atom.of({
   siderCollapsed: false,
@@ -23,7 +23,7 @@ function toggleSiderCollapsed(): void {
   swap(atom, (s) => ({ ...s, siderCollapsed: !s.siderCollapsed }))
 }
 
-export function Dashboard(props: Props): JSX.Element {
+export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
   const { siderCollapsed } = useAtom(atom)
 
   const [state, dispatch] = useRematch((s) => ({
@@ -63,7 +63,7 @@ export function Dashboard(props: Props): JSX.Element {
           selectedKeys={fromNullable(props.location)
             .map((l) => l.pathname)
             .fold([], (pn) => [pn])}>
-          {(function renderRoutesAsMenuItems(routes: Array<RouteMeta>) {
+          {(function renderRoutesAsMenuItems(routes: Array<RouteMeta<any>>) {
             return routes
               .filter((route) => route.shouldAppearInSideNav)
               .map((route) => {
@@ -87,17 +87,14 @@ export function Dashboard(props: Props): JSX.Element {
                 )
               })
           })(props.subroutes)}
-          {
-            state.adminConfig.components.map(({routable, id, title}) =>
-            !routable
-              ? null
-              : <Menu.Item key={id}>
+          {state.adminConfig.components.map(({ routable, id, title }) =>
+            !routable ? null : (
+              <Menu.Item key={id}>
                 <span>{title}</span>
               </Menu.Item>
             )
-          }
+          )}
           <Menu.Divider />
-
         </Menu>
       </Layout.Sider>
 
