@@ -8,8 +8,7 @@ import { Reports } from "../routes/dashboard/routes/reports"
 import { Report } from "../routes/dashboard/routes/reports/routes/report"
 import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config-admin"
 import { Option } from "fp-ts/lib/Option"
-import { ConfigIndex } from "../routes/dashboard/routes/global-config-admin/routes/config-index"
-import { ConfigEditor } from "../routes/dashboard/routes/global-config-admin/routes/config-index/routes/config-editor"
+import { ConfigEditor } from "../routes/dashboard/routes/global-config-admin/routes/config-editor"
 
 declare module "./store.types" {
   interface AppModels {
@@ -23,7 +22,7 @@ declare module "./store.types" {
 }
 
 export interface State {
-  routes: Array<RouteMeta>
+  routes: Array<RouteMeta<any>>
 }
 
 export interface Selectors {}
@@ -40,11 +39,11 @@ export interface Effects {
   ): void
 }
 
-export interface RouteMeta {
+export interface RouteMeta<ComponentProps> {
   /** the absolute url */
   abs: string
   /** the component to render at this route */
-  component: React.ComponentType<RouteProps>
+  component: React.ComponentType<WithRouteProps<ComponentProps>>
   /** a name for UI presentation */
   displayName: string
   /** the name of an icon from `antd` */
@@ -52,14 +51,18 @@ export interface RouteMeta {
   /** the url relative to parent's abs url */
   rel: string
   shouldAppearInSideNav: boolean
-  subroutes: Array<RouteMeta>
+  subroutes: Array<RouteMeta<any>>
 }
 
-export interface RouteProps extends RouteMeta, Reach.RouteComponentProps {
-  children: Array<JSX.Element>
-}
+// export interface RouteProps extends RouteMeta, Required<Reach.RouteComponentProps> {
+//   children: Array<JSX.Element>
+// }
 
-const home: RouteMeta = {
+export type WithRouteProps<P> = P &
+  RouteMeta<P> &
+  Required<Reach.RouteComponentProps> & { children: JSX.Element }
+
+const home: RouteMeta<PropsFromComponent<typeof Landing>> = {
   abs: "/",
   component: Landing,
   displayName: "Home",
@@ -69,7 +72,7 @@ const home: RouteMeta = {
   subroutes: [],
 }
 
-const dashboard: RouteMeta = {
+const dashboard: RouteMeta<PropsFromComponent<typeof Dashboard>> = {
   abs: "/dashboard",
   component: Dashboard,
   displayName: "Dashboard",
@@ -123,23 +126,13 @@ const dashboard: RouteMeta = {
       shouldAppearInSideNav: true,
       subroutes: [
         {
-          abs: "/dashboard/global-configs",
-          component: ConfigIndex,
-          displayName: "Configs",
+          abs: "/dashboard/global-configs/:configId",
+          component: ConfigEditor,
+          displayName: "Editor",
           iconType: "code",
-          rel: "/",
+          rel: ":configId",
           shouldAppearInSideNav: false,
-          subroutes: [
-            {
-              abs: "/dashboard/global-configs/:configId",
-              component: ConfigEditor,
-              displayName: "Editor",
-              iconType: "code",
-              rel: ":configId",
-              shouldAppearInSideNav: false,
-              subroutes: [],
-            },
-          ],
+          subroutes: [],
         },
       ],
     },
@@ -166,5 +159,6 @@ export const navigation: Store.AppModel<State, Reducers, Effects, Selectors> = {
         (opts) => Reach.navigate(home.abs, opts)
       ),
   }),
+
   selectors: () => ({}),
 }
