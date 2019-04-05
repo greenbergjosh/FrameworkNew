@@ -103,7 +103,7 @@ namespace UnsubLib
             await _fw.Trace(nameof(GetNetworks), $"Before SelectNetwork {singleNetworkName ?? "null"}");
 
             var network = await Data.CallFn(Conn, "SelectNetwork",
-                    singleNetworkName != null ? Jw.Json(new { NetworkName = singleNetworkName }) : "{}", "");
+                    singleNetworkName != null ? Jw.Serialize(new { NetworkName = singleNetworkName }) : "{}", "");
 
             await _fw.Trace(nameof(GetNetworks), $"After SelectNetwork: {network.GetS("")} {singleNetworkName ?? "null"}");
 
@@ -161,7 +161,7 @@ namespace UnsubLib
 
             await _fw.Log(nameof(ForceUnsub), $"Completed ForceUnsub: {forceName}");
 
-            return Jw.Json(new { Result = "Success" });
+            return Jw.Serialize(new { Result = "Success" });
         }
 
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
@@ -1280,7 +1280,7 @@ namespace UnsubLib
 
                 if (!isUnsub && globalSupp)
                 {
-                    var res = await Data.CallFn(Conn, "IsSuppressed", Jw.Json(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
+                    var res = await Data.CallFn(Conn, "IsSuppressed", Jw.Serialize(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
 
                     isUnsub = res.GetS("Result").ParseBool() ?? true;
                 }
@@ -1322,10 +1322,15 @@ namespace UnsubLib
 
                     if (md5.Contains("@"))
                     {
-                        var email = Hashing.CalculateMD5Hash(md5.ToLower());
+                        var email = md5;
 
-                        md5s.Add(email);
-                        requestemails.Add(md5, email);
+                        md5 = Hashing.CalculateMD5Hash(email.ToLower());
+
+                        if (!requestemails.ContainsKey(md5))
+                        {
+                            md5s.Add(md5);
+                            requestemails.Add(md5, email);
+                        }
                     }
                     else
                     {
@@ -1343,22 +1348,24 @@ namespace UnsubLib
                     return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
                 }
 
-                var notFound = (await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), md5s)).notFound;
+                var r = await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), md5s);
+
+                var emailsNotFound = requestemails.Where(kvp => r.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToArray();
+                var md5sNotFound = r.notFound.Where(m => !requestemails.ContainsKey(m)).ToArray();
 
                 if (globalSupp)
                 {
-                    var gsEmails = requestemails.Where(kvp => notFound.Contains(kvp.Key)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-                    var gsMd5s = notFound.Where(m => !gsEmails.ContainsKey(m));
-                    var res = await Data.CallFn(Conn, "AreSuppressed", Jw.Json(new { md5s = gsMd5s, emails = gsEmails.Values }), "");
+                    var res = await Data.CallFn(Conn, "AreSuppressed", Jw.Serialize(new { md5s = md5sNotFound, emails = emailsNotFound }), "");
 
-                    notFound = res.GetL("notFound").Select(g=>g.GetS("")).ToList();
+                    emailsNotFound = res.GetL("notFound/emails").Select(g => g.GetS("e")).ToArray();
+                    md5sNotFound = res.GetL("notFound/md5s").Select(g => g.GetS("m")).ToArray();
                 }
 
-                return Jw.Json("NotUnsub", notFound);
+                return Jw.Serialize(new { NotUnsub = emailsNotFound.Union(md5sNotFound) });
             }
             catch (Exception ex)
             {
-                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex}");
+                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex.UnwrapForLog()}");
                 throw new Exception("Search failed.");
             }
         }

@@ -72,9 +72,13 @@ namespace Utility.DataLayer
             }
         }
 
-        private static async Task<string> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs)
+        public static async Task<string> GetConfigs(IEnumerable<string> configKeys, string[] commandLineArgs = null, string confConnName = null, string confFuncName = null)
         {
             var loaded = new HashSet<string>();
+            var configConn = confConnName == null ? _configConn : Connections.GetValueOrDefault(confConnName);
+            var configFunc = confFuncName == null ? _configFunction : configConn?.Functions.GetValueOrDefault(confFuncName);
+
+            if (configConn == null || configFunc == null) throw new Exception($"Invalid config function definition: {confConnName ?? "[Default]"}::{confFuncName ?? "[Default]"}({configFunc ?? "null"})");
 
             async Task<JObject> LoadConfig(JObject config, string key)
             {
@@ -84,7 +88,7 @@ namespace Utility.DataLayer
 
                 try
                 {
-                    var confStr = await _configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = key }), "{}", _configFunction, _configConn.ConnStr);
+                    var confStr = await configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = key }), "{}", configFunc, configConn.ConnStr);
                     var c = JObject.Parse(confStr);
                     JObject mergeConfig = null;
 
@@ -109,7 +113,7 @@ namespace Utility.DataLayer
             }
             var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
             var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs ?? Array.Empty<string>()).Build();
-            foreach(var kvp in commandLineConfig.AsEnumerable())
+            foreach (var kvp in commandLineConfig.AsEnumerable())
             {
                 resolvedConfig[kvp.Key] = kvp.Value;
             }
@@ -121,7 +125,7 @@ namespace Utility.DataLayer
         {
             if (mergeConfig == null) return;
 
-            var mergeRoot = mergeConfig.Parent == null ? mergeConfig : (JObject) mergeConfig.DeepClone();
+            var mergeRoot = mergeConfig.Parent == null ? mergeConfig : (JObject)mergeConfig.DeepClone();
 
             var paths = FindRemovePaths(mergeRoot);
 
@@ -239,8 +243,10 @@ namespace Utility.DataLayer
         //    return paths;
         //}
 
-        public static async Task<IGenericEntity> CallFn(string conName, string method, string args, string payload, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
+            args = args.IfNullOrWhitespace(Jw.Empty);
+            payload = payload.IfNullOrWhitespace(Jw.Empty);
             var res = await CallFnString(conName, method, args, payload, timeout);
 
             return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
