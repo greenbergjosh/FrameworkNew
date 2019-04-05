@@ -28,10 +28,10 @@ export interface Selectors {}
 export interface Profile {
   id: string
   name: string
-  givenName?: string,
-  familyName?: string,
-  imageUrl?: string,
-  email?: string,
+  givenName?: string
+  familyName?: string
+  imageUrl?: string
+  email?: string
 }
 
 export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
