@@ -1,8 +1,8 @@
 import React from "react"
-import { RouteProps } from "../../../../state/navigation"
+import { WithRouteProps } from "../../../../state/navigation"
 
-interface Props extends RouteProps {}
+interface Props {}
 
-export function Summary(props: Props): JSX.Element {
+export function Summary(props: WithRouteProps<Props>): JSX.Element {
   return <div>Summary</div>
 }

@@ -14,15 +14,15 @@ import {
 import { none, some } from "fp-ts/lib/Option"
 import React from "react"
 
-import { HorizontalSpace } from "../../components/horizontal-space"
+import { Space } from "../../components/space"
 import { useRematch } from "../../hooks/use-rematch"
 import image from "../../images/go-get-em-coffee-mug.jpg"
 import styles from "./landing.module.css"
-import { RouteProps } from "../../state/navigation"
+import { WithRouteProps } from "../../state/navigation"
 
-interface Props extends RouteProps {}
+interface Props {}
 
-export function Landing(props: Props) {
+export function Landing(props: WithRouteProps<Props>) {
   const [{ iam }, dispatch] = useRematch((s) => ({
     iam: s.iam,
   }))
@@ -120,14 +120,14 @@ export function Landing(props: Props) {
                         <h1 className={styles.title}>INSIGHTS</h1>
                       </Row>
 
-                      <HorizontalSpace size={25} />
+                      <Space.Horizontal height={25} />
 
                       <Row>
                         <div>
                           <Avatar size={200} icon="user" />
                         </div>
 
-                        <HorizontalSpace size={25} />
+                        <Space.Horizontal height={25} />
 
                         <div>
                           <Typography.Text
@@ -137,7 +137,7 @@ export function Landing(props: Props) {
                         </div>
                       </Row>
 
-                      <HorizontalSpace size={25} />
+                      <Space.Horizontal height={25} />
 
                       <Row>
                         <Button
