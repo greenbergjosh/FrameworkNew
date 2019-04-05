@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Utility;
 using Jw = Utility.JsonWrapper;
 
@@ -21,9 +22,14 @@ namespace SystemHealthChecks
 
                 var alertPayload = LowDiskSpaceChecks();
 
-                if (!alertPayload.IsNullOrWhitespace())
+                if (!alertPayload.lowDiskSpace.IsNullOrWhitespace())
                 {
-                    await fw.Err(ErrorSeverity.Warn, nameof(LowDiskSpaceChecks), ErrorDescriptor.EmailAlert, alertPayload);
+                    await fw.Err(ErrorSeverity.Warn, nameof(LowDiskSpaceChecks), ErrorDescriptor.EmailAlert, alertPayload.lowDiskSpace);
+                }
+
+                if (!alertPayload.unreachable.IsNullOrWhitespace())
+                {
+                    await fw.Err(ErrorSeverity.Warn, "DiskUnreachable", ErrorDescriptor.EmailAlert, alertPayload.lowDiskSpace);
                 }
             }
             catch (Exception e)
@@ -33,9 +39,10 @@ namespace SystemHealthChecks
             }
         }
 
-        private static string LowDiskSpaceChecks()
+        private static (string lowDiskSpace, string unreachable) LowDiskSpaceChecks()
         {
             var alerts = new List<EmailAlertPayloadItem>();
+            var unreachable = new List<EmailAlertPayloadItem>();
             var config = fw.StartupConfiguration.GetE("Config/LowDiskSpace");
             var thresholdStr = config.GetS("PercentThreshold");
             var threshold = thresholdStr.ParseUInt();
@@ -49,7 +56,7 @@ namespace SystemHealthChecks
                     {
                         var stats = GetLocalDriveDetails(drive.Item2);
 
-                        if (stats.capacity == 0) alerts.Add(new DiskSpaceDetails(drive.Item1, "Drive unreachable"));
+                        if (stats.capacity == 0) unreachable.Add(new DiskSpaceDetails(drive.Item1, "Drive unreachable"));
                         else
                         {
                             var percFree = stats.free * 100 / stats.capacity;
@@ -62,7 +69,7 @@ namespace SystemHealthChecks
                     }
                     catch (Exception e)
                     {
-                        alerts.Add(new DiskSpaceDetails(drive.Item1, $"Failed to retrieve data: {e}"));
+                        unreachable.Add(new DiskSpaceDetails(drive.Item1, $"Failed to retrieve data: {e}"));
                     }
                 }
             }
@@ -71,7 +78,13 @@ namespace SystemHealthChecks
                 alerts.Add(new EmailAlertPayloadItem("Invalid Config", $"PercentThreshold missing or not valid string: PercentThreshold={thresholdStr.IfNullOrWhitespace("null")}"));
             }
 
-            return alerts.Any() ? PL.N("Config", config.GetS("")).Add(PL.N("Alerts", JsonConvert.SerializeObject(alerts))).ToString() : null;
+            var res = (lowDiskSpace: (string)null, unreachable: (string)null);
+
+            if (alerts.Any()) res.lowDiskSpace = Jw.Serialize(new { Config = JToken.Parse(config.GetS("")), Alerts = alerts });
+
+            if (unreachable.Any()) res.unreachable = Jw.Serialize(new { Config = JToken.Parse(config.GetS("")), Alerts = unreachable });
+
+            return res;
         }
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]

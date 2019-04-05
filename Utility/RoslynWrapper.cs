@@ -91,7 +91,7 @@ namespace Utility
         {
             var (debug, debugDir) = GetDefaultDebugValues();
 
-            return Evaluate(null, code, parms, state, debug, debugDir);
+            return Evaluate(Guid.NewGuid().ToString(), code, parms, state, debug, debugDir);
         }
 
         public Task<object> Evaluate(string name, string code, object parms, StateWrapper state, bool debug, string debugDir)
