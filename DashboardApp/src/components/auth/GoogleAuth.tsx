@@ -55,13 +55,19 @@ export const GoogleAuth = (): JSX.Element => {
           .init(GOOGLE_AUTH_CONFIG)
           // Once we're set up for Google Auth
           .then(() => {
-            // Send the current state to rematch
-            onAuthChange(gAuth().isSignedIn.get())
             // Listen for any changes to the signed in status, refire to rematch
             gAuth().isSignedIn.listen(onAuthChange)
+            if (gAuth().isSignedIn.get()) {
+              dispatch.iam.update({
+                profile: some(extractUserFromProfile(gAuth().currentUser.get())),
+          })
+            } else {
+              dispatch.iam.reset()
+              dispatch.navigation.goToLanding(none)
+            }
           })
       ),
-    [onAuthChange]
+    [dispatch, onAuthChange]
   )
 
   return iam.profile.foldL(
