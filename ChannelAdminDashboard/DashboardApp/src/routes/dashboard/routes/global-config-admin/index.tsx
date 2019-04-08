@@ -1,8 +1,7 @@
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
-import { Card, Layout, Menu, PageHeader, Typography } from "antd"
-import { Route } from "antd/lib/breadcrumb/Breadcrumb"
-import { filter, takeWhile } from "fp-ts/lib/Array"
+import { Card, Layout, Menu, Typography } from "antd"
+import { filter } from "fp-ts/lib/Array"
 import React from "react"
 import { ConfigType } from "../../../../data/GlobalConfig.Config"
 import { useRematch } from "../../../../hooks/use-rematch"
@@ -67,22 +66,6 @@ export function GlobalConfigAdmin({
 
   return (
     <div>
-      <PageHeader
-        backIcon={false}
-        breadcrumb={{
-          routes: location.pathname.split("/").map((x) => ({
-            path: takeWhile(location.pathname.split("/"), (y) => y !== x)
-              .concat([x])
-              .join("/"),
-            breadcrumbName: x,
-          })),
-          itemRender(route: Route) {
-            return <Reach.Link to={route.path}>{route.breadcrumbName}</Reach.Link>
-          },
-        }}
-        subTitle="View and edit GlobalConfig.Config entries"
-        title="Global Config Admin"
-      />
       <Card>
         <Layout hasSider={true}>
           <Layout.Sider
