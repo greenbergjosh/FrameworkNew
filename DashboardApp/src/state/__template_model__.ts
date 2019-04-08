@@ -24,7 +24,6 @@ import * as Store from "./store.types"
 
 // export interface Selectors {}
 
-// // eslint-disable-next-line @typescript-eslint/camelcase
 // export const __template_model__: Store.AppModel<State, Reducers, Effects, Selectors> = {
 //   state: {},
 
