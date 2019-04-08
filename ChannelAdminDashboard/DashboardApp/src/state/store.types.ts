@@ -1,5 +1,5 @@
-import * as Rematch from "@rematch/core"
 import * as Reselect from "reselect"
+import { Dispatch, AnyAction, Action } from "redux"
 
 /**
  * ------------ APP MODELS --------------
@@ -43,7 +43,7 @@ export type AppState = { [K in keyof AppModels]: AppModels[K]["state"] }
 /**
  * The dispatch function / object enhanced and returned by `Rematch.init`
  */
-export type AppDispatch = AppEffects & AppReducers & Rematch.RematchDispatch
+export type AppDispatch = AppEffects & AppReducers & Dispatch<Action>
 
 /**
  * This utility type makes it easier to annotate the Props
@@ -66,12 +66,7 @@ export type Connect<
  * autocompletion againt the interfaces already defined
  * and registered
  */
-export interface AppModel<
-  S,
-  R extends object,
-  E extends object,
-  PublicSelectors extends object
-> {
+export interface AppModel<S, R extends object, E extends object, PublicSelectors extends object> {
   state: S
   reducers: {
     [K in keyof R]: R[K] extends () => void
@@ -80,9 +75,7 @@ export interface AppModel<
       ? (state: S, payload: P) => void
       : never
   }
-  effects:
-    | PublicEffects2EffectConfg<E>
-    | ((dispatch: AppDispatch) => PublicEffects2EffectConfg<E>)
+  effects: PublicEffects2EffectConfg<E> | ((dispatch: AppDispatch) => PublicEffects2EffectConfg<E>)
   selectors: AppModelToSelectorFactory<S, PublicSelectors>
 }
 
