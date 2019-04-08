@@ -31,12 +31,14 @@ export const GoogleAuth = (): JSX.Element => {
   }))
 
   const onAuthChange = useCallback(
-    (signedIn: boolean) => {
+    (signedIn: boolean, suppressDashboardRouting?: boolean) => {
       if (signedIn) {
         const user = extractUserFromProfile(gAuth().currentUser.get())
 
         dispatch.iam.update({ profile: some(user) })
-        dispatch.navigation.goToDashboard(none)
+        if (suppressDashboardRouting !== true) {
+          dispatch.navigation.goToDashboard(none)
+        }
       } else {
         dispatch.iam.reset()
         dispatch.navigation.goToLanding(none)
@@ -48,26 +50,16 @@ export const GoogleAuth = (): JSX.Element => {
   useEffect(
     () =>
       // Load the Google API for auth
-      gAPI().load("client:auth2", () =>
-        // When it's loaded, grab the GAuth client
-        gAPI()
-          .client // Initialize with our config
-          .init(GOOGLE_AUTH_CONFIG)
-          // Once we're set up for Google Auth
-          .then(() => {
-            // Listen for any changes to the signed in status, refire to rematch
-            gAuth().isSignedIn.listen(onAuthChange)
-            if (gAuth().isSignedIn.get()) {
-              dispatch.iam.update({
-                profile: some(extractUserFromProfile(gAuth().currentUser.get())),
-          })
-            } else {
-              dispatch.iam.reset()
-              dispatch.navigation.goToLanding(none)
-            }
-          })
-      ),
-    [dispatch, onAuthChange]
+      gAPI().load("client:auth2", async () => {
+        // When it's loaded, grab the GAuth client and init with out config
+        await gAPI().client.init(GOOGLE_AUTH_CONFIG)
+        // Once we're set up for Google Auth
+        // Send the current state to rematch
+        onAuthChange(gAuth().isSignedIn.get(), true)
+        // Listen for any changes to the signed in status, refire to rematch
+        gAuth().isSignedIn.listen(onAuthChange)
+      }),
+    [onAuthChange]
   )
 
   return iam.profile.foldL(
