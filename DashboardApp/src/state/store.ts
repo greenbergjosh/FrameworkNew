@@ -36,6 +36,6 @@ const _store = Rematch.init({
 export const store = {
   ..._store,
   getState: _store.getState as () => Store.AppState,
-  dispatch: _store.dispatch as Store.AppDispatch,
+  dispatch: (_store.dispatch as unknown) as Store.AppDispatch,
   select: (_store.select as unknown) as Store.AppSelectors,
 }
