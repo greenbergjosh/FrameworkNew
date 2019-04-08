@@ -1,4 +1,4 @@
-import { Col, Icon, Layout, Menu, Row, Typography } from "antd"
+import { Col, Icon, Layout, Menu, Row, Typography, Breadcrumb } from "antd"
 import React from "react"
 
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
@@ -7,6 +7,7 @@ import { GoogleAuth } from "../../components/auth/GoogleAuth"
 import { RouteMeta, WithRouteProps } from "../../state/navigation"
 import styles from "./dashboard.module.css"
 import { some, toArray } from "fp-ts/lib/Record"
+import { Space } from "../../components/space"
 
 interface Props {}
 
@@ -83,41 +84,58 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 onClick={toggleSiderCollapsed}
               />
             </Col>
-
-            <Col push={20} span={2}>
+            <Col span={20}>
+              {toArray(props.subroutes).map(([path, subroute]) => (
+                <Reach.Match key={subroute.abs} path={`${subroute.path}/*`}>
+                  {({ match }) => {
+                    if (!match) return
+                    return (
+                      <Row align="middle" style={{ display: "flex" }}>
+                        <Col>
+                          <Typography.Text strong={true}>{subroute.title}</Typography.Text>
+                        </Col>
+                        <Space.Vertical width={15} />
+                        <Col>
+                          <Typography.Text type="secondary">{subroute.description}</Typography.Text>
+                        </Col>
+                      </Row>
+                    )
+                  }}
+                </Reach.Match>
+              ))}
+            </Col>
+            <Col span={2}>
               <GoogleAuth />
-              {/*<Dropdown*/}
-              {/*overlay={*/}
-              {/*<Menu*/}
-              {/*onClick={({ key }) =>*/}
-              {/*key === "logout" ? handleLogout() : () => null*/}
-              {/*}>*/}
-              {/*<Menu.Item key="logout">*/}
-              {/*<Icon type="logout" />*/}
-              {/*<span>Logout</span>*/}
-              {/*</Menu.Item>*/}
-              {/*</Menu>*/}
-              {/*}*/}
-              {/*placement="bottomCenter"*/}
-              {/*trigger={["click"]}>*/}
-              {/*<Button icon="user"a shape="circle" />*/}
-              {/*</Dropdown>*/}
+              {/* <Dropdown
+                overlay={
+                  <Menu
+                    onClick={({ key }) =>
+                      key === "logout" ? dispatch.gapiAuth.signOut() : () => null
+                    }>
+                    <Menu.Item key="logout">
+                      <Icon type="logout" />
+                      <span>Logout</span>
+                    </Menu.Item>
+                  </Menu>
+                }
+                placement="bottomCenter"
+                trigger={["click"]}>
+                <Button icon="user" shape="circle" />
+              </Dropdown> */}
             </Col>
           </Row>
         </Layout.Header>
-
-        <Layout.Content
-          style={{
-            overflow: "scroll",
-          }}>
-          <Row
-            style={{
-              margin: "24px 16px",
-              minHeight: 280,
-              padding: 24,
-            }}>
-            {props.children}
-          </Row>
+        <Row style={{ padding: 12 }}>
+          <Breadcrumb>
+            {props.location.pathname.split("/").map((_, idx, parts) => (
+              <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
+                <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
+              </Breadcrumb.Item>
+            ))}
+          </Breadcrumb>
+        </Row>
+        <Layout.Content style={{ overflow: "scroll" }}>
+          <Row style={{ padding: 24 }}>{props.children}</Row>
 
           <Layout.Footer style={{ textAlign: "center" }}>
             {`OnPoint Global © ${new Date().getFullYear()}`}
