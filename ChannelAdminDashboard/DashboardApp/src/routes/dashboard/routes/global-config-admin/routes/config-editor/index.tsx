@@ -42,9 +42,7 @@ interface Props {
   configId: string
 }
 
-export const ConfigEditor = React.memo(function ConfigEditor(
-  props: WithRouteProps<Props>
-) {
+export const ConfigEditor = React.memo(function ConfigEditor(props: WithRouteProps<Props>) {
   const { editorLang, editorTheme } = useAtom(atom)
   const [fromRematch, dispatch] = useRematch(
     (s) => ({
@@ -66,12 +64,7 @@ export const ConfigEditor = React.memo(function ConfigEditor(
     } else if (fromRematch.configNeedsToBeLoaded) {
       dispatch.globalConfig.loadConfigById(props.configId)
     }
-  }, [
-    dispatch,
-    props.configId,
-    fromRematch.configsAreEmpty,
-    fromRematch.configNeedsToBeLoaded,
-  ])
+  }, [dispatch, props.configId, fromRematch.configsAreEmpty, fromRematch.configNeedsToBeLoaded])
 
   return (
     <Card bordered={false}>
@@ -93,9 +86,6 @@ export const ConfigEditor = React.memo(function ConfigEditor(
           },
           function Some(theseConfigs) {
             return theseConfigs.fold(
-              // This case is _theoretically_ possible but programmatically impossible;
-              // you can't have a draft unless you have a config in the first place.
-              // It's good to handle the case nevertheless
               function This(/* draft */) {
                 return <Empty />
               },
@@ -113,9 +103,7 @@ export const ConfigEditor = React.memo(function ConfigEditor(
                     <Space.Horizontal height={15} />
                     <Row>
                       <Col span={12} />
-                      <Col
-                        span={12}
-                        style={{ display: "flex", justifyContent: "flex-end" }}>
+                      <Col span={12} style={{ display: "flex", justifyContent: "flex-end" }}>
                         <Button.Group size="small">
                           <Button
                             type="primary"
@@ -127,14 +115,9 @@ export const ConfigEditor = React.memo(function ConfigEditor(
                     </Row>
                     <Skeleton
                       active={true}
-                      loading={
-                        fromRematch.configIsLoading || fromRematch.configsAreLoading
-                      }>
+                      loading={fromRematch.configIsLoading || fromRematch.configsAreLoading}>
                       <Row>
-                        <EditorSettingsControls
-                          editorLang={editorLang}
-                          editorTheme={editorTheme}
-                        />
+                        <EditorSettingsControls editorLang={editorLang} editorTheme={editorTheme} />
                       </Row>
 
                       <Divider />
@@ -185,15 +168,11 @@ export const ConfigEditor = React.memo(function ConfigEditor(
                     <Space.Horizontal height={15} />
                     <Row>
                       <Col span={12} />
-                      <Col
-                        span={12}
-                        style={{ display: "flex", justifyContent: "flex-end" }}>
+                      <Col span={12} style={{ display: "flex", justifyContent: "flex-end" }}>
                         <Button
                           size="small"
                           type="danger"
-                          onClick={() =>
-                            dispatch.globalConfig.rmDraftConfigById(draft.id)
-                          }>
+                          onClick={() => dispatch.globalConfig.rmDraftConfigById(draft.id)}>
                           <Icon type="close" /> Cancel
                         </Button>
 
@@ -202,19 +181,14 @@ export const ConfigEditor = React.memo(function ConfigEditor(
                         <Button
                           size="small"
                           type="primary"
-                          onClick={() =>
-                            dispatch.globalConfig.rmDraftConfigById(draft.id)
-                          }>
+                          onClick={() => dispatch.globalConfig.rmDraftConfigById(draft.id)}>
                           <Icon type="save" /> Save
                         </Button>
                       </Col>
                     </Row>
 
                     <Row>
-                      <EditorSettingsControls
-                        editorLang={editorLang}
-                        editorTheme={editorTheme}
-                      />
+                      <EditorSettingsControls editorLang={editorLang} editorTheme={editorTheme} />
                     </Row>
 
                     <Divider />

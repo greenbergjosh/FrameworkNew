@@ -1,15 +1,12 @@
-import { Button, Col, Dropdown, Icon, Layout, Menu, Row, Typography } from "antd"
-import { identity } from "fp-ts/lib/function"
-import { fromNullable, none } from "fp-ts/lib/Option"
+import { Col, Icon, Layout, Menu, Row, Typography } from "antd"
 import React from "react"
 
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
-
-import { useRematch } from "../../hooks/use-rematch"
+import { GoogleAuth } from "../../components/auth/GoogleAuth"
 import { RouteMeta, WithRouteProps } from "../../state/navigation"
 import styles from "./dashboard.module.css"
-import { GoogleAuth } from "../../components/auth/GoogleAuth"
+import { some, toArray } from "fp-ts/lib/Record"
 
 interface Props {}
 
@@ -26,16 +23,11 @@ function toggleSiderCollapsed(): void {
 
 export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
   const { siderCollapsed } = useAtom(atom)
-
-  const [state, dispatch] = useRematch((s) => ({
-    iam: s.iam,
-    paths: s.navigation.routes,
-  }))
-
-  const handleLogout = React.useCallback(() => {
-    dispatch.iam.reset()
-    dispatch.navigation.goToLanding(none)
-  }, [dispatch])
+  const activeMenuKeys = React.useMemo(() => {
+    return toArray(props.subroutes)
+      .filter(([k, sr]) => props.location.pathname.includes(sr.abs))
+      .map(([k, sr]) => sr.abs)
+  }, [props.subroutes, props.location.pathname])
 
   return (
     <Layout className={styles.fullHeight} hasSider={true}>
@@ -53,39 +45,29 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         <Menu
           theme="dark"
           mode="inline"
-          defaultOpenKeys={fromNullable(props.location)
-            .map((l) =>
-              props.subroutes
-                .filter((sr) => l.pathname.includes(sr.abs))
-                .map((sr) => sr.abs)
-            )
-            .fold([], identity)}
-          selectedKeys={fromNullable(props.location)
-            .map((l) => l.pathname)
-            .fold([], (pn) => [pn])}>
-          {(function renderRoutesAsMenuItems(routes: Array<RouteMeta<any>>) {
-            return routes
-              .filter((route) => route.shouldAppearInSideNav)
-              .map((route) => {
-                return route.subroutes.some((route) => route.shouldAppearInSideNav) ? (
-                  <Menu.SubMenu
-                    key={route.abs}
-                    title={
-                      <span>
-                        <Icon type={route.iconType} />
-                        <span>{route.displayName}</span>
-                      </span>
-                    }>
-                    {renderRoutesAsMenuItems(route.subroutes)}
-                  </Menu.SubMenu>
-                ) : (
-                  <Menu.Item key={route.abs}>
-                    <Icon type={route.iconType} />
-                    <span>{route.displayName}</span>
-                    <Reach.Link to={route.abs} />
-                  </Menu.Item>
-                )
-              })
+          defaultOpenKeys={activeMenuKeys}
+          selectedKeys={activeMenuKeys}>
+          {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
+            return toArray(appRoutes).map(([path, route]) => {
+              return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
+                <Menu.SubMenu
+                  key={route.abs}
+                  title={
+                    <span>
+                      <Icon type={route.iconType} />
+                      <span>{route.title}</span>
+                    </span>
+                  }>
+                  {renderRoutesAsMenuItems(route.subroutes)}
+                </Menu.SubMenu>
+              ) : (
+                <Menu.Item key={route.abs}>
+                  <Icon type={route.iconType} />
+                  <span>{route.title}</span>
+                  <Reach.Link to={route.abs} />
+                </Menu.Item>
+              )
+            })
           })(props.subroutes)}
           <Menu.Divider />
         </Menu>
