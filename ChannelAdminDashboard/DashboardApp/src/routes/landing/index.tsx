@@ -13,12 +13,13 @@ import {
 } from "antd"
 import { none, some } from "fp-ts/lib/Option"
 import React from "react"
+import * as Reach from "@reach/router"
 import { GoogleAuth } from "../../components/auth/GoogleAuth"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks/use-rematch"
 import image from "../../images/go-get-em-coffee-mug.jpg"
-import { WithRouteProps } from "../../state/navigation"
 import styles from "./landing.module.css"
+import { WithRouteProps } from "../../state/navigation"
 
 interface Props {}
 
@@ -64,17 +65,13 @@ export function Landing(props: WithRouteProps<Props>) {
                         className={styles.loginFormArea}>
                         <Form.Item>
                           <Input
-                            prefix={
-                              <Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />
-                            }
+                            prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
                             placeholder="Username"
                           />
                         </Form.Item>
                         <Form.Item>
                           <Input
-                            prefix={
-                              <Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />
-                            }
+                            prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
                             type="password"
                             placeholder="Password"
                           />
@@ -117,8 +114,7 @@ export function Landing(props: WithRouteProps<Props>) {
                         <Space.Horizontal height={25} />
 
                         <div>
-                          <Typography.Text
-                            className={styles.welcomeBackText}>{`Welcome back, ${
+                          <Typography.Text className={styles.welcomeBackText}>{`Welcome back, ${
                             profile.name
                           }!`}</Typography.Text>
                         </div>
@@ -133,7 +129,7 @@ export function Landing(props: WithRouteProps<Props>) {
                           // TODO: remove coersion when `antd` release fix in next version
                           type={("primary" as unknown) as undefined}
                           onClick={() => dispatch.navigation.goToDashboard(none)}>
-                          Go to your Insights Dashboard
+                          <Reach.Link to="/dashboard">Go to your Dashboard</Reach.Link>
                         </Button>
                       </Row>
                     </Layout.Content>
