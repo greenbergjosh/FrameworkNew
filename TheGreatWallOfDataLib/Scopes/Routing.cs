@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
+using Utility.OpgAuth;
 using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
 using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
 using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
@@ -36,7 +37,7 @@ namespace TheGreatWallOfDataLib.Scopes
             return async (fw, payload, identity) =>
             {
                 // If first char is '_' then function is internal only
-                if (funcName.IsNullOrWhitespace() || funcName.First() == '_') throw new FunctionException(100, $"Function is an invalid or internal: {funcName.IfNullOrWhitespace("[empty]")}");
+                if (scopeName == Auth.ConnName || funcName.IsNullOrWhitespace() || funcName.First() == '_') throw new FunctionException(100, $"Function is an invalid or internal: {funcName.IfNullOrWhitespace("[empty]")}");
 
                 var res = await Data.CallFn(scopeName, funcName, identity, payload);
 
