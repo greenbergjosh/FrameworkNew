@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Oauth2.v2" Version="1.38.0.1532" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 
