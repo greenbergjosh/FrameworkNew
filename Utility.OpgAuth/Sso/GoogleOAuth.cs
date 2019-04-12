@@ -31,7 +31,7 @@ namespace Utility.OpgAuth.Sso
 
                 var userInfo = await req.ExecuteAsync();
 
-                return new UserDetails(userInfo.Name, userInfo.Email, null, userInfo.Picture, JsonWrapper.Serialize(new { platform = PlatformType, userInfo }));
+                return new UserDetails(userInfo.Id, userInfo.Name, userInfo.Email, null, userInfo.Picture, JsonWrapper.Serialize(new { platform = PlatformType, userInfo }));
             }
         }
     }
