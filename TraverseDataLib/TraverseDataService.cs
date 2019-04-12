@@ -24,6 +24,7 @@ namespace TraverseDataLib
         static MemoryCache pidSidMd5Cache;
         List<Guid> md5ExcludeList;
         static int excludeSpanDays;
+        const string responseMd5Key = "emailMd5Lower";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -64,17 +65,27 @@ namespace TraverseDataLib
                         case "TraverseResponse":
                             var (fullBodyGe, opaqueGe) = await TraverseResponseAsGe(context);
                             var opqVals = VisitorIdDataService.ValsFromOpaque(opaqueGe);
-                            var pidSidMd5 = new PidSidMd5() { Pid = opqVals.pid, Sid = opqVals.sid, Md5 = fullBodyGe.GetS("emailMd5Lower"), FirstSeen = DateTime.UtcNow };
+                            var pidSidMd5 = new PidSidMd5() { Pid = opqVals.pid, Sid = opqVals.sid, Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
 
-                            VisitorIdResponse vidResp = new VisitorIdResponse("", "", "", "");
-                            if (! ExistsOrAddToMemoryCache(pidSidMd5, excludeSpanDays) &&
-                                ! await ExistsOrAddToDbCache(pidSidMd5))
+                            VisitorIdResponse vidResp = new VisitorIdResponse("", "", "", "", null);
+                            try
                             {
-                                await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS("emailMd5Lower")}");
-                                vidResp = await Vid.SaveSession(this.Fw, context, true, false, opaqueGe, fullBodyGe.GetS("emailMd5Lower"));
+                                await WriteResponseEvent(opqVals.pid, opqVals.slot, opqVals.page, opqVals.lst, opqVals.host, opqVals.lv, opqVals.vft, opqVals.rsids, fullBodyGe.GetS(responseMd5Key));
+                                if (!ExistsOrAddToMemoryCache(pidSidMd5, excludeSpanDays) &&
+                                    !await ExistsOrAddToDbCache(pidSidMd5))
+                                {
+                                    await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS(responseMd5Key)}");
+                                    vidResp = await Vid.SaveSession(this.Fw, context, true, false, null, opaqueGe, fullBodyGe.GetS(responseMd5Key));
+                                }
+                                result = Jw.Json(vidResp);
+                                resultHttpStatus = StatusCodes.Status202Accepted;
                             }
-                            result = Jw.Json(vidResp);
-                            resultHttpStatus = StatusCodes.Status202Accepted;
+                            catch (Exception e)
+                            {
+                                resultHttpStatus = StatusCodes.Status500InternalServerError;
+                                await this.Fw.Err(1000, nameof(Run), "Exception", $@"Caught exception in 'TraverseResponse' handler: {requestFromPost}::{e}, {e.UnwrapForLog()}");
+                            }
+
                             break;
                         default:
                             await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
@@ -92,6 +103,26 @@ namespace TraverseDataLib
             }
             await WriteResponse(resultHttpStatus, context, result);
 
+        }
+
+        public async Task WriteResponseEvent(string pid, int slot, int page, string lastSeenTime, string host, string lastVisit, bool veryFirstTime, Dictionary<string, object> rsids, string md5)
+        {
+            EdwBulkEvent be = new EdwBulkEvent();
+            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                null, PL.O(new
+                {
+                    et = "TraverseMd5Response",
+                    pid,
+                    slot,
+                    page,
+                    md5,
+                    lst = lastSeenTime,
+                    domain = host,
+                    lv = lastVisit,
+                    vft = veryFirstTime,
+                    succ = 1 // Traverse only responds with Md5s
+                }));
+            await this.Fw.EdwWriter.Write(be);
         }
 
         List<Guid> Md5ExcludeList ()
