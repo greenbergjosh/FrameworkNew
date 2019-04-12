@@ -126,26 +126,24 @@ namespace GetGotLib
                             var payloadStr = p.Item2 == null ? "null" : $"\r\n{p.Item2}\r\n";
                             var funcContext = $"\r\nName: {p.Item1}\r\nIdentity: {identityStr}\r\nArgs: {payloadStr}\r\nRequestId: {requestId}";
 
-                            var fe = e as FunctionException;
-
-                            if (fe == null)
-                            {
-                                await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
-                                fResult = Jw.JsonToGenericEntity("{ \"r\": 1 }");
-                            }
-                            else
+                            if (e is FunctionException fe)
                             {
                                 var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
 
                                 await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
 
-                                fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
+                                if (fe?.HaltExecution == true)
+                                {
+                                    fResult = Jw.JsonToGenericEntity("{ \"r\": " + RC.FunctionHalting + "}");
+                                    cancellation.Cancel();
+                                }
+                                else if (fe.LogAndReturnSuccess) fResult = Jw.JsonToGenericEntity("{ \"r\": 0}");
+                                else fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
                             }
-
-                            if (fe?.HaltExecution == true)
+                            else
                             {
-                                fResult = Jw.JsonToGenericEntity("{ \"r\": " + RC.FunctionHalting + "}");
-                                cancellation.Cancel();
+                                await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
+                                fResult = Jw.JsonToGenericEntity("{ \"r\": 1 }");
                             }
                         }
 
@@ -217,31 +215,51 @@ namespace GetGotLib
 
         public async Task SendCode(string payload, string reqId)
         {
-            var ge = Jw.JsonToGenericEntity(payload);
-            var contact = ValidateContact(ge.GetS("u"));
-
-            switch (contact.Type)
+            try
             {
-                case ContactType.Email:
-                    var (code, accountName, res) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+                var ge = Jw.JsonToGenericEntity(payload);
+                var contact = ValidateContact(ge.GetS("u"));
 
-                    if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
-                    else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
-                    else
-                    {
-                        await _fw.Error(nameof(SendCode), $"Unhandled exception getting confirmation code: {reqId} {contact.Cleaned} {res.GetS("")}");
-                        return;
-                    }
-                    break;
-                default:
-                    throw new FunctionException(103, $"{contact.Type} not supported");
+                switch (contact.Type)
+                {
+                    case ContactType.Email:
+                        var (code, accountName, res) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+
+                        if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
+                        else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
+                        else
+                        {
+                            await _fw.Error(nameof(SendCode), $"Unhandled exception getting confirmation code: {reqId} {contact.Cleaned} {res.GetS("")}");
+                            return;
+                        }
+                        break;
+                    default:
+                        throw new FunctionException(103, $"{contact.Type} not supported");
+                }
+            }
+            catch (Exception e)
+            {
+                if (e is FunctionException fe)
+                {
+                    fe.LogAndReturnSuccess = true;
+                    throw fe;
+                }
+
+                throw new FunctionException(100, "Unhandled exception sending confirmation code", e, true);
             }
         }
 
         private async Task<(string code, string accountName, IGenericEntity)> GetAvailableConfirmationCode(string args)
         {
-            var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => args, () => Jw.Serialize(Random.Numbers(MinConfCode, MaxConfCode, 6)));
+            var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => args, () => Jw.Serialize(Random.Numbers(MinConfCode, MaxConfCode, 6)), (i, result, resultCode) =>
+            {
+                if (resultCode == 109) throw new FunctionException(resultCode.Value, $"Contact doesn't exist: {args}");
+
+                return Task.CompletedTask;
+            });
             var rc = res.GetS("r").ParseInt() ?? 100;
+
+            if (rc == 109) throw new FunctionException(rc, $"Contact doesn't exist: {args}");
 
             if (rc != 0) throw new FunctionException(rc, $"DB failure generating conf code: {res.GetS("")}");
 
@@ -264,15 +282,17 @@ namespace GetGotLib
             return contact;
         }
 
-        public async Task<IGenericEntity> RetryDbCallOnFailure(string method, int maxRetries, Func<string> getArgs, Func<string> getPayload, Func<int, IGenericEntity, int?, Task> onFail = null, Action onRetryExceeded = null)
+        public async Task<IGenericEntity> RetryDbCallOnFailure(string method, int maxRetries, Func<string> getArgs, Func<string> getPayload, Func<int, IGenericEntity, int?, Task> onFail = null, Action<int, IGenericEntity, int?> onRetryExceeded = null)
         {
             var tried = 0;
+            IGenericEntity res = null;
+            int? rc = null;
 
             while (tried < maxRetries)
             {
                 tried++;
-                var res = await Data.CallFn(Conn, method, getArgs(), getPayload());
-                var rc = res.GetS("r").ParseInt();
+                res = await Data.CallFn(Conn, method, getArgs(), getPayload());
+                rc = res.GetS("r").ParseInt();
 
                 if (rc == RC.Success) return res;
 
@@ -281,32 +301,41 @@ namespace GetGotLib
 
             if (onRetryExceeded != null)
             {
-                onRetryExceeded();
+                onRetryExceeded(tried - 1, res, rc);
                 return null;
             }
 
-            throw new FunctionException(100, $"Exceeded {nameof(maxRetries)} of {maxRetries} for {method}");
+            throw new FunctionException(rc ?? 100, $"Exceeded {nameof(maxRetries)} of {maxRetries} for {method}: {res?.GetS("") ?? "null"}");
         }
 
         public async Task SendResetPasswordCode(string payload, string reqId)
         {
-            var ge = Jw.JsonToGenericEntity(payload);
-            var contact = new Contact(ge.GetS("u"));
-
-            switch (contact.Type)
+            try
             {
-                case ContactType.Email:
-                    var (code, accountName, cres) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned, pwdReset = true }));
+                var ge = Jw.JsonToGenericEntity(payload);
+                var contact = new Contact(ge.GetS("u"));
 
-                    if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Password Reset", code.PadLeft(6, '0'));
-                    else
-                    {
-                        await _fw.Error(nameof(SendResetPasswordCode), $"Bad DB response generating password rest code: {reqId} {contact.Cleaned} {cres.GetS("")}");
-                        return;
-                    }
-                    break;
-                default:
-                    throw new FunctionException(103, $"{contact.Type} not supported");
+                switch (contact.Type)
+                {
+                    case ContactType.Email:
+                        var (code, accountName, cres) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned, pwdReset = true }));
+
+                        if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Password Reset", code.PadLeft(6, '0'));
+                        else await _fw.Error(nameof(SendResetPasswordCode), $"Bad DB response generating password rest code: {reqId} {contact.Cleaned} {cres.GetS("")}");
+                        break;
+                    default:
+                        throw new FunctionException(103, $"{contact.Type} not supported");
+                }
+            }
+            catch (Exception e)
+            {
+                if (e is FunctionException fe)
+                {
+                    fe.LogAndReturnSuccess = true;
+                    throw fe;
+                }
+
+                throw new FunctionException(100, "Unhandled exception sending password reset code", e, true);
             }
         }
 
@@ -520,19 +549,23 @@ namespace GetGotLib
 
         private class FunctionException : Exception
         {
-            public FunctionException(int resultCode, string message) : base(message)
+            public FunctionException(int resultCode, string message, bool logAndReturnSuccess = false) : base(message)
             {
                 ResultCode = resultCode;
+                LogAndReturnSuccess = logAndReturnSuccess;
             }
 
-            public FunctionException(int resultCode, string message, Exception innerException) : base(message, innerException)
+            public FunctionException(int resultCode, string message, Exception innerException, bool logAndReturnSuccess = false) : base(message, innerException)
             {
                 ResultCode = resultCode;
+                LogAndReturnSuccess = logAndReturnSuccess;
             }
 
             public int ResultCode { get; }
 
             public bool HaltExecution { get; }
+
+            public bool LogAndReturnSuccess { get; set; }
         }
 
         private static class RC
