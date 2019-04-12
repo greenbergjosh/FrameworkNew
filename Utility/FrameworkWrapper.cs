@@ -50,6 +50,7 @@ namespace Utility
                 Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
                 var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
+                this.TraceLogging = StartupConfiguration.GetB("Config/EnableTraceLogging");
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
