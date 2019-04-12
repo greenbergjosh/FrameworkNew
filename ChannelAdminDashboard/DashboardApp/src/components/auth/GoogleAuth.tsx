@@ -22,13 +22,13 @@ const extractUserFromProfile = (googleAuthUser: gapi.auth2.GoogleUser) => {
     familyName: profile.getFamilyName(),
     imageUrl: profile.getImageUrl(),
     email: profile.getEmail(),
+    idToken: googleAuthUser.getAuthResponse().id_token,
+    accessToken: googleAuthUser.getAuthResponse().access_token,
   }
 }
 
 export const GoogleAuth = (): JSX.Element => {
-  const [{ iam }, dispatch] = useRematch((s) => ({
-    iam: s.iam,
-  }))
+  const [{ iam }, dispatch] = useRematch(({ iam }) => ({ iam }))
 
   const onAuthChange = useCallback(
     (signedIn: boolean, suppressDashboardRouting?: boolean) => {
