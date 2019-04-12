@@ -63,6 +63,13 @@ namespace Utility
             return i;
         }
 
+        public static bool IsMatch(this string str, Regex rx)
+        {
+            var m = rx.Match(str);
+
+            return m.Success;
+        }
+
         public static string Match(this string str, Regex rx)
         {
             var m = rx.Match(str);

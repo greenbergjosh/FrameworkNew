@@ -11,7 +11,8 @@ using Utility.DataLayer;
 
 namespace SignalApiLib
 {
-    public class Fluent
+    
+    public class Fluent : ISourceHandler
     {
         private readonly FrameworkWrapper _fw;
         private const string Key = "498937C1-6FCA-45B6-9C86-49D4999BB5C7";
@@ -91,48 +92,6 @@ namespace SignalApiLib
                 var entries = posts.Select(p => new PostingQueueEntry(p.Key, now, p.Payload));
 
                 var res = await _fw.PostingQueueWriter.Write(entries);
-            }
-        }
-
-        private async Task PostToConsole(JObject payload)
-        {
-            var email = payload["em"]?.ToString();
-
-            if (email.IsNullOrWhitespace()) return;
-            string res = null;
-
-            try
-            {
-                res = await ProtocolClient.HttpPostAsync(ConsoleUrl,
-                    JsonConvert.SerializeObject(new
-                    {
-                        header = new { svc = 1, p = -1 },
-                        body = new
-                        {
-                            domain_id = "1d6b7dd9-6d97-44b8-a795-9d0e5e72a01f",
-                            domain = "fluent feed",
-                            isFinal = true,
-                            //url = null,
-                            //phone_home = null,
-                            email
-                        }
-                    }), "application/json", 15);
-            }
-            catch (Exception e)
-            {
-                await _fw.Error($"{_logCtx}.{nameof(PostToConsole)}", $"Failed to post {payload} to Console: {e.UnwrapForLog()}");
-            }
-        }
-
-        private async Task PostToConsole(JArray payload)
-        {
-            try
-            {
-                await payload.AsJEnumerable().Select(p => p as JObject).Where(p => p != null).ForEachAsync(5, PostToConsole);
-            }
-            catch (Exception e)
-            {
-                await _fw.Error($"{_logCtx}.{nameof(PostToConsole)}[]", $"Failed to post {payload} to Console: {e.UnwrapForLog()}");
             }
         }
 
