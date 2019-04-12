@@ -10,12 +10,12 @@ namespace SignalApiLib
     public class DataService
     {
         private FrameworkWrapper _fw;
-        private Dictionary<string,dynamic> _sourceHandlers;
+        private Dictionary<string,ISourceHandler> _sourceHandlers;
 
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
-            _sourceHandlers = new Dictionary<string, object>
+            _sourceHandlers = new Dictionary<string, ISourceHandler>
             {
                 {"fluent", new Fluent(_fw)}
             };
