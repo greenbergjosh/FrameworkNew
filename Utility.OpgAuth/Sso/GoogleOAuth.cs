@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Oauth2.v2;
 using Google.Apis.Services;
 
@@ -27,6 +28,7 @@ namespace Utility.OpgAuth.Sso
             {
                 var req = service.Userinfo.Get();
 
+                
                 req.OauthToken = authData.GetS("t");
 
                 var userInfo = await req.ExecuteAsync();

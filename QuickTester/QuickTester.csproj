@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UnsubLib\UnsubLib.csproj" />
+    <ProjectReference Include="..\Utility.OpgAuth\Utility.OpgAuth.csproj" />
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 

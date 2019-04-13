@@ -65,6 +65,8 @@ namespace Utility
 
         public static bool IsMatch(this string str, Regex rx)
         {
+            if (str.IsNullOrWhitespace()) return false;
+
             var m = rx.Match(str);
 
             return m.Success;

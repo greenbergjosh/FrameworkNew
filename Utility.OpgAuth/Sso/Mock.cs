@@ -21,20 +21,20 @@ namespace Utility.OpgAuth.Sso
 
         public override async Task<UserDetails> GetUserDetails(IGenericEntity authData)
         {
+            string e;
+
             if (_isConsole)
             {
-                var rx = new Regex(@"\.+@\.+");
-                string email;
+                var rx = new Regex(@"^[^@]+@[^@]+\.[^@.]+$");
 
                 do
                 {
                     Console.WriteLine("Enter email address:");
-                    email = Console.ReadLine();
+                    e = Console.ReadLine();
                     Console.WriteLine("");
-                } while (!email.IsMatch(rx));
+                } while (!e.IsMatch(rx));
             }
-
-            var e = _emails[Random.Number(0, _emails.Length - 1)];
+            else e = _emails[Random.Number(0, _emails.Length - 1)];
 
             return new UserDetails(e, "Mock name", e, null, null, null);
         }

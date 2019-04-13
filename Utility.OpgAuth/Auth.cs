@@ -44,8 +44,8 @@ namespace Utility.OpgAuth
 
                             try
                             {
-                                var typeName = conf.GetS($"{key}/Type");
-                                var init = conf.GetE($"{key}/Initialization");
+                                var typeName = conf.GetS($"Sso/{key}/Type");
+                                var init = conf.GetE($"Sso/{key}/Initialization");
 
                                 if (typeName.IsNullOrWhitespace()) throw new AuthException($"Type not defined for SSO {key}");
 
@@ -81,6 +81,17 @@ namespace Utility.OpgAuth
             }
 
             if (!_initialized) throw new AuthException(_initError);
+        }
+
+        public static async Task<UserDetails> GetSsoUserDetails(IGenericEntity payload)
+        {
+            if (!_initialized) throw new Exception(_initError);
+
+            SsoPlatforms.TryGetValue(payload.GetS("sso"), out var platform);
+
+            if (platform == null) throw new AuthFrameworkNotFoundException($"SSO Platform not found: {payload.GetS("")}");
+
+            return await platform.GetUserDetails(payload);
         }
 
         public static async Task<string> VerifyCode(string email, string verificationCode)
@@ -134,7 +145,7 @@ namespace Utility.OpgAuth
 
             if (userDetails.Name?.IsNullOrWhitespace() != false) throw new AuthException("Failed to retrieve name from SSO");
 
-            var handle = ToCamelCase(userDetails.Name);
+            var handle = ToCamelCase(userDetails.Name).IfNullOrWhitespace(userDetails.Email.Split('@').First());
             var altHandles = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) });
             var sourceId = Guid.NewGuid().ToString();
             var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
@@ -181,15 +192,55 @@ namespace Utility.OpgAuth
             return res;
         }
 
-        public static async Task<bool> HasPermission(string token, string scope, string securable)
+        public static async Task<IEnumerable<string>> GetSecurables()
         {
-            var res = await Data.CallFn(ConnName, "HasPermission", Jw.Serialize(new { t = token }), Jw.Serialize(new { scope, securable }));
+            var permissions = JArray.Parse((await Data.CallFn(ConnName, "AllPermissions")).GetS(""));
+            var res = new List<string>();
+
+            void Dive(string rootPath, JObject tree)
+            {
+                var divider = rootPath.IsNullOrWhitespace() ? "" : ".";
+
+                foreach (var branch in tree.Properties())
+                {
+                    var path = rootPath + divider + branch.Name;
+
+                    res.Add(path);
+
+                    if (branch.Value is JObject jo) Dive(path, jo);
+                }
+            }
+
+            foreach (var jt in permissions)
+            {
+                if (jt is JObject jo) Dive("", jo);
+            }
+
+            return res.Distinct().OrderBy(s => s).ToArray();
+        }
+
+        public static async Task<bool> HasPermission(string token, string securable)
+        {
+            var res = await Data.CallFn(ConnName, "MergePermissions", Jw.Serialize(new { t = token }));
             var err = res.GetS("err");
 
-            if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user permission details: Token: {token} Scope: {scope} Securable: {securable} Error: {err}");
-            var hasPermission = res.GetS("p").ParseBool() ?? false;
+            if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user permission details: Token: {token} Securable: {securable} Error: {err}");
 
-            return hasPermission;
+            var steps = securable.Split('.');
+
+            for (int i = 1; i < steps.Length + 1; i++)
+            {
+                var path = steps.Take(i).Join("/");
+                var val = res.GetS(path);
+
+                if (val == null) return false;
+
+                var hasPermissions = val.ParseBool();
+
+                if (hasPermissions.HasValue) return hasPermissions.Value;
+            }
+
+            return false;
         }
 
         private static string ToCamelCase(string handle)
@@ -243,7 +294,7 @@ namespace Utility.OpgAuth
 
         private static IGenericEntity GetConfig(bool throwOnNull = true)
         {
-            var conf = _fw?.StartupConfiguration.GetE("OpgAuth");
+            var conf = _fw?.StartupConfiguration.GetE("Config/OpgAuth");
 
             if (conf == null && throwOnNull) throw new Exception(_initError);
 
