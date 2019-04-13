@@ -15,6 +15,7 @@ using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using Utility.DataLayer;
+using Utility.OpgAuth;
 using Random = Utility.Crypto.Random;
 
 namespace QuickTester
@@ -140,6 +141,18 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
+            //ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ
+
+            var fw1 = new FrameworkWrapper();
+
+            await Auth.Initialize(fw1);
+
+            var wpl = Jw.JsonToGenericEntity(
+                "{\"sso\": \"mock\", \"t\": \"ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ\"}");
+
+            var sec = await Auth.GetSecurables();
+
+            return;
 
             var rs = new RoslynWrapper(new ScriptDescriptor[0], Path.Combine(Directory.GetCurrentDirectory(), "rsDebug"));
 
