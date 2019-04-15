@@ -1,19 +1,27 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Jw = Utility.JsonWrapper;
 
 namespace Utility
 {
     public static class VisitorIdUtil
     {
-        public static IGenericEntity OpaqueFromBase64(string base64Opaque)
+        public static IGenericEntity OpaqueFromBase64(string base64Opaque, Action<string, string> errLogger)
         {
             if (string.IsNullOrEmpty(base64Opaque)) { return null; }
 
-            string jsopaque = Utility.Hashing.Base64DecodeFromUrl(base64Opaque);
+            string jsopaque = Jw.Empty;
+            object opstate = new object();
+            try
+            {
+                jsopaque = Utility.Hashing.Base64DecodeFromUrl(base64Opaque); // could be badly base-64 encoded
+                opstate = JsonConvert.DeserializeObject(jsopaque); // could be invalid json after decoding
+            }
+            catch (Exception e)
+            {
+                errLogger(nameof(OpaqueFromBase64), $"Caught exception attempting to Base-64 decode string '{base64Opaque ?? ""}' to opaque value: {e.UnwrapForLog()}");
+            }
             IGenericEntity op = new GenericEntityJson();
-            var opstate = JsonConvert.DeserializeObject(jsopaque);
             op.InitializeEntity(null, null, opstate);
             return op;
         }
