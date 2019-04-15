@@ -67,7 +67,7 @@ namespace TraverseDataLib
                             var opqVals = VisitorIdDataService.ValsFromOpaque(opaqueGe);
                             var pidSidMd5 = new PidSidMd5() { Pid = opqVals.pid, Sid = opqVals.sid, Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
 
-                            VisitorIdResponse vidResp = new VisitorIdResponse("", "", "", "", null);
+                            VisitorIdResponse vidResp = new VisitorIdResponse("", "", "", null);
                             try
                             {
                                 await WriteResponseEvent(opqVals.pid, opqVals.slot, opqVals.page, opqVals.lst, opqVals.host, opqVals.lv, opqVals.vft, opqVals.rsids, fullBodyGe.GetS(responseMd5Key));
@@ -75,7 +75,7 @@ namespace TraverseDataLib
                                     !await ExistsOrAddToDbCache(pidSidMd5))
                                 {
                                     await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS(responseMd5Key)}");
-                                    vidResp = await Vid.SaveSession(this.Fw, context, true, false, null, opaqueGe, fullBodyGe.GetS(responseMd5Key));
+                                    vidResp = await Vid.SaveSession(this.Fw, context, true, false, false, null, opaqueGe, fullBodyGe.GetS(responseMd5Key));
                                 }
                                 result = Jw.Json(vidResp);
                                 resultHttpStatus = StatusCodes.Status202Accepted;
@@ -116,9 +116,9 @@ namespace TraverseDataLib
                     slot,
                     page,
                     md5,
-                    lst = lastSeenTime,
+                    lst = lastSeenTime ?? "",
                     domain = host,
-                    lv = lastVisit,
+                    lv = lastVisit ?? "",
                     vft = veryFirstTime,
                     succ = 1 // Traverse only responds with Md5s
                 }));
@@ -191,7 +191,7 @@ namespace TraverseDataLib
             try
             {
                 fullBodyGe = Jw.JsonToGenericEntity(fullBody);
-                opaqueGe = Vutil.OpaqueFromBase64(fullBodyGe.GetS("advertiserProperties.op"));
+                opaqueGe = Vutil.OpaqueFromBase64(fullBodyGe.GetS("advertiserProperties.op"), async (method, message) => { await Fw.Log(method, message); });
             }
             catch (Exception e)
             {
