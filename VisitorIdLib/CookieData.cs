@@ -45,7 +45,7 @@ namespace VisitorIdLib
 
         public CookieData() { }
 
-        public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds)
+        public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool updateVisitStats = false)
         {
             // This guy gets new'd up regardless of new or existing cookie
             this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
@@ -84,7 +84,7 @@ namespace VisitorIdLib
                 {
                     existingDomainVisit.Expire(timeOfCurrentVisit);
                 }
-                else
+                else if (updateVisitStats)
                 {
                     existingDomainVisit.UpdateVisitStats(timeOfCurrentVisit);
                 }
