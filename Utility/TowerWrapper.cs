@@ -151,14 +151,14 @@ namespace Utility
                     await fw.Err(100, "ProcessTowerMessage", "Error", "Md5 is invalid: " + $"{emailMd5}" + "::ip=" + context.Connection.RemoteIpAddress);
                 }
 
-                return (opaque: VisitorIdUtil.OpaqueFromBase64(opaque), md5: "");
+                return (opaque: VisitorIdUtil.OpaqueFromBase64(opaque,async (method, message) => { await fw.Log(method, message); } ), md5: "");
             }
 
             try
             {
                 await fw.Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
-                return (opaque: VisitorIdUtil.OpaqueFromBase64(opaque), md5: emailMd5);
+                return (opaque: VisitorIdUtil.OpaqueFromBase64(opaque, async (method, message) => { await fw.Log(method, message); }), md5: emailMd5);
             }
             catch (Exception ex)
             {
