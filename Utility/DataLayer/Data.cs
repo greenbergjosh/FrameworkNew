@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Jw = Utility.JsonWrapper;
 
@@ -18,12 +19,22 @@ namespace Utility.DataLayer
         private static readonly ConcurrentDictionary<string, Connection> Connections = new ConcurrentDictionary<string, Connection>();
         private static Connection _configConn;
         private static string _configFunction;
+        private static List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
+
+        private static void TraceLog(string location, string log)
+        {
+            _traceLog.Add((DateTime.Now, location, log));
+        }
+
+        public static IEnumerable<(DateTime logTime, string location, string log)> GetTrace() => _traceLog.AsEnumerable();
 
         public static async Task<IGenericEntity> Initialize(string connStr, string dataLayerType, string[] configKeys, string configFunction, string[] commandLineArgs)
         {
             string configStr = null;
 
             _configFunction = configFunction;
+
+            TraceLog(nameof(Initialize), "Initializing");
 
             try
             {
@@ -32,7 +43,11 @@ namespace Utility.DataLayer
                 _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
                 Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
 
+                TraceLog(nameof(Initialize), $"{nameof(_configConn)}\r\n{Jw.Serialize(_configConn)}");
+
                 configStr = await GetConfigs(configKeys, commandLineArgs);
+
+                TraceLog(nameof(Initialize), $"{nameof(configStr)}\r\n{configStr}");
 
                 var gc = Jw.JsonToGenericEntity(Jw.Json(new { Config = configStr }, new bool[] { false }));
 
@@ -80,9 +95,13 @@ namespace Utility.DataLayer
 
             if (configConn == null || configFunc == null) throw new Exception($"Invalid config function definition: {confConnName ?? "[Default]"}::{confFuncName ?? "[Default]"}({configFunc ?? "null"})");
 
+            TraceLog(nameof(GetConfigs), $"Loading configs from {configConn}.{configFunc}");
+
             async Task<JObject> LoadConfig(JObject config, string key)
             {
                 if (loaded.Contains(key)) return config;
+
+                TraceLog(nameof(GetConfigs), $"Loading config {key}");
 
                 loaded.Add(key);
 
@@ -94,6 +113,9 @@ namespace Utility.DataLayer
 
                     if (c["using"] is JArray usng)
                     {
+
+                        TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usng}");
+
                         await usng.Select(u => ((string)u).Trim())
                             .Where(u => !loaded.Contains(u))
                             .AggregateAsync(config, async (cf, k) => await LoadConfig(cf, k));
@@ -102,7 +124,11 @@ namespace Utility.DataLayer
                     }
                     else mergeConfig = c;
 
+                    TraceLog(nameof(GetConfigs), $"Merging configs\r\nCurrent\r\n{config}\r\n\r\n{key}\r\n{mergeConfig}");
+
                     MergeConfigs(config, mergeConfig);
+
+                    TraceLog(nameof(GetConfigs), $"Merged configs into\r\n{config}");
 
                     return config;
                 }
@@ -111,13 +137,20 @@ namespace Utility.DataLayer
                     throw new Exception($"Failed to merge config {key}. Exception: {ex.Message}", ex);
                 }
             }
-            var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
-            var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs ?? Array.Empty<string>()).Build();
-            foreach (var kvp in commandLineConfig.AsEnumerable())
-            {
-                resolvedConfig[kvp.Key] = kvp.Value;
-            }
 
+            var resolvedConfig = await configKeys.AggregateAsync(new JObject(), async (c, k) => await LoadConfig(c, k));
+
+            if (commandLineArgs?.Any() == true)
+            {
+                TraceLog(nameof(GetConfigs), $"Overriding configs from command line:\r\n{Jw.Serialize(commandLineArgs)}");
+                var commandLineConfig = new ConfigurationBuilder().AddCommandLine(commandLineArgs).Build();
+
+                foreach (var kvp in commandLineConfig.AsEnumerable())
+                {
+                    resolvedConfig[kvp.Key] = kvp.Value;
+                }
+            }
+            
             return resolvedConfig.ToString();
         }
 
@@ -206,6 +239,7 @@ namespace Utility.DataLayer
             }
 
             public string Id { get; }
+            [JsonIgnore]
             public IDataLayerClient Client { get; }
             public string ConnStr { get; }
             public ConcurrentDictionary<string, string> Functions { get; } = new ConcurrentDictionary<string, string>();
