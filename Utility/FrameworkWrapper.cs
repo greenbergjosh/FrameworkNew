@@ -13,7 +13,6 @@ namespace Utility
     public class FrameworkWrapper
     {
         public string[] ConfigurationKeys;
-        public string SelectConfigSproc;
         public ConfigEntityRepo Entities;
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
@@ -44,9 +43,7 @@ namespace Utility
                     configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"),
                     commandLineArgs)
                     .GetAwaiter().GetResult();
-
-                SelectConfigSproc = configuration.GetValue<string>("Application:SelectConfigSproc");
-
+                
                 Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
                 var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");

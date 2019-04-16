@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Utility;
+using Utility.DataLayer;
 
 namespace GenericDataService
 {
@@ -58,6 +59,11 @@ namespace GenericDataService
             try
             {
                 fw = new FrameworkWrapper();
+                var traceLog = $"Init trace log\r\n";
+
+                traceLog += Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ?? $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
+
+                File.AppendAllText("DataService.log", traceLog);
 
                 using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
@@ -85,7 +91,7 @@ namespace GenericDataService
             }
             else app.UseStaticFiles();
 
-	    app.UseCors("CorsPolicy");
+            app.UseCors("CorsPolicy");
 
             TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
