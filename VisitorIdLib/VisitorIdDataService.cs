@@ -64,6 +64,7 @@ namespace VisitorIdLib
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
             this.SessionDuration = new TimeSpan(fw.StartupConfiguration.GetS("Config/SessionDurationDays").ParseInt() ?? 75, 0, 0, 0);
             this.CookieName = fw.StartupConfiguration.GetS("Config/CookieName") ?? "vidck";
+            this.Md5ExcludeList = Vutil.Md5ExcludeList(fw.StartupConfiguration.GetL("Config/Md5ExcludeList"));
             ConfigProviders(this.Fw);
         }
 
