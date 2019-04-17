@@ -25,7 +25,9 @@
     "typescript": "3.3.4000"
   },
   "scripts": {
-    "dev": "npm run start & tcm --watch -p src/**/*.module.css",
+    "dev": "concurrently \"npm:start\"  \"npm:watch-*\"",
+    "watch-css": "tcm --watch -p src/**/*.module.css",
+    "watch-scss": "tsm --watch src/**/*.module.scss",
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
@@ -54,6 +56,7 @@
     "@typescript-eslint/parser": "^1.5.0",
     "babel-eslint": "^9.0.0",
     "babel-plugin-import": "^1.11.0",
+    "concurrently": "^4.1.0",
     "customize-cra": "^0.2.12",
     "eslint": "^5.12.0",
     "eslint-config-prettier": "^4.1.0",
@@ -65,6 +68,7 @@
     "prettier": "^1.16.4",
     "react-app-rewired": "^2.1.1",
     "typed-css-modules": "^0.4.2",
+    "typed-scss-modules": "0.0.10",
     "utility-types": "^3.5.0"
   }
 }
