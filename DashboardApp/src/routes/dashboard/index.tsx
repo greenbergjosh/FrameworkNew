@@ -70,7 +70,6 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
               )
             })
           })(props.subroutes)}
-          <Menu.Divider />
         </Menu>
       </Layout.Sider>
 
