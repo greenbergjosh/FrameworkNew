@@ -32,7 +32,7 @@ namespace TraverseDataLib
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
             this.Vid = new VisitorIdDataService().ConfigProviders(this.Fw);
             pidSidMd5Cache = MemoryCache.Default;
-            this.md5ExcludeList = Md5ExcludeList();
+            this.md5ExcludeList = Vutil.Md5ExcludeList(this.Fw.StartupConfiguration.GetL("Config/Md5ExcludeList"));
             excludeSpanDays = fw.StartupConfiguration.GetS("Config/ExcludeSpanDays").IsNullOrWhitespace() ?
                 30 :
                 (int)fw.StartupConfiguration.GetS("Config/ExcludeSpanDays").ParseInt();
@@ -123,14 +123,6 @@ namespace TraverseDataLib
                     succ = 1 // Traverse only responds with Md5s
                 }));
             await this.Fw.EdwWriter.Write(be);
-        }
-
-        List<Guid> Md5ExcludeList ()
-        {
-            IEnumerable<IGenericEntity> excludeListGe = Fw.StartupConfiguration.GetL("Config/Md5ExcludeList");
-            List<Guid> md5List = new List<Guid>();
-            excludeListGe.ForEach(x => md5List.Add(new Guid(x.GetS(""))));
-            return md5List;
         }
 
         public async Task WriteResponse(int StatusCode, HttpContext context, string resp)
