@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using Jw = Utility.JsonWrapper;
 
 namespace Utility
@@ -26,5 +27,11 @@ namespace Utility
             return op;
         }
 
+        public static List<Guid> Md5ExcludeList (IEnumerable<IGenericEntity> excludeListGe)
+        {
+            List<Guid> md5List = new List<Guid>();
+            excludeListGe.ForEach(x => md5List.Add(new Guid(x.GetS(""))));
+            return md5List;
+        }
     }
 }

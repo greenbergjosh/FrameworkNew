@@ -473,6 +473,14 @@ namespace VisitorIdLib
                         await fw.EdwWriter.Write(be);
                         cookieData.AddOrUpdateProviderSelect("cookie", DateTime.UtcNow);
 
+                        if (! cookieData.md5.IsNullOrWhitespace() &&
+                            cookieData.md5.ParseGuid() != null &&
+                            this.Md5ExcludeList.Contains(new Guid(cookieData.md5)))
+                        {
+                            await Fw.Log(nameof(DoVisitorId), $"Removing exclude list md5 value '{cookieData.md5}' from client cookie");
+                            await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "Md5ExcludeListRemoval" } ));
+                            cookieData.md5 = "";
+                        }
 
                         md5 = cookieData.md5;
                         eml = cookieData.em;
