@@ -91,7 +91,10 @@ namespace VisitorIdLib
                     {
                         existingDomainVisit.Expire(timeOfCurrentVisit);
                     }
-                    existingDomainVisit.UpdateVisitStats(timeOfCurrentVisit);
+                    else
+                    {
+                        existingDomainVisit.UpdateVisitStats(timeOfCurrentVisit);
+                    }
                 }
                 this.Domains = deserialized.Domains;
                 this.DomainVisit = existingDomainVisit;
