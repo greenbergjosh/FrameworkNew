@@ -32,6 +32,7 @@ namespace VisitorIdLib
         public int SqlTimeoutSec;
         public TimeSpan SessionDuration;
         public string CookieName;
+        public List<Guid> Md5ExcludeList;
 
         //public void test()
         //{
