@@ -352,7 +352,7 @@ namespace VisitorIdLib
             }
 
             DateTime visitTime = DateTime.UtcNow;
-            var cookieData = new CookieData(visitTime, c.Request.Cookies[this.CookieName], host, path, this.SessionDuration, this.RsConfigIds, updateVisitStats: slot == 0);
+            var cookieData = new CookieData(visitTime, c.Request.Cookies[this.CookieName], host, path, this.SessionDuration, this.RsConfigIds, newlyConstructed: slot == 0);
             lv = cookieData.lv == null ? "" : cookieData.lv.ToString();
             sid = cookieData.sid.ToString();
 

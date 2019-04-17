@@ -45,7 +45,7 @@ namespace VisitorIdLib
 
         public CookieData() { }
 
-        public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool updateVisitStats = false)
+        public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool newlyConstructed = false)
         {
             // This guy gets new'd up regardless of new or existing cookie
             this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
@@ -80,12 +80,17 @@ namespace VisitorIdLib
                 var existingDomainVisit = deserialized.Domains[host];
                 var lastVisitDateTime = existingDomainVisit.VisitDateTime;
                 var lastVisitcount = existingDomainVisit.VisitNum;
-                if (existingDomainVisit.IsExpired(timeOfCurrentVisit, sessionDuration))
+
+                // Expire only if we're in the beginning of a run. Wait until
+                // the next visit to do so otherwise, so we don't split our
+                // session details between two sets of RS's. Either way, update
+                // our visit counts in this case.
+                if (newlyConstructed)
                 {
-                    existingDomainVisit.Expire(timeOfCurrentVisit);
-                }
-                else if (updateVisitStats)
-                {
+                    if (existingDomainVisit.IsExpired(timeOfCurrentVisit, sessionDuration))
+                    {
+                        existingDomainVisit.Expire(timeOfCurrentVisit);
+                    }
                     existingDomainVisit.UpdateVisitStats(timeOfCurrentVisit);
                 }
                 this.Domains = deserialized.Domains;
