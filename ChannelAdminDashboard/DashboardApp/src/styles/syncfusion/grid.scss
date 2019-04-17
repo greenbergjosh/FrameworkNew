@@ -1,0 +1,40 @@
+@import "../theme";
+
+.e-grid {
+  border: 0;
+
+  .e-toolbar {
+    border: 0;
+  }
+
+  .e-detailindentcell {
+    border: 0;
+  }
+
+  .e-detailcell {
+    border: 0;
+  }
+
+  .e-gridheader {
+    border: 0;
+  }
+
+  .e-headercell,
+  .e-detailheadercell {
+    background: #fafafa;
+    border-bottom: 1px solid $border-color;
+  }
+
+  .e-rowcell,
+  .e-detailrowcollapse {
+    border-color: $border-color;
+  }
+
+  &.e-resize-lines .e-headercell .e-rhandler {
+    border-color: $border-color;
+  }
+
+  td.e-active {
+    background-color: $background-color-primary-light;
+  }
+}
