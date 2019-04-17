@@ -437,21 +437,22 @@ namespace VisitorIdLib
                     eml = "";
                 }
 
-                if (visitorIdMd5ProviderSequence.Count > 0)
-                {
-                    be = new EdwBulkEvent();
-                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
-                        null, PL.O(new
-                        {
-                            et = "Md5ProviderSelectionInitiate",
-                            count = visitorIdMd5ProviderSequence.Count,
-                            slot,
-                            page
-                        }));
-                    await fw.EdwWriter.Write(be);
-                }
                 while (slot < visitorIdMd5ProviderSequence.Count)
                 {
+                    if (slot == 0) // Drop an event at the beginning of the Md5 provider run
+                    {
+                        be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
+                            null, PL.O(new
+                            {
+                                et = "Md5ProviderSelectionInitiate",
+                                count = visitorIdMd5ProviderSequence.Count,
+                                slot,
+                                page
+                            }));
+                        await fw.EdwWriter.Write(be);
+                    }
+
                     var nextTask = visitorIdMd5ProviderSequence[slot].Md5provider;
                     var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[slot].EmailProviderSeq;
 
@@ -621,7 +622,7 @@ namespace VisitorIdLib
                         continueToNextSlot();
                     }
                 }
-                if (visitorIdMd5ProviderSequence.Count > 0)
+                if (visitorIdMd5ProviderSequence.Count > 0) // Drop an event at the end of the Md5 provider run
                 {
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
