@@ -1,3 +1,4 @@
+/* SyncFusion Essential JS 2 app styles */
 @import "../node_modules/@syncfusion/ej2-base/styles/bootstrap4.css";
 @import "../node_modules/@syncfusion/ej2-buttons/styles/bootstrap4.css";
 @import "../node_modules/@syncfusion/ej2-calendars/styles/bootstrap4.css";
@@ -7,6 +8,12 @@
 @import "../node_modules/@syncfusion/ej2-popups/styles/bootstrap4.css";
 @import "../node_modules/@syncfusion/ej2-splitbuttons/styles/bootstrap4.css";
 @import "../node_modules/@syncfusion/ej2-react-grids/styles/bootstrap4.css";
+
+/* SyncFusion Theme Overrides */
+@import "./styles/syncfusion/bootstrap4-orange.css";
+
+/* OnPoint overrides for SyncFusion styles */
+@import "./styles/syncfusion/grid.css";
 
 .App {
   text-align: center;

@@ -11,6 +11,7 @@ import {
   GridModel,
   Inject,
   Toolbar,
+  Resize,
 } from "@syncfusion/ej2-react-grids"
 
 import visitorIdData from "../../../../../../mock-data/visitor-id-report.json"
@@ -35,12 +36,18 @@ export type dataSourceTypes = keyof DataSources
 
 const toolbarOptions = ["CsvExport", "ExcelExport", "ColumnChooser"]
 const childGridOptions: GridModel = {
+  allowResizing: true,
   queryString: "Date",
   columns: [
-    { field: "Domain", textAlign: "Right", width: 150 },
-    { field: "Publisher", width: 100 },
-    { field: "Slot", width: 100 },
-    { field: "Page", width: 100 },
+    { field: "Domain", textAlign: "Right", width: 120 },
+    { field: "Publisher", width: 80 },
+    { field: "Slot", width: 50 },
+    { field: "Page", width: 50 },
+    { field: "MD5 Provider", width: 120 },
+    { field: "MD5ProviderId", width: 150 },
+    { field: "Selected", width: 50 },
+    { field: "Responded", width: 50 },
+    { field: "Succeeded", width: 50 },
   ],
 }
 
@@ -49,14 +56,6 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
   const data: any[] = dataSources[reportId]
   const grid = useRef<GridComponent>(null)
 
-  // console.log(
-  //   "index.Report",
-  //   `dataSources['${props.reportId}']`,
-  //   data,
-  //   props,
-  //   childGridOptions.dataSource
-  // )
-  //
   const handleToolbarItemClicked = ({ item }: ClickEventArgs) => {
     if (item.id && item.id.endsWith("_excelexport")) {
       if (grid && grid.current) {
@@ -87,7 +86,8 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
         toolbar={toolbarOptions}
         toolbarClick={handleToolbarItemClicked}
         showColumnChooser
-        allowExcelExport>
+        allowExcelExport
+        allowResizing>
         <ColumnsDirective>
           <ColumnDirective
             field="Date"
@@ -97,7 +97,7 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
           />
           <ColumnDirective field="VisitCount" width="100" />
         </ColumnsDirective>
-        <Inject services={[Toolbar, ColumnChooser, DetailRow, ExcelExport]} />
+        <Inject services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport]} />
       </GridComponent>
     </div>
   )
