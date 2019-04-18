@@ -145,6 +145,8 @@ namespace VisitorIdLib
 
         public async Task Run(HttpContext context)
         {
+            context.Response.Headers.Add("Cache-Control", "no-cache, no-store");
+            context.Response.Headers.Add("Expires", "-1");
             string requestFromPost = "";
             var result = Jw.Json(new { Error = "SeeLogs" });
             try
