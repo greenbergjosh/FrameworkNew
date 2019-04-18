@@ -52,7 +52,7 @@ async function handleService(res) {
                 md5: getDescendantProp(response, res.config.Transform.md5) || '',
                 saveSession: res.config.SaveSession
             };
-        } else return { ...JSON.parse(response), saveSession: res.config.SaveSession };
+        } else return { ...response, saveSession: res.config.SaveSession };
     } else return { email: '', md5: '', saveSession: 'false' };
 }
 
