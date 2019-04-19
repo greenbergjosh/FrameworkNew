@@ -1,0 +1,50 @@
+/* SyncFusion Essential JS 2 app styles */
+@import "../node_modules/@syncfusion/ej2-base/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-buttons/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-calendars/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-dropdowns/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-inputs/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-navigations/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-popups/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-splitbuttons/styles/bootstrap4.css";
+@import "../node_modules/@syncfusion/ej2-react-grids/styles/bootstrap4.css";
+
+/* SyncFusion Theme Overrides */
+@import "./styles/syncfusion/bootstrap4-orange.css";
+
+/* OnPoint overrides for SyncFusion styles */
+@import "./styles/syncfusion/grid.scss";
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -4,7 +4,7 @@ import { Avatar, Button, Dropdown, Icon, Menu } from "antd"
 import { none, some } from "fp-ts/lib/Option"
 
 const GOOGLE_AUTH_CONFIG = {
-  clientId: "427941496558-cinvoa6vcatjc6ckabmkjbip17ggp8rh.apps.googleusercontent.com",
+  clientId: "807151246360-m98u9n22fm81tu5fn9pmqdcuoh48qk6p.apps.googleusercontent.com",
   scope: "profile email",
 }
 
@@ -22,13 +22,13 @@ const extractUserFromProfile = (googleAuthUser: gapi.auth2.GoogleUser) => {
     familyName: profile.getFamilyName(),
     imageUrl: profile.getImageUrl(),
     email: profile.getEmail(),
+    idToken: googleAuthUser.getAuthResponse().id_token,
+    accessToken: googleAuthUser.getAuthResponse().access_token,
   }
 }
 
 export const GoogleAuth = (): JSX.Element => {
-  const [{ iam }, dispatch] = useRematch((s) => ({
-    iam: s.iam,
-  }))
+  const [{ iam }, dispatch] = useRematch(({ iam }) => ({ iam }))
 
   const onAuthChange = useCallback(
     (signedIn: boolean, suppressDashboardRouting?: boolean) => {
@@ -76,9 +76,7 @@ export const GoogleAuth = (): JSX.Element => {
         overlay={
           <Menu
             onClick={({ key }) =>
-              key === "logout"
-                ? onSignOutClick()
-                : (e: React.SyntheticEvent) => e.preventDefault()
+              key === "logout" ? onSignOutClick() : (e: React.SyntheticEvent) => e.preventDefault()
             }>
             <Menu.Item key="username">
               <span>{profile.name}</span>
