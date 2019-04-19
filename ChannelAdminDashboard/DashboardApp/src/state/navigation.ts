@@ -6,9 +6,14 @@ import { Dashboard } from "../routes/dashboard"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { Reports } from "../routes/dashboard/routes/reports"
 import { Report } from "../routes/dashboard/routes/reports/routes/report"
-import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config-admin"
 import { Option } from "fp-ts/lib/Option"
-import { ConfigEditor } from "../routes/dashboard/routes/global-config-admin/routes/config-editor"
+import { None, Some } from "../data/Option"
+import { Config } from "../data/GlobalConfig.Config"
+import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config"
+import { CreateGlobalConfig } from "../routes/dashboard/routes/global-config/routes/create"
+import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/routes/edit"
+import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
+import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
 
 declare module "./store.types" {
   interface AppModels {
@@ -30,9 +35,13 @@ export interface Selectors {}
 export interface Reducers {}
 
 export interface Effects {
-  goToLanding<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
-
   goToDashboard<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
+
+  goToGlobalConfigById(params: { id: Config["id"]; navOpts?: Reach.NavigateOptions<object> }): void
+
+  goToGlobalConfigs<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
+
+  goToLanding<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
 }
 
 export interface RouteMeta {
@@ -114,21 +123,54 @@ const staticRoutesMap = {
           },
         },
       },
-      "global-configs": {
-        abs: "/dashboard/global-configs",
+      "global-config": {
+        abs: "/dashboard/global-config",
         component: GlobalConfigAdmin,
         description: "Manage GlobalConfig.Config entries",
-        title: "Global Configs",
+        title: "Global Config",
         iconType: "code",
-        path: "global-configs",
+        path: "global-config",
         redirectFrom: [],
         shouldAppearInSideNav: true,
         subroutes: {
-          ":configId": {
-            abs: "/dashboard/global-configs/:configId",
-            component: ConfigEditor,
+          "/": {
+            abs: "/dashboard/global-config",
+            component: ListGlobalConfig,
             description: "",
-            title: "Editor",
+            title: "Global Configs Index",
+            iconType: "code",
+            path: "/",
+            redirectFrom: [],
+            shouldAppearInSideNav: false,
+            subroutes: {},
+          },
+          create: {
+            abs: "/dashboard/global-config/create",
+            component: CreateGlobalConfig,
+            description: "",
+            title: "Create Global Config",
+            iconType: "code",
+            path: "create",
+            redirectFrom: [],
+            shouldAppearInSideNav: false,
+            subroutes: {},
+          },
+          ":configId/edit": {
+            abs: "/dashboard/global-config/:configId/edit",
+            component: EditGlobalConfig,
+            description: "",
+            title: "Edit Global Config",
+            iconType: "code",
+            path: ":configId/edit",
+            redirectFrom: [],
+            shouldAppearInSideNav: false,
+            subroutes: {},
+          },
+          ":configId": {
+            abs: "/dashboard/global-config/:configId",
+            component: ShowGlobalConfig,
+            description: "",
+            title: "Global Configs Index",
             iconType: "code",
             path: ":configId",
             redirectFrom: [],
@@ -156,14 +198,24 @@ export const navigation: Store.AppModel<
   effects: () => ({
     goToDashboard: (opts, { navigation: { routes } }) =>
       opts.foldL(
-        () => Reach.navigate(routes.dashboard.abs),
-        (opts) => Reach.navigate(routes.dashboard.abs, opts)
+        None(() => Reach.navigate(routes.dashboard.abs)),
+        Some((opts) => Reach.navigate(routes.dashboard.abs, opts))
+      ),
+
+    goToGlobalConfigById: ({ id, navOpts }, { navigation: { routes } }) => {
+      Reach.navigate(`${routes.dashboard.subroutes["global-config"].abs}/${id}`, navOpts)
+    },
+
+    goToGlobalConfigs: (opts, { navigation: { routes } }) =>
+      opts.foldL(
+        None(() => Reach.navigate(routes.dashboard.subroutes["global-config"].abs)),
+        Some((opts) => Reach.navigate(routes.dashboard.subroutes["global-config"].abs, opts))
       ),
 
     goToLanding: (opts, { navigation: { routes } }) =>
       opts.foldL(
-        () => Reach.navigate(routes.login.abs),
-        (opts) => Reach.navigate(routes.login.abs, opts)
+        None(() => Reach.navigate(routes.login.abs)),
+        Some((opts) => Reach.navigate(routes.login.abs, opts))
       ),
   }),
 

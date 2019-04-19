@@ -15,6 +15,7 @@ const overrides = [
  * @param {"development" | "production"} env
  */
 module.exports = function customizeCRA(config, env) {
+  config.devtool = "source-map"
   config.plugins = config.plugins || []
   config.module.rules = config.module.rules || []
 
