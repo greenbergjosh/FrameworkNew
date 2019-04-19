@@ -1,6 +1,10 @@
 ﻿async function visitorId(url, opaque, future) {
     opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: '0', page: '0', sd: '', succ: '0' };
     while (true) {
+        await window.genericFetch(url + '?m=Initialize&op=' + base64UrlSafe(JSON.stringify(opaque)),
+            { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
+            'json', '');
+
         let res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
@@ -13,7 +17,7 @@
             for (let x in res.config.Strategy) {
                 let f = res.config.Strategy[x].f;
                 let a = res.config.Strategy[x].a;
-                if (f == undefined) continue;
+                if (f === undefined) continue;
                 let exf = getDescendantProp(window[res.config.GlobalObject], f);
                 exf(...a);
             }
@@ -27,7 +31,7 @@
             md5: sres.md5, e: base64UrlSafe(sres.email||''), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid, lv: res.lv
         };
 
-        if (res.config.SaveSession == 'true') {
+        if (res.config.SaveSession === 'true') {
             res = await window.genericFetch(url + '?m=SaveSession&pq=' + (res.config.SaveResult || 0) +'&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');
@@ -60,14 +64,14 @@ async function genericFetch(url, fetchParms, fetchType, imgFlag) {
     return await fetch(url, fetchParms)
         .then(response => {
             if (response.ok) {
-                return (fetchType == "base64") ? response.arrayBuffer() : response.text();
+                return (fetchType === "base64") ? response.arrayBuffer() : response.text();
             }
             throw new Error('Network response was not ok.');
         })
         .then(data => {
-            if (fetchType == "json") return JSON.parse(data);
-            else if (fetchType == "base64") return imgFlag + arrayBufferToBase64(data);
-            else if (fetchType == "html") {
+            if (fetchType === "json") return JSON.parse(data);
+            else if (fetchType === "base64") return imgFlag + arrayBufferToBase64(data);
+            else if (fetchType === "html") {
                 let parser = new DOMParser();
 
                 return parser.parseFromString(data, "text/html");
@@ -92,7 +96,7 @@ function arrayBufferToBase64(buffer) {
     bytes.forEach((b) => binary += String.fromCharCode(b));
 
     return window.btoa(binary);
-};
+}
 
 function getDescendantProp(obj, desc) {
     let arr = desc.split('.');
