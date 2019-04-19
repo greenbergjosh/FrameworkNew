@@ -194,8 +194,7 @@ namespace UnsubLib
                 return;
             }
 
-            var idtof = new Dictionary<string, FileInfo>();
-            List<(string NetworkCampaignId, string NetworkCampaignName, JObject CampaignPayload)> campaignDetails = new List<(string NetworkCampaignId, string NetworkCampaignName, JObject CampaignPayload)>();
+            var unsubFiles = new List<(FileInfo unsub, IEnumerable<IGenericEntity> campaigns)>();
 
             await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Processing Manual Dir");
 
@@ -208,13 +207,22 @@ namespace UnsubLib
                     if (cd.type == "c")
                     {
                         var networkCampaignId = cd.id;
-                        JObject campaignJson;
-                        string networkCampaignName;
 
                         if (cd.campaignDataFile.Exists)
                         {
-                            campaignJson = JObject.Parse(await cd.campaignDataFile.ReadAllTextAsync());
-                            networkCampaignName = campaignJson["NetworkName"].ToString();
+                            var campaignJson = await cd.campaignDataFile.ReadAllTextAsync();
+                            var args = Jw.Serialize(new
+                            {
+                                NetworkId = networkId,
+                                PayloadType = "json",
+                                DataPath = "$",
+                                CampaignIdPath = network.GetS("Credentials/CampaignIdPath"),
+                                RelationshipPath = network.GetS("Credentials/UnsubRelationshipPath"),
+                                NamePath = network.GetS("Credentials/CampaignNamePath")
+                            });
+                            var res = await Data.CallFn(Conn, "MergeNetworkCampaigns", args, campaignJson);
+
+                            unsubFiles.Add((cd.unsubFile, new[] { res }));
                         }
                         else
                         {
@@ -227,26 +235,14 @@ namespace UnsubLib
                                 continue;
                             }
 
-                            campaignJson = JObject.Parse(res.GetS("NetworkCampaignPayload"));
-                            networkCampaignName = res.GetS("NetworkCampaignName");
+                            unsubFiles.Add((cd.unsubFile, new[] { res }));
                         }
-
-                        campaignDetails.Add((
-                            NetworkCampaignId: networkCampaignId,
-                            NetworkCampaignName: networkCampaignName,
-                            CampaignPayload: campaignJson
-                        ));
-
-                        idtof.Add(networkCampaignId, cd.unsubFile);
                     }
                     else if (cd.type == "r")
                     {
                         var unsubRelId = cd.id;
-                        var res = await Data.CallFn(Conn, "SelectNetworkCampaignsWithPayload", Jw.Serialize(new { nr = unsubRelId, NetworkId = networkId }));
-                        var cmps = res?.GetL("")
-                            .Select(c => new {networkCampaignId = c.GetS("NetworkCampaignId"), networkCampaignName = c.GetS("NetworkCampaignName"), campaignJson = Jw.TryParseObject(c.GetS("NetworkCampaignPayload")) })
-                            .Where(c=>c.campaignJson != null)
-                            .ToArray();
+                        var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Serialize(new { nr = unsubRelId, NetworkId = networkId }));
+                        var cmps = res?.GetL("").ToArray();
 
                         if (!cmps.Any())
                         {
@@ -254,16 +250,7 @@ namespace UnsubLib
                             continue;
                         }
 
-                        foreach (var cmp in cmps)
-                        {
-                            campaignDetails.Add((
-                                NetworkCampaignId: cmp.networkCampaignId,
-                                NetworkCampaignName: cmp.networkCampaignName,
-                                CampaignPayload: cmp.campaignJson
-                            ));
-
-                            idtof.Add(cmp.networkCampaignId, cd.unsubFile);
-                        }
+                        unsubFiles.Add((cd.unsubFile, cmps));
                     }
                 }
                 catch (Exception e)
@@ -272,44 +259,21 @@ namespace UnsubLib
                 }
             }
 
-            if (!campaignDetails.Any())
+            if (!unsubFiles.Any())
             {
                 await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"No campaigns to process");
                 return;
             }
 
-            var campaignsJson = Jw.Serialize(campaignDetails);
-
-            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Campaigns: {campaignsJson}");
-
-            var campaigns = await Data.CallFn(Conn, "MergeNetworkCampaignsManual",
-                    Jw.Json(new { NetworkId = networkId.ToLower() }), campaignsJson.ToString());
-
-            if (campaigns.GetS("Result") == "NoData")
-            {
-                await _fw.Log($"{nameof(ManualJob)}-{networkName}", "NoData");
-                return;
-            }
-
-            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"MergeNetworkCampaignsManual->: {campaigns}");
-
-            IDictionary<string, List<IGenericEntity>> uris =
-               new Dictionary<string, List<IGenericEntity>>();
-            foreach (var cmp in campaigns.GetL(""))
-            {
-                var ncid = cmp.GetS("NetworkCampaignId");
-                var unsubFile = idtof.GetValueOrDefault(ncid);
-
-                if (unsubFile?.Exists == true) uris.Add(unsubFile.FullName, new List<IGenericEntity>() { cmp });
-            }
-
             await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Calling ProcessUnsubFiles");
 
-            await ProcessUnsubFiles(uris, network, campaigns);
+            await ProcessUnsubFiles(unsubFiles.ToDictionary(u => u.unsub.FullName, u => u.campaigns.ToList()), network, unsubFiles.SelectMany(u => u.campaigns).ToArray());
 
             await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Completed ProcessUnsubFiles");
 
-            EnumerateCampaignDirs().Where(d => d.Name.ParseInt().HasValue).ForEach(d =>
+            var cleanUp = unsubFiles.Select(u => u.unsub.Directory).DistinctBy(u => u.FullName);
+
+            cleanUp.ForEach(d =>
                         {
                             try
                             {
@@ -377,12 +341,12 @@ namespace UnsubLib
 
             await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Calling ProcessUnsubFiles");
 
-            await ProcessUnsubFiles(uris, network, cse);
+            await ProcessUnsubFiles(uris, network, cse.GetL(""));
 
             await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Completed ProcessUnsubFiles");
         }
 
-        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IGenericEntity cse)
+        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IEnumerable<IGenericEntity> cse)
         {
             var networkName = network.GetS("Name");
 
@@ -392,7 +356,7 @@ namespace UnsubLib
             // Generate diff list
             var campaignsWithNegativeDelta = new List<string>();
             var diffs = new HashSet<Tuple<string, string>>();
-            foreach (var c in cse.GetL(""))
+            foreach (var c in cse)
             {
                 if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
                 {
@@ -550,6 +514,7 @@ namespace UnsubLib
         public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network)
         {
             var networkName = network.GetS("Name");
+            var isSchedWithManual = network.GetS("Credentials/ManualFile").ParseBool() == true;
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
@@ -567,7 +532,7 @@ namespace UnsubLib
                     await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Iteration({networkName}):: for url {uri.Key} for {logCtx}");
 
                     IDictionary<string, object> cf = new Dictionary<string, object>();
-                    if (networkUnsubMethod == "ScheduledUnsubJob")
+                    if (networkUnsubMethod == "ScheduledUnsubJob" && !isSchedWithManual)
                     {
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
 
@@ -575,7 +540,7 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
                     }
-                    else if (networkUnsubMethod == "ManualDirectory")
+                    else if (networkUnsubMethod == "ManualDirectory" || isSchedWithManual)
                     {
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling UnzipUnbuffered({networkName}):: for url {uri.Key}");
 
@@ -851,18 +816,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+                }
 #if DEBUG
             }
 #endif

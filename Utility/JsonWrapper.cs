@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Utility
@@ -14,6 +15,16 @@ namespace Utility
         public const string Empty = "{}";
 
         public static string Serialize(object value, bool pretty = false) => JsonConvert.SerializeObject(value, pretty ? Formatting.Indented : Formatting.None);
+
+        public static async Task<IGenericEntity> GenericEntityFromFile(string path)
+        {
+            return JsonToGenericEntity(await new FileInfo(path).ReadAllTextAsync());
+        }
+
+        public static async Task<T> FromFile<T>(string path) where T : JToken
+        {
+            return JToken.Parse(await new FileInfo(path).ReadAllTextAsync()) as T;
+        }
 
         public static JToken TryParse(string str)
         {
