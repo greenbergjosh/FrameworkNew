@@ -25,7 +25,8 @@ namespace Utility.DataLayer
                     .Direction = System.Data.ParameterDirection.Output;
                 cmd.CommandTimeout = timeout;
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
-                outval = (string)cmd.Parameters["@Return"].Value;
+                var ov = cmd.Parameters["@Return"].Value;
+                outval = ov == DBNull.Value ? null : (string) ov;
                 cn.Close();
             }
 

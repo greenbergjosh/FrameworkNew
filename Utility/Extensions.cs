@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -43,6 +44,9 @@ namespace Utility
 
         public static DateTime? ParseDate(this string str) => DateTime.TryParse(str, out var i) ? i : (DateTime?)null;
 
+        public static DateTime? ParseDate(this string str, string format, IFormatProvider provider = null, DateTimeStyles style = DateTimeStyles.AssumeLocal) =>
+            DateTime.TryParseExact(str, format, provider ?? CultureInfo.CurrentCulture, style, out var i) ? i : (DateTime?)null;
+
         public static long? ParseLong(this string str) => long.TryParse(str, out var i) ? i : (long?)null;
 
         public static int? ParseInt(this string str) => int.TryParse(str, out var i) ? i : (int?)null;
@@ -61,6 +65,19 @@ namespace Utility
                 return null;
             }
             return i;
+        }
+
+        public static Uri ParseWebUrl(this string str, UriKind kind = UriKind.Absolute)
+        {
+            if (str.IsNullOrWhitespace()) return null;
+
+            str = str.Trim();
+
+            if (kind == UriKind.Absolute && !str.StartsWith("http")) str = "http://" + str;
+
+            Uri.TryCreate(str, UriKind.Absolute, out var u);
+
+            return u;
         }
 
         public static bool IsMatch(this string str, Regex rx)
@@ -150,17 +167,17 @@ namespace Utility
 
             foreach (var set in sets)
             {
-                var cp = finalSet.SelectMany(fs => set, (fs, s) => new {fs, s});
+                var cp = finalSet.SelectMany(fs => set, (fs, s) => new { fs, s });
 
                 finalSet = cp.Select(x =>
                 {
-                    var a = new T[x.fs.Length+1];
+                    var a = new T[x.fs.Length + 1];
 
-                    x.fs.CopyTo(a,0);
+                    x.fs.CopyTo(a, 0);
                     a[x.fs.Length] = x.s;
 
                     return a;
-                } );
+                });
             }
 
             return finalSet;
@@ -233,6 +250,46 @@ namespace Utility
         public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct
         {
             return key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
+        }
+
+        #endregion
+
+        #region IO
+
+        public static string PathCombine(this DirectoryInfo di, params string[] parts)
+        {
+            //
+            // Union does not garantee preserved order
+            //
+            var arr = new string[parts.Length + 1];
+
+            arr[0] = di.FullName;
+
+            for (int i = 0; i < parts.Length; i++) arr[i + 1] = parts[i];
+
+            return Path.Combine(arr);
+        }
+
+        public static void Rename(this DirectoryInfo di, string newName)
+        {
+            if(di.Parent == null) return;
+
+            di.MoveTo(di.Parent.PathCombine(newName));
+        }
+
+        public static void Rename(this FileInfo fi, string newName)
+        {
+            if (fi.Directory == null) return;
+
+            fi.MoveTo(fi.Directory.PathCombine(newName));
+        }
+
+        public static async Task<string> ReadAllTextAsync(this FileInfo fi)
+        {
+            using (var fr = fi.OpenText())
+            {
+                return await fr.ReadToEndAsync();
+            }
         }
 
         #endregion

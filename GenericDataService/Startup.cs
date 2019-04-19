@@ -59,11 +59,6 @@ namespace GenericDataService
             try
             {
                 fw = new FrameworkWrapper();
-                var traceLog = $"Init trace log\r\n";
-
-                traceLog += Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ?? $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
-
-                File.AppendAllText("DataService.log", traceLog);
 
                 using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
@@ -104,10 +99,16 @@ namespace GenericDataService
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
                         return;
                     }
-                    else
+
+                    if (context.IsLocal() && context.Request.Query["m"] == "trace")
                     {
-                        await this.DataService.Run(context);
+                        var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ?? $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
+
+                        await context.WriteSuccessRespAsync(traceLog, Encoding.UTF8);
+                        return;
                     }
+
+                    await this.DataService.Run(context);
                 }
                 catch (Exception ex)
                 {
