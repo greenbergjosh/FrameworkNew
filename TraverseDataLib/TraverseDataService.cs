@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Utility;
 using VisitorIdLib;
 using Jw = Utility.JsonWrapper;
-using Vutil = Utility.VisitorIdUtil;
+using Vutil = VisitorIdLib.Util;
 using System.Runtime.Caching;
 using Utility.DataLayer;
 using Newtonsoft.Json;
