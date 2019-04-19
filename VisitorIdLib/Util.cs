@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using Utility;
 using Jw = Utility.JsonWrapper;
 
-namespace Utility
+namespace VisitorIdLib
 {
-    public static class VisitorIdUtil
+    public static class Util
     {
         public static IGenericEntity OpaqueFromBase64(string base64Opaque, Action<string, string> errLogger)
         {
