@@ -9,10 +9,13 @@ namespace UnsubJob
 {
     class Program
     {
-        private static FrameworkWrapper Fw = new FrameworkWrapper();
+        private static FrameworkWrapper Fw = null;
 
         public static async Task Main(string[] args)
         {
+
+            Fw = new FrameworkWrapper();
+
             await Fw.Log(nameof(Main), "Starting...");
 
             // AppName = "UnsubJob"
@@ -77,7 +80,7 @@ namespace UnsubJob
                         await Fw.Error(nameof(Main), $"ScheduledUnsubJob failed({name}): {exScheduledUnsub}");
                     }
 
-                    if (n.GetS("AlsoDoManualDirectory") == "True")
+                    if (n.GetS("Credentials/AlsoDoManualDirectory") == "True")
                     {
                         try
                         {
