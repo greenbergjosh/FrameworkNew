@@ -11,7 +11,7 @@ using Utility.DataLayer;
 
 namespace SignalApiLib
 {
-    
+
     public class Fluent : ISourceHandler
     {
         private readonly FrameworkWrapper _fw;
@@ -50,7 +50,7 @@ namespace SignalApiLib
                         await _fw.Error(_logCtx, $"Invalid items in array:\r\n\r\nBad items:\r\n{bad.Select(p => p.orig.ToString()).Join("\r\n")}\r\n\r\nFull payload:\r\n{token}");
                     }
 
-                    payloads = original.Where(p => p.jobj != null).Select(p => Mutate(p.jobj));
+                    payloads = original.Where(p => p.jobj != null).Select(p => Mutate(p.jobj)).ToArray();
                 }
                 else
                 {
@@ -58,11 +58,10 @@ namespace SignalApiLib
                     return null;
                 }
 
-                payloads = payloads.Where(p => p.em?.Contains("@") == true).ToArray();
-
                 if (payloads.Any())
                 {
-                    var localDbTask = Data.CallFn("Fluent", "SaveData", "", JsonConvert.SerializeObject(payloads));
+                    var dbp = JsonConvert.SerializeObject(payloads);
+                    var localDbTask = Data.CallFn("Fluent", "SaveData", payload: dbp);
                     var pqTask = PostToQueue(payloads);
 
                     await Task.WhenAll(localDbTask, pqTask);
@@ -80,11 +79,24 @@ namespace SignalApiLib
             return null;
         }
 
-        private SourceData Mutate(JObject s) => new SourceData { em = s["em"].ToString(), src = "fluent"};
+        // ToDo: move to config
+        private Dictionary<string, string[]> mutations = new Dictionary<string, string[]>
+        {
+            {"fn", new[]{"FirstName","Firstname"} },
+            {"ln", new[]{ "LastName", "Lastname" } },
+            {"su", new[]{ "OptInURL" } },
+            {"ip", new[]{ "LeadIPAddress"} },
+            {"daq", new[]{ "LeadDate" } },
+            {"zip", new[]{ "PostalZipCode" } },
+            {"dob", new[]{ "BirthDate" } },
+            {"g", new[]{ "GenderID", "GenderId" } }
+        };
+
+        private SourceData Mutate(JObject s) => new SourceData(s, mutations);
 
         private async Task PostToQueue(IEnumerable<SourceData> payloads)
         {
-            var posts = _postingQueueExports.SelectMany(p => payloads, (p, d) => p.GetPostingQueueData(d)).Where(qd => qd != null).ToArray();
+            var posts = _postingQueueExports.SelectMany(p => payloads, (p, d) => p.GetPostingQueueData("fluent", d)).Where(qd => qd != null).ToArray();
 
             if (posts.Any())
             {
