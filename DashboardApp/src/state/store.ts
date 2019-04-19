@@ -9,17 +9,17 @@ import { globalConfig } from "./global-config"
 import { remoteDataClient } from "./remote-data-client"
 import { iam } from "./iam"
 import { logger } from "./logger"
-import { navigation } from "./navigation"
 import { reports } from "./reports"
 import * as Store from "./store.types"
+import { navigation } from "./navigation"
 
 const appModels: Omit<Store.AppModelConfigs, "loading"> = {
   adminConfig,
   globalConfig,
-  remoteDataClient,
   iam,
   logger,
   navigation,
+  remoteDataClient,
   reports,
 }
 

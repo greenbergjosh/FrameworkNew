@@ -55,6 +55,7 @@
     "@typescript-eslint/array-type": 0,
     "no-use-before-define": 0,
     "no-useless-constructor": 0,
+    "react/no-children-prop": 0,
     "react-hooks/exhaustive-deps": 1,
     "react-hooks/rules-of-hooks": 2,
     "react/prop-types": 0,

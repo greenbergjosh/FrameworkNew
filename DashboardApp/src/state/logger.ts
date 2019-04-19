@@ -32,18 +32,18 @@ export const logger: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
   effects: () => ({
     logInfo: (message) => {
-      if (process.env.NODE_ENV === "production") {
+      if (process.env.NODE_ENV !== "production") {
         console.log(message)
       }
     },
     logWarning: (message) => {
-      if (process.env.NODE_ENV === "production") {
-        console.log(message)
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(message)
       }
     },
     logError: (message) => {
-      if (process.env.NODE_ENV === "production") {
-        console.log(message)
+      if (process.env.NODE_ENV !== "production") {
+        console.error(message)
       }
     },
   }),
