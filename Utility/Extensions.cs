@@ -161,6 +161,11 @@ namespace Utility
 
         #region Collections
 
+        public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> col, Func<T, TKey> keySelector)
+        {
+            return col.GroupBy(keySelector).Select(g => g.First());
+        }
+
         public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<T> initialSet, params IEnumerable<T>[] sets)
         {
             var finalSet = initialSet.Select(x => new[] { x });
