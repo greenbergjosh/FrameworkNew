@@ -44,9 +44,9 @@ export function BadPayload(value: string, response: HttpResponse<string>): HttpE
     return onBadPayload(value, response)
   }
 }
-export function BadUrl(value: string): HttpError {
+export function BadUrl(url: string): HttpError {
   return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
-    return onBadUrl(value)
+    return onBadUrl(url)
   }
 }
 export function NetworkError(value: string): HttpError {
@@ -140,9 +140,7 @@ function axiosErrorToEither<A>(e: AxiosError): Either<HttpError, A> {
     }
   }
 
-  return e.code === "ECONNABORTED"
-    ? left(Timeout(e.request))
-    : left(NetworkError(e.message))
+  return e.code === "ECONNABORTED" ? left(Timeout(e.request)) : left(NetworkError(e.message))
 }
 
 function getPromiseAxiosResponse(config: AxiosRequestConfig): Promise<AxiosResponse> {

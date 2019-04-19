@@ -75,11 +75,13 @@ export interface AppModel<S, R extends object, E extends object, PublicSelectors
       ? (state: S, payload: P) => void
       : never
   }
-  effects: PublicEffects2EffectConfg<E> | ((dispatch: AppDispatch) => PublicEffects2EffectConfg<E>)
+  effects:
+    | PublicEffects2EffectConfig<E>
+    | ((dispatch: AppDispatch) => PublicEffects2EffectConfig<E>)
   selectors: AppModelToSelectorFactory<S, PublicSelectors>
 }
 
-type PublicEffects2EffectConfg<Effects extends object> = {
+type PublicEffects2EffectConfig<Effects extends object> = {
   [K in keyof Effects]: Effects[K] extends (payload: infer P, meta: infer M) => infer R
     ? (payload: P, rootState: AppState, meta: M) => R
     : Effects[K] extends (payload: infer P) => infer R

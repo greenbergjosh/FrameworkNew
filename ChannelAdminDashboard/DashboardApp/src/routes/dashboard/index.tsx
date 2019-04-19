@@ -49,28 +49,29 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           defaultOpenKeys={activeMenuKeys}
           selectedKeys={activeMenuKeys}>
           {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
-            return toArray(appRoutes).map(([path, route]) => {
-              return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
-                <Menu.SubMenu
-                  key={route.abs}
-                  title={
-                    <span>
-                      <Icon type={route.iconType} />
-                      <span>{route.title}</span>
-                    </span>
-                  }>
-                  {renderRoutesAsMenuItems(route.subroutes)}
-                </Menu.SubMenu>
-              ) : (
-                <Menu.Item key={route.abs}>
-                  <Icon type={route.iconType} />
-                  <span>{route.title}</span>
-                  <Reach.Link to={route.abs} />
-                </Menu.Item>
-              )
-            })
+            return toArray(appRoutes)
+              .map(([path, route]) => {
+                return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
+                  <Menu.SubMenu
+                    key={route.abs}
+                    title={
+                      <span>
+                        <Icon type={route.iconType} />
+                        <span>{route.title}</span>
+                      </span>
+                    }>
+                    {renderRoutesAsMenuItems(route.subroutes)}
+                  </Menu.SubMenu>
+                ) : (
+                  <Menu.Item key={route.abs}>
+                    <Icon type={route.iconType} />
+                    <span>{route.title}</span>
+                    <Reach.Link to={route.abs} />
+                  </Menu.Item>
+                )
+              })
+              .reverse()
           })(props.subroutes)}
-          <Menu.Divider />
         </Menu>
       </Layout.Sider>
 
@@ -135,7 +136,10 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
         <Layout.Content style={{ overflow: "scroll" }}>
-          <Row style={{ padding: 24 }}>{props.children}</Row>
+          {/* <Row style={{ padding: 24 }}> */}
+          {props.children}
+
+          {/* </Row> */}
 
           <Layout.Footer style={{ textAlign: "center" }}>
             {`OnPoint Global © ${new Date().getFullYear()}`}
