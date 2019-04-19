@@ -12,7 +12,7 @@ using Utility;
 using Utility.DataLayer;
 using Extensions = Newtonsoft.Json.Linq.Extensions;
 using Jw = Utility.JsonWrapper;
-using Vutil = Utility.VisitorIdUtil;
+using Vutil = VisitorIdLib.Util;
 
 namespace VisitorIdLib
 {
@@ -33,6 +33,7 @@ namespace VisitorIdLib
         public string CookieName;
         public string CookieVersion;
         public List<Guid> Md5ExcludeList;
+        public readonly DateTime CookieExpirationDate = new DateTime(2038, 1, 19);
 
         //public void test()
         //{
@@ -163,6 +164,12 @@ namespace VisitorIdLib
                     string m = context.Request.Query["m"];
                     switch (m)
                     {
+                        case "Initialize":
+                            await WriteCodePathEvent(PL.O(new { branch = "Initialize", loc = "start" }), codePathRsidDict);
+                            var initReturn = await WriteBlankCookie(this.Fw, context, codePathRsidDict);
+                            result = initReturn.Result;
+                            await WriteCodePathEvent(PL.O(new { branch = "Initialize", loc = "end" }), codePathRsidDict);
+                            break;
                         case "VisitorId":
                             await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "start" }), codePathRsidDict);
                             var resDV = await DoVisitorId(this.Fw, context, codePathRsidDict);
@@ -172,7 +179,7 @@ namespace VisitorIdLib
                             resDV.CookieData.em = resDV.Email.IfNullOrWhitespace(resDV.CookieData.em);
                             resDV.CookieData.lv = visitTime;
 
-                            context.SetCookie(this.CookieName,resDV.CookieData.ToJson(), new DateTime(2038, 1, 19));
+                            context.SetCookie(this.CookieName,resDV.CookieData.ToJson(), this.CookieExpirationDate);
                             await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "end", cookieData = resDV.CookieData.ToJson() },
                                                    new bool[] { true,                true,        false  } ), codePathRsidDict);
 
@@ -186,7 +193,7 @@ namespace VisitorIdLib
                             resSS.CookieData.md5 = resSS.Md5.IfNullOrWhitespace(resSS.CookieData.md5);
                             resSS.CookieData.em = resSS.Email.IfNullOrWhitespace(resSS.CookieData.em);
                             resSS.CookieData.lv = visitTime;
-                            context.SetCookie(this.CookieName,resSS.CookieData.ToJson(), new DateTime(2038, 1, 19));
+                            context.SetCookie(this.CookieName,resSS.CookieData.ToJson(), this.CookieExpirationDate);
                             await WriteCodePathEvent(PL.O(new { branch = "SaveSession", loc = "end", cookieData = resSS.CookieData.ToJson() },
                                                    new bool[] { true,                   true,        false  } ), codePathRsidDict);
 
@@ -265,6 +272,14 @@ namespace VisitorIdLib
             return tokenized.Replace("[=OPAQUE=]", opaque);
         }
 
+        public async Task<VisitorIdResponse> WriteBlankCookie(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
+        {
+            await WriteCodePathEvent(PL.O(new { branch = nameof(WriteBlankCookie), loc = "start" }), codePathRsidDict);
+            c.SetCookie(this.CookieName,"", this.CookieExpirationDate);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(WriteBlankCookie), loc = "end" }), codePathRsidDict);
+            return new VisitorIdResponse(result: Jw.Json( new { Initialized = true }), md5: "", email: "", cookieData: null);
+        }
+
         public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
         {
             string opaque64, opaque = null, afid, tpid, eml, md5, osid, sid, qstr, host, path, qury, lv, lst;
@@ -303,7 +318,28 @@ namespace VisitorIdLib
             }
 
             DateTime visitTime = DateTime.UtcNow;
-            var cookieData = new CookieData(visitTime, c.Request.Cookies[this.CookieName], this.CookieVersion, host, path, this.SessionDuration, this.RsConfigIds, newlyConstructed: slot == 0);
+            if (!c.Request.Cookies.ContainsKey(this.CookieName))
+            {
+                await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "body", msg = "cannot write 3rd party cookie" }), codePathRsidDict);
+                var noCookieRsid = Guid.NewGuid();
+                PL eventPayload = PL.O(new
+                {
+                    qs = qstr,
+                    ip = c.Connection.RemoteIpAddress,
+                    h = host,
+                    p = path,
+                    q = qury,
+                    afid,
+                    tpid,
+                });
+                be = new EdwBulkEvent();
+                be.AddRS(EdwBulkEvent.EdwType.Immediate, noCookieRsid, DateTime.UtcNow, eventPayload, this.RsConfigIds.PageRsid);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { typeof(PageVisit).Name, noCookieRsid } }, null, eventPayload.Add(PL.O(new { et = "ThirdPartyCookieDisabled" })));
+                await fw.EdwWriter.Write(be);
+                return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: null);
+            }
+
+            var cookieData = new CookieData(visitTime,c.Request.Cookies[this.CookieName], this.CookieVersion, host, path, this.SessionDuration, this.RsConfigIds, newlyConstructed: slot == 0);
             foreach (var rsid in opqRsids) cookieData.RsIdDict.Add(rsid.Key, rsid.Value);
             foreach (var rsid in cookieData.RsIdDict) codePathRsidDict.Add(rsid.Key, rsid.Value);
             lv = cookieData.lv == null ? "" : cookieData.lv.ToString();
