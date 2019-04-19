@@ -66,6 +66,7 @@
     "eslint-plugin-react": "^7.12.4",
     "eslint-plugin-react-hooks": "^1.6.0",
     "monaco-editor-webpack-plugin": "^1.7.0",
+    "node-sass": "^4.11.0",
     "prettier": "^1.16.4",
     "react-app-rewired": "^2.1.1",
     "typed-css-modules": "^0.4.2",
