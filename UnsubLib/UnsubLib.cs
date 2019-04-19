@@ -112,34 +112,21 @@ namespace UnsubLib
 
         public async Task ManualDirectory(IGenericEntity network)
         {
-            // Handle multiple days by doing them one at a time
             var networkName = network.GetS("Name");
             var networkId = network.GetS("Id");
-            var now = DateTime.Now;
-            var nowString = now.ToString("yyyyMMdd");
+            var path = Path.Combine(ClientWorkingDirectory, "Manual", networkId);
 
-            var dirs = new List<DirectoryInfo>();
-            var di = new DirectoryInfo(ClientWorkingDirectory + "\\Manual");
+            var di = new DirectoryInfo(path);
 
-            foreach (var dd in di.EnumerateDirectories())
+            if (!di.Exists)
             {
-                if (DateTime.ParseExact(dd.Name, "yyyyMMdd", new CultureInfo("en-US")) <=
-                    DateTime.ParseExact(nowString, "yyyyMMdd", new CultureInfo("en-US")))
-                {
-                    var dir = new DirectoryInfo(dd.FullName + "\\" + network.GetS("Id").ToLower());
-                    if (dir.Exists) dirs.Add(dd);
-                }
+                await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"No Manual dirs found at {path}");
+                return;
             }
-            dirs.Sort((dir1, dir2) =>
-                DateTime.ParseExact(dir1.Name, "yyyyMMdd", new CultureInfo("en-US"))
-                .CompareTo(DateTime.ParseExact(dir2.Name, "yyyyMMdd", new CultureInfo("en-US"))));
 
-            foreach (var dir in dirs)
-            {
-                await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"Before ManualJob: {dir}");
-                await ManualJob(dir, network);
-                await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"After ManualJob: {dir}");
-            }
+            await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"Before ManualJob: {di}");
+            await ManualJob(di, network);
+            await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"After ManualJob: {di}");
         }
 
         public async Task<string> ForceUnsub(IGenericEntity dtve)
@@ -169,77 +156,170 @@ namespace UnsubLib
             var dir = new DirectoryInfo(ClientWorkingDirectory + "\\Force\\" + forceDirName);
             var networkName = network.GetS("Name");
 
-            await _fw.Trace($"{nameof(ForceDirectory)}-{networkName}", $"Starting ManualJob({networkName}): {dir}");
+            await _fw.Trace($"{nameof(ForceDirectory)}-{networkName}", $"Starting: {dir}");
             await ManualJob(dir, network);
-            await _fw.Trace($"{nameof(ForceDirectory)}-{networkName}", $"Completed ManualJob({networkName}): {dir}");
+            await _fw.Trace($"{nameof(ForceDirectory)}-{networkName}", $"Completed: {dir}");
         }
 
         public async Task ManualJob(DirectoryInfo dir, IGenericEntity network)
         {
-            var cd = new DirectoryInfo(dir.FullName + "\\" + network.GetS("Id").ToLower());
-            IDictionary<string, string> idtof = new Dictionary<string, string>();
-            var campaignsJson = new StringBuilder("[");
             var networkName = network.GetS("Name");
-
-            foreach (var dd in cd.EnumerateDirectories())
+            var networkId = network.GetS("Id");
+            var drx = new Regex(@"(?<type>(c|r))-(?<id>\d+)", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+            IEnumerable<DirectoryInfo> EnumerateCampaignDirs() => dir.EnumerateDirectories().Where(d => d.Name.IsMatch(drx));
+            var campaignDirs = EnumerateCampaignDirs().Select(d =>
             {
-                // Each folder corresponds to a campaign to be processed
+                var ms = drx.Matches(d.Name);
+                FileInfo unsubFile = null;
+                FileInfo campaignDataFile = null;
+                string type = null;
+                string id = null;
 
-                await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"ManualJob({networkName}) Processing: {dd.Name}");
-
-                var networkCampaignId = dd.Name;
-                var campaignJson = await File.ReadAllTextAsync(dd.FullName + "\\" + "json.txt");
-                var ge = Jw.JsonToGenericEntity(campaignJson);
-                var networkCampaignName = ge.GetS("NetworkName");
-
-                campaignsJson.Append(Jw.Json(new
+                if (ms?.Count() == 1 && ms.First().Success)
                 {
-                    NetworkCampaignId = networkCampaignId,
-                    NetworkCampaignName = networkCampaignName,
-                    CampaignPayload = campaignJson
-                }, new bool[] { true, true, false }));
-                campaignsJson.Append(",");
-                idtof.Add(networkCampaignId, dd.FullName + "\\" + "unsub.zip");
+                    var m = ms.First();
+
+                    type = m.Groups["type"].Value;
+                    id = m.Groups["id"].Value;
+                    unsubFile = new FileInfo(d.PathCombine("unsub.zip"));
+                    campaignDataFile = new FileInfo(Path.Combine(d.FullName, "json.txt"));
+                }
+
+                return new { dir = d, type, id, unsubFile, campaignDataFile };
+            }).Where(cd => cd.unsubFile?.Exists == true && !cd.id.IsNullOrWhitespace() && !cd.type.IsNullOrWhitespace()).ToArray();
+
+            if (campaignDirs.Any() != true)
+            {
+                await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"No Manual sub dirs found at {dir.FullName}");
+                return;
             }
 
-            if (campaignsJson.Length > 1) campaignsJson.Remove(campaignsJson.Length - 1, 1);
-            campaignsJson.Append("]");
-            if (campaignsJson.Length < 2) campaignsJson = new StringBuilder("[]");
+            var idtof = new Dictionary<string, FileInfo>();
+            List<(string NetworkCampaignId, string NetworkCampaignName, JObject CampaignPayload)> campaignDetails = new List<(string NetworkCampaignId, string NetworkCampaignName, JObject CampaignPayload)>();
 
-            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"ManualJob({networkName}) Campaigns: {campaignsJson}");
+            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Processing Manual Dir");
+
+            foreach (var cd in campaignDirs)
+            {
+                await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Processing: {cd.dir.Name}");
+
+                try
+                {
+                    if (cd.type == "c")
+                    {
+                        var networkCampaignId = cd.id;
+                        JObject campaignJson;
+                        string networkCampaignName;
+
+                        if (cd.campaignDataFile.Exists)
+                        {
+                            campaignJson = JObject.Parse(await cd.campaignDataFile.ReadAllTextAsync());
+                            networkCampaignName = campaignJson["NetworkName"].ToString();
+                        }
+                        else
+                        {
+                            var res = await Data.CallFn(Conn, "SelectNetworkCampaign", Jw.Serialize(new { nCId = networkCampaignId, nId = networkId }));
+
+                            if (res?.GetS("Id").ParseGuid().HasValue != true)
+                            {
+                                await _fw.Error($"{nameof(ManualJob)}-{networkName}",
+                                    $"Failed to retrieve campaign details from db: NetworkCampaignId:{networkCampaignId} NetworkId:{networkId}");
+                                continue;
+                            }
+
+                            campaignJson = JObject.Parse(res.GetS("NetworkCampaignPayload"));
+                            networkCampaignName = res.GetS("NetworkCampaignName");
+                        }
+
+                        campaignDetails.Add((
+                            NetworkCampaignId: networkCampaignId,
+                            NetworkCampaignName: networkCampaignName,
+                            CampaignPayload: campaignJson
+                        ));
+
+                        idtof.Add(networkCampaignId, cd.unsubFile);
+                    }
+                    else if (cd.type == "r")
+                    {
+                        var unsubRelId = cd.id;
+                        var res = await Data.CallFn(Conn, "SelectNetworkCampaignsWithPayload", Jw.Serialize(new { nr = unsubRelId, NetworkId = networkId }));
+                        var cmps = res?.GetL("")
+                            .Select(c => new {networkCampaignId = c.GetS("NetworkCampaignId"), networkCampaignName = c.GetS("NetworkCampaignName"), campaignJson = Jw.TryParseObject(c.GetS("NetworkCampaignPayload")) })
+                            .Where(c=>c.campaignJson != null)
+                            .ToArray();
+
+                        if (!cmps.Any())
+                        {
+                            await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"No campaigns found: Network: {networkName} {networkId} NetworkUnsubRelationshipId: {unsubRelId} ");
+                            continue;
+                        }
+
+                        foreach (var cmp in cmps)
+                        {
+                            campaignDetails.Add((
+                                NetworkCampaignId: cmp.networkCampaignId,
+                                NetworkCampaignName: cmp.networkCampaignName,
+                                CampaignPayload: cmp.campaignJson
+                            ));
+
+                            idtof.Add(cmp.networkCampaignId, cd.unsubFile);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to retrieve campaign details: NetworkId:{networkId}\r\n{Jw.Serialize(cd)}\r\n{e.UnwrapForLog()}");
+                }
+            }
+
+            if (!campaignDetails.Any())
+            {
+                await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"No campaigns to process");
+                return;
+            }
+
+            var campaignsJson = Jw.Serialize(campaignDetails);
+
+            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Campaigns: {campaignsJson}");
 
             var campaigns = await Data.CallFn(Conn, "MergeNetworkCampaignsManual",
-                    Jw.Json(new { NetworkId = network.GetS("Id").ToLower() }), campaignsJson.ToString());
+                    Jw.Json(new { NetworkId = networkId.ToLower() }), campaignsJson.ToString());
 
             if (campaigns.GetS("Result") == "NoData")
             {
                 await _fw.Log($"{nameof(ManualJob)}-{networkName}", "NoData");
                 return;
             }
-            else
-            {
-                await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"ManualJob({networkName}) MergeNetworkCampaignsManual->: {campaigns}");
-            }
+
+            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"MergeNetworkCampaignsManual->: {campaigns}");
 
             IDictionary<string, List<IGenericEntity>> uris =
                new Dictionary<string, List<IGenericEntity>>();
             foreach (var cmp in campaigns.GetL(""))
             {
                 var ncid = cmp.GetS("NetworkCampaignId");
-                if (idtof.ContainsKey(ncid))
-                {
-                    var fname = idtof[ncid];
-                    uris.Add(fname, new List<IGenericEntity>() { cmp });
-                }
+                var unsubFile = idtof.GetValueOrDefault(ncid);
+
+                if (unsubFile?.Exists == true) uris.Add(unsubFile.FullName, new List<IGenericEntity>() { cmp });
             }
 
-            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"ManualJob({networkName}) Calling ProcessUnsubFiles");
+            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Calling ProcessUnsubFiles");
 
             await ProcessUnsubFiles(uris, network, campaigns);
 
-            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"ManualJob({networkName}) Completed ProcessUnsubFiles");
+            await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Completed ProcessUnsubFiles");
 
-            dir.Delete(true);
+            EnumerateCampaignDirs().Where(d => d.Name.ParseInt().HasValue).ForEach(d =>
+                        {
+                            try
+                            {
+                                d.Delete(true);
+                            }
+                            catch (Exception e)
+                            {
+                                _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to delete manual folder after processing:\r\n{d.FullName}\r\n{e.UnwrapForLog()}").Wait();
+                            }
+                        });
         }
 
         public async Task ScheduledUnsubJob(IGenericEntity network, string networkCampaignId = null)
@@ -254,6 +334,8 @@ namespace UnsubLib
             if (networkCampaignId.IsNullOrWhitespace())
             {
                 cse = await GetCampaignsScheduledJobs(network, networkProvider);
+
+                if (network.GetS("Credentials/ManualFile").ParseBool() == true) return;
 
                 // Get uris of files to download - maintain campaign association
                 try
@@ -769,18 +851,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+            }
 #if DEBUG
             }
 #endif

@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "Amobee"
+      "commandLineArgs": "\"H2H Interactive\""
     }
   }
 }

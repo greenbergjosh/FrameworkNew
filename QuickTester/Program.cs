@@ -1,9 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Runtime.CompilerServices;
 using Utility;
@@ -11,6 +14,7 @@ using static Utility.EdwBulkEvent;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using CsvHelper;
 using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
@@ -30,226 +34,18 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
-        static async Task<(TimeSpan overall, IEnumerable<(TimeSpan elapsed, int found, int notFound)> batches)> RunBatches(string testName, string filePath, IEnumerable<string> emails, int batchSize, bool global, bool sync, bool v1)
-        {
-            var batches = emails.Select(e => (email: e, md5: Hashing.CalculateMD5Hash(e.Trim().ToLower()))).Batch(batchSize).Select(b => b.ToList()).ToArray();
-            var stats = new List<(TimeSpan elapsed, int found, int notFound)>();
-            var batchCnt = batches.Length;
-            var unsubFile = new FileInfo(filePath);
-
-            Func<List<(string email, string md5)>, Task<(TimeSpan elapsed, int found, int notFound)>> fileSearch;
-            Func<List<string>, Task<int>> globalSearch;
-
-            if (global && batchSize == 1)
-            {
-                globalSearch = async b =>
-                {
-                    var email = b.First();
-                    var res = await Data.CallFn("Unsub", "IsSuppressed", Jw.Json(new { email }), "");
-
-                    return res.GetS("Result").ParseBool() == true ? 1 : 0;
-                };
-            }
-            else if (global)
-            {
-                // Not registering or not working
-                globalSearch = async b =>
-                {
-                    var res = await Data.CallFn("Unsub", "AreSuppressed", Jw.Serialize(new { emails = b }), "");
-
-                    var found = res.GetL("found/emails").Select(g => g.GetS("e")).ToList();
-
-                    return found.Count;
-                };
-            }
-            else globalSearch = b => Task.FromResult(0);
-
-            if (batchSize == 1)
-            {
-                fileSearch = async b =>
-                {
-                    var swb = Stopwatch.StartNew();
-                    var e = b.First();
-                    var f = await UnixWrapper.BinarySearchSortedMd5File(unsubFile.DirectoryName, unsubFile.Name, e.md5);
-
-                    if (!f)
-                    {
-                        var r = await globalSearch(new List<string> { e.email });
-                        f = r > 0;
-                    }
-
-                    return (swb.Elapsed, f ? 1 : 0, f ? 0 : 1);
-                };
-            }
-            else
-            {
-                var batchCompleted = 0;
-                var throttler = new SemaphoreSlim(100);
-                Func<string, List<string>, Task<(List<string> found, List<string> notFound)>> binSrch;
-
-                if (v1) binSrch = UnixWrapper.BinarySearchSortedMd5File;
-                else binSrch = UnixWrapper.BinarySearchSortedMd5FileV2;
-
-                fileSearch = async b =>
-                {
-                    await throttler.WaitAsync();
-                    var swb = Stopwatch.StartNew();
-                    var r = await binSrch(unsubFile.FullName, b.Select(e => e.md5).ToList());
-                    var notFound = from e in b
-                                   join n in r.notFound on e.md5 equals n
-                                   select e.email;
-                    var gr = await globalSearch(notFound.ToList());
-
-                    swb.Stop();
-
-                    Interlocked.Increment(ref batchCompleted);
-
-                    Console.WriteLine($"{testName} Batch {batchCompleted}/{batchCnt}");
-
-                    throttler.Release();
-
-                    return (swb.Elapsed, r.found.Count + gr, r.notFound.Count - gr);
-                };
-            }
-
-            Console.WriteLine($"Starting {testName} {batchCnt} batches");
-
-            var swg = Stopwatch.StartNew();
-
-            if (sync)
-            {
-                for (int i = 0; i < batchCnt; i++)
-                {
-                    var r = await fileSearch(batches[i]);
-
-                    stats.Add((r.elapsed, r.found, r.notFound));
-
-                    Console.WriteLine($"{testName} Batch {i + 1}/{batchCnt}");
-                }
-            }
-            else
-            {
-                var tasks = batches.Select(fileSearch);
-
-                stats = (await Task.WhenAll(tasks)).ToList();
-            }
-
-            swg.Stop();
-
-            return (swg.Elapsed, stats);
-        }
-
         static async Task Main(string[] args)
         {
-            //ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ
+            var u = "a.com".ParseWebUrl();
 
-            var fw1 = new FrameworkWrapper();
+            //var fw1 = new FrameworkWrapper();
 
-            await Auth.Initialize(fw1);
+            //await Auth.Initialize(fw1);
 
-            var wpl = Jw.JsonToGenericEntity(
-                "{\"sso\": \"mock\", \"t\": \"ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ\"}");
+            //var wpl = Jw.JsonToGenericEntity(
+            //    "{\"sso\": \"mock\", \"t\": \"ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ\"}");
 
-            var sec = await Auth.GetSecurables();
-
-            return;
-
-            var rs = new RoslynWrapper(new ScriptDescriptor[0], Path.Combine(Directory.GetCurrentDirectory(), "rsDebug"));
-
-            var ret = await rs.Evaluate("return $\"ConsoleSignalIntersection-{ System.DateTime.Now:yy - MM - dd HH - mm}.csv\";", new { a = "" }, new StateWrapper());
-
-            return;
-
-            //var batchSizes = new[] { 13, 21, 55, 144, 377, 987, 2584, 6765, 17711, 46368, 121393, 317811 }.Select(x => x.ToString());
-            var batchSizes = new[] { 2584 }.Select(x => x.ToString());
-            var tf = new[] { "true", "false" };
-            var cp = batchSizes.CartesianProduct(new[] { "true" }, new[] { "false" }, new[] { "false" }).ToArray();
-            List<(string name, int batchSize, bool global, bool sync, bool v1)> tests = new List<(string name, int batchSize, bool global, bool sync, bool v1)>();// { ("_current", 1, true, true, false) };
-
-            tests.AddRange(cp.Select(x =>
-            {
-                var p = x.ToArray();
-                var size = p[0].ParseInt().Value;
-                var global = p[1].ParseBool().Value;
-                var sync = p[2].ParseBool().Value;
-                var v1 = p[3].ParseBool().Value;
-                var g = global ? "G" : "L";
-                var sy = sync ? "S" : "P";
-                var v = v1 ? "V1" : "V2";
-
-                return ($"{size}-{g}-{sy}-{v}", size, global, sync, v1);
-            }));
-
-            var emails = new List<string>();
-
-            using (var fs = File.OpenText("C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/performanceTestEmails.csv"))
-            {
-                while (!fs.EndOfStream)
-                {
-                    var l = fs.ReadLine();
-
-                    if (!l.IsNullOrWhitespace()) emails.Add(l.Trim().ToLower());
-                }
-            }
-
-            var batch = emails.Batch(2584).First();
-            var pl = Jw.Serialize(new { CampaignId = "934FA978-376D-4C2A-8FE6-02FE10CC7AAB", GlobalSuppression = true, EmailMd5 = batch.ToArray() });
-
-            return;
-
-            //using (var ow = File.CreateText("C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/performanceTestMD5s.txt"))
-            //{
-            //    foreach (var md5 in emails.Distinct().Select(Hashing.CalculateMD5Hash).OrderBy(m => m))
-            //    {
-            //        ow.WriteLine(md5);
-            //    }
-            //}
-
-            //return;
-
-            var fw = new FrameworkWrapper();
-            //var unsub = new UnsubLib.UnsubLib(fw);
-            var opDir = new DirectoryInfo($"C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/perfOP-{DateTime.Now:M-d-HH-mm}");
-
-            if (opDir.Exists)
-            {
-                opDir.Delete(true);
-                await Task.Delay(1000);
-                opDir.Refresh();
-            }
-
-            opDir.Create();
-
-            var of = new FileInfo(Path.Combine(opDir.FullName, "summary.csv"));
-
-            using (var ow = of.CreateText())
-            {
-                ow.WriteLine("name,batchSize,global,sync,batchCount,totalSeconds,emails/s,found,notFound,avgBatchCompletionSec");
-                var filePath = "C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/search/99d39a3b-49e3-4ef7-a8a0-e856ec657ea1.txt.srt";
-                //var filePath = "C:/Users/OnPoint Global/Documents/dev/Workspace/Unsub/performanceTestMD5s.txt";
-
-                foreach (var t in tests)
-                {
-                    var r = await RunBatches(t.name, filePath, emails, t.batchSize, t.global, t.sync, t.v1);
-                    var df = new FileInfo(Path.Combine(opDir.FullName, $"{t.name}.txt"));
-                    var found = 0;
-                    var notFound = 0;
-
-                    using (var dw = df.CreateText())
-                    {
-                        dw.WriteLine($"Total Seconds: {r.overall.TotalSeconds:##,###.###}");
-                        dw.WriteLine("Batches:");
-                        foreach (var b in r.batches)
-                        {
-                            dw.WriteLine($"{b.elapsed.TotalSeconds:##,###.###},{b.found},{b.notFound}");
-                            found += b.found;
-                            notFound += b.notFound;
-                        }
-                    }
-
-                    ow.WriteLine($"{t.name},{t.batchSize},{t.global},{t.sync},{(int)Math.Ceiling(emails.Count / (double)t.batchSize)},{r.overall.TotalSeconds},\"{emails.Count / r.overall.TotalSeconds:##,###.###}\",{found},{notFound},\"{(int)Math.Ceiling(r.batches.Select(ts => ts.elapsed.TotalSeconds).Average()):##,###}\"");
-                }
-            }
+            //var sec = await Auth.GetSecurables();
 
             return;
 
