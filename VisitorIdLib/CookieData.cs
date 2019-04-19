@@ -13,6 +13,7 @@ namespace VisitorIdLib
         public string em;
         public Guid sid;
         public DateTime? lv;
+        public string version;
         public Dictionary<string, DomainVisit> Domains = new Dictionary<string, DomainVisit>();
         public Dictionary<string, DateTime> ProviderLastSelectTime = new Dictionary<string, DateTime>();
 
@@ -23,16 +24,7 @@ namespace VisitorIdLib
         [JsonIgnore]
         public PageVisit PageVisit;
         [JsonIgnore]
-        public Dictionary<string, object> RsIdDict
-        {
-            get
-            {
-                return new Dictionary<string, object> {
-                    { typeof(Visit).Name, this.sid },
-                    { typeof(DomainVisit).Name, DomainVisit.ReportingSequenceId },
-                    { typeof(PageVisit).Name, PageVisit.ReportingSequenceId } };
-            }
-        }
+        public Dictionary<string, object> RsIdDict;
         [JsonIgnore]
         public bool VeryFirstVisit
         {
@@ -45,7 +37,7 @@ namespace VisitorIdLib
 
         public CookieData() { }
 
-        public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool newlyConstructed = false)
+        public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string version, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool newlyConstructed = false)
         {
             // This guy gets new'd up regardless of new or existing cookie
             this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
@@ -53,18 +45,25 @@ namespace VisitorIdLib
             // New Vid Visit
             // New Domain Visit
             // New Page Visit (above)
-            if (cookieAsString.IsNullOrWhitespace())
+            if (cookieAsString.IsNullOrWhitespace() ||
+                JsonConvert.DeserializeObject<CookieData>(cookieAsString).version != version) // current upgrade path is just wiping out the old
             {
                 this.md5 = null;
                 this.em = null;
                 this.lv = null;
                 this.sid = Guid.NewGuid();
+                this.version = version;
                 this.VidVisit = new Visit(veryFirstVisit: true, visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.VidRsid, reportingSequenceId: this.sid);
                 this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid());
                 this.PageVisit.VisitNum = this.DomainVisit.VisitNum = 1;
                 this.PageVisit.VeryFirstVisit = this.DomainVisit.VeryFirstVisit = true;
-
                 this.Domains.Add(host, this.DomainVisit);
+                this.RsIdDict = new Dictionary<string, object> {
+                        { typeof(Visit).Name, this.sid },
+                        { typeof(DomainVisit).Name, DomainVisit.ReportingSequenceId },
+                        { typeof(PageVisit).Name, PageVisit.ReportingSequenceId }
+                };
+
                 return;
             }
 
@@ -117,6 +116,13 @@ namespace VisitorIdLib
             this.md5 = deserialized.md5;
             this.em = deserialized.em;
             this.lv = deserialized.lv;
+            this.version = deserialized.version;
+            this.RsIdDict = new Dictionary<string, object> {
+                    { typeof(Visit).Name, this.sid },
+                    { typeof(DomainVisit).Name, DomainVisit.ReportingSequenceId },
+                    { typeof(PageVisit).Name, PageVisit.ReportingSequenceId }
+            };
+
         }
 
         public static (string md5, string em, string sid) Md5EmailSessionIdFromCookie(string cookieString)
