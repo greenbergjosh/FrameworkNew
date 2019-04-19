@@ -1,0 +1,49 @@
+{
+  "reportConfig": {
+    "queries": [],
+    "displayConfigs": [
+      {
+        "id": "sidfafdasd-asdfadsf-sdfasdf-adsfasdf",
+        "type": "table",
+        "config": {
+          "formFields": [
+            {
+              "title": "Name",
+              "dataIndex": "name",
+              "dataType": "string",
+              "ordinal": 1
+            },
+            {
+              "title": "Price",
+              "dataIndex": "price",
+              "dataType": "number",
+              "number-type": "currency",
+              "ordinal": 2
+            }
+          ],
+          "subrowsDisplayConfig": "lasfdjldf-adsfadf-sdfad-dfdfgdfgdfg"
+        }
+      },
+      {
+        "id": "lasfdjldf-adsfadf-sdfad-dfdfgdfgdfg",
+        "type": "chart",
+        "config": {
+          "chartType": "bar",
+          "groupBy": "name",
+          "valueBy": "price",
+          "aggregator": "sum"
+        }
+      }
+    ],
+    "reports": [
+      {
+        "query": "lasdkfjaldfkj-slkdjfalk",
+        "displayConfigs": ["sidfafdasd-asdfadsf-sdfasdf-adsfasdf"]
+      },
+      {
+        "query": "storedproc/Config:get",
+        "displayConfigs": ["sidfafdasd-asdfadsf-sdfasdf-adsfasdf"]
+      }
+    ]
+  }
+}
