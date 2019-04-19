@@ -65,16 +65,16 @@ namespace TraverseDataLib
                         case "TraverseResponse":
                             var (fullBodyGe, opaqueGe) = await TraverseResponseAsGe(context);
                             var opqVals = VisitorIdDataService.ValsFromOpaque(opaqueGe);
-                            var pidSidMd5 = new PidSidMd5() { Pid = opqVals.pid, Sid = opqVals.sid, Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
+                            var pidSidMd5 = new PidSidMd5() { Pid = opqVals.md5pid, Sid = opqVals.sid, Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
 
                             VisitorIdResponse vidResp = new VisitorIdResponse("", "", "", null);
                             try
                             {
-                                await WriteResponseEvent(opqVals.pid, opqVals.slot, opqVals.page, opqVals.lst, opqVals.host, opqVals.lv, opqVals.vft, opqVals.rsids, fullBodyGe.GetS(responseMd5Key));
+                                await WriteResponseEvent(opqVals.md5pid, opqVals.slot, opqVals.page, opqVals.lst, opqVals.host, opqVals.lv, opqVals.vft, opqVals.rsids, fullBodyGe.GetS(responseMd5Key));
                                 if (!ExistsOrAddToMemoryCache(pidSidMd5, excludeSpanDays) &&
                                     !await ExistsOrAddToDbCache(pidSidMd5))
                                 {
-                                    await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS(responseMd5Key)}");
+                                    await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.md5pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS(responseMd5Key)}");
                                     vidResp = await Vid.SaveSession(this.Fw, context, true, false, false, null, opaqueGe, fullBodyGe.GetS(responseMd5Key));
                                 }
                                 result = Jw.Json(vidResp);
