@@ -271,7 +271,7 @@ namespace VisitorIdLib
             await WriteCodePathEvent(PL.O(new { branch = nameof(WriteBlankCookie), loc = "start" }), codePathRsidDict);
             c.SetCookie(CookieName, "", CookieExpirationDate);
             await WriteCodePathEvent(PL.O(new { branch = nameof(WriteBlankCookie), loc = "end" }), codePathRsidDict);
-            return new VisitorIdResponse(result: Jw.Json(new { Initialized = true }), md5: "", email: "", cookieData: null);
+            return new VisitorIdResponse(result: Jw.Json(new { Initialized = true }), md5: "", email: "", cookieData: new CookieData());
         }
 
         public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
@@ -330,7 +330,7 @@ namespace VisitorIdLib
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, noCookieRsid, DateTime.UtcNow, eventPayload, RsConfigIds.PageRsid);
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { typeof(PageVisit).Name, noCookieRsid } }, null, eventPayload.Add(PL.O(new { et = "ThirdPartyCookieDisabled" })));
                 await fw.EdwWriter.Write(be);
-                return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: null);
+                return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: new CookieData());
             }
 
             var cookieData = new CookieData(visitTime, c.Request.Cookies[CookieName], CookieVersion, host, path, SessionDuration, RsConfigIds, newlyConstructed: slot == 0);
@@ -662,7 +662,7 @@ namespace VisitorIdLib
                     {
                         foreach (var (Md5provider, EmailProviderSeq) in sequence.SlotSequence)
                         {
-                            if (Md5provider.Contains(md5pid))
+                            if (Md5provider.Contains(md5pid??""))
                             {
                                 foundMd5ProviderPid = true;
                             }
@@ -680,24 +680,31 @@ namespace VisitorIdLib
             }
 
 
-            var be = new EdwBulkEvent();
-            var egBool = IsExpenseGenerating(fw, pixelDomain, lst, md5pid);
+            try
+            {
+                var be = new EdwBulkEvent();
+                var egBool = IsExpenseGenerating(fw, pixelDomain, lst, md5pid);
 
-            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                null, PL.O(new
-                {
-                    et = "Md5ProviderResponse",
-                    md5pid,
-                    slot,
-                    page,
-                    lst = lst ?? "",
-                    domain = pixelDomain,
-                    lv = lastVisit ?? "",
-                    eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
-                    vft,
-                    succ = success ? "1" : "0"
-                }));
-            await fw.EdwWriter.Write(be);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                    null, PL.O(new
+                    {
+                        et = "Md5ProviderResponse",
+                        md5pid,
+                        slot,
+                        page,
+                        lst = lst ?? "",
+                        domain = pixelDomain,
+                        lv = lastVisit ?? "",
+                        eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
+                        vft,
+                        succ = success ? "1" : "0"
+                    }));
+                await fw.EdwWriter.Write(be);
+            }
+            catch (Exception e)
+            {
+                await this.Fw.Error(nameof(SaveSession), $"Caught exception attempting to write Md5ProviderResponse for pid: '{md5pid ?? ""}': {e.UnwrapForLog()}");
+            }
 
             if (!success)
             {
@@ -733,9 +740,9 @@ namespace VisitorIdLib
                  !md5pid.IsNullOrWhitespace())
             {
                 var postResult = await PostMd5LeadDataToConsole(fw, md5, pixelDomain, md5pid);
-                if (postResult.postData.IsNullOrWhitespace())
+                if (!postResult.postData.IsNullOrWhitespace())
                 {
-                    be = new EdwBulkEvent();
+                    var be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                         null, PL.FromJsonString(postResult.postData).Add(PL.O(new { et = "ConsoleMd5PostLeadData", consolePostSuccess = postResult.success })));
                     await fw.EdwWriter.Write(be);
@@ -868,6 +875,7 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderResponse",
                             emailpid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E",
+                            eg = 0,
                             slot,
                             page,
                             md5Pid,
@@ -1008,20 +1016,29 @@ namespace VisitorIdLib
                         cookieEml = eml;
                     }
 
-                    be = new EdwBulkEvent();
-                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                        null, PL.O(new
-                        {
-                            et = "EmailProviderResponse",
-                            emailpid,
-                            slot,
-                            page,
-                            md5Pid,
-                            md5Slot,
-                            md5Page,
-                            succ = eml.IsNullOrWhitespace() ? "0" : "1"
-                        }));
-                    await fw.EdwWriter.Write(be);
+                    try
+                    {
+                        var egBool = IsExpenseGenerating(fw, pixelDomain, "", emailpid);
+                        be = new EdwBulkEvent();
+                        be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
+                            null, PL.O(new
+                            {
+                                et = "EmailProviderResponse",
+                                eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
+                                emailpid,
+                                slot,
+                                page,
+                                md5Pid,
+                                md5Slot,
+                                md5Page,
+                                succ = eml.IsNullOrWhitespace() ? "0" : "1"
+                            }));
+                        await fw.EdwWriter.Write(be);
+                    }
+                    catch (Exception e)
+                    {
+                        await this.Fw.Error(nameof(SaveSession), $"Caught exception attempting to write EmailProviderResponse for pid: '{emailpid ?? ""}': {e.UnwrapForLog()}");
+                    }
 
                     slot++;
                     page++;
