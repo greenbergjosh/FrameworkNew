@@ -12,7 +12,16 @@ namespace VisitorIdLib
         public string md5;
         public string em;
         public Guid sid;
-        public DateTime? lv;
+
+        [JsonProperty("lv")]
+        public DateTime? LastVisit
+        {
+            get
+            {
+                return this.DomainVisit.VisitDateTime == DateTime.MinValue ? null : (DateTime?)this.DomainVisit.VisitDateTime;
+            }
+        }
+
         public string version;
         public Dictionary<string, DomainVisit> Domains = new Dictionary<string, DomainVisit>();
         public Dictionary<string, DateTime> ProviderLastSelectTime = new Dictionary<string, DateTime>();
@@ -39,9 +48,6 @@ namespace VisitorIdLib
 
         public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string version, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool newlyConstructed = false)
         {
-            // This guy gets new'd up regardless of new or existing cookie
-            this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
-
             // New Vid Visit
             // New Domain Visit
             // New Page Visit (above)
@@ -50,11 +56,11 @@ namespace VisitorIdLib
             {
                 this.md5 = null;
                 this.em = null;
-                this.lv = null;
                 this.sid = Guid.NewGuid();
                 this.version = version;
+                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
+                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid(), pageReportingSequenceId: this.PageVisit.ReportingSequenceId);
                 this.VidVisit = new Visit(veryFirstVisit: true, visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.VidRsid, reportingSequenceId: this.sid);
-                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid());
                 this.PageVisit.VisitNum = this.DomainVisit.VisitNum = 1;
                 this.PageVisit.VeryFirstVisit = this.DomainVisit.VeryFirstVisit = true;
                 this.Domains.Add(host, this.DomainVisit);
@@ -94,7 +100,12 @@ namespace VisitorIdLib
                     {
                         existingDomainVisit.UpdateVisitStats(timeOfCurrentVisit);
                     }
+                    // This counts as a new visit to a page, so make a new RSID for it
+                    existingDomainVisit.PageReportingSequenceId = Guid.NewGuid();
                 }
+                // new up Page visit with an RSID from the existing domain visit.  See above where we shim a new guid as appropriat
+                // based on whether this is a new visit or mid-cycle
+                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: existingDomainVisit.PageReportingSequenceId);
                 this.Domains = deserialized.Domains;
                 this.DomainVisit = existingDomainVisit;
                 this.DomainVisit.Page = path;
@@ -103,7 +114,8 @@ namespace VisitorIdLib
             // New Domain, first visit
             else
             {
-                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid());
+                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
+                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid(), pageReportingSequenceId: this.PageVisit.ReportingSequenceId);
                 this.DomainVisit.VisitNum = 1;
                 this.PageVisit.VeryFirstVisit = this.DomainVisit.VeryFirstVisit = true;
                 this.Domains = deserialized.Domains;
@@ -115,7 +127,6 @@ namespace VisitorIdLib
             this.sid = deserialized.sid;
             this.md5 = deserialized.md5;
             this.em = deserialized.em;
-            this.lv = deserialized.lv;
             this.version = deserialized.version;
             this.RsIdDict = new Dictionary<string, object> {
                     { typeof(Visit).Name, this.sid },

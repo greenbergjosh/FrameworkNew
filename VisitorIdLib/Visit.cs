@@ -70,6 +70,9 @@ namespace VisitorIdLib
 
         public int VisitNum { get; set; }
 
+        [JsonProperty("PageId")]
+        public Guid PageReportingSequenceId { get; set; }
+
         [JsonIgnore]
         public DateTime? ExpiredVisitDateTime { get; set; }
         [JsonIgnore]
@@ -82,13 +85,14 @@ namespace VisitorIdLib
             this.ReportingSequenceName = "Domain";
         }
 
-        public DomainVisit( DateTime visitDateTime, string domain, string page, Guid rsConfigId, Guid reportingSequenceId) : this()
+        public DomainVisit( DateTime visitDateTime, string domain, string page, Guid rsConfigId, Guid reportingSequenceId, Guid pageReportingSequenceId ) : this()
         {
             this.VisitDateTime = visitDateTime;
             this.Domain = domain;
             this.Page = page;
             this.RsConfigId = rsConfigId;
             this.ReportingSequenceId = reportingSequenceId;
+            this.PageReportingSequenceId = pageReportingSequenceId;
         }
 
         public bool IsExpired (DateTime timeOfCurentVisit, TimeSpan sessionDuration)
@@ -138,6 +142,7 @@ namespace VisitorIdLib
             this.Page = page;
             this.RsConfigId = rsConfigId;
             this.ReportingSequenceId = reportingSequenceId;
+            this.PageReportingSequenceId = reportingSequenceId;
         }
 
         override public PL ReportingSequencePayload()

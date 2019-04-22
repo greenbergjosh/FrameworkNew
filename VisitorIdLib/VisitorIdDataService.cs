@@ -173,12 +173,14 @@ namespace VisitorIdLib
                             break;
                         case "VisitorId":
                             await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "start" }), codePathRsidDict);
-                            var resDV = await DoVisitorId(Fw, context, codePathRsidDict);
+                            bool bootstrap = context.Request.Query["bootstrap"] == "1";
+                            await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "body", bootstrap }), codePathRsidDict);
+
+                            var resDV = await DoVisitorId(Fw, context, bootstrap, codePathRsidDict);
 
                             result = resDV.Result;
                             resDV.CookieData.md5 = resDV.Md5.IfNullOrWhitespace(resDV.CookieData.md5);
                             resDV.CookieData.em = resDV.Email.IfNullOrWhitespace(resDV.CookieData.em);
-                            resDV.CookieData.lv = visitTime;
 
                             context.SetCookie(CookieName, resDV.CookieData.ToJson(), CookieExpirationDate);
                             await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "end", cookieData = resDV.CookieData.ToJson() },
@@ -193,7 +195,6 @@ namespace VisitorIdLib
 
                             resSS.CookieData.md5 = resSS.Md5.IfNullOrWhitespace(resSS.CookieData.md5);
                             resSS.CookieData.em = resSS.Email.IfNullOrWhitespace(resSS.CookieData.em);
-                            resSS.CookieData.lv = visitTime;
                             context.SetCookie(CookieName, resSS.CookieData.ToJson(), CookieExpirationDate);
                             await WriteCodePathEvent(PL.O(new { branch = "SaveSession", loc = "end", cookieData = resSS.CookieData.ToJson() },
                                                    new bool[] { true, true, false }), codePathRsidDict);
@@ -278,7 +279,7 @@ namespace VisitorIdLib
             return new VisitorIdResponse(result: Jw.Json(new { Initialized = true }), md5: "", email: "", cookieData: new CookieData());
         }
 
-        public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
+        public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, bool bootstrap, Dictionary<string, object> codePathRsidDict)
         {
             string opaque64, opaque = null, afid, tpid, eml, md5, osid, sid, qstr, host, path, qury, lv, lst;
             IGenericEntity opge;
@@ -337,7 +338,7 @@ namespace VisitorIdLib
                 return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: new CookieData());
             }
 
-            var cookieData = new CookieData(visitTime, c.Request.Cookies[CookieName], CookieVersion, host, path, SessionDuration, RsConfigIds, newlyConstructed: slot == 0);
+            var cookieData = new CookieData(visitTime, c.Request.Cookies[CookieName], CookieVersion, host, path, SessionDuration, RsConfigIds, newlyConstructed: bootstrap);
             foreach (var rsid in opqRsids)
             {
                 cookieData.RsIdDict.Add(rsid.Key, rsid.Value);
@@ -348,7 +349,7 @@ namespace VisitorIdLib
                 codePathRsidDict.Add(rsid.Key, rsid.Value);
             }
 
-            lv = cookieData.lv == null ? "" : cookieData.lv.ToString();
+            lv = cookieData.LastVisit == null ? "" : cookieData.LastVisit.ToString();
             sid = cookieData.sid.ToString();
 
             if (!osid.IsNullOrWhitespace() && osid != sid)
@@ -362,7 +363,7 @@ namespace VisitorIdLib
 
             // Consider accepting an existing Guid from opaque.rsid and using it or dropping
             // events to it, in addition to the events we drop specifically for vid
-            if (slot == 0)
+            if (bootstrap)
             {
                 var eventPayload = PL.O(new
                 {
@@ -988,6 +989,7 @@ namespace VisitorIdLib
 
                         if (!eml.IsNullOrWhitespace())
                         {
+                            await SaveSessionEmailMd5(fw, sid, eml, md5, rsids);
                             var (success, postData) = await PostVisitorIdToConsole(fw, eml, emailpid, pixelDomain, clientIp, userAgent, lastVisit);
                             if (!postData.IsNullOrWhitespace())
                             {
@@ -1086,17 +1088,20 @@ namespace VisitorIdLib
             return cookieEml;
         }
 
-        public async Task SaveSessionEmailMd5(FrameworkWrapper fw, VisitorIdResponse vidResp, string connection = DataLayerName)
+        public async Task SaveSessionEmailMd5(FrameworkWrapper fw, string sid, string email, string md5 , Dictionary<string,object> rsids, string connection = DataLayerName)
         {
-            if (!string.IsNullOrWhiteSpace(vidResp.Email))
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSessionEmailMd5), loc = "end" }), rsids);
+            try
             {
-                await Data.CallFn(connection,
-                "SaveSessionIdEmailMd5",
-                JsonWrapper.Json(new { vidResp.CookieData.sid, vidResp.Email, vidResp.Md5 }),
-                "");
-
-                await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {vidResp.CookieData.sid}, Email: {vidResp.Email}, Md5: {vidResp.Md5}");
+                await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSessionEmailMd5), loc = "body", sid, email, md5 }), rsids);
+                await Data.CallFn(connection, "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
+                await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {sid}, Email: {email}, Md5: {md5}");
             }
+            catch (Exception e)
+            {
+                await fw.Error(nameof(SaveSessionEmailMd5), $"Caught exception attempting to write session id '{sid}', email '{email}', md5 '{md5}': {e.UnwrapForLog()}");
+            }
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSessionEmailMd5), loc = "end" }), rsids);
 
         }
 
