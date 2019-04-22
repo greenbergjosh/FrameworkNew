@@ -1,13 +1,14 @@
 ﻿async function visitorId(url, opaque, future) {
     opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: '0', page: '0', sd: '', succ: '0' };
+    await window.genericFetch(url + '?m=Initialize&op=' + base64UrlSafe(JSON.stringify(opaque)),
+        { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
+        'json', '');
+    let bootstrap = 1;
     while (true) {
-        await window.genericFetch(url + '?m=Initialize&op=' + base64UrlSafe(JSON.stringify(opaque)),
+        let res = await window.genericFetch(url + '?m=VisitorId&bootstrap='+bootstrap+'&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
-
-        let res = await window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)),
-            { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
-            'json', '');
+        bootstrap = 0;
 
         if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl))) break;
         let sres = {};
