@@ -447,6 +447,7 @@ namespace VisitorIdLib
                     var nextTask = visitorIdMd5ProviderSequence[slot].Md5provider;
                     var visitorIdEmailProviderSequence = visitorIdMd5ProviderSequence[slot].EmailProviderSeq;
 
+                    await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "body", seq = nextTask.ToLower() }), codePathRsidDict);
                     if (nextTask.ToLower() == "cookie")
                     {
                         be = new EdwBulkEvent();
@@ -650,6 +651,7 @@ namespace VisitorIdLib
             Dictionary<string, object> rsids, string pixelDomain, bool sendMd5ToPostingQueue, bool hasClientContext, string lastVisit, string lst, bool vft, string afid, string host, CookieData cookieData)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), rsids);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "args", sid = sid??"''", md5pid = md5pid??"''", slot, page, md5 = md5??"''", email = email??"''", vieps=visitorIdEmailProviderSequence, lv=lastVisit??"''", lst=lst??"''", vft,afid=afid??"''", host  }), rsids);
             var ip = c.Ip();
             var success = !md5.IsNullOrWhitespace();
             var foundMd5ProviderPid = false;
@@ -801,13 +803,19 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, bool hasClientContext, bool canHaveCookie = true, CookieData cookieData = null, IGenericEntity op = null, string md5 = null)
         {
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), new Dictionary<string,object>());
             var opqVals = ValsFromOpaque(op ?? Vutil.OpaqueFromBase64(c.Get("op", "", false), async (method, message) => { await fw.Log(method, message); }));
+            var opqValsToPl = PL.O(new { canHaveCookie, sid = opqVals.sid??"", slot = opqVals.slot, page = opqVals.page, md5pid = opqVals.md5pid??"", vieps = opqVals.vieps??"", argsMd5 = md5??"", md5 = opqVals.md5??"", host = opqVals.host??"", afid = opqVals.afid??"", lst = opqVals.lst??"", vft = opqVals.vft });
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "body" }).Add(opqValsToPl), opqVals.rsids);
             if (cookieData == null && canHaveCookie) // passed in a context where we haven't set it yet, but weren't called out of band from a real browser
             {
                 cookieData = new CookieData(DateTime.UtcNow, c.Request.Cookies[CookieName], CookieVersion, opqVals.host, opqVals.uri.AbsolutePath, SessionDuration, RsConfigIds);
+                await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "body", cookieObj = JsonConvert.SerializeObject(cookieData)  },
+                                       new bool[] { true,                         true,         false }), opqVals.rsids);
             }
 
             var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, sendMd5ToPostingQueue, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.host, cookieData);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), opqVals.rsids);
             return response;
         }
 
@@ -821,6 +829,7 @@ namespace VisitorIdLib
             var page = 0;
             foreach (var s in VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
             {
+                await WriteCodePathEvent(PL.O(new { branch = nameof(DoEmailProviders), loc = "body", seq = s.ToLower() }), rsids);
                 if (s.ToLower() == "stopifemail")
                 {
                     if (!email.IsNullOrWhitespace())
