@@ -78,7 +78,7 @@ namespace TraverseDataLib
                                     await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.md5pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS(responseMd5Key)}");
                                     vidResp = await Vid.SaveSession(this.Fw, context, true, false, false, null, opaqueGe, fullBodyGe.GetS(responseMd5Key));
                                 }
-                                result = Jw.Json(vidResp);
+                                result = JsonConvert.SerializeObject(vidResp);
                                 resultHttpStatus = StatusCodes.Status202Accepted;
                             }
                             catch (Exception e)
@@ -108,12 +108,17 @@ namespace TraverseDataLib
 
         public async Task WriteResponseEvent(string pid, int slot, int page, string lastSeenTime, string host, string lastVisit, bool veryFirstTime, Dictionary<string, object> rsids, string md5)
         {
+            var rsidDict = new Dictionary<string, object>();
+            if (rsids == null)
+            {
+                await this.Fw.Log(nameof(WriteResponseEvent), $"Called with null 'rsids' dictionary, supplying event with no related report sequence ids for pid '{pid ?? ""}', md5 {md5}, for host {host}");
+            }
             EdwBulkEvent be = new EdwBulkEvent();
             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                 null, PL.O(new
                 {
                     et = "TraverseMd5Response",
-                    pid,
+                    pid = pid??"",
                     slot,
                     page,
                     md5,
