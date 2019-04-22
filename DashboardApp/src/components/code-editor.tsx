@@ -80,7 +80,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
   )
 })
 
-const activeEditorSettings: NonNullable<MonacoEditorProps["options"]> = {
+export const activeEditorSettings: NonNullable<MonacoEditorProps["options"]> = {
   cursorBlinking: "blink",
   cursorSmoothCaretAnimation: false,
   cursorStyle: "block",

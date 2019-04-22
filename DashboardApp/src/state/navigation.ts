@@ -8,6 +8,7 @@ import { CreateGlobalConfig } from "../routes/dashboard/routes/global-config/rou
 import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/routes/edit"
 import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
+import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
 import { Reports } from "../routes/dashboard/routes/reports"
 import { Report } from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
@@ -180,6 +181,17 @@ const staticRoutesMap = {
             subroutes: {},
           },
         },
+      },
+      "form-editor-test": {
+        abs: "/dashboard/form-editor-test",
+        component: FormEditorTest,
+        description: "Form Editor Test",
+        title: "Form Editor Test",
+        iconType: "form",
+        path: "form-editor-test",
+        redirectFrom: [],
+        shouldAppearInSideNav: true,
+        subroutes: {},
       },
     },
   },
