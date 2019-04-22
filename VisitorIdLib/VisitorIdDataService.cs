@@ -746,12 +746,12 @@ namespace VisitorIdLib
                  !md5.IsNullOrWhitespace() &&
                  !md5pid.IsNullOrWhitespace())
             {
-                var postResult = await PostMd5LeadDataToConsole(fw, md5, pixelDomain, md5pid);
-                if (!postResult.postData.IsNullOrWhitespace())
+                var postData = await PostMd5LeadDataToConsole(fw, md5, pixelDomain, md5pid);
+                if (!postData.IsNullOrWhitespace())
                 {
                     var be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                        null, PL.FromJsonString(postResult.postData).Add(PL.O(new { et = "ConsoleMd5PostLeadData", consolePostSuccess = postResult.success })));
+                        null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostLeadData" })));
                     await fw.EdwWriter.Write(be);
                 }
             }
@@ -872,12 +872,12 @@ namespace VisitorIdLib
                     if (!eml.IsNullOrWhitespace())
                     {
                         cookieEml = eml;
-                        var (success, postData) = await PostVisitorIdToConsole(fw, eml, "E4208B3A-0B21-4D06-B348-1CCC5715F66E", pixelDomain, clientIp, userAgent, lastVisit);
+                        var postData = await PostVisitorIdToConsole(fw, eml, "E4208B3A-0B21-4D06-B348-1CCC5715F66E", pixelDomain, clientIp, userAgent, lastVisit);
                         if (!postData.IsNullOrWhitespace())
                         {
                             be = new EdwBulkEvent();
                             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E", consolePostSuccess = success })));
+                                null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E"})));
                             await fw.EdwWriter.Write(be);
                         }
 
@@ -990,12 +990,12 @@ namespace VisitorIdLib
                         if (!eml.IsNullOrWhitespace())
                         {
                             await SaveSessionEmailMd5(fw, sid, eml, md5, rsids);
-                            var (success, postData) = await PostVisitorIdToConsole(fw, eml, emailpid, pixelDomain, clientIp, userAgent, lastVisit);
+                            var postData = await PostVisitorIdToConsole(fw, eml, emailpid, pixelDomain, clientIp, userAgent, lastVisit);
                             if (!postData.IsNullOrWhitespace())
                             {
                                 be = new EdwBulkEvent();
                                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                    null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid, consolePostSuccess = success })));
+                                    null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid})));
                                 await fw.EdwWriter.Write(be);
                             }
 
@@ -1147,7 +1147,7 @@ namespace VisitorIdLib
             }
         }
 
-        public async Task<(bool success, string postData)> PostMd5LeadDataToConsole(FrameworkWrapper fw, string md5, string domain, string provider)
+        public async Task<string> PostMd5LeadDataToConsole(FrameworkWrapper fw, string md5, string domain, string provider)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(PostMd5LeadDataToConsole), loc = "start" }), new Dictionary<string, object>());
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
@@ -1155,7 +1155,7 @@ namespace VisitorIdLib
             if (result == null || result == Jw.Empty)
             {
                 await fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}");
-                return (success: false, postData: "");
+                return "";
             }
 
             var ge = JsonWrapper.JsonToGenericEntity(result);
@@ -1173,12 +1173,12 @@ namespace VisitorIdLib
                 provider
             });
             await fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}, as: {ge.GetS("Email")}");
-            var postResult = PostDataToConsole(fw, ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
+            PostDataToConsole(fw, ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
             await WriteCodePathEvent(PL.O(new { branch = nameof(PostMd5LeadDataToConsole), loc = "end" }), new Dictionary<string, object>());
-            return postResult;
+            return body;
         }
 
-        public async Task<(bool success, string postData)> PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
+        public async Task<string> PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "start" }), new Dictionary<string, object>());
 
@@ -1199,9 +1199,9 @@ namespace VisitorIdLib
                 label_domain = domain,
                 lastVisit
             });
-            var postResult = PostDataToConsole(fw, plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
+            PostDataToConsole(fw, plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
             await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "end" }), new Dictionary<string, object>());
-            return postResult;
+            return body;
         }
 
         public bool? IsExpenseGenerating(FrameworkWrapper fw, string host, string lastSelectedTimeStr, string pid)
@@ -1246,15 +1246,13 @@ namespace VisitorIdLib
             return isExpenseGenerating;
         }
 
-        public (bool success, string postData) PostDataToConsole(FrameworkWrapper fw, string key, string header, string body, string caller)
+        public void PostDataToConsole(FrameworkWrapper fw, string key, string header, string body, string caller)
         {
 
             if (this.OnPointConsoleUrl.IsNullOrWhitespace())
             {
                 fw.Error(caller, $"Console endpoint is not set. Failed to post {key} to Console  with data {body}");
-                return (success: false, postData: "");
             }
-            var success = false;
             var postData = "";
             var task = new Func<Task>(async () =>
             {
@@ -1268,16 +1266,13 @@ namespace VisitorIdLib
                     await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl, postData, "application/json");
 
                     await fw.Trace(caller, $"Successfully posted {key} to Console endpoint {this.OnPointConsoleUrl} with data {postData}.");
-                    success = true;
                 }
                 catch (Exception e)
                 {
                     await fw.Error(caller, $"Failed to post {key} to Console endpoint {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
-                    success = false;
                 }
             });
             Task.Run(task);
-            return (success: success, postData: postData);
         }
 
         public async Task WriteCodePathRs(PL payload, DateTime timestamp, Guid codePathRsGuid, bool sendPayloadToLog = true)
