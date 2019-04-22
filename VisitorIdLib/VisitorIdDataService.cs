@@ -31,6 +31,8 @@ namespace VisitorIdLib
         public string CookieVersion;
         public List<Guid> Md5ExcludeList;
         public readonly DateTime CookieExpirationDate = new DateTime(2038, 1, 19);
+        public string OnPointConsoleDomainId;
+        public string OnPointConsoleUrl;
 
         //public void test()
         //{
@@ -64,6 +66,8 @@ namespace VisitorIdLib
             CookieName = fw.StartupConfiguration.GetS("Config/CookieName") ?? "vidck";
             CookieVersion = fw.StartupConfiguration.GetS("Config/CookieVersion") ?? "1";
             Md5ExcludeList = Vutil.Md5ExcludeList(fw.StartupConfiguration.GetL("Config/Md5ExcludeList"));
+            OnPointConsoleDomainId = fw.StartupConfiguration.GetS("Config/OnPointConsoleDomainId");
+            OnPointConsoleUrl = fw.StartupConfiguration.GetS("Config/OnPointConsoleUrl");
             ConfigProviders(Fw);
         }
 
@@ -1172,15 +1176,15 @@ namespace VisitorIdLib
         public async Task<(bool success, string postData)> PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "start" }), new Dictionary<string, object>());
-            var onPointConsoleDomainId = fw.StartupConfiguration.GetS("Config/OnPointConsoleDomainId");
-            if (onPointConsoleDomainId.IsNullOrWhitespace())
+
+            if (this.OnPointConsoleDomainId.IsNullOrWhitespace())
             {
                 await fw.Error(nameof(PostVisitorIdToConsole), $"Console domain id is not set, still posting to Console for email {plainTextEmail}");
             }
             var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
             var body = Jw.Json(new
             {
-                domain_id = onPointConsoleDomainId,
+                domain_id = this.OnPointConsoleDomainId,
                 email = plainTextEmail,
                 user_ip = clientIp,
                 user_agent = userAgent,
@@ -1240,8 +1244,7 @@ namespace VisitorIdLib
         public (bool success, string postData) PostDataToConsole(FrameworkWrapper fw, string key, string header, string body, string caller)
         {
 
-            var onPointConsoleUrl = fw.StartupConfiguration.GetS("Config/OnPointConsoleUrl");
-            if (onPointConsoleUrl.IsNullOrWhitespace())
+            if (this.OnPointConsoleUrl.IsNullOrWhitespace())
             {
                 fw.Error(caller, $"Console endpoint is not set. Failed to post {key} to Console  with data {body}");
                 return (success: false, postData: "");
@@ -1257,14 +1260,14 @@ namespace VisitorIdLib
                         header,
                         body
                     }, new bool[] { false, false });
-                    await ProtocolClient.HttpPostAsync(onPointConsoleUrl, postData, "application/json");
+                    await ProtocolClient.HttpPostAsync(this.OnPointConsoleUrl, postData, "application/json");
 
-                    await fw.Trace(caller, $"Successfully posted {key} to Console endpoint {onPointConsoleUrl} with data {postData}.");
+                    await fw.Trace(caller, $"Successfully posted {key} to Console endpoint {this.OnPointConsoleUrl} with data {postData}.");
                     success = true;
                 }
                 catch (Exception e)
                 {
-                    await fw.Error(caller, $"Failed to post {key} to Console endpoint {onPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
+                    await fw.Error(caller, $"Failed to post {key} to Console endpoint {this.OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
                     success = false;
                 }
             });

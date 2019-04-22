@@ -30,7 +30,8 @@ namespace TraverseDataLib
         {
             this.Fw = fw;
             this.SqlTimeoutSec = fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
-            this.Vid = new VisitorIdDataService().ConfigProviders(this.Fw);
+            this.Vid = new VisitorIdDataService();
+            this.Vid.Config(this.Fw);
             pidSidMd5Cache = MemoryCache.Default;
             this.md5ExcludeList = Vutil.Md5ExcludeList(this.Fw.StartupConfiguration.GetL("Config/Md5ExcludeList"));
             excludeSpanDays = fw.StartupConfiguration.GetS("Config/ExcludeSpanDays").IsNullOrWhitespace() ?
