@@ -15,6 +15,11 @@ namespace UnsubJobServer
             _fw = fw;
         }
 
+        public void OnStart()
+        {
+            _fw.Log(nameof(OnStart), "Service started").Wait();
+        }
+
         public async Task HandleHttpRequest(HttpContext context)
         {
             var requestFromPost = "";
@@ -33,6 +38,10 @@ namespace UnsubJobServer
                     case "LoadUnsubFiles":
                         Task.Run(() => nw.LoadUnsubFiles(dtv));
                         result = JsonWrapper.Json(new { Result = "Success" });
+                        break;
+                    case "alive":
+                        await _fw.Log(nameof(HandleHttpRequest), "Someone asked if I was alive, I was");
+                        result = JsonWrapper.Json(new { Result = "yes" });
                         break;
                     default:
                         File.AppendAllText("UnsubJobServer.log", $"{DateTime.Now}::{requestFromPost}::Unknown method{Environment.NewLine}");
