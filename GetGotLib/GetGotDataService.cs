@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Reporting;
 using Jw = Utility.JsonWrapper;
 using Random = Utility.Crypto.Random;
 

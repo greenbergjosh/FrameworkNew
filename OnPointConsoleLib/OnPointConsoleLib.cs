@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Logging;
 using Jw = Utility.JsonWrapper;
 
 namespace OnPointConsoleLib

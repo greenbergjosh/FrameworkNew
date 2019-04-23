@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Utility.DataLayer;
 
-namespace Utility
+namespace Utility.EDW.Logging
 {
     public class ErrorSiloEndpoint : IEndpoint
     {

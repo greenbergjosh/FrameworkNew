@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Utility
+namespace Utility.EDW.Reporting
 {
     //EdwBulkEvent bulk = new EdwBulkEvent();
     //bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
