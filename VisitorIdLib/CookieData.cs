@@ -14,11 +14,13 @@ namespace VisitorIdLib
         public Guid sid;
 
         [JsonProperty("lv")]
-        public DateTime? LastVisit
+        public string LastVisit
         {
             get
             {
-                return this.DomainVisit.VisitDateTime == DateTime.MinValue ? null : (DateTime?)this.DomainVisit.VisitDateTime;
+                if (this.DomainVisit == null) return "";
+                if (this.DomainVisit.VisitDateTime == DateTime.MinValue) return "";
+                return this.DomainVisit.VisitDateTime.ToString();
             }
         }
 
