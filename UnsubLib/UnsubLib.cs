@@ -30,8 +30,6 @@ namespace UnsubLib
         public string ServerWorkingDirectory;
         public string ClientWorkingDirectory;
         public string SearchDirectory;
-        public string ServerName;
-        public string DatabaseName;
         public string FileCacheDirectory;
         public string FileCacheFtpServer;
         public string FileCacheFtpUser;
@@ -65,8 +63,6 @@ namespace UnsubLib
             ServerWorkingDirectory = config.GetS("Config/ServerWorkingDirectory");
             ClientWorkingDirectory = config.GetS("Config/ClientWorkingDirectory");
             SearchDirectory = config.GetS("Config/SearchDirectory");
-            ServerName = config.GetS("Config/ServerName");
-            DatabaseName = config.GetS("Config/DatabaseName");
             FileCacheDirectory = config.GetS("Config/FileCacheDirectory");
             FileCacheFtpServer = config.GetS("Config/FileCacheFtpServer");
             FileCacheFtpUser = config.GetS("Config/FileCacheFtpUser");
@@ -113,8 +109,7 @@ namespace UnsubLib
         public async Task ManualDirectory(IGenericEntity network)
         {
             var networkName = network.GetS("Name");
-            var networkId = network.GetS("Id");
-            var path = Path.Combine(ClientWorkingDirectory, "Manual", networkId);
+            var path = Path.Combine(ClientWorkingDirectory, "Manual", networkName);
 
             var di = new DirectoryInfo(path);
 
@@ -341,6 +336,8 @@ namespace UnsubLib
 
             await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Calling ProcessUnsubFiles");
 
+            var bad = uris.Where(u => u.Value?.Any() != true).ToArray();
+
             await ProcessUnsubFiles(uris, network, cse.GetL(""));
 
             await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Completed ProcessUnsubFiles");
@@ -525,7 +522,7 @@ namespace UnsubLib
 
             await uris.ForEachAsync(parallelism, async uri =>
             {
-                var logCtx = $"campaigns: {uri.Value.Select(v => v.GetS("id")).Join(":")}";
+                var logCtx = $"campaigns: {uri.Value.Select(v => v.GetS("Id")).Join(":")}";
 
                 try
                 {
@@ -667,7 +664,7 @@ namespace UnsubLib
                 }
                 catch (Exception exFile)
                 {
-                    await _fw.Error($"{nameof(DownloadUnsubFiles)}-{networkName}", $"OuterCatch({networkName})::{uri.Key}::{logCtx}::{exFile}");
+                    await _fw.Error($"{nameof(DownloadUnsubFiles)}-{networkName}", $"OuterCatch::{uri.Key}::{logCtx}::{exFile}");
                 }
             });
 

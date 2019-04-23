@@ -44,6 +44,10 @@ namespace UnsubClientWeb
                     case "ForceUnsub":
                         result = await nw.ServerForceUnsub(requestFromPost);
                         break;
+                    case "alive":
+                        await _fw.Log(nameof(Run), "Someone asked if I was alive, I was");
+                        result = JsonWrapper.Json(new { Result = "yes" });
+                        break;
                     default:
                         File.AppendAllText("UnsubClient.log", $"{DateTime.Now}::{requestFromPost}::Unknown method{Environment.NewLine}");
                         break;

@@ -28,7 +28,15 @@ namespace GenericWindowsService
             }
             else
             {
-                ValidateAndConfigureService(args).Build().RunAsService();
+                var svc = ValidateAndConfigureService(args);
+
+                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Building Host{Environment.NewLine}");
+
+                var wh = svc.Build();
+
+                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Running Host{Environment.NewLine}");
+
+                wh.RunAsService();
             }
         }
 
@@ -37,7 +45,7 @@ namespace GenericWindowsService
             try
             {
                 var listenerUrl = Fw.StartupConfiguration.GetS("Config/HttpListenerUrl");
-                
+
                 if (listenerUrl.IsNullOrWhitespace())
                 {
                     throw new Exception("HttpListenerUrl not defined in config");
