@@ -817,6 +817,13 @@ namespace VisitorIdLib
                 cookieData = new CookieData(DateTime.UtcNow, c.Request.Cookies[CookieName], CookieVersion, opqVals.host, opqVals.uri.AbsolutePath, SessionDuration, RsConfigIds);
                 await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "body", cookieObj = JsonConvert.SerializeObject(cookieData)  },
                                        new bool[] { true,                         true,         false }), opqVals.rsids);
+
+                foreach (var cookie_rsid in cookieData?.RsIdDict)
+                {
+                    if (!opqVals.rsids.ContainsKey(cookie_rsid.Key))
+                        opqVals.rsids[cookie_rsid.Key] = cookie_rsid.Value;
+                }
+
             }
 
             var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, sendMd5ToPostingQueue, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.host, cookieData);
