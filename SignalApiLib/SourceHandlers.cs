@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Queueing;
 
 namespace SignalApiLib
 {

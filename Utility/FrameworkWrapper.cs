@@ -6,6 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Utility.DataLayer;
+using Utility.EDW.Logging;
+using Utility.EDW.Queueing;
+using Utility.EDW.Reporting;
 
 namespace Utility
 {

@@ -5,9 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Utility;
 
-namespace Utility
+namespace Utility.EDW.Reporting
 {
     public class EdwSiloLoadBalancedWriter : LoadBalancedWriter
     {

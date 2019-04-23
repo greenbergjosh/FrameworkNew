@@ -2,11 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Utility
+namespace Utility.EDW
 {
     public abstract class LoadBalancedWriter
     {

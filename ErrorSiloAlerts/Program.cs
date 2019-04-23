@@ -5,6 +5,7 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Logging;
 using Jw = Utility.JsonWrapper;
 
 namespace ErrorSiloAlerts

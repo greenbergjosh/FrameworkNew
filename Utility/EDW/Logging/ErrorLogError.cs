@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Utility
+namespace Utility.EDW.Logging
 {
     public class ErrorLogError
     {

@@ -10,7 +10,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Runtime.CompilerServices;
 using Utility;
-using static Utility.EdwBulkEvent;
+using static Utility.EDW.Reporting.EdwBulkEvent;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +19,7 @@ using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using Utility.DataLayer;
+using Utility.EDW.Reporting;
 using Utility.OpgAuth;
 using Random = Utility.Crypto.Random;
 

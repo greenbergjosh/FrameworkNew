@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Utility.DataLayer;
 
-namespace Utility
+namespace Utility.EDW.Queueing
 {
     class PostingQueueSiloEndpoint : IEndpoint
     {
