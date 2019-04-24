@@ -11,13 +11,11 @@ import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
 interface Props {
   configId: string
-  mode: "edit" | "show"
 }
 export function ShowGlobalConfig({
   children,
   configId,
   location,
-  mode,
   navigate,
   path,
   uri,
@@ -75,7 +73,7 @@ export function ShowGlobalConfig({
                   </Reach.Link>
                 </Button>
               }
-              title={mode === "edit" ? `Edit Config` : `ConfigDetails`}>
+              title={`Config Details`}>
               <Form
                 labelAlign="left"
                 layout="horizontal"
