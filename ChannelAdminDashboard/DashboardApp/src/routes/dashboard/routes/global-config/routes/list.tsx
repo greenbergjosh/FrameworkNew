@@ -1,42 +1,37 @@
 import { Atom } from "@dbeining/react-atom"
+import * as Reach from "@reach/router"
 import {
+  AutoComplete,
   Button,
   Card,
-  Skeleton,
-  Empty,
-  Table,
-  Icon,
-  Typography,
-  Popover,
-  Dropdown,
-  Menu,
-  Row,
   Col,
+  Dropdown,
+  Empty,
+  Icon,
   Input,
-  AutoComplete,
-  PageHeader,
-  Modal,
   List,
+  Menu,
+  Modal,
+  Row,
+  Skeleton,
+  Table,
   Tag,
+  Typography,
 } from "antd"
+import { ClickParam } from "antd/lib/menu"
+import { ColumnProps } from "antd/lib/table"
+import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
+import { ordString } from "fp-ts/lib/Ord"
+import * as Record from "fp-ts/lib/Record"
+import { setoidString } from "fp-ts/lib/Setoid"
+import { Branded } from "io-ts"
+import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import React from "react"
-import * as Reach from "@reach/router"
+import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
+import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
-import { ColumnProps } from "antd/lib/table"
-import { Config } from "../../../../../data/GlobalConfig.Config"
-import { Overwrite } from "utility-types"
-import { array, mapOption, range, uniq, isEmpty, sort, filter } from "fp-ts/lib/Array"
-import * as Record from "fp-ts/lib/Record"
-import { ButtonProps } from "antd/lib/button"
-import { setoidString } from "fp-ts/lib/Setoid"
-import { ordString } from "fp-ts/lib/Ord"
-import { io, IO } from "fp-ts/lib/IO"
-import { toString } from "fp-ts/lib/function"
-import { None, Some } from "../../../../../data/Option"
-import { ClickParam } from "antd/lib/menu"
-import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 
 interface Props {}
 
@@ -76,7 +71,7 @@ export function ListGlobalConfig({
 // -----------------
 
 interface ConfigTableProps {
-  configs: Array<Config>
+  configs: Array<PersistedConfig>
 }
 function ConfigTable({ configs }: ConfigTableProps) {
   const [fromStore, dispatch] = useRematch((s) => ({
@@ -85,7 +80,9 @@ function ConfigTable({ configs }: ConfigTableProps) {
     isDeletingConfigs: s.loading.effects.globalConfig.deleteRemoteConfigsById,
   }))
 
-  const [potentiallyStaleSelectedRowKeys, setSelectedRowKeys] = React.useState<Array<string>>([])
+  const [potentiallyStaleSelectedRowKeys, setSelectedRowKeys] = React.useState<
+    Array<Branded<string, NonEmptyStringBrand>>
+  >([])
 
   const selectedRowKeys = React.useMemo(() => {
     return potentiallyStaleSelectedRowKeys.filter((k) =>
@@ -111,7 +108,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
       configNames: sort(ordString)(uniq(setoidString)(filteredConfigs.map((c) => c.name))),
       configTypes: sort(ordString)(uniq(setoidString)(filteredConfigs.map((c) => c.type))),
     }
-    function whatIWant(c: Config): boolean {
+    function whatIWant(c: PersistedConfig): boolean {
       return [
         new RegExp(configNameFilterVal, "i").test(c.name) && configTypeFilters.includes(c.type),
         new RegExp(configNameFilterVal, "i").test(c.name) && isEmpty(configTypeFilters),
@@ -119,7 +116,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
     }
   }, [configs, configNameFilterVal, configTypeFilters])
 
-  const columns = React.useMemo<Array<ColumnProps<Config>>>(
+  const columns = React.useMemo<Array<ColumnProps<PersistedConfig>>>(
     () => [
       {
         title: "Type",
@@ -153,7 +150,11 @@ function ConfigTable({ configs }: ConfigTableProps) {
             <Input placeholder="Search by Name" />
           </AutoComplete>
         ),
-        render: (text, config, idx) => <Typography.Text ellipsis={true}>{text}</Typography.Text>,
+        render: (text, config, idx) => (
+          <Typography.Text ellipsis={true}>
+            <Reach.Link to={config.id}>{text}</Reach.Link>
+          </Typography.Text>
+        ),
       },
       {
         align: "right",

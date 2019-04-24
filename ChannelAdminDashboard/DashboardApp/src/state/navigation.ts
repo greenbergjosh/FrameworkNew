@@ -1,19 +1,18 @@
 import * as Reach from "@reach/router"
-
-import * as Store from "./store.types"
-import { Landing } from "../routes/landing"
-import { Dashboard } from "../routes/dashboard"
-import { Summary } from "../routes/dashboard/routes/summary"
-import { Reports } from "../routes/dashboard/routes/reports"
-import { Report } from "../routes/dashboard/routes/reports/routes/report"
 import { Option } from "fp-ts/lib/Option"
+import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { None, Some } from "../data/Option"
-import { Config } from "../data/GlobalConfig.Config"
+import { Dashboard } from "../routes/dashboard"
 import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config"
 import { CreateGlobalConfig } from "../routes/dashboard/routes/global-config/routes/create"
 import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/routes/edit"
-import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
 import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
+import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
+import { Reports } from "../routes/dashboard/routes/reports"
+import { Report } from "../routes/dashboard/routes/reports/routes/report"
+import { Summary } from "../routes/dashboard/routes/summary"
+import { Landing } from "../routes/landing"
+import * as Store from "./store.types"
 
 declare module "./store.types" {
   interface AppModels {
@@ -37,7 +36,10 @@ export interface Reducers {}
 export interface Effects {
   goToDashboard<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
 
-  goToGlobalConfigById(params: { id: Config["id"]; navOpts?: Reach.NavigateOptions<object> }): void
+  showGlobalConfigById(params: {
+    id: PersistedConfig["id"]
+    navOpts?: Reach.NavigateOptions<object>
+  }): void
 
   goToGlobalConfigs<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
 
@@ -202,7 +204,7 @@ export const navigation: Store.AppModel<
         Some((opts) => Reach.navigate(routes.dashboard.abs, opts))
       ),
 
-    goToGlobalConfigById: ({ id, navOpts }, { navigation: { routes } }) => {
+    showGlobalConfigById: ({ id, navOpts }, { navigation: { routes } }) => {
       Reach.navigate(`${routes.dashboard.subroutes["global-config"].abs}/${id}`, navOpts)
     },
 

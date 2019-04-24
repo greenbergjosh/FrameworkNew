@@ -1,29 +1,17 @@
-import { failure, pending, RemoteData, success, initial } from "@devexperts/remote-data-ts"
-import { array, head, snoc, uniq, sort } from "fp-ts/lib/Array"
-import { constant, identity, tuple, concat } from "fp-ts/lib/function"
-import { fromNullable, none, Option, some } from "fp-ts/lib/Option"
+import { failure, initial, pending, RemoteData, success } from "@devexperts/remote-data-ts"
+import { array, head, snoc, sort, uniq } from "fp-ts/lib/Array"
+import { concat, identity, tuple } from "fp-ts/lib/function"
+import { fromNullable, some } from "fp-ts/lib/Option"
+import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
-import { JSONFromString } from "io-ts-types/lib/JSON/JSONFromString"
+import { Overwrite } from "utility-types"
 import { Left, Right } from "../data/Either"
-import {
-  CompleteConfigDraft,
-  Config,
-  ConfigType,
-  InProgressDraftConfig,
-} from "../data/GlobalConfig.Config"
-import { JSONRecord, JSONRecordCodec, fromStrToJSONRec } from "../data/JSON"
+import { CompleteLocalDraft, ConfigType, PersistedConfig } from "../data/GlobalConfig.Config"
 import { None, Some } from "../data/Option"
 import { prettyPrint } from "../lib/json"
 import { Config as mockGlobalConfigs } from "../mock-data/global-config.json"
 import * as Store from "./store.types"
-import { ordString } from "fp-ts/lib/Ord"
-import {
-  GlobalConfigApiResponse,
-  ServerException,
-  Unauthorized,
-} from "../data/GlobalConfigWebService"
-import { Overwrite } from "utility-types"
 
 declare module "./store.types" {
   interface AppModels {
@@ -38,42 +26,36 @@ declare module "./store.types" {
 
 export interface State {
   /** configs from the database */
-  configs: RemoteData<Error, Array<Config>>
+  configs: RemoteData<Error, Array<PersistedConfig>>
   readonly defaultEntityTypeConfig: { lang: "json" }
   /** a place to hold edits to a config prior to persisting changes */
-  draftConfig: Option<InProgressDraftConfig>
 }
 
 export interface Reducers {
-  insertLocalDraftConfig(c: InProgressDraftConfig): void
-  insertLocalConfig(c: Config): void
-  rmLocalConfigsById(ids: Array<Config["id"]>): void
-  rmDraftConfig(): void
+  insertLocalConfig(c: PersistedConfig): void
+  rmLocalConfigsById(ids: Array<PersistedConfig["id"]>): void
   update(payload: Partial<State>): void
-  updateLocalConfig(c: Partial<Config> & Required<Pick<Config, "id">>): void
+  updateLocalConfig(c: Partial<PersistedConfig> & Required<Pick<PersistedConfig, "id">>): void
   // insertOrUpdateLocalConfigs(updater: State["configs"]): void
-  updateDraftConfig(
-    c: Partial<InProgressDraftConfig> & Required<Pick<InProgressDraftConfig, "draftId">>
-  ): void
 }
 
 export interface Effects {
-  createRemoteConfig(config: CompleteConfigDraft): Promise<void>
-  deleteRemoteConfigsById(id: Array<Config["id"]>): Promise<void>
+  createRemoteConfig(config: CompleteLocalDraft): Promise<void>
+  deleteRemoteConfigsById(id: Array<PersistedConfig["id"]>): Promise<void>
   loadRemoteConfigs(): Promise<void>
-  updateRemoteConfig(config: Overwrite<Config, { config: string }>): Promise<void>
+  updateRemoteConfig(config: Overwrite<PersistedConfig, { config: string }>): Promise<void>
 }
 
 export interface Selectors {
   /** record of config[] indexed by config.type */
-  configsByType(state: Store.AppState): Record<ConfigType, Array<Config>>
+  configsByType(state: Store.AppState): Record<ConfigType, Array<PersistedConfig>>
   /** a record of configs indexed on config.id */
-  configsById(state: Store.AppState): Record<Config["id"], Config>
+  configsById(state: Store.AppState): Record<PersistedConfig["id"], PersistedConfig>
   /** an array of unique strings which are all the known values on config.type */
   configTypes(state: Store.AppState): Array<ConfigType>
   /** a Record of all configs where config.type === 'EntityType', indexed by config.name
    * which should correspond to some other configs' config.type */
-  entityTypeConfigs(state: Store.AppState): Record<ConfigType, Config>
+  entityTypeConfigs(state: Store.AppState): Record<ConfigType, PersistedConfig>
 }
 
 export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> = {
@@ -89,21 +71,12 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         }))
       ),
     defaultEntityTypeConfig: { lang: "json" },
-    draftConfig: none,
   },
 
   reducers: {
-    insertLocalDraftConfig: (s, c) => ({
-      ...s,
-      draftConfig: some(c),
-    }),
     insertLocalConfig: (s, c) => ({
       ...s,
       configs: s.configs.map((cs) => snoc(cs, c)),
-    }),
-    rmDraftConfig: (s) => ({
-      ...s,
-      draftConfig: none,
     }),
     rmLocalConfigsById: (s, ids) => ({
       ...s,
@@ -113,10 +86,6 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
     updateLocalConfig: (s, { id, ...updatedFields }) => ({
       ...s,
       configs: s.configs.map((cs) => cs.map((c) => (c.id === id ? { ...c, ...updatedFields } : c))),
-    }),
-    updateDraftConfig: (s, draft) => ({
-      ...s,
-      draftConfig: s.draftConfig.map((dc) => ({ ...dc, ...draft })),
     }),
   },
 
@@ -151,15 +120,10 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   )
                 }),
                 Some((createdConfig) => {
-                  dispatch.globalConfig.rmDraftConfig()
-                  dispatch.globalConfig.insertLocalConfig({
+                  return dispatch.globalConfig.insertLocalConfig({
                     ...createdConfig,
                     config: some(draft.config),
                     type: draft.type,
-                  })
-                  dispatch.navigation.goToGlobalConfigById({
-                    id: createdConfig.id,
-                    navOpts: { replace: true },
                   })
                 })
               )
@@ -254,7 +218,6 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
             },
             OK() {
               dispatch.globalConfig.updateLocalConfig({ ...draft, config: some(draft.config) })
-              dispatch.globalConfig.rmDraftConfig()
             },
           })
         })
@@ -269,7 +232,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         (configs) => {
           return configs.map(arrToRecordGroupedByType).getOrElse({})
 
-          function arrToRecordGroupedByType(cs: Array<Config>) {
+          function arrToRecordGroupedByType(cs: Array<PersistedConfig>) {
             return Record.fromFoldable(array)(cs.map((c) => tuple(c.type, [c])), concat)
           }
         }
