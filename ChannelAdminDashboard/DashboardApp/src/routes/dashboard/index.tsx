@@ -50,6 +50,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           selectedKeys={activeMenuKeys}>
           {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
             return toArray(appRoutes)
+              .filter(([path, route]) => route.shouldAppearInSideNav)
               .map(([path, route]) => {
                 return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
                   <Menu.SubMenu
