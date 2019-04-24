@@ -101,10 +101,7 @@ namespace SignalApiLib
 
             if (posts.Any())
             {
-                var now = DateTime.Now;
-                var entries = posts.Select(p => new PostingQueueEntry(p.Key, now, p.Payload));
-
-                var res = await _fw.PostingQueueWriter.Write(entries);
+                var res = await _fw.PostingQueueWriter.Write(posts);
             }
         }
 

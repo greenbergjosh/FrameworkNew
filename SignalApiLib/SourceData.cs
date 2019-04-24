@@ -13,6 +13,7 @@ namespace SignalApiLib
 
         public SourceData(JObject s, Dictionary<string, string[]> mutationConfig)
         {
+            // ToDo: use DynamicMutations
             var propsUsed = new List<string>();
 
             foreach (var pi in Props)
