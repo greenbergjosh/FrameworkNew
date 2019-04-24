@@ -314,10 +314,13 @@ export function CreateGlobalConfig({
   function validateConfigName(name: string): Validated<string> {
     const existingConfigNames = fromStore.configs.getOrElse([]).map((c) => c.name.toLowerCase())
 
-    return validate(name.toLowerCase(), [
+    return validate(name, [
       isNotEmpty(monoidString),
-      isUnique(setoidString)(existingConfigNames),
       (n) => (isWhitespace(n) ? failure({ value: n, reason: "must not be blank" }) : success(n)),
+      (n) =>
+        existingConfigNames.includes(n.toLowerCase())
+          ? failure({ value: n, reason: "must be unique" })
+          : success(n),
     ])
   }
 
