@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace Utility
 {
@@ -281,7 +283,7 @@ namespace Utility
 
         public static void Rename(this DirectoryInfo di, string newName)
         {
-            if(di.Parent == null) return;
+            if (di.Parent == null) return;
 
             di.MoveTo(di.Parent.PathCombine(newName));
         }
