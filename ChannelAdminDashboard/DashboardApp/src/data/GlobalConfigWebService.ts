@@ -1,6 +1,7 @@
 import * as iots from "io-ts"
-import { ConfigCodec } from "./GlobalConfig.Config"
+import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { assertNever } from "../lib/assert-never"
+import { PersistedConfigCodec } from "./GlobalConfig.Config"
 
 export type ResponseCode = iots.TypeOf<typeof ResponseCodeCodec>
 
@@ -32,7 +33,7 @@ export const responsePayloadCodecs = {
     "config:get": iots.union([
       iots.type({
         r: iots.literal(0),
-        configs: iots.array(ConfigCodec),
+        configs: iots.array(PersistedConfigCodec),
       }),
       iots.type({
         r: ErrorCodeCodec,
@@ -51,8 +52,8 @@ export const responsePayloadCodecs = {
         r: iots.literal(0),
         configs: iots.array(
           iots.type({
-            id: iots.string,
-            name: iots.string,
+            id: NonEmptyString,
+            name: NonEmptyString,
           })
         ),
       }),

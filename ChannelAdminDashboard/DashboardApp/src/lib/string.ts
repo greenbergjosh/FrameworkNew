@@ -7,3 +7,7 @@ export function titleize(s: string): string {
     .map(([fst, ...rest]) => `${fst.toUpperCase()}${rest.join("")}`)
     .join(" ")
 }
+
+export function isWhitespace(s: string): boolean {
+  return s.trim() === ""
+}

@@ -1,11 +1,11 @@
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
 import { Overwrite } from "utility-types"
-import { Config, CreateRemoteConfigParams } from "../data/GlobalConfig.Config"
+import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
 import * as GCWS from "../data/GlobalConfigWebService"
 import { HttpError, request } from "../lib/http"
-import * as Store from "./store.types"
 import { prettyPrint } from "../lib/json"
+import * as Store from "./store.types"
 
 declare module "./store.types" {
   interface AppModels {
@@ -28,16 +28,18 @@ export interface Effects {
   defaultHttpErrorHandler(r: HttpError): void
 
   globalConfigsDeleteById(
-    ids: Array<Config["id"]>
+    ids: Array<PersistedConfig["id"]>
   ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<void>>>
 
   globalConfigsInsert(
     c: CreateRemoteConfigParams
-  ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<Pick<Config, "id" | "name">>>>>
+  ): Promise<
+    Either<HttpError, GCWS.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>>>
+  >
 
   globalConfigsGet(
-    query: Pick<Config, "id"> | Partial<Pick<Config, "name" | "type">>
-  ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<Config>>>>
+    query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
+  ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<PersistedConfig>>>>
 
   // globalConfigsGetById(p: Pick<Config, "id">): Promise<Either<HttpError, Config>>
 
@@ -45,10 +47,10 @@ export interface Effects {
     id?: string
     name?: string | RegExp
     type?: string | RegExp
-  }): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<Config>>>>
+  }): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<PersistedConfig>>>>
 
   globalConfigsUpdate(
-    config: Pick<Overwrite<Config, { config: string }>, "id" | "config">
+    config: Pick<Overwrite<PersistedConfig, { config: string }>, "id" | "config">
   ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<void>>>
 }
 
@@ -115,7 +117,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): GCWS.GlobalConfigApiResponse<Array<Pick<Config, "id" | "name">>> => {
+          (payload): GCWS.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
             return payload["config:insert"].r === 0
               ? GCWS.OK(payload["config:insert"].configs)
               : GCWS.mkGlobalConfigApiError(payload["config:insert"].r)
@@ -140,7 +142,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): GCWS.GlobalConfigApiResponse<Array<Config>> => {
+          (payload): GCWS.GlobalConfigApiResponse<Array<PersistedConfig>> => {
             return payload["config:get"].r === 0
               ? GCWS.OK(payload["config:get"].configs)
               : GCWS.mkGlobalConfigApiError(payload["config:get"].r)
@@ -189,7 +191,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): GCWS.GlobalConfigApiResponse<Array<Config>> => {
+          (payload): GCWS.GlobalConfigApiResponse<Array<PersistedConfig>> => {
             return payload["config:get"].r === 0
               ? GCWS.OK(payload["config:get"].configs)
               : GCWS.mkGlobalConfigApiError(payload["config:get"].r)
