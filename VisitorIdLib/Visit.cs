@@ -72,6 +72,7 @@ namespace VisitorIdLib
 
         [JsonProperty("PageId")]
         public Guid PageReportingSequenceId { get; set; }
+        public DateTime PageVisitDateTime { get; set; }
 
         [JsonIgnore]
         public DateTime? ExpiredVisitDateTime { get; set; }
@@ -85,7 +86,7 @@ namespace VisitorIdLib
             this.ReportingSequenceName = "Domain";
         }
 
-        public DomainVisit( DateTime visitDateTime, string domain, string page, Guid rsConfigId, Guid reportingSequenceId, Guid pageReportingSequenceId ) : this()
+        public DomainVisit( DateTime visitDateTime, DateTime pageVisitDateTime, string domain, string page, Guid rsConfigId, Guid reportingSequenceId, Guid pageReportingSequenceId ) : this()
         {
             this.VisitDateTime = visitDateTime;
             this.Domain = domain;
@@ -93,6 +94,7 @@ namespace VisitorIdLib
             this.RsConfigId = rsConfigId;
             this.ReportingSequenceId = reportingSequenceId;
             this.PageReportingSequenceId = pageReportingSequenceId;
+            this.PageVisitDateTime = pageVisitDateTime;
         }
 
         public bool IsExpired (DateTime timeOfCurentVisit, TimeSpan sessionDuration)
@@ -111,13 +113,14 @@ namespace VisitorIdLib
             this.ExpiredReportingSequenceId = this.ReportingSequenceId;
             this.VisitNum = 1;
             this.VisitDateTime = newVisitDateTime;
+            this.PageVisitDateTime = newVisitDateTime;
             this.ReportingSequenceId = Guid.NewGuid();
         }
 
         public void UpdateVisitStats (DateTime newVisitDateTime)
         {
             this.VisitNum++;
-            this.VisitDateTime = newVisitDateTime;
+            this.PageVisitDateTime = newVisitDateTime;
         }
 
         override public PL ReportingSequencePayload()
@@ -130,24 +133,27 @@ namespace VisitorIdLib
 
     public class PageVisit : DomainVisit
     {
+        public DateTime DomainVisitDateTime { get; set; }
+
         public PageVisit() : base()
         {
             this.ReportingSequenceName = "Page";
         }
 
-        public PageVisit(DateTime visitDateTime, string domain, string page, Guid rsConfigId, Guid reportingSequenceId) : this()
+        public PageVisit(DateTime visitDateTime, DateTime domainVisitDateTime, string domain, string page, Guid rsConfigId, Guid reportingSequenceId) : this()
         {
             this.VisitDateTime = visitDateTime;
+            this.PageVisitDateTime = visitDateTime;
             this.Domain = domain;
             this.Page = page;
             this.RsConfigId = rsConfigId;
             this.ReportingSequenceId = reportingSequenceId;
-            this.PageReportingSequenceId = reportingSequenceId;
+            this.DomainVisitDateTime = domainVisitDateTime;
         }
 
         override public PL ReportingSequencePayload()
         {
-            return PL.O(new { this.VisitDateTime, this.Domain, this.Page, this.VisitNum });
+            return PL.O(new { this.VisitDateTime, this.DomainVisitDateTime, this.Domain, this.Page, this.VisitNum });
         }
 
     }

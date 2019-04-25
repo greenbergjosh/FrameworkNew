@@ -52,7 +52,7 @@ namespace VisitorIdLib
         {
             // New Vid Visit
             // New Domain Visit
-            // New Page Visit (above)
+            // New Page Visit
             if (cookieAsString.IsNullOrWhitespace() ||
                 JsonConvert.DeserializeObject<CookieData>(cookieAsString).version != version) // current upgrade path is just wiping out the old
             {
@@ -60,8 +60,8 @@ namespace VisitorIdLib
                 this.em = null;
                 this.sid = Guid.NewGuid();
                 this.version = version;
-                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
-                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid(), pageReportingSequenceId: this.PageVisit.ReportingSequenceId);
+                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domainVisitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
+                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, pageVisitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid(), pageReportingSequenceId: this.PageVisit.ReportingSequenceId);
                 this.VidVisit = new Visit(veryFirstVisit: true, visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.VidRsid, reportingSequenceId: this.sid);
                 this.PageVisit.VisitNum = this.DomainVisit.VisitNum = 1;
                 this.PageVisit.VeryFirstVisit = this.DomainVisit.VeryFirstVisit = true;
@@ -85,7 +85,7 @@ namespace VisitorIdLib
             if (deserialized.Domains.ContainsKey(host))
             {
                 var existingDomainVisit = deserialized.Domains[host];
-                var lastVisitDateTime = existingDomainVisit.VisitDateTime;
+                var lastVisitDateTime = existingDomainVisit.PageVisitDateTime;
                 var lastVisitcount = existingDomainVisit.VisitNum;
 
                 // Expire only if we're in the beginning of a run. Wait until
@@ -107,7 +107,7 @@ namespace VisitorIdLib
                 }
                 // new up Page visit with an RSID from the existing domain visit.  See above where we shim a new guid as appropriat
                 // based on whether this is a new visit or mid-cycle
-                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: existingDomainVisit.PageReportingSequenceId);
+                this.PageVisit = new PageVisit(visitDateTime: newlyConstructed ? timeOfCurrentVisit : existingDomainVisit.PageVisitDateTime, domainVisitDateTime: existingDomainVisit.VisitDateTime, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: existingDomainVisit.PageReportingSequenceId);
                 this.Domains = deserialized.Domains;
                 this.DomainVisit = existingDomainVisit;
                 this.DomainVisit.Page = path;
@@ -116,14 +116,18 @@ namespace VisitorIdLib
             // New Domain, first visit
             else
             {
-                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
-                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid(), pageReportingSequenceId: this.PageVisit.ReportingSequenceId);
+                this.PageVisit = new PageVisit(visitDateTime: timeOfCurrentVisit, domainVisitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.PageRsid, reportingSequenceId: Guid.NewGuid());
+                this.DomainVisit = new DomainVisit(visitDateTime: timeOfCurrentVisit, pageVisitDateTime: timeOfCurrentVisit, domain: host, page: path, rsConfigId: RsConfigIds.DomainRsid, reportingSequenceId: Guid.NewGuid(), pageReportingSequenceId: this.PageVisit.ReportingSequenceId);
                 this.DomainVisit.VisitNum = 1;
                 this.PageVisit.VeryFirstVisit = this.DomainVisit.VeryFirstVisit = true;
                 this.Domains = deserialized.Domains;
                 this.Domains.Add(host, this.DomainVisit);
             }
-            PruneExpiredVisits(timeOfCurrentVisit, sessionDuration);
+            if (newlyConstructed)
+            {
+                // Only do this when we're not mid-cycle
+                PruneExpiredVisits(timeOfCurrentVisit, sessionDuration);
+            }
             this.ProviderLastSelectTime = deserialized.ProviderLastSelectTime;
             this.PageVisit.VisitNum = this.DomainVisit.VisitNum;
             this.sid = deserialized.sid;
