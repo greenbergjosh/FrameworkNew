@@ -11,7 +11,7 @@ import { store } from "./state/store"
 
 export function App(): JSX.Element {
   const [state] = useRematch((s) => ({
-    routes: s.navigation.routes,
+    routes: store.select.navigation.routes(s),
   }))
 
   const routes = React.useMemo(() => renderRoutes(state.routes), [state.routes])
