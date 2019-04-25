@@ -5,7 +5,7 @@
         'json', '');
     let bootstrap = 1;
     while (true) {
-        let res = await window.genericFetch(url + '?m=VisitorId&bootstrap='+bootstrap+'&op=' + base64UrlSafe(JSON.stringify(opaque)),
+        let res = await window.genericFetch(url + '?m=VisitorId&bootstrap=' + bootstrap + '&op=' + base64UrlSafe(JSON.stringify(opaque)),
             { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
             'json', '');
         bootstrap = 0;
@@ -29,11 +29,11 @@
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email||''), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid, lv: res.lv
+            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, pid: res.pid, lv: res.lv
         };
 
         if (res.config.SaveSession === 'true') {
-            res = await window.genericFetch(url + '?m=SaveSession&pq=' + (res.config.SaveResult || 0) +'&op=' + base64UrlSafe(JSON.stringify(opaque)),
+            res = await window.genericFetch(url + '?m=SaveSession&pq=' + (res.config.SaveResult || 0) + '&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');
             opaque.eml = res.email;
@@ -126,7 +126,8 @@ async function loadScript(url) {
             });
 
         script.addEventListener('error',
-            () => {
+            (event) => {
+                console.error(event);
                 reject(new Error('Failed to load.'));
             });
     });
