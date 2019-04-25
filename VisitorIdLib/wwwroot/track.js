@@ -13,23 +13,28 @@
         if (res.done || !(res.config && (res.config.Url || res.config.ScriptUrl))) break;
         let sres = {};
 
-        if (res.config.ScriptUrl) {
-            await load(res.config.ScriptUrl, 'Segment' + res.config.slot);
-            for (let x in res.config.Strategy) {
-                let f = res.config.Strategy[x].f;
-                let a = res.config.Strategy[x].a;
-                if (f === undefined) continue;
-                let exf = getDescendantProp(window[res.config.GlobalObject], f);
-                exf(...a);
+        let providerFailed = false;
+        try {
+            if (res.config.ScriptUrl) {
+                await load(res.config.ScriptUrl, 'Segment' + res.config.slot);
+                for (let x in res.config.Strategy) {
+                    let f = res.config.Strategy[x].f;
+                    let a = res.config.Strategy[x].a;
+                    if (f === undefined) continue;
+                    let exf = getDescendantProp(window[res.config.GlobalObject], f);
+                    exf(...a);
+                }
             }
-        }
-        else {
-            sres = await window.handleService(res);
+            else {
+                sres = await window.handleService(res);
+            }
+        } catch {
+            providerFailed = true;
         }
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email||''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "1", lv: res.lv
+            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "1", lv: res.lv, pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
         };
 
         if (res.config.SaveSession === 'true') {
@@ -38,7 +43,6 @@
                 'json', '');
             opaque.eml = res.email;
             opaque.md5 = res.md5;
-
         }
 
         opaque.slot++;
@@ -126,8 +130,7 @@ async function loadScript(url) {
             });
 
         script.addEventListener('error',
-            (event) => {
-                console.error(event);
+            () => {
                 reject(new Error('Failed to load.'));
             });
     });
