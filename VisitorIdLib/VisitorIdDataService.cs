@@ -777,6 +777,7 @@ namespace VisitorIdLib
                 string qstr,
                 string lst,
                 bool vft,
+                string tjsv,
                 string lv)
             ValsFromOpaque(IGenericEntity opge)
         {
@@ -796,6 +797,7 @@ namespace VisitorIdLib
             var tpid = opge.GetS("tpid");
             var lst = opge.GetS("lst");
             var vft = (opge.GetS("vft") == "true");
+            var tjsv = (opge.GetS("tjsv"));
 
             Dictionary<string, object> rsids = null;
             if (!string.IsNullOrWhiteSpace(opge.GetS("rsid")))
