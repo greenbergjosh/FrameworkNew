@@ -13,12 +13,15 @@ import { Reports } from "../routes/dashboard/routes/reports"
 import { Report } from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { Landing } from "../routes/landing"
+import * as record from "fp-ts/lib/Record"
+import { Lens } from "monocle-ts"
+
 import * as Store from "./store.types"
 
 declare module "./store.types" {
   interface AppModels {
     navigation: {
-      state: State<typeof staticRoutesMap>
+      state: State<RoutesMap>
       reducers: Reducers
       effects: Effects
       selectors: Selectors
@@ -30,7 +33,9 @@ export interface State<RouteMap extends object> {
   routes: { [K in keyof RouteMap]: RouteMap[K] }
 }
 
-export interface Selectors {}
+export interface Selectors {
+  routes(app: Store.AppState): RoutesMap
+}
 
 export interface Reducers {}
 
@@ -52,6 +57,7 @@ export interface RouteMeta {
   abs: string
   /** the component to render at this route */
   component: React.ComponentType<WithRouteProps<any>>
+  context?: Record<string, unknown>
   /** for possible UI display; provide more info about the route's purpose */
   description: string
   /** a name for UI presentation */
@@ -68,6 +74,8 @@ export interface RouteMeta {
 export type WithRouteProps<P> = P &
   RouteMeta &
   Required<Reach.RouteComponentProps> & { children: JSX.Element }
+
+export type RoutesMap = typeof staticRoutesMap
 
 const staticRoutesMap = {
   login: {
@@ -112,19 +120,7 @@ const staticRoutesMap = {
         path: "reports",
         redirectFrom: [],
         shouldAppearInSideNav: true,
-        subroutes: {
-          ":reportId": {
-            abs: "/dashboard/reports/:reportId",
-            component: Report,
-            description: "",
-            title: "Report Name Here",
-            iconType: "bar-chart",
-            path: ":reportId",
-            redirectFrom: [],
-            shouldAppearInSideNav: false,
-            subroutes: {},
-          },
-        },
+        subroutes: {},
       },
       "global-config": {
         abs: "/dashboard/global-config",
@@ -197,12 +193,7 @@ const staticRoutesMap = {
   },
 }
 
-export const navigation: Store.AppModel<
-  State<typeof staticRoutesMap>,
-  Reducers,
-  Effects,
-  Selectors
-> = {
+export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Selectors> = {
   state: {
     routes: staticRoutesMap,
   },
@@ -233,5 +224,58 @@ export const navigation: Store.AppModel<
       ),
   }),
 
-  selectors: () => ({}),
+  selectors: (slice, createSelector) => ({
+    routes(select) {
+      return createSelector(
+        (state) => select.globalConfig.configsByType(state),
+        (configsByType) => {
+          return record
+            .lookup("Report", configsByType)
+            .map((records) =>
+              records.map((report) => ({
+                [report.id]: {
+                  abs: `/dashboard/reports/${report.id}`,
+                  component: Report,
+                  description: "",
+                  title: report.name as string,
+                  iconType: "bar-chart",
+                  path: report.id as string,
+                  context: { id: report.id as string },
+                  redirectFrom: [],
+                  shouldAppearInSideNav: true,
+                  subroutes: {},
+                },
+              }))
+            )
+            .map((routes) =>
+              routes.reduce(
+                (acc, route) => ({
+                  ...acc,
+                  ...route,
+                }),
+                {}
+              )
+            )
+            .map((routesDict) =>
+              reportsSubroutes.set({
+                ...reportsSubroutes.get(staticRoutesMap),
+                ...routesDict,
+              })(staticRoutesMap)
+            )
+            .getOrElse(staticRoutesMap)
+        }
+      )
+    },
+  }),
 }
+
+//
+// ─── LENSES ─────────────────────────────────────────────────────────────────────
+//
+
+const reportsSubroutes = Lens.fromPath<RoutesMap>()([
+  "dashboard",
+  "subroutes",
+  "reports",
+  "subroutes",
+])
