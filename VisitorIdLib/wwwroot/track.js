@@ -29,7 +29,7 @@
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email||''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, lv: res.lv
+            md5: sres.md5, e: base64UrlSafe(sres.email||''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "1", lv: res.lv
         };
 
         if (res.config.SaveSession === 'true') {
