@@ -14483,7 +14483,8 @@ ejs-sidebar {
   color: #212529;
 }
 
-/*! component icons */
+/*
+!*! component icons *!
 .e-icon-check::before {
   content: "\e7ff";
 }
@@ -14684,6 +14685,7 @@ ejs-sidebar {
 .e-grid-menu .e-chkcancel-icon::before {
   content: "\e745";
 }
+*/
 
 /*! Grid layout */
 .e-disableuserselect {

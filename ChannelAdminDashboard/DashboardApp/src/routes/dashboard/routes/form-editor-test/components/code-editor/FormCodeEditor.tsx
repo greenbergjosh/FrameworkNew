@@ -8,7 +8,7 @@ import { Button, Divider, Dropdown, Icon, Menu, Row, Skeleton } from "antd"
 import { activeEditorSettings, CodeEditor } from "../../../../../../components/code-editor"
 import { some } from "fp-ts/lib/Option"
 
-type SupportedEditorLang = "csharp" | "javascript" | "json" | "typescript" | "sql" | "xml"
+type SupportedEditorLang = "csharp" | "javascript" | "json" | "typescript" | "sql"
 type SupportedEditorTheme = "vs" | "vs-dark" | "hc-black"
 
 interface EditorOptions {
@@ -175,7 +175,6 @@ function EditorSettingsControls(props: {
               <Menu.Item key="json">JSON</Menu.Item>
               <Menu.Item key="typescript">TypeScript</Menu.Item>
               <Menu.Item key="sql">SQL</Menu.Item>
-              <Menu.Item key="xml">XML</Menu.Item>
             </Menu>
           }>
           <Button size="small" style={{ marginLeft: 8 }}>

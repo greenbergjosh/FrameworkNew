@@ -1,26 +1,59 @@
-import React, { useRef } from "react"
+import React, { RefObject, useRef } from "react"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import {
   ColumnChooser,
-  ColumnDirective,
-  ColumnsDirective,
   DetailDataBoundEventArgs,
   DetailRow,
   ExcelExport,
   GridComponent,
   GridModel,
   Inject,
+  PdfExport,
   Toolbar,
   Resize,
+  Sort,
 } from "@syncfusion/ej2-react-grids"
 
 import visitorIdData from "../../../../../../mock-data/visitor-id-report.json"
 import visitorIdDetailsData from "../../../../../../mock-data/visitor-id-report-details.json"
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
+import { Typography } from "antd"
 
 interface DataSources {
   visitorId: typeof visitorIdData.results
   test: any[]
+}
+
+const detailMapper = (childData: any[]) => ({
+  // @ts-ignore
+  childGrid,
+  data,
+}: DetailDataBoundEventArgs): void => {
+  childGrid.dataSource = childData.map((childRecord) =>
+    data && childGrid.queryString
+      ? {
+          // @ts-ignore
+          [childGrid.queryString]: data[childGrid.queryString],
+          ...childRecord,
+        }
+      : childRecord
+  )
+}
+
+const handleToolbarItemClicked = (grid: RefObject<GridComponent>) => ({ item }: ClickEventArgs) => {
+  if (item.id && item.id.endsWith("_excelexport")) {
+    if (grid && grid.current) {
+      grid.current.excelExport()
+    }
+  } else if (item.id && item.id.endsWith("_csvexport")) {
+    if (grid && grid.current) {
+      grid.current.csvExport()
+    }
+  } else if (item.id && item.id.endsWith("_pdfexport")) {
+    if (grid && grid.current) {
+      grid.current.pdfExport()
+    }
+  }
 }
 
 const dataSources: DataSources = {
@@ -34,7 +67,32 @@ interface Props {
 
 export type dataSourceTypes = keyof DataSources
 
-const toolbarOptions = ["CsvExport", "ExcelExport", "ColumnChooser"]
+const commonGridOptions = {
+  detailDataBound: detailMapper(visitorIdDetailsData.results),
+  columnMenuItems: ["SortAscending", "SortDescending"],
+  toolbar: ["CsvExport", "ExcelExport", "PdfExport", "Print", "ColumnChooser"],
+  showColumnChooser: true,
+  allowExcelExport: true,
+  allowMultiSorting: true,
+  allowPdfExport: true,
+  allowResizing: true,
+  allowReordering: true,
+  allowSorting: true,
+}
+
+const gridColumns = [
+  {
+    field: "Date",
+    type: "date",
+    format: { type: "date", format: "yyyy-MM-dd" },
+    width: "100",
+  },
+  {
+    field: "VisitCount",
+    width: "100",
+  },
+]
+
 const childGridOptions: GridModel = {
   allowResizing: true,
   queryString: "Date",
@@ -56,48 +114,20 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
   const data: any[] = dataSources[reportId]
   const grid = useRef<GridComponent>(null)
 
-  const handleToolbarItemClicked = ({ item }: ClickEventArgs) => {
-    if (item.id && item.id.endsWith("_excelexport")) {
-      if (grid && grid.current) {
-        grid.current.excelExport()
-      }
-    } else if (item.id && item.id.endsWith("_csvexport")) {
-      if (grid && grid.current) {
-        grid.current.csvExport()
-      }
-    }
-  }
-
   return (
     <div>
-      {props.title}
+      <Typography.Title>{props.title}</Typography.Title>
+
       <GridComponent
         ref={grid}
+        {...commonGridOptions}
+        toolbarClick={handleToolbarItemClicked(grid)}
+        childGrid={{ ...commonGridOptions, ...childGridOptions }}
         dataSource={data}
-        detailDataBound={function(args: DetailDataBoundEventArgs) {
-          // console.log("Reports.detailDataBound", args)
-          // @ts-ignore
-          args.childGrid.dataSource = visitorIdDetailsData.results.map((result) => ({
-            ...result,
-            ...args.data,
-          }))
-        }}
-        childGrid={childGridOptions}
-        toolbar={toolbarOptions}
-        toolbarClick={handleToolbarItemClicked}
-        showColumnChooser
-        allowExcelExport
-        allowResizing>
-        <ColumnsDirective>
-          <ColumnDirective
-            field="Date"
-            type="date"
-            format={{ type: "date", format: "yyyy-MM-dd" }}
-            width="100"
-          />
-          <ColumnDirective field="VisitCount" width="100" />
-        </ColumnsDirective>
-        <Inject services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport]} />
+        columns={gridColumns}>
+        <Inject
+          services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
+        />
       </GridComponent>
     </div>
   )

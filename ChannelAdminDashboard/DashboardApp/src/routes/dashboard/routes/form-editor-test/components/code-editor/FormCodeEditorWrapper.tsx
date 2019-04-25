@@ -9,7 +9,7 @@ import { activeEditorSettings, CodeEditor } from "../../../../../../components/c
 import { some } from "fp-ts/lib/Option"
 import ReactFormBase from "../../../../../../components/form/ReactFormBase"
 
-type SupportedEditorLang = "csharp" | "javascript" | "json" | "typescript" | "sql" | "xml"
+type SupportedEditorLang = "csharp" | "javascript" | "json" | "typescript" | "sql"
 type SupportedEditorTheme = "vs" | "vs-dark" | "hc-black"
 
 interface EditorOptions {

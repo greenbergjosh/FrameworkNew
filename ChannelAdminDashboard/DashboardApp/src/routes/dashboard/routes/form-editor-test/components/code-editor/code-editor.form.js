@@ -6,7 +6,6 @@ const supportedEditorLang = [
   { label: "JSON", value: "json" },
   { label: "TypeScript", value: "typescript" },
   { label: "SQL", value: "sql" },
-  { label: "XML", value: "xml" },
 ]
 
 const supportedEditorTheme = [
