@@ -14,15 +14,14 @@ import {
   Sort,
 } from "@syncfusion/ej2-react-grids"
 
-import visitorIdData from "../../../../../../mock-data/visitor-id-report.json"
-import visitorIdDetailsData from "../../../../../../mock-data/visitor-id-report-details.json"
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Typography } from "antd"
-
-interface DataSources {
-  visitorId: typeof visitorIdData.results
-  test: any[]
-}
+import { useRematch } from "../../../../../../hooks"
+import { store } from "../../../../../../state/store"
+import { fromEither } from "fp-ts/lib/Option"
+import { tryCatch2v } from "fp-ts/lib/Either"
+import * as record from "fp-ts/lib/Record"
+import { Some, None } from "../../../../../../data/Option"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -56,19 +55,16 @@ const handleToolbarItemClicked = (grid: RefObject<GridComponent>) => ({ item }: 
   }
 }
 
-const dataSources: DataSources = {
-  visitorId: visitorIdData.results,
-  test: [],
+interface ReportContext {
+  id: ReportQueryId
 }
 
 interface Props {
-  reportId: string
+  context: ReportContext
 }
 
-export type dataSourceTypes = keyof DataSources
-
 const commonGridOptions = {
-  detailDataBound: detailMapper(visitorIdDetailsData.results),
+  detailDataBound: detailMapper([]),
   columnMenuItems: ["SortAscending", "SortDescending"],
   toolbar: ["CsvExport", "ExcelExport", "PdfExport", "Print", "ColumnChooser"],
   showColumnChooser: true,
@@ -109,26 +105,69 @@ const childGridOptions: GridModel = {
   ],
 }
 
+type ReportQueryId = string
+
+interface LayoutDetailsItem {
+  query: ReportQueryId
+}
+
+interface LayoutItem {
+  component: string
+  componentProps: Record<string, unknown>
+  details: LayoutDetailsItem
+}
+
+interface ReportConfig {
+  query: ReportQueryId
+  layout: LayoutItem
+}
+
 export function Report(props: WithRouteProps<Props>): JSX.Element {
-  const reportId: dataSourceTypes = props.reportId as keyof DataSources
-  const data: any[] = dataSources[reportId]
+  console.log("Report Child Page", props)
+  const reportId = props.context.id
+
+  const [fromStore] = useRematch((state) => ({
+    configsById: store.select.globalConfig.configsById(state),
+  }))
+
+  const reportGlobalConfig = record.lookup(reportId, fromStore.configsById)
+  const reportConfig = reportGlobalConfig
+    .chain(({ config }) => config)
+    .map((configString) =>
+      tryCatch2v(
+        () => {
+          return JSON.parse(configString) as ReportConfig // TODO: Use IO
+        },
+        (error) => {
+          console.log(error)
+        }
+      )
+    )
+    .chain((e) => fromEither(e))
+
+  const data: any[] = []
   const grid = useRef<GridComponent>(null)
 
   return (
     <div>
       <Typography.Title>{props.title}</Typography.Title>
 
-      <GridComponent
-        ref={grid}
-        {...commonGridOptions}
-        toolbarClick={handleToolbarItemClicked(grid)}
-        childGrid={{ ...commonGridOptions, ...childGridOptions }}
-        dataSource={data}
-        columns={gridColumns}>
-        <Inject
-          services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
-        />
-      </GridComponent>
+      {reportConfig.foldL(
+        None(() => <Typography.Text type="danger">No Report Config Found</Typography.Text>),
+        Some((r) => (
+          <GridComponent
+            ref={grid}
+            {...commonGridOptions}
+            toolbarClick={handleToolbarItemClicked(grid)}
+            // childGrid={{ ...commonGridOptions, ...childGridOptions }}
+            dataSource={data}
+            {...r.layout.componentProps}>
+            <Inject
+              services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
+            />
+          </GridComponent>
+        ))
+      )}
     </div>
   )
 }
