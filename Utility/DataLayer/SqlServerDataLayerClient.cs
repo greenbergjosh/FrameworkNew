@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -7,6 +8,49 @@ namespace Utility.DataLayer
 {
     public class SqlServerDataLayerClient : IDataLayerClient
     {
+        public async Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120)
+        {
+            using (var cn = new SqlConnection(connectionString))
+            {
+                var results = new List<Dictionary<string, object>>();
+
+                cn.Open();
+                using (var cmd = new SqlCommand($"SELECT {sproc}(@Args, @Payload)", cn) { CommandTimeout = timeout })
+                {
+
+                    foreach (var p in parameters) cmd.Parameters.AddWithValue(p.Key, p.Value);
+
+                    using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false))
+                    {
+                        var fields = new string[rdr.FieldCount];
+
+                        for (int i = 0; i < rdr.FieldCount; i++)
+                        {
+                            fields[i] = rdr.GetName(i);
+                        }
+
+                        while (await rdr.ReadAsync())
+                        {
+                            var row = new Dictionary<string, object>();
+
+                            foreach (var f in fields)
+                            {
+                                var val = rdr[f];
+
+                                if (val == DBNull.Value) val = null;
+
+                                row.Add(f, val);
+                            }
+
+                            results.Add(row);
+                        }
+                    }
+                }
+                cn.Close();
+
+                return results;
+            }
+        }
 
         public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
         {

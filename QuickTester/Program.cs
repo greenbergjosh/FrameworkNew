@@ -37,8 +37,25 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
-            var u = "a.com".ParseWebUrl();
+            try
+            {
+                String str = "[{\"a\":1,\"b\":\"f\",\"c\":\"2019-04-25T12:12:05.3274509-04:00\"}]";
+                var ig2 = Jw.ToGenericEntity(str);
+                var ig = Jw.ToGenericEntity(JArray.FromObject(new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object>
+                    {
+                        { "a", 1 },
+                        { "b", "f" },
+                        { "c", DateTime.Now }
+                    }
+                }));
 
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.UnwrapForLog());
+            }
             //var fw1 = new FrameworkWrapper();
 
             //await Auth.Initialize(fw1);

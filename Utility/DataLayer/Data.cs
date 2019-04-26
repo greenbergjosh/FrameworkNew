@@ -203,6 +203,23 @@ namespace Utility.DataLayer
             return paths;
         }
 
+        public static async Task<List<Dictionary<string, object>>> CallFn(string conName, string method, Dictionary<string, object> parameters, int timeout = 120)
+        {
+            try
+            {
+                var conn = Connections.GetValueOrDefault(conName);
+                var sp = conn?.Functions.GetValueOrDefault(method);
+
+                if (sp.IsNullOrWhitespace()) return null;
+
+                return await conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed {nameof(CallFnString)}({conName}, {method}, {Jw.Serialize(parameters)})", e);
+            }
+        }
+
         public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
             args = args.IfNullOrWhitespace(Jw.Empty);

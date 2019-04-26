@@ -14,12 +14,18 @@ namespace TheGreatWallOfDataLib.Scopes
 {
     public static class Routing
     {
-        public delegate Task<IGenericEntity> ApiFunc(FrameworkWrapper fw, string payload, string identity);
+        private const string DefaultFuncIdent = "*";
+        public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string payload, string identity);
 
+        // ToDo: Refactor to use LBMs and config
         private static readonly (string scope, (string funcName, ApiFunc func)[] funcs)[] __ = new[]
         {
             ("config", new [] {
-                ("merge", new ApiFunc(async (fw, p, i) => await Config.Merge(fw, "config", p, i)))
+                ("merge", new ApiFunc(async (s, f, p, i) => await Config.Merge(s, p, i)))
+            }),
+            ("edw", new [] {
+                (DefaultFuncIdent, new ApiFunc(async (s, f, p, i) => await Edw.DefaultFunc(s, f, p, i))),
+                ("meta", new ApiFunc(async (s, f, p, i) => await Edw.GetReportMetadata(s, f, p, i)))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
@@ -27,19 +33,22 @@ namespace TheGreatWallOfDataLib.Scopes
 
         public static ApiFunc GetFunc(string scopeName, string funcName)
         {
-            var func = CsFuncs.GetValueOrDefault(scopeName)?.GetValueOrDefault(funcName);
+            // If first char is '_' then function is internal only
+            if (scopeName == Auth.ConnName || funcName.IsNullOrWhitespace() || funcName == DefaultFuncIdent || funcName.First() == '_') throw new FunctionException(100, $"Function is an invalid or internal: {funcName.IfNullOrWhitespace("[empty]")}");
 
-            return func ?? DbFunc(scopeName, funcName);
+            var scope = CsFuncs.GetValueOrDefault(scopeName);
+            ApiFunc func = null;
+
+            if (scope != null) func = scope.GetValueOrDefault(funcName) ?? scope?.GetValueOrDefault("*");
+
+            return func ?? DbFunc();
         }
 
-        private static ApiFunc DbFunc(string scopeName, string funcName)
+        private static ApiFunc DbFunc()
         {
-            return async (fw, payload, identity) =>
+            return async (scope, funcName, payload, identity) =>
             {
-                // If first char is '_' then function is internal only
-                if (scopeName == Auth.ConnName || funcName.IsNullOrWhitespace() || funcName.First() == '_') throw new FunctionException(100, $"Function is an invalid or internal: {funcName.IfNullOrWhitespace("[empty]")}");
-
-                var res = await Data.CallFn(scopeName, funcName, identity, payload);
+                var res = await Data.CallFn(scope, funcName, identity, payload);
 
                 if (res == null) throw new FunctionException(100, "Empty DB response");
 

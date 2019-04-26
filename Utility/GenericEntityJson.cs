@@ -15,7 +15,7 @@ namespace Utility
         {
             this.rw = rw;
             if (data is JObject || data is JToken || data is JArray) _root = (data as JToken);
-            else _root = JObject.Parse(@"{}");
+            else _root = JToken.FromObject(data);
         }
 
         private string ConvertPath(string path)
