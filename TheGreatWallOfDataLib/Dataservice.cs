@@ -12,18 +12,18 @@ namespace TheGreatWallOfDataLib
 {
     public class DataService
     {
-        private FrameworkWrapper _fw = null;
+        public static FrameworkWrapper Fw = null;
 
         public void Config(FrameworkWrapper fw)
         {
             try
             {
-                _fw = fw;
-                _fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
+                Fw = fw;
+                Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
             }
             catch (Exception ex)
             {
-                _fw?.Error(nameof(Config), ex.UnwrapForLog());
+                Fw?.Error(nameof(Config), ex.UnwrapForLog());
                 throw;
             }
         }
@@ -38,7 +38,7 @@ namespace TheGreatWallOfDataLib
             {
                 var requestBody = await context.GetRawBodyStringAsync();
 
-                _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
                 var req = Jw.JsonToGenericEntity(requestBody);
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
@@ -59,7 +59,7 @@ namespace TheGreatWallOfDataLib
 
                     try
                     {
-                        fResult = await Routing.GetFunc(scope, func)(_fw, payload, identity);
+                        fResult = await Routing.GetFunc(scope, func)(scope, func, payload, identity);
                     }
                     catch (Exception e)
                     {
@@ -71,14 +71,14 @@ namespace TheGreatWallOfDataLib
 
                         if (fe == null)
                         {
-                            await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
+                            await Fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
                             fResult = Jw.JsonToGenericEntity("{ \"r\": 1 }");
                         }
                         else
                         {
                             var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
 
-                            await _fw.Error($"DB:{reqFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                            await Fw.Error($"DB:{reqFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
 
                             fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
                         }
@@ -105,7 +105,7 @@ namespace TheGreatWallOfDataLib
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
+                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
             }
 
             var body = new PL();
@@ -114,7 +114,7 @@ namespace TheGreatWallOfDataLib
 
             var resp = body.ToString();
 
-            _fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
             await context.WriteSuccessRespAsync(resp);
         }

@@ -11,7 +11,7 @@ namespace TheGreatWallOfDataLib.Scopes
 {
     public static class Config
     {
-        public static async Task<IGenericEntity> Merge(FrameworkWrapper fw, string connName, string payload, string identity)
+        public static async Task<IGenericEntity> Merge(string connName, string payload, string identity)
         {
             var ids = JsonConvert.DeserializeObject<string[]>(payload);
 

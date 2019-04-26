@@ -62,6 +62,16 @@ namespace Utility
             }
         }
 
+        public static IGenericEntity ToGenericEntity(object obj, RoslynWrapper rw = null, object config = null)
+        {
+            if (obj is string s) return JsonToGenericEntity(s, rw, config);
+
+            var gp = new GenericEntityJson();
+
+            gp.InitializeEntity(rw, config, obj);
+            return gp;
+        }
+
         public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
         {
             var gp = new GenericEntityJson();
