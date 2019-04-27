@@ -8,6 +8,7 @@ import { RouteMeta, WithRouteProps } from "../../state/navigation"
 import styles from "./dashboard.module.css"
 import { some, toArray } from "fp-ts/lib/Record"
 import { Space } from "../../components/space"
+import { useRematch } from "../../hooks"
 
 interface Props {}
 
@@ -29,6 +30,12 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
       .filter(([k, sr]) => props.location.pathname.includes(sr.abs))
       .map(([k, sr]) => sr.abs)
   }, [props.subroutes, props.location.pathname])
+
+  const [fromStore, dispatch] = useRematch((s) => null)
+
+  React.useEffect(() => {
+    dispatch.globalConfig.loadRemoteConfigs()
+  }, [dispatch])
 
   return (
     <Layout className={styles.fullHeight} hasSider={true}>
