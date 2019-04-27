@@ -15,13 +15,17 @@ import {
 } from "@syncfusion/ej2-react-grids"
 
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
-import { Typography } from "antd"
+import { Typography, Select, Button } from "antd"
 import { useRematch } from "../../../../../../hooks"
 import { store } from "../../../../../../state/store"
-import { fromEither } from "fp-ts/lib/Option"
+import { fromEither, option } from "fp-ts/lib/Option"
 import { tryCatch2v } from "fp-ts/lib/Either"
 import * as record from "fp-ts/lib/Record"
 import { Some, None } from "../../../../../../data/Option"
+import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
+import { SelectProps } from "antd/lib/select"
+import { Do } from "fp-ts-contrib/lib/Do"
+import { identity } from "fp-ts/lib/function"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -54,6 +58,8 @@ const handleToolbarItemClicked = (grid: RefObject<GridComponent>) => ({ item }: 
     }
   }
 }
+
+type ReportQueryId = string
 
 interface ReportContext {
   id: ReportQueryId
@@ -105,22 +111,128 @@ const childGridOptions: GridModel = {
   ],
 }
 
-type ReportQueryId = string
-
-interface LayoutDetailsItem {
-  query: ReportQueryId
+const componentMap = {
+  table: GridComponent,
+  select: Select,
 }
 
-interface LayoutItem {
-  component: string
-  componentProps: Record<string, unknown>
-  details: LayoutDetailsItem
+type LayoutItem = TableLayoutItem | SelectLayoutItem
+
+interface ILayoutItem {
+  component: keyof typeof componentMap
+}
+
+interface TableLayoutItem extends ILayoutItem {
+  component: "table"
+  componentProps: GridModel
+}
+
+interface SelectLayoutItem extends ILayoutItem {
+  component: "select"
+  componentProps: SelectProps
 }
 
 interface ReportConfig {
-  query: ReportQueryId
+  type: "ReportConfig"
+  query: GlobalConfigReference
   layout: LayoutItem
+  details?: ReportItem
 }
+
+interface SubReportConfig {
+  type: "SubReportConfig"
+  layout: LayoutItem
+  details?: ReportItem
+}
+
+interface GlobalConfigReference {
+  type: "GlobalConfig"
+  id: PersistedConfig["id"]
+}
+
+type ReportItem = GlobalConfigReference | ReportConfig | SubReportConfig
+
+interface StoredProcQueryConfig {
+  format: "StoredProc"
+  query: string
+  parameters: ParameterItem[]
+}
+
+interface SQLQueryConfig {
+  format: "SQL"
+  query: string
+  subquery?: string[]
+  parameters: ParameterItem[]
+  map: Record<string, string>
+}
+
+type ParameterItem =
+  | BooleanParameterItem
+  | DateParameterItem
+  | DateRangeParameterItem
+  | FloatParameterItem
+  | IntegeParameterItem
+  | SelectParameterItem
+  | StringParameterItem
+
+interface IParameterItem {
+  name: string
+  label?: string
+  type: "string" | "integer" | "float" | "date" | "date-range" | "boolean" | "select"
+}
+
+interface StringParameterItem extends IParameterItem {
+  type: "string"
+  // options?: {
+  //   maxLength?: number
+  // }
+}
+
+interface IntegeParameterItem extends IParameterItem {
+  type: "integer"
+  // options?: {
+  //   maxValue?: number
+  //   minValue?: number
+  // }
+}
+
+interface FloatParameterItem extends IParameterItem {
+  type: "float"
+  options?: {}
+}
+
+interface DateParameterItem extends IParameterItem {
+  type: "date"
+  options?: {}
+}
+
+interface DateRangeParameterItem extends IParameterItem {
+  type: "date-range"
+  options?: {}
+}
+
+interface BooleanParameterItem extends IParameterItem {
+  type: "boolean"
+  options?: {}
+}
+
+interface SelectParameterItem extends IParameterItem {
+  type: "select"
+  options?: { multiple?: boolean } & (
+    | {
+        datasource: SQLQueryConfig
+      }
+    | {
+        items: SelectOption[]
+      })
+}
+
+interface SelectOption {
+  label: string
+  value: string | number | boolean
+}
+
+type QueryConfig = StoredProcQueryConfig | SQLQueryConfig
 
 export function Report(props: WithRouteProps<Props>): JSX.Element {
   console.log("Report Child Page", props)
@@ -130,44 +242,79 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     configsById: store.select.globalConfig.configsById(state),
   }))
 
-  const reportGlobalConfig = record.lookup(reportId, fromStore.configsById)
-  const reportConfig = reportGlobalConfig
+  const reportConfig = record
+    .lookup(reportId, fromStore.configsById)
     .chain(({ config }) => config)
     .map((configString) =>
       tryCatch2v(
-        () => {
-          return JSON.parse(configString) as ReportConfig // TODO: Use IO
-        },
-        (error) => {
-          console.log(error)
-        }
+        () => JSON.parse(configString) as ReportConfig, // TODO: Use io-ts
+        (error) => console.log(error)
       )
     )
     .chain((e) => fromEither(e))
 
-  const data: any[] = []
+  const queryConfig = reportConfig
+    .chain(({ query }) => record.lookup(query.id, fromStore.configsById))
+    .chain(({ config }) => config)
+    .map((configString) =>
+      tryCatch2v(
+        () => JSON.parse(configString) as QueryConfig, // TODO: Use io-ts
+        (error) => console.log(error)
+      )
+    )
+    .chain((e) => fromEither(e))
+
+  const data: any[] = [] // <Query query={query} parameterValues={parameterValues}>
+  // {({data, loading, error, refetch}) => {
+  //
+  //}}
+  // Read from the store for Query + Parameters
+  // If data is already cached, then use it
+  // If no data is cached, query for it
+  // If user presses query button, force re-fetch of data
   const grid = useRef<GridComponent>(null)
+
+  const executeQuery = React.useCallback((query: string, parameters: unknown) => {}, [])
 
   return (
     <div>
       <Typography.Title>{props.title}</Typography.Title>
 
-      {reportConfig.foldL(
-        None(() => <Typography.Text type="danger">No Report Config Found</Typography.Text>),
-        Some((r) => (
-          <GridComponent
-            ref={grid}
-            {...commonGridOptions}
-            toolbarClick={handleToolbarItemClicked(grid)}
-            // childGrid={{ ...commonGridOptions, ...childGridOptions }}
-            dataSource={data}
-            {...r.layout.componentProps}>
-            <Inject
-              services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
-            />
-          </GridComponent>
-        ))
-      )}
+      {Do(option)
+        .bind("report", reportConfig)
+        .bind("query", queryConfig)
+        .return(identity)
+        .foldL(
+          None(() => <Typography.Text type="danger">No Report Config Found</Typography.Text>),
+          Some(({ report, query }) => {
+            // query.query
+            return (
+              <>
+                {/* <QueryForm parameters={query.parameters} /> */}
+                <Button onClick={() => null}>Fire ze missiles</Button>
+                <GridComponent
+                  ref={grid}
+                  {...commonGridOptions}
+                  toolbarClick={handleToolbarItemClicked(grid)}
+                  // childGrid={{ ...commonGridOptions, ...childGridOptions }}
+                  dataSource={data}
+                  {...report.layout.componentProps}>
+                  <Inject
+                    services={[
+                      Toolbar,
+                      ColumnChooser,
+                      Resize,
+                      DetailRow,
+                      ExcelExport,
+                      PdfExport,
+                      Sort,
+                    ]}
+                  />
+                </GridComponent>
+              </>
+            )
+          })
+        )}
     </div>
   )
 }
