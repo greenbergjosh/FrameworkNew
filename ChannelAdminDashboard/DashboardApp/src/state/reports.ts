@@ -1,4 +1,5 @@
 import * as Store from "./store.types"
+import { JSONRecord } from "../data/JSON"
 
 declare module "./store.types" {
   interface AppModels {
@@ -11,16 +12,22 @@ declare module "./store.types" {
   }
 }
 
-export interface State {}
+export interface State {
+  reportDataByQuery: Record<string, Array<JSONRecord>>
+}
 
 export interface Reducers {}
 
-export interface Effects {}
+export interface Effects {
+  // executeQuery(q: string, )
+}
 
 export interface Selectors {}
 
 export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
-  state: {},
+  state: {
+    reportDataByQuery: {},
+  },
 
   reducers: {},
 

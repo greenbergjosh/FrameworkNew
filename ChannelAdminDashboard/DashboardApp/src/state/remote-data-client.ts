@@ -6,6 +6,7 @@ import * as GCWS from "../data/GlobalConfigWebService"
 import { HttpError, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
+import { JSONRecord, JSONArray } from "../data/JSON"
 
 declare module "./store.types" {
   interface AppModels {
@@ -52,6 +53,11 @@ export interface Effects {
   globalConfigsUpdate(
     config: Pick<Overwrite<PersistedConfig, { config: string }>, "id" | "config">
   ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<void>>>
+
+  reportGet(
+    query: string,
+    params: JSONRecord | JSONArray
+  ): Promise<Either<HttpError, Array<JSONRecord>>>
 }
 
 export interface Selectors {}
@@ -222,6 +228,8 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         })
       )
     },
+
+    async reportGet() {},
   }),
 
   selectors: () => ({}),
