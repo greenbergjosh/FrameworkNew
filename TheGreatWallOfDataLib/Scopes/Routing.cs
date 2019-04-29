@@ -24,8 +24,7 @@ namespace TheGreatWallOfDataLib.Scopes
                 ("merge", new ApiFunc(async (s, f, p, i) => await Config.Merge(s, p, i)))
             }),
             ("edw", new [] {
-                (DefaultFuncIdent, new ApiFunc(async (s, f, p, i) => await Edw.DefaultFunc(s, f, p, i))),
-                ("meta", new ApiFunc(async (s, f, p, i) => await Edw.GetReportMetadata(s, f, p, i)))
+                (DefaultFuncIdent, new ApiFunc(async (s, f, p, i) => await Edw.DefaultFunc(s, f, p, i)))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =

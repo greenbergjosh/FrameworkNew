@@ -146,7 +146,7 @@ namespace Utility.DataLayer
             }
             catch (Exception ex)
             {
-                outval = $"Exception::{ex.ToString()}";
+                outval = $"Exception::{ex.UnwrapForLog()}";
             }
 
             return outval;

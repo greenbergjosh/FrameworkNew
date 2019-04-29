@@ -14,53 +14,45 @@ namespace TheGreatWallOfDataLib.Scopes
     {
         public static async Task<IGenericEntity> DefaultFunc(string scope, string funcName, string payload, string identity)
         {
-            var pl = Jw.TryParseObject(payload);
-            var parms = pl.Properties().ToDictionary(p => p.Name, p =>
+            if (funcName.StartsWith("meta."))
             {
-                object r = null;
+                var spl = funcName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                var schema = spl[1];
+                var table = spl[2];
 
-                if (p.Value is JArray ja) r = ja.Select(v => v.Value<string>()).Join(",");
-                else r = p.Value.ToString();
+                return await GetReportMetadata(scope, schema, table, identity);
+            }
+            else
+            {
+                var pl = Jw.TryParseObject(payload);
+                var parms = pl.Properties().ToDictionary(p => p.Name, p =>
+                {
+                    object r = null;
 
-                return r;
-            });
+                    if (p.Value is JArray ja) r = ja.Select(v => v.Value<string>()).Join(",");
+                    else r = p.Value.ToString();
 
-            var res = await Data.CallFn(scope, funcName, parms);
+                    return r;
+                });
 
-            return Jw.ToGenericEntity(res);
+                var res = await Data.CallFn(scope, funcName, parms);
+
+                return Jw.ToGenericEntity(new { r = 0, result = res });
+            }
         }
 
-        public static async Task<IGenericEntity> GetReportMetadata(string scope, string funcName, string payload, string identity)
+        private static async Task<IGenericEntity> GetReportMetadata(string scope, string schema, string table, string identity)
         {
-            var pl = Jw.JsonToGenericEntity(payload);
-            var results = new Dictionary<string, IGenericEntity>();
-            var sets = pl.GetL("")
-                .Select(s =>
-                    {
-                        var set = s.GetS("");
-                        var spl = set.Split(':', StringSplitOptions.RemoveEmptyEntries);
+            var res = await Data.CallFn(scope, "_meta", Jw.Serialize(new { schema, table }));
+            var err = res.GetS("err");
 
-                        if (spl.Length != 2) return null;
-
-                        return new { set, schema = spl[0], table = spl[1] };
-                    })
-                .Where(s => s != null);
-
-            foreach (var set in sets)
+            if (err != null)
             {
-                results.Add(set.set, await Data.CallFn(scope, "_meta", Jw.Serialize(set)));
+                await DataService.Fw.Error(nameof(GetReportMetadata), $"Failed to get metadata from {scope} : {schema}.{table}");
+                return Jw.ToGenericEntity(new { r = 100 });
             }
 
-            var errors = results.Select(r => r.Value.GetS("err")).Where(r => !r.IsNullOrWhitespace());
-
-            if (errors.Any()) await DataService.Fw.Error(nameof(GetReportMetadata), Jw.Serialize(errors));
-
-            return Jw.ToGenericEntity(results.Aggregate(new JObject(), (o, pair) =>
-            {
-                o.Add(pair.Key, Jw.TryParse(pair.Value.GetS("")));
-
-                return o;
-            }));
+            return Jw.ToGenericEntity(new { r = 0, result = Jw.TryParseArray(res.GetS("")) });
         }
 
     }
