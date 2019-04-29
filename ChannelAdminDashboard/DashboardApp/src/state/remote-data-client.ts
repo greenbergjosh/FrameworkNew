@@ -1,12 +1,15 @@
-import { Either } from "fp-ts/lib/Either"
+import { Either, fromOption as eitherFromOption } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
 import { Overwrite } from "utility-types"
 import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
-import * as GCWS from "../data/GlobalConfigWebService"
-import { HttpError, request } from "../lib/http"
+import * as AdminApi from "../data/AdminApi"
+import { HttpError, request, BadPayload } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
 import { JSONRecord, JSONArray } from "../data/JSON"
+import { QueryConfig } from "../data/Report"
+import { Left, Right } from "../data/Either"
 
 declare module "./store.types" {
   interface AppModels {
@@ -20,7 +23,7 @@ declare module "./store.types" {
 }
 
 export interface State {
-  globalConfigUrl: string
+  apiUrl: string
 }
 
 export interface Reducers {}
@@ -30,17 +33,17 @@ export interface Effects {
 
   globalConfigsDeleteById(
     ids: Array<PersistedConfig["id"]>
-  ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<void>>>
+  ): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<void>>>
 
   globalConfigsInsert(
     c: CreateRemoteConfigParams
   ): Promise<
-    Either<HttpError, GCWS.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>>>
+    Either<HttpError, AdminApi.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>>>
   >
 
   globalConfigsGet(
     query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
-  ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<PersistedConfig>>>>
+  ): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>>>>
 
   // globalConfigsGetById(p: Pick<Config, "id">): Promise<Either<HttpError, Config>>
 
@@ -48,14 +51,14 @@ export interface Effects {
     id?: string
     name?: string | RegExp
     type?: string | RegExp
-  }): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<Array<PersistedConfig>>>>
+  }): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>>>>
 
   globalConfigsUpdate(
     config: Pick<Overwrite<PersistedConfig, { config: string }>, "id" | "config">
-  ): Promise<Either<HttpError, GCWS.GlobalConfigApiResponse<void>>>
+  ): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<void>>>
 
-  reportGet(
-    query: string,
+  reportQueryGet(
+    query: QueryConfig,
     params: JSONRecord | JSONArray
   ): Promise<Either<HttpError, Array<JSONRecord>>>
 }
@@ -64,7 +67,7 @@ export interface Selectors {}
 
 export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
-    globalConfigUrl: "http://142.44.215.16:8085",
+    apiUrl: "http://142.44.215.16:8085",
   },
 
   reducers: {},
@@ -95,17 +98,17 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         body: {
           "config:delete": ids,
         },
-        expect: GCWS.responsePayloadCodecs.delete,
+        expect: AdminApi.globalConfigResponsePayloadCodec.delete,
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.globalConfigUrl,
+        url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map((payload) => {
           return payload["config:delete"].r === 0
-            ? GCWS.OK<void>(undefined)
-            : GCWS.mkGlobalConfigApiError<void>(payload["config:delete"].r)
+            ? AdminApi.OK<void>(undefined)
+            : AdminApi.mkAdminApiError<void>(payload["config:delete"].r)
         })
       )
     },
@@ -115,18 +118,20 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         body: {
           "config:insert": config,
         },
-        expect: GCWS.responsePayloadCodecs.insert,
+        expect: AdminApi.globalConfigResponsePayloadCodec.insert,
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.globalConfigUrl,
+        url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): GCWS.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
+          (
+            payload
+          ): AdminApi.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
             return payload["config:insert"].r === 0
-              ? GCWS.OK(payload["config:insert"].configs)
-              : GCWS.mkGlobalConfigApiError(payload["config:insert"].r)
+              ? AdminApi.OK(payload["config:insert"].result)
+              : AdminApi.mkAdminApiError(payload["config:insert"].r)
           }
         )
       )
@@ -140,18 +145,18 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         body: {
           "config:get": params,
         },
-        expect: GCWS.responsePayloadCodecs.get,
+        expect: AdminApi.globalConfigResponsePayloadCodec.get,
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.globalConfigUrl,
+        url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): GCWS.GlobalConfigApiResponse<Array<PersistedConfig>> => {
+          (payload): AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>> => {
             return payload["config:get"].r === 0
-              ? GCWS.OK(payload["config:get"].configs)
-              : GCWS.mkGlobalConfigApiError(payload["config:get"].r)
+              ? AdminApi.OK(payload["config:get"].result)
+              : AdminApi.mkAdminApiError(payload["config:get"].r)
           }
         )
       )
@@ -173,7 +178,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     //     withCredentials: false,
     //   }).then((result) =>
     //     result.chain((payload) =>
-    //       head(payload["config:get"].configs).fold(BadPayload(payload["config:get"], response))
+    //       head(payload["config:get"].result).fold(BadPayload(payload["config:get"], response))
     //     )
     //   )
     // },
@@ -189,18 +194,18 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
             metaOnly: true,
           },
         },
-        expect: GCWS.responsePayloadCodecs.get,
+        expect: AdminApi.globalConfigResponsePayloadCodec.get,
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.globalConfigUrl,
+        url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): GCWS.GlobalConfigApiResponse<Array<PersistedConfig>> => {
+          (payload): AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>> => {
             return payload["config:get"].r === 0
-              ? GCWS.OK(payload["config:get"].configs)
-              : GCWS.mkGlobalConfigApiError(payload["config:get"].r)
+              ? AdminApi.OK(payload["config:get"].result)
+              : AdminApi.mkAdminApiError(payload["config:get"].r)
           }
         )
       )
@@ -214,22 +219,43 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
             config: config.config,
           },
         },
-        expect: GCWS.responsePayloadCodecs.update,
+        expect: AdminApi.globalConfigResponsePayloadCodec.update,
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.globalConfigUrl,
+        url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map((payload) => {
           return payload["config:update"].r === 0
-            ? GCWS.OK<void>(undefined)
-            : GCWS.mkGlobalConfigApiError<void>(payload["config:update"].r)
+            ? AdminApi.OK<void>(undefined)
+            : AdminApi.mkAdminApiError<void>(payload["config:update"].r)
         })
       )
     },
 
-    async reportGet() {},
+    async reportQueryGet(queryConfig, { remoteDataClient }, params) {
+      const { query } = queryConfig
+      return request({
+        body: {
+          [query]: params,
+        },
+        expect: AdminApi.reportResponsePayloadCodecs.get(query),
+        headers: {},
+        method: "POST",
+        timeout: none,
+        url: remoteDataClient.apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.chain((payload) => {
+          const opt = record
+            .lookup(queryConfig.query, payload)
+            .map((p) => (p.r === 0 ? AdminApi.OK(payload.result) : AdminApi.mkAdminApiError(p.r)))
+
+          // return eitherFromOption(BadPayload(`Reports query ${query} response payload lacks matching key`, ))
+        })
+      )
+    },
   }),
 
   selectors: () => ({}),
