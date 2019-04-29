@@ -26,6 +26,7 @@ import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 import { SelectProps } from "antd/lib/select"
 import { Do } from "fp-ts-contrib/lib/Do"
 import { identity } from "fp-ts/lib/function"
+import { QueryConfig, ReportConfig } from "../../../../../../data/Report"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -115,124 +116,6 @@ const componentMap = {
   table: GridComponent,
   select: Select,
 }
-
-type LayoutItem = TableLayoutItem | SelectLayoutItem
-
-interface ILayoutItem {
-  component: keyof typeof componentMap
-}
-
-interface TableLayoutItem extends ILayoutItem {
-  component: "table"
-  componentProps: GridModel
-}
-
-interface SelectLayoutItem extends ILayoutItem {
-  component: "select"
-  componentProps: SelectProps
-}
-
-interface ReportConfig {
-  type: "ReportConfig"
-  query: GlobalConfigReference
-  layout: LayoutItem
-  details?: ReportItem
-}
-
-interface SubReportConfig {
-  type: "SubReportConfig"
-  layout: LayoutItem
-  details?: ReportItem
-}
-
-interface GlobalConfigReference {
-  type: "GlobalConfig"
-  id: PersistedConfig["id"]
-}
-
-type ReportItem = GlobalConfigReference | ReportConfig | SubReportConfig
-
-interface StoredProcQueryConfig {
-  format: "StoredProc"
-  query: string
-  parameters: ParameterItem[]
-}
-
-interface SQLQueryConfig {
-  format: "SQL"
-  query: string
-  subquery?: string[]
-  parameters: ParameterItem[]
-  map: Record<string, string>
-}
-
-type ParameterItem =
-  | BooleanParameterItem
-  | DateParameterItem
-  | DateRangeParameterItem
-  | FloatParameterItem
-  | IntegeParameterItem
-  | SelectParameterItem
-  | StringParameterItem
-
-interface IParameterItem {
-  name: string
-  label?: string
-  type: "string" | "integer" | "float" | "date" | "date-range" | "boolean" | "select"
-}
-
-interface StringParameterItem extends IParameterItem {
-  type: "string"
-  // options?: {
-  //   maxLength?: number
-  // }
-}
-
-interface IntegeParameterItem extends IParameterItem {
-  type: "integer"
-  // options?: {
-  //   maxValue?: number
-  //   minValue?: number
-  // }
-}
-
-interface FloatParameterItem extends IParameterItem {
-  type: "float"
-  options?: {}
-}
-
-interface DateParameterItem extends IParameterItem {
-  type: "date"
-  options?: {}
-}
-
-interface DateRangeParameterItem extends IParameterItem {
-  type: "date-range"
-  options?: {}
-}
-
-interface BooleanParameterItem extends IParameterItem {
-  type: "boolean"
-  options?: {}
-}
-
-interface SelectParameterItem extends IParameterItem {
-  type: "select"
-  options?: { multiple?: boolean } & (
-    | {
-        datasource: SQLQueryConfig
-      }
-    | {
-        items: SelectOption[]
-      })
-}
-
-interface SelectOption {
-  label: string
-  value: string | number | boolean
-}
-
-type QueryConfig = StoredProcQueryConfig | SQLQueryConfig
 
 export function Report(props: WithRouteProps<Props>): JSX.Element {
   console.log("Report Child Page", props)

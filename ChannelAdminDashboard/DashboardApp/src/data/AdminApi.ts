@@ -2,10 +2,11 @@ import * as iots from "io-ts"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { assertNever } from "../lib/assert-never"
 import { PersistedConfigCodec } from "./GlobalConfig.Config"
+import { JSONRecordCodec } from "./JSON"
 
 export type ResponseCode = iots.TypeOf<typeof ResponseCodeCodec>
 
-export const globalConfigWebServiceErrors = {
+export const adminApiErrors = {
   1: "Unhandled server-side exception",
   2: "Server resource failure",
   100: "Unhandle server-side function exception",
@@ -22,7 +23,11 @@ export const ErrorCodeCodec = iots.union([
 ])
 export const ResponseCodeCodec = iots.union([iots.literal(0), ErrorCodeCodec])
 
-export const responsePayloadCodecs = {
+export const ErrorPayload = iots.type({
+  r: ErrorCodeCodec,
+})
+
+export const globalConfigResponsePayloadCodec = {
   delete: iots.type({
     "config:delete": iots.type({
       r: ResponseCodeCodec,
@@ -33,24 +38,20 @@ export const responsePayloadCodecs = {
     "config:get": iots.union([
       iots.type({
         r: iots.literal(0),
-        configs: iots.array(PersistedConfigCodec),
+        result: iots.array(PersistedConfigCodec),
       }),
-      iots.type({
-        r: ErrorCodeCodec,
-      }),
+      ErrorPayload,
     ]),
   }),
 
   insert: iots.union([
     iots.type({
-      "config:insert": iots.type({
-        r: ErrorCodeCodec,
-      }),
+      "config:insert": ErrorPayload,
     }),
     iots.type({
       "config:insert": iots.type({
         r: iots.literal(0),
-        configs: iots.array(
+        result: iots.array(
           iots.type({
             id: NonEmptyString,
             name: NonEmptyString,
@@ -67,13 +68,26 @@ export const responsePayloadCodecs = {
   }),
 }
 
-export function mkGlobalConfigApiError<T>(r: Exclude<ResponseCode, 0>): GlobalConfigApiResponse<T> {
+export const reportResponsePayloadCodecs = {
+  get: (query: string) =>
+    iots.type({
+      [query]: iots.union([
+        iots.type({
+          r: iots.literal(0),
+          result: iots.union([iots.array(JSONRecordCodec), JSONRecordCodec]),
+        }),
+        ErrorPayload,
+      ]),
+    }),
+}
+
+export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): GlobalConfigApiResponse<T> {
   switch (r) {
-    case 1: return ServerException({reason: globalConfigWebServiceErrors[1]})
-    case 2: return ServerException({reason: globalConfigWebServiceErrors[2]})
-    case 100: return ServerException({reason: globalConfigWebServiceErrors[100]})
+    case 1: return ServerException({reason: adminApiErrors[1]})
+    case 2: return ServerException({reason: adminApiErrors[2]})
+    case 100: return ServerException({reason: adminApiErrors[100]})
     case 101: return Unauthorized()
-    case 106: return ServerException({reason: globalConfigWebServiceErrors[106]})
+    case 106: return ServerException({reason: adminApiErrors[106]})
     // case 106: return DuplicateConfigName()
     default: return assertNever(r)
   } // prettier-ignore
