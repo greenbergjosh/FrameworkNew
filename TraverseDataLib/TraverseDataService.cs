@@ -78,6 +78,10 @@ namespace TraverseDataLib
                                     await this.Fw.Trace(nameof(Run), $"Processing Traverse response from VID host {opqVals.host}, pid {opqVals.md5pid}, sid {opqVals.sid}, md5 {fullBodyGe.GetS(responseMd5Key)}");
                                     vidResp = await Vid.SaveSession(this.Fw, context, true, false, false, null, opaqueGe, fullBodyGe.GetS(responseMd5Key));
                                 }
+                                else
+                                {
+                                    await WriteResponseEvent(opqVals.md5pid, opqVals.slot, opqVals.page, opqVals.lst, opqVals.host, opqVals.lv, opqVals.vft, opqVals.rsids, fullBodyGe.GetS(responseMd5Key), dupe: true);
+                                }
                                 result = JsonConvert.SerializeObject(vidResp);
                                 resultHttpStatus = StatusCodes.Status202Accepted;
                             }
@@ -97,6 +101,7 @@ namespace TraverseDataLib
                 {
                     await this.Fw.Err(1000, "Start", "Error", "Unknown request: " + requestFromPost);
                 }
+                await this.Fw.Trace(nameof(Run), $"On finish of request, returning http status {resultHttpStatus}");
             }
             catch (Exception ex)
             {
@@ -106,7 +111,7 @@ namespace TraverseDataLib
 
         }
 
-        public async Task WriteResponseEvent(string pid, int slot, int page, string lastSeenTime, string host, string lastVisit, bool veryFirstTime, Dictionary<string, object> rsids, string md5)
+        public async Task WriteResponseEvent(string pid, int slot, int page, string lastSeenTime, string host, string lastVisit, bool veryFirstTime, Dictionary<string, object> rsids, string md5, bool dupe = false)
         {
             var rsidDict = new Dictionary<string, object>();
             if (rsids == null)
@@ -114,20 +119,21 @@ namespace TraverseDataLib
                 await this.Fw.Log(nameof(WriteResponseEvent), $"Called with null 'rsids' dictionary, supplying event with no related report sequence ids for pid '{pid ?? ""}', md5 {md5}, for host {host}");
             }
             EdwBulkEvent be = new EdwBulkEvent();
-            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                null, PL.O(new
-                {
-                    et = "TraverseMd5Response",
-                    pid = pid??"",
-                    slot,
-                    page,
-                    md5,
-                    lst = lastSeenTime ?? "",
-                    domain = host,
-                    lv = lastVisit ?? "",
-                    vft = veryFirstTime,
-                    succ = 1 // Traverse only responds with Md5s
-                }));
+            var payload = PL.O(new
+            {
+                et = "TraverseMd5Response",
+                pid = pid ?? "",
+                slot,
+                page,
+                md5,
+                lst = lastSeenTime ?? "",
+                domain = host,
+                lv = lastVisit ?? "",
+                vft = veryFirstTime,
+                dupe = dupe ? "1" : "0",
+                succ = 1 // Traverse only responds with Md5s
+            });
+            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, null,payload);
             await this.Fw.EdwWriter.Write(be);
         }
 
