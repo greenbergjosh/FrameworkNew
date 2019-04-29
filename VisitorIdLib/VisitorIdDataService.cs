@@ -33,6 +33,8 @@ namespace VisitorIdLib
         public readonly DateTime CookieExpirationDate = new DateTime(2038, 1, 19);
         public string OnPointConsoleDomainId;
         public string OnPointConsoleUrl;
+        public const string CookieMd5Pid = "B484C2D3-BD77-491F-B63B-BE3B010D73BE";
+        public const string CookieEmailPid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E";
 
         //public void test()
         //{
@@ -460,13 +462,13 @@ namespace VisitorIdLib
                             null, PL.O(new
                             {
                                 et = "Md5ProviderSelected",
-                                md5pid = "B484C2D3-BD77-491F-B63B-BE3B010D73BE",
+                                md5pid = CookieMd5Pid,
                                 slot,
                                 page,
                                 vft = cookieData.VeryFirstVisit
                             }));
                         await fw.EdwWriter.Write(be);
-                        cookieData.AddOrUpdateProviderSelect("B484C2D3-BD77-491F-B63B-BE3B010D73BE", DateTime.UtcNow);
+                        cookieData.AddOrUpdateProviderSelect(CookieMd5Pid, DateTime.UtcNow);
 
                         if (!cookieData.md5.IsNullOrWhitespace() &&
                             cookieData.md5.ParseGuid() != null &&
@@ -498,7 +500,7 @@ namespace VisitorIdLib
                                 null, PL.O(new
                                 {
                                     et = "Md5ProviderResponse",
-                                    md5pid = "B484C2D3-BD77-491F-B63B-BE3B010D73BE",
+                                    md5pid = CookieMd5Pid,
                                     slot,
                                     page,
                                     eg = 0,
@@ -509,9 +511,10 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            await SaveSession(fw, c, sid, "B484C2D3-BD77-491F-B63B-BE3B010D73BE", slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, host, false, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, host, cookieData);
+                            var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, host, false, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, host, cookieData);
+                            eml = vidResp.Email;
                         }
-                        continueToNextSlot();
+                        slot++;
                         page++;
                         continue;
                     }
@@ -858,7 +861,7 @@ namespace VisitorIdLib
                         null, PL.O(new
                         {
                             et = "EmailProviderSelected",
-                            emailpid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E",
+                            emailpid = CookieEmailPid,
                             slot,
                             page,
                             md5pid,
@@ -881,12 +884,12 @@ namespace VisitorIdLib
                     if (!eml.IsNullOrWhitespace())
                     {
                         cookieEml = eml;
-                        var postData = await PostVisitorIdToConsole(fw, eml, "E4208B3A-0B21-4D06-B348-1CCC5715F66E", pixelDomain, clientIp, userAgent, lastVisit);
+                        var postData = await PostVisitorIdToConsole(fw, eml, CookieEmailPid, pixelDomain, clientIp, userAgent, lastVisit);
                         if (!postData.IsNullOrWhitespace())
                         {
                             be = new EdwBulkEvent();
                             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E"})));
+                                null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid = CookieEmailPid})));
                             await fw.EdwWriter.Write(be);
                         }
 
@@ -897,7 +900,7 @@ namespace VisitorIdLib
                         null, PL.O(new
                         {
                             et = "EmailProviderResponse",
-                            emailpid = "E4208B3A-0B21-4D06-B348-1CCC5715F66E",
+                            emailpid = CookieEmailPid,
                             eg = 0,
                             slot,
                             page,
