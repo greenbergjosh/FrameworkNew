@@ -209,7 +209,7 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
                       Both((reportConfig3, queryConfig3) => (
                         <>
                           {/* <QueryForm parameters={query.parameters} /> */}
-                          <Button onClick={() => null}>Fire ze missiles</Button>
+                          <Button onClick={() => null}>Debug: Force Run Test Query</Button>
                           <GridComponent
                             ref={grid}
                             {...commonGridOptions}
