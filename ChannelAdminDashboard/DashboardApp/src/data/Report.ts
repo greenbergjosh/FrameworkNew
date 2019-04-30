@@ -1,94 +1,107 @@
-import { GridModel } from "@syncfusion/ej2-grids"
-import { SelectProps } from "antd/lib/select"
+import { Option } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
-import { PersistedConfig } from "./GlobalConfig.Config"
 
-export type LayoutItem = TableLayoutItem | SelectLayoutItem
-
-export interface ILayoutItem {
-  //   component: keyof typeof componentMap
-}
-
-export interface TableLayoutItem extends ILayoutItem {
-  component: "table"
-  componentProps: GridModel
-}
-
-export interface SelectLayoutItem extends ILayoutItem {
-  component: "select"
-  componentProps: SelectProps
-}
-
-export interface ReportConfig {
-  type: "ReportConfig"
-  query: GlobalConfigReference
-  layout: LayoutItem
-  details?: ReportItem
-}
-
-export interface SubReportConfig {
-  type: "SubReportConfig"
-  layout: LayoutItem
-  details?: ReportItem
-}
-
-export type GlobalConfigReference = iots.Type<typeof GlobalConfigReferenceCodec>
-export const GlobalConfigReferenceCodec = iots.type({
-  type: iots.literal("GlobalConfig"),
-  id: iots.string,
+export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
+export const TableLayoutItemCodec = iots.type({
+  component: iots.literal("table"),
+  componentProps: iots.UnknownRecord, // TODO: GridModel from @syncfusion/ej2-grids
 })
 
-export type ReportItem = GlobalConfigReference | ReportConfig | SubReportConfig
+export type SelectLayoutItem = iots.TypeOf<typeof SelectLayoutItemCodec>
+export const SelectLayoutItemCodec = iots.type({
+  component: iots.literal("select"),
+  componentProps: iots.UnknownRecord, // TODO: SelectProps from antd/lib/select
+})
+
+export type LayoutItem = iots.TypeOf<typeof LayoutItemCodec>
+export const LayoutItemCodec = iots.taggedUnion("component", [
+  TableLayoutItemCodec,
+  SelectLayoutItemCodec,
+])
+
+export type RemoteReportConfig = {
+  type: "ReportConfig"
+  query: Nullable<GlobalConfigReference>
+  layout: LayoutItem
+  details: Nullable<GlobalConfigReference | RemoteReportConfig>
+}
+export type LocalReportConfig = {
+  type: "ReportConfig"
+  query: Option<GlobalConfigReference>
+  layout: LayoutItem
+  details: Option<GlobalConfigReference | LocalReportConfig>
+}
+export const ReportConfigCodec = iots.recursion<
+  LocalReportConfig,
+  RemoteReportConfig,
+  unknown,
+  iots.Type<LocalReportConfig, RemoteReportConfig>
+>("ReportConfig", (_ReportConfigCodec) =>
+  iots.type({
+    type: iots.literal("ReportConfig"),
+    query: iotst.createOptionFromNullable(GlobalConfigReferenceCodec),
+    layout: iots.taggedUnion("component", [TableLayoutItemCodec, SelectLayoutItemCodec]),
+    details: iotst.createOptionFromNullable(
+      iots.taggedUnion("type", [GlobalConfigReferenceCodec, _ReportConfigCodec])
+    ),
+  })
+)
+
+export type GlobalConfigReference = iots.TypeOf<typeof GlobalConfigReferenceCodec>
+export const GlobalConfigReferenceCodec = iots.type({
+  type: iots.literal("GlobalConfigReference"),
+  id: iots.string,
+})
 
 export const _BaseParameterItemCodec = iots.type({
   name: iots.string,
   label: iotst.createOptionFromNullable(iots.string),
 })
 
-export type StringParamterItem = iots.Type<typeof StringParameterItemCodec>
+export type StringParamterItem = iots.TypeOf<typeof StringParameterItemCodec>
 export const StringParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("string") }),
 ])
 
-export type IntegerParameterItem = iots.Type<typeof IntegerParameterItemCodec>
+export type IntegerParameterItem = iots.TypeOf<typeof IntegerParameterItemCodec>
 export const IntegerParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("integer") }),
 ])
 
-export type FloatParameterItem = iots.Type<typeof FloatParameterItemCodec>
+export type FloatParameterItem = iots.TypeOf<typeof FloatParameterItemCodec>
 export const FloatParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("float") }),
 ])
 
-export type DateParameterItem = iots.Type<typeof DateParameterItemCodec>
+export type DateParameterItem = iots.TypeOf<typeof DateParameterItemCodec>
 export const DateParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("date") }),
 ])
 
-export type DateRangeParameterItem = iots.Type<typeof DateRangeParameterItemCodec>
+export type DateRangeParameterItem = iots.TypeOf<typeof DateRangeParameterItemCodec>
 export const DateRangeParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("date-range") }),
 ])
 
-export type BooleanParametItem = iots.Type<typeof BooleanParameterItemCodec>
+export type BooleanParametItem = iots.TypeOf<typeof BooleanParameterItemCodec>
 export const BooleanParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("boolean") }),
 ])
 
-export type SelectOptionItem = iots.Type<typeof SelectOptionItemCodec>
+export type SelectOptionItem = iots.TypeOf<typeof SelectOptionItemCodec>
 export const SelectOptionItemCodec = iots.type({
   label: iots.string,
   value: iots.union([iots.string, iots.number, iots.boolean]),
 })
 
-export type SelectParameterItemOptions = iots.Type<typeof SelectParameterItemOptionsCodec>
+export type SelectParameterItemOptions = iots.TypeOf<typeof SelectParameterItemOptionsCodec>
 export const SelectParameterItemOptionsCodec = iots.union([
   iots.type({
     multiple: iots.boolean,
@@ -101,7 +114,7 @@ export const SelectParameterItemOptionsCodec = iots.union([
   }),
 ])
 
-export type SelectParameterItem = iots.Type<typeof SelectParameterItemCodec>
+export type SelectParameterItem = iots.TypeOf<typeof SelectParameterItemCodec>
 export const SelectParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({
@@ -110,7 +123,7 @@ export const SelectParameterItemCodec = iots.intersection([
   }),
 ])
 
-export type ParameterItem = iots.Type<typeof ParameterItemCodec>
+export type ParameterItem = iots.TypeOf<typeof ParameterItemCodec>
 export const ParameterItemCodec = iots.taggedUnion("type", [
   StringParameterItemCodec,
   IntegerParameterItemCodec,
@@ -121,21 +134,21 @@ export const ParameterItemCodec = iots.taggedUnion("type", [
   SelectParameterItemCodec,
 ])
 
-export type SQLQueryConfig = iots.Type<typeof SQLQueryConfigCodec>
+export type SQLQueryConfig = iots.TypeOf<typeof SQLQueryConfigCodec>
 export const SQLQueryConfigCodec = iots.type({
   format: iots.literal("SQL"),
   query: iots.string,
-  parameters: ParameterItemCodec,
+  parameters: iots.array(ParameterItemCodec),
 })
 
-export type StoredProcQueryConfig = iots.Type<typeof StoredProcQueryConfigCodec>
+export type StoredProcQueryConfig = iots.TypeOf<typeof StoredProcQueryConfigCodec>
 export const StoredProcQueryConfigCodec = iots.type({
   format: iots.literal("StoredProc"),
   query: iots.string,
-  parameters: ParameterItemCodec,
+  parameters: iots.array(ParameterItemCodec),
 })
 
-export type QueryConfig = iots.Type<typeof QueryConfigCodec>
+export type QueryConfig = iots.TypeOf<typeof QueryConfigCodec>
 export const QueryConfigCodec = iots.taggedUnion("format", [
   SQLQueryConfigCodec,
   StoredProcQueryConfigCodec,

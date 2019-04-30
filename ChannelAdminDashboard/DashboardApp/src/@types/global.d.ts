@@ -1,5 +1,6 @@
 declare type Nil = undefined | null
 declare type Nilable<T> = T | null | undefined
+declare type Nullable<T> = T | null
 declare type PropsFromComponent<C extends React.ComponentType<any>> = C extends React.ComponentType<
   infer P
 >
