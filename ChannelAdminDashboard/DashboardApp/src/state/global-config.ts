@@ -12,6 +12,7 @@ import { None, Some } from "../data/Option"
 import { prettyPrint } from "../lib/json"
 import { Config as mockGlobalConfigs } from "../mock-data/global-config.json"
 import * as Store from "./store.types"
+import { LocalReportConfig, ReportConfigCodec } from "../data/Report"
 
 declare module "./store.types" {
   interface AppModels {
