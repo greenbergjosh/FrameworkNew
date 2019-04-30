@@ -35,38 +35,38 @@ export type Method = "GET" | "POST" | "PUT" | "DELETE"
 // }
 
 export function BadStatus(response: HttpResponse<string>): HttpError {
-  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
-    return onBadStatus(response)
+  return (variants) => {
+    return variants.BadStatus(response)
   }
 }
 export function BadPayload(value: string, response: HttpResponse<string>): HttpError {
-  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
-    return onBadPayload(value, response)
+  return (variants) => {
+    return variants.BadPayload(value, response)
   }
 }
 export function BadUrl(url: string): HttpError {
-  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
-    return onBadUrl(url)
+  return (variants) => {
+    return variants.BadUrl(url)
   }
 }
 export function NetworkError(value: string): HttpError {
-  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
-    return onNetworkError(value)
+  return (variants) => {
+    return variants.NetworkError(value)
   }
 }
 export function Timeout(req: HttpRequest<unknown>): HttpError {
-  return (onBadStatus, onBadPayload, onBadUrl, onNetworkError, onTimeout) => {
-    return onTimeout(req)
+  return (variants) => {
+    return variants.Timeout(req)
   }
 }
 
-export type HttpError = <R>(
-  onBadStatus: (res: HttpResponse<string>) => R,
-  onBadPayload: (message: string, res: HttpResponse<string>) => R,
-  onBadUrl: (message: string) => R,
-  onNetworkError: (message: string) => R,
-  onTimeout: (req: HttpRequest<unknown>) => R
-) => R
+export type HttpError = <R>(variants: {
+  BadStatus: (res: HttpResponse<string>) => R
+  BadPayload: (message: string, res: HttpResponse<string>) => R
+  BadUrl: (message: string) => R
+  NetworkError: (message: string) => R
+  Timeout: (req: HttpRequest<unknown>) => R
+}) => R
 
 // export type HttpError = BadUrl | Timeout | NetworkError | BadStatus | BadPayload
 
@@ -104,7 +104,7 @@ export function request<A>(req: HttpRequest<A>): Promise<Either<HttpError, A>> {
 }
 
 // --------------- HELPERS -------------------
-function axiosResponseToResponse(res: AxiosResponse): HttpResponse<string> {
+function axiosRespToHttpResponseOfString(res: AxiosResponse): HttpResponse<string> {
   return {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     url: res.config.url!,
@@ -125,7 +125,7 @@ function axiosResponseToEither<A>(
   return expect
     .decode(res.data)
     .mapLeft((errors) => failure(errors).join("\n"))
-    .mapLeft((errMsg) => BadPayload(errMsg, axiosResponseToResponse(res)))
+    .mapLeft((errMsg) => BadPayload(errMsg, axiosRespToHttpResponseOfString(res)))
 }
 
 function axiosErrorToEither<A>(e: AxiosError): Either<HttpError, A> {
@@ -136,7 +136,7 @@ function axiosErrorToEither<A>(e: AxiosError): Either<HttpError, A> {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return left(BadUrl(res.config.url!))
       default:
-        return left(BadStatus(axiosResponseToResponse(res)))
+        return left(BadStatus(axiosRespToHttpResponseOfString(res)))
     }
   }
 
