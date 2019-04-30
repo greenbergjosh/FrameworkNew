@@ -65,7 +65,7 @@ export interface Selectors {}
 
 export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
-    apiUrl: "http://142.44.215.16:8085",
+    apiUrl: "http://admin.techopg.com/api",
   },
 
   reducers: {},
