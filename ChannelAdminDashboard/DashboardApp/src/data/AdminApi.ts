@@ -74,14 +74,14 @@ export const reportResponsePayloadCodecs = {
       [query]: iots.union([
         iots.type({
           r: iots.literal(0),
-          result: iots.union([iots.array(JSONRecordCodec), JSONRecordCodec]),
+          result: iots.array(JSONRecordCodec),
         }),
         ErrorPayload,
       ]),
     }),
 }
 
-export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): GlobalConfigApiResponse<T> {
+export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): ApiResponse<T> {
   switch (r) {
     case 1: return ServerException({reason: adminApiErrors[1]})
     case 2: return ServerException({reason: adminApiErrors[2]})
@@ -92,18 +92,18 @@ export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): GlobalConfigApi
     default: return assertNever(r)
   } // prettier-ignore
 }
-export type GlobalConfigApiResponse<T> = <R>(variants: {
+export type ApiResponse<T> = <R>(variants: {
   OK: (payload: T) => R
   ServerException: (err: { reason: string }) => R
   Unauthorized: () => R
 }) => R
 
-export function OK<T>(v: T): GlobalConfigApiResponse<T> {
+export function OK<T>(v: T): ApiResponse<T> {
   return ({ OK: f }) => f(v)
 }
-export function ServerException<T>(err: { reason: string }): GlobalConfigApiResponse<T> {
+export function ServerException<T>(err: { reason: string }): ApiResponse<T> {
   return ({ ServerException: f }) => f(err)
 }
-export function Unauthorized<T>(): GlobalConfigApiResponse<T> {
+export function Unauthorized<T>(): ApiResponse<T> {
   return ({ Unauthorized: f }) => f()
 }

@@ -33,17 +33,15 @@ export interface Effects {
 
   globalConfigsDeleteById(
     ids: Array<PersistedConfig["id"]>
-  ): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<void>>>
+  ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
 
   globalConfigsInsert(
     c: CreateRemoteConfigParams
-  ): Promise<
-    Either<HttpError, AdminApi.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>>>
-  >
+  ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>>>>
 
   globalConfigsGet(
     query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
-  ): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>>>>
+  ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
 
   // globalConfigsGetById(p: Pick<Config, "id">): Promise<Either<HttpError, Config>>
 
@@ -51,16 +49,16 @@ export interface Effects {
     id?: string
     name?: string | RegExp
     type?: string | RegExp
-  }): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
 
   globalConfigsUpdate(
     config: Pick<Overwrite<PersistedConfig, { config: string }>, "id" | "config">
-  ): Promise<Either<HttpError, AdminApi.GlobalConfigApiResponse<void>>>
+  ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
 
-  reportQueryGet(
-    query: QueryConfig,
+  reportQueryGet(payload: {
+    query: Pick<QueryConfig, "query">["query"]
     params: JSONRecord | JSONArray
-  ): Promise<Either<HttpError, Array<JSONRecord>>>
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
 }
 
 export interface Selectors {}
@@ -74,23 +72,23 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
 
   effects: (dispatch) => ({
     defaultHttpErrorHandler: (HttpError) => {
-      HttpError(
-        function BadStatus(res) {
-          dispatch.logger.logError(prettyPrint(res))
+      HttpError({
+        BadStatus(res) {
+          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(res)}`)
         },
-        function BadPayload(message) {
+        BadPayload(message) {
           dispatch.logger.logError(`Bad payload in remoteDataClient: ${message}`)
         },
-        function BadUrl(message) {
+        BadUrl(message) {
           dispatch.logger.logError(`Bad url in remoteDataClient: ${message}`)
         },
-        function NetworkError(message) {
+        NetworkError(message) {
           dispatch.logger.logError(`NetworkError in remoteDataClient: ${message}`)
         },
-        function Timeout(req) {
-          dispatch.logger.logError(prettyPrint(req))
-        }
-      )
+        Timeout(req) {
+          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(req)}`)
+        },
+      })
     },
 
     async globalConfigsDeleteById(ids, { remoteDataClient }) {
@@ -126,9 +124,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (
-            payload
-          ): AdminApi.GlobalConfigApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
+          (payload): AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>> => {
             return payload["config:insert"].r === 0
               ? AdminApi.OK(payload["config:insert"].result)
               : AdminApi.mkAdminApiError(payload["config:insert"].r)
@@ -153,7 +149,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>> => {
+          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
             return payload["config:get"].r === 0
               ? AdminApi.OK(payload["config:get"].result)
               : AdminApi.mkAdminApiError(payload["config:get"].r)
@@ -202,7 +198,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         withCredentials: false,
       }).then((result) =>
         result.map(
-          (payload): AdminApi.GlobalConfigApiResponse<Array<PersistedConfig>> => {
+          (payload): AdminApi.ApiResponse<Array<PersistedConfig>> => {
             return payload["config:get"].r === 0
               ? AdminApi.OK(payload["config:get"].result)
               : AdminApi.mkAdminApiError(payload["config:get"].r)
@@ -234,8 +230,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       )
     },
 
-    async reportQueryGet(queryConfig, { remoteDataClient }, params) {
-      const { query } = queryConfig
+    async reportQueryGet({ query, params }, { remoteDataClient }) {
       return request({
         body: {
           [query]: params,
@@ -247,13 +242,12 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>
-        result.chain((payload) => {
-          const opt = record
-            .lookup(queryConfig.query, payload)
-            .map((p) => (p.r === 0 ? AdminApi.OK(payload.result) : AdminApi.mkAdminApiError(p.r)))
-
-          // return eitherFromOption(BadPayload(`Reports query ${query} response payload lacks matching key`, ))
-        })
+        result.map(
+          (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+            const p = payload[query]
+            return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+          }
+        )
       )
     },
   }),
