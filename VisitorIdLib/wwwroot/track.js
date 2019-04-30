@@ -25,8 +25,10 @@
                     exf(...a);
                 }
             }
-            else {
+            else if (res.config.Url) {
                 sres = await window.handleService(res);
+            } else {
+                sres = res;
             }
         } catch {
             providerFailed = true;
