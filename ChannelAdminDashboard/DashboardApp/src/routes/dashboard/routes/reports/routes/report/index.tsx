@@ -1,5 +1,4 @@
-import React, { RefObject, useRef } from "react"
-import { WithRouteProps } from "../../../../../../state/navigation"
+import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import {
   ColumnChooser,
   DetailDataBoundEventArgs,
@@ -9,24 +8,22 @@ import {
   GridModel,
   Inject,
   PdfExport,
-  Toolbar,
   Resize,
   Sort,
+  Toolbar,
 } from "@syncfusion/ej2-react-grids"
-
-import { ClickEventArgs } from "@syncfusion/ej2-navigations"
-import { Typography, Select, Button } from "antd"
-import { useRematch } from "../../../../../../hooks"
-import { store } from "../../../../../../state/store"
-import { fromEither, option } from "fp-ts/lib/Option"
-import { tryCatch2v } from "fp-ts/lib/Either"
-import * as record from "fp-ts/lib/Record"
-import { Some, None } from "../../../../../../data/Option"
-import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
-import { SelectProps } from "antd/lib/select"
+import { Button, Select, Typography } from "antd"
 import { Do } from "fp-ts-contrib/lib/Do"
+import { tryCatch2v } from "fp-ts/lib/Either"
 import { identity } from "fp-ts/lib/function"
+import { fromEither, option } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
+import React, { RefObject, useRef } from "react"
+import { None, Some } from "../../../../../../data/Option"
 import { QueryConfig, ReportConfig } from "../../../../../../data/Report"
+import { useRematch } from "../../../../../../hooks"
+import { WithRouteProps } from "../../../../../../state/navigation"
+import { store } from "../../../../../../state/store"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -121,7 +118,7 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
   console.log("Report Child Page", props)
   const reportId = props.context.id
 
-  const [fromStore] = useRematch((state) => ({
+  const [fromStore, dispatch] = useRematch((state) => ({
     configsById: store.select.globalConfig.configsById(state),
   }))
 
@@ -158,6 +155,8 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
   const grid = useRef<GridComponent>(null)
 
   const executeQuery = React.useCallback((query: string, parameters: unknown) => {}, [])
+
+  React.useEffect(() => {}, [dispatch.logger, dispatch.remoteDataClient])
 
   return (
     <div>
