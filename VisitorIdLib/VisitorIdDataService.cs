@@ -527,14 +527,14 @@ namespace VisitorIdLib
                             {
                                 config = s.GetS("Config"),
                                 sid,
-                                CookieMd5Pid,
+                                md5pid = CookieMd5Pid,
                                 slot,
                                 page,
                                 isAsync = isAsync ? "true" : "false",
                                 lv,
                                 vieps = visitorIdEmailProviderSequence,
                                 md5,
-                                eml
+                                email = eml
                             },
                             new bool[] { false, true, true, true, true, true }), md5, eml, cookieData);
                         }
