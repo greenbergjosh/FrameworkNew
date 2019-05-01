@@ -29,7 +29,7 @@ export function ShowGlobalConfig({
   }))
 
   const { focusedConfig, entityTypeConfig, editorLanguage } = React.useMemo(() => {
-    const focusedConfig = lookup(configId, fromStore.configsById)
+    const focusedConfig = lookup(configId && configId.toLowerCase(), fromStore.configsById)
     const entityTypeConfig = focusedConfig.chain((c) => lookup(c.type, fromStore.entityTypes))
     const editorLanguage = entityTypeConfig
       .chain((etc) => etc.config)
