@@ -12,6 +12,10 @@ import { store } from "../../../../../state/store"
 interface Props {
   configId: string
 }
+
+const normalizeURLParams = (param: string) =>
+  typeof param === "string" ? param.toLowerCase() : param
+
 export function ShowGlobalConfig({
   children,
   configId,
@@ -29,7 +33,7 @@ export function ShowGlobalConfig({
   }))
 
   const { focusedConfig, entityTypeConfig, editorLanguage } = React.useMemo(() => {
-    const focusedConfig = lookup(configId && configId.toLowerCase(), fromStore.configsById)
+    const focusedConfig = lookup(normalizeURLParams(configId), fromStore.configsById)
     const entityTypeConfig = focusedConfig.chain((c) => lookup(c.type, fromStore.entityTypes))
     const editorLanguage = entityTypeConfig
       .chain((etc) => etc.config)
