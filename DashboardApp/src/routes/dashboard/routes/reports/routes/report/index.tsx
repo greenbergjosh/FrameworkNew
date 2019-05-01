@@ -13,21 +13,18 @@ import {
   Toolbar,
 } from "@syncfusion/ej2-react-grids"
 import { Button, Select, Typography } from "antd"
-import { Do } from "fp-ts-contrib/lib/Do"
-import { tryCatch2v, fromOption as eitherFromOption } from "fp-ts/lib/Either"
 import { Identity } from "fp-ts/lib/Identity"
-import * as these from "fp-ts/lib/These"
 import { identity } from "fp-ts/lib/function"
-import { fromEither as optionFromEither, option, none } from "fp-ts/lib/Option"
+import { none } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import React, { RefObject, useRef } from "react"
-import { None, Some } from "../../../../../../data/Option"
 import { useRematch } from "../../../../../../hooks"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
 import { Left, Right } from "../../../../../../data/Either"
-import { This, That, Both } from "../../../../../../data/These"
-import { prettyPrint } from "../../../../../../lib/json"
+import { ReportOrErrors } from "./ReportOrErrors"
+import { QueryForm } from "./QueryForm"
+import { JSONRecord } from "../../../../../../data/JSON"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -151,93 +148,37 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
   // If user presses query button, force re-fetch of data
   const grid = useRef<GridComponent>(null)
 
-  const executeQuery = React.useCallback((query: string, parameters: unknown) => {}, [])
-
   React.useEffect(() => {}, [dispatch.logger, dispatch.remoteDataClient])
 
   return (
     <div>
       <Typography.Title level={2}>{props.title}</Typography.Title>
-      {these.fromOptions(reportConfig, queryConfig).foldL(
-        None(() => (
-          <Typography.Text type="danger">
-            {`No configuration found for ${reportId}`}
-          </Typography.Text>
-        )),
-
-        Some((theseEithers) => {
-          return theseEithers.fold(
-            This((reportConfig1) => (
-              <Typography.Text type="danger">{`No query found for ${reportId}`}</Typography.Text>
-            )),
-
-            That((queryConfig1) => (
-              <Typography.Text type="danger">
-                {`No configuration found for Report config with id ${reportId}`}
-              </Typography.Text>
-            )),
-
-            Both((reportConfig1, queryConfig1) =>
-              these
-                .fromOptions(optionFromEither(reportConfig1), optionFromEither(queryConfig1))
-                .foldL(
-                  None(() => (
-                    <>
-                      <Typography.Paragraph type="danger">
-                        {`Unable to parse Report config with id ${reportId}}`}
-                      </Typography.Paragraph>
-                      <Typography.Paragraph type="danger">
-                        {`Unable to parse Report.Query config associated with Report config with id ${reportId}`}
-                      </Typography.Paragraph>
-                    </>
-                  )),
-
-                  Some((theseConfigs) =>
-                    theseConfigs.fold(
-                      This((reportConfig3) => (
-                        <Typography.Paragraph type="danger">
-                          {`Unable to parse Report.Query config associated with Report config with id ${reportId}`}
-                        </Typography.Paragraph>
-                      )),
-
-                      That((queryConfig3) => (
-                        <Typography.Paragraph type="danger">
-                          {`Unable to parse Report config with id ${reportId}`}
-                        </Typography.Paragraph>
-                      )),
-
-                      Both((reportConfig3, queryConfig3) => (
-                        <>
-                          {/* <QueryForm parameters={query.parameters} /> */}
-                          <Button onClick={() => null}>Debug: Force Run Test Query</Button>
-                          <GridComponent
-                            ref={grid}
-                            {...commonGridOptions}
-                            toolbarClick={handleToolbarItemClicked(grid)}
-                            // childGrid={{ ...commonGridOptions, ...childGridOptions }}
-                            dataSource={data}
-                            {...reportConfig3.layout.componentProps}>
-                            <Inject
-                              services={[
-                                Toolbar,
-                                ColumnChooser,
-                                Resize,
-                                DetailRow,
-                                ExcelExport,
-                                PdfExport,
-                                Sort,
-                              ]}
-                            />
-                          </GridComponent>
-                        </>
-                      ))
-                    )
-                  )
-                )
-            )
-          )
-        })
-      )}
+      <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
+        {(reportConfig, queryConfig) => (
+          <>
+            <QueryForm
+              parameters={queryConfig.parameters}
+              layout={queryConfig.layout}
+              onSubmit={(parameterValues: JSONRecord) => {
+                console.log("report/index", "QueryForm.onSubmit", parameterValues)
+                dispatch.reports.executeQuery({ query: queryConfig.query, params: parameterValues })
+              }}
+            />
+            {/* <Button onClick={() => null}>Debug: Force Run Test Query</Button> */}
+            <GridComponent
+              ref={grid}
+              {...commonGridOptions}
+              toolbarClick={handleToolbarItemClicked(grid)}
+              // childGrid={{ ...commonGridOptions, ...childGridOptions }}
+              dataSource={data}
+              {...reportConfig.layout.componentProps}>
+              <Inject
+                services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
+              />
+            </GridComponent>
+          </>
+        )}
+      </ReportOrErrors>
     </div>
   )
 }
