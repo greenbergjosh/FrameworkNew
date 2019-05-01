@@ -1,6 +1,7 @@
 import { Option } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
+import { JSONRecordCodec, JSONRecord } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({
@@ -59,7 +60,7 @@ export const _BaseParameterItemCodec = iots.type({
   label: iotst.createOptionFromNullable(iots.string),
 })
 
-export type StringParamterItem = iots.TypeOf<typeof StringParameterItemCodec>
+export type StringParameterItem = iots.TypeOf<typeof StringParameterItemCodec>
 export const StringParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
   iots.type({ type: iots.literal("string") }),
@@ -139,6 +140,7 @@ export const SQLQueryConfigCodec = iots.type({
   format: iots.literal("SQL"),
   query: iots.string,
   parameters: iots.array(ParameterItemCodec),
+  layout: iots.array(iots.UnknownRecord),
 })
 
 export type StoredProcQueryConfig = iots.TypeOf<typeof StoredProcQueryConfigCodec>
@@ -146,8 +148,10 @@ export const StoredProcQueryConfigCodec = iots.type({
   format: iots.literal("StoredProc"),
   query: iots.string,
   parameters: iots.array(ParameterItemCodec),
+  layout: iots.array(iots.UnknownRecord),
 })
 
+export type QueryLayoutItem = JSONRecord
 export type QueryConfig = iots.TypeOf<typeof QueryConfigCodec>
 export const QueryConfigCodec = iots.taggedUnion("format", [
   SQLQueryConfigCodec,
