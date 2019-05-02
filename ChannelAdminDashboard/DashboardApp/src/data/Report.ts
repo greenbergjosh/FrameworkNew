@@ -103,14 +103,16 @@ export const SelectOptionItemCodec = iots.type({
 })
 
 export type SelectParameterItemOptions = iots.TypeOf<typeof SelectParameterItemOptionsCodec>
-export const SelectParameterItemOptionsCodec = iots.union([
+export const SelectParameterItemOptionsCodec = iots.taggedUnion("dataLocation", [
   iots.type({
     multiple: iots.boolean,
+    dataLocation: iots.literal("remote"),
     // a Report.Query config of format: "SQL"
     datasource: GlobalConfigReferenceCodec,
   }),
   iots.type({
     multiple: iots.boolean,
+    dataLocation: iots.literal("local"),
     items: iots.array(SelectOptionItemCodec),
   }),
 ])

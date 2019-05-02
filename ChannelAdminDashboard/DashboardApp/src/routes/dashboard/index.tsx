@@ -101,11 +101,13 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                     return (
                       <Row align="middle" style={{ display: "flex" }}>
                         <Col>
-                          <Typography.Text strong={true}>{subroute.title}</Typography.Text>
+                          {/* <Typography.Text strong={true}>{subroute.title}</Typography.Text> */}
+                          {subroute.title}
                         </Col>
                         <Space.Vertical width={15} />
                         <Col>
-                          <Typography.Text type="secondary">{subroute.description}</Typography.Text>
+                          {/* <Typography.Text type="secondary">{subroute.description}</Typography.Text> */}
+                          {subroute.description}
                         </Col>
                       </Row>
                     )
@@ -144,10 +146,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
         <Layout.Content style={{ overflow: "scroll" }}>
-          {/* <Row style={{ padding: 24 }}> */}
-          {props.children}
-
-          {/* </Row> */}
+          <Row style={{ padding: 24 }}>{props.children}</Row>
 
           <Layout.Footer style={{ textAlign: "center" }}>
             {`OnPoint Global © ${new Date().getFullYear()}`}
