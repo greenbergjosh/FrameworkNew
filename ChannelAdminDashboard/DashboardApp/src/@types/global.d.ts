@@ -10,3 +10,11 @@ declare type PropsFromComponent<C extends React.ComponentType<any>> = C extends 
 /** Make keys in K required in T */
 declare type Require<T extends object, K extends keyof T> = Pick<T, Exclude<keyof T, K>> &
   Required<Pick<T, K>>
+declare type VariadicTuple =
+  | []
+  | [unknown]
+  | [unknown, unknown]
+  | [unknown, unknown, unknown]
+  | [unknown, unknown, unknown, unknown]
+  | [unknown, unknown, unknown, unknown, unknown]
+  | [unknown, unknown, unknown, unknown, unknown, unknown]
