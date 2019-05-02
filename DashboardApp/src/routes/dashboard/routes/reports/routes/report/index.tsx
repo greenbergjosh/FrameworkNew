@@ -15,7 +15,7 @@ import {
 import { Button, Select, Typography } from "antd"
 import { Identity } from "fp-ts/lib/Identity"
 import { identity } from "fp-ts/lib/function"
-import { none } from "fp-ts/lib/Option"
+import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import React, { RefObject, useRef } from "react"
 import { useRematch } from "../../../../../../hooks"
@@ -25,6 +25,7 @@ import { Left, Right } from "../../../../../../data/Either"
 import { ReportOrErrors } from "./ReportOrErrors"
 import { QueryForm } from "./QueryForm"
 import { JSONRecord } from "../../../../../../data/JSON"
+import { cheapHash } from "../../../../../../lib/json"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -116,7 +117,7 @@ const componentMap = {
 }
 
 export function Report(props: WithRouteProps<Props>): JSX.Element {
-  console.log("Report Child Page", props)
+  console.log("Report", props)
   const reportId = props.context.id
 
   const [fromStore, dispatch] = useRematch((state) => ({
@@ -125,6 +126,8 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     decodedQueryConfigsById: store.select.reports.decodedQueryConfigByConfigId(state),
     reportDataByQuery: state.reports.reportDataByQuery,
   }))
+
+  const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
 
   const reportConfig = record.lookup(reportId, fromStore.decodedReportConfigsById)
 
@@ -138,46 +141,57 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     () => console.log("no report config"),
     (rc) => console.log("report config", rc)
   )
-  const data: any[] = [] // <Query query={query} parameterValues={parameterValues}>
-  // {({data, loading, error, refetch}) => {
-  //
-  //}}
-  // Read from the store for Query + Parameters
-  // If data is already cached, then use it
-  // If no data is cached, query for it
-  // If user presses query button, force re-fetch of data
   const grid = useRef<GridComponent>(null)
 
+  // Force run query if report doesn't have parameters
   React.useEffect(() => {}, [dispatch.logger, dispatch.remoteDataClient])
 
   return (
     <div>
       <Typography.Title level={2}>{props.title}</Typography.Title>
       <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
-        {(reportConfig, queryConfig) => (
-          <>
-            <QueryForm
-              parameters={queryConfig.parameters}
-              layout={queryConfig.layout}
-              onSubmit={(parameterValues: JSONRecord) => {
-                console.log("report/index", "QueryForm.onSubmit", parameterValues)
-                dispatch.reports.executeQuery({ query: queryConfig.query, params: parameterValues })
-              }}
-            />
-            {/* <Button onClick={() => null}>Debug: Force Run Test Query</Button> */}
-            <GridComponent
-              ref={grid}
-              {...commonGridOptions}
-              toolbarClick={handleToolbarItemClicked(grid)}
-              // childGrid={{ ...commonGridOptions, ...childGridOptions }}
-              dataSource={data}
-              {...reportConfig.layout.componentProps}>
-              <Inject
-                services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
+        {(reportConfig, queryConfig) => {
+          const data = parameterValues.chain((params) =>
+            record.lookup(cheapHash(queryConfig.query, params), fromStore.reportDataByQuery)
+          )
+          return (
+            <>
+              <QueryForm
+                layout={queryConfig.layout}
+                parameters={queryConfig.parameters}
+                parameterValues={parameterValues.getOrElse({})}
+                onSubmit={(parameterValues: JSONRecord) => {
+                  console.log("report/index", "QueryForm.onSubmit", parameterValues)
+                  setParameterValues(some(parameterValues))
+                  dispatch.reports.executeQuery({
+                    query: queryConfig.query,
+                    params: parameterValues,
+                  })
+                }}
               />
-            </GridComponent>
-          </>
-        )}
+              {/* <Button onClick={() => null}>Debug: Force Run Test Query</Button> */}
+              <GridComponent
+                ref={grid}
+                {...commonGridOptions}
+                toolbarClick={handleToolbarItemClicked(grid)}
+                // childGrid={{ ...commonGridOptions, ...childGridOptions }}
+                dataSource={data.getOrElse([])}
+                {...reportConfig.layout.componentProps}>
+                <Inject
+                  services={[
+                    Toolbar,
+                    ColumnChooser,
+                    Resize,
+                    DetailRow,
+                    ExcelExport,
+                    PdfExport,
+                    Sort,
+                  ]}
+                />
+              </GridComponent>
+            </>
+          )
+        }}
       </ReportOrErrors>
     </div>
   )
