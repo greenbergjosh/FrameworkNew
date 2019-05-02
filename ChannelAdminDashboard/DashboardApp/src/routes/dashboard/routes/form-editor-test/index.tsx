@@ -1,8 +1,7 @@
 import React from "react"
 import { Button, Card, Divider, Typography } from "antd"
 
-import { Form, FormBuilder, Components } from "react-formio"
-import "./form-editor-test.scss"
+import { Form, FormBuilder, Components } from "../../../../components/form-io"
 
 import { WithRouteProps } from "../../../../state/navigation"
 import CheckMatrix from "./components/CheckMatrix"
