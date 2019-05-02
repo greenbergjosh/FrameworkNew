@@ -20,7 +20,7 @@ namespace Utility
 
         public async Task<string> GetEntity(Guid id)
         {
-            return await _entities.GetOrAdd(id, async _ => await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonWrapper.Json(new { InstanceId = id }), ""));
+            return await _entities.GetOrAdd(id, async _ => await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonWrapper.Json(new { InstanceId = id }), JsonWrapper.Empty));
         }
 
         public async Task<IGenericEntity> GetEntityGe(Guid id)
