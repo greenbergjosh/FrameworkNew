@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using TheGreatWallOfDataLib.Scopes;
 using Utility;
 using Jw = Utility.JsonWrapper;
@@ -38,7 +38,7 @@ namespace TheGreatWallOfDataLib
             {
                 var requestBody = await context.GetRawBodyStringAsync();
 
-                _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                _ = _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
                 var req = Jw.JsonToGenericEntity(requestBody);
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
@@ -49,7 +49,10 @@ namespace TheGreatWallOfDataLib
                 {
                     var reqFunc = p.Item1;
 
-                    if (cancellation.Token.IsCancellationRequested) return (reqFunc, null);
+                    if (cancellation.Token.IsCancellationRequested)
+                    {
+                        return (reqFunc, null);
+                    }
 
                     IGenericEntity fResult = null;
                     var funcParts = reqFunc.Split(':');
@@ -114,7 +117,7 @@ namespace TheGreatWallOfDataLib
 
             var resp = body.ToString();
 
-            _fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            _ = _fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
             await context.WriteSuccessRespAsync(resp);
         }

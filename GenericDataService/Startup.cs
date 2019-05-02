@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders;
 using Utility;
 
 namespace GenericDataService
@@ -15,7 +15,6 @@ namespace GenericDataService
     public class Startup
     {
         public dynamic DataService;
-        private IGenericEntity _cors = null;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -41,10 +40,7 @@ namespace GenericDataService
             });
         }
 
-        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
-        {
-            File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
-        }
+        public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
@@ -61,10 +57,13 @@ namespace GenericDataService
 
                 using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
-                    this.DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
+                    DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
 
-                if (DataService == null) throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
+                if (DataService == null)
+                {
+                    throw new Exception("Failed to retrieve DataService instance. Check config entries DataServiceAssemblyFilePath and DataServiceTypeName");
+                }
 
                 DataService.Config(fw);
             }
@@ -83,9 +82,12 @@ namespace GenericDataService
                     FileProvider = new PhysicalFileProvider(wwwrootPath)
                 });
             }
-            else app.UseStaticFiles();
+            else
+            {
+                app.UseStaticFiles();
+            }
 
-	    app.UseCors("CorsPolicy");
+            app.UseCors("CorsPolicy");
 
             TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
 
