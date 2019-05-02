@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Utility.DataLayer
@@ -15,16 +16,19 @@ namespace Utility.DataLayer
                 var results = new List<Dictionary<string, object>>();
 
                 cn.Open();
-                using (var cmd = new SqlCommand($"SELECT {sproc}(@Args, @Payload)", cn) { CommandTimeout = timeout })
+                using (var cmd = new SqlCommand($"EXEC {sproc} {parameters.Select(p => $"@{p.Key}").Join(",")}", cn) { CommandTimeout = timeout })
                 {
 
-                    foreach (var p in parameters) cmd.Parameters.AddWithValue(p.Key, p.Value);
+                    foreach (var p in parameters)
+                    {
+                        cmd.Parameters.AddWithValue($"@{p.Key}", p.Value);
+                    }
 
                     using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false))
                     {
                         var fields = new string[rdr.FieldCount];
 
-                        for (int i = 0; i < rdr.FieldCount; i++)
+                        for (var i = 0; i < rdr.FieldCount; i++)
                         {
                             fields[i] = rdr.GetName(i);
                         }
@@ -37,7 +41,10 @@ namespace Utility.DataLayer
                             {
                                 var val = rdr[f];
 
-                                if (val == DBNull.Value) val = null;
+                                if (val == DBNull.Value)
+                                {
+                                    val = null;
+                                }
 
                                 row.Add(f, val);
                             }
@@ -56,10 +63,10 @@ namespace Utility.DataLayer
         {
             string outval = null;
 
-            using (SqlConnection cn = new SqlConnection(connectionString))
+            using (var cn = new SqlConnection(connectionString))
             {
                 cn.Open();
-                SqlCommand cmd = cn.CreateCommand();
+                var cmd = cn.CreateCommand();
                 cmd.CommandText = sproc;
                 cmd.CommandType = CommandType.StoredProcedure;
 
@@ -70,7 +77,7 @@ namespace Utility.DataLayer
                 cmd.CommandTimeout = timeout;
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                 var ov = cmd.Parameters["@Return"].Value;
-                outval = ov == DBNull.Value ? null : (string) ov;
+                outval = ov == DBNull.Value ? null : (string)ov;
                 cn.Close();
             }
 
@@ -83,10 +90,10 @@ namespace Utility.DataLayer
 
             try
             {
-                using (SqlConnection cn = new SqlConnection(connectionString))
+                using (var cn = new SqlConnection(connectionString))
                 {
                     cn.Open();
-                    SqlCommand cmd = cn.CreateCommand();
+                    var cmd = cn.CreateCommand();
                     cmd.CommandText = "[Data].[p_submit_bulk_payload]";
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -104,7 +111,10 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) outval = "Walkaway";
+                    )
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -121,10 +131,10 @@ namespace Utility.DataLayer
 
             try
             {
-                using (SqlConnection cn = new SqlConnection(connectionString))
+                using (var cn = new SqlConnection(connectionString))
                 {
                     cn.Open();
-                    SqlCommand cmd = cn.CreateCommand();
+                    var cmd = cn.CreateCommand();
                     cmd.CommandText = "[ErrorLog].[spInsertErrorLog]";
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -146,7 +156,10 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) outval = "Walkaway";
+                    )
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -164,10 +177,10 @@ namespace Utility.DataLayer
 
             try
             {
-                using (SqlConnection cn = new SqlConnection(connectionString))
+                using (var cn = new SqlConnection(connectionString))
                 {
                     cn.Open();
-                    SqlCommand cmd = cn.CreateCommand();
+                    var cmd = cn.CreateCommand();
                     cmd.CommandText = "[PostingQueue].[spInsertPostingQueue]";
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -186,7 +199,10 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) outval = "Walkaway";
+                    )
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -219,7 +235,10 @@ namespace Utility.DataLayer
             }
             catch (SqlException sqlex)
             {
-                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) outval = "Walkaway";
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
