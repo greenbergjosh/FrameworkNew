@@ -3,11 +3,12 @@ import { flatten } from "fp-ts/lib/Array"
 import { toArray } from "fp-ts/lib/Record"
 import React from "react"
 import * as ReactRedux from "react-redux"
-import "./App.scss"
+
 import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
+import "./App.scss"
 
 export function App(): JSX.Element {
   const [state] = useRematch((s) => ({

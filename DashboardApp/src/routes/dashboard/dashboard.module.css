@@ -26,16 +26,18 @@
 
 .topToolbar {
   background-color: #fff;
-  /*color: #fff;*/
+
   height: 64px;
   padding: 0;
 }
 
 .trigger {
-  font-size: 18px;
-  padding: 0 24px;
+  /* font-size: 18px; */
+  /* padding: 0 24px; */
   cursor: pointer;
   transition: color 0.3s;
+  transform: translateX(-50%);
+  z-index: 999;
 }
 
 .trigger:hover {

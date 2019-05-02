@@ -1,3 +1,4 @@
+import React from "react"
 import * as Reach from "@reach/router"
 import { Option } from "fp-ts/lib/Option"
 import { PersistedConfig } from "../data/GlobalConfig.Config"
