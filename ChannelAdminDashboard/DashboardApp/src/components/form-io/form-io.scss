@@ -34,8 +34,7 @@ $dark: $gray-800;
 @import "~bootswatch/dist/simplex/_variables.scss";
 @import "~bootstrap/scss/bootstrap.scss";
 @import "~bootswatch/dist/simplex/_bootswatch.scss";
-$fa-font-path: "../../../../../node_modules/font-awesome/fonts";
-@import "~font-awesome/scss/font-awesome";
+@import "~font-awesome/css/font-awesome.css";
 @import "~formiojs/dist/formio.full.css";
 
 .logo {
@@ -62,4 +61,16 @@ $fa-font-path: "../../../../../node_modules/font-awesome/fonts";
 .large-container {
   min-height: 300px;
   width: 100%;
+}
+
+.anticon svg {
+  vertical-align: baseline;
+}
+
+button.btn.btn-block.builder-group-button {
+  padding: 2px 7px;
+}
+
+.formio-form .alert.alert-success {
+  display: none;
 }

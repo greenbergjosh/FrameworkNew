@@ -1,4 +1,4 @@
-import { Col, Icon, Layout, Menu, Row, Typography, Breadcrumb } from "antd"
+import { Col, Icon, Layout, Menu, Row, Typography, Breadcrumb, Button } from "antd"
 import React from "react"
 
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
@@ -83,13 +83,15 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         </Menu>
       </Layout.Sider>
 
-      <Layout style={{ overflow: "hide" }}>
+      <Layout style={{ overflowX: "visible" }}>
         <Layout.Header className={styles.topToolbar}>
           <Row align="middle">
             <Col span={2}>
-              <Icon
+              <Button
                 className={styles.trigger}
-                type={siderCollapsed ? "menu-unfold" : "menu-fold"}
+                icon={siderCollapsed ? "menu-unfold" : "menu-fold"}
+                shape="circle-outline"
+                size="large"
                 onClick={toggleSiderCollapsed}
               />
             </Col>
@@ -101,13 +103,11 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                     return (
                       <Row align="middle" style={{ display: "flex" }}>
                         <Col>
-                          {/* <Typography.Text strong={true}>{subroute.title}</Typography.Text> */}
-                          {subroute.title}
+                          <Typography.Text strong={true}>{subroute.title}</Typography.Text>
                         </Col>
                         <Space.Vertical width={15} />
                         <Col>
-                          {/* <Typography.Text type="secondary">{subroute.description}</Typography.Text> */}
-                          {subroute.description}
+                          <Typography.Text type="secondary">{subroute.description}</Typography.Text>
                         </Col>
                       </Row>
                     )
