@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.Loader;
-using System.Reflection;
-using Microsoft.Extensions.DependencyModel;
+﻿using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Concurrent;
+using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Utility
 {
@@ -26,10 +25,10 @@ namespace Utility
         public AssemblyResolver(string path, IEnumerable<string> additionalAssemblyPaths)
         {
             path = Path.GetFullPath(path);
-            this.Assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-            this.dependencyContext = DependencyContext.Load(this.Assembly);
+            Assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+            dependencyContext = DependencyContext.Load(Assembly);
 
-            this.assemblyResolver = new CompositeCompilationAssemblyResolver
+            assemblyResolver = new CompositeCompilationAssemblyResolver
                                     (new ICompilationAssemblyResolver[]
             {
             new AppBaseCompilationAssemblyResolver(Path.GetDirectoryName(path)),
@@ -37,8 +36,8 @@ namespace Utility
             new PackageCompilationAssemblyResolver()
             });
 
-            this.loadContext = AssemblyLoadContext.GetLoadContext(this.Assembly);
-            this.loadContext.Resolving += OnResolving;
+            loadContext = AssemblyLoadContext.GetLoadContext(Assembly);
+            loadContext.Resolving += OnResolving;
             var assemblyDirs = new List<DirectoryInfo> { new FileInfo(path).Directory };
 
             if (additionalAssemblyPaths?.Any() == true)
@@ -61,7 +60,10 @@ namespace Utility
             {
                 var referencedAssembly = Array.Find(Assembly.GetExecutingAssembly().GetReferencedAssemblies(), a => a.Name == args.Name);
 
-                if (referencedAssembly != null) return Assembly.LoadFrom(referencedAssembly.CodeBase);
+                if (referencedAssembly != null)
+                {
+                    return Assembly.LoadFrom(referencedAssembly.CodeBase);
+                }
 
                 var libFileName = args.Name.Substring(0, args.Name.IndexOf(",")) + ".dll";
 
@@ -71,11 +73,13 @@ namespace Utility
                     {
                         var copiedDependencyAssemblyPath = Path.Combine(d.FullName, libFileName);
 
-                        if (File.Exists(copiedDependencyAssemblyPath)) return Assembly.LoadFrom(copiedDependencyAssemblyPath);
+                        if (File.Exists(copiedDependencyAssemblyPath))
+                        {
+                            return Assembly.LoadFrom(copiedDependencyAssemblyPath);
+                        }
                     }
-                    catch (Exception e)
+                    catch
                     {
-                        
                     }
                 }
 
@@ -90,10 +94,7 @@ namespace Utility
 
         public Assembly Assembly { get; }
 
-        public void Dispose()
-        {
-            this.loadContext.Resolving -= this.OnResolving;
-        }
+        public void Dispose() => loadContext.Resolving -= OnResolving;
 
         private Assembly OnResolving(AssemblyLoadContext context, AssemblyName name)
         {
@@ -102,8 +103,8 @@ namespace Utility
                 return string.Equals(runtime.Name, name.Name, StringComparison.OrdinalIgnoreCase);
             }
 
-            RuntimeLibrary library =
-                this.dependencyContext.RuntimeLibraries.FirstOrDefault(NamesMatch);
+            var library =
+                dependencyContext.RuntimeLibraries.FirstOrDefault(NamesMatch);
             if (library != null)
             {
                 var wrapper = new CompilationLibrary(
@@ -116,10 +117,10 @@ namespace Utility
                     library.Serviceable);
 
                 var assemblies = new List<string>();
-                this.assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblies);
+                assemblyResolver.TryResolveAssemblyPaths(wrapper, assemblies);
                 if (assemblies.Count > 0)
                 {
-                    return this.loadContext.LoadFromAssemblyPath(assemblies[0]);
+                    return loadContext.LoadFromAssemblyPath(assemblies[0]);
                 }
             }
 
@@ -128,12 +129,12 @@ namespace Utility
 
         public static void PrintTypes(Assembly assembly)
         {
-            foreach (TypeInfo type in assembly.DefinedTypes)
+            foreach (var type in assembly.DefinedTypes)
             {
                 Console.WriteLine(type.Name);
-                foreach (PropertyInfo property in type.DeclaredProperties)
+                foreach (var property in type.DeclaredProperties)
                 {
-                    string attributes = string.Join(
+                    var attributes = string.Join(
                         ", ",
                         property.CustomAttributes.Select(a => a.AttributeType.Name));
 
@@ -148,9 +149,11 @@ namespace Utility
 
         public static MethodInfo GetMethod(string dllPath, string className, string methodName, IEnumerable<string> assemblyPaths)
         {
-            MethodInfo mi;
             var t = new Tuple<string, string, string>(dllPath, className, methodName);
-            if (_cache.TryGetValue(t, out mi)) return mi;
+            if (_cache.TryGetValue(t, out var mi))
+            {
+                return mi;
+            }
 
             Assembly a;
             lock (_dllCacheLock)

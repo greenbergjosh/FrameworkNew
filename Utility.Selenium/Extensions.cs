@@ -1,6 +1,6 @@
-﻿using System;
+﻿using OpenQA.Selenium;
+using System;
 using System.Threading.Tasks;
-using OpenQA.Selenium;
 
 namespace Utility.Selenium
 {
@@ -9,13 +9,13 @@ namespace Utility.Selenium
         public static IWebElement FindElementOrDefault(this IWebDriver driver, By by)
         {
             try { return driver.FindElement(by); }
-            catch (Exception e) { return null; }
+            catch { return null; }
         }
 
         public static async Task<IWebElement> FindElementWhenDisplayed(this IWebDriver driver, By by, TimeSpan timeout, TimeSpan? pollingInterval = null)
         {
             pollingInterval = pollingInterval ?? TimeSpan.FromSeconds(1);
-            IWebElement element = driver.FindElementOrDefault(by);
+            var element = driver.FindElementOrDefault(by);
             var timesOut = DateTime.Now.Add(timeout);
 
             while (element?.Displayed != true && DateTime.Now < timesOut)
@@ -36,7 +36,10 @@ namespace Utility.Selenium
                 await Task.Delay(500);
                 pollingInterval = TimeSpan.FromMilliseconds(1000);
             }
-            else await Task.Delay(pollingInterval.Value);
+            else
+            {
+                await Task.Delay(pollingInterval.Value);
+            }
 
             var js = (IJavaScriptExecutor)driver;
             string result = null;
@@ -46,7 +49,7 @@ namespace Utility.Selenium
             string poll()
             {
                 try { return (string)js.ExecuteScript("return document.readyState"); }
-                catch (Exception e) { return null; }
+                catch { return null; }
             }
 
             poll();
@@ -57,7 +60,10 @@ namespace Utility.Selenium
                 result = poll();
             }
 
-            if (loaded()) return;
+            if (loaded())
+            {
+                return;
+            }
 
             throw new Exception($"Document load timed out. Last JS result {result ?? null}");
         }

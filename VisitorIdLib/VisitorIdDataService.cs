@@ -191,7 +191,7 @@ namespace VisitorIdLib
                             break;
                         case "SaveSession":
                             await WriteCodePathEvent(PL.O(new { branch = "SaveSession", loc = "start" }), codePathRsidDict);
-                            var resSS = await SaveSession(Fw, context, ((string)context.Request.Query["pq"]).ParseBool() ?? false, true, true);
+                            var resSS = await SaveSession(Fw, context, true, true);
 
                             result = resSS.Result;
 
@@ -253,7 +253,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        result = (await SaveSession(Fw, context, true, false, true, null, op, md5)).Result;
+                        result = (await SaveSession(Fw, context, false, true, null, op, md5)).Result;
                     }
                     await WriteCodePathEvent(PL.O(new { branch = "Tower", loc = "end", result },
                                            new bool[] { true, true, false }), codePathRsidDict);
@@ -517,7 +517,7 @@ namespace VisitorIdLib
                             md5 = lookupGe.GetS("Md5");
                         }
 
-                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, host, false, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, host, cookieData);
+                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, host, false, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, host, cookieData);
                         eml = vidResp.Email;
 
                         if (!md5.IsNullOrWhitespace())
@@ -679,7 +679,7 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string md5pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
-            Dictionary<string, object> rsids, string pixelDomain, bool sendMd5ToPostingQueue, bool hasClientContext, string lastVisit, string lst, bool vft, string afid, string host, CookieData cookieData)
+            Dictionary<string, object> rsids, string pixelDomain, bool hasClientContext, string lastVisit, string lst, bool vft, string afid, string host, CookieData cookieData)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), rsids);
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "args", sid = sid ?? "''", md5pid = md5pid ?? "''", slot, page, md5 = md5 ?? "''", email = email ?? "''", vieps = visitorIdEmailProviderSequence ?? "''", lv = lastVisit ?? "''", lst = lst ?? "''", vft, afid = afid ?? "''", host }), rsids);
@@ -745,19 +745,16 @@ namespace VisitorIdLib
                 return new VisitorIdResponse(Jw.Json(new { Result = "Failure", slot, page, lv = lastVisit }), md5, email, cookieData);
             }
 
-            if (sendMd5ToPostingQueue)
-            {
-                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
-                    PL.O(new
-                    {
-                        md5Slot = slot,
-                        md5Page = page,
-                        sid,
-                        md5pid,
-                        md5,
-                        lastVisit = lastVisit ?? ""
-                    }).ToString()));
-            }
+            await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdProviderResult", DateTime.Now,
+                PL.O(new
+                {
+                    md5Slot = slot,
+                    md5Page = page,
+                    sid,
+                    md5pid,
+                    md5,
+                    lastVisit = lastVisit ?? ""
+                }).ToString()));
 
             string clientIp = null, userAgent = null;
 
@@ -841,11 +838,11 @@ namespace VisitorIdLib
             return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv);
         }
 
-        public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool sendMd5ToPostingQueue, bool hasClientContext, bool canHaveCookie = true, CookieData cookieData = null, IGenericEntity op = null, string md5 = null)
+        public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool hasClientContext, bool canHaveCookie = true, CookieData cookieData = null, IGenericEntity op = null, string md5 = null)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), new Dictionary<string, object>());
             var opqVals = ValsFromOpaque(op ?? Vutil.OpaqueFromBase64(c.Get("op", "", false), async (method, message) => { await fw.Log(method, message); }));
-            var opqValsToPl = PL.O(new { canHaveCookie, sid = opqVals.sid ?? "", slot = opqVals.slot, page = opqVals.page, md5pid = opqVals.md5pid ?? "", vieps = opqVals.vieps ?? "", argsMd5 = md5 ?? "", md5 = opqVals.md5 ?? "", host = opqVals.host ?? "", afid = opqVals.afid ?? "", lst = opqVals.lst ?? "", vft = opqVals.vft });
+            var opqValsToPl = PL.O(new { canHaveCookie, sid = opqVals.sid ?? "", opqVals.slot, opqVals.page, md5pid = opqVals.md5pid ?? "", vieps = opqVals.vieps ?? "", argsMd5 = md5 ?? "", md5 = opqVals.md5 ?? "", host = opqVals.host ?? "", afid = opqVals.afid ?? "", lst = opqVals.lst ?? "", opqVals.vft });
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "body" }).Add(opqValsToPl), opqVals.rsids);
             if (cookieData == null && canHaveCookie) // passed in a context where we haven't set it yet, but weren't called out of band from a real browser
             {
@@ -864,7 +861,7 @@ namespace VisitorIdLib
             }
 
 
-            var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, sendMd5ToPostingQueue, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.host, cookieData);
+            var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, opqVals.host, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.host, cookieData);
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "end" }), opqVals.rsids);
             return response;
         }
