@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using TheGreatWallOfDataLib.Scopes;
 using Utility;
 using Jw = Utility.JsonWrapper;
@@ -38,18 +38,21 @@ namespace TheGreatWallOfDataLib
             {
                 var requestBody = await context.GetRawBodyStringAsync();
 
-                Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
                 var req = Jw.JsonToGenericEntity(requestBody);
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
-                var funcs = req.GetD("").Where(p => p.Item1 != "i").ToArray();
+                var funcs = req.GetD("").Where(p => p.Item1 != "i");
                 var cancellation = new CancellationTokenSource();
 
                 async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                 {
                     var reqFunc = p.Item1;
 
-                    if (cancellation.Token.IsCancellationRequested) return (reqFunc, null);
+                    if (cancellation.Token.IsCancellationRequested)
+                    {
+                        return (reqFunc, null);
+                    }
 
                     IGenericEntity fResult = null;
                     var funcParts = reqFunc.Split(':');
@@ -96,7 +99,10 @@ namespace TheGreatWallOfDataLib
                 var tasks = funcs.Select(HandleFunc).ToArray();
 
 #if DEBUG
-                foreach (var t in tasks) await t;
+                foreach (var t in tasks)
+                {
+                    await t;
+                }
 #else
                 await Task.WhenAll(tasks);
 #endif
@@ -114,7 +120,7 @@ namespace TheGreatWallOfDataLib
 
             var resp = body.ToString();
 
-            Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
             await context.WriteSuccessRespAsync(resp);
         }

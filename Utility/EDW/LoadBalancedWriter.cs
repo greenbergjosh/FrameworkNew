@@ -55,13 +55,13 @@ namespace Utility.EDW
         {
             this.endpointPollingInterval = endpointPollingInterval;
             this.writeTimeoutSec = writeTimeoutSec == 0 ? this.writeTimeoutSec : writeTimeoutSec;
-            List<IEndpoint> ps = initializeEndpoints().ConfigureAwait(false)
+            var ps = initializeEndpoints().ConfigureAwait(false)
                 .GetAwaiter().GetResult();
 
-            this.endpoints = new ConcurrentDictionary<IEndpoint, Tuple<bool, int>>();
+            endpoints = new ConcurrentDictionary<IEndpoint, Tuple<bool, int>>();
             foreach (var p in ps)
             {
-                this.endpoints.TryAdd(p, new Tuple<bool, int>(true, 0));
+                endpoints.TryAdd(p, new Tuple<bool, int>(true, 0));
             }
 
             this.initializeEndpoints = initializeEndpoints;
@@ -75,29 +75,26 @@ namespace Utility.EDW
             InitiateEndpointPolling();
         }
 
-        public async Task<LoadBalancedWriter.Result> Write(object w)
-        {
-            return await Write(w, writeTimeoutSec);
-        }
+        public Task<LoadBalancedWriter.Result> Write(object w) => Write(w, writeTimeoutSec);
 
         public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds)
         {
-            return await Write(w, timeoutSeconds, this.initiateWalkaway, this.selector, this.novalid,
-                this.failure, this.unhandled).ConfigureAwait(false);
+            return await Write(w, timeoutSeconds, initiateWalkaway, selector, novalid,
+                failure, unhandled).ConfigureAwait(false);
         }
 
-        public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds, 
-            InitiateWalkawayDelegate initiateWalkaway, 
-            SelectEndpointDelegate selector, 
+        public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds,
+            InitiateWalkawayDelegate initiateWalkaway,
+            SelectEndpointDelegate selector,
             NoValidEndpointsDelegate novalid,
             FailureDelegate failure,
             UnhandledExceptionDelegate unhandled)
         {
-            LoadBalancedWriter.Result writeError = LoadBalancedWriter.Result.DefaultFailure;
+            var writeError = LoadBalancedWriter.Result.DefaultFailure;
             try
             {
-                bool secondaryWrite = false;
-                List<IEndpoint> alreadyChosen = new List<IEndpoint>();
+                var secondaryWrite = false;
+                var alreadyChosen = new List<IEndpoint>();
                 while (true)
                 {
                     IEndpoint p = null;
@@ -119,7 +116,10 @@ namespace Utility.EDW
                     alreadyChosen.Add(p);
                     writeError = await p.Write(w, secondaryWrite, timeoutSeconds)
                         .ConfigureAwait(false);
-                    if (writeError == LoadBalancedWriter.Result.Success) break;
+                    if (writeError == LoadBalancedWriter.Result.Success)
+                    {
+                        break;
+                    }
                     else if (writeError == LoadBalancedWriter.Result.Failure)
                     {
                         await failure(w).ConfigureAwait(false);
@@ -149,35 +149,40 @@ namespace Utility.EDW
             return writeError;
         }
 
-        void InitiateEndpointPolling() 
+        private void InitiateEndpointPolling()
         {
-            IObservable<long> observable = 
-                Observable.Interval(TimeSpan.FromSeconds(this.endpointPollingInterval));
+            var observable =
+                Observable.Interval(TimeSpan.FromSeconds(endpointPollingInterval));
 
-            CancellationTokenSource source = new CancellationTokenSource();
+            var source = new CancellationTokenSource();
             Action action = (async () => await PollEndpointsCallback().ConfigureAwait(false));
-            observable.Subscribe(x => {
-                Task task = new Task(action); task.Start();
+            observable.Subscribe(x =>
+            {
+                var task = new Task(action); task.Start();
             }, source.Token);
         }
 
-        async Task PollEndpointsCallback()
+        private async Task PollEndpointsCallback()
         {
             try
             {
-                List<IEndpoint> newEndpoints = await this.pollEndpoints().ConfigureAwait(false);
+                var newEndpoints = await pollEndpoints().ConfigureAwait(false);
                 cacheLock.EnterWriteLock();
                 try
                 {
                     foreach (var key in newEndpoints)
                     {
                         if (!endpoints.ContainsKey(key))
+                        {
                             endpoints[key] = new Tuple<bool, int>(true, 0);
+                        }
                     }
                     foreach (var key in endpoints.Keys)
                     {
-                        Tuple<bool, int> t;
-                        if (!newEndpoints.Contains(key)) endpoints.TryRemove(key, out t);
+                        if (!newEndpoints.Contains(key))
+                        {
+                            endpoints.TryRemove(key, out var t);
+                        }
                     }
                 }
                 finally
@@ -185,13 +190,12 @@ namespace Utility.EDW
                     cacheLock.ExitWriteLock();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                int zz = 1;
             }
         }
 
-        void RemoveEndpoint(IEndpoint p, bool walkaway, bool initialCall = true) 
+        private void RemoveEndpoint(IEndpoint p, bool walkaway, bool initialCall = true)
         {
             Tuple<bool, int> t;
             try
@@ -204,16 +208,22 @@ namespace Utility.EDW
 
                 if (endpoints.TryGetValue(p, out t))
                 {
-                    int nextTimeout = nextWalkawayValue(t.Item2);
+                    var nextTimeout = nextWalkawayValue(t.Item2);
 
                     if (nextTimeout == 0)
+                    {
                         endpoints.TryRemove(p, out t);
+                    }
                     else
                     {
                         cacheLock.EnterWriteLock();
                         try
                         {
-                            if (endpoints[p].Item1 == false && initialCall) return;
+                            if (endpoints[p].Item1 == false && initialCall)
+                            {
+                                return;
+                            }
+
                             endpoints[p] = new Tuple<bool, int>(false, nextTimeout);
                             var _ = Task.Run(async () =>
                             {
@@ -222,9 +232,8 @@ namespace Utility.EDW
                                 {
                                     await AuditEndpoint(p).ConfigureAwait(false);
                                 }
-                                catch (Exception ex)
+                                catch (Exception)
                                 {
-                                    int zz = 1;
                                 }
                             });
                         }
@@ -235,24 +244,25 @@ namespace Utility.EDW
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                int kk = 1;
             }
         }
 
-        async Task AuditEndpoint(IEndpoint p)
+        private async Task AuditEndpoint(IEndpoint p)
         {
             try
             {
-                bool res = await p.Audit().ConfigureAwait(false);
+                var res = await p.Audit().ConfigureAwait(false);
                 if (res)
                 {
                     cacheLock.EnterWriteLock();
                     try
                     {
                         if (endpoints.ContainsKey(p))
+                        {
                             endpoints[p] = new Tuple<bool, int>(true, 0);
+                        }
                     }
                     finally
                     {
@@ -264,9 +274,8 @@ namespace Utility.EDW
                     RemoveEndpoint(p, true, false);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                int i = 1;
             }
         }
     }
