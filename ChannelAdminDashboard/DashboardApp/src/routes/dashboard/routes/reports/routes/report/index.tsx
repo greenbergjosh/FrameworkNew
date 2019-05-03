@@ -12,12 +12,13 @@ import {
   Sort,
   Toolbar,
 } from "@syncfusion/ej2-react-grids"
-import { Button, Select, Typography } from "antd"
+import { Button, Select, Typography, PageHeader } from "antd"
 import { Identity } from "fp-ts/lib/Identity"
 import { identity } from "fp-ts/lib/function"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
-import React, { RefObject, useRef } from "react"
+import React, { RefObject } from "react"
+import * as Reach from "@reach/router"
 import { useRematch } from "../../../../../../hooks"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
@@ -30,13 +31,13 @@ import { cheapHash } from "../../../../../../lib/json"
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
   childGrid,
-  data,
+  data: parentDataRecord,
 }: DetailDataBoundEventArgs): void => {
   childGrid.dataSource = childData.map((childRecord) =>
-    data && childGrid.queryString
+    parentDataRecord && childGrid.queryString
       ? {
           // @ts-ignore
-          [childGrid.queryString]: data[childGrid.queryString],
+          [childGrid.queryString]: parentDataRecord[childGrid.queryString],
           ...childRecord,
         }
       : childRecord
@@ -70,7 +71,7 @@ interface Props {
 }
 
 const commonGridOptions = {
-  detailDataBound: detailMapper([]),
+  // detailDataBound: detailMapper([]),
   columnMenuItems: ["SortAscending", "SortDescending"],
   toolbar: ["CsvExport", "ExcelExport", "PdfExport", "Print", "ColumnChooser"],
   showColumnChooser: true,
@@ -117,7 +118,6 @@ const componentMap = {
 }
 
 export function Report(props: WithRouteProps<Props>): JSX.Element {
-  console.log("Report", props)
   const reportId = props.context.id
 
   const [fromStore, dispatch] = useRematch((state) => ({
@@ -125,6 +125,7 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     decodedReportConfigsById: store.select.reports.decodedReportConfigByConfigId(state),
     decodedQueryConfigsById: store.select.reports.decodedQueryConfigByConfigId(state),
     reportDataByQuery: state.reports.reportDataByQuery,
+    globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))
 
   const reportConfig = record.lookup(reportId, fromStore.decodedReportConfigsById)
@@ -133,21 +134,14 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     .map((a) => a.chain((b) => record.lookup(b.id, fromStore.decodedQueryConfigsById)))
     .fold(identity)
 
-  const grid = useRef<GridComponent>(null)
+  const grid = React.useRef<GridComponent>(null)
   const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
-
-  reportConfig.foldL(
-    () => console.log("no report config"),
-    (rc) => console.log("report config", rc)
-  )
 
   // Force run query if report doesn't have parameters
   React.useEffect(() => {}, [dispatch.logger, dispatch.remoteDataClient])
 
-  console.log("decodedQueryConfigsById >>>", fromStore.decodedQueryConfigsById)
   return (
     <div>
-      <Typography.Title level={2}>{props.title}</Typography.Title>
       <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
         {(reportConfig, queryConfig) => {
           const data = parameterValues.chain((params) =>
@@ -155,19 +149,32 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
           )
           return (
             <>
-              <QueryForm
-                layout={queryConfig.layout}
-                parameters={queryConfig.parameters}
-                parameterValues={parameterValues.getOrElse({})}
-                onSubmit={(parameterValues: JSONRecord) => {
-                  console.log("report/index", "QueryForm.onSubmit", parameterValues)
-                  setParameterValues(some(parameterValues))
-                  dispatch.reports.executeQuery({
-                    query: queryConfig.query,
-                    params: parameterValues,
-                  })
-                }}
-              />
+              <PageHeader
+                extra={
+                  <Button.Group size="small">
+                    <Button>
+                      <Reach.Link to={`${fromStore.globalConfigPath}/${reportId}`}>
+                        View Config
+                      </Reach.Link>
+                    </Button>
+                  </Button.Group>
+                }
+                title={`Report: ${props.title}`}>
+                <QueryForm
+                  layout={queryConfig.layout}
+                  parameters={queryConfig.parameters}
+                  parameterValues={parameterValues.getOrElse({})}
+                  onSubmit={(parameterValues: JSONRecord) => {
+                    console.log("report/index", "QueryForm.onSubmit", parameterValues)
+                    setParameterValues(some(parameterValues))
+                    dispatch.reports.executeQuery({
+                      query: queryConfig.query,
+                      params: parameterValues,
+                    })
+                  }}
+                />
+              </PageHeader>
+
               {/* <Button onClick={() => null}>Debug: Force Run Test Query</Button> */}
               <div style={{ width: "100%" }}>
                 <GridComponent
@@ -175,6 +182,29 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
                   {...commonGridOptions}
                   toolbarClick={handleToolbarItemClicked(grid)}
                   // childGrid={{ ...commonGridOptions, ...childGridOptions }}
+                  detailTemplate={() => (
+                    // <table className="detailtable" style={{ width: "100%" }}>
+                    //   <colgroup>
+                    //     <col style={{ width: "35%" }} />
+                    //     <col style={{ width: "35%" }} />
+                    //     <col style={{ width: "30%" }} />
+                    //   </colgroup>
+                    //   <tbody>
+                    //     <tr>
+                    //       <td rowSpan={4} className="images">
+                    //         Text
+                    //       </td>
+                    //       <td>
+                    //         <span style={{ fontWeight: 500 }}>First Name: </span> Hello
+                    //       </td>
+                    //       <td>
+                    //         <span style={{ fontWeight: 500 }}>Postal Code: </span> World
+                    //       </td>
+                    //     </tr>
+                    //   </tbody>
+                    // </table>
+                    <div style={{ textAlign: "left" }}>Test ABCDE</div>
+                  )}
                   dataSource={data.getOrElse([])}
                   {...reportConfig.layout.componentProps}>
                   <Inject
