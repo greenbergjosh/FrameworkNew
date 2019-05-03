@@ -5,24 +5,26 @@ import { Form } from "react-formio"
 import { JSONRecord } from "../../../../../../data/JSON"
 import { useRematch } from "../../../../../../hooks"
 import { generateLayoutFromParameters } from "./generators"
-import { useTaskRemoteData } from "../../../../../../hooks/use-task-remote-data"
-import { Task } from "fp-ts/lib/Task"
-import * as array from "fp-ts/lib/Array"
-import { success } from "@devexperts/remote-data-ts"
-import { Query } from "@syncfusion/ej2-data"
-import { groupBy } from "fp-ts/lib/NonEmptyArray2v"
 
 interface Props {
   layout: QueryConfig["layout"]
   parameters: QueryConfig["parameters"]
   parameterValues: JSONRecord
-  onSubmit: (parameterValues: JSONRecord) => void
+  onSubmit: (parameterValues: JSONRecord, formState: FormState) => void
 }
 
 // TODO: Improve this type
-interface UncleanParameterValues {
+export interface FormState {
   data: JSONRecord
-  metadata: JSONRecord
+  metadata: {
+    browserName: string
+    offset: number
+    onLine: boolean
+    pathName: string
+    referrer: string
+    timezone: string
+    userAgent: string
+  }
 }
 
 const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
@@ -38,7 +40,7 @@ const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
   }),
 })
 
-// const handleSubmit = debounce((uncleanParameterValues: UncleanParameterValues, ...args: any[]) => {
+// const handleSubmit = debounce((uncleanParameterValues: FormIOState, ...args: any[]) => {
 //   console.log("QueryForm.Form.onSubmit", uncleanParameterValues, args)
 //   const { submit, ...cleanParameterValues } = uncleanParameterValues.data
 //   onSubmit(cleanParameterValues)
@@ -84,10 +86,10 @@ export const QueryForm = ({ layout, parameters, parameterValues, onSubmit }: Pro
   }, [])
 
   const handleSubmit = React.useCallback(
-    debounce((uncleanParameterValues: UncleanParameterValues) => {
-      console.log("QueryForm.Form.onSubmit", uncleanParameterValues)
-      const { submit, ...cleanParameterValues } = uncleanParameterValues.data
-      onSubmit(cleanParameterValues)
+    debounce((formState: FormState) => {
+      console.log("QueryForm.Form.onSubmit", formState)
+      const { submit, ...cleanParameterValues } = formState.data
+      onSubmit(cleanParameterValues, formState)
     }, 50),
     [onSubmit]
   )
@@ -113,7 +115,7 @@ export const QueryForm = ({ layout, parameters, parameterValues, onSubmit }: Pro
       <Form
         form={generateFormFromLayout(realLayout)}
         onSubmit={handleSubmit}
-        submission={parameterValues}
+        submission={{ data: parameterValues }}
       />
     )
   }

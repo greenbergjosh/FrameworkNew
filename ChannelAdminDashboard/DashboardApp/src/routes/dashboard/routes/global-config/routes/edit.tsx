@@ -252,3 +252,5 @@ const formItemLayout = {
     lg: { span: 22 },
   },
 }
+
+export default EditGlobalConfig

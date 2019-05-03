@@ -47,3 +47,5 @@ export function FormEditorTest({ children, ...props }: WithRouteProps<Props>): J
     </div>
   )
 }
+
+export default FormEditorTest

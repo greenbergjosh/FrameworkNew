@@ -81,6 +81,7 @@ export type RoutesMap = typeof staticRoutesMap
 const staticRoutesMap = {
   login: {
     abs: "/login",
+    // component: React.lazy(() => import("../routes/landing")), // Landing,
     component: Landing,
     description: "",
     title: "Home",
@@ -93,6 +94,7 @@ const staticRoutesMap = {
 
   dashboard: {
     abs: "/dashboard",
+    // component: React.lazy(() => import("../routes/dashboard")), // Dashboard,
     component: Dashboard,
     description: "",
     title: "Dashboard",
@@ -103,6 +105,7 @@ const staticRoutesMap = {
     subroutes: {
       summary: {
         abs: "/dashboard/summary",
+        // component: React.lazy(() => import("../routes/dashboard/routes/summary")), // Summary,
         component: Summary,
         description: "Customizable highlights dashboard",
         title: "Summary",
@@ -114,6 +117,7 @@ const staticRoutesMap = {
       },
       reports: {
         abs: "/dashboard/reports",
+        // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
         component: Reports,
         description: "Create, read, update, delete reports",
         title: "Reports",
@@ -125,6 +129,7 @@ const staticRoutesMap = {
       },
       "global-config": {
         abs: "/dashboard/global-config",
+        // component: React.lazy(() => import("../routes/dashboard/routes/global-config")), //GlobalConfigAdmin,
         component: GlobalConfigAdmin,
         description: "Manage GlobalConfig.Config entries",
         title: "Global Config",
@@ -135,6 +140,9 @@ const staticRoutesMap = {
         subroutes: {
           "/": {
             abs: "/dashboard/global-config",
+            // component: React.lazy(() =>
+            //   import("../routes/dashboard/routes/global-config/routes/list")
+            // ), // ListGlobalConfig,
             component: ListGlobalConfig,
             description: "",
             title: "Global Configs Index",
@@ -146,6 +154,9 @@ const staticRoutesMap = {
           },
           create: {
             abs: "/dashboard/global-config/create",
+            // component: React.lazy(() =>
+            //   import("../routes/dashboard/routes/global-config/routes/create")
+            // ), // CreateGlobalConfig,
             component: CreateGlobalConfig,
             description: "",
             title: "Create Global Config",
@@ -157,6 +168,9 @@ const staticRoutesMap = {
           },
           ":configId/edit": {
             abs: "/dashboard/global-config/:configId/edit",
+            // component: React.lazy(() =>
+            //   import("../routes/dashboard/routes/global-config/routes/edit")
+            // ), // EditGlobalConfig,
             component: EditGlobalConfig,
             description: "",
             title: "Edit Global Config",
@@ -168,6 +182,9 @@ const staticRoutesMap = {
           },
           ":configId": {
             abs: "/dashboard/global-config/:configId",
+            // component: React.lazy(() =>
+            //   import("../routes/dashboard/routes/global-config/routes/show")
+            // ), // ShowGlobalConfig,
             component: ShowGlobalConfig,
             description: "",
             title: "Global Configs Index",
@@ -181,6 +198,7 @@ const staticRoutesMap = {
       },
       "form-editor-test": {
         abs: "/dashboard/form-editor-test",
+        // component: React.lazy(() => import("../routes/dashboard/routes/form-editor-test")), // FormEditorTest,
         component: FormEditorTest,
         description: "Form Editor Test",
         title: "Form Editor Test",
