@@ -40,6 +40,7 @@
   top: 0;
   transition: color 0.3s;
   transform: translateX(50%);
+  z-index: 1;
 }
 
 .trigger:hover {
