@@ -129,7 +129,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
         <Layout.Content>
-          <Row style={{ padding: 24 }}>{props.children}</Row>
+          <Row style={{ padding: 24, paddingTop: 0 }}>{props.children}</Row>
 
           <Layout.Footer style={{ textAlign: "center" }}>
             {`OnPoint Global © ${new Date().getFullYear()}`}
