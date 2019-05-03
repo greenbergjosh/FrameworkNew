@@ -6,3 +6,5 @@ interface Props {}
 export function Reports(props: WithRouteProps<Props>): JSX.Element {
   return <>{props.children}</>
 }
+
+export default Reports

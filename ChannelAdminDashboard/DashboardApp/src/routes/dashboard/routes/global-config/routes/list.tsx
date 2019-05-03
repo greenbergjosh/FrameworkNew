@@ -35,7 +35,6 @@ import { store } from "../../../../../state/store"
 
 interface Props {}
 
-const atom = Atom.of({})
 
 export function ListGlobalConfig({
   children,
@@ -304,3 +303,5 @@ function ConfigTable({ configs }: ConfigTableProps) {
     </>
   )
 }
+
+export default ListGlobalConfig

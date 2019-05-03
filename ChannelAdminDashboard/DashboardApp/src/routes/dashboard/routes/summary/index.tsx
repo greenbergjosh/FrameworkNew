@@ -7,3 +7,5 @@ interface Props {}
 export function Summary(props: WithRouteProps<Props>): JSX.Element {
   return <MockDnDDashboardPanel />
 }
+
+export default Summary

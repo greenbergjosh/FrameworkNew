@@ -23,7 +23,7 @@ import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
 import { Left, Right } from "../../../../../../data/Either"
 import { ReportOrErrors } from "./ReportOrErrors"
-import { QueryForm } from "./QueryForm"
+import { FormState, QueryForm } from "./QueryForm"
 import { JSONRecord } from "../../../../../../data/JSON"
 import { cheapHash } from "../../../../../../lib/json"
 
@@ -127,25 +127,24 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     reportDataByQuery: state.reports.reportDataByQuery,
   }))
 
-  const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
-
   const reportConfig = record.lookup(reportId, fromStore.decodedReportConfigsById)
-
   const queryConfig = new Identity(reportConfig)
     .map((a) => a.chain((b) => b.fold(Left((errs) => none), Right((rc) => rc.query))))
     .map((a) => a.chain((b) => record.lookup(b.id, fromStore.decodedQueryConfigsById)))
     .fold(identity)
 
-  console.log("decodedQueryConfigsById >>>", fromStore.decodedQueryConfigsById)
+  const grid = useRef<GridComponent>(null)
+  const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
+
   reportConfig.foldL(
     () => console.log("no report config"),
     (rc) => console.log("report config", rc)
   )
-  const grid = useRef<GridComponent>(null)
 
   // Force run query if report doesn't have parameters
   React.useEffect(() => {}, [dispatch.logger, dispatch.remoteDataClient])
 
+  console.log("decodedQueryConfigsById >>>", fromStore.decodedQueryConfigsById)
   return (
     <div>
       <Typography.Title level={2}>{props.title}</Typography.Title>
@@ -198,3 +197,5 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     </div>
   )
 }
+
+export default Report

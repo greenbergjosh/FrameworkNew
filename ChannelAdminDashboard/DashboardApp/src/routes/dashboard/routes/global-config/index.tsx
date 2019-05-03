@@ -17,3 +17,5 @@ export function GlobalConfigAdmin({
     </Card>
   )
 }
+
+export default GlobalConfigAdmin

@@ -143,3 +143,5 @@ export function Landing(props: WithRouteProps<Props>) {
     </Layout>
   )
 }
+
+export default Landing
