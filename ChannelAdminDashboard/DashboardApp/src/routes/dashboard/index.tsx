@@ -58,54 +58,43 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
             <Icon type={siderCollapsed ? "menu-unfold" : "menu-fold"} />
           </Button>
         </div>
-        <div style={{ overflowY: "scroll" }}>
-          <Menu
-            theme="dark"
-            mode="inline"
-            defaultOpenKeys={activeMenuKeys}
-            selectedKeys={activeMenuKeys}>
-            {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
-              return toArray(appRoutes)
-                .filter(([path, route]) => route.shouldAppearInSideNav)
-                .map(([path, route]) => {
-                  return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
-                    <Menu.SubMenu
-                      key={route.abs}
-                      title={
-                        <span>
-                          <Icon type={route.iconType} />
-                          <span>{route.title}</span>
-                        </span>
-                      }>
-                      {renderRoutesAsMenuItems(route.subroutes)}
-                    </Menu.SubMenu>
-                  ) : (
-                    <Menu.Item key={route.abs}>
-                      <Icon type={route.iconType} />
-                      <span>{route.title}</span>
-                      <Reach.Link to={route.abs} />
-                    </Menu.Item>
-                  )
-                })
-                .reverse()
-            })(props.subroutes)}
-          </Menu>
-        </div>
+        <Menu
+          theme="dark"
+          mode="inline"
+          defaultOpenKeys={activeMenuKeys}
+          selectedKeys={activeMenuKeys}>
+          {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
+            return toArray(appRoutes)
+              .filter(([path, route]) => route.shouldAppearInSideNav)
+              .map(([path, route]) => {
+                return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
+                  <Menu.SubMenu
+                    key={route.abs}
+                    title={
+                      <span>
+                        <Icon type={route.iconType} />
+                        <span>{route.title}</span>
+                      </span>
+                    }>
+                    {renderRoutesAsMenuItems(route.subroutes)}
+                  </Menu.SubMenu>
+                ) : (
+                  <Menu.Item key={route.abs}>
+                    <Icon type={route.iconType} />
+                    <span>{route.title}</span>
+                    <Reach.Link to={route.abs} />
+                  </Menu.Item>
+                )
+              })
+              .reverse()
+          })(props.subroutes)}
+        </Menu>
       </Layout.Sider>
 
       <Layout>
         <Layout.Header className={styles.topToolbar}>
           <Row align="middle">
-            <Col span={2}>
-              {/* <Button
-                className={styles.trigger}
-                icon={siderCollapsed ? "menu-unfold" : "menu-fold"}
-                shape="circle-outline"
-                size="large"
-                onClick={toggleSiderCollapsed}
-              /> */}
-            </Col>
-            <Col span={20}>
+            <Col push={2} span={20}>
               {toArray(props.subroutes).map(([path, subroute]) => (
                 <Reach.Match key={subroute.abs} path={`${subroute.path}/*`}>
                   {({ match }) => {
@@ -127,22 +116,6 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
             </Col>
             <Col span={2}>
               <GoogleAuth />
-              {/* <Dropdown
-                overlay={
-                  <Menu
-                    onClick={({ key }) =>
-                      key === "logout" ? dispatch.gapiAuth.signOut() : () => null
-                    }>
-                    <Menu.Item key="logout">
-                      <Icon type="logout" />
-                      <span>Logout</span>
-                    </Menu.Item>
-                  </Menu>
-                }
-                placement="bottomCenter"
-                trigger={["click"]}>
-                <Button icon="user" shape="circle" />
-              </Dropdown> */}
             </Col>
           </Row>
         </Layout.Header>
@@ -166,3 +139,5 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
     </Layout>
   )
 }
+
+export default Dashboard
