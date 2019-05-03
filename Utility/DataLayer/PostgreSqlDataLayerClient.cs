@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Threading.Tasks;
-using Npgsql;
 
 namespace Utility.DataLayer
 {
@@ -8,16 +8,16 @@ namespace Utility.DataLayer
     {
 
         // TODO: deal with SQL Nulls (cast doesn't work)
-       public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
+        public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
         {
             string outval;
-            using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
+            using (var cn = new NpgsqlConnection(connectionString))
             {
                 cn.Open();
                 using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload)", cn) { CommandTimeout = timeout })
                 {
-                    cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args);
-                    cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
+                    cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace(JsonWrapper.Empty));
+                    cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Json, payload.IfNullOrWhitespace(JsonWrapper.Empty));
                     cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                     outval = (string)cmd.Parameters["@Return"].Value;
@@ -28,13 +28,13 @@ namespace Utility.DataLayer
             return outval;
         }
 
-       public async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
-       {
-           string result = null;
+        public async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
+        {
+            string result = null;
 
             try
             {
-                using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(connectionString))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT data.p_submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
@@ -54,7 +54,10 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) result = "Walkaway";
+                    )
+                {
+                    result = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -64,14 +67,14 @@ namespace Utility.DataLayer
             return result;
         }
 
-       public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
-            string process, string method, string descriptor, string message, int timeout = 120)
+        public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
+             string process, string method, string descriptor, string message, int timeout = 120)
         {
             string outval = null;
 
             try
             {
-                using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(connectionString))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout })
@@ -94,7 +97,10 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) outval = "Walkaway";
+                    )
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -104,13 +110,13 @@ namespace Utility.DataLayer
             return outval;
         }
 
-       public async Task<string> InsertPostingQueue(string connectionString, string postType, DateTime postDate, string payload, int timeout = 120)
+        public async Task<string> InsertPostingQueue(string connectionString, string postType, DateTime postDate, string payload, int timeout = 120)
         {
             string outval = null;
 
             try
             {
-                using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(connectionString))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout })
@@ -131,7 +137,10 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") ||
                     sqlex.Message.Contains("login failed")
-                    ) outval = "Walkaway";
+                    )
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -141,9 +150,6 @@ namespace Utility.DataLayer
             return outval;
         }
 
-        public Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120) => throw new NotImplementedException();
     }
 }
