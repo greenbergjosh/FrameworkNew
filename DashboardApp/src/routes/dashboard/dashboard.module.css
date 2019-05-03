@@ -35,9 +35,11 @@
   /* font-size: 18px; */
   /* padding: 0 24px; */
   cursor: pointer;
+  position: absolute;
+  right: 0;
+  top: 0;
   transition: color 0.3s;
-  transform: translateX(-50%);
-  z-index: 999;
+  transform: translateX(50%);
 }
 
 .trigger:hover {
@@ -60,5 +62,5 @@
 }
 
 .logo.logoCollapsed {
-  transform: scale(0.5);
+  transform: scale(1);
 }
