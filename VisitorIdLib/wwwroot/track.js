@@ -40,7 +40,7 @@
         };
 
         if (res.config.SaveSession === 'true') {
-            res = await window.genericFetch(url + '?m=SaveSession&pq=' + (res.config.SaveResult || 0) + '&op=' + base64UrlSafe(JSON.stringify(opaque)),
+            res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
                 { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
                 'json', '');
             opaque.eml = res.email;
@@ -88,8 +88,6 @@ async function genericFetch(url, fetchParms, fetchType, imgFlag) {
             return "";
         });
 }
-//document.querySelector('img').src = 'data:image/gif;base64' 
-// var docArticle = doc.querySelector('article').innerHTML;
 
 function base64UrlSafe(s) {
     s = btoa(s);
