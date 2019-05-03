@@ -9,6 +9,7 @@ import styles from "./dashboard.module.css"
 import { some, toArray } from "fp-ts/lib/Record"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks"
+import { identity } from "fp-ts/lib/function"
 
 interface Props {}
 
@@ -42,58 +43,67 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
       <Layout.Sider
         collapsible={true}
         collapsed={siderCollapsed}
-        style={{ overflowY: "scroll" }}
         trigger={null}
         width={200}
         onCollapse={setSiderCollapsed}>
-        <div className={`${styles.logo} ${siderCollapsed ? styles.logoCollapsed : ""}`}>
-          <Typography.Title level={4}>ONPOINT</Typography.Title>
+        <div style={{ position: identity<"relative">("relative") }}>
+          <div className={`${styles.logo} ${siderCollapsed ? styles.logoCollapsed : ""}`}>
+            <Typography.Title level={4}>{siderCollapsed ? "OPG" : "ONPOINT"}</Typography.Title>
+          </div>
+          <Button
+            className={styles.trigger}
+            shape="circle-outline"
+            size="large"
+            onClick={toggleSiderCollapsed}>
+            <Icon type={siderCollapsed ? "menu-unfold" : "menu-fold"} />
+          </Button>
         </div>
-
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultOpenKeys={activeMenuKeys}
-          selectedKeys={activeMenuKeys}>
-          {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
-            return toArray(appRoutes)
-              .filter(([path, route]) => route.shouldAppearInSideNav)
-              .map(([path, route]) => {
-                return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
-                  <Menu.SubMenu
-                    key={route.abs}
-                    title={
-                      <span>
-                        <Icon type={route.iconType} />
-                        <span>{route.title}</span>
-                      </span>
-                    }>
-                    {renderRoutesAsMenuItems(route.subroutes)}
-                  </Menu.SubMenu>
-                ) : (
-                  <Menu.Item key={route.abs}>
-                    <Icon type={route.iconType} />
-                    <span>{route.title}</span>
-                    <Reach.Link to={route.abs} />
-                  </Menu.Item>
-                )
-              })
-              .reverse()
-          })(props.subroutes)}
-        </Menu>
+        <div style={{ overflowY: "scroll" }}>
+          <Menu
+            theme="dark"
+            mode="inline"
+            defaultOpenKeys={activeMenuKeys}
+            selectedKeys={activeMenuKeys}>
+            {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
+              return toArray(appRoutes)
+                .filter(([path, route]) => route.shouldAppearInSideNav)
+                .map(([path, route]) => {
+                  return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
+                    <Menu.SubMenu
+                      key={route.abs}
+                      title={
+                        <span>
+                          <Icon type={route.iconType} />
+                          <span>{route.title}</span>
+                        </span>
+                      }>
+                      {renderRoutesAsMenuItems(route.subroutes)}
+                    </Menu.SubMenu>
+                  ) : (
+                    <Menu.Item key={route.abs}>
+                      <Icon type={route.iconType} />
+                      <span>{route.title}</span>
+                      <Reach.Link to={route.abs} />
+                    </Menu.Item>
+                  )
+                })
+                .reverse()
+            })(props.subroutes)}
+          </Menu>
+        </div>
       </Layout.Sider>
 
-      <Layout style={{ overflowX: "visible" }}>
+      <Layout>
         <Layout.Header className={styles.topToolbar}>
           <Row align="middle">
             <Col span={2}>
-              <Button
+              {/* <Button
                 className={styles.trigger}
                 icon={siderCollapsed ? "menu-unfold" : "menu-fold"}
                 shape="circle-outline"
                 size="large"
                 onClick={toggleSiderCollapsed}
-              />
+              /> */}
             </Col>
             <Col span={20}>
               {toArray(props.subroutes).map(([path, subroute]) => (
@@ -145,7 +155,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
             ))}
           </Breadcrumb>
         </Row>
-        <Layout.Content style={{ overflow: "scroll" }}>
+        <Layout.Content>
           <Row style={{ padding: 24 }}>{props.children}</Row>
 
           <Layout.Footer style={{ textAlign: "center" }}>

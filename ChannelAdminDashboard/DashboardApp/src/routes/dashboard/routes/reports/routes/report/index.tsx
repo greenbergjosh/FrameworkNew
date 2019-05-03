@@ -170,25 +170,27 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
                 }}
               />
               {/* <Button onClick={() => null}>Debug: Force Run Test Query</Button> */}
-              <GridComponent
-                ref={grid}
-                {...commonGridOptions}
-                toolbarClick={handleToolbarItemClicked(grid)}
-                // childGrid={{ ...commonGridOptions, ...childGridOptions }}
-                dataSource={data.getOrElse([])}
-                {...reportConfig.layout.componentProps}>
-                <Inject
-                  services={[
-                    Toolbar,
-                    ColumnChooser,
-                    Resize,
-                    DetailRow,
-                    ExcelExport,
-                    PdfExport,
-                    Sort,
-                  ]}
-                />
-              </GridComponent>
+              <div style={{ width: "100%" }}>
+                <GridComponent
+                  ref={grid}
+                  {...commonGridOptions}
+                  toolbarClick={handleToolbarItemClicked(grid)}
+                  // childGrid={{ ...commonGridOptions, ...childGridOptions }}
+                  dataSource={data.getOrElse([])}
+                  {...reportConfig.layout.componentProps}>
+                  <Inject
+                    services={[
+                      Toolbar,
+                      ColumnChooser,
+                      Resize,
+                      DetailRow,
+                      ExcelExport,
+                      PdfExport,
+                      Sort,
+                    ]}
+                  />
+                </GridComponent>
+              </div>
             </>
           )
         }}
