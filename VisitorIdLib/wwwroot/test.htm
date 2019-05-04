@@ -7,19 +7,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
         (function (w, d, e, t, u, j, n, o, f, i) {
-                document.addEventListener(e,
-                    function (event) {
-                        w.visitorIdObject = n;
-                        w[n] = {};
-                        i = d.createElement(t);
-                        i.async = 1;
-                        i.src = u + j;
-                        d.head.appendChild(i);
-                        i.onload = async function () {
-                            await w[n].visitorId(u, o, f);
-                        };
-                    });
-        })(window, document, 'DOMContentLoaded', 'script', '//visitor-identification.net', '/track.js', 'visid', { afid: '00000000-0000-0000-0000-000000000001', tpid: '', rsid: {} });
+            document.addEventListener(e,
+                function (event) {
+                    w.visitorIdObject = n;
+                    w[n] = {};
+                    i = d.createElement(t);
+                    i.async = 1;
+                    i.src = u + j;
+                    d.head.appendChild(i);
+                    i.onload = async function () {
+                        await w[n].visitorId(u, o, f);
+                    };
+                });
+        })(window, document, 'DOMContentLoaded', 'script', '//localhost:21339', '/track-compat.js', 'visid', { afid: '00000000-0000-0000-0000-000000000017', tpid: '', rsid: {} });
     </script>
 </head>
 <body>
