@@ -237,7 +237,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        result = (await SaveSession(Fw, context, false, true, null, op, md5)).Result;
+                        result = (await SaveSession(Fw, context, true, true, null, op, md5)).Result;
                     }
                     await WriteCodePathEvent(PL.O(new { branch = "Tower", loc = "end", result },
                                            new bool[] { true, true, false }), codePathRsidDict);
@@ -500,7 +500,7 @@ namespace VisitorIdLib
                             md5 = lookupGe.GetS("Md5");
                         }
 
-                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, c != null, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData);
+                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData);
                         eml = vidResp.Email;
 
                         if (!md5.IsNullOrWhitespace())
@@ -742,8 +742,9 @@ namespace VisitorIdLib
                 await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdSignal", DateTime.Now,
                     PL.O(new
                     {
+                        ts = DateTime.Now,
                         visitorIdSessionId = sid,
-                        md5,
+                        md5 = Guid.Parse(md5),
                         email = email.IfNullOrWhitespace(null),
                         ipAddress = clientIp,
                         md5ProviderId = md5pid,
