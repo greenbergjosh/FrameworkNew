@@ -62,7 +62,7 @@ namespace TraverseDataLib
                     {
                         case "TraverseResponse":
                             var (fullBodyGe, opaqueGe) = await TraverseResponseAsGe(context);
-                            var (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv) = VisitorIdDataService.ValsFromOpaque(opaqueGe);
+                            var (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, _, _) = VisitorIdDataService.ValsFromOpaque(opaqueGe);
                             var pidSidMd5 = new PidSidMd5() { Pid = md5pid, Sid = sid, Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
 
                             var vidResp = new VisitorIdResponse("", "", "", null);
