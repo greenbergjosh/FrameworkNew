@@ -35,7 +35,6 @@ import { store } from "../../../../../state/store"
 
 interface Props {}
 
-
 export function ListGlobalConfig({
   children,
   location,

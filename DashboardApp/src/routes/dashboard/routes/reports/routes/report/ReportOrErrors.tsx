@@ -13,7 +13,7 @@ import { useRematch } from "../../../../../../hooks"
 interface Props {
   children: (reportConfig: LocalReportConfig, queryConfig: QueryConfig) => JSX.Element
   reportConfig: Option<Either<Errors, LocalReportConfig>>
-  reportId: string
+  reportId?: string
   queryConfig: Option<Either<Errors, QueryConfig>>
 }
 
@@ -22,22 +22,28 @@ export const ReportOrErrors = ({ children, reportConfig, reportId, queryConfig }
     globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))
 
+  const id = reportId || "NestedReport"
+
   return (
     <Card size="small">
       {these.fromOptions(reportConfig, queryConfig).foldL(
         None(() => (
-          <Typography.Text type="danger">{`No configuration found for ${reportId}`}</Typography.Text>
+          <Typography.Text type="danger">{`No configuration found for ${id}`}</Typography.Text>
         )),
 
         Some((theseEithers) => {
           return theseEithers.fold(
-            This((reportConfig1) => (
-              <Typography.Text type="danger">{`No query found for ${reportId}`}</Typography.Text>
-            )),
+            This(
+              (reportConfig1) =>
+                // @ts-ignore
+                console.debug("ReportOrErrors", "#2: No query found", reportConfig1) || (
+                  <Typography.Text type="danger">{`No query found for ${id}`}</Typography.Text>
+                )
+            ),
 
             That((queryConfig1) => (
               <Typography.Text type="danger">
-                {`No configuration found for Report config with id ${reportId}`}
+                {`No configuration found for Report config with id ${id}`}
               </Typography.Text>
             )),
 
@@ -48,33 +54,53 @@ export const ReportOrErrors = ({ children, reportConfig, reportId, queryConfig }
                   None(() => (
                     <>
                       <Typography.Paragraph type="danger">
-                        {`Unable to parse Report config with id ${reportId}}`}
+                        {`Unable to parse Report config with id ${id}}`}
                       </Typography.Paragraph>
                       <Typography.Paragraph type="danger">
-                        {`Unable to parse Report.Query config associated with Report config with id ${reportId}`}
+                        {`Unable to parse Report.Query config associated with Report config with id ${id}`}
                       </Typography.Paragraph>
                     </>
                   )),
 
-                  Some((theseConfigs) =>
-                    theseConfigs.fold(
-                      This((reportConfig3) => (
-                        <Typography.Paragraph type="danger">
-                          {`Unable to parse Report.Query config associated with Report config with id `}
-                          <Reach.Link to={`${fromStore.globalConfigPath}/${reportId}`}>
-                            {reportId}
-                          </Reach.Link>
-                        </Typography.Paragraph>
-                      )),
+                  Some(
+                    (theseConfigs) =>
+                      // @ts-ignore
+                      console.log(
+                        "ReportOrErrors.theseConfigs",
+                        theseConfigs,
+                        reportConfig1,
+                        queryConfig1
+                      ) ||
+                      theseConfigs.fold(
+                        This(
+                          (reportConfig3) =>
+                            // @ts-ignore
+                            console.debug(
+                              "ReportOrErrors",
+                              "#6: No query found",
+                              reportConfig3
+                            ) || (
+                              <Typography.Paragraph type="danger">
+                                {`Unable to parse Report.Query config associated with Report config with id `}
+                                {reportId ? (
+                                  <Reach.Link to={`${fromStore.globalConfigPath}/${reportId}`}>
+                                    {reportId}
+                                  </Reach.Link>
+                                ) : (
+                                  id
+                                )}
+                              </Typography.Paragraph>
+                            )
+                        ),
 
-                      That((queryConfig3) => (
-                        <Typography.Paragraph type="danger">
-                          {`Unable to parse Report config with id ${reportId}`}
-                        </Typography.Paragraph>
-                      )),
+                        That((queryConfig3) => (
+                          <Typography.Paragraph type="danger">
+                            {`Unable to parse Report config with id ${id}`}
+                          </Typography.Paragraph>
+                        )),
 
-                      Both(children)
-                    )
+                        Both(children)
+                      )
                   )
                 )
             )

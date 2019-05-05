@@ -11,7 +11,7 @@ import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/route
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
 import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
 import { Reports } from "../routes/dashboard/routes/reports"
-import { Report } from "../routes/dashboard/routes/reports/routes/report"
+import { ReportView } from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { Landing } from "../routes/landing"
 import * as record from "fp-ts/lib/Record"
@@ -254,7 +254,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
               records.map((report) => ({
                 [report.id]: {
                   abs: `/dashboard/reports/${report.id}`,
-                  component: Report,
+                  component: ReportView,
                   description: "",
                   title: report.name as string,
                   iconType: "bar-chart",
