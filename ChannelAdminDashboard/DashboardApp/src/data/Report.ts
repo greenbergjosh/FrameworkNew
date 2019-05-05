@@ -42,7 +42,7 @@ export const ReportConfigCodec = iots.recursion<
   iots.type({
     type: iots.literal("ReportConfig"),
     query: iotst.createOptionFromNullable(GlobalConfigReferenceCodec),
-    layout: iots.taggedUnion("component", [TableLayoutItemCodec, SelectLayoutItemCodec]),
+    layout: LayoutItemCodec,
     details: iotst.createOptionFromNullable(
       iots.taggedUnion("type", [GlobalConfigReferenceCodec, _ReportConfigCodec])
     ),

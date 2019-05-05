@@ -14,7 +14,7 @@ export const generators = {
   integer: (parameter: ParameterItem): QueryLayoutItem => ({}),
   float: (parameter: ParameterItem): QueryLayoutItem => ({}),
   date: (parameter: ParameterItem): QueryLayoutItem => ({
-    label: parameter.label.getOrElse("Date"),
+    label: parameter.label.getOrElse(parameter.name),
     displayInTimezone: "utc",
     format: "yyyy-MM-dd",
     type: "datetime",

@@ -27,6 +27,14 @@ import { ReportOrErrors } from "./ReportOrErrors"
 import { FormState, QueryForm } from "./QueryForm"
 import { JSONRecord } from "../../../../../../data/JSON"
 import { cheapHash } from "../../../../../../lib/json"
+import {
+  GlobalConfigReference,
+  LocalReportConfig,
+  ParameterItem,
+  QueryConfig,
+  RemoteReportConfig,
+  ReportConfigCodec,
+} from "../../../../../../data/Report"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -66,8 +74,14 @@ interface ReportContext {
   id: ReportQueryId
 }
 
-interface Props {
+interface ViewProps {
   context: ReportContext
+}
+
+interface ReportProps {
+  report: GlobalConfigReference | RemoteReportConfig
+  title?: string
+  data?: JSONRecord
 }
 
 const commonGridOptions = {
@@ -117,9 +131,42 @@ const componentMap = {
   select: Select,
 }
 
-export function Report(props: WithRouteProps<Props>): JSX.Element {
-  const reportId = props.context.id
+export function ReportView(props: WithRouteProps<ViewProps>): JSX.Element {
+  return (
+    <Report
+      report={{
+        type: "GlobalConfigReference",
+        id: props.context.id,
+      }}
+      title={props.title}
+    />
+  )
+}
 
+function determineSatisfiedParameters(
+  parameters: ParameterItem[],
+  data: JSONRecord
+): { unsatisfiedParameters: ParameterItem[]; satisfiedParameters: JSONRecord } {
+  console.log("index.determineSatisfiedParameters", { parameters, data })
+  return parameters.reduce(
+    (acc, parameter) =>
+      typeof data[parameter.name] !== "undefined"
+        ? {
+            ...acc,
+            satisfiedParameters: {
+              ...acc.satisfiedParameters,
+              [parameter.name]: data[parameter.name],
+            },
+          }
+        : {
+            ...acc,
+            unsatisfiedParameters: [...acc.unsatisfiedParameters, parameter],
+          },
+    { unsatisfiedParameters: [] as ParameterItem[], satisfiedParameters: {} as JSONRecord }
+  )
+}
+
+function Report(props: ReportProps): JSX.Element {
   const [fromStore, dispatch] = useRematch((state) => ({
     configsById: store.select.globalConfig.configsById(state),
     decodedReportConfigsById: store.select.reports.decodedReportConfigByConfigId(state),
@@ -128,7 +175,12 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))
 
-  const reportConfig = record.lookup(reportId, fromStore.decodedReportConfigsById)
+  const reportConfig =
+    props.report.type === "GlobalConfigReference"
+      ? record.lookup(props.report.id, fromStore.decodedReportConfigsById)
+      : some(ReportConfigCodec.decode(props.report))
+
+  const reportId = props.report.type === "GlobalConfigReference" ? props.report.id : void 0
   const queryConfig = new Identity(reportConfig)
     .map((a) => a.chain((b) => b.fold(Left((errs) => none), Right((rc) => rc.query))))
     .map((a) => a.chain((b) => record.lookup(b.id, fromStore.decodedQueryConfigsById)))
@@ -144,68 +196,96 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
     <div>
       <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
         {(reportConfig, queryConfig) => {
-          const data = parameterValues.chain((params) =>
-            record.lookup(cheapHash(queryConfig.query, params), fromStore.reportDataByQuery)
+          const { satisfiedParameters, unsatisfiedParameters } = determineSatisfiedParameters(
+            queryConfig.parameters,
+            props.data || {}
           )
+
+          console.log("Reporting", "Looking up query result data", {
+            query: queryConfig.query,
+            satisfiedParameters,
+            parameterValues,
+          })
+
+          const queryResultData = parameterValues.foldL(
+            () =>
+              !unsatisfiedParameters.length
+                ? record.lookup(
+                    cheapHash(queryConfig.query, satisfiedParameters),
+                    fromStore.reportDataByQuery
+                  )
+                : none,
+
+            (params) =>
+              record.lookup(
+                cheapHash(queryConfig.query, { ...satisfiedParameters, ...params }),
+                fromStore.reportDataByQuery
+              )
+          )
+
+          queryResultData.foldL(() => {
+            if (!unsatisfiedParameters.length && Object.keys(satisfiedParameters).length) {
+              console.log("All parameters are satisfied", {
+                queryResultData,
+                query: queryConfig.query,
+                params: satisfiedParameters,
+              })
+
+              dispatch.reports.executeQuery({
+                query: queryConfig.query,
+                params: satisfiedParameters,
+              })
+            }
+          }, identity)
+
           return (
             <>
               <PageHeader
                 extra={
-                  <Button.Group size="small">
-                    <Button>
-                      <Reach.Link to={`${fromStore.globalConfigPath}/${reportId}`}>
-                        View Config
-                      </Reach.Link>
-                    </Button>
-                  </Button.Group>
+                  reportId && (
+                    <Button.Group size="small">
+                      <Button>
+                        <Reach.Link to={`${fromStore.globalConfigPath}/${reportId}`}>
+                          View Config
+                        </Reach.Link>
+                      </Button>
+                    </Button.Group>
+                  )
                 }
-                title={`Report: ${props.title}`}>
+                title={props.title && `Report: ${props.title}`}>
                 <QueryForm
                   layout={queryConfig.layout}
-                  parameters={queryConfig.parameters}
+                  parameters={unsatisfiedParameters}
                   parameterValues={parameterValues.getOrElse({})}
                   onSubmit={(parameterValues: JSONRecord) => {
-                    console.log("report/index", "QueryForm.onSubmit", parameterValues)
                     setParameterValues(some(parameterValues))
                     dispatch.reports.executeQuery({
                       query: queryConfig.query,
-                      params: parameterValues,
+                      params: { ...satisfiedParameters, ...parameterValues },
                     })
                   }}
                 />
               </PageHeader>
 
-              {/* <Button onClick={() => null}>Debug: Force Run Test Query</Button> */}
               <div style={{ width: "100%" }}>
                 <GridComponent
                   ref={grid}
                   {...commonGridOptions}
                   toolbarClick={handleToolbarItemClicked(grid)}
-                  // childGrid={{ ...commonGridOptions, ...childGridOptions }}
-                  detailTemplate={() => (
-                    // <table className="detailtable" style={{ width: "100%" }}>
-                    //   <colgroup>
-                    //     <col style={{ width: "35%" }} />
-                    //     <col style={{ width: "35%" }} />
-                    //     <col style={{ width: "30%" }} />
-                    //   </colgroup>
-                    //   <tbody>
-                    //     <tr>
-                    //       <td rowSpan={4} className="images">
-                    //         Text
-                    //       </td>
-                    //       <td>
-                    //         <span style={{ fontWeight: 500 }}>First Name: </span> Hello
-                    //       </td>
-                    //       <td>
-                    //         <span style={{ fontWeight: 500 }}>Postal Code: </span> World
-                    //       </td>
-                    //     </tr>
-                    //   </tbody>
-                    // </table>
-                    <div style={{ textAlign: "left" }}>Test ABCDE</div>
+                  detailTemplate={reportConfig.details.fold(
+                    void 0,
+                    (childReport) => (parentData: JSONRecord) => (
+                      <Report
+                        report={
+                          childReport.type === "ReportConfig"
+                            ? ReportConfigCodec.encode(childReport)
+                            : childReport
+                        }
+                        data={{ ...parameterValues.getOrElse({}), ...parentData }}
+                      />
+                    )
                   )}
-                  dataSource={data.getOrElse([])}
+                  dataSource={queryResultData.getOrElse([])}
                   {...reportConfig.layout.componentProps}>
                   <Inject
                     services={[
@@ -228,4 +308,4 @@ export function Report(props: WithRouteProps<Props>): JSX.Element {
   )
 }
 
-export default Report
+export default ReportView
