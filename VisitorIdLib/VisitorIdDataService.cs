@@ -473,7 +473,6 @@ namespace VisitorIdLib
                                 md5pid = CookieMd5Pid,
                                 slot,
                                 page,
-                                vft = cookieData.VeryFirstVisit
                             }));
                         await fw.EdwWriter.Write(be);
                         cookieData.AddOrUpdateProviderSelect(CookieMd5Pid, DateTime.UtcNow);
@@ -500,7 +499,7 @@ namespace VisitorIdLib
                             md5 = lookupGe.GetS("Md5");
                         }
 
-                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData);
+                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData, c.Connection.RemoteIpAddress.ToString(), c.Request.Headers["User-Agent"]);
                         eml = vidResp.Email;
 
                         if (!md5.IsNullOrWhitespace())
@@ -599,6 +598,9 @@ namespace VisitorIdLib
                         opq["lst"] = cookieData.LastSelectTime(md5pid);
                         opq["vft"] = cookieData.VeryFirstVisit;
                         opq["rsid"] = JsonConvert.SerializeObject(cookieData.RsIdDict);
+                        opq["ip"] = c.Connection.RemoteIpAddress?.ToString();
+                        opq["ua"] = c.Request.Headers["User-Agent"].ToString();
+
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
                         var s = await fw.Entities.GetEntityGe(new Guid(md5pid));
@@ -610,7 +612,6 @@ namespace VisitorIdLib
                                 md5pid,
                                 slot,
                                 page,
-                                vft = cookieData.VeryFirstVisit
                             }));
                         await fw.EdwWriter.Write(be);
                         cookieData.AddOrUpdateProviderSelect(md5pid, DateTime.UtcNow);
@@ -660,11 +661,10 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string md5pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
-            Dictionary<string, object> rsids, bool hasClientContext, string lastVisit, string lst, bool vft, string afid, string tpid, string host, string path, CookieData cookieData)
+            Dictionary<string, object> rsids, bool hasClientContext, string lastVisit, string lst, bool vft, string afid, string tpid, string host, string path, CookieData cookieData, string ip, string ua)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), rsids);
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "args", sid = sid ?? "''", md5pid = md5pid ?? "''", slot, page, md5 = md5 ?? "''", email = email ?? "''", vieps = visitorIdEmailProviderSequence ?? "''", lv = lastVisit ?? "''", lst = lst ?? "''", vft, afid = afid ?? "''", host }), rsids);
-            var ip = c.Ip();
             var success = !md5.IsNullOrWhitespace();
             var foundMd5ProviderPid = false;
 
@@ -711,7 +711,6 @@ namespace VisitorIdLib
                         domain = host,
                         lv = lastVisit ?? "",
                         eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
-                        vft,
                         succ = success ? "1" : "0"
                     }));
                 await fw.EdwWriter.Write(be);
@@ -732,6 +731,11 @@ namespace VisitorIdLib
             {
                 clientIp = c.Connection.RemoteIpAddress?.ToString();
                 userAgent = c.UserAgent();
+            }
+            else
+            {
+                clientIp = ip;
+                userAgent = ua;
             }
 
             string emailpid = null;
@@ -778,28 +782,30 @@ namespace VisitorIdLib
         }
 
         public static (
-                string sid,
-                int slot,
-                int page,
-                string md5pid,
-                bool isAsync,
-                string vieps,
-                string md5,
-                string eml,
-                Dictionary<string, object> rsids,
-                string host,
-                Uri uri,
-                string afid,
-                string tpid,
-                string qstr,
-                string lst,
-                bool vft,
-                string tjsv,
-                bool pfail,
-                int pfailslot,
-                int pfailpage,
-                string lv)
-            ValsFromOpaque(IGenericEntity opge)
+            string sid,
+            int slot,
+            int page,
+            string md5pid,
+            bool isAsync,
+            string vieps,
+            string md5,
+            string eml,
+            Dictionary<string, object> rsids,
+            string host,
+            Uri uri,
+            string afid,
+            string tpid,
+            string qstr,
+            string lst,
+            bool vft,
+            string tjsv,
+            bool pfail,
+            int pfailslot,
+            int pfailpage,
+            string lv,
+            string ip,
+            string ua
+        ) ValsFromOpaque(IGenericEntity opge)
         {
             var sid = opge.GetS("sd");
             var slot = int.Parse(opge.GetS("slot") ?? "0");
@@ -820,7 +826,9 @@ namespace VisitorIdLib
             var pfail = ((opge.GetS("pfail") ?? "").ToLower() == "true");
             var pfailslot = int.Parse(opge.GetS("pfailSlot") ?? "0");
             var pfailpage = int.Parse(opge.GetS("pfailPage") ?? "0");
-            var tjsv = (opge.GetS("tjsv"));
+            var tjsv = opge.GetS("tjsv");
+            var ip = opge.GetS("ip");
+            var ua = opge.GetS("ua");
 
             Dictionary<string, object> rsids = null;
             if (!string.IsNullOrWhiteSpace(opge.GetS("rsid")))
@@ -828,7 +836,7 @@ namespace VisitorIdLib
                 rsids = JsonConvert.DeserializeObject<Dictionary<string, object>>(opge.GetS("rsid"));
             }
 
-            return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv);
+            return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, ip, ua);
         }
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool hasClientContext, bool canHaveCookie = true, CookieData cookieData = null, IGenericEntity op = null, string md5 = null)
@@ -853,7 +861,7 @@ namespace VisitorIdLib
 
             }
 
-            var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.tpid, opqVals.host, opqVals.uri.AbsolutePath, cookieData);
+            var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.tpid, opqVals.host, opqVals.uri.AbsolutePath, cookieData, opqVals.ip, opqVals.ua);
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "end" }), opqVals.rsids);
             return response;
         }
