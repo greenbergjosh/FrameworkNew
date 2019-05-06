@@ -1,3 +1,8 @@
+.breadCrumbsRow {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
 .fullHeight {
   height: 100vh;
 }
@@ -45,6 +50,11 @@
 
 .trigger:hover {
   color: #1890ff;
+}
+
+.layoutContainer {
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
 .logo {
