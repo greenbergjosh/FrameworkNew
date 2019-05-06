@@ -31,7 +31,7 @@ const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
   display: "form",
   components: layout.concat({
     type: "button",
-    label: "Filter",
+    label: "Generate Report",
     // key: "submit",
     disableOnInvalid: true,
     theme: "primary",
@@ -114,8 +114,8 @@ export const QueryForm = ({ layout, parameters, parameterValues, onSubmit }: Pro
     return (
       <Form
         form={generateFormFromLayout(realLayout)}
-        onSubmit={handleSubmit}
         submission={{ data: parameterValues }}
+        onSubmit={handleSubmit}
       />
     )
   }
