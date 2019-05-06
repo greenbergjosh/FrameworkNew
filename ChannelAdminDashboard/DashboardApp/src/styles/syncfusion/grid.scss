@@ -3,6 +3,14 @@
 .e-grid {
   border: 0;
 
+  .e-content {
+    transition: margin-bottom ease-in-out 250ms, padding-bottom ease-in-out 250ms;
+  }
+  .e-content:not(:hover) {
+    margin-bottom: -50px; /* to hide horizontal scrollbar */
+    padding-bottom: 50px; /* to hide horizontal scrollbar */
+  }
+
   .e-toolbar {
     border: 0;
   }

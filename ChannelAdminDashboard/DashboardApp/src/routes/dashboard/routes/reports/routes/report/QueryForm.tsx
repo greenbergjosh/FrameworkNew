@@ -46,7 +46,7 @@ const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
 //   onSubmit(cleanParameterValues)
 // })
 
-export const QueryForm = ({ layout, parameters, parameterValues, onSubmit }: Props) => {
+export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSubmit }: Props) => {
   const [fromStore, dispatch] = useRematch((s) => null)
 
   // const TaskRemoteQueryDependencies = useTaskRemoteData(
@@ -121,7 +121,7 @@ export const QueryForm = ({ layout, parameters, parameterValues, onSubmit }: Pro
   }
 
   return null
-}
+})
 
 function recursiveIndexBy(
   items: JSONRecord[],

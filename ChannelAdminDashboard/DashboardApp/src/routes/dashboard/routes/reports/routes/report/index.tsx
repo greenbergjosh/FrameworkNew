@@ -1,9 +1,12 @@
+import * as Reach from "@reach/router"
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import {
+  Aggregate,
   ColumnChooser,
   DetailDataBoundEventArgs,
   DetailRow,
   ExcelExport,
+  Freeze,
   GridComponent,
   GridModel,
   Inject,
@@ -11,33 +14,30 @@ import {
   Resize,
   Sort,
   Toolbar,
-  dataBound,
 } from "@syncfusion/ej2-react-grids"
-import { Button, Select, Typography, PageHeader } from "antd"
-import { Identity } from "fp-ts/lib/Identity"
-import { identity } from "fp-ts/lib/function"
+import { Button, PageHeader } from "antd"
+import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
 import { right } from "fp-ts/lib/Either"
+import { identity } from "fp-ts/lib/function"
+import { Identity } from "fp-ts/lib/Identity"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
-import React, { RefObject, Ref } from "react"
-import * as Reach from "@reach/router"
-import { useRematch } from "../../../../../../hooks"
-import { WithRouteProps } from "../../../../../../state/navigation"
-import { store } from "../../../../../../state/store"
+import { Errors } from "io-ts"
+import React from "react"
 import { Left, Right } from "../../../../../../data/Either"
-import { ReportOrErrors } from "./ReportOrErrors"
-import { FormState, QueryForm } from "./QueryForm"
 import { JSONRecord } from "../../../../../../data/JSON"
-import { cheapHash } from "../../../../../../lib/json"
 import {
   GlobalConfigReference,
   LocalReportConfig,
   ParameterItem,
   QueryConfig,
-  RemoteReportConfig,
-  ReportConfigCodec,
 } from "../../../../../../data/Report"
-import { Errors } from "io-ts"
+import { useRematch } from "../../../../../../hooks"
+import { cheapHash } from "../../../../../../lib/json"
+import { WithRouteProps } from "../../../../../../state/navigation"
+import { store } from "../../../../../../state/store"
+import { QueryForm } from "./QueryForm"
+import { ReportOrErrors } from "./ReportOrErrors"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -55,17 +55,19 @@ const detailMapper = (childData: any[]) => ({
   )
 }
 
-const handleToolbarItemClicked = (grid: RefObject<GridComponent>) => ({ item }: ClickEventArgs) => {
+const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => ({
+  item,
+}: ClickEventArgs) => {
   if (item.id && item.id.endsWith("_excelexport")) {
-    if (grid && grid.current) {
+    if (grid.current) {
       grid.current.excelExport()
     }
   } else if (item.id && item.id.endsWith("_csvexport")) {
-    if (grid && grid.current) {
+    if (grid.current) {
       grid.current.csvExport()
     }
   } else if (item.id && item.id.endsWith("_pdfexport")) {
-    if (grid && grid.current) {
+    if (grid.current) {
       grid.current.pdfExport()
     }
   }
@@ -129,11 +131,6 @@ const childGridOptions: GridModel = {
   ],
 }
 
-const componentMap = {
-  table: GridComponent,
-  select: Select,
-}
-
 export function ReportView(props: WithRouteProps<ViewProps>): JSX.Element {
   return (
     <Report
@@ -150,10 +147,7 @@ function determineSatisfiedParameters(
   parameters: ParameterItem[],
   parentData: JSONRecord
 ): { unsatisfiedByParentParams: ParameterItem[]; satisfiedByParentParams: JSONRecord } {
-  return parameters.reduce<{
-    unsatisfiedByParentParams: ParameterItem[]
-    satisfiedByParentParams: JSONRecord
-  }>(
+  return parameters.reduce<ReturnType<typeof determineSatisfiedParameters>>(
     (acc, parameter) =>
       typeof parentData[parameter.name] !== "undefined"
         ? {
@@ -177,16 +171,27 @@ function Report(props: ReportProps): JSX.Element {
     decodedQueryConfigsById: store.select.reports.decodedQueryConfigByConfigId(state),
   }))
 
-  const reportConfig =
-    props.report.type === "GlobalConfigReference"
-      ? record.lookup(props.report.id, fromStore.decodedReportConfigsById)
-      : some(right<Errors, LocalReportConfig>(props.report))
+  const reportConfig = React.useMemo(
+    () =>
+      props.report.type === "GlobalConfigReference"
+        ? record.lookup(props.report.id, fromStore.decodedReportConfigsById)
+        : some(right<Errors, LocalReportConfig>(props.report)),
+    [fromStore.decodedReportConfigsById, props.report]
+  )
 
-  const reportId = props.report.type === "GlobalConfigReference" ? some(props.report.id) : none
-  const queryConfig = new Identity(reportConfig)
-    .map((a) => a.chain((b) => b.fold(Left((errs) => none), Right((rc) => rc.query))))
-    .map((a) => a.chain((b) => record.lookup(b.id, fromStore.decodedQueryConfigsById)))
-    .fold(identity)
+  const reportId = React.useMemo(
+    () => (props.report.type === "GlobalConfigReference" ? some(props.report.id) : none),
+    [props.report]
+  )
+
+  const queryConfig = React.useMemo(
+    () =>
+      new Identity(reportConfig)
+        .map((a) => a.chain((b) => b.fold(Left((errs) => none), Right((rc) => rc.query))))
+        .map((a) => a.chain((b) => record.lookup(b.id, fromStore.decodedQueryConfigsById)))
+        .fold(identity),
+    [fromStore.decodedQueryConfigsById, reportConfig]
+  )
 
   return (
     <div>
@@ -215,125 +220,144 @@ interface ReportBodyProps {
   title?: string
 }
 
-const ReportBody = ({
-  parentData,
-  queryConfig,
-  reportConfig,
-  reportId,
-  title,
-}: ReportBodyProps) => {
-  const [fromStore, dispatch] = useRematch((state) => ({
-    reportDataByQuery: state.reports.reportDataByQuery,
-    globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
-  }))
+const ReportBody = React.memo(
+  ({ parentData, queryConfig, reportConfig, reportId, title }: ReportBodyProps) => {
+    const [fromStore, dispatch] = useRematch((state) => ({
+      reportDataByQuery: state.reports.reportDataByQuery,
+      globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
+      isExecutingQuery: state.loading.effects.reports.executeQuery,
+    }))
 
-  const grid = React.useRef<GridComponent>(null)
+    const grid = React.useRef<GridComponent>(null)
 
-  const { satisfiedByParentParams, unsatisfiedByParentParams } = determineSatisfiedParameters(
-    queryConfig.parameters,
-    parentData || {}
-  )
+    const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
+      () => determineSatisfiedParameters(queryConfig.parameters, parentData || {}),
+      [parentData, queryConfig.parameters]
+    )
 
-  const [queryResultUri, setQueryResultUri] = React.useState(none as Option<string>)
-  const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
+    const [queryResultUri, setQueryResultUri] = React.useState(none as Option<string>)
+    const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
 
-  console.log("Reporting", "Looking up query result data", {
-    query: queryConfig.query,
-    satisfiedByParentParams,
-    parameterValues,
-  })
+    const queryResultData = React.useMemo(
+      () =>
+        parameterValues.foldL(
+          () =>
+            record.lookup(
+              cheapHash(queryConfig.query, satisfiedByParentParams),
+              fromStore.reportDataByQuery
+            ),
 
-  const queryResultData = parameterValues.foldL(
-    () =>
-      record.lookup(
-        cheapHash(queryConfig.query, satisfiedByParentParams),
-        fromStore.reportDataByQuery
-      ),
-
-    (params) =>
-      record.lookup(
-        cheapHash(queryConfig.query, { ...satisfiedByParentParams, ...params }),
-        fromStore.reportDataByQuery
-      )
-  )
-
-  React.useEffect(() => {
-    if (queryResultData.isNone() && !unsatisfiedByParentParams.length) {
-      // Should we request data from the server?
-      // console.log("All parameters are satisfied", {
-      //   queryResultData,
-      //   query: queryConfig.query,
-      //   params: satisfiedByParentParams,
-      // })
-
-      dispatch.reports.executeQuery({
-        resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
-        query: queryConfig.query,
-        params: satisfiedByParentParams,
-      })
-    }
-  }, [
-    dispatch,
-    unsatisfiedByParentParams,
-    queryResultData,
-    queryConfig.query,
-    satisfiedByParentParams,
-  ])
-
-  return (
-    <>
-      <PageHeader
-        extra={reportId.fold(null, (id) => (
-          <Button.Group size="small">
-            <Button>
-              <Reach.Link to={`${fromStore.globalConfigPath}/${id}`}>View Config</Reach.Link>
-            </Button>
-          </Button.Group>
-        ))}
-        style={{ padding: "15px" }}
-        title={title && `Report: ${title}`}>
-        <QueryForm
-          layout={queryConfig.layout}
-          parameters={unsatisfiedByParentParams}
-          parameterValues={parameterValues.getOrElse({})}
-          onSubmit={(parameterValues: JSONRecord) => {
-            const queryResultURI = cheapHash(queryConfig.query, {
-              ...satisfiedByParentParams,
-              ...parameterValues,
-            })
-
-            setQueryResultUri(some(queryResultURI))
-            setParameterValues(some(parameterValues))
-            dispatch.reports.executeQuery({
-              resultURI: queryResultURI,
-              query: queryConfig.query,
-              params: { ...satisfiedByParentParams, ...parameterValues },
-            })
-          }}
-        />
-      </PageHeader>
-
-      <div style={{ width: "100%" }}>
-        <GridComponent
-          ref={grid}
-          {...commonGridOptions}
-          toolbarClick={handleToolbarItemClicked(grid)}
-          detailTemplate={reportConfig.details.fold(
-            void 0,
-            (childReport) => (parentData: JSONRecord) => (
-              <Report
-                report={childReport}
-                data={{ ...parameterValues.getOrElse({}), ...parentData }}
-              />
+          (params) =>
+            record.lookup(
+              cheapHash(queryConfig.query, { ...satisfiedByParentParams, ...params }),
+              fromStore.reportDataByQuery
             )
-          )}
-          dataSource={queryResultData.getOrElse([])}
-          {...reportConfig.layout.componentProps}>
-          <Inject
-            services={[Toolbar, ColumnChooser, Resize, DetailRow, ExcelExport, PdfExport, Sort]}
-          />
-        </GridComponent>
-      </div>
-    </>
-  )
-}
+        ),
+      [fromStore.reportDataByQuery, parameterValues, queryConfig.query, satisfiedByParentParams]
+    )
+
+    const handleQueryFormSubmit = React.useCallback(
+      (parameterValues: JSONRecord) => {
+        const queryResultURI = cheapHash(queryConfig.query, {
+          ...satisfiedByParentParams,
+          ...parameterValues,
+        })
+
+        setQueryResultUri(some(queryResultURI))
+        setParameterValues(some(parameterValues))
+        dispatch.reports.executeQuery({
+          resultURI: queryResultURI,
+          query: queryConfig.query,
+          params: { ...satisfiedByParentParams, ...parameterValues },
+        })
+      },
+      [dispatch.reports, queryConfig.query, satisfiedByParentParams]
+    )
+
+    const handleToolbarClick = React.useMemo(() => handleToolbarItemClicked(grid), [])
+
+    React.useEffect(() => {
+      if (
+        !fromStore.isExecutingQuery &&
+        queryResultData.isNone() &&
+        !unsatisfiedByParentParams.length
+      ) {
+        dispatch.reports.executeQuery({
+          resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+          query: queryConfig.query,
+          params: satisfiedByParentParams,
+        })
+      }
+    }, [
+      dispatch,
+      unsatisfiedByParentParams,
+      queryResultData,
+      queryConfig.query,
+      satisfiedByParentParams,
+      fromStore.isExecutingQuery,
+    ])
+
+    const createDetailTemplate = React.useMemo(
+      () =>
+        reportConfig.details
+          .map((childReport) => (parentData: JSONRecord) => (
+            <Report
+              report={childReport}
+              data={{ ...parameterValues.getOrElse(record.empty), ...parentData }}
+            />
+          ))
+          .toUndefined(),
+      [parameterValues, reportConfig.details]
+    )
+
+    return (
+      <>
+        {(reportId.isSome() || title !== undefined || !isEmpty(unsatisfiedByParentParams)) && (
+          <PageHeader
+            extra={reportId.fold(null, (id) => (
+              <Button.Group size="small">
+                <Button>
+                  <Reach.Link to={`${fromStore.globalConfigPath}/${id}`}>View Config</Reach.Link>
+                </Button>
+              </Button.Group>
+            ))}
+            style={{ padding: "15px" }}
+            title={title && `Report: ${title}`}>
+            <QueryForm
+              layout={queryConfig.layout}
+              parameters={unsatisfiedByParentParams}
+              parameterValues={parameterValues.getOrElse(record.empty)}
+              onSubmit={handleQueryFormSubmit}
+            />
+          </PageHeader>
+        )}
+
+        <div style={{ width: "100%" }}>
+          <PureGridComponent
+            ref={grid}
+            {...commonGridOptions}
+            toolbarClick={handleToolbarClick}
+            detailTemplate={createDetailTemplate}
+            dataSource={queryResultData.getOrElse(emptyArray)}
+            {...reportConfig.layout.componentProps}>
+            <Inject services={gridComponentServices} />
+          </PureGridComponent>
+        </div>
+      </>
+    )
+  }
+)
+
+const PureGridComponent = React.memo(GridComponent)
+
+const gridComponentServices = [
+  Toolbar,
+  ColumnChooser,
+  Resize,
+  DetailRow,
+  ExcelExport,
+  PdfExport,
+  Sort,
+  Freeze,
+  Aggregate,
+]
