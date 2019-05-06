@@ -33,6 +33,7 @@ export interface Reducers {
 
 export interface Effects {
   executeQuery(payload: {
+    resultURI: string
     query: Pick<QueryConfig, "query">["query"]
     params: JSONRecord | JSONArray
   }): void
@@ -62,7 +63,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
   },
 
   effects: (dispatch) => ({
-    executeQuery({ query, params }) {
+    executeQuery({ resultURI: lookupKey, query, params }) {
       dispatch.remoteDataClient
         .reportQueryGet({
           query,
@@ -74,7 +75,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
             Right((ApiResponse) =>
               ApiResponse({
                 OK(payload) {
-                  dispatch.reports.updateReportDataByQuery({ [cheapHash(query, params)]: payload })
+                  dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")

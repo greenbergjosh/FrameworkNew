@@ -13,7 +13,7 @@ import { useRematch } from "../../../../../../hooks"
 interface Props {
   children: (reportConfig: LocalReportConfig, queryConfig: QueryConfig) => JSX.Element
   reportConfig: Option<Either<Errors, LocalReportConfig>>
-  reportId?: string
+  reportId: Option<string>
   queryConfig: Option<Either<Errors, QueryConfig>>
 }
 
@@ -22,7 +22,7 @@ export const ReportOrErrors = ({ children, reportConfig, reportId, queryConfig }
     globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))
 
-  const id = reportId || "NestedReport"
+  const id = reportId.getOrElse("NestedReport")
 
   return (
     <Card size="small">
@@ -82,12 +82,15 @@ export const ReportOrErrors = ({ children, reportConfig, reportId, queryConfig }
                             ) || (
                               <Typography.Paragraph type="danger">
                                 {`Unable to parse Report.Query config associated with Report config with id `}
-                                {reportId ? (
-                                  <Reach.Link to={`${fromStore.globalConfigPath}/${reportId}`}>
-                                    {reportId}
-                                  </Reach.Link>
-                                ) : (
-                                  id
+                                {reportId.foldL(
+                                  () => (
+                                    <>id</>
+                                  ),
+                                  (rId) => (
+                                    <Reach.Link to={`${fromStore.globalConfigPath}/${rId}`}>
+                                      {rId}
+                                    </Reach.Link>
+                                  )
                                 )}
                               </Typography.Paragraph>
                             )
