@@ -92,9 +92,9 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
       </Layout.Sider>
 
       <Layout>
-        <Layout.Header className={styles.topToolbar}>
-          <Row align="middle">
-            <Col push={2} span={20}>
+        <Layout.Header className={`${styles.layoutContainer} ${styles.topToolbar}`}>
+          <Row align="middle" type="flex">
+            <Col style={{ flex: 1 }}>
               {toArray(props.subroutes).map(([path, subroute]) => (
                 <Reach.Match key={subroute.abs} path={`${subroute.path}/*`}>
                   {({ match }) => {
@@ -114,12 +114,14 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 </Reach.Match>
               ))}
             </Col>
-            <Col span={2}>
-              <GoogleAuth />
+            <Col style={{ flex: 1 }}>
+              <Row align="middle" justify="end" type="flex">
+                <GoogleAuth />
+              </Row>
             </Col>
           </Row>
         </Layout.Header>
-        <Row style={{ padding: 12 }}>
+        <Row className={`${styles.layoutContainer} ${styles.breadCrumbsRow}`}>
           <Breadcrumb>
             {props.location.pathname.split("/").map((_, idx, parts) => (
               <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
@@ -128,13 +130,12 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
             ))}
           </Breadcrumb>
         </Row>
-        <Layout.Content>
-          <Row style={{ padding: 24, paddingTop: 0 }}>{props.children}</Row>
 
-          <Layout.Footer style={{ textAlign: "center" }}>
-            {`OnPoint Global © ${new Date().getFullYear()}`}
-          </Layout.Footer>
-        </Layout.Content>
+        <Layout.Content className={`${styles.layoutContainer}`}>{props.children}</Layout.Content>
+
+        <Layout.Footer className={`${styles.layoutContainer}`} style={{ textAlign: "center" }}>
+          {`OnPoint Global © ${new Date().getFullYear()}`}
+        </Layout.Footer>
       </Layout>
     </Layout>
   )
