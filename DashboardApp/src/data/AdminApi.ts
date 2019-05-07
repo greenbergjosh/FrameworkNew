@@ -5,6 +5,7 @@ import { PersistedConfigCodec } from "./GlobalConfig.Config"
 import { JSONRecordCodec } from "./JSON"
 
 export type ResponseCode = iots.TypeOf<typeof ResponseCodeCodec>
+export type AuthLoginPayload = iots.TypeOf<typeof authLoginPayloadCodec>
 
 export const adminApiErrors = {
   1: "Unhandled server-side exception",
@@ -25,6 +26,30 @@ export const ResponseCodeCodec = iots.union([iots.literal(0), ErrorCodeCodec])
 
 export const ErrorPayload = iots.type({
   r: ErrorCodeCodec,
+})
+
+export const authResponsePayloadCodec = {
+  login: iots.type({
+    "auth:login": iots.union([
+      ErrorPayload,
+      iots.type({
+        r: iots.literal(0),
+        result: iots.type({
+          token: iots.string,
+          name: iots.string,
+          email: NonEmptyString,
+          profileImage: iots.string,
+        }),
+      }),
+    ]),
+  }),
+}
+
+export const authLoginPayloadCodec = iots.type({
+  token: iots.string,
+  name: iots.string,
+  email: NonEmptyString,
+  profileImage: iots.string,
 })
 
 export const globalConfigResponsePayloadCodec = {

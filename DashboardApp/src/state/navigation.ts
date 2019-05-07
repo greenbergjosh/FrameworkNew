@@ -119,7 +119,7 @@ const staticRoutesMap = {
         abs: "/dashboard/reports",
         // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
         component: Reports,
-        description: "Create, read, update, delete reports",
+        description: "Generate and export reports",
         title: "Reports",
         iconType: "table",
         path: "reports",
