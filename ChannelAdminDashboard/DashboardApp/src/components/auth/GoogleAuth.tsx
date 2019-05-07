@@ -35,7 +35,6 @@ export const GoogleAuth = (): JSX.Element => {
       if (signedIn) {
         const user = extractUserFromProfile(gAuth().currentUser.get())
 
-        dispatch.iam.update({ profile: some(user) })
         if (suppressDashboardRouting !== true) {
           dispatch.navigation.goToDashboard(none)
         }
@@ -96,9 +95,9 @@ export const GoogleAuth = (): JSX.Element => {
         }
         placement="bottomCenter"
         trigger={["click"]}>
-        {profile.imageUrl ? (
+        {profile.profileImage ? (
           <Button shape="circle" htmlType="button">
-            <Avatar src={profile.imageUrl} alt={profile.name} />
+            <Avatar src={profile.profileImage} alt={profile.name} />
           </Button>
         ) : (
           <Button icon="user" shape="circle" htmlType="button" />

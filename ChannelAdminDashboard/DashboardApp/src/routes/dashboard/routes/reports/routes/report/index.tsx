@@ -332,7 +332,7 @@ const ReportBody = React.memo(
           </PageHeader>
         )}
 
-        <div style={{ width: "100%" }}>
+        <div>
           <PureGridComponent
             ref={grid}
             {...commonGridOptions}
