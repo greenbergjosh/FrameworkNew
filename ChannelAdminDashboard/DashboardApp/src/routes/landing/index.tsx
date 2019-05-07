@@ -29,7 +29,7 @@ export function Landing(props: WithRouteProps<Props>) {
   }))
 
   const attemptLogin = React.useCallback(() => {
-    dispatch.iam.update({ profile: some({ id: "123", name: "my dude" }) })
+    // dispatch.iam.update({ profile: some({ id: "123", name: "my dude" }) })
     dispatch.navigation.goToDashboard(none)
   }, [dispatch])
 

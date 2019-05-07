@@ -1,15 +1,15 @@
-import { Either, fromOption as eitherFromOption } from "fp-ts/lib/Either"
-import { none } from "fp-ts/lib/Option"
-import * as record from "fp-ts/lib/Record"
+import { Either } from "fp-ts/lib/Either"
+import { Option, none, some } from "fp-ts/lib/Option"
 import { Overwrite } from "utility-types"
-import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
 import * as AdminApi from "../data/AdminApi"
-import { HttpError, request, BadPayload } from "../lib/http"
+import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
+import { JSONArray, JSONRecord } from "../data/JSON"
+import { QueryConfig } from "../data/Report"
+import { HttpError, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
-import { JSONRecord, JSONArray } from "../data/JSON"
-import { QueryConfig } from "../data/Report"
 import { Left, Right } from "../data/Either"
+import { Unauthorized, ServerException } from "../data/AdminApi"
 
 declare module "./store.types" {
   interface AppModels {
@@ -24,12 +24,26 @@ declare module "./store.types" {
 
 export interface State {
   apiUrl: string
+  token: null | string
 }
 
-export interface Reducers {}
+export interface Reducers {
+  update(update: Partial<State>): void
+}
 
 export interface Effects {
   defaultHttpErrorHandler(r: HttpError): void
+
+  // authLoginBasic(p: {
+  //   username: string
+  //   password: string
+  // }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
+
+  authLoginGoogle(p: {
+    profileId: string
+    idToken: string
+    accessToken: string
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
   globalConfigsDeleteById(
     ids: Array<PersistedConfig["id"]>
@@ -66,11 +80,40 @@ export interface Selectors {}
 export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
     apiUrl: "http://admin.techopg.com/api",
+    token: null,
   },
 
-  reducers: {},
+  reducers: {
+    update: (state, updater) => ({ ...state, ...updater }),
+  },
 
   effects: (dispatch) => ({
+    // authLoginBasic(p) {},
+
+    authLoginGoogle(params, { remoteDataClient }) {
+      return request({
+        body: {
+          "auth:login": {
+            google: params,
+          },
+        },
+        expect: AdminApi.authResponsePayloadCodec.login,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        url: remoteDataClient.apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+            return payload["auth:login"].r === 0
+              ? AdminApi.OK(payload["auth:login"].result)
+              : AdminApi.mkAdminApiError(payload["auth:login"].r)
+          }
+        )
+      )
+    },
+
     defaultHttpErrorHandler: (HttpError) => {
       HttpError({
         BadStatus(res) {
