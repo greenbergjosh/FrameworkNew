@@ -7,33 +7,6 @@ import { failure } from "io-ts/lib/PathReporter"
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE"
 
-// export class BadUrl {
-//   public readonly _tag: "BadUrl" = "BadUrl"
-//   public constructor(public readonly value: string) {}
-// }
-
-// export class Timeout {
-//   public readonly _tag: "Timeout" = "Timeout"
-// }
-
-// export class NetworkError {
-//   public readonly _tag: "NetworkError" = "NetworkError"
-//   public constructor(public readonly value: string) {}
-// }
-
-// export class BadStatus {
-//   public readonly _tag: "BadStatus" = "BadStatus"
-//   public constructor(public readonly response: HttpResponse<string>) {}
-// }
-
-// export class BadPayload {
-//   public readonly _tag: "BadPayload" = "BadPayload"
-//   public constructor(
-//     public readonly value: string,
-//     public readonly response: HttpResponse<string>
-//   ) {}
-// }
-
 export function BadStatus(response: HttpResponse<string>): HttpError {
   return (variants) => {
     return variants.BadStatus(response)
@@ -77,7 +50,7 @@ export interface HttpRequest<A> {
   body?: unknown
   expect: Type<A, any, unknown>
   timeout: Option<number>
-  transformResponse?: (data: any) => any
+  transformResponse?: (data: any) => A
   withCredentials: boolean
 }
 
@@ -92,7 +65,7 @@ export interface HttpResponse<Body> {
 }
 
 export function request<A>(req: HttpRequest<A>): Promise<Either<HttpError, A>> {
-  return getPromiseAxiosResponse({
+  const a = {
     method: req.method,
     headers: req.headers,
     url: req.url,
@@ -100,7 +73,8 @@ export function request<A>(req: HttpRequest<A>): Promise<Either<HttpError, A>> {
     timeout: req.timeout.fold(undefined, identity),
     withCredentials: req.withCredentials,
     transformResponse: req.transformResponse,
-  })
+  }
+  return getPromiseAxiosResponse(a.transformResponse ? a : (delete a.transformResponse, a))
     .then((res) => axiosResponseToEither(res, req.expect))
     .catch((e) => axiosErrorToEither<A>(e))
 }

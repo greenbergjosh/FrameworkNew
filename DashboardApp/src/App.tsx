@@ -16,55 +16,50 @@ export function App(): JSX.Element {
     routes: store.select.navigation.routes(s),
   }))
 
-  const routes = React.useMemo(() => renderRoutes(fromStore.routes), [fromStore.routes])
-  const redirects = React.useMemo(() => renderRedirects(fromStore.routes), [fromStore.routes])
-
   return (
     <ReactRedux.Provider store={store}>
       <Reach.Router>
-        {routes}
-        {redirects}
+        {(function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
+          return toArray(routes).map(([k, route]) =>
+            route.requiresAuthentication === true ? (
+              fromStore.profile.foldL(
+                None(() => (
+                  <Reach.Redirect
+                    key={route.abs}
+                    from={`${route.abs}/*`}
+                    state={{ redirectedFrom: window.location.pathname }}
+                    noThrow
+                    to={fromStore.routes.login.abs}
+                  />
+                )),
+                Some((prof) => (
+                  <route.component key={route.abs} profile={prof} {...route}>
+                    {renderRoutes(route.subroutes)}
+                  </route.component>
+                ))
+              )
+            ) : (
+              <route.component key={route.abs} {...route}>
+                {renderRoutes(route.subroutes)}
+              </route.component>
+            )
+          )
+        })(fromStore.routes)}
+
+        {(function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
+          return flatten(
+            toArray(routes).map(([k, route]) => {
+              return route.redirectFrom
+                .map((url) => (
+                  <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />
+                ))
+                .concat(renderRedirects(route.subroutes))
+            })
+          )
+        })(fromStore.routes)}
+
         <NotFound default />
       </Reach.Router>
     </ReactRedux.Provider>
   )
-
-  function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-    return toArray(routes).map(([k, route]) =>
-      route.requiresAuthentication === true ? (
-        fromStore.profile.foldL(
-          None(() => (
-            <Reach.Redirect
-              key={route.abs}
-              from={`${route.abs}/*`}
-              state={{ redirectedFrom: window.location.pathname }}
-              noThrow
-              to={fromStore.routes.login.abs}
-            />
-          )),
-          Some((prof) => (
-            <route.component key={route.abs} profile={prof} {...route}>
-              {renderRoutes(route.subroutes)}
-            </route.component>
-          ))
-        )
-      ) : (
-        <route.component key={route.abs} {...route}>
-          {renderRoutes(route.subroutes)}
-        </route.component>
-      )
-    )
-  }
-
-  function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-    return flatten(
-      toArray(routes).map(([k, route]) => {
-        return route.redirectFrom
-          .map((url) => (
-            <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />
-          ))
-          .concat(renderRedirects(route.subroutes))
-      })
-    )
-  }
 }
