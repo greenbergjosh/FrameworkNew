@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Jw = Utility.JsonWrapper;
 
 namespace Utility.DataLayer
@@ -21,10 +21,7 @@ namespace Utility.DataLayer
         private static string _configFunction;
         private static List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
 
-        private static void TraceLog(string location, string log)
-        {
-            _traceLog.Add((DateTime.Now, location, log));
-        }
+        private static void TraceLog(string location, string log) => _traceLog.Add((DateTime.Now, location, log));
 
         public static IEnumerable<(DateTime logTime, string location, string log)> GetTrace() => _traceLog.AsEnumerable();
 
@@ -65,9 +62,15 @@ namespace Utility.DataLayer
         {
             foreach (var o in connectionStrings)
             {
-                if (Connections.ContainsKey(o.Item1) && Connections[o.Item1].Id == o.Item2) continue;
+                if (Connections.ContainsKey(o.Item1) && Connections[o.Item1].Id == o.Item2)
+                {
+                    continue;
+                }
 
-                if (Connections.ContainsKey(o.Item1)) throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Item1}");
+                if (Connections.ContainsKey(o.Item1))
+                {
+                    throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Item1}");
+                }
 
                 var conf = Jw.JsonToGenericEntity(await _configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = o.Item2 }), "{}", _configFunction, _configConn.ConnStr));
                 var conn = Connections.AddOrUpdate(o.Item1, new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString")), (key, current) => current);
@@ -93,13 +96,19 @@ namespace Utility.DataLayer
             var configConn = confConnName == null ? _configConn : Connections.GetValueOrDefault(confConnName);
             var configFunc = confFuncName == null ? _configFunction : configConn?.Functions.GetValueOrDefault(confFuncName);
 
-            if (configConn == null || configFunc == null) throw new Exception($"Invalid config function definition: {confConnName ?? "[Default]"}::{confFuncName ?? "[Default]"}({configFunc ?? "null"})");
+            if (configConn == null || configFunc == null)
+            {
+                throw new Exception($"Invalid config function definition: {confConnName ?? "[Default]"}::{confFuncName ?? "[Default]"}({configFunc ?? "null"})");
+            }
 
             TraceLog(nameof(GetConfigs), $"Loading configs from {configConn}.{configFunc}");
 
             async Task<JObject> LoadConfig(JObject config, string key)
             {
-                if (loaded.Contains(key)) return config;
+                if (loaded.Contains(key))
+                {
+                    return config;
+                }
 
                 TraceLog(nameof(GetConfigs), $"Loading config {key}");
 
@@ -122,7 +131,10 @@ namespace Utility.DataLayer
 
                         mergeConfig = c["config"] as JObject;
                     }
-                    else mergeConfig = c;
+                    else
+                    {
+                        mergeConfig = c;
+                    }
 
                     TraceLog(nameof(GetConfigs), $"Merging configs\r\nCurrent\r\n{config}\r\n\r\n{key}\r\n{mergeConfig}");
 
@@ -150,13 +162,16 @@ namespace Utility.DataLayer
                     resolvedConfig[kvp.Key] = kvp.Value;
                 }
             }
-            
+
             return resolvedConfig.ToString();
         }
 
         private static void MergeConfigs(JObject config, JObject mergeConfig)
         {
-            if (mergeConfig == null) return;
+            if (mergeConfig == null)
+            {
+                return;
+            }
 
             var mergeRoot = mergeConfig.Parent == null ? mergeConfig : (JObject)mergeConfig.DeepClone();
 
@@ -181,10 +196,19 @@ namespace Utility.DataLayer
 
             foreach (var prop in root.Properties())
             {
-                if (prop.Name.StartsWith("~")) paths.Add((prop.Parent.Path, prop.Name));
+                if (prop.Name.StartsWith("~"))
+                {
+                    paths.Add((prop.Parent.Path, prop.Name));
+                }
 
-                if (prop.Value is JObject jo) paths.AddRange(FindRemovePaths(jo));
-                else if (prop.Value is JArray ja) paths.AddRange(FindRemovePaths(ja));
+                if (prop.Value is JObject jo)
+                {
+                    paths.AddRange(FindRemovePaths(jo));
+                }
+                else if (prop.Value is JArray ja)
+                {
+                    paths.AddRange(FindRemovePaths(ja));
+                }
             }
 
             return paths;
@@ -196,23 +220,32 @@ namespace Utility.DataLayer
 
             foreach (var jai in root.Children())
             {
-                if (jai is JObject jo) paths.AddRange(FindRemovePaths(jo));
-                else if (jai is JArray ja) paths.AddRange(FindRemovePaths(ja));
+                if (jai is JObject jo)
+                {
+                    paths.AddRange(FindRemovePaths(jo));
+                }
+                else if (jai is JArray ja)
+                {
+                    paths.AddRange(FindRemovePaths(ja));
+                }
             }
 
             return paths;
         }
 
-        public static async Task<List<Dictionary<string, object>>> CallFn(string conName, string method, Dictionary<string, object> parameters, int timeout = 120)
+        public static Task<List<Dictionary<string, object>>> CallFn(string conName, string method, Dictionary<string, object> parameters, int timeout = 120)
         {
             try
             {
                 var conn = Connections.GetValueOrDefault(conName);
                 var sp = conn?.Functions.GetValueOrDefault(method);
 
-                if (sp.IsNullOrWhitespace()) return null;
+                if (sp.IsNullOrWhitespace())
+                {
+                    return null;
+                }
 
-                return await conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
+                return conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
             }
             catch (Exception e)
             {
@@ -229,16 +262,19 @@ namespace Utility.DataLayer
             return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
         }
 
-        public static async Task<string> CallFnString(string conName, string method, string args, string payload, int timeout = 120)
+        public static Task<string> CallFnString(string conName, string method, string args, string payload, int timeout = 120)
         {
             try
             {
                 var conn = Connections.GetValueOrDefault(conName);
                 var sp = conn?.Functions.GetValueOrDefault(method);
 
-                if (sp.IsNullOrWhitespace()) return null;
+                if (sp.IsNullOrWhitespace())
+                {
+                    return null;
+                }
 
-                return await conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
+                return conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
             }
             catch (Exception e)
             {

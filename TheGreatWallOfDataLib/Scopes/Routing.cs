@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
 using Utility.OpgAuth;
-using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
-using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
 using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
+using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
 using ScopeDic = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
+using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
 
 namespace TheGreatWallOfDataLib.Scopes
 {
@@ -21,9 +21,13 @@ namespace TheGreatWallOfDataLib.Scopes
         private static readonly (string scope, (string funcName, ApiFunc func)[] funcs)[] __ = new[]
         {
             ("config", new [] {
-                ("merge", new ApiFunc(async (s, f, p, i) => await Config.Merge(s, p, i)))
+                ("merge", new ApiFunc((s, f, p, i) => Config.Merge(s, p, i)))
             }),
             ("edw", new [] {
+                (DefaultFuncIdent, new ApiFunc((s, f, p, i) => Edw.DefaultFunc(s, f, p, i)))
+            }),
+            ("rollup182", new [] {
+                (DefaultFuncIdent, new ApiFunc((s, f, p, i) => Edw.DefaultFunc(s, f, p, i)))
                 (DefaultFuncIdent, new ApiFunc(async (s, f, p, i) => await Edw.DefaultFunc(s, f, p, i)))
             }),
             ("auth", new []
@@ -38,12 +42,18 @@ namespace TheGreatWallOfDataLib.Scopes
         public static ApiFunc GetFunc(string scopeName, string funcName)
         {
             // If first char is '_' then function is internal only
-            if (scopeName == Auth.ConnName || funcName.IsNullOrWhitespace() || funcName == DefaultFuncIdent || funcName.First() == '_') throw new FunctionException(100, $"Function is an invalid or internal: {funcName.IfNullOrWhitespace("[empty]")}");
+            if (scopeName == Auth.ConnName || funcName.IsNullOrWhitespace() || funcName == DefaultFuncIdent || funcName.First() == '_')
+            {
+                throw new FunctionException(100, $"Function is an invalid or internal: {funcName.IfNullOrWhitespace("[empty]")}");
+            }
 
             var scope = CsFuncs.GetValueOrDefault(scopeName);
             ApiFunc func = null;
 
-            if (scope != null) func = scope.GetValueOrDefault(funcName) ?? scope?.GetValueOrDefault("*");
+            if (scope != null)
+            {
+                func = scope.GetValueOrDefault(funcName) ?? scope?.GetValueOrDefault("*");
+            }
 
             return func ?? DbFunc();
         }
@@ -60,9 +70,15 @@ namespace TheGreatWallOfDataLib.Scopes
 
                 var r = res.GetS("r")?.ParseInt();
 
-                if (!r.HasValue) throw new FunctionException(100, $"Invalid db response {res.GetS("")}");
+                if (!r.HasValue)
+                {
+                    throw new FunctionException(100, $"Invalid db response {res.GetS("")}");
+                }
 
-                if (r.Value != 0) throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
+                if (r.Value != 0)
+                {
+                    throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
+                }
 
                 return res;
             };
