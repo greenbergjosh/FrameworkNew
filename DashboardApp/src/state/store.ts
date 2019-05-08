@@ -6,12 +6,12 @@ import storage from "redux-persist/lib/storage"
 import { Omit } from "utility-types"
 import { adminConfig } from "./admin-config"
 import { globalConfig } from "./global-config"
-import { remoteDataClient } from "./remote-data-client"
 import { iam } from "./iam"
 import { logger } from "./logger"
+import { navigation } from "./navigation"
+import { remoteDataClient } from "./remote-data-client"
 import { reports } from "./reports"
 import * as Store from "./store.types"
-import { navigation } from "./navigation"
 
 const appModels: Omit<Store.AppModelConfigs, "loading"> = {
   adminConfig,

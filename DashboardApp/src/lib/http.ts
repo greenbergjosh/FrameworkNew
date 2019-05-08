@@ -1,7 +1,7 @@
-import axios, { AxiosResponse, AxiosRequestConfig, AxiosError } from "axios"
-import { Option } from "fp-ts/lib/Option"
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios"
 import { Either, left } from "fp-ts/lib/Either"
 import { identity } from "fp-ts/lib/function"
+import { Option } from "fp-ts/lib/Option"
 import { Type } from "io-ts"
 import { failure } from "io-ts/lib/PathReporter"
 
@@ -77,6 +77,7 @@ export interface HttpRequest<A> {
   body?: unknown
   expect: Type<A, any, unknown>
   timeout: Option<number>
+  transformResponse?: (data: any) => any
   withCredentials: boolean
 }
 
@@ -98,6 +99,7 @@ export function request<A>(req: HttpRequest<A>): Promise<Either<HttpError, A>> {
     data: req.body,
     timeout: req.timeout.fold(undefined, identity),
     withCredentials: req.withCredentials,
+    transformResponse: req.transformResponse,
   })
     .then((res) => axiosResponseToEither(res, req.expect))
     .catch((e) => axiosErrorToEither<A>(e))

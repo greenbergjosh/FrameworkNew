@@ -1,82 +1,26 @@
-import React, { useCallback, useEffect } from "react"
+import { Button } from "antd"
+import React from "react"
 import { useRematch } from "../../hooks/use-rematch"
-import { Avatar, Button, Dropdown, Icon, Menu } from "antd"
-import { none, some } from "fp-ts/lib/Option"
-
-const GOOGLE_AUTH_CONFIG = {
-  clientId: "807151246360-m98u9n22fm81tu5fn9pmqdcuoh48qk6p.apps.googleusercontent.com",
-  scope: "profile email",
-}
-
-const gAPI = () => window.gapi
-const gAuth = () => gAPI().auth2.getAuthInstance()
-const onSignInClick = () => gAuth().signIn()
-const onSignOutClick = () => gAuth().signOut()
-const extractUserFromProfile = (googleAuthUser: gapi.auth2.GoogleUser) => {
-  const profile = googleAuthUser.getBasicProfile()
-
-  return {
-    id: profile.getId(),
-    name: profile.getName(),
-    givenName: profile.getGivenName(),
-    familyName: profile.getFamilyName(),
-    imageUrl: profile.getImageUrl(),
-    email: profile.getEmail(),
-    idToken: googleAuthUser.getAuthResponse().id_token,
-    accessToken: googleAuthUser.getAuthResponse().access_token,
-  }
-}
 
 export const GoogleAuth = (): JSX.Element => {
-  const [{ iam }, dispatch] = useRematch(({ iam }) => ({ iam }))
+  const [, dispatch] = useRematch((s) => null)
 
-  const onAuthChange = useCallback(
-    (signedIn: boolean, suppressDashboardRouting?: boolean) => {
-      if (signedIn) {
-        const user = extractUserFromProfile(gAuth().currentUser.get())
-
-        if (suppressDashboardRouting !== true) {
-          dispatch.navigation.goToDashboard(none)
-        }
-      } else {
-        dispatch.iam.reset()
-        dispatch.navigation.goToLanding(none)
-      }
-    },
-    [dispatch.iam, dispatch.navigation]
+  return (
+    <Button
+      block={true}
+      htmlType="button"
+      icon="google"
+      onClick={() => dispatch.iam.authViaGoogleOAuth()}>
+      Sign In With Google
+    </Button>
   )
+}
 
-  useEffect(
-    () =>
-      // Load the Google API for auth
-      gAPI().load("client:auth2", async () => {
-        // When it's loaded, grab the GAuth client and init with out config
-        await gAPI().client.init(GOOGLE_AUTH_CONFIG)
-        // Once we're set up for Google Auth
-        // Send the current state to rematch
-        onAuthChange(gAuth().isSignedIn.get(), true)
-        // Listen for any changes to the signed in status, refire to rematch
-        gAuth().isSignedIn.listen(onAuthChange)
-      }),
-    [onAuthChange]
-  )
+/*
 
-  return iam.profile.foldL(
-    // Fold / None case (No user profile)
-    () => (
-      <Button block={true} htmlType="button" icon="google" onClick={onSignInClick}>
-        Sign In With Google
-      </Button>
-    ),
-
-    // Fold / Some case (Has user profile)
-    (profile) => (
-      <Dropdown
+<Dropdown
         overlay={
-          <Menu
-            onClick={({ key }) =>
-              key === "logout" ? onSignOutClick() : (e: React.SyntheticEvent) => e.preventDefault()
-            }>
+          <Menu>
             <Menu.Item key="username">
               <span>{profile.name}</span>
             </Menu.Item>
@@ -103,6 +47,5 @@ export const GoogleAuth = (): JSX.Element => {
           <Button icon="user" shape="circle" htmlType="button" />
         )}
       </Dropdown>
-    )
-  )
-}
+
+      */

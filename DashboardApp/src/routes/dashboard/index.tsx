@@ -1,17 +1,30 @@
-import { Col, Icon, Layout, Menu, Row, Typography, Breadcrumb, Button } from "antd"
-import React from "react"
-
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
-import { GoogleAuth } from "../../components/auth/GoogleAuth"
-import { RouteMeta, WithRouteProps } from "../../state/navigation"
-import styles from "./dashboard.module.css"
+import { identity } from "fp-ts/lib/function"
 import { some, toArray } from "fp-ts/lib/Record"
+import React from "react"
+import { GoogleAuth } from "../../components/auth/GoogleAuth"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks"
-import { identity } from "fp-ts/lib/function"
+import { Profile } from "../../state/iam"
+import { RouteMeta, WithRouteProps } from "../../state/navigation"
+import styles from "./dashboard.module.css"
+import {
+  Breadcrumb,
+  Button,
+  Col,
+  Dropdown,
+  Icon,
+  Layout,
+  Menu,
+  Row,
+  Typography,
+  Avatar,
+} from "antd"
 
-interface Props {}
+interface Props {
+  profile: Profile
+}
 
 const atom = Atom.of({
   siderCollapsed: false,
@@ -32,7 +45,9 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
       .map(([k, sr]) => sr.abs)
   }, [props.subroutes, props.location.pathname])
 
-  const [fromStore, dispatch] = useRematch((s) => null)
+  const [fromStore, dispatch] = useRematch((s) => ({
+    profile: s.iam.profile,
+  }))
 
   React.useEffect(() => {
     dispatch.globalConfig.loadRemoteConfigs()
@@ -116,7 +131,39 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
             </Col>
             <Col style={{ flex: 1 }}>
               <Row align="middle" justify="end" type="flex">
-                <GoogleAuth />
+                {fromStore.profile
+                  .map((profile) => (
+                    <Dropdown
+                      overlay={
+                        <Menu>
+                          <Menu.Item key="username">
+                            <span>{profile.name}</span>
+                          </Menu.Item>
+                          <Menu.Item key="email">
+                            <Icon type="mail" />
+                            <span>
+                              <i>{profile.email}</i>
+                            </span>
+                          </Menu.Item>
+                          <Menu.Divider />
+                          <Menu.Item key="logout">
+                            <Icon type="logout" />
+                            <span>Logout</span>
+                          </Menu.Item>
+                        </Menu>
+                      }
+                      placement="bottomCenter"
+                      trigger={["click"]}>
+                      {profile.profileImage ? (
+                        <Button shape="circle" htmlType="button">
+                          <Avatar src={profile.profileImage} alt={profile.name} />
+                        </Button>
+                      ) : (
+                        <Button icon="user" shape="circle" htmlType="button" />
+                      )}
+                    </Dropdown>
+                  ))
+                  .getOrElse(<></>)}
               </Row>
             </Col>
           </Row>
