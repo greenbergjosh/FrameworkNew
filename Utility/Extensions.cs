@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Utility
 {
@@ -33,7 +31,13 @@ namespace Utility
 
         public static void ForEach<T>(this IEnumerable<T> coll, Action<T> body)
         {
-            if (coll != null) foreach (var i in coll) body.Invoke(i);
+            if (coll != null)
+            {
+                foreach (var i in coll)
+                {
+                    body.Invoke(i);
+                }
+            }
         }
 
         public static string Join(this IEnumerable<string> coll, string separator) => string.Join(separator, coll.ToArray());
@@ -61,8 +65,15 @@ namespace Utility
         {
             if (!bool.TryParse(str, out var i))
             {
-                if (str == "1") return true;
-                if (str == "0") return false;
+                if (str == "1")
+                {
+                    return true;
+                }
+
+                if (str == "0")
+                {
+                    return false;
+                }
 
                 return null;
             }
@@ -71,11 +82,17 @@ namespace Utility
 
         public static Uri ParseWebUrl(this string str, UriKind kind = UriKind.Absolute)
         {
-            if (str.IsNullOrWhitespace()) return null;
+            if (str.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             str = str.Trim();
 
-            if (kind == UriKind.Absolute && !str.StartsWith("http")) str = "http://" + str;
+            if (kind == UriKind.Absolute && !str.StartsWith("http"))
+            {
+                str = "http://" + str;
+            }
 
             Uri.TryCreate(str, UriKind.Absolute, out var u);
 
@@ -84,7 +101,10 @@ namespace Utility
 
         public static bool IsMatch(this string str, Regex rx)
         {
-            if (str.IsNullOrWhitespace()) return false;
+            if (str.IsNullOrWhitespace())
+            {
+                return false;
+            }
 
             var m = rx.Match(str);
 
@@ -167,7 +187,10 @@ namespace Utility
         {
             var grp = col.GroupBy(keySelector);
 
-            if (takeLast) return grp.Select(g => g.Last());
+            if (takeLast)
+            {
+                return grp.Select(g => g.Last());
+            }
 
             return grp.Select(g => g.First());
         }
@@ -194,19 +217,27 @@ namespace Utility
             return finalSet;
         }
 
-        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size)
-        {
-            return Batch(source, size, x => x);
-        }
+        public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size) => Batch(source, size, x => x);
 
         // Split a collection into batches of a max size
         //https://github.com/morelinq/MoreLINQ/blob/master/MoreLinq/Batch.cs
         public static IEnumerable<TResult> Batch<TSource, TResult>(this IEnumerable<TSource> source, int size,
             Func<IEnumerable<TSource>, TResult> resultSelector)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
-            if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (size <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            if (resultSelector == null)
+            {
+                throw new ArgumentNullException(nameof(resultSelector));
+            }
 
             return _();
 
@@ -253,15 +284,9 @@ namespace Utility
             }
         }
 
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct
-        {
-            return key != null && d.ContainsKey(key.Value) ? d[key.Value] : default(TValue);
-        }
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : default(TValue);
 
-        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct
-        {
-            return key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
-        }
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey? key, TValue defaultValue) where TKey : struct => key != null && d.ContainsKey(key.Value) ? d[key.Value] : defaultValue;
 
         #endregion
 
@@ -276,21 +301,30 @@ namespace Utility
 
             arr[0] = di.FullName;
 
-            for (int i = 0; i < parts.Length; i++) arr[i + 1] = parts[i];
+            for (var i = 0; i < parts.Length; i++)
+            {
+                arr[i + 1] = parts[i];
+            }
 
             return Path.Combine(arr);
         }
 
         public static void Rename(this DirectoryInfo di, string newName)
         {
-            if (di.Parent == null) return;
+            if (di.Parent == null)
+            {
+                return;
+            }
 
             di.MoveTo(di.Parent.PathCombine(newName));
         }
 
         public static void Rename(this FileInfo fi, string newName)
         {
-            if (fi.Directory == null) return;
+            if (fi.Directory == null)
+            {
+                return;
+            }
 
             fi.MoveTo(fi.Directory.PathCombine(newName));
         }
@@ -305,10 +339,7 @@ namespace Utility
 
         #endregion
 
-        public static async Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func)
-        {
-            return await source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
-        }
+        public static Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func) => source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
 
     }
 }
