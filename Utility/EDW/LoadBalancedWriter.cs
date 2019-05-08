@@ -75,7 +75,7 @@ namespace Utility.EDW
             InitiateEndpointPolling();
         }
 
-        public Task<LoadBalancedWriter.Result> Write(object w) => Write(w, writeTimeoutSec);
+        public async Task<LoadBalancedWriter.Result> Write(object w) => await Write(w, writeTimeoutSec);
 
         public async Task<LoadBalancedWriter.Result> Write(object w, int timeoutSeconds)
         {
@@ -190,7 +190,7 @@ namespace Utility.EDW
                     cacheLock.ExitWriteLock();
                 }
             }
-            catch (Exception)
+            catch
             {
             }
         }
@@ -232,7 +232,7 @@ namespace Utility.EDW
                                 {
                                     await AuditEndpoint(p).ConfigureAwait(false);
                                 }
-                                catch (Exception)
+                                catch
                                 {
                                 }
                             });
@@ -244,7 +244,7 @@ namespace Utility.EDW
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
             }
         }
@@ -274,7 +274,7 @@ namespace Utility.EDW
                     RemoveEndpoint(p, true, false);
                 }
             }
-            catch (Exception)
+            catch
             {
             }
         }
