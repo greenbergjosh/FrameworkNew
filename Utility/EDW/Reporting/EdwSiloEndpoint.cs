@@ -11,7 +11,7 @@ namespace Utility.EDW.Reporting
         public EdwSiloEndpoint(string dataLayerType, string connectionString)
         {
             this.connectionString = connectionString;
-            this.dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
+            dataLayerClient = DataLayerClientFactory.DataStoreInstance(dataLayerType);
         }
         public async Task<bool> Audit()
         {
@@ -25,24 +25,20 @@ namespace Utility.EDW.Reporting
 
         public async Task<LoadBalancedWriter.Result> Write(object w, bool secondaryWrite, int timeoutSeconds)
         {
-            string res = await this.dataLayerClient.InsertEdwPayload(this.connectionString, w.ToString(), timeoutSeconds)
+            var res = await dataLayerClient.InsertEdwPayload(connectionString, w.ToString(), timeoutSeconds)
                 .ConfigureAwait(false);
-            string result = res.ToLower();
-            if (result == "success") return LoadBalancedWriter.Result.Success;
-            else if (result == "walkaway")
-                return LoadBalancedWriter.Result.Walkaway;
+            var result = res.ToLower();
+            if (result == "success")
+            {
+                return LoadBalancedWriter.Result.Success;
+            }
+            else if (result == "walkaway") return LoadBalancedWriter.Result.Walkaway;
             else if (result == "removeendpoint") return LoadBalancedWriter.Result.RemoveEndpoint;
             else return LoadBalancedWriter.Result.Failure;
         }
-        
-        public override bool Equals(object obj)
-        {
-            return ((EdwSiloEndpoint)obj).connectionString == this.connectionString;
-        }
 
-        public override int GetHashCode()
-        {
-            return this.connectionString.GetHashCode();
-        }
+        public override bool Equals(object obj) => ((EdwSiloEndpoint)obj).connectionString == connectionString;
+
+        public override int GetHashCode() => connectionString.GetHashCode();
     }
 }

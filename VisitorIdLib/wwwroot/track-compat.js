@@ -28,11 +28,11 @@ function visitorId(_x, _x2, _x3) {
 function _visitorId() {
     _visitorId = _asyncToGenerator(
         /*#__PURE__*/
-        regeneratorRuntime.mark(function _callee2(url, opaque, future) {
-            var res, sres, x, f, a, exf;
-            return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        regeneratorRuntime.mark(function _callee(url, opaque, future) {
+            var bootstrap, res, sres, providerFailed, x, f, a, exf;
+            return regeneratorRuntime.wrap(function _callee$(_context) {
                 while (1) {
-                    switch (_context2.prev = _context2.next) {
+                    switch (_context.prev = _context.next) {
                         case 0:
                             opaque = _objectSpread({}, opaque || {}, {
                                 qs: encodeURIComponent(window.location.href),
@@ -41,15 +41,8 @@ function _visitorId() {
                                 sd: '',
                                 succ: '0'
                             });
-
-                        case 1:
-                            if (!true) {
-                                _context2.next = 28;
-                                break;
-                            }
-
-                            _context2.next = 4;
-                            return window.genericFetch(url + '?m=VisitorId&op=' + base64UrlSafe(JSON.stringify(opaque)), {
+                            _context.next = 3;
+                            return window.genericFetch(url + '?m=Initialize&op=' + base64UrlSafe(JSON.stringify(opaque)), {
                                 method: 'GET',
                                 mode: 'cors',
                                 credentials: 'include',
@@ -58,47 +51,106 @@ function _visitorId() {
                                 referrer: 'no-referrer'
                             }, 'json', '');
 
-                        case 4:
-                            res = _context2.sent;
+                        case 3:
+                            bootstrap = 1;
 
-                            if (!(res.done || !(res.config && (res.config.Url || res.config.ScriptUrl)))) {
-                                _context2.next = 7;
+                        case 4:
+                            if (!true) {
+                                _context.next = 53;
                                 break;
                             }
 
-                            return _context2.abrupt("break", 28);
+                            _context.next = 7;
+                            return window.genericFetch(url + '?m=VisitorId&bootstrap=' + bootstrap + '&op=' + base64UrlSafe(JSON.stringify(opaque)), {
+                                method: 'GET',
+                                mode: 'cors',
+                                credentials: 'include',
+                                cache: 'no-cache',
+                                redirect: 'follow',
+                                referrer: 'no-referrer'
+                            }, 'json', '');
 
                         case 7:
-                            sres = {};
+                            res = _context.sent;
+                            bootstrap = 0;
 
-                            if (!res.config.ScriptUrl) {
-                                _context2.next = 14;
+                            if (!(res.done || !(res.config && (res.config.SaveSession === "false" || res.config.Url || res.config.ScriptUrl)))) {
+                                _context.next = 11;
                                 break;
                             }
 
-                            _context2.next = 11;
-                            return load(res.config.ScriptUrl, 'Segment' + res.config.slot);
+                            return _context.abrupt("break", 53);
 
                         case 11:
-                            for (x in res.config.Strategy) {
-                                f = res.config.Strategy[x].f;
-                                a = res.config.Strategy[x].a;
-                                if (f == undefined) continue;
-                                exf = getDescendantProp(window[res.config.GlobalObject], f);
-                                exf.apply(void 0, _toConsumableArray(a));
+                            sres = {};
+                            providerFailed = false;
+                            _context.prev = 13;
+
+                            if (!res.config.ScriptUrl) {
+                                _context.next = 30;
+                                break;
                             }
 
-                            _context2.next = 17;
-                            break;
-
-                        case 14:
-                            _context2.next = 16;
-                            return window.handleService(res);
-
-                        case 16:
-                            sres = _context2.sent;
+                            _context.next = 17;
+                            return load(res.config.ScriptUrl, 'Segment' + res.config.slot);
 
                         case 17:
+                            _context.t0 = regeneratorRuntime.keys(res.config.Strategy);
+
+                        case 18:
+                            if ((_context.t1 = _context.t0()).done) {
+                                _context.next = 28;
+                                break;
+                            }
+
+                            x = _context.t1.value;
+                            f = res.config.Strategy[x].f;
+                            a = res.config.Strategy[x].a;
+
+                            if (!(f === undefined)) {
+                                _context.next = 24;
+                                break;
+                            }
+
+                            return _context.abrupt("continue", 18);
+
+                        case 24:
+                            exf = getDescendantProp(window[res.config.GlobalObject], f);
+                            exf.apply(void 0, _toConsumableArray(a));
+                            _context.next = 18;
+                            break;
+
+                        case 28:
+                            _context.next = 37;
+                            break;
+
+                        case 30:
+                            if (!res.config.Url) {
+                                _context.next = 36;
+                                break;
+                            }
+
+                            _context.next = 33;
+                            return window.handleService(res);
+
+                        case 33:
+                            sres = _context.sent;
+                            _context.next = 37;
+                            break;
+
+                        case 36:
+                            sres = res;
+
+                        case 37:
+                            _context.next = 42;
+                            break;
+
+                        case 39:
+                            _context.prev = 39;
+                            _context.t2 = _context["catch"](13);
+                            providerFailed = true;
+
+                        case 42:
                             opaque = _objectSpread({}, opaque, {
                                 slot: res.slot,
                                 page: res.page,
@@ -108,17 +160,21 @@ function _visitorId() {
                                 e: base64UrlSafe(sres.email || ''),
                                 isAsync: res.isAsync,
                                 vieps: res.vieps,
-                                pid: res.pid,
-                                lv: res.lv
+                                md5pid: res.md5pid,
+                                tjsv: "3",
+                                lv: res.lv,
+                                pfail: providerFailed,
+                                pfailSlot: res.slot,
+                                pfailPage: res.page
                             });
 
-                            if (!(res.config.SaveSession == 'true')) {
-                                _context2.next = 24;
+                            if (!(res.config.SaveSession === 'true')) {
+                                _context.next = 49;
                                 break;
                             }
 
-                            _context2.next = 21;
-                            return window.genericFetch(url + '?m=SaveSession&pq=' + (res.config.SaveResult || 0) + '&op=' + base64UrlSafe(JSON.stringify(opaque)), {
+                            _context.next = 46;
+                            return window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)), {
                                 method: 'GET',
                                 mode: 'cors',
                                 credentials: 'include',
@@ -127,23 +183,23 @@ function _visitorId() {
                                 referrer: 'no-referrer'
                             }, 'json', '');
 
-                        case 21:
-                            res = _context2.sent;
+                        case 46:
+                            res = _context.sent;
                             opaque.eml = res.email;
                             opaque.md5 = res.md5;
 
-                        case 24:
+                        case 49:
                             opaque.slot++;
                             opaque.page++;
-                            _context2.next = 1;
+                            _context.next = 4;
                             break;
 
-                        case 28:
+                        case 53:
                         case "end":
-                            return _context2.stop();
+                            return _context.stop();
                     }
                 }
-            }, _callee2, this);
+            }, _callee, null, [[13, 39]]);
         }));
     return _visitorId.apply(this, arguments);
 }
@@ -157,45 +213,45 @@ function handleService(_x4) {
 function _handleService() {
     _handleService = _asyncToGenerator(
         /*#__PURE__*/
-        regeneratorRuntime.mark(function _callee3(res) {
+        regeneratorRuntime.mark(function _callee2(res) {
             var response;
-            return regeneratorRuntime.wrap(function _callee3$(_context3) {
+            return regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
-                    switch (_context3.prev = _context3.next) {
+                    switch (_context2.prev = _context2.next) {
                         case 0:
-                            _context3.next = 2;
+                            _context2.next = 2;
                             return window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);
 
                         case 2:
-                            response = _context3.sent;
+                            response = _context2.sent;
 
                             if (!response) {
-                                _context3.next = 11;
+                                _context2.next = 11;
                                 break;
                             }
 
                             if (!res.config.Transform) {
-                                _context3.next = 8;
+                                _context2.next = 8;
                                 break;
                             }
 
-                            return _context3.abrupt("return", {
+                            return _context2.abrupt("return", {
                                 email: getDescendantProp(response, res.config.Transform.email) || '',
                                 md5: getDescendantProp(response, res.config.Transform.md5) || '',
                                 saveSession: res.config.SaveSession
                             });
 
                         case 8:
-                            return _context3.abrupt("return", _objectSpread({}, JSON.parse(response), {
+                            return _context2.abrupt("return", _objectSpread({}, response, {
                                 saveSession: res.config.SaveSession
                             }));
 
                         case 9:
-                            _context3.next = 12;
+                            _context2.next = 12;
                             break;
 
                         case 11:
-                            return _context3.abrupt("return", {
+                            return _context2.abrupt("return", {
                                 email: '',
                                 md5: '',
                                 saveSession: 'false'
@@ -203,37 +259,35 @@ function _handleService() {
 
                         case 12:
                         case "end":
-                            return _context3.stop();
+                            return _context2.stop();
                     }
                 }
-            }, _callee3, this);
+            }, _callee2);
         }));
     return _handleService.apply(this, arguments);
 }
 
 function genericFetch(_x5, _x6, _x7, _x8) {
     return _genericFetch.apply(this, arguments);
-} //document.querySelector('img').src = 'data:image/gif;base64' 
-// var docArticle = doc.querySelector('article').innerHTML;
-
+}
 
 function _genericFetch() {
     _genericFetch = _asyncToGenerator(
         /*#__PURE__*/
-        regeneratorRuntime.mark(function _callee4(url, fetchParms, fetchType, imgFlag) {
-            return regeneratorRuntime.wrap(function _callee4$(_context4) {
+        regeneratorRuntime.mark(function _callee3(url, fetchParms, fetchType, imgFlag) {
+            return regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
-                    switch (_context4.prev = _context4.next) {
+                    switch (_context3.prev = _context3.next) {
                         case 0:
-                            _context4.next = 2;
+                            _context3.next = 2;
                             return fetch(url, fetchParms).then(function (response) {
                                 if (response.ok) {
-                                    return fetchType == "base64" ? response.arrayBuffer() : response.text();
+                                    return fetchType === "base64" ? response.arrayBuffer() : response.text();
                                 }
 
                                 throw new Error('Network response was not ok.');
                             }).then(function (data) {
-                                if (fetchType == "json") return JSON.parse(data); else if (fetchType == "base64") return imgFlag + arrayBufferToBase64(data); else if (fetchType == "html") {
+                                if (fetchType === "json") return JSON.parse(data); else if (fetchType === "base64") return imgFlag + arrayBufferToBase64(data); else if (fetchType === "html") {
                                     var parser = new DOMParser();
                                     return parser.parseFromString(data, "text/html");
                                 } else return data;
@@ -242,14 +296,14 @@ function _genericFetch() {
                             });
 
                         case 2:
-                            return _context4.abrupt("return", _context4.sent);
+                            return _context3.abrupt("return", _context3.sent);
 
                         case 3:
                         case "end":
-                            return _context4.stop();
+                            return _context3.stop();
                     }
                 }
-            }, _callee4, this);
+            }, _callee3);
         }));
     return _genericFetch.apply(this, arguments);
 }
@@ -267,8 +321,6 @@ function arrayBufferToBase64(buffer) {
     });
     return window.btoa(binary);
 }
-
-;
 
 function getDescendantProp(obj, desc) {
     var arr = desc.split('.');
@@ -288,14 +340,14 @@ function loadScript(_x9) {
 function _loadScript() {
     _loadScript = _asyncToGenerator(
         /*#__PURE__*/
-        regeneratorRuntime.mark(function _callee5(url) {
+        regeneratorRuntime.mark(function _callee4(url) {
             var _this = this;
 
-            return regeneratorRuntime.wrap(function _callee5$(_context5) {
+            return regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
-                    switch (_context5.prev = _context5.next) {
+                    switch (_context4.prev = _context4.next) {
                         case 0:
-                            return _context5.abrupt("return", new Promise(function (resolve, reject) {
+                            return _context4.abrupt("return", new Promise(function (resolve, reject) {
                                 var script = document.createElement('script');
                                 script.type = 'text/javascript';
                                 script.async = true;
@@ -313,10 +365,10 @@ function _loadScript() {
 
                         case 1:
                         case "end":
-                            return _context5.stop();
+                            return _context4.stop();
                     }
                 }
-            }, _callee5, this);
+            }, _callee4);
         }));
     return _loadScript.apply(this, arguments);
 }
@@ -328,44 +380,44 @@ function load(_x10, _x11) {
 function _load() {
     _load = _asyncToGenerator(
         /*#__PURE__*/
-        regeneratorRuntime.mark(function _callee7(script, global) {
+        regeneratorRuntime.mark(function _callee6(script, global) {
             var _this2 = this;
 
-            return regeneratorRuntime.wrap(function _callee7$(_context7) {
+            return regeneratorRuntime.wrap(function _callee6$(_context6) {
                 while (1) {
-                    switch (_context7.prev = _context7.next) {
+                    switch (_context6.prev = _context6.next) {
                         case 0:
-                            return _context7.abrupt("return", new Promise(
+                            return _context6.abrupt("return", new Promise(
                                 /*#__PURE__*/
                                 function () {
-                                    var _ref2 = _asyncToGenerator(
+                                    var _ref = _asyncToGenerator(
                                         /*#__PURE__*/
-                                        regeneratorRuntime.mark(function _callee6(resolve, reject) {
-                                            return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                                        regeneratorRuntime.mark(function _callee5(resolve, reject) {
+                                            return regeneratorRuntime.wrap(function _callee5$(_context5) {
                                                 while (1) {
-                                                    switch (_context6.prev = _context6.next) {
+                                                    switch (_context5.prev = _context5.next) {
                                                         case 0:
                                                             if (_this2.isLoaded) {
-                                                                _context6.next = 12;
+                                                                _context5.next = 12;
                                                                 break;
                                                             }
 
-                                                            _context6.prev = 1;
-                                                            _context6.next = 4;
+                                                            _context5.prev = 1;
+                                                            _context5.next = 4;
                                                             return _this2.loadScript(script);
 
                                                         case 4:
                                                             resolve(window[global]);
-                                                            _context6.next = 10;
+                                                            _context5.next = 10;
                                                             break;
 
                                                         case 7:
-                                                            _context6.prev = 7;
-                                                            _context6.t0 = _context6["catch"](1);
-                                                            reject(_context6.t0);
+                                                            _context5.prev = 7;
+                                                            _context5.t0 = _context5["catch"](1);
+                                                            reject(_context5.t0);
 
                                                         case 10:
-                                                            _context6.next = 13;
+                                                            _context5.next = 13;
                                                             break;
 
                                                         case 12:
@@ -373,46 +425,23 @@ function _load() {
 
                                                         case 13:
                                                         case "end":
-                                                            return _context6.stop();
+                                                            return _context5.stop();
                                                     }
                                                 }
-                                            }, _callee6, this, [[1, 7]]);
+                                            }, _callee5, null, [[1, 7]]);
                                         }));
 
                                     return function (_x12, _x13) {
-                                        return _ref2.apply(this, arguments);
+                                        return _ref.apply(this, arguments);
                                     };
                                 }()));
 
                         case 1:
                         case "end":
-                            return _context7.stop();
+                            return _context6.stop();
                     }
                 }
-            }, _callee7, this);
+            }, _callee6);
         }));
     return _load.apply(this, arguments);
 }
-
-_asyncToGenerator(
-    /*#__PURE__*/
-    regeneratorRuntime.mark(function _callee() {
-        var tag, u, o, f;
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-            while (1) {
-                switch (_context.prev = _context.next) {
-                    case 0:
-                        tag = document.getElementById("visIdTag");
-                        u = tag.getAttribute("u");
-                        o = JSON.parse(tag.getAttribute("o"));
-                        f = tag.getAttribute("f");
-                        _context.next = 6;
-                        return visitorId(u, o, f);
-
-                    case 6:
-                    case "end":
-                        return _context.stop();
-                }
-            }
-        }, _callee, this);
-    }))();

@@ -25,22 +25,19 @@ namespace Utility.EDW.Queueing
 
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
-            List<IEndpoint> endpoints = new List<IEndpoint>();
+            var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/PostingQueueSilos")) endpoints.Add(new PostingQueueSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return endpoints;
         }
 
         public static async Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
         {
-            List<IEndpoint> endpoints = new List<IEndpoint>();
+            var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/PostingQueueSilos")) endpoints.Add(new PostingQueueSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return endpoints;
         }
 
-        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds)
-        {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
-        }
+        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
 
         public static int NextWalkawayValue(int previousValue)
         {
@@ -53,7 +50,7 @@ namespace Utility.EDW.Queueing
         public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen)
         {
             IEndpoint e = null;
-            List<IEndpoint> es = endpoints.Keys.ToList();
+            var es = endpoints.Keys.ToList();
             var rnd = new Random(DateTime.Now.Millisecond);
             for (int i = rnd.Next(0, es.Count), k = 0; k < es.Count; k++)
             {
@@ -70,21 +67,15 @@ namespace Utility.EDW.Queueing
             await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::NoValid::{w}{Environment.NewLine}").ConfigureAwait(false);
         }
 
-        public static async Task Failure(object w, string errorFilePath)
-        {
-            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
-        }
+        public static async Task Failure(object w, string errorFilePath) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
 
-        public static async Task Unhandled(object w, string errorFilePath, Exception ex)
-        {
-            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
-        }
+        public static async Task Unhandled(object w, string errorFilePath, Exception ex) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
 
         public static PostingQueueSiloLoadBalancedWriter InitializePostingQueueSiloLoadBalancedWriter(IGenericEntity config)
         {
-            int writeTimeoutSeconds = config.GetS("Config/PostingQueueWriteTimeout").ParseInt() ?? 0;
-            string dataFilePath = config.GetS("Config/PostingQueueDataFilePath");
-            string errorFilePath = config.GetS("Config/PostingQueueErrorFilePath");
+            var writeTimeoutSeconds = config.GetS("Config/PostingQueueWriteTimeout").ParseInt() ?? 0;
+            var dataFilePath = config.GetS("Config/PostingQueueDataFilePath");
+            var errorFilePath = config.GetS("Config/PostingQueueErrorFilePath");
 
             return new PostingQueueSiloLoadBalancedWriter(60, writeTimeoutSeconds,
                 async () => await PostingQueueSiloLoadBalancedWriter.InitializeEndpoints(config).ConfigureAwait(false),

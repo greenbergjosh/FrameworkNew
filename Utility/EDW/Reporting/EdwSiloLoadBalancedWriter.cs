@@ -26,22 +26,19 @@ namespace Utility.EDW.Reporting
 
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
-            List<IEndpoint> endpoints = new List<IEndpoint>();
+			var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return endpoints;
         }
 
         public static async Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
         {
-            List<IEndpoint> endpoints = new List<IEndpoint>();
+            var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return endpoints;
         }
 
-        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds)
-        {
-            await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
-        }
+        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
 
         public static int NextWalkawayValue(int previousValue)
         {
@@ -54,7 +51,7 @@ namespace Utility.EDW.Reporting
         public static IEndpoint Selector(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen)
         {
             IEndpoint e = null;
-            List<IEndpoint> es = endpoints.Keys.ToList();
+            var es = endpoints.Keys.ToList();
             var rnd = new Random(DateTime.Now.Millisecond);
             for (int i = rnd.Next(0, es.Count), k = 0; k < es.Count; k++)
             {
@@ -71,15 +68,9 @@ namespace Utility.EDW.Reporting
             await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::NoValid::{w}{Environment.NewLine}").ConfigureAwait(false);
         }
 
-        public static async Task Failure(object w, string errorFilePath)
-        {
-            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
-        }
+        public static async Task Failure(object w, string errorFilePath) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
 
-        public static async Task Unhandled(object w, string errorFilePath, Exception ex)
-        {
-            await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
-        }
+        public static async Task Unhandled(object w, string errorFilePath, Exception ex) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
 
         public static EdwSiloLoadBalancedWriter InitializeEdwSiloLoadBalancedWriter(IGenericEntity config)
         {
@@ -87,9 +78,9 @@ namespace Utility.EDW.Reporting
 
             if (!siloConns.Any()) return null;
 
-            int writeTimeoutSeconds = config.GetS("Config/EdwWriteTimeout").ParseInt() ?? 0;
-            string dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
-            string errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));
+            var writeTimeoutSeconds = config.GetS("Config/EdwWriteTimeout").ParseInt() ?? 0;
+            var dataFilePath = Path.GetFullPath(config.GetS("Config/EdwDataFilePath"));
+            var errorFilePath = Path.GetFullPath(config.GetS("Config/EdwErrorFilePath"));
 
             return new EdwSiloLoadBalancedWriter(60,
                 writeTimeoutSeconds,
@@ -128,19 +119,19 @@ namespace Utility.EDW.Reporting
 
         public static string EdwEvt(object payld, IDictionary<string, string> rsids)
         {
-            StringBuilder pyld = new StringBuilder(JsonWrapper.Json(payld));
+            var pyld = new StringBuilder(JsonWrapper.Json(payld));
             return EdwEvt(pyld, rsids);
         }
 
         public static string EdwEvt(IDictionary<string, string> payld, IDictionary<string, string> rsids)
         {
-            StringBuilder pyld = new StringBuilder(JsonWrapper.Json("", payld, true));
+            var pyld = new StringBuilder(JsonWrapper.Json("", payld, true));
             return EdwEvt(pyld, rsids);
         }
 
         public static string EdwEvt(string payld, IDictionary<string, string> rsids)
         {
-            StringBuilder pyld = new StringBuilder(payld);
+            var pyld = new StringBuilder(payld);
             return EdwEvt(pyld, rsids);
         }
 
@@ -148,7 +139,7 @@ namespace Utility.EDW.Reporting
         {
             if (rsids != null && rsids.Count > 0)
             {
-                string rsid = JsonWrapper.Json("rsid", rsids, false);
+                var rsid = JsonWrapper.Json("rsid", rsids, false);
                 pyld.Remove(pyld.Length - 1, 1);
                 pyld.Append(rsid + "}");
             }
@@ -159,7 +150,7 @@ namespace Utility.EDW.Reporting
 
         public static string EdwBulk(List<string> Im, List<string> Ck, List<string> Cd, List<string> Evt)
         {
-            StringBuilder sb = new StringBuilder("{");
+            var sb = new StringBuilder("{");
             if (Im != null && Im.Count > 0) sb.Append(JsonWrapper.Json("IM", Im, false, false) + ",");
             if (Ck != null && Ck.Count > 0) sb.Append(JsonWrapper.Json("CK", Ck, false, false) + ",");
             if (Cd != null && Cd.Count > 0) sb.Append(JsonWrapper.Json("CD", Cd, false, false) + ",");
