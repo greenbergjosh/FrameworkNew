@@ -2,6 +2,7 @@
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Oauth2.v2;
 using Google.Apis.Services;
+using Utility.GenericEntity;
 
 namespace Utility.OpgAuth.Sso
 {

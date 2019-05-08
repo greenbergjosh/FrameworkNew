@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
+using Utility.GenericEntity;
 using VisitorIdLib;
 using Jw = Utility.JsonWrapper;
 using Vutil = VisitorIdLib.Util;

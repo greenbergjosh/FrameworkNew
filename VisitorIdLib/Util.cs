@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Utility;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace VisitorIdLib

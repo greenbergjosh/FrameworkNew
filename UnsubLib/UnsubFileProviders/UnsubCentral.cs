@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using Utility;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace UnsubLib.UnsubFileProviders

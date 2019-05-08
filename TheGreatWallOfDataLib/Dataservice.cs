@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TheGreatWallOfDataLib.Scopes;
 using Utility;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace TheGreatWallOfDataLib

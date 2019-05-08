@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Utility;
+using Utility.GenericEntity;
 
 namespace GetGotLib
 {

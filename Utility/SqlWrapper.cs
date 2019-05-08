@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Configuration;
+using Utility.GenericEntity;
 
 namespace Utility
 {

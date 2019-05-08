@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
 using Utility;
+using Utility.GenericEntity;
 using Vutil = VisitorIdLib.Util;
 
 namespace VisitorIdLib

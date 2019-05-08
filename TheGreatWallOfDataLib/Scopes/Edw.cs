@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace TheGreatWallOfDataLib.Scopes

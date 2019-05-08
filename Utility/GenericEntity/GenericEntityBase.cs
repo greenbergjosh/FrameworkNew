@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Utility
+namespace Utility.GenericEntity
 {
     public abstract class GenericEntityBase : IGenericEntity
     {

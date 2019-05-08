@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Utility;
+using Utility.GenericEntity;
 
 namespace SimpleImportExport
 {

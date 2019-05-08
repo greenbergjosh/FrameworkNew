@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Linq;
+using Utility.GenericEntity;
 
 namespace Utility
 {

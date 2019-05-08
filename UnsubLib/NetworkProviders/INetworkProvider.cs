@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Utility;
 using Utility.DataLayer;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace UnsubLib.NetworkProviders

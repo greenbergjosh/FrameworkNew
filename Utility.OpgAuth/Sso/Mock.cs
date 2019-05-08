@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Utility.GenericEntity;
 using Random = Utility.Crypto.Random;
 
 namespace Utility.OpgAuth.Sso
