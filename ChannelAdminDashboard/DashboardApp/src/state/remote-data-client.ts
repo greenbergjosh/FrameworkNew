@@ -1,9 +1,7 @@
 import { Either } from "fp-ts/lib/Either"
-import { none, Option, some } from "fp-ts/lib/Option"
+import { none } from "fp-ts/lib/Option"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
-import { ServerException, Unauthorized } from "../data/AdminApi"
-import { Left, Right } from "../data/Either"
 import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { QueryConfig } from "../data/Report"
@@ -148,6 +146,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     async globalConfigsDeleteById(ids, { remoteDataClient }) {
       return request({
         body: {
+          i: remoteDataClient.token,
           "config:delete": ids,
         },
         expect: AdminApi.globalConfigResponsePayloadCodec.delete,
@@ -168,6 +167,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     async globalConfigsInsert(config, { remoteDataClient }) {
       return request({
         body: {
+          i: remoteDataClient.token,
           "config:insert": config,
         },
         expect: AdminApi.globalConfigResponsePayloadCodec.insert,
@@ -193,6 +193,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     async globalConfigsGet(params, { remoteDataClient }) {
       return request({
         body: {
+          i: remoteDataClient.token,
           "config:get": params,
         },
         expect: AdminApi.globalConfigResponsePayloadCodec.get,
@@ -240,6 +241,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       return request({
         body: {
           "config:get": {
+            i: remoteDataClient.token,
             ...params,
             metaOnly: true,
           },
@@ -264,6 +266,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     async globalConfigsUpdate(config, { remoteDataClient }) {
       return request({
         body: {
+          i: remoteDataClient.token,
           "config:update": {
             id: config.id,
             config: config.config,
@@ -287,6 +290,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     async reportQueryGet({ query, params }, { remoteDataClient }) {
       return request({
         body: {
+          i: remoteDataClient.token,
           [query]: params,
         },
         expect: AdminApi.reportResponsePayloadCodecs.get(query),
