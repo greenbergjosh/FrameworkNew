@@ -1,15 +1,15 @@
 import { Either } from "fp-ts/lib/Either"
-import { Option, none, some } from "fp-ts/lib/Option"
+import { none, Option, some } from "fp-ts/lib/Option"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
+import { ServerException, Unauthorized } from "../data/AdminApi"
+import { Left, Right } from "../data/Either"
 import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { QueryConfig } from "../data/Report"
 import { HttpError, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
-import { Left, Right } from "../data/Either"
-import { Unauthorized, ServerException } from "../data/AdminApi"
 
 declare module "./store.types" {
   interface AppModels {
@@ -101,6 +101,17 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
+        transformResponse: (data) => {
+          const jsonThingHopefullyIsData = JSON.parse(data)
+          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
+            ? {
+                "auth:login": {
+                  r: 0,
+                  result: jsonThingHopefullyIsData["auth:login"],
+                },
+              }
+            : data
+        },
         url: remoteDataClient.apiUrl,
         withCredentials: false,
       }).then((result) =>

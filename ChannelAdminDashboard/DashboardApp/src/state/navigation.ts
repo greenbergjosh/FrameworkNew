@@ -1,22 +1,22 @@
-import React from "react"
 import * as Reach from "@reach/router"
 import { Option } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
+import { Lens } from "monocle-ts"
+import React from "react"
 import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { None, Some } from "../data/Option"
 import { Dashboard } from "../routes/dashboard"
+import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
 import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config"
 import { CreateGlobalConfig } from "../routes/dashboard/routes/global-config/routes/create"
 import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/routes/edit"
 import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
-import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
 import { Reports } from "../routes/dashboard/routes/reports"
 import { ReportView } from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { Landing } from "../routes/landing"
-import * as record from "fp-ts/lib/Record"
-import { Lens } from "monocle-ts"
-
+import { Profile } from "./iam"
 import * as Store from "./store.types"
 
 declare module "./store.types" {
@@ -53,11 +53,28 @@ export interface Effects {
   goToLanding<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
 }
 
-export interface RouteMeta {
+// export interface RouteMeta {
+//   /** the absolute url */
+//   abs: string
+//   /** the component to render at this route */
+//   component: React.ComponentType<WithRouteProps<any>>
+//   context?: Record<string, unknown>
+//   /** for possible UI display; provide more info about the route's purpose */
+//   description: string
+//   /** a name for UI presentation */
+//   title: string
+//   /** the name of an icon from `antd` */
+//   iconType: string
+//   /** the url relative to parent's abs url */
+//   path: string
+//   redirectFrom: Array<string>
+//   shouldAppearInSideNav: boolean
+//   subroutes: Record<string, RouteMeta>
+// }
+
+export interface IRouteMeta {
   /** the absolute url */
   abs: string
-  /** the component to render at this route */
-  component: React.ComponentType<WithRouteProps<any>>
   context?: Record<string, unknown>
   /** for possible UI display; provide more info about the route's purpose */
   description: string
@@ -71,6 +88,26 @@ export interface RouteMeta {
   shouldAppearInSideNav: boolean
   subroutes: Record<string, RouteMeta>
 }
+
+export interface AuthenticatedRouteMeta extends IRouteMeta {
+  requiresAuthentication: true
+  component: React.ComponentType<WithAuthenticatedRouteProps<any>>
+}
+
+export interface UnauthenticatedRouteMeta extends IRouteMeta {
+  requiresAuthentication: false
+  component: React.ComponentType<WithUnauthenticatedRouteProps<any>>
+}
+
+export type RouteMeta = AuthenticatedRouteMeta | UnauthenticatedRouteMeta
+
+export type WithAuthenticatedRouteProps<P> = P &
+  AuthenticatedRouteMeta &
+  Required<Reach.RouteComponentProps> & { profile: Profile; children: JSX.Element }
+
+export type WithUnauthenticatedRouteProps<P> = P &
+  AuthenticatedRouteMeta &
+  Required<Reach.RouteComponentProps> & { children: JSX.Element }
 
 export type WithRouteProps<P> = P &
   RouteMeta &
@@ -88,6 +125,7 @@ const staticRoutesMap = {
     iconType: "home",
     path: "login",
     redirectFrom: ["/"],
+    requiresAuthentication: false as const,
     shouldAppearInSideNav: false,
     subroutes: {},
   },
@@ -101,6 +139,7 @@ const staticRoutesMap = {
     iconType: "dashboard",
     path: "dashboard",
     redirectFrom: [],
+    requiresAuthentication: true as const,
     shouldAppearInSideNav: false,
     subroutes: {
       summary: {
@@ -112,6 +151,7 @@ const staticRoutesMap = {
         iconType: "dashboard",
         path: "summary",
         redirectFrom: ["/dashboard"],
+        requiresAuthentication: true as const,
         shouldAppearInSideNav: true,
         subroutes: {},
       },
@@ -124,6 +164,7 @@ const staticRoutesMap = {
         iconType: "table",
         path: "reports",
         redirectFrom: [],
+        requiresAuthentication: true as const,
         shouldAppearInSideNav: true,
         subroutes: {},
       },
@@ -136,6 +177,7 @@ const staticRoutesMap = {
         iconType: "code",
         path: "global-config",
         redirectFrom: [],
+        requiresAuthentication: true as const,
         shouldAppearInSideNav: true,
         subroutes: {
           "/": {
@@ -149,6 +191,7 @@ const staticRoutesMap = {
             iconType: "code",
             path: "/",
             redirectFrom: [],
+            requiresAuthentication: true as const,
             shouldAppearInSideNav: false,
             subroutes: {},
           },
@@ -163,6 +206,7 @@ const staticRoutesMap = {
             iconType: "code",
             path: "create",
             redirectFrom: [],
+            requiresAuthentication: true as const,
             shouldAppearInSideNav: false,
             subroutes: {},
           },
@@ -177,6 +221,7 @@ const staticRoutesMap = {
             iconType: "code",
             path: ":configId/edit",
             redirectFrom: [],
+            requiresAuthentication: true as const,
             shouldAppearInSideNav: false,
             subroutes: {},
           },
@@ -191,6 +236,7 @@ const staticRoutesMap = {
             iconType: "code",
             path: ":configId",
             redirectFrom: [],
+            requiresAuthentication: true as const,
             shouldAppearInSideNav: false,
             subroutes: {},
           },
@@ -205,6 +251,7 @@ const staticRoutesMap = {
         iconType: "form",
         path: "form-editor-test",
         redirectFrom: [],
+        requiresAuthentication: true as const,
         shouldAppearInSideNav: true,
         subroutes: {},
       },
