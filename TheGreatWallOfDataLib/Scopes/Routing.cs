@@ -27,7 +27,6 @@ namespace TheGreatWallOfDataLib.Scopes
                 (DefaultFuncIdent, new ApiFunc((s, f, p, i) => Edw.DefaultFunc(s, f, p, i)))
             }),
             ("rollup182", new [] {
-                (DefaultFuncIdent, new ApiFunc((s, f, p, i) => Edw.DefaultFunc(s, f, p, i)))
                 (DefaultFuncIdent, new ApiFunc(async (s, f, p, i) => await Edw.DefaultFunc(s, f, p, i)))
             }),
             ("auth", new []
