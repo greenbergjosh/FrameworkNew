@@ -20,6 +20,7 @@ namespace TheGreatWallOfDataLib
             {
                 Fw = fw;
                 Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
+                Authentication.Initialize(fw).Wait();
             }
             catch (Exception ex)
             {
