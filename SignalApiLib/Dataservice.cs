@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using SignalApiLib.SourceHandlers;
 using Utility;
 using Jw = Utility.JsonWrapper;
 
@@ -17,7 +18,8 @@ namespace SignalApiLib
             _fw = fw;
             _sourceHandlers = new Dictionary<string, ISourceHandler>
             {
-                {"fluent", new Fluent(_fw)}
+                {"fluent", new Fluent(_fw)},
+                {"console", new ConsoleFeed(_fw)}
             };
         }
 

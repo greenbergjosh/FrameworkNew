@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
-using Utility.EDW.Queueing;
 
-namespace SignalApiLib
+namespace SignalApiLib.SourceHandlers
 {
-
     public class Fluent : ISourceHandler
     {
         private readonly FrameworkWrapper _fw;
@@ -69,6 +66,17 @@ namespace SignalApiLib
 
                     if (localDbTask.Result.GetS("Result") == "Success")
                     {
+                        try
+                        {
+                            var res = await Data.CallFn("Signal", "fluentLead", payload: dbp);
+
+                            if(res?.GetS("Result") != "Success") await _fw.Error(_logCtx, $"PG double write failed. Response: {res?.GetS("") ?? "null"}");
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error(_logCtx, $"PG double write failed. {e.UnwrapForLog()}");
+                        }
+
                         return localDbTask.Result.GetS("");
                     }
 

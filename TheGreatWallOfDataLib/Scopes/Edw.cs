@@ -14,6 +14,8 @@ namespace TheGreatWallOfDataLib.Scopes
     {
         public static async Task<IGenericEntity> DefaultFunc(string scope, string funcName, string payload, string identity)
         {
+            if (!await Authentication.HasPermissions(scope, funcName, identity)) throw new FunctionException(106, $"Permission denied: Identity: {identity} Scope: {scope} Func: {funcName}");
+
             if (funcName.StartsWith("meta."))
             {
                 var spl = funcName.Split('.', StringSplitOptions.RemoveEmptyEntries);

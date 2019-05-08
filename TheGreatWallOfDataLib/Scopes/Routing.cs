@@ -25,6 +25,11 @@ namespace TheGreatWallOfDataLib.Scopes
             }),
             ("edw", new [] {
                 (DefaultFuncIdent, new ApiFunc(async (s, f, p, i) => await Edw.DefaultFunc(s, f, p, i)))
+            }),
+            ("auth", new []
+            {
+                ("login", new ApiFunc(async (s, f, p, i) => await Authentication.Login(p))),
+                ("userDetails", new ApiFunc(async (s, f, p, i) => await Authentication.GetUserDetails(i)))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
@@ -47,7 +52,9 @@ namespace TheGreatWallOfDataLib.Scopes
         {
             return async (scope, funcName, payload, identity) =>
             {
-                var res = await Data.CallFn(scope, funcName, identity, payload);
+                if (!await Authentication.HasPermissions(scope, funcName, identity)) throw new FunctionException(106, $"Permission denied: Identity: {identity} Scope: {scope} Func: {funcName}");
+
+                var res = await Data.CallFn(scope, funcName, payload: payload);
 
                 if (res == null) throw new FunctionException(100, "Empty DB response");
 

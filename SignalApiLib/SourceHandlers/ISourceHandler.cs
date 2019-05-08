@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace SignalApiLib
+namespace SignalApiLib.SourceHandlers
 {
     public interface ISourceHandler
     {
