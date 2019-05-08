@@ -1,5 +1,6 @@
 import * as Reach from "@reach/router"
-import { none, some } from "fp-ts/lib/Option"
+import { Avatar, Button, Col, Divider, Form, Icon, Input, Layout, Row, Typography } from "antd"
+import { none } from "fp-ts/lib/Option"
 import React from "react"
 import { GoogleAuth } from "../../components/auth/GoogleAuth"
 import { Space } from "../../components/space"
@@ -7,19 +8,6 @@ import { useRematch } from "../../hooks/use-rematch"
 import image from "../../images/go-get-em-coffee-mug.jpg"
 import { WithRouteProps } from "../../state/navigation"
 import styles from "./landing.module.css"
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Col,
-  Divider,
-  Form,
-  Icon,
-  Input,
-  Layout,
-  Row,
-  Typography,
-} from "antd"
 
 interface Props {
   location: {
@@ -29,8 +17,7 @@ interface Props {
   }
 }
 
-export function Landing(props: WithRouteProps<Props>, ...args: any[]) {
-  console.log("Landing", props.location.state, props, args)
+export function Landing(props: WithRouteProps<Props>) {
   const [fromStore, dispatch] = useRematch((s) => ({
     iam: s.iam,
     routes: s.navigation.routes,
@@ -38,18 +25,20 @@ export function Landing(props: WithRouteProps<Props>, ...args: any[]) {
 
   const attemptLogin = React.useCallback(() => {
     // dispatch.iam.update({ profile: some({ id: "123", name: "my dude" }) })
-    if (props.location.state.redirectedFrom) {
-      props.navigate(props.location.state.redirectedFrom)
-    } else {
-      dispatch.navigation.goToDashboard(none)
-    }
-  }, [dispatch])
+  }, [])
 
-  React.useEffect(() => {
-    if (fromStore.iam.profile.isSome()) {
-      props.navigate(fromStore.routes.dashboard.abs)
-    }
-  }, [fromStore.iam.profile])
+  React.useEffect(
+    function handleDidLogin() {
+      if (fromStore.iam.profile.isSome()) {
+        if (props.location.state.redirectedFrom) {
+          props.navigate(props.location.state.redirectedFrom)
+        } else {
+          dispatch.navigation.goToDashboard(none)
+        }
+      }
+    },
+    [dispatch.navigation, fromStore.iam.profile, fromStore.routes.dashboard.abs, props]
+  )
 
   return (
     <Layout className={styles.fullHeight} hasSider={true}>
