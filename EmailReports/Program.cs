@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
+using Utility.GenericEntity;
 
 namespace EmailReports
 {

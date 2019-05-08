@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Utility.DataLayer;
+using Utility.GenericEntity;
 using Utility.OpgAuth.Sso;
 using Jw = Utility.JsonWrapper;
 using Random = Utility.Crypto.Random;

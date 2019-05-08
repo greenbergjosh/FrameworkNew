@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
+using Utility.GenericEntity;
 using Utility.OpgAuth;
 using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
 using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;

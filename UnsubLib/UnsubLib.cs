@@ -19,6 +19,7 @@ using System.Threading;
 using UnsubLib.NetworkProviders;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
+using Utility.GenericEntity;
 
 namespace UnsubLib
 {

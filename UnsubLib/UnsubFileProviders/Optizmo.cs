@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Utility;
+using Utility.GenericEntity;
 
 namespace UnsubLib.UnsubFileProviders
 {

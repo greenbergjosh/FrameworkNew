@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
+using Utility.GenericEntity;
 using Utility.OpgAuth;
 using Random = Utility.Crypto.Random;
 

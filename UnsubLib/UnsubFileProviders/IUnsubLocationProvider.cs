@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Utility;
+using Utility.GenericEntity;
 
 namespace UnsubLib.UnsubFileProviders
 {

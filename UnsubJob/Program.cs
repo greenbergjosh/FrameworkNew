@@ -4,6 +4,7 @@ using System.Linq;
 using Utility;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Utility.GenericEntity;
 
 namespace UnsubJob
 {

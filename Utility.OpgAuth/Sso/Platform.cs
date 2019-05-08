@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Utility.GenericEntity;
 
 namespace Utility.OpgAuth.Sso
 {

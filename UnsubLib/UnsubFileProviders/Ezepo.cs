@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Utility;
+using Utility.GenericEntity;
 using Utility.Selenium;
 
 namespace UnsubLib.UnsubFileProviders

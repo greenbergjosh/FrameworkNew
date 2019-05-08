@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace SimpleImportExport
