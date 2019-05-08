@@ -3,20 +3,21 @@ import { flatten } from "fp-ts/lib/Array"
 import { toArray } from "fp-ts/lib/Record"
 import React from "react"
 import * as ReactRedux from "react-redux"
-
+import "./App.scss"
+import { None, Some } from "./data/Option"
 import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
-import "./App.scss"
 
 export function App(): JSX.Element {
-  const [state] = useRematch((s) => ({
+  const [fromStore] = useRematch((s) => ({
+    profile: s.iam.profile,
     routes: store.select.navigation.routes(s),
   }))
 
-  const routes = React.useMemo(() => renderRoutes(state.routes), [state.routes])
-  const redirects = React.useMemo(() => renderRedirects(state.routes), [state.routes])
+  const routes = React.useMemo(() => renderRoutes(fromStore.routes), [fromStore.routes])
+  const redirects = React.useMemo(() => renderRedirects(fromStore.routes), [fromStore.routes])
 
   return (
     <ReactRedux.Provider store={store}>
@@ -27,24 +28,43 @@ export function App(): JSX.Element {
       </Reach.Router>
     </ReactRedux.Provider>
   )
-}
 
-function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-  return toArray(routes).map(([k, route]) => (
-    <route.component key={route.abs} {...route}>
-      {renderRoutes(route.subroutes)}
-    </route.component>
-  ))
-}
+  function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
+    return toArray(routes).map(([k, route]) =>
+      route.requiresAuthentication === true ? (
+        fromStore.profile.foldL(
+          None(() => (
+            <Reach.Redirect
+              key={route.abs}
+              from={`${route.abs}/*`}
+              state={{ redirectedFrom: window.location.pathname }}
+              noThrow
+              to={fromStore.routes.login.abs}
+            />
+          )),
+          Some((prof) => (
+            <route.component key={route.abs} profile={prof} {...route}>
+              {renderRoutes(route.subroutes)}
+            </route.component>
+          ))
+        )
+      ) : (
+        <route.component key={route.abs} {...route}>
+          {renderRoutes(route.subroutes)}
+        </route.component>
+      )
+    )
+  }
 
-function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-  return flatten(
-    toArray(routes).map(([k, route]) => {
-      return route.redirectFrom
-        .map((url) => (
-          <Reach.Redirect key={url.concat(route.abs)} from={url} noThrow={true} to={route.abs} />
-        ))
-        .concat(renderRedirects(route.subroutes))
-    })
-  )
+  function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
+    return flatten(
+      toArray(routes).map(([k, route]) => {
+        return route.redirectFrom
+          .map((url) => (
+            <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />
+          ))
+          .concat(renderRedirects(route.subroutes))
+      })
+    )
+  }
 }
