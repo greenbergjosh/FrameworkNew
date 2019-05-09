@@ -27,7 +27,7 @@ const _store = Rematch.init({
   models: (appModels as unknown) as Rematch.Models, // Rematch types are difficult to work with :(
   plugins: [
     createLoadingPlugin({}),
-    createPersistPlugin({ storage, whitelist: [] }),
+    createPersistPlugin({ storage, whitelist: ["remoteDataClient"] }),
     createSelectPlugin(),
   ],
 })

@@ -134,8 +134,14 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 {fromStore.profile
                   .map((profile) => (
                     <Dropdown
+                      key={profile.email}
                       overlay={
-                        <Menu>
+                        <Menu
+                          onClick={(evt) => {
+                            if (evt.key === "logout") {
+                              dispatch.iam.logout()
+                            }
+                          }}>
                           <Menu.Item key="username">
                             <span>{profile.name}</span>
                           </Menu.Item>
