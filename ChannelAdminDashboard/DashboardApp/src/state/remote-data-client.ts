@@ -26,16 +26,24 @@ export interface State {
 }
 
 export interface Reducers {
+  reset(): void
   update(update: Partial<State>): void
 }
 
 export interface Effects {
   defaultHttpErrorHandler(r: HttpError): void
 
+  authGetUserDetails(): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
+
   // authLoginBasic(p: {
   //   username: string
   //   password: string
   // }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
+
+  authLoginBasic(loginData: {
+    user: string
+    password: string
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
   authLoginGoogle(p: {
     profileId: string
@@ -82,11 +90,80 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
   },
 
   reducers: {
+    reset: () => remoteDataClient.state,
     update: (state, updater) => ({ ...state, ...updater }),
   },
 
   effects: (dispatch) => ({
-    // authLoginBasic(p) {},
+    authGetUserDetails(_, { remoteDataClient }) {
+      return request({
+        body: {
+          i: remoteDataClient.token,
+          "auth:getUserDetails": {},
+        },
+        expect: AdminApi.authResponsePayloadCodec.login,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        transformResponse: (data) => {
+          const jsonThingHopefullyIsData = JSON.parse(data)
+          return typeof jsonThingHopefullyIsData["auth:getUserDetails"].r === "undefined"
+            ? {
+                "auth:getUserDetails": {
+                  r: 0,
+                  result: {
+                    token: remoteDataClient.token,
+                    ...jsonThingHopefullyIsData["auth:getUserDetails"],
+                  },
+                },
+              }
+            : data
+        },
+        url: remoteDataClient.apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+            return payload["auth:login"].r === 0
+              ? AdminApi.OK(payload["auth:login"].result)
+              : AdminApi.mkAdminApiError(payload["auth:login"].r)
+          }
+        )
+      )
+    },
+
+    authLoginBasic(loginData, { remoteDataClient }) {
+      return request({
+        body: {
+          "auth:login": loginData,
+        },
+        expect: AdminApi.authResponsePayloadCodec.login,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        transformResponse: (data) => {
+          const jsonThingHopefullyIsData = JSON.parse(data)
+          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
+            ? {
+                "auth:login": {
+                  r: 0,
+                  result: jsonThingHopefullyIsData["auth:login"],
+                },
+              }
+            : data
+        },
+        url: remoteDataClient.apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+            return payload["auth:login"].r === 0
+              ? AdminApi.OK(payload["auth:login"].result)
+              : AdminApi.mkAdminApiError(payload["auth:login"].r)
+          }
+        )
+      )
+    },
 
     authLoginGoogle(params, { remoteDataClient }) {
       return request({

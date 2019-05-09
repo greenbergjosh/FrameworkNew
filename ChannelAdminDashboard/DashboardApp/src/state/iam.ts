@@ -51,7 +51,10 @@ export interface Reducers {
 }
 
 export interface Effects {
+  attemptResumeSession(): Promise<void>
+  authViaBasicAuth(loginData: { user: string; password: string }): void
   authViaGoogleOAuth(): void
+  logout(): void
   handleGoogleAuthSignedIn(currentUser: gapi.auth2.GoogleUser): Promise<void>
 }
 
@@ -72,11 +75,67 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
     update: (state, updater): State => ({ ...state, ...updater }),
   },
   effects: (dispatch) => ({
-    // attemptAuth() {
-    //   /**
-    //    *
-    //    */
-    // },
+    attemptResumeSession() {
+      return dispatch.remoteDataClient.authGetUserDetails().then((e) =>
+        e.fold(
+          Left((HttpError) => {
+            dispatch.remoteDataClient.defaultHttpErrorHandler(HttpError)
+          }),
+
+          Right((ApiResponse) => {
+            return ApiResponse({
+              OK({ token, ...profile }) {
+                dispatch.remoteDataClient.update({ token })
+                dispatch.iam.update({ profile: some(profile) })
+              },
+              Unauthorized() {
+                dispatch.remoteDataClient.update({ token: null })
+                dispatch.iam.update({ profile: none })
+                dispatch.logger.logError("Your account is not authorized") // TODO: Toast
+              },
+              ServerException({ reason }) {
+                dispatch.remoteDataClient.update({ token: null })
+                dispatch.iam.update({ profile: none })
+                dispatch.logger.logError(
+                  "Something went wrong while on our servers while authenticating your account:\n${reason}"
+                ) // TODO: Toast
+              },
+            })
+          })
+        )
+      )
+    },
+
+    authViaBasicAuth(loginData) {
+      return dispatch.remoteDataClient.authLoginBasic(loginData).then((e) =>
+        e.fold(
+          Left((HttpError) => {
+            dispatch.remoteDataClient.defaultHttpErrorHandler(HttpError)
+          }),
+
+          Right((ApiResponse) => {
+            return ApiResponse({
+              OK({ token, ...profile }) {
+                dispatch.remoteDataClient.update({ token })
+                dispatch.iam.update({ profile: some(profile) })
+              },
+              Unauthorized() {
+                dispatch.remoteDataClient.update({ token: null })
+                dispatch.iam.update({ profile: none })
+                dispatch.logger.logError("Your account is not authorized") // TODO: Toast
+              },
+              ServerException({ reason }) {
+                dispatch.remoteDataClient.update({ token: null })
+                dispatch.iam.update({ profile: none })
+                dispatch.logger.logError(
+                  "Something went wrong while on our servers while authenticating your account:\n${reason}"
+                ) // TODO: Toast
+              },
+            })
+          })
+        )
+      )
+    },
 
     async authViaGoogleOAuth() {
       await new Promise((resolve) => gAPI().load("client:auth2", resolve))
@@ -118,6 +177,11 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
           })
         )
       )
+    },
+
+    logout() {
+      dispatch.iam.reset()
+      dispatch.remoteDataClient.reset()
     },
   }),
 
