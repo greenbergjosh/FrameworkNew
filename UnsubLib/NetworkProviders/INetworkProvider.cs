@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Utility;
 using Utility.DataLayer;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace UnsubLib.NetworkProviders
@@ -53,9 +54,13 @@ namespace UnsubLib.NetworkProviders
 
                     await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
                     var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
-                    await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                     if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
+                    var jbody = Jw.TryParseObject(resp.body);
+
+                    if(jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
+
+                    await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                     respBody = resp.body;
                     
@@ -118,7 +123,11 @@ namespace UnsubLib.NetworkProviders
 
             private string BuildUrl(string baseUrl, string path, string apiKey, string affiliateId, string unsubRelationshipId = null, Dictionary<string, string> qs = null)
             {
-                var url = $"{baseUrl}{path}";
+                var url = $"{baseUrl}";
+
+                if (!baseUrl.EndsWith("/") && !path.StartsWith("/")) url += "/";
+
+                url += path;
 
                 if (!url.Contains("?")) url += "?";
                 else url += "&";

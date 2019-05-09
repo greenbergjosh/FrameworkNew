@@ -1,19 +1,27 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Runtime.CompilerServices;
 using Utility;
-using static Utility.EdwBulkEvent;
+using static Utility.EDW.Reporting.EdwBulkEvent;
 using System.Reflection;
-
+using System.Threading;
 using System.Threading.Tasks;
+using CsvHelper;
 using Jw = Utility.JsonWrapper;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
+using Utility.DataLayer;
+using Utility.EDW.Reporting;
+using Utility.GenericEntity;
+using Utility.OpgAuth;
 using Random = Utility.Crypto.Random;
 
 namespace QuickTester
@@ -28,38 +36,35 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
-        private static (string path, string propName)? SplitPropertyPath(string fullPath)
-        {
-            if (fullPath.IsNullOrWhitespace()) return null;
-
-            fullPath = $"$/{fullPath}";
-
-            var parts = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-            return ($"{parts.Take(parts.Length - 1).Join(".")}", parts.Last());
-        }
-
         static async Task Main(string[] args)
         {
-            var sww = Stopwatch.StartNew();
-            
-            for (int k = 0; k < 10000; k++)
+            try
             {
-                Guid.NewGuid();
+                String str = "[{\"a\":1,\"b\":\"f\",\"c\":\"2019-04-25T12:12:05.3274509-04:00\"}]";
+                var ig2 = Jw.ToGenericEntity(str);
+                var ig = Jw.ToGenericEntity(JArray.FromObject(new List<Dictionary<string, object>>
+                {
+                    new Dictionary<string, object>
+                    {
+                        { "a", 1 },
+                        { "b", "f" },
+                        { "c", DateTime.Now }
+                    }
+                }));
+
             }
-
-            sww.Stop();
-            Console.WriteLine(sww.Elapsed.TotalSeconds);
-            sww.Restart();
-
-            for (int k = 0; k < 10000; k++)
+            catch (Exception e)
             {
-                Random.Number<int>();
+                Console.WriteLine(e.UnwrapForLog());
             }
+            //var fw1 = new FrameworkWrapper();
 
-            sww.Stop();
-            Console.WriteLine(sww.Elapsed.TotalSeconds);
-            Console.ReadLine();
+            //await Auth.Initialize(fw1);
+
+            //var wpl = Jw.JsonToGenericEntity(
+            //    "{\"sso\": \"mock\", \"t\": \"ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ\"}");
+
+            //var sec = await Auth.GetSecurables();
 
             return;
 

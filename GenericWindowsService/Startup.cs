@@ -28,13 +28,18 @@ namespace GenericWindowsService
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args)
         {
-            File.AppendAllText(Program.LogPath, $@"Unobservered::{DateTime.Now}::{args}::{args}{Environment.NewLine}");
+            File.AppendAllText(Program.LogPath, $@"Unobservered::{DateTime.Now}::{args.Exception.UnwrapForLog()}{Environment.NewLine}");
+        }
+
+        private void UnhandledExceptionEventHandler(object sender, UnhandledExceptionEventArgs e)
+        {
+            File.AppendAllText(Program.LogPath, $@"Unhandled::{DateTime.Now}::{((Exception)e.ExceptionObject).UnwrapForLog()}{Environment.NewLine}");
         }
 
         private void OnShutdown()
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::OnShutdown()" + Environment.NewLine);
-            if(Program.HasOnStop) Program.Service.OnStop();
+            if (Program.HasOnStop) Program.Service.OnStop();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,40 +47,59 @@ namespace GenericWindowsService
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configure..." + Environment.NewLine);
 
-            if (env.IsDevelopment())
+            try
             {
-                app.UseDeveloperExceptionPage();
-            }
-
-            TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
-
-            applicationLifetime.ApplicationStopping.Register(OnShutdown);
-
-            var wwwrootPath = Program.Fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
-
-            if (!wwwrootPath.IsNullOrWhitespace())
-            {
-                app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(wwwrootPath) });
-            }
-            else app.UseStaticFiles();
-
-            app.Run(async context =>
-            {
-                try
+                if (env.IsDevelopment())
                 {
-                    if (context.Request.Query["m"] == "cfg-0nP01nt")
+                    app.UseDeveloperExceptionPage();
+                }
+
+                AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionEventHandler;
+
+                TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
+
+                applicationLifetime.ApplicationStopping.Register(OnShutdown);
+
+                File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Setting static files path..." + Environment.NewLine);
+
+                var wwwrootPath = Program.Fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
+
+                if (!wwwrootPath.IsNullOrWhitespace())
+                {
+                    app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(wwwrootPath) });
+                }
+                else app.UseStaticFiles();
+
+                File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuring Http Handler..." + Environment.NewLine);
+
+                app.Run(async context =>
+                {
+                    try
                     {
-                        await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        if (context.Request.Query["m"] == "config")
+                        {
+                            await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        }
+                        else await Program.Service.HandleHttpRequest(context);
                     }
-                    else await Program.Service.HandleHttpRequest(context);
-                }
-                catch (Exception ex)
-                {
-                    File.AppendAllText(Program.LogPath, $@"Run::{DateTime.Now}::{ex.ToString()}{Environment.NewLine}");
-                }
-            });
+                    catch (Exception ex)
+                    {
+                        File.AppendAllText(Program.LogPath, $@"Run::{DateTime.Now}::{ex.ToString()}{Environment.NewLine}");
+                    }
+                });
 
-            if(Program.HasOnStart) Program.Service.OnStart();
+                if (Program.HasOnStart)
+                {
+
+                    File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Starting service..." + Environment.NewLine);
+
+                    Program.Service.OnStart();
+                }
+            }
+            catch (Exception e)
+            {
+                File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuration failed {e.UnwrapForLog()} {Environment.NewLine}");
+            }
         }
 
     }

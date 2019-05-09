@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utility
@@ -51,12 +48,20 @@ namespace Utility
         //    }
         //}
 
+        public static async Task<string> ReadFileTextAsync(string path)
+        {
+            using (var fs = File.OpenText(path))
+            {
+                return await fs.ReadToEndAsync();
+            }
+        }
+
         public static string QuotePathParts(string path)
         {
-            StringBuilder quotedPath = new StringBuilder("");
+            var quotedPath = new StringBuilder("");
 
-            string[] ps = path.Split('\\');
-            for (int i = 0; i < ps.Length - 1; i++)
+            var ps = path.Split('\\');
+            for (var i = 0; i < ps.Length - 1; i++)
             {
                 if (i == 0) quotedPath.Append(ps[i] + "\\");
                 else if (ps[i].Contains(' ')) quotedPath.Append("\"" + ps[i] + "\"\\");
@@ -69,12 +74,12 @@ namespace Utility
 
         public static void MoveFiles(string sourcePath, string destinationPath, string searchPattern)
         {
-            DirectoryInfo sourceDir = new DirectoryInfo(sourcePath);
-            DirectoryInfo destinationDir = new DirectoryInfo(destinationPath);
+            var sourceDir = new DirectoryInfo(sourcePath);
+            var destinationDir = new DirectoryInfo(destinationPath);
 
-            FileInfo[] files = sourceDir.GetFiles(searchPattern, SearchOption.AllDirectories);
+            var files = sourceDir.GetFiles(searchPattern, SearchOption.AllDirectories);
 
-            foreach (FileInfo file in files)
+            foreach (var file in files)
             {
                 file.MoveTo(destinationDir.FullName + "\\" + file.Name);
             }
@@ -82,13 +87,13 @@ namespace Utility
 
         public static void DeleteDirectoryContents(string dirPath)
         {
-            DirectoryInfo dir = new DirectoryInfo(dirPath);
+            var dir = new DirectoryInfo(dirPath);
 
-            foreach (FileInfo f in dir.GetFiles())
+            foreach (var f in dir.GetFiles())
             {
                 f.Delete();
             }
-            foreach (DirectoryInfo d in dir.GetDirectories())
+            foreach (var d in dir.GetDirectories())
             {
                 d.Delete(true);
             }
@@ -100,7 +105,7 @@ namespace Utility
             {
                 new FileInfo(fname).Delete();
             }
-            catch (Exception exDel)
+            catch
             {
                 return false;
             }
@@ -113,7 +118,7 @@ namespace Utility
             {
                 f.Delete();
             }
-            catch (Exception exDel)
+            catch
             {
                 return false;
             }

@@ -11,6 +11,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace SeleniumSandbox

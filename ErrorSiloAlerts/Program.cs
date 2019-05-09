@@ -5,6 +5,8 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Logging;
+using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
 namespace ErrorSiloAlerts
@@ -28,27 +30,19 @@ namespace ErrorSiloAlerts
 
                 emails.AddRange(await GetEmailAlertDescriptorEvents(lastSeqIds, DateTime.Today.AddDays(minTimestampDays * -1)));
 
-                using (var smtp = new SmtpClient(smtpRelay, smtpPort))
+                var results = ProtocolClient.SendMail(smtpRelay, smtpPort, emails.Select(e => (reference: e, msg: e.msg)), true);
+
+                foreach (var ((configName, lastSeqId, msg), e) in results)
                 {
-                    smtp.EnableSsl = true;
-
-                    foreach (var (configName, lastSeqId, msg) in emails)
+                    if (e == null)
                     {
-                        try
-                        {
-                            smtp.Send(msg);
-                            var res = await Data.CallFn("History", "InsertAlertsSent", Jw.Json(new { configName, lastSeqId }), "");
-                            var err = res.GetS("ErrorMessage");
+                        var res = await Data.CallFn("History", "InsertAlertsSent", Jw.Json(new { configName, lastSeqId }), "");
+                        var err = res.GetS("ErrorMessage");
 
-                            if (!err.IsNullOrWhitespace()) await fw.Err(ErrorSeverity.Error, nameof(Main), ErrorDescriptor.Exception, $"InsertAlertsSent failed: {err} Config: {configName} LastSeqId: {lastSeqIds}");
-                        }
-                        catch (Exception e)
-                        {
-                            await fw.Err(ErrorSeverity.Error, nameof(Main), ErrorDescriptor.Exception, $"Email delivery failed: {e}");
-                        }
+                        if (!err.IsNullOrWhitespace()) await fw.Err(ErrorSeverity.Error, nameof(Main), ErrorDescriptor.Exception, $"InsertAlertsSent failed: {err} Config: {configName} LastSeqId: {lastSeqIds}");
                     }
+                    else await fw.Err(ErrorSeverity.Error, nameof(Main), ErrorDescriptor.Exception, $"Email delivery failed: {e}");
                 }
-
             }
             catch (Exception e)
             {
@@ -96,8 +90,8 @@ namespace ErrorSiloAlerts
                 var bodyTemplate = pg.config.GetS("BodyTemplate");
                 var itemTemplate = pg.config.GetS("BodyItemTemplate");
                 var itemFailedTemplate = pg.config.GetS("BodyFailedItemTemplate");
-                var from = pg.config.GetS("From");
-                var to = pg.config.GetS("To");
+                var from = new MailAddress(pg.config.GetS("From"));
+                var to = pg.config.GetS("To").Split(";").Select(e=>new MailAddress(e));
                 var subject = pg.config.GetS("Subject");
                 var lastSeqId = lastSeqIds.GetValueOrDefault(pgk, 0);
 
@@ -125,8 +119,17 @@ namespace ErrorSiloAlerts
                         s += dataGroup.body.Replace("[Items]", dataGroup.items.Join(""));
                         return s;
                     });
+                var msg = new MailMessage()
+                {
+                    IsBodyHtml = true,
+                    From = from,
+                    Subject = subject,
+                    Body = body
+                };
 
-                emails.Add((configName: pgk, lastSeqId, msg: new MailMessage(from, to, subject, body) { IsBodyHtml = true }));
+                to.ForEach(t=>msg.To.Add(t));
+
+                emails.Add((configName: pgk, lastSeqId, msg));
             }
 
             return emails;

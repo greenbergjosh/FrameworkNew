@@ -4,22 +4,26 @@ using System.Linq;
 using Utility;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Utility.GenericEntity;
 
 namespace UnsubJob
 {
     class Program
     {
-        private static FrameworkWrapper Fw = new FrameworkWrapper();
+        private static FrameworkWrapper Fw = null;
 
         public static async Task Main(string[] args)
         {
+
+            Fw = new FrameworkWrapper();
+
             await Fw.Log(nameof(Main), "Starting...");
 
             // AppName = "UnsubJob"
             var nw = new UnsubLib.UnsubLib(Fw);
-            IEnumerable<IGenericEntity> networks = null;
-            string networkCampaignId = null;
 
+            IEnumerable<IGenericEntity> networks = null;
+            
             try
             {
                 await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
@@ -31,10 +35,24 @@ namespace UnsubJob
                 await Fw.Error(nameof(Main), $"CleanUnusedFiles:: {exClean}");
             }
 
+            if (args.Any(a => String.Equals(a, "useLocal", StringComparison.CurrentCultureIgnoreCase)))
+            {
+                nw.UseLocalNetworkFile = true;
+            }
+
+            if (args.Any(a => String.Equals(a, "singleThread", StringComparison.CurrentCultureIgnoreCase)))
+            {
+                nw.MaxParallelism = 1;
+            }
+
+
+            var singleNetworkName = args.Where(a => a.StartsWith("n:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
+            string networkCampaignId = null;
+
+            if (singleNetworkName != null) networkCampaignId = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
+
             try
             {
-                var singleNetworkName = args?.FirstOrDefault().IfNullOrWhitespace(null);
-
                 networks = (await nw.GetNetworks(singleNetworkName))?.GetL("");
 
                 if (!networks.Any())
@@ -42,8 +60,6 @@ namespace UnsubJob
                     await Fw.Error(nameof(Main), $"Network(s) not found {args.Join(" ")}");
                     return;
                 }
-
-                if (singleNetworkName != null) networkCampaignId = args.Skip(1).FirstOrDefault().IfNullOrWhitespace(null);
             }
             catch (Exception exGetNetworks)
             {
@@ -77,7 +93,7 @@ namespace UnsubJob
                         await Fw.Error(nameof(Main), $"ScheduledUnsubJob failed({name}): {exScheduledUnsub}");
                     }
 
-                    if (n.GetS("AlsoDoManualDirectory") == "True")
+                    if (n.GetS("Credentials/AlsoDoManualDirectory") == "True")
                     {
                         try
                         {

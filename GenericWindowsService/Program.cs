@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Diagnostics;
@@ -20,8 +21,23 @@ namespace GenericWindowsService
         private static void Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-            Fw = LoadFramework();
-            ValidateAndConfigureService(args).Build().Run();
+            Fw = LoadFramework(args);
+            if (args.Contains("console"))
+            {
+                ValidateAndConfigureService(args).Build().Run();
+            }
+            else
+            {
+                var svc = ValidateAndConfigureService(args);
+
+                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Building Host{Environment.NewLine}");
+
+                var wh = svc.Build();
+
+                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Running Host{Environment.NewLine}");
+
+                wh.RunAsService();
+            }
         }
 
         private static IWebHostBuilder ValidateAndConfigureService(string[] args)
@@ -115,11 +131,11 @@ namespace GenericWindowsService
             }
         }
 
-        private static FrameworkWrapper LoadFramework()
+        private static FrameworkWrapper LoadFramework(string[] args)
         {
             try
             {
-                var fw = new FrameworkWrapper();
+                var fw = new FrameworkWrapper(args);
 
                 using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(p => p.GetS(""))))
                 {

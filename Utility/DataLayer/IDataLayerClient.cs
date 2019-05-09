@@ -8,6 +8,7 @@ namespace Utility.DataLayer
 {
     public interface IDataLayerClient
     {
+        Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120);
         Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120);
         Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0);
 
