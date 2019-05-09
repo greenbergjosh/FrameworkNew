@@ -243,7 +243,7 @@ namespace Utility.DataLayer
 
                 if (sp.IsNullOrWhitespace())
                 {
-                    return null;
+                    return Task.FromResult<List<Dictionary<string, object>>>(null);
                 }
 
                 return conn.Client.CallStoredFunction(parameters, sp, conn.ConnStr, timeout);
@@ -272,7 +272,7 @@ namespace Utility.DataLayer
 
                 if (sp.IsNullOrWhitespace())
                 {
-                    return null;
+                    return Task.FromResult<string>(null);
                 }
 
                 return conn.Client.CallStoredFunction(args, payload, sp, conn.ConnStr, timeout);
