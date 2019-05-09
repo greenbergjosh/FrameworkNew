@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GenericWindowsService": {
+      "commandName": "Project",
+      "commandLineArgs": "Mode=bootstrap console"
+    }
+  }
+}

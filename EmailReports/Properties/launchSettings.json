@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "EmailReports": {
+      "commandName": "Project",
+      "commandLineArgs": "ConsoleSignalIntersection"
+    }
+  }
+}

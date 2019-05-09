@@ -2,8 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using Utility.GenericEntity;
 
 namespace Utility
 {
@@ -11,7 +15,63 @@ namespace Utility
     {
         public const string Empty = "{}";
 
-        public static string Serialize(object value) => JsonConvert.SerializeObject(value);
+        public static string Serialize(object value, bool pretty = false) => JsonConvert.SerializeObject(value, pretty ? Formatting.Indented : Formatting.None);
+
+        public static async Task<IGenericEntity> GenericEntityFromFile(string path)
+        {
+            return JsonToGenericEntity(await new FileInfo(path).ReadAllTextAsync());
+        }
+
+        public static async Task<T> FromFile<T>(string path) where T : JToken
+        {
+            return JToken.Parse(await new FileInfo(path).ReadAllTextAsync()) as T;
+        }
+
+        public static JToken TryParse(string str)
+        {
+            try
+            {
+                return JToken.Parse(str);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static JObject TryParseObject(string str)
+        {
+            try
+            {
+                return JObject.Parse(str);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static JArray TryParseArray(string str)
+        {
+            try
+            {
+                return JArray.Parse(str);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static IGenericEntity ToGenericEntity(object obj, RoslynWrapper rw = null, object config = null)
+        {
+            if (obj is string s) return JsonToGenericEntity(s, rw, config);
+
+            var gp = new GenericEntityJson();
+
+            gp.InitializeEntity(rw, config, obj);
+            return gp;
+        }
 
         public static IGenericEntity JsonToGenericEntity(string json, RoslynWrapper rw = null, object config = null)
         {
@@ -20,6 +80,15 @@ namespace Utility
 
             gp.InitializeEntity(rw, config, gpstate);
             return gp;
+        }
+
+        public static (string path, string propName) GetPropertyPathParts(string fullPath)
+        {
+            if (fullPath.IsNullOrWhitespace()) return (null, null);
+
+            var parts = fullPath.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+            return ($"{parts.Take(parts.Length - 1).Join(".")}", parts.Last());
         }
 
         public static string Json(object o, params bool[] quote)
@@ -60,7 +129,7 @@ namespace Utility
         public static string JsonTuple<T>(List<T> o, List<string> names, params bool[] quote)
         {
             if (o == null || o.Count == 0) return "[]";
- 
+
             StringBuilder sb = new StringBuilder("[");
             foreach (var le in o)
             {
@@ -101,7 +170,7 @@ namespace Utility
             {
                 sb.Append("[]");
             }
-            
+
             return sb.ToString();
         }
 
@@ -118,7 +187,7 @@ namespace Utility
                 }
                 sb.Remove(sb.Length - 1, 1);
             }
-            sb = String.IsNullOrEmpty(name) ? sb.Append(wrap ? "}" : "") : sb.Append("}" + (wrap ? "}" : ""));            
+            sb = String.IsNullOrEmpty(name) ? sb.Append(wrap ? "}" : "") : sb.Append("}" + (wrap ? "}" : ""));
 
             return sb.ToString();
         }
@@ -132,7 +201,7 @@ namespace Utility
             sb.Append("[");
             foreach (var e in data)
             {
-               sb = quote ? sb.Append("\"" + data + "\",") : sb.Append(data + ",");
+                sb = quote ? sb.Append("\"" + data + "\",") : sb.Append(data + ",");
             }
             sb.Remove(sb.Length - 1, 1);
             sb.Append("]" + (wrap ? "}" : ""));

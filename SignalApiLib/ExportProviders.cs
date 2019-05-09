@@ -1,31 +1,94 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json.Linq;
+using Utility;
+using Utility.EDW.Queueing;
 
 namespace SignalApiLib.ExportProviders
 {
     public interface IPostingQueueProvider
     {
-        PostingQueueData GetPostingQueueData(SourceData d);
+        PostingQueueEntry GetPostingQueueData(string feedSource, SourceData d);
     }
 
     public class Console : IPostingQueueProvider
     {
-        private const string PostingQueueKey = "SignalApi-Console";
-        //private const string Template = "{\"u\":\"forms.direct-market.com/PostExtra/pe/\",\"p\":\"https\",\"v\":\"POST\",\"h\":{\"Accept\":\"application/json\",\"Content-Type\":\"application/json\"},\"b\":{\"header\":{\"svc\":1,\"p\":-1},\"body\":{\"domain_id\":\"1d6b7dd9-6d97-44b8-a795-9d0e5e72a01f\",\"domain\":\"fluent feed\",\"isFinal\":true,\"email\":\"${email}\"}}}";
-        private const string Template = "{\"ref\":\"${ref}\",\"u\":\"forms.direct-market.com/PostExtra/pe/\",\"p\":\"https\",\"v\":\"POST\",\"h\":{\"Accept\":\"application/json\",\"Content-Type\":\"application/json\"},\"b\":{\"header\":{\"svc\":1,\"p\":-1},\"body\":{\"domain_id\":\"${domainId}\",\"domain\":\"${domain}\",\"isFinal\":true,\"email\":\"${email}\"}}}";
-        private Dictionary<string, (string domainId, string domain)?> _sourceMap = new Dictionary<string, (string domainId, string domain)?>
+        private const string PostingQueueKey = "WebPost";
+        private Dictionary<string, string> _sourceMap = new Dictionary<string, string>
         {
-            { "fluent", ("1d6b7dd9-6d97-44b8-a795-9d0e5e72a01f", "fluent feed") }
+            { "fluent", "1d6b7dd9-6d97-44b8-a795-9d0e5e72a01f" }
         };
 
-        public PostingQueueData GetPostingQueueData(SourceData d)
+        public PostingQueueEntry GetPostingQueueData(string feedSource, SourceData d)
         {
-            if (d.src == null) return null;
+            if (feedSource.IsNullOrWhitespace()) return null;
 
-            var src = _sourceMap.GetValueOrDefault(d.src);
+            var domainId = _sourceMap.GetValueOrDefault(feedSource);
 
-            return src != null ? new PostingQueueData(PostingQueueKey, Template.Replace("${ref}", d.@ref).Replace("${email}", d.em).Replace("${domainId}", src.Value.domainId).Replace("${domain}", src.Value.domain)) : null;
+            return domainId != null ? new PostingQueueEntry(PostingQueueKey, DateTime.Now, BuildConsolePostBody(d.@ref, new ConsolePostData(domainId, d.fn, d.ln, d.zip, d.em, d.dob, d.su, d.g, d.ip))) : null;
         }
+
+        //public ConsolePostBody(SourceData sd, string domainId)
+        //{
+        //    first_name = sd.fn;
+        //    last_name = sd.ln;
+        //    zip_code = sd.zip;
+        //    email = sd.em;
+        //    dob = sd.dob;
+        //    label_domain = sd.su.ParseWebUrl()?.Host;
+        //    gender = sd.g;
+        //    domain_id = domainId;
+        //    user_ip = sd.ip;
+        //}
+
+        public string BuildConsolePostBody(string reference, ConsolePostData body, Dictionary<string, object> overrideConsoleHeaders = null, Dictionary<string, string> additionalHttpHeaders = null)
+        {
+            if (body.domain_id.IsNullOrWhitespace()) throw new Exception("ConsolePostBody has empty domain_id");
+
+            var httpHeaders = new Dictionary<string, string>
+            {
+                { "Accept", "application/json"},
+                { "Content-Type", "application/json" }
+            };
+
+            if (additionalHttpHeaders != null)
+            {
+                foreach (var h in additionalHttpHeaders)
+                {
+                    if (!httpHeaders.ContainsKey(h.Key)) httpHeaders.Add(h.Key, h.Value);
+                }
+            }
+
+            var consoleHeaders = new Dictionary<string, object>
+            {
+                { "svc", 1 },
+                { "p", -1 }
+            };
+
+            if (overrideConsoleHeaders != null)
+            {
+                foreach (var h in overrideConsoleHeaders)
+                {
+                    if (consoleHeaders.ContainsKey(h.Key)) consoleHeaders[h.Key] = h.Value;
+                    else consoleHeaders.Add(h.Key, h.Value);
+                }
+            }
+
+            return JsonWrapper.Serialize(new
+            {
+                @ref = reference,
+                u = "dpost.direct-market.com/api?pe=VisitorId",
+                p = "http",
+                v = "POST",
+                h = httpHeaders,
+                b = new
+                {
+                    header = consoleHeaders,
+                    body
+                }
+            });
+        }
+
     }
 }
