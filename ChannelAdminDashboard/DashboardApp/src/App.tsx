@@ -50,7 +50,7 @@ export function App(): JSX.Element {
                     ))
                   )
                 ) : (
-                  <route.component key={route.abs} {...route} path="/">
+                  <route.component key={route.abs} {...route}>
                     {renderRoutes(route.subroutes)}
                   </route.component>
                 )
