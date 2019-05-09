@@ -183,6 +183,10 @@ namespace Utility
 
         #region Collections
 
+        public static Task WhenAll(this IEnumerable<Task> tasks) => Task.WhenAll(tasks);
+
+        public static Task WhenAny(this IEnumerable<Task> tasks) => Task.WhenAny(tasks);
+
         public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> col, Func<T, TKey> keySelector, bool takeLast = false)
         {
             var grp = col.GroupBy(keySelector);

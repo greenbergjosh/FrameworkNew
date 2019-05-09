@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utility
@@ -47,6 +48,30 @@ namespace Utility
         //        }
         //    }
         //}
+
+        private static readonly ReaderWriterLockSlim ReadWriteLock = new ReaderWriterLockSlim();
+
+        //https://johandorper.com/log/
+        public static void WriteLineToFileThreadSafe(string path, string text)
+        {
+            // Set Status to Locked
+            ReadWriteLock.EnterWriteLock();
+            try
+            {
+                // Append text to the file
+                using (StreamWriter sw = File.AppendText(path))
+                {
+                    // Yes, there is an async version of this, it did not end well
+                    sw.WriteLine(text);
+                    sw.Close();
+                }
+            }
+            finally
+            {
+                // Release lock
+                ReadWriteLock.ExitWriteLock();
+            }
+        }
 
         public static async Task<string> ReadFileTextAsync(string path)
         {
