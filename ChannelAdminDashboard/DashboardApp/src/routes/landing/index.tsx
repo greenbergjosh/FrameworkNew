@@ -23,10 +23,6 @@ export function Landing(props: WithRouteProps<Props>) {
     routes: s.navigation.routes,
   }))
 
-  const attemptLogin = React.useCallback(() => {
-    // dispatch.iam.update({ profile: some({ id: "123", name: "my dude" }) })
-  }, [])
-
   React.useEffect(
     function handleDidLogin() {
       if (fromStore.iam.profile.isSome()) {
@@ -39,6 +35,8 @@ export function Landing(props: WithRouteProps<Props>) {
     },
     [dispatch.navigation, fromStore.iam.profile, fromStore.routes.dashboard.abs, props]
   )
+
+  const [formState, setFormState] = React.useState({ user: "", password: "" })
 
   return (
     <Layout className={styles.fullHeight} hasSider={true}>
@@ -59,7 +57,7 @@ export function Landing(props: WithRouteProps<Props>) {
                   <Layout.Content className={styles.sidebarRightContent}>
                     <Row>
                       <Typography.Title level={1} className={styles.title}>
-                        ONPOINT CONSOLE
+                        ONPOINT ADMIN
                       </Typography.Title>
                     </Row>
 
@@ -67,29 +65,32 @@ export function Landing(props: WithRouteProps<Props>) {
                       <Form
                         onSubmit={(evt) => {
                           evt.preventDefault()
-                          alert("Not implemented")
+                          dispatch.iam.authViaBasicAuth(formState)
                         }}
                         className={styles.loginFormArea}>
                         <Form.Item>
                           <Input
+                            onChange={(evt) =>
+                              setFormState({ ...formState, user: evt.target.value })
+                            }
                             prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
                             placeholder="Username"
+                            value={formState.user}
                           />
                         </Form.Item>
                         <Form.Item>
                           <Input
+                            onChange={(evt) =>
+                              setFormState({ ...formState, password: evt.target.value })
+                            }
                             prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
                             type="password"
                             placeholder="Password"
+                            value={formState.password}
                           />
                         </Form.Item>
                         <Form.Item />
-                        <Button
-                          block={true}
-                          htmlType="button"
-                          icon="login"
-                          type="primary"
-                          onClick={attemptLogin}>
+                        <Button block={true} htmlType="submit" icon="login" type="primary">
                           Sign In
                         </Button>
                       </Form>
