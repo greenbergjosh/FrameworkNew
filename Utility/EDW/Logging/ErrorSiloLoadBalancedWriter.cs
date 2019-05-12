@@ -38,7 +38,7 @@ namespace Utility.EDW.Logging
             return endpoints;
         }
 
-        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);
+        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, DateTime.Now + "::" + w);
 
         public static int NextWalkawayValue(int previousValue)
         {
@@ -62,11 +62,11 @@ namespace Utility.EDW.Logging
             return e;
         }
 
-        public static async Task NoValid(object w, string errorFilePath) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::NoValid::{w}{Environment.NewLine}").ConfigureAwait(false);
+        public static async Task NoValid(object w, string errorFilePath) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::NoValid::{w}");
 
-        public static async Task Failure(object w, string errorFilePath) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Failure::{w}{Environment.NewLine}").ConfigureAwait(false);
+        public static async Task Failure(object w, string errorFilePath) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Failure::{w}");
 
-        public static async Task Unhandled(object w, string errorFilePath, Exception ex) => await File.AppendAllTextAsync(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.Message ?? "None provided"}{Environment.NewLine}").ConfigureAwait(false);
+        public static async Task Unhandled(object w, string errorFilePath, Exception ex) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.UnwrapForLog() ?? "None provided"}");
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
         {
