@@ -38,25 +38,39 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
+
+            var lines = new List<string>();
+
+            for (int k = 0; k < 50000; k++)
+            {
+                lines.Add(new int[1000].Select(_ => k.ToString()).Join(""));
+            }
+
+            var tasks = lines.Select(l =>
+            {
+                return Task.Run(() =>
+                {
+                    try
+                    {
+                        //File.AppendAllText("C:/Users/OnPoint Global/Documents/dev/Workspace/fileWriteTests/f.txt", $"{l}\r\n");
+                        FileSystem.WriteLineToFileThreadSafe("C:/Users/OnPoint Global/Documents/dev/Workspace/fileWriteTests/f.txt", l);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                });
+            });
+
             try
             {
-                String str = "[{\"a\":1,\"b\":\"f\",\"c\":\"2019-04-25T12:12:05.3274509-04:00\"}]";
-                var ig2 = Jw.ToGenericEntity(str);
-                var ig = Jw.ToGenericEntity(JArray.FromObject(new List<Dictionary<string, object>>
-                {
-                    new Dictionary<string, object>
-                    {
-                        { "a", 1 },
-                        { "b", "f" },
-                        { "c", DateTime.Now }
-                    }
-                }));
-
+                await tasks.WhenAll();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.UnwrapForLog());
+                Console.WriteLine(e);
             }
+
             //var fw1 = new FrameworkWrapper();
 
             //await Auth.Initialize(fw1);
