@@ -2,7 +2,6 @@ import { Either } from "fp-ts/lib/Either"
 import { fromEquals } from "fp-ts/lib/Setoid"
 import * as iots from "io-ts"
 import { createOptionFromNullable } from "io-ts-types/lib/fp-ts/createOptionFromNullable"
-import { JSONType } from "io-ts-types/lib/JSON/JSONFromString"
 import { lensesFromInterface } from "io-ts-types/lib/monocle-ts/lensesFromInterface"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { failure } from "io-ts/lib/PathReporter"
@@ -12,11 +11,6 @@ export type ConfigLang = iots.TypeOf<typeof ConfigLangCodec>
 export type ConfigLangJson = iots.TypeOf<typeof ConfigLangJsonCodec>
 export type ConfigLangNonJson = iots.TypeOf<typeof ConfigLangNonJsonCodec>
 
-export interface CreateRemoteConfigParams {
-  config: JSONType
-  name: string
-  type: string
-}
 export const configLangs = {
   csharp: "csharp",
   javascript: "javascript",
@@ -94,7 +88,7 @@ export function mkCompleteRemoteUpdateDraft(
 //   :::::: IN PROGRESS CREATE DRAFT : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
 //
-export interface InProgressLocalDraft {
+export interface InProgressLocalDraftConfig {
   config: string
   name: string
   type: string
@@ -113,7 +107,7 @@ export const CompleteLocalDraftCodec = iots.type({
 })
 
 export function mkCompleteLocalDraft(
-  draft: InProgressLocalDraft
+  draft: InProgressLocalDraftConfig
 ): Either<Array<string>, CompleteLocalDraft> {
   return CompleteLocalDraftCodec.decode(draft).mapLeft(failure)
 }

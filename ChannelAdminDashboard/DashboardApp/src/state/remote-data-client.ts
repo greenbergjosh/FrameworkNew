@@ -2,7 +2,7 @@ import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
-import { CreateRemoteConfigParams, PersistedConfig } from "../data/GlobalConfig.Config"
+import { PersistedConfig, CompleteLocalDraft } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { QueryConfig } from "../data/Report"
 import { HttpError, request } from "../lib/http"
@@ -56,7 +56,7 @@ export interface Effects {
   ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
 
   globalConfigsInsert(
-    c: CreateRemoteConfigParams
+    c: CompleteLocalDraft
   ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<Pick<PersistedConfig, "id" | "name">>>>>
 
   globalConfigsGet(
