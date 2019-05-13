@@ -1,8 +1,7 @@
+import { Typography } from "antd"
+import Base from "formiojs/components/base/Base"
 import React from "react"
 import ReactDOM from "react-dom"
-
-import Base from "formiojs/components/base/Base"
-import { Typography } from "antd"
 
 interface Stateful<T> {
   state: T
@@ -38,13 +37,15 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
   abstract render(): JSX.Element | JSX.Element[]
 
   buildReactComponent = () => {
-    const buildComponent = this.render || this.renderMissingComponent
-    const renderedComponent = buildComponent.call(this)
+    if (this.renderContainer) {
+      const buildComponent = this.render || this.renderMissingComponent
+      const renderedComponent = buildComponent.call(this)
 
-    const wrappedComponent = (
-      <DumbStateComponent state={this.state}>{renderedComponent}</DumbStateComponent>
-    )
-    ReactDOM.render(wrappedComponent, this.renderContainer)
+      const wrappedComponent = (
+        <DumbStateComponent state={this.state}>{renderedComponent}</DumbStateComponent>
+      )
+      ReactDOM.render(wrappedComponent, this.renderContainer)
+    }
   }
 
   static renderMissingComponent(): JSX.Element {
@@ -60,8 +61,12 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
   abstract get emptyValue(): T
 
   getValue(): T {
-    console.log("ReactFormBase.getValue", this._state)
+    // console.log("ReactFormBase.getValue", this._state)
     return this.state
+  }
+
+  get hasSetValue() {
+    return this.hasValue()
   }
 
   setValue(value: T) {
@@ -77,11 +82,17 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
   }
 
   set state(state: T) {
+    const isChanged = this._state !== state
     if (!this.initialState) {
       this.initialState = state
     }
     this._state = state
-    console.log("ReactFormBase._state", this._state)
+    // console.log("ReactFormBase._state", this._state, this.component, { isChanged })
+
+    if (isChanged) {
+      this.buildReactComponent()
+      super.setValue(state)
+    }
   }
 
   setState(state: Partial<T>) {

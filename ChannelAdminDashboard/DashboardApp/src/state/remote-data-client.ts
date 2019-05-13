@@ -100,20 +100,17 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         timeout: none,
         transformResponse: (data) => {
           const jsonThingHopefullyIsData = JSON.parse(data)
-          const result =
-            typeof jsonThingHopefullyIsData["auth:userDetails"].r === "undefined"
-              ? {
-                  "auth:login": {
-                    r: 0,
-                    result: {
-                      token: remoteDataClient.token,
-                      ...jsonThingHopefullyIsData["auth:userDetails"],
-                    },
+          return typeof jsonThingHopefullyIsData["auth:userDetails"].r === "undefined"
+            ? {
+                "auth:login": {
+                  r: 0,
+                  result: {
+                    token: remoteDataClient.token,
+                    ...jsonThingHopefullyIsData["auth:userDetails"],
                   },
-                }
-              : data
-
-          return result
+                },
+              }
+            : data
         },
         url: remoteDataClient.apiUrl,
         withCredentials: false,

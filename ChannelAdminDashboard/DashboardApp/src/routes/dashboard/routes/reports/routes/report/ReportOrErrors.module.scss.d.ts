@@ -1,1 +1,1 @@
-export const reportBodyContainer: string;
+export const reportBodyContainer: string

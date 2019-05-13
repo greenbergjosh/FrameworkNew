@@ -1,16 +1,24 @@
+import {
+  Button,
+  Card,
+  Divider,
+  Typography
+  } from "antd"
 import React from "react"
-import { Button, Card, Divider, Typography } from "antd"
-
-import { Form, FormBuilder, Components } from "../../../../components/form-io"
-
+import { Components, Form, FormBuilder } from "../../../../components/form-io"
+import CodeEditorFormComponent from "../../../../components/form-io/code-editor/CodeEditorFormComponent"
+import DateRangeFormComponent from "../../../../components/form-io/date-range/DateRangeFormComponent"
+import DateFormComponent from "../../../../components/form-io/date/DateFormComponent"
+import SelectFormComponent from "../../../../components/form-io/select/SelectFormComponent"
 import { WithRouteProps } from "../../../../state/navigation"
 import CheckMatrix from "./components/CheckMatrix"
-import FormCodeEditor from "./components/code-editor/FormCodeEditor"
-import FormCodeEditorWrapper from "./components/code-editor/FormCodeEditorWrapper"
 
 Components.setComponents({
   checkmatrix: CheckMatrix,
-  "code-editor": FormCodeEditorWrapper,
+  "code-editor": CodeEditorFormComponent,
+  date: DateFormComponent,
+  "date-range": DateRangeFormComponent,
+  // select: SelectFormComponent,
 })
 
 interface Props {}
