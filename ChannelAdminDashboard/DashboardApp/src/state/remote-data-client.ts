@@ -99,7 +99,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       return request({
         body: {
           i: remoteDataClient.token,
-          "auth:getUserDetails": {},
+          "auth:userDetails": {},
         },
         expect: AdminApi.authResponsePayloadCodec.login,
         headers: {},
@@ -107,17 +107,22 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         timeout: none,
         transformResponse: (data) => {
           const jsonThingHopefullyIsData = JSON.parse(data)
-          return typeof jsonThingHopefullyIsData["auth:getUserDetails"].r === "undefined"
-            ? {
-                "auth:getUserDetails": {
-                  r: 0,
-                  result: {
-                    token: remoteDataClient.token,
-                    ...jsonThingHopefullyIsData["auth:getUserDetails"],
+          const result =
+            typeof jsonThingHopefullyIsData["auth:userDetails"].r === "undefined"
+              ? {
+                  "auth:login": {
+                    r: 0,
+                    result: {
+                      token: remoteDataClient.token,
+                      ...jsonThingHopefullyIsData["auth:userDetails"],
+                    },
                   },
-                },
-              }
-            : data
+                }
+              : data
+
+          console.log("User Details payload", result)
+
+          return result
         },
         url: remoteDataClient.apiUrl,
         withCredentials: false,
