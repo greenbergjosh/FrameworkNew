@@ -1,5 +1,22 @@
 import * as Reach from "@reach/router"
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
+import { Button, PageHeader } from "antd"
+import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
+import { right } from "fp-ts/lib/Either"
+import { identity } from "fp-ts/lib/function"
+import { Identity } from "fp-ts/lib/Identity"
+import { none, Option, some } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
+import { Errors } from "io-ts"
+import React from "react"
+import { Left, Right } from "../../../../../../data/Either"
+import { JSONRecord } from "../../../../../../data/JSON"
+import { useRematch } from "../../../../../../hooks"
+import { cheapHash } from "../../../../../../lib/json"
+import { WithRouteProps } from "../../../../../../state/navigation"
+import { store } from "../../../../../../state/store"
+import { QueryForm } from "./QueryForm"
+import { ReportOrErrors } from "./ReportOrErrors"
 import {
   Aggregate,
   ColumnChooser,
@@ -15,29 +32,12 @@ import {
   Sort,
   Toolbar,
 } from "@syncfusion/ej2-react-grids"
-import { Button, PageHeader } from "antd"
-import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
-import { right } from "fp-ts/lib/Either"
-import { identity } from "fp-ts/lib/function"
-import { Identity } from "fp-ts/lib/Identity"
-import { none, Option, some } from "fp-ts/lib/Option"
-import * as record from "fp-ts/lib/Record"
-import { Errors } from "io-ts"
-import React from "react"
-import { Left, Right } from "../../../../../../data/Either"
-import { JSONRecord } from "../../../../../../data/JSON"
 import {
   GlobalConfigReference,
   LocalReportConfig,
   ParameterItem,
   QueryConfig,
 } from "../../../../../../data/Report"
-import { useRematch } from "../../../../../../hooks"
-import { cheapHash } from "../../../../../../lib/json"
-import { WithRouteProps } from "../../../../../../state/navigation"
-import { store } from "../../../../../../state/store"
-import { QueryForm } from "./QueryForm"
-import { ReportOrErrors } from "./ReportOrErrors"
 
 const detailMapper = (childData: any[]) => ({
   // @ts-ignore
@@ -268,7 +268,7 @@ const ReportBody = React.memo(
         dispatch.reports.executeQuery({
           resultURI: queryResultURI,
           query: queryConfig.query,
-          params: { ...satisfiedByParentParams, ...parameterValues },
+          params: { ...satisfiedByParentParams, ...flattenObject(parameterValues) },
         })
       },
       [dispatch.reports, queryConfig.query, satisfiedByParentParams]
@@ -361,3 +361,17 @@ const gridComponentServices = [
   Freeze,
   Aggregate,
 ]
+
+const flattenObject = (obj: any) => {
+  const flattened: any = {}
+
+  Object.keys(obj).forEach((key) => {
+    if (typeof obj[key] === "object" && obj[key] !== null && obj[key]["_unrollValue"] === true) {
+      Object.assign(flattened, obj[key].data)
+    } else {
+      flattened[key] = obj[key]
+    }
+  })
+
+  return flattened
+}

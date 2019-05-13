@@ -1,8 +1,8 @@
-import React from "react"
 import debounce from "lodash.debounce"
-import { QueryConfig } from "../../../../../../data/Report"
+import React from "react"
 import { Form } from "react-formio"
 import { JSONRecord } from "../../../../../../data/JSON"
+import { QueryConfig } from "../../../../../../data/Report"
 import { useRematch } from "../../../../../../hooks"
 import { generateLayoutFromParameters } from "./generators"
 
