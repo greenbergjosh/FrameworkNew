@@ -51,6 +51,8 @@ export interface Effects {
   goToGlobalConfigs<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
 
   goToLanding<LocationState = void>(opts: Option<Reach.NavigateOptions<LocationState>>): void
+
+  navigate: typeof Reach.navigate
 }
 
 // export interface RouteMeta {
@@ -114,6 +116,134 @@ export type WithRouteProps<P> = P &
   Required<Reach.RouteComponentProps> & { children: JSX.Element }
 
 export type RoutesMap = typeof staticRoutesMap
+
+function mkAuthenticatedRoute(ar: AuthenticatedRouteMeta): AuthenticatedRouteMeta {
+  return ar
+}
+
+function mkUnauthenticatedRoute(ur: UnauthenticatedRouteMeta): UnauthenticatedRouteMeta {
+  return ur
+}
+
+const Login = mkUnauthenticatedRoute({
+  abs: "/login",
+  // component: React.lazy(() => import("../routes/landing")), // Landing,
+  component: Landing,
+  description: "",
+  title: "Home",
+  iconType: "home",
+  path: "login",
+  redirectFrom: ["/"],
+  requiresAuthentication: false as const,
+  shouldAppearInSideNav: false,
+  subroutes: {},
+})
+
+const DashSummary = mkAuthenticatedRoute({
+  abs: "/dashboard/summary",
+  // component: React.lazy(() => import("../routes/dashboard/routes/summary")), // Summary,
+  component: Summary,
+  description: "Customizable highlights dashboard",
+  title: "Summary",
+  iconType: "dashboard",
+  path: "summary",
+  redirectFrom: ["/dashboard"],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: true,
+  subroutes: {},
+})
+
+const DashReports = mkAuthenticatedRoute({
+  abs: "/dashboard/reports",
+  // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
+  component: Reports,
+  description: "Generate and export reports",
+  title: "Reports",
+  iconType: "table",
+  path: "reports",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: true,
+  subroutes: {},
+})
+
+const GlobalConfigList = mkAuthenticatedRoute({
+  abs: "/dashboard/global-config",
+  // component: React.lazy(() =>
+  //   import("../routes/dashboard/routes/global-config/routes/list")
+  // ), // ListGlobalConfig,
+  component: ListGlobalConfig,
+  description: "",
+  title: "Global Configs Index",
+  iconType: "code",
+  path: "/",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: false,
+  subroutes: {},
+})
+
+const GlobalConfigCreate = mkAuthenticatedRoute({
+  abs: "/dashboard/global-config/create",
+  // component: React.lazy(() =>
+  //   import("../routes/dashboard/routes/global-config/routes/create")
+  // ), // CreateGlobalConfig,
+  component: CreateGlobalConfig,
+  description: "",
+  title: "Create Global Config",
+  iconType: "code",
+  path: "create",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: false,
+  subroutes: {},
+})
+
+const GlobalConfigEdit = mkAuthenticatedRoute({
+  abs: "/dashboard/global-config/:configId/edit",
+  // component: React.lazy(() =>
+  //   import("../routes/dashboard/routes/global-config/routes/edit")
+  // ), // EditGlobalConfig,
+  component: EditGlobalConfig,
+  description: "",
+  title: "Edit Global Config",
+  iconType: "code",
+  path: ":configId/edit",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: false,
+  subroutes: {},
+})
+
+const GlobalConfigShow = mkAuthenticatedRoute({
+  abs: "/dashboard/global-config/:configId",
+  // component: React.lazy(() =>
+  //   import("../routes/dashboard/routes/global-config/routes/show")
+  // ), // ShowGlobalConfig,
+  component: ShowGlobalConfig,
+  description: "",
+  title: "Global Configs Index",
+  iconType: "code",
+  path: ":configId",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: false,
+  subroutes: {},
+})
+
+const FormEditorSandbox = mkAuthenticatedRoute({
+  abs: "/dashboard/form-editor-test",
+  // component: React.lazy(() => import("../routes/dashboard/routes/form-editor-test")), // FormEditorTest,
+  component: FormEditorTest,
+  description: "Form Editor Test",
+  title: "Form Editor Test",
+  iconType: "form",
+  path: "form-editor-test",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: true,
+  subroutes: {},
+})
 
 const staticRoutesMap = {
   login: {
@@ -288,6 +418,10 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
         None(() => Reach.navigate(routes.login.abs)),
         Some((opts) => Reach.navigate(routes.login.abs, opts))
       ),
+
+    navigate(path, rootState, navOptions) {
+      return Reach.navigate(path, navOptions)
+    },
   }),
 
   selectors: (slice, createSelector) => ({

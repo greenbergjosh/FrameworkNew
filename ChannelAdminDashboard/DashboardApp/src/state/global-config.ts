@@ -5,14 +5,20 @@ import { fromNullable, some } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
-import { Overwrite } from "utility-types"
+import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { Left, Right } from "../data/Either"
-import { CompleteLocalDraft, ConfigType, PersistedConfig } from "../data/GlobalConfig.Config"
+import {
+  ConfigType,
+  InProgressLocalDraftConfig,
+  InProgressRemoteUpdateDraft,
+  mkCompleteLocalDraft,
+  mkCompleteRemoteUpdateDraft,
+  PersistedConfig,
+} from "../data/GlobalConfig.Config"
 import { None, Some } from "../data/Option"
 import { prettyPrint } from "../lib/json"
 import { Config as mockGlobalConfigs } from "../mock-data/global-config.json"
 import * as Store from "./store.types"
-import { LocalReportConfig, ReportConfigCodec } from "../data/Report"
 
 declare module "./store.types" {
   interface AppModels {
@@ -41,10 +47,10 @@ export interface Reducers {
 }
 
 export interface Effects {
-  createRemoteConfig(config: CompleteLocalDraft): Promise<void>
+  createRemoteConfig(config: InProgressLocalDraftConfig): Promise<void>
   deleteRemoteConfigsById(id: Array<PersistedConfig["id"]>): Promise<void>
   loadRemoteConfigs(): Promise<void>
-  updateRemoteConfig(config: Overwrite<PersistedConfig, { config: string }>): Promise<void>
+  updateRemoteConfig(config: InProgressRemoteUpdateDraft): Promise<void>
 }
 
 export interface Selectors {
@@ -52,6 +58,7 @@ export interface Selectors {
   configsByType(state: Store.AppState): Record<ConfigType, Array<PersistedConfig>>
   /** a record of configs indexed on config.id */
   configsById(state: Store.AppState): Record<PersistedConfig["id"], PersistedConfig>
+  configNames(state: Store.AppState): Array<PersistedConfig["name"]>
   /** an array of unique strings which are all the known values on config.type */
   configTypes(state: Store.AppState): Array<ConfigType>
   /** a Record of all configs where config.type === 'EntityType', indexed by config.name
@@ -92,44 +99,55 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
 
   effects: (dispatch) => ({
     async createRemoteConfig(draft) {
-      const response = await dispatch.remoteDataClient.globalConfigsInsert({
-        config: draft.config,
-        name: draft.name,
-        type: draft.type,
-      })
-      return response.fold(
-        Left((HttpError) => {
-          dispatch.remoteDataClient.defaultHttpErrorHandler(HttpError)
+      return mkCompleteLocalDraft(draft).fold(
+        Left(async (errs) => {
+          return dispatch.logger.logError(
+            `createRemoteConfig error:\n${errs.join("\n")}\n\nInvalid config params:\n${draft}`
+          )
         }),
-        Right((GlobalConfigApiResponse) => {
-          return GlobalConfigApiResponse({
-            ServerException({ reason }) {
-              dispatch.logger.logError(
-                `A server exception occured while attempting to create config:\n${prettyPrint(
-                  draft
-                )}`
-              )
-            },
-            Unauthorized: () => {
-              dispatch.logger.logError(`Unauthorized to create config:\n${prettyPrint(draft)}`)
-            },
-            OK: (createdConfigs) => {
-              return head(createdConfigs).foldL(
-                None(() => {
-                  dispatch.logger.logError(
-                    `web service for state.globalConfig.createConfig returned nothing`
-                  )
-                }),
-                Some((createdConfig) => {
-                  return dispatch.globalConfig.insertLocalConfig({
-                    ...createdConfig,
-                    config: some(draft.config),
-                    type: draft.type,
-                  })
-                })
-              )
-            },
+        Right(async (completeDraft) => {
+          const response = await dispatch.remoteDataClient.globalConfigsInsert({
+            config: completeDraft.config,
+            name: completeDraft.name,
+            type: completeDraft.type,
           })
+
+          return response.fold(
+            Left((HttpError) => {
+              dispatch.remoteDataClient.defaultHttpErrorHandler(HttpError)
+            }),
+
+            Right((GlobalConfigApiResponse) => {
+              return GlobalConfigApiResponse({
+                ServerException({ reason }) {
+                  dispatch.logger.logError(
+                    `A server exception occured while attempting to create config:\n${prettyPrint(
+                      draft
+                    )}`
+                  )
+                },
+                Unauthorized: () => {
+                  dispatch.logger.logError(`Unauthorized to create config:\n${prettyPrint(draft)}`)
+                },
+                OK: (createdConfigs) => {
+                  return head(createdConfigs).foldL(
+                    None(() => {
+                      dispatch.logger.logError(
+                        `web service for state.globalConfig.createConfig returned nothing`
+                      )
+                    }),
+                    Some((createdConfig) => {
+                      return dispatch.globalConfig.insertLocalConfig({
+                        ...createdConfig,
+                        config: some(draft.config),
+                        type: completeDraft.type,
+                      })
+                    })
+                  )
+                },
+              })
+            })
+          )
         })
       )
     },
@@ -201,26 +219,40 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
       )
     },
     async updateRemoteConfig(draft) {
-      const result = await dispatch.remoteDataClient.globalConfigsUpdate(draft)
+      return mkCompleteRemoteUpdateDraft(draft).fold(
+        Left(async (errs) => {
+          dispatch.logger.logError(
+            `updateRemoteConfig argument error:\n${errs.join(
+              "\n"
+            )}\n\nInvalid update values:\n${prettyPrint(draft)}`
+          )
+        }),
+        Right(async (completeDraft) => {
+          const result = await dispatch.remoteDataClient.globalConfigsUpdate(completeDraft)
 
-      return result.fold(
-        Left((httpError) => dispatch.remoteDataClient.defaultHttpErrorHandler(httpError)),
-        Right((GlobalConfigApiResponse) => {
-          GlobalConfigApiResponse({
-            ServerException() {
-              dispatch.logger.logError(
-                `Error "ServerException"; could not update remote config ${prettyPrint(draft)}`
-              )
-            },
-            Unauthorized() {
-              dispatch.logger.logError(
-                `Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`
-              )
-            },
-            OK() {
-              dispatch.globalConfig.updateLocalConfig({ ...draft, config: some(draft.config) })
-            },
-          })
+          return result.fold(
+            Left((httpError) => dispatch.remoteDataClient.defaultHttpErrorHandler(httpError)),
+            Right((GlobalConfigApiResponse) => {
+              GlobalConfigApiResponse({
+                ServerException() {
+                  dispatch.logger.logError(
+                    `Error "ServerException"; could not update remote config ${prettyPrint(draft)}`
+                  )
+                },
+                Unauthorized() {
+                  dispatch.logger.logError(
+                    `Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`
+                  )
+                },
+                OK() {
+                  dispatch.globalConfig.updateLocalConfig({
+                    ...completeDraft,
+                    config: some(completeDraft.config),
+                  })
+                },
+              })
+            })
+          )
         })
       )
     },
@@ -244,6 +276,18 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
       return createSelector(
         slice((state) => state.configs),
         (cs) => Record.fromFoldable(array)(cs.getOrElse([]).map((c) => tuple(c.id, c)), identity)
+      )
+    },
+
+    configNames() {
+      return createSelector(
+        slice((self) => self.configs),
+        (cs) =>
+          cs
+            .map((cs) => cs.map((c) => c.name))
+            .map((types) => uniq<NonEmptyString>(setoidString)(types))
+            .map((types) => sort<NonEmptyString>(ordString)(types))
+            .getOrElse([])
       )
     },
 

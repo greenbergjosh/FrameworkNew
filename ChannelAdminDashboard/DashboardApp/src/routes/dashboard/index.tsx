@@ -1,15 +1,7 @@
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
-import { identity } from "fp-ts/lib/function"
-import { some, toArray } from "fp-ts/lib/Record"
-import React from "react"
-import { GoogleAuth } from "../../components/auth/GoogleAuth"
-import { Space } from "../../components/space"
-import { useRematch } from "../../hooks"
-import { Profile } from "../../state/iam"
-import { RouteMeta, WithRouteProps } from "../../state/navigation"
-import styles from "./dashboard.module.css"
 import {
+  Avatar,
   Breadcrumb,
   Button,
   Col,
@@ -19,8 +11,15 @@ import {
   Menu,
   Row,
   Typography,
-  Avatar,
 } from "antd"
+import { identity } from "fp-ts/lib/function"
+import { some, toArray } from "fp-ts/lib/Record"
+import React from "react"
+import { Space } from "../../components/space"
+import { useRematch } from "../../hooks"
+import { Profile } from "../../state/iam"
+import { RouteMeta, WithRouteProps } from "../../state/navigation"
+import styles from "./dashboard.module.css"
 
 interface Props {
   profile: Profile
@@ -75,7 +74,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         </div>
         <Menu
           theme="dark"
-          mode="inline"
+          mode="vertical"
           defaultOpenKeys={activeMenuKeys}
           selectedKeys={activeMenuKeys}>
           {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {

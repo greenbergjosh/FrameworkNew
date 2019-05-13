@@ -1,36 +1,25 @@
 import * as Reach from "@reach/router"
-import { Alert, Button, Card, Empty, Form, Skeleton, Typography } from "antd"
-import { constant } from "fp-ts/lib/function"
-import { IO } from "fp-ts/lib/IO"
-import { monoidString } from "fp-ts/lib/Monoid"
-import { head } from "fp-ts/lib/NonEmptyArray2v"
-import { fromEither, getSetoid as getSetoidOption, none, Option, some } from "fp-ts/lib/Option"
-import { lookup } from "fp-ts/lib/Record"
-import { setoidString } from "fp-ts/lib/Setoid"
-import {
-  failure,
-  getSetoid as getSetoidValidation,
-  success,
-  Validation,
-} from "fp-ts/lib/Validation"
+import { Alert, Button, Card, Empty, Form, Input, Skeleton, Typography } from "antd"
+import * as Formik from "formik"
+import { Identity } from "fp-ts/lib/Identity"
+import { fromEither, none, some } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
+import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
-import {
-  getSetoidValidatorErrors,
-  isNotEmpty,
-  validate,
-  ValidatorErrors,
-} from "../../../../../data/Validator"
+import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
+
 interface Props {
   configId: string
 }
+
 export function EditGlobalConfig({
   children,
   configId,
@@ -42,200 +31,206 @@ export function EditGlobalConfig({
   const [fromStore, dispatch] = useRematch((s) => ({
     configs: s.globalConfig.configs,
     configsById: store.select.globalConfig.configsById(s),
-    defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
-    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
-    isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
   }))
 
-  const [state, setState] = React.useState({
-    draft: none as Option<string>,
-  })
-
-  const draftValidation = React.useMemo(
-    () =>
-      state.draft.map((draft) =>
-        validate(draft, [
-          isNotEmpty(monoidString),
-          (draft) =>
-            isWhitespace(draft)
-              ? failure({ value: draft, reason: "cannot be blank" })
-              : success(draft),
-        ])
-      ),
-    [state.draft]
+  const [focusedConfig, prevFocusedConfig] = useMemoPlus(
+    () => record.lookup(configId, fromStore.configsById),
+    [configId, fromStore.configsById]
   )
 
-  const { focusedConfig, entityTypeConfig, editorLanguage } = React.useMemo(() => {
-    const focusedConfig = lookup(configId, fromStore.configsById)
-    const entityTypeConfig = focusedConfig.chain((c) => lookup(c.type, fromStore.entityTypes))
-    const editorLanguage = entityTypeConfig
-      .chain((etc) => etc.config)
-      .chain(fromStrToJSONRec)
-      .chain((config) => lookup("lang", config))
-      .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
-      .getOrElse(fromStore.defaultEntityTypeConfig.lang)
-
-    return { focusedConfig, entityTypeConfig, editorLanguage }
-  }, [
-    configId,
-    fromStore.configsById,
-    fromStore.entityTypes,
-    fromStore.defaultEntityTypeConfig.lang,
-  ])
-
-  const isSaveable =
-    getSetoidOption(
-      getSetoidValidation(getSetoidValidatorErrors(setoidString), setoidString)
-    ).equals(
-      draftValidation,
-      state.draft.map<Validation<ValidatorErrors<string>, string>>(success)
-    ) && !getSetoidOption(setoidString).equals(state.draft, focusedConfig.chain((c) => c.config))
-
-  const updateRemoteConfig = React.useCallback(() => {
-    focusedConfig
-      .chain((c) => state.draft.map((d) => ({ ...c, config: d })))
-      .map((draft) => new IO(() => dispatch.globalConfig.updateRemoteConfig(draft)))
-      .getOrElse(new IO(() => Promise.resolve(dispatch.logger.logError(`impossible`))))
-      .run()
-  }, [dispatch, state.draft, focusedConfig])
-
-  React.useEffect(
-    function reconcileDraftAndOriginal() {
-      setState((s) => ({ ...s, draft: focusedConfig.chain((c) => c.config) }))
-    },
-    [focusedConfig]
-  )
-
-  React.useEffect(
-    function afterConfigDelete() {
-      if (focusedConfig.isNone() && state.draft.isSome()) {
-        dispatch.navigation.goToGlobalConfigs(none)
-      }
-    },
-    [dispatch, focusedConfig, state.draft]
-  )
+  /* afterDelete */
+  React.useEffect(() => {
+    if (prevFocusedConfig.isSome() && focusedConfig.isNone()) {
+      dispatch.navigation.goToGlobalConfigs(none)
+    }
+  }, [dispatch.navigation, focusedConfig, prevFocusedConfig])
 
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
       {focusedConfig.foldL(
         None(() => <Empty description={`No config found with id ${configId}`} />),
-        Some((config) => (
-          <>
-            {entityTypeConfig.isNone() && (
-              <Alert
-                banner
-                closable
-                description={`No config of type "EntityType" could be found for configs of type "${
-                  config.type
-                }." For the best experience, please create an EntityType config for ${config.type}`}
-                message={`No EntityType exists for ${config.type}`}
-                type="warning"
-              />
-            )}
+        Some((config) => <UpdatePersistedConfigForm config={config} />)
+      )}
+    </Skeleton>
+  )
+}
 
+function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
+  const [fromStore, dispatch] = useRematch((s) => ({
+    configNames: store.select.globalConfig.configNames(s),
+    defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
+    isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
+    isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
+  }))
+
+  const entityTypeConfig = React.useMemo(
+    () => record.lookup(props.config.type, fromStore.entityTypes),
+    [fromStore.entityTypes, props.config.type]
+  )
+
+  const configLang = React.useMemo(() => {
+    return entityTypeConfig
+      .chain((etc) => etc.config)
+      .chain(fromStrToJSONRec)
+      .chain((config) => record.lookup("lang", config))
+      .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
+      .getOrElse(fromStore.defaultEntityTypeConfig.lang)
+  }, [entityTypeConfig, fromStore.defaultEntityTypeConfig.lang])
+
+  const existingConfigNames = React.useMemo(() => {
+    return fromStore.configNames.filter((name) => name !== props.config.name)
+  }, [fromStore.configNames, props.config.name])
+
+  const initialFormState = {
+    config: props.config.config.map((c) => c.toString()).getOrElse(""),
+    name: props.config.name,
+  }
+
+  return (
+    <>
+      {entityTypeConfig.isNone() && (
+        <Alert
+          banner
+          closable
+          description={`No config of type "EntityType" could be found for configs of type "${
+            props.config.type
+          }." For the best experience, please create an EntityType config for ${props.config.type}`}
+          message={`No EntityType exists for ${props.config.type}`}
+          type="warning"
+        />
+      )}
+
+      <Formik.Formik
+        initialValues={initialFormState}
+        enableReinitialize
+        validate={(vs) =>
+          new Identity({})
+            .map((errs) => ({
+              ...errs,
+              config: isWhitespace(vs.config) ? some("Cannot be empty") : none,
+            }))
+            .map((errs) => ({
+              ...errs,
+              name: isWhitespace(vs.name)
+                ? some("Cannot be empty")
+                : existingConfigNames.map((n) => n.toLowerCase()).includes(vs.name.toLowerCase())
+                ? some("Name already taken")
+                : none,
+            }))
+            .map(record.compact)
+            .extract()
+        }
+        onSubmit={(values, { setSubmitting }) => {
+          dispatch.globalConfig
+            .updateRemoteConfig({
+              ...props.config,
+              ...values,
+            })
+            .then(() => setSubmitting(false))
+        }}>
+        {(form) => (
+          <>
             <Card
               bordered={false}
               extra={
                 <Button.Group size="small">
-                  {SaveButton()}
-                  {isSaveable ? (
-                    CancelButton()
+                  <Button
+                    form="edit-config-form"
+                    htmlType="submit"
+                    icon={fromStore.isUpdatingRemoteConfig ? "loading" : "save"}
+                    key="save"
+                    loading={fromStore.isUpdatingRemoteConfig}
+                    size="small"
+                    type="primary">
+                    Save
+                  </Button>
+
+                  {form.dirty ? (
+                    <Button
+                      icon="close-circle"
+                      key="cancel"
+                      size="small"
+                      type="default"
+                      onClick={form.handleReset}>
+                      Cancel
+                    </Button>
                   ) : (
                     <ConfirmableDeleteButton
                       confirmationMessage={`Are you sure want to delete?`}
                       confirmationTitle={`Confirm Delete`}
+                      loading={fromStore.isDeletingRemoteConfig}
                       size="small"
-                      onDelete={() => dispatch.globalConfig.deleteRemoteConfigsById([config.id])}>
+                      onDelete={() =>
+                        dispatch.globalConfig.deleteRemoteConfigsById([props.config.id])
+                      }>
                       Delete
                     </ConfirmableDeleteButton>
                   )}
                 </Button.Group>
               }
-              title={`Edit Config`}>
+              title={`Create Config`}>
               <Form
+                id="edit-config-form"
                 labelAlign="left"
                 layout="horizontal"
+                onSubmit={form.handleSubmit}
                 {...formItemLayout}
                 style={{ width: "100%" }}>
                 {/* ---------- Config.Type Input ---------------- */}
                 <Form.Item label="Type" style={{ width: "100%" }}>
                   <Typography.Text>
                     {entityTypeConfig.foldL(
-                      None(() => <>{config.type}</>),
-                      Some((etc) => <Reach.Link to={`../../${etc.id}`}>{config.type}</Reach.Link>)
+                      None(() => <>{props.config.type}</>),
+                      Some((etc) => (
+                        <Reach.Link to={`../../${etc.id}`}>{props.config.type}</Reach.Link>
+                      ))
                     )}
                   </Typography.Text>
                 </Form.Item>
 
                 {/* ---------- Config.Name Input ---------------- */}
-                <Form.Item label="Name">
-                  <Typography.Text>{config.name}</Typography.Text>
+                <Form.Item
+                  hasFeedback={!!form.touched.name}
+                  help={form.touched.name && form.errors.name}
+                  label="Name"
+                  required={true}
+                  validateStatus={form.touched.name && form.errors.name ? "error" : "success"}>
+                  <Input
+                    placeholder="Enter a unique config name"
+                    name="name"
+                    value={form.values.name}
+                    onBlur={form.handleBlur}
+                    onChange={form.handleChange}
+                  />
                 </Form.Item>
 
                 {/* ---------- Config.Config Input ---------------- */}
                 <Form.Item
-                  hasFeedback={draftValidation.isSome()}
-                  help={draftValidation
-                    .chain((dv) => dv.fold((err) => some(err.reasons), constant(none)))
-                    .map(head)
-                    .toUndefined()}
+                  hasFeedback={form.touched.config}
+                  help={form.touched.config && form.errors.config}
                   label="Config"
                   required={true}
-                  validateStatus={draftValidation
-                    .map((dv) =>
-                      dv.fold(constant<"error">("error"), constant<"success">("success"))
-                    )
-                    .chain((status) => (status === "success" ? none : some(status)))
-                    .toUndefined()}>
+                  validateStatus={form.errors.config ? "error" : "success"}>
                   <CodeEditor
-                    content={state.draft.getOrElse("")}
-                    contentDraft={state.draft.alt(some(""))}
+                    content={props.config.config.getOrElse("")}
+                    contentDraft={some(form.values.config)}
                     height={500}
-                    language={editorLanguage}
+                    language={configLang}
                     width="100%"
-                    onChange={(config) =>
-                      setState({
-                        ...state,
-                        draft: some(config),
-                      })
-                    }
+                    onChange={(val) => {
+                      form.setFieldValue("config", val)
+                      form.setFieldTouched("config", true)
+                    }}
                   />
                 </Form.Item>
               </Form>
             </Card>
           </>
-        ))
-      )}
-    </Skeleton>
+        )}
+      </Formik.Formik>
+    </>
   )
-
-  function SaveButton() {
-    return (
-      <Button
-        disabled={!isSaveable}
-        icon={fromStore.isUpdatingRemoteConfig ? "loading" : "save"}
-        key="save"
-        loading={fromStore.isUpdatingRemoteConfig}
-        size="small"
-        type="primary"
-        onClick={updateRemoteConfig}>
-        Save
-      </Button>
-    )
-  }
-
-  function CancelButton() {
-    return (
-      <Button
-        icon="close-circle"
-        key="cancel"
-        size="small"
-        type="default"
-        onClick={() => setState({ draft: focusedConfig.chain((c) => c.config) })}>
-        Cancel
-      </Button>
-    )
-  }
 }
 
 const formItemLayout = {
