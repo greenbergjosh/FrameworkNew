@@ -27,8 +27,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeleniumSandbox", "Selenium
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoslynArticleTester", "RoslynArticleTester\RoslynArticleTester.csproj", "{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadPixel", "ReadPIxel\ReadPixel.csproj", "{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountdownGenerator", "CountdownGenerator\CountdownGenerator.csproj", "{E621A07E-2C9C-4897-9EAC-41397D52F0BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Seeder", "Seeder", "{5B0E3B8A-B8FE-4948-B66C-C67325A5245B}"
@@ -89,7 +87,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailReports", "EmailReport
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility.OpgAuth", "Utility.OpgAuth\Utility.OpgAuth.csproj", "{63F6BEFC-59F5-4F54-BE34-37B32AC9C1AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueueProcessorLib", "QueueProcessorLib\QueueProcessorLib.csproj", "{0559F8C5-7837-4E0A-AD28-422E1E563943}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueProcessorLib", "QueueProcessorLib\QueueProcessorLib.csproj", "{0559F8C5-7837-4E0A-AD28-422E1E563943}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadPixelDataLib", "ReadPixelLib\ReadPixelDataLib.csproj", "{8AC259EB-DA55-4B04-AC27-7C7F01810440}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -170,12 +170,6 @@ Global
 		{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C80BF08A-2472-47BF-BFCB-8515E1B60EA8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E621A07E-2C9C-4897-9EAC-41397D52F0BE}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -320,6 +314,12 @@ Global
 		{0559F8C5-7837-4E0A-AD28-422E1E563943}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{0559F8C5-7837-4E0A-AD28-422E1E563943}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0559F8C5-7837-4E0A-AD28-422E1E563943}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -352,6 +352,7 @@ Global
 		{473221BA-2366-4A24-B6AF-7600F7EEA230} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
 		{63F6BEFC-59F5-4F54-BE34-37B32AC9C1AD} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 		{0559F8C5-7837-4E0A-AD28-422E1E563943} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{8AC259EB-DA55-4B04-AC27-7C7F01810440} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
