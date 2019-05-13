@@ -19,7 +19,7 @@ namespace Utility
     public class RoslynWrapper : System.Dynamic.DynamicObject
     {
         public string DefaultDebugDir = null;
-        public ConcurrentDictionary<string, ScriptDescriptor> functions = new ConcurrentDictionary<string, ScriptDescriptor>();
+        public ConcurrentDictionary<string, Lazy<ScriptDescriptor>> functions = new ConcurrentDictionary<string, Lazy<ScriptDescriptor>>();
 
         public RoslynWrapper(IEnumerable<ScriptDescriptor> initialScripts, string defaultDebugDir)
         {
@@ -44,36 +44,36 @@ namespace Utility
         // Probably just a bool argument called forceRecompile
         public ScriptDescriptor CompileAndCache(ScriptDescriptor sd)
         {
-
-            if (functions.TryGetValue(sd.Key, out var sdCached))
+            return functions.GetOrAdd(sd.Key, _ =>
             {
-                return sdCached;
-            }
+                return new Lazy<ScriptDescriptor>(() =>
+                {
+                    Console.WriteLine($"Creating script for {sd.Key}");
+                    var scriptOptions = ScriptOptions.Default
+                            .AddReferences(
+                                Assembly.GetAssembly(typeof(System.Dynamic.DynamicObject)),  // System.Code
+                                Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
+                                Assembly.GetAssembly(typeof(System.Dynamic.ExpandoObject)),  // System.Dynamic
+                                Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),  // TODO: Use Assembly.Load() from db list
+                                Assembly.GetAssembly(typeof(Utility.JsonWrapper))
+                                )
+                            .AddImports("System.Dynamic", "System.Xml");
 
-            var scriptOptions = ScriptOptions.Default
-                    .AddReferences(
-                        Assembly.GetAssembly(typeof(System.Dynamic.DynamicObject)),  // System.Code
-                        Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                        Assembly.GetAssembly(typeof(System.Dynamic.ExpandoObject)),  // System.Dynamic
-                        Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),  // TODO: Use Assembly.Load() from db list
-                        Assembly.GetAssembly(typeof(Utility.JsonWrapper))
-                        )
-                    .AddImports("System.Dynamic", "System.Xml");
+                    if (sd.Debug)
+                    {
+                        scriptOptions = scriptOptions
+                            .WithFilePath(GenerateDebugSourceFile(sd))
+                            .WithFileEncoding(System.Text.Encoding.UTF8)
+                            .WithEmitDebugInformation(true);
+                    }
 
-            if (sd.Debug)
-            {
-                scriptOptions = scriptOptions
-                    .WithFilePath(GenerateDebugSourceFile(sd))
-                    .WithFileEncoding(System.Text.Encoding.UTF8)
-                    .WithEmitDebugInformation(true);
-            }
+                    var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
+                    scriptc.Compile();
+                    sd.Script = scriptc.CreateDelegate();
 
-            var scriptc = CSharpScript.Create<object>(sd.Code, scriptOptions, globalsType: typeof(Globals));
-            scriptc.Compile();
-            functions[sd.Key] = sd;
-            sd.Script = scriptc.CreateDelegate();
-
-            return functions[sd.Key];
+                    return sd;
+                });
+            }).Value;
         }
 
         public string GenerateDebugSourceFile(ScriptDescriptor sd)
@@ -153,7 +153,7 @@ namespace Utility
             var globals = (state == null) ? new Globals { f = this, s = new StateWrapper() }
                                           : new Globals { f = this, s = state };
             globals.st.Push(StackFrame.CreateStackFrame(parms));
-            var result = await functions[fname].Script(globals);
+            var result = await functions[fname].Value.Script(globals);
             globals.st.Pop();
             return result;
         }

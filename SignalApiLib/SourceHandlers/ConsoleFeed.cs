@@ -12,7 +12,7 @@ namespace SignalApiLib.SourceHandlers
         private readonly FrameworkWrapper _fw;
         private const string MsConn = "OnPointConsole";
         private const string PgConn = "Signal";
-        private readonly string _logCtx = $"{nameof(Fluent)}.{nameof(HandleRequest)}";
+        private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
 
         public ConsoleFeed(FrameworkWrapper fw)
         {
@@ -60,16 +60,41 @@ namespace SignalApiLib.SourceHandlers
 
             try
             {
-                result = await Data.CallFn(MsConn, "SaveLiveFeed", payload: request);
+                var tasks = new Task[]
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            result = await Data.CallFn(MsConn, "SaveLiveFeed", payload: request);
 
-                // This is temporary double write
-                var res = await Data.CallFn(PgConn, "consoleLiveFeed", payload: request);
+                            if (result?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"MSSql write failed. Response: {result?.GetS("") ?? "null"}\r\nBody: {request}");
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"MSSql write failed. {e.UnwrapForLog()}\r\nBody: {request}");
+                        }
+                    }),
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var res = await Data.CallFn(PgConn, "consoleLiveFeed", payload: request);
 
-                if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"PG double write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+                            if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"PG write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"PG write failed {e.UnwrapForLog()}\r\nBody: {request}");
+                        }
+                    })
+                };
+
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
-                await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"{ex}\r\nBody: {request}");
+                await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"Tasks failed. {ex.UnwrapForLog()}\r\nBody: {request}");
             }
 
             return result.GetS("");
@@ -81,16 +106,41 @@ namespace SignalApiLib.SourceHandlers
 
             try
             {
-                result = await Data.CallFn(MsConn, "SaveEmailEvent", payload: request);
+                var tasks = new []
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            result = await Data.CallFn(MsConn, "SaveEmailEvent", payload: request);
 
-                // This is temporary double write
-                var res = await Data.CallFn(PgConn, "consoleEvent", payload: request);
+                            if (result?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"MSSql write failed. Response: {result?.GetS("") ?? "null"}\r\nBody: {request}");
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"MSSql write failed. {e.UnwrapForLog()}\r\nBody: {request}");
+                        }
+                    }),
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var res = await Data.CallFn(PgConn, "consoleEvent", payload: request);
 
-                if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"PG double write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+                            if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"PG write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+                        }
+                        catch (Exception e)
+                        {
+                            await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"PG write failed {e.UnwrapForLog()}\r\nBody: {request}");
+                        }
+                    })
+                };
+
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
-                await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"{ex}\r\nBody: {request}");
+                await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"Tasks failed. {ex.UnwrapForLog()}\r\nBody: {request}");
             }
 
             return result.GetS("");
