@@ -1,13 +1,8 @@
-import React from "react"
-import ReactDOM from "react-dom"
-
-import Base from "formiojs/components/base/Base"
-import MonacoEditor from "react-monaco-editor"
-import editForm from "./code-editor.form"
-import { Button, Divider, Dropdown, Icon, Menu, Row, Skeleton } from "antd"
-import { activeEditorSettings, CodeEditor } from "../../../../../../components/code-editor"
 import { some } from "fp-ts/lib/Option"
-import ReactFormBase from "../../../../../../components/form/ReactFormBase"
+import React from "react"
+import { CodeEditor } from "../../code-editor"
+import ReactFormBase from "../ReactFormBase"
+import editForm from "./code-editor.form"
 
 type SupportedEditorLang = "csharp" | "javascript" | "json" | "typescript" | "sql"
 type SupportedEditorTheme = "vs" | "vs-dark" | "hc-black"
@@ -18,7 +13,7 @@ interface EditorOptions {
   value: string
 }
 
-export default class FormCodeEditor extends ReactFormBase<EditorOptions> {
+export default class CodeEditorFormComponent extends ReactFormBase<EditorOptions> {
   static schema(...extend: any[]) {
     return ReactFormBase.schema(
       {
@@ -39,7 +34,7 @@ export default class FormCodeEditor extends ReactFormBase<EditorOptions> {
     icon: "fa fa-code",
     weight: 10,
     documentation: "http://help.form.io/userguide/#table",
-    schema: FormCodeEditor.schema(),
+    schema: CodeEditorFormComponent.schema(),
   }
 
   static editForm = editForm
@@ -71,7 +66,6 @@ export default class FormCodeEditor extends ReactFormBase<EditorOptions> {
   }
 
   get emptyValue() {
-    console.log("ReactFormBase.emptyValue")
     return {
       lang: this.component.defaultLanguage || "json",
       theme: this.component.defaultTheme || "vs",
@@ -80,6 +74,6 @@ export default class FormCodeEditor extends ReactFormBase<EditorOptions> {
   }
 
   get defaultSchema() {
-    return FormCodeEditor.schema()
+    return CodeEditorFormComponent.schema()
   }
 }
