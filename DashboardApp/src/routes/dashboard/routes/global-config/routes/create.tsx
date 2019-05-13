@@ -1,13 +1,9 @@
 import { Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton } from "antd"
+import * as Formik from "formik"
 import { Do } from "fp-ts-contrib/lib/Do"
-import { sequenceS } from "fp-ts/lib/Apply"
 import { array } from "fp-ts/lib/Array"
-import { fromValidation as eitherFromValidation } from "fp-ts/lib/Either"
 import { findFirst } from "fp-ts/lib/Foldable2v"
-import { constant, identity, unsafeCoerce } from "fp-ts/lib/function"
-import { IO } from "fp-ts/lib/IO"
-import { monoidString } from "fp-ts/lib/Monoid"
-import { head, make, nonEmptyArray } from "fp-ts/lib/NonEmptyArray2v"
+import { Identity } from "fp-ts/lib/Identity"
 import {
   fromEither,
   getSetoid as getOptionSetoid,
@@ -16,37 +12,20 @@ import {
   option,
   some,
 } from "fp-ts/lib/Option"
-import * as Record from "fp-ts/lib/Record"
+import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
-import { failure, getSetoid as getSetoidValidation, success } from "fp-ts/lib/Validation"
-import { Branded } from "io-ts"
-import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import React from "react"
-import {
-  CodeEditor,
-  EditorLang,
-  EditorLangCodec,
-  editorLanguages,
-} from "../../../../../components/code-editor"
+import { useFormState } from "react-use-form-state"
+import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
 import { Space } from "../../../../../components/space"
-import { Left, Right } from "../../../../../data/Either"
 import {
-  CompleteLocalDraft,
-  mkCompleteLocalDraft,
+  InProgressLocalDraftConfig,
   PersistedConfig,
 } from "../../../../../data/GlobalConfig.Config"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
-import {
-  getApplicativeValidated,
-  getSetoidValidatorErrors,
-  isNotEmpty,
-  isUnique,
-  validate,
-  Validated,
-} from "../../../../../data/Validator"
 import { useRematch } from "../../../../../hooks/use-rematch"
-import { prettyPrint } from "../../../../../lib/json"
+import { useStatePlus } from "../../../../../hooks/use-state-plus"
 import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
@@ -64,117 +43,55 @@ export function CreateGlobalConfig({
 }: WithRouteProps<Props>): JSX.Element {
   const [fromStore, dispatch] = useRematch((s) => ({
     configs: s.globalConfig.configs,
-    configsByType: store.select.globalConfig.configsByType(s),
+    configNames: store.select.globalConfig.configNames(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     entityTypeConfigs: store.select.globalConfig.entityTypeConfigs(s),
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
   }))
 
-  const [state, setState] = React.useState({
-    draft: {
-      config: none as Option<Validated<string>>,
-      name: none as Option<Validated<string>>,
-      type: none as Option<Validated<string>>,
-    },
+  const [setState, state, prevState] = useStatePlus({
     shouldShowConfigTypeSelectDropdown: false,
     shouldShowCreateEntityModal: false,
+    createdConfig: none as Option<InProgressLocalDraftConfig>,
   })
-
-  const { entityTypeConfig, editorLanguage } = React.useMemo(() => {
-    const entityTypeConfig = state.draft.type
-      .chain((t) => t.fold(constant(none), some))
-      .chain((t) => Record.lookup(t, fromStore.entityTypeConfigs))
-
-    const editorLanguage = entityTypeConfig
-      .chain((etc) => etc.config)
-      .chain(fromStrToJSONRec)
-      .chain((config) => Record.lookup("lang", config))
-      .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
-      .getOrElse(fromStore.defaultEntityTypeConfig.lang)
-
-    return { entityTypeConfig, editorLanguage }
-  }, [state.draft.type, fromStore.entityTypeConfigs, fromStore.defaultEntityTypeConfig.lang])
 
   const entityTypeNames = React.useMemo(() => {
     return Object.values(fromStore.entityTypeConfigs).map((c) => c.name)
   }, [fromStore.entityTypeConfigs])
 
-  const configValidation = React.useMemo(() => {
-    return sequenceS(option)(state.draft)
-      .map((draft) => sequenceS(getApplicativeValidated<string>())(draft))
-      .getOrElse(
-        failure({
-          value: prettyPrint(state.draft),
-          reasons: nonEmptyArray.of("some inputs are still clean"),
-        })
-      )
-  }, [state.draft])
-
-  const createConfig = React.useCallback(() => {
-    sequenceS(option)(state.draft)
-      .map((draft) => sequenceS(getApplicativeValidated<string>())(draft))
-      .map((draft) => eitherFromValidation(draft))
-      .map((draft) =>
-        draft.chain((d) =>
-          mkCompleteLocalDraft(d).mapLeft((errs) => ({
-            value: prettyPrint(d),
-            reasons: make("invalid", errs),
-          }))
-        )
-      )
-      .foldL(
-        None(() => new IO(() => dispatch.logger.logError("some input is still clean"))),
-        Some((draft) =>
-          draft.fold(
-            Left((err) => new IO(() => dispatch.logger.logError(err.reasons.join("\n")))),
-            Right((draft) => new IO(() => void dispatch.globalConfig.createRemoteConfig(draft)))
-          )
-        )
-      )
-      .run()
-  }, [dispatch, state.draft])
-
   const toggleCreateEntityTypeModal = React.useCallback(() => {
     setState((s) => ({ ...s, shouldShowCreateEntityModal: !s.shouldShowCreateEntityModal }))
-  }, [])
+  }, [setState])
 
   const setShouldShowConfigTypeSelectDropdown = React.useCallback(() => {
     setState((s) => ({
       ...s,
       shouldShowConfigTypeSelectDropdown: !s.shouldShowConfigTypeSelectDropdown,
     }))
-  }, [])
+  }, [setState])
 
-  React.useEffect(
-    function showConfigAfterCreate() {
-      if (configValidation.isSuccess()) {
-        const cs = fromStore.configs.getOrElse([])
-        findFirst(array)(cs, equalsDraftConfig).foldL(
-          None(() => {}),
-          Some((c) => {
-            dispatch.navigation.showGlobalConfigById({ id: c.id, navOpts: { replace: true } })
-          })
-        )
-      }
-      function equalsDraftConfig({ config, name, type }: PersistedConfig) {
-        const setoidOptionValidationString = getOptionSetoid(
-          getSetoidValidation(getSetoidValidatorErrors(setoidString), setoidString)
-        )
-        const { equals } = getStructSetoid({
-          config: setoidOptionValidationString,
-          name: setoidOptionValidationString,
-          type: setoidOptionValidationString,
-        })
+  /* afterCreate */
+  React.useEffect(() => {
+    state.createdConfig.chain(findInStore).foldL(
+      None(() => {}),
+      Some((c) => {
+        dispatch.navigation.showGlobalConfigById({ id: c.id, navOpts: { replace: true } })
+      })
+    )
 
-        return equals(state.draft, {
-          config: config.map((c) => success(c)),
-          name: some(success(name)),
-          type: some(success(type)),
-        })
-      }
-    },
-    [configValidation, dispatch, fromStore.configs, state.draft]
-  )
+    function findInStore(c: InProgressLocalDraftConfig): Option<PersistedConfig> {
+      return findFirst(array)(fromStore.configs.getOrElse([]), (c1) =>
+        equals(c, { ...c1, config: c1.config.getOrElse("") })
+      )
+    }
+    function equals<T extends InProgressLocalDraftConfig>(a: T, b: T): boolean {
+      return getStructSetoid({
+        config: setoidString,
+        name: setoidString,
+        type: setoidString,
+      }).equals(a, b)
+    }
+  }, [dispatch, fromStore.configs, prevState.createdConfig, state.createdConfig])
 
   //
   // ─── RENDER ─────────────────────────────────────────────────────────────────────
@@ -182,261 +99,230 @@ export function CreateGlobalConfig({
 
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
-      <Card
-        bordered={false}
-        extra={
-          <>
-            {/* --------- Save Button ----------- */}
-            <Button
-              disabled={configValidation.isFailure()}
-              icon={fromStore.isCreatingConfig ? "loading" : "save"}
-              key="save"
-              loading={fromStore.isCreatingConfig}
-              size="small"
-              type="primary"
-              onClick={createConfig}>
-              Save
-            </Button>
-          </>
+      <Formik.Formik
+        initialValues={initialFormState}
+        validate={(vs) =>
+          new Identity({})
+            .map((errs) => ({
+              ...errs,
+              config: isWhitespace(vs.config) ? some("Cannot be empty") : none,
+            }))
+            .map((errs) => ({
+              ...errs,
+              name: isWhitespace(vs.name)
+                ? some("Cannot be empty")
+                : fromStore.configNames.map((n) => n.toLowerCase()).includes(vs.name.toLowerCase())
+                ? some("Name already taken")
+                : none,
+            }))
+            .map((errs) => ({
+              ...errs,
+              type: isWhitespace(vs.type)
+                ? some("Cannot be empty")
+                : !entityTypeNames.some((name) => name === vs.type)
+                ? some("Type does not exist")
+                : none,
+            }))
+            .map(record.compact)
+            .extract()
         }
-        title={`Create Config`}>
-        <Form labelAlign="left" layout="horizontal" {...formItemLayout} style={{ width: "100%" }}>
-          {/* ---------- Config.Type Input ---------------- */}
-          <Form.Item
-            hasFeedback={state.draft.type.isSome()}
-            help={state.draft.type
-              .chain((ctv) => ctv.fold((fs) => some(fs.reasons), constant(none)))
-              .map(head)
-              .toUndefined()}
-            label="Type"
-            style={{ width: "100%" }}
-            required={true}
-            validateStatus={state.draft.type
-              .map((ctv) => ctv.fold(constant<"error">("error"), constant<"success">("success")))
-              .toUndefined()}>
-            <Select
-              dropdownRender={(menu) => (
+        onSubmit={(values, { setSubmitting }) => {
+          setState({ createdConfig: some(values) })
+          dispatch.globalConfig.createRemoteConfig(values).then(() => setSubmitting(false))
+        }}>
+        {(form) => (
+          <>
+            <Card
+              bordered={false}
+              extra={
                 <>
-                  {menu}
-                  <Button block ghost type="primary" onMouseDown={toggleCreateEntityTypeModal}>
-                    <Icon type="plus-circle" /> New Entity Type
+                  {/* --------- Save Button ----------- */}
+                  <Button
+                    htmlType="submit"
+                    form="create-config-form"
+                    icon={fromStore.isCreatingConfig ? "loading" : "save"}
+                    key="save"
+                    loading={fromStore.isCreatingConfig}
+                    size="small"
+                    type="primary">
+                    Save
                   </Button>
                 </>
-              )}
-              open={state.shouldShowConfigTypeSelectDropdown}
-              placeholder="Select a config type"
-              style={{ width: "100%" }}
-              value={state.draft.type.chain((t) => t.fold(constant(none), some)).toUndefined()}
-              onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
-              onSelect={(type) => {
-                setState({
-                  ...state,
-                  draft: { ...state.draft, type: some(validateConfigType(type)) },
-                })
-              }}>
-              {entityTypeNames.map((type) => (
-                <Select.Option key={type}>{type}</Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* ---------- Config.Name Input ---------------- */}
-          <Form.Item
-            hasFeedback={state.draft.name.isSome()}
-            help={state.draft.name
-              .chain((name) => name.fold((err) => some(err.reasons), constant(none)))
-              .map(head)
-              .toUndefined()}
-            label="Name"
-            required={true}
-            validateStatus={state.draft.name
-              .map((name) => name.fold(constant<"error">("error"), constant<"success">("success")))
-              .toUndefined()}>
-            <Input
-              placeholder="Enter a unique config name"
-              value={state.draft.name
-                .chain((n) => n.fold((e) => some(e.value), some))
-                .toUndefined()}
-              onChange={({ target: t }) =>
-                setState({
-                  ...state,
-                  draft: { ...state.draft, name: some(validateConfigName(t.value.trim())) },
-                })
               }
-            />
-          </Form.Item>
+              title={`Create Config`}>
+              <Form
+                id="create-config-form"
+                labelAlign="left"
+                layout="horizontal"
+                onSubmit={form.handleSubmit}
+                {...formItemLayout}
+                style={{ width: "100%" }}>
+                {/* ---------- Config.Type Input ---------------- */}
+                <Form.Item
+                  hasFeedback={form.touched.type}
+                  help={form.touched.type && form.errors.type}
+                  label="Type"
+                  required={true}
+                  validateStatus={form.touched.type && form.errors.type ? "error" : "success"}>
+                  <Select
+                    dropdownRender={(menu) => (
+                      <>
+                        {menu}
+                        <Button
+                          block
+                          ghost
+                          type="primary"
+                          onMouseDown={toggleCreateEntityTypeModal}>
+                          <Icon type="plus-circle" /> New Entity Type
+                        </Button>
+                      </>
+                    )}
+                    open={state.shouldShowConfigTypeSelectDropdown}
+                    placeholder="Select a config type"
+                    style={{ width: "100%" }}
+                    onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
+                    value={form.values.type}
+                    onBlur={() => form.handleBlur({ target: { name: "type" } })}
+                    onChange={(val) => form.setFieldValue("type", val)}>
+                    {entityTypeNames.map((type) => (
+                      <Select.Option key={type}>{type}</Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
 
-          {/* ---------- Config.Config Input ---------------- */}
-          <Form.Item
-            hasFeedback={state.draft.config.isSome()}
-            help={state.draft.config
-              .chain((config) => config.fold((err) => some(err.reasons), constant(none)))
-              .map(head)
-              .toUndefined()}
-            label="Config"
-            required={true}
-            validateStatus={state.draft.config
-              .map((config) =>
-                config.fold(constant<"error">("error"), constant<"success">("success"))
-              )
-              .toUndefined()}>
-            <CodeEditor
-              content={state.draft.config
-                .chain((c) => c.fold((e) => some(e.value), some))
-                .getOrElse("")}
-              contentDraft={state.draft.config
-                .chain((c) => c.fold((e) => some(e.value), some))
-                .alt(some(""))}
-              height={500}
-              language={editorLanguage}
-              width="100%"
-              onChange={(config) =>
-                setState({
-                  ...state,
-                  draft: { ...state.draft, config: some(validateConfigConfig(config)) },
-                })
-              }
+                {/* ---------- Config.Name Input ---------------- */}
+                <Form.Item
+                  hasFeedback={form.touched.name}
+                  help={form.touched.name && form.errors.name}
+                  label="Name"
+                  required={true}
+                  validateStatus={form.touched.name && form.errors.name ? "error" : "success"}>
+                  <Input
+                    placeholder="Enter a unique config name"
+                    name="name"
+                    value={form.values.name}
+                    onBlur={form.handleBlur}
+                    onChange={form.handleChange}
+                  />
+                </Form.Item>
+
+                {/* ---------- Config.Config Input ---------------- */}
+                <Form.Item
+                  hasFeedback={form.touched.config}
+                  help={form.touched.config && form.errors.config}
+                  label="Config"
+                  required={true}
+                  validateStatus={form.errors.config ? "error" : "success"}>
+                  <CodeEditor
+                    content={""}
+                    contentDraft={some(form.values.config)}
+                    height={500}
+                    language={record
+                      .lookup(form.values.type, fromStore.entityTypeConfigs)
+                      .chain((etc) => etc.config)
+                      .chain(fromStrToJSONRec)
+                      .chain((config) => record.lookup("lang", config))
+                      .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
+                      .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
+                    width="100%"
+                    onChange={(val) => {
+                      form.setFieldValue("config", val)
+                      form.setFieldTouched("config", true)
+                    }}
+                  />
+                </Form.Item>
+              </Form>
+            </Card>
+            <CreateEntityTypeModal
+              isVisible={state.shouldShowCreateEntityModal}
+              onDidCreate={(config) => form.setFieldValue("type", config.name)}
+              onRequestClose={toggleCreateEntityTypeModal}
             />
-          </Form.Item>
-        </Form>
-      </Card>
-      <CreateEntityTypeModal
-        isVisible={state.shouldShowCreateEntityModal}
-        onRequestClose={toggleCreateEntityTypeModal}
-      />
+          </>
+        )}
+      </Formik.Formik>
     </Skeleton>
   )
-
-  //
-  // ─── PRIVATE ────────────────────────────────────────────────────────────────────
-  //
-
-  function validateConfigName(name: string): Validated<string> {
-    const existingConfigNames = fromStore.configs.getOrElse([]).map((c) => c.name.toLowerCase())
-
-    return validate(name, [
-      isNotEmpty(monoidString),
-      (n) => (isWhitespace(n) ? failure({ value: n, reason: "must not be blank" }) : success(n)),
-      (n) =>
-        existingConfigNames.includes(n.toLowerCase())
-          ? failure({ value: n, reason: "must be unique" })
-          : success(n),
-    ])
-  }
-
-  function validateConfigType(type: string): Validated<string> {
-    return validate(type, [
-      isNotEmpty(monoidString),
-      function configTypeExists(type) {
-        return entityTypeNames.includes(
-          unsafeCoerce<string, Branded<string, NonEmptyStringBrand>>(type)
-        )
-          ? success(type)
-          : failure({ value: type, reason: "does not exist" })
-      },
-    ])
-  }
-
-  function validateConfigConfig(c: string): Validated<string> {
-    return validate(c, [
-      isNotEmpty(monoidString),
-      (config) =>
-        isWhitespace(config)
-          ? failure({ value: config, reason: "must not be blank" })
-          : success(config),
-    ])
-  }
 }
 
-function CreateEntityTypeModal(props: { isVisible: boolean; onRequestClose: () => void }) {
+const initialFormState = {
+  config: "",
+  name: "",
+  type: "",
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+
+function CreateEntityTypeModal(props: {
+  isVisible: boolean
+  onDidCreate: (c: PersistedConfig) => void
+  onRequestClose: () => void
+}) {
   const [fromStore, dispatch] = useRematch((s) => ({
     configs: s.globalConfig.configs,
     configsByType: store.select.globalConfig.configsByType(s),
-    defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
   }))
 
-  const [state, setState] = React.useState(getInitialState)
+  const initialFormState = {
+    name: "",
+    lang: "",
+  }
+  const [formState, inputs] = useFormState<typeof initialFormState>(initialFormState)
 
-  const resetState = React.useCallback(() => setState(getInitialState()), [])
+  const [state, setState] = React.useState(initialState)
 
-  const nameValidation = React.useMemo(() => {
-    const existingConfigNames = Record.lookup("EntityType", fromStore.configsByType)
-      .map((cs) => cs.map((c) => c.name))
-      .getOrElse([])
+  const resetState = React.useCallback(() => setState(initialState), [])
 
-    return state.draft.name.map((name) =>
-      validate(name, [
-        (n) => (isWhitespace(n) ? failure({ value: n, reason: "must not be blank" }) : success(n)),
-        isNotEmpty(monoidString),
-        isUnique(setoidString)(existingConfigNames),
-      ])
-    )
-  }, [fromStore.configsByType, state.draft.name])
-
-  const typeValidation = React.useMemo(() => {
-    return state.draft.type.map((l) => validate(l, [(x) => success(x)]))
-  }, [state.draft.type])
-
-  const langValidation = React.useMemo(() => {
-    return state.draft.lang.map((l) => validate(l, [isNotEmpty(monoidString)]))
-  }, [state.draft.lang])
-
-  const entityTypeValidation = React.useMemo(() => {
-    return Do(option)
-      .bind("lang", langValidation)
-      .bind("name", nameValidation)
-      .bind("type", typeValidation)
-      .return(({ lang, name, type }) => {
-        return sequenceS(getApplicativeValidated<string>())({ lang, name, type })
-      })
-      .getOrElse(
-        failure({
-          value: prettyPrint(state.draft),
-          reasons: nonEmptyArray.of("some inputs are still clean"),
-        })
-      )
-  }, [langValidation, nameValidation, state.draft, typeValidation])
+  const existingEntityTypes = React.useMemo(() => {
+    return record.lookup("EntityType", fromStore.configsByType).getOrElse([])
+  }, [fromStore.configsByType])
 
   const handleRequestClose = React.useCallback(() => {
     props.onRequestClose()
     resetState()
-  }, [props, resetState])
+    formState.clear()
+  }, [formState, props, resetState])
 
   const createEntityTypeConfig = React.useCallback(() => {
-    eitherFromValidation(entityTypeValidation)
-      .mapLeft((err) => [...err.reasons])
-      .map(({ lang, name, type }) => ({
-        type,
-        name,
-        config: JSON.stringify({ lang }),
-      }))
-      .chain((draft) => mkCompleteLocalDraft(draft))
-      .fold(
-        Left((errs) => dispatch.logger.logError(errs.join("\n"))),
-        Right((draftConfig) => {
-          setState((s) => ({ ...s, submittedDraft: some(draftConfig) }))
-          dispatch.globalConfig.createRemoteConfig(draftConfig)
-        })
-      )
-  }, [dispatch.globalConfig, dispatch.logger, entityTypeValidation])
+    const draft = {
+      type: "EntityType",
+      name: formState.values.name,
+      config: JSON.stringify({ lang: formState.values.lang }),
+    }
+
+    dispatch.globalConfig.createRemoteConfig(draft)
+    setState({ submittedDraft: some(draft) })
+  }, [dispatch.globalConfig, formState.values])
+
+  const isSubmittable = React.useMemo(() => {
+    const isValid = [formState.validity.lang, formState.validity.name].every((x) => x === true)
+
+    return isValid
+  }, [formState.validity])
 
   React.useEffect(
-    function requestCloseAfterCreate() {
+    function afterCreate() {
+      Do(option)
+        .bind("configs", fromStore.configs.toOption())
+        .bind("draft", state.submittedDraft.map((d) => ({ ...d, config: some(d.config) })))
+        .done()
+        .chain(({ configs, draft }) => findFirst(array)(configs, (c) => equals(c, draft)))
+        .foldL(
+          None(() => {}),
+          Some((c) => {
+            props.onDidCreate(c)
+            handleRequestClose()
+          })
+        )
+
       const { equals } = getStructSetoid({
         config: getOptionSetoid(setoidString),
         name: setoidString,
         type: setoidString,
       })
-
-      Do(option)
-        .bind("configs", fromStore.configs.toOption())
-        .bind("draft", state.submittedDraft.map((d) => ({ ...d, config: some(d.config) })))
-        .return(identity)
-        .chain(({ configs, draft }) => findFirst(array)(configs, (c) => equals(c, draft)))
-        .foldL(None(() => {}), Some((c) => handleRequestClose()))
     },
-    [entityTypeValidation, dispatch, fromStore.configs, handleRequestClose, state]
+    [dispatch, fromStore.configs, handleRequestClose, props, state]
   )
   // ────────────────────────────────────────────────────────────────────────────────
   if (!props.isVisible) return null
@@ -451,54 +337,44 @@ function CreateEntityTypeModal(props: { isVisible: boolean; onRequestClose: () =
       onCancel={handleRequestClose}>
       <Form layout="vertical">
         <Form.Item
-          hasFeedback={nameValidation.isSome()}
-          help={nameValidation
-            .chain((nv) => nv.fold((err) => some(err.reasons), constant(none)))
-            .map(head)
-            .toUndefined()}
-          label={`Name`}
-          validateStatus={nameValidation
-            .map((nv) => nv.fold(constant<"error">("error"), constant<"success">("success")))
-            .toUndefined()}>
+          hasFeedback={formState.validity.name}
+          help={formState.errors.name}
+          label="Name"
+          required={true}
+          validateStatus={formState.errors.name ? ("error" as const) : ("success" as const)}>
           <Input
             placeholder={`Enter a unique EntityType name`}
-            value={state.draft.name.getOrElse("")}
-            onChange={(evt) =>
-              setState({
-                ...state,
-                draft: { ...state.draft, name: some(evt.target.value) },
-              })
-            }
+            {...inputs.text({
+              name: "name",
+              validateOnBlur: true,
+              validate(v) {
+                return isWhitespace(v)
+                  ? "Required"
+                  : existingEntityTypes.map((et) => et.name.toLowerCase()).includes(v.toLowerCase())
+                  ? "Name already taken"
+                  : true
+              },
+            })}
           />
         </Form.Item>
         <Form.Item
-          hasFeedback={langValidation.isSome()}
-          help={langValidation
-            .chain((lv) => lv.fold((err) => some(err.reasons), constant(none)))
-            .map(head)
-            .toUndefined()}
-          label={`Language`}
-          validateStatus={langValidation
-            .map((lv) => lv.fold(constant<"error">("error"), constant<"success">("success")))
-            .toUndefined()}>
+          hasFeedback={formState.validity.lang}
+          help={formState.errors.lang}
+          label="Language"
+          required={true}
+          validateStatus={formState.errors.lang ? ("error" as const) : ("success" as const)}>
           <Select
-            placeholder={state.draft.name.fold(
-              `Select the config language`,
-              (name) => `Select the config language for ${name}`
-            )}
-            value={state.draft.lang.toUndefined()}
-            onSelect={(val) => {
-              EditorLangCodec.decode(val).fold(
-                function Left(errors) {
-                  dispatch.logger.logError(
-                    `Attempted to select invalid lang: ${val}\n\n${prettyPrint(errors)}`
-                  )
-                },
-                function Right(lang) {
-                  setState((s) => ({ ...s, draft: { ...s.draft, lang: some(lang) } }))
-                }
-              )
-            }}>
+            placeholder={
+              formState.values.name
+                ? `Select the config language for ${formState.values.name}`
+                : `Select the config language`
+            }
+            {...inputs.raw({
+              name: "lang",
+              validate(v) {
+                return isWhitespace(v) ? "Required" : true
+              },
+            })}>
             {Object.values(editorLanguages).map((lang) => (
               <Select.Option key={lang} title={lang} value={lang}>
                 {lang}
@@ -519,7 +395,7 @@ function CreateEntityTypeModal(props: { isVisible: boolean; onRequestClose: () =
               </Button>
               <Space.Vertical width={8} />
               <Button
-                disabled={entityTypeValidation.isFailure()}
+                disabled={!isSubmittable}
                 htmlType="submit"
                 icon="save"
                 loading={fromStore.isCreatingConfig}
@@ -533,18 +409,10 @@ function CreateEntityTypeModal(props: { isVisible: boolean; onRequestClose: () =
       </Form>
     </Modal>
   )
+}
 
-  // ────────────────────────────────────────────────────────────────────────────────
-  function getInitialState() {
-    return {
-      draft: {
-        name: none as Option<string>,
-        type: some(identity<"EntityType">("EntityType")),
-        lang: none as Option<EditorLang>,
-      },
-      submittedDraft: none as Option<CompleteLocalDraft>,
-    }
-  }
+const initialState = {
+  submittedDraft: none as Option<InProgressLocalDraftConfig>,
 }
 
 const formItemLayout = {
