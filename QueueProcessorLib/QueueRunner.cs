@@ -20,7 +20,7 @@ namespace QueueProcessorLib
 
         private readonly string _logMethod;
 
-        public QueueRunner(FrameworkWrapper fw, string name, Func<Task<IEnumerable<QueueItem>>> itemGetter, Func<QueueItem, Task<bool>> itemProcessor, HashSet<string> discriminatorsInRetry, Func<QueueItem, Task> sendToRetryQueue, Func<IEnumerable<long>, Task> sendToRestartQueue)
+        public QueueRunner(FrameworkWrapper fw, string name, Func<int, Task<IEnumerable<QueueItem>>> itemGetter, Func<string, QueueItem, Task<bool>> itemProcessor, HashSet<string> discriminatorsInRetry, Func<QueueItem, Task> sendToRetryQueue, Func<IEnumerable<long>, Task> sendToRestartQueue)
         {
             _fw = fw;
 
@@ -52,13 +52,9 @@ namespace QueueProcessorLib
         {
             await _fw.Log(_logMethod, "Starting...");
 
-            _producerTask = new Task(async () => await _producer.Start(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
-            _ = _producerTask.ContinueWith(async (t) => await OnError("Producer", t), TaskContinuationOptions.OnlyOnFaulted);
-            _producerTask.Start();
+            _producerTask = _producer.Start(_cancellationTokenSource.Token);
 
-            _consumerTask = new Task(async () => await _consumer.Start(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning);
-            _ = _consumerTask.ContinueWith(async (t) => await OnError("Consumer", t), TaskContinuationOptions.OnlyOnFaulted);
-            _consumerTask.Start();
+            _consumerTask = _consumer.Start(_cancellationTokenSource.Token);
 
             await _fw.Log(_logMethod, "Started.");
         }
@@ -68,8 +64,27 @@ namespace QueueProcessorLib
             await _fw.Log(_logMethod, "Stopping...");
 
             _cancellationTokenSource.Cancel();
+
+            Task.WaitAll(_producerTask, _consumerTask);
+
+            await _fw.Log(_logMethod, "Stopped");
         }
 
-        private async Task OnError(string process, Task task) => await _fw.Error(_logMethod, $"Error in {process}: ${task.Exception}");
+        public object GetStatus()
+        {
+            return new
+            {
+                Producer = new
+                {
+                    _producer.Config,
+                    _producer.QueueSnapshot
+                },
+                Consumer = new
+                {
+                    _consumer.Config,
+                    _consumer.InFlightSnapshot
+                }
+            };
+        }
     }
 }

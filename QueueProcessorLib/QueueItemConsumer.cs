@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Utility;
@@ -9,26 +11,27 @@ namespace QueueProcessorLib
     {
         private FrameworkWrapper _fw;
         private bool _started = false;
-        private int _itemsInFlightCount;
+        private ConcurrentDictionary<QueueItem, QueueItem> _itemsInFlight = new ConcurrentDictionary<QueueItem, QueueItem>();
 
-        private readonly QueueItemConsumerConfig _config;
+        public QueueItemConsumerConfig Config { get; }
 
-        private string LogMethod => $"{_config.Name} QueueItemConsumer";
+        private string LogMethod => $"{Config.Name} QueueItemConsumer";
+
+        public QueueItem[] InFlightSnapshot => _itemsInFlight.Keys.ToArray();
 
         public QueueItemConsumer(FrameworkWrapper fw, QueueItemConsumerConfig config)
         {
             _fw = fw;
-            _config = config;
+            Config = config;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
             if (_started)
             {
-                throw new InvalidOperationException($"{_config.Name} consumer is already started.");
+                throw new InvalidOperationException($"{Config.Name} consumer is already started.");
             }
             _started = true;
-
 
             try
             {
@@ -36,15 +39,15 @@ namespace QueueProcessorLib
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (_itemsInFlightCount >= _config.ItemsInFlightMaxCount && !cancellationToken.IsCancellationRequested)
+                    while (_itemsInFlight.Count >= Config.ItemsInFlightMaxCount && !cancellationToken.IsCancellationRequested)
                     {
-                        await Task.Delay(_config.SleepInterval);
+                        await Task.Delay(Config.SleepInterval);
                     }
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        var queueItem = _config.Queue.Take(cancellationToken);
-                        Interlocked.Increment(ref _itemsInFlightCount);
+                        var queueItem = Config.Queue.Take(cancellationToken);
+                        _itemsInFlight.TryAdd(queueItem, queueItem);
 
                         _ = Task.Run(async () => await Process(queueItem));
                     }
@@ -61,33 +64,33 @@ namespace QueueProcessorLib
                 _started = false;
             }
 
-            await _fw.Log(LogMethod, $"Waiting up to {_config.DrainInterval / 1000.0} seconds for in-flight request to complete.");
-            var waitLimit = DateTime.Now.AddMilliseconds(_config.DrainInterval);
-            while (_itemsInFlightCount > 0)
+            await _fw.Log(LogMethod, $"Waiting up to {Config.DrainInterval / 1000.0} seconds for in-flight request to complete.");
+            var waitLimit = DateTime.UtcNow.AddMilliseconds(Config.DrainInterval);
+            while (_itemsInFlight.Count > 0)
             {
-                await Task.Delay(_config.DrainSleepInterval);
-                if (DateTime.Now >= waitLimit)
+                await Task.Delay(Config.DrainSleepInterval);
+                if (DateTime.UtcNow >= waitLimit)
                 {
                     break;
                 }
             }
 
-            await _fw.Log(LogMethod, $"Stopped with {_itemsInFlightCount} items in flight.");
+            await _fw.Log(LogMethod, $"Stopped with {_itemsInFlight.Count} items in flight.");
         }
 
         private async Task Process(QueueItem queueItem)
         {
             try
             {
-                var success = await _config.QueueItemProcessor(queueItem);
+                var success = await Config.QueueItemProcessor(Config.Name, queueItem);
                 if (!success)
                 {
-                    await _config.SendToRetryQueue(queueItem);
+                    await Config.SendToRetryQueue(queueItem);
                 }
             }
             finally
             {
-                Interlocked.Decrement(ref _itemsInFlightCount);
+                _itemsInFlight.TryRemove(queueItem, out var _);
             }
         }
     }
