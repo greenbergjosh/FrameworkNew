@@ -1,4 +1,3 @@
-import { tuple } from "fp-ts/lib/function"
 import React from "react"
 
 /**
@@ -15,17 +14,19 @@ import React from "react"
  * // OR
  * setState(s => ({ a: s.a.toUpperCase() }))
  */
-export function useStatePlus<S>(state: S | (() => S)) {
+export function useStatePlus<S>(state: S | (() => S)): [SetStatePlus<S>, S, S] {
   const [current, setCurrent] = React.useState(state)
   const [prev, setPrev] = React.useState(state)
 
-  const setState = React.useCallback(
-    function(s: Partial<S> | ((s: S) => S)) {
+  const setState = React.useCallback<SetStatePlus<S>>(
+    (s) => {
       setPrev(current)
       setCurrent(typeof s === "function" ? { ...current, ...s(current) } : { ...current, ...s })
     },
     [current]
   )
 
-  return tuple(setState, current, prev)
+  return [setState, current, prev]
 }
+
+type SetStatePlus<S> = (updater: Partial<S> | ((s: S) => S)) => void
