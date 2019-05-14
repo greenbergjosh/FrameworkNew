@@ -48,14 +48,13 @@ namespace Utility
             {
                 return new Lazy<ScriptDescriptor>(() =>
                 {
-                    Console.WriteLine($"Creating script for {sd.Key}");
                     var scriptOptions = ScriptOptions.Default
                             .AddReferences(
-                                Assembly.GetAssembly(typeof(System.Dynamic.DynamicObject)),  // System.Code
+                                Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
                                 Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                                Assembly.GetAssembly(typeof(System.Dynamic.ExpandoObject)),  // System.Dynamic
+                                Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
                                 Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),  // TODO: Use Assembly.Load() from db list
-                                Assembly.GetAssembly(typeof(Utility.JsonWrapper))
+                                Assembly.GetAssembly(typeof(JsonWrapper))
                                 )
                             .AddImports("System.Dynamic", "System.Xml");
 
