@@ -15,7 +15,6 @@ import {
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import React from "react"
-import { useFormState } from "react-use-form-state"
 import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
 import { Space } from "../../../../../components/space"
 import {
@@ -264,155 +263,173 @@ function CreateEntityTypeModal(props: {
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
   }))
 
-  const initialFormState = {
-    name: "",
-    lang: "",
-  }
-  const [formState, inputs] = useFormState<typeof initialFormState>(initialFormState)
+  const initialFormState = React.useMemo(() => ({ name: "", lang: "" }), [])
 
-  const [state, setState] = React.useState(initialState)
+  const [submittedDraft, setSubmittedDraft] = React.useState<Option<InProgressLocalDraftConfig>>(
+    none
+  )
 
-  const resetState = React.useCallback(() => setState(initialState), [])
+  const resetState = React.useCallback(() => setSubmittedDraft(none), [])
 
   const existingEntityTypes = React.useMemo(() => {
     return record.lookup("EntityType", fromStore.configsByType).getOrElse([])
   }, [fromStore.configsByType])
 
-  const handleRequestClose = React.useCallback(() => {
-    props.onRequestClose()
-    resetState()
-    formState.clear()
-  }, [formState, props, resetState])
+  const validateForm = React.useCallback(
+    (vs: typeof initialFormState) => {
+      return new Identity({})
+        .map((errs) => ({
+          ...errs,
+          name: isWhitespace(vs.name)
+            ? some("Required")
+            : existingEntityTypes.map((et) => et.name.toLowerCase()).includes(vs.name.toLowerCase())
+            ? some("Name already taken")
+            : none,
+        }))
+        .map((errs) => ({ ...errs, lang: isWhitespace(vs.lang) ? some("Required") : none }))
+        .map(record.compact)
+        .extract()
+    },
+    [existingEntityTypes, initialFormState]
+  )
 
-  const createEntityTypeConfig = React.useCallback(() => {
-    const draft = {
-      type: "EntityType",
-      name: formState.values.name,
-      config: JSON.stringify({ lang: formState.values.lang }),
-    }
+  const resetForm = React.useCallback(
+    (values: typeof initialFormState, form: Formik.FormikActions<typeof initialFormState>) => {
+      props.onRequestClose()
+      resetState()
+    },
+    [initialFormState, props, resetState]
+  )
 
-    dispatch.globalConfig.createRemoteConfig(draft)
-    setState({ submittedDraft: some(draft) })
-  }, [dispatch.globalConfig, formState.values])
+  const submitForm = React.useCallback(
+    async function(
+      values: typeof initialFormState,
+      form: Formik.FormikActions<typeof initialFormState>
+    ): Promise<void> {
+      const draft = {
+        type: "EntityType",
+        name: values.name,
+        config: JSON.stringify({ lang: values.lang }),
+      }
 
-  const isSubmittable = React.useMemo(() => {
-    const isValid = [formState.validity.lang, formState.validity.name].every((x) => x === true)
-
-    return isValid
-  }, [formState.validity])
+      await dispatch.globalConfig.createRemoteConfig(draft)
+      setSubmittedDraft(some(draft))
+      form.setSubmitting(false)
+    },
+    [dispatch.globalConfig, initialFormState]
+  )
 
   React.useEffect(
     function afterCreate() {
       Do(option)
         .bind("configs", fromStore.configs.toOption())
-        .bind("draft", state.submittedDraft.map((d) => ({ ...d, config: some(d.config) })))
+        .bind("draft", submittedDraft)
         .done()
-        .chain(({ configs, draft }) => findFirst(array)(configs, (c) => equals(c, draft)))
+        .chain(({ configs, draft }) => findFirst(array)(configs, (c) => isSame(c, draft)))
         .foldL(
           None(() => {}),
           Some((c) => {
             props.onDidCreate(c)
-            handleRequestClose()
+            props.onRequestClose()
+            resetState()
           })
         )
 
-      const { equals } = getStructSetoid({
-        config: getOptionSetoid(setoidString),
-        name: setoidString,
-        type: setoidString,
-      })
+      function isSame(a: PersistedConfig, b: InProgressLocalDraftConfig): boolean {
+        return getStructSetoid({
+          config: getOptionSetoid(setoidString),
+          name: setoidString,
+          type: setoidString,
+        }).equals(a, { ...b, config: some(b.config) })
+      }
     },
-    [dispatch, fromStore.configs, handleRequestClose, props, state]
+    [dispatch, fromStore.configs, props, resetState, submittedDraft]
   )
   // ────────────────────────────────────────────────────────────────────────────────
   if (!props.isVisible) return null
   return (
-    <Modal
-      centered
-      closable={false}
-      destroyOnClose
-      footer={null}
-      title="Create New Entity Type"
-      visible={props.isVisible}
-      onCancel={handleRequestClose}>
-      <Form layout="vertical">
-        <Form.Item
-          hasFeedback={formState.validity.name}
-          help={formState.errors.name}
-          label="Name"
-          required={true}
-          validateStatus={formState.errors.name ? ("error" as const) : ("success" as const)}>
-          <Input
-            placeholder={`Enter a unique EntityType name`}
-            {...inputs.text({
-              name: "name",
-              validateOnBlur: true,
-              validate(v) {
-                return isWhitespace(v)
-                  ? "Required"
-                  : existingEntityTypes.map((et) => et.name.toLowerCase()).includes(v.toLowerCase())
-                  ? "Name already taken"
-                  : true
-              },
-            })}
-          />
-        </Form.Item>
-        <Form.Item
-          hasFeedback={formState.validity.lang}
-          help={formState.errors.lang}
-          label="Language"
-          required={true}
-          validateStatus={formState.errors.lang ? ("error" as const) : ("success" as const)}>
-          <Select
-            placeholder={
-              formState.values.name
-                ? `Select the config language for ${formState.values.name}`
-                : `Select the config language`
-            }
-            {...inputs.raw({
-              name: "lang",
-              validate(v) {
-                return isWhitespace(v) ? "Required" : true
-              },
-            })}>
-            {Object.values(editorLanguages).map((lang) => (
-              <Select.Option key={lang} title={lang} value={lang}>
-                {lang}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+    <Formik.Formik
+      initialValues={initialFormState}
+      validate={validateForm}
+      validateOnChange={true}
+      onReset={resetForm}
+      onSubmit={submitForm}>
+      {(form) => (
+        <Modal
+          centered
+          closable={false}
+          destroyOnClose
+          footer={null}
+          title="Create New Entity Type"
+          visible={props.isVisible}
+          onCancel={form.handleReset}>
+          <Form id="create-entity-type-form" layout="vertical" onSubmit={form.handleSubmit}>
+            <Form.Item
+              hasFeedback={form.touched.name}
+              help={form.touched.name && form.errors.name}
+              label="Name"
+              required={true}
+              validateStatus={form.errors.name ? "error" : "success"}>
+              <Input
+                name="name"
+                placeholder={`Enter a unique EntityType name`}
+                value={form.values.name}
+                onChange={form.handleChange}
+                onBlur={form.handleBlur}
+              />
+            </Form.Item>
+            <Form.Item
+              hasFeedback={form.touched.lang}
+              help={form.touched.lang && form.errors.lang}
+              label="Language"
+              required={true}
+              validateStatus={form.errors.lang ? "error" : "success"}>
+              <Select
+                placeholder={
+                  form.values.name
+                    ? `Select the config language for ${form.values.name}`
+                    : `Select the config language`
+                }
+                onBlur={() => form.handleBlur({ target: { name: "lang" } })}
+                onChange={(val) => {
+                  form.setFieldTouched("lang")
+                  form.setFieldValue("lang", val)
+                }}>
+                {Object.values(editorLanguages).map((lang) => (
+                  <Select.Option key={lang} title={lang} value={lang}>
+                    {lang}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-        <Row type="flex">
-          <Col span={12} />
-          <Col span={12}>
-            <Row align="middle" justify="end" type="flex">
-              <Button
-                disabled={fromStore.isCreatingConfig}
-                icon="close-circle"
-                onClick={handleRequestClose}>
-                Cancel
-              </Button>
-              <Space.Vertical width={8} />
-              <Button
-                disabled={!isSubmittable}
-                htmlType="submit"
-                icon="save"
-                loading={fromStore.isCreatingConfig}
-                type="primary"
-                onClick={createEntityTypeConfig}>
-                Save
-              </Button>
+            <Row type="flex">
+              <Col span={12} />
+              <Col span={12}>
+                <Row align="middle" justify="end" type="flex">
+                  <Button
+                    disabled={fromStore.isCreatingConfig}
+                    icon="close-circle"
+                    onClick={form.handleReset}>
+                    Cancel
+                  </Button>
+                  <Space.Vertical width={8} />
+                  <Button
+                    form="create-entity-type-form"
+                    htmlType="submit"
+                    icon="save"
+                    loading={fromStore.isCreatingConfig}
+                    type="primary">
+                    Save
+                  </Button>
+                </Row>
+              </Col>
             </Row>
-          </Col>
-        </Row>
-      </Form>
-    </Modal>
+          </Form>
+        </Modal>
+      )}
+    </Formik.Formik>
   )
-}
-
-const initialState = {
-  submittedDraft: none as Option<InProgressLocalDraftConfig>,
 }
 
 const formItemLayout = {
