@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace Utility.EDW.Queueing
 {
@@ -18,14 +18,6 @@ namespace Utility.EDW.Queueing
             Payload = payload;
         }
 
-        public override string ToString()
-        {
-            return JsonWrapper.Json(new
-            {
-                t = PostType,
-                d = PostDate,
-                p = Utility.Hashing.EncodeTo64(Payload)
-            });
-        }
+        public override string ToString() => JsonConvert.SerializeObject(this);
     }
 }
