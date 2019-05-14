@@ -2,7 +2,7 @@ import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
-import { PersistedConfig, CompleteLocalDraft } from "../data/GlobalConfig.Config"
+import { CompleteLocalDraft, PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { QueryConfig } from "../data/Report"
 import { HttpError, request } from "../lib/http"
@@ -35,11 +35,6 @@ export interface Effects {
 
   authGetUserDetails(): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
-  // authLoginBasic(p: {
-  //   username: string
-  //   password: string
-  // }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
-
   authLoginBasic(loginData: {
     user: string
     password: string
@@ -62,8 +57,6 @@ export interface Effects {
   globalConfigsGet(
     query: Pick<PersistedConfig, "id"> | Partial<Pick<PersistedConfig, "name" | "type">>
   ): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
-
-  // globalConfigsGetById(p: Pick<Config, "id">): Promise<Either<HttpError, Config>>
 
   globalConfigsGetMetaOnly(p: {
     id?: string
@@ -119,8 +112,6 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
                   },
                 }
               : data
-
-          console.log("User Details payload", result)
 
           return result
         },
@@ -209,18 +200,38 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       HttpError({
         BadStatus(res) {
           dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(res)}`)
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Network Error (001): Invalid data from server. Code: ${res.status}`,
+          })
         },
         BadPayload(message) {
           dispatch.logger.logError(`Bad payload in remoteDataClient: ${message}`)
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Network Error (002): Invalid data from server.`,
+          })
         },
         BadUrl(message) {
           dispatch.logger.logError(`Bad url in remoteDataClient: ${message}`)
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Network Error (003): Failed to connect to ${message}`,
+          })
         },
         NetworkError(message) {
           dispatch.logger.logError(`NetworkError in remoteDataClient: ${message}`)
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Network Error (004): Failed to connect to server.`,
+          })
         },
         Timeout(req) {
-          dispatch.logger.logError(`Bad status in remoteDataClient: ${prettyPrint(req)}`)
+          dispatch.logger.logError(`Request timed out. ${prettyPrint(req)}`)
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Network Error (005): Request timed out. ${req.url}`,
+          })
         },
       })
     },
@@ -268,10 +279,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         )
       )
     },
-    /**
-     * SELECT Config, Id, Name, Type from GlobalConfig.Config
-     * WHERE <params>
-     */
+
     async globalConfigsGet(params, { remoteDataClient }) {
       return request({
         body: {
@@ -294,31 +302,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         )
       )
     },
-    /**
-     * SELECT Config, Id, Name, Type from GlobalConfig.Config
-     * WHERE <params>
-     */
-    // async globalConfigsGetById(params, { remoteDataClient }) {
-    //   return request({
-    //     body: {
-    //       "config:get": params,
-    //     },
-    //     expect: GCWS.responsePayloadCodecs.get,
-    //     headers: {},
-    //     method: "POST",
-    //     timeout: none,
-    //     url: remoteDataClient.globalConfigUrl,
-    //     withCredentials: false,
-    //   }).then((result) =>
-    //     result.chain((payload) =>
-    //       head(payload["config:get"].result).fold(BadPayload(payload["config:get"], response))
-    //     )
-    //   )
-    // },
-    /**
-     * SELECT Id, Name, Type from GlobalConfig.Config
-     * WHERE <params>
-     */
+
     async globalConfigsGetMetaOnly(params, { remoteDataClient }) {
       return request({
         body: {

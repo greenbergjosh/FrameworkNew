@@ -11,7 +11,7 @@ import styles from "./landing.module.css"
 
 interface Props {
   location: {
-    state: {
+    state?: {
       redirectedFrom?: string
     }
   }
@@ -26,7 +26,7 @@ export function Landing(props: WithRouteProps<Props>) {
   React.useEffect(
     function handleDidLogin() {
       if (fromStore.iam.profile.isSome()) {
-        if (props.location.state.redirectedFrom) {
+        if (props.location.state && props.location.state.redirectedFrom) {
           props.navigate(props.location.state.redirectedFrom)
         } else {
           dispatch.navigation.goToDashboard(none)

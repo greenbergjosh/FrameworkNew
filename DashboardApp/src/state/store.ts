@@ -5,6 +5,7 @@ import createSelectPlugin from "@rematch/select"
 import storage from "redux-persist/lib/storage"
 import { Omit } from "utility-types"
 import { adminConfig } from "./admin-config"
+import { feedback } from "./feedback"
 import { globalConfig } from "./global-config"
 import { iam } from "./iam"
 import { logger } from "./logger"
@@ -15,6 +16,7 @@ import * as Store from "./store.types"
 
 const appModels: Omit<Store.AppModelConfigs, "loading"> = {
   adminConfig,
+  feedback,
   globalConfig,
   iam,
   logger,
