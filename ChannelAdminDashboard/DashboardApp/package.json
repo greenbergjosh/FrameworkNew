@@ -38,7 +38,6 @@
     "react-redux": "^7.0.2",
     "react-scripts": "3.0.0",
     "react-transition-group": "^4.0.0",
-    "react-use-form-state": "derrickbeining/react-use-form-state#dist",
     "typescript": "3.4.5"
   },
   "scripts": {
