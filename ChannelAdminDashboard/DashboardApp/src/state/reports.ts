@@ -1,15 +1,13 @@
-import * as record from "fp-ts/lib/Record"
-import { fromOption as eitherFromOption } from "fp-ts/lib/Either"
-import { Left, Right } from "../data/Either"
-import { JSONArray, JSONRecord, JSONRecordCodec, fromStrToJSONRec } from "../data/JSON"
-import { QueryConfig, ReportConfigCodec, QueryConfigCodec } from "../data/Report"
-import { cheapHash } from "../lib/json"
-import * as Store from "./store.types"
-import { PersistedConfig } from "../data/GlobalConfig.Config"
-import { tuple, identity } from "fp-ts/lib/function"
 import { array } from "fp-ts/lib/Array"
-import { None, Some } from "../data/Option"
+import { identity, tuple } from "fp-ts/lib/function"
+import * as record from "fp-ts/lib/Record"
 import { JSONFromString } from "io-ts-types"
+import { Left, Right } from "../data/Either"
+import { PersistedConfig } from "../data/GlobalConfig.Config"
+import { JSONArray, JSONRecord } from "../data/JSON"
+import { None, Some } from "../data/Option"
+import { QueryConfig, QueryConfigCodec, ReportConfigCodec } from "../data/Report"
+import * as Store from "./store.types"
 
 declare module "./store.types" {
   interface AppModels {
@@ -79,9 +77,17 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
+                  dispatch.feedback.notify({
+                    type: "error",
+                    message: `You do not have permission to run this report`,
+                  })
                 },
                 ServerException(err) {
                   dispatch.logger.logError(err.reason)
+                  dispatch.feedback.notify({
+                    type: "error",
+                    message: `An error occurred while running this report: ${err.reason}`,
+                  })
                 },
               })
             )
