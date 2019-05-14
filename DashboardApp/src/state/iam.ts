@@ -1,6 +1,13 @@
 import { none, Option, some } from "fp-ts/lib/Option"
 import { Left, Right } from "../data/Either"
+import { assertNever } from "../lib/assert-never"
 import * as Store from "./store.types"
+
+type SignInErrorCode =
+  | "idpiframe_initialization_failed"
+  | "popup_closed_by_user"
+  | "access_denied"
+  | "immediate_failed"
 
 const GOOGLE_AUTH_CONFIG = {
   clientId: "807151246360-m98u9n22fm81tu5fn9pmqdcuoh48qk6p.apps.googleusercontent.com",
@@ -150,9 +157,65 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
     },
 
     async authViaGoogleOAuth() {
-      await new Promise((resolve) => gAPI().load("client:auth2", resolve))
-      await gAPI().client.init(GOOGLE_AUTH_CONFIG)
-      dispatch.iam.handleGoogleAuthSignedIn(await gAuth().signIn())
+      try {
+        await new Promise((resolve) => gAPI().load("client:auth2", resolve))
+      } catch (err) {
+        dispatch.logger.logError(`Error loading gAPI: ${JSON.stringify(err, null, 2)}`)
+        dispatch.feedback.notify({
+          type: "error",
+          message: "Application Error: Failed to load Google OAuth Library",
+        })
+        return undefined
+      }
+      try {
+        await gAPI().client.init(GOOGLE_AUTH_CONFIG)
+        dispatch.iam.handleGoogleAuthSignedIn(await gAuth().signIn())
+      } catch (err) {
+        const errorCode: SignInErrorCode = err.error
+
+        switch (errorCode) {
+          case "access_denied": {
+            dispatch.logger.logError(
+              `User denied permission access for application: ${JSON.stringify(err, null, 2)}`
+            )
+            dispatch.feedback.notify({
+              type: "error",
+              message: `You must allow permission for this app to access Google in order to use Google Sign In`,
+            })
+
+            break
+          }
+          case "idpiframe_initialization_failed": {
+            dispatch.logger.logError(
+              `Error loading displaying gAuth sign in popup: ${JSON.stringify(err, null, 2)}`
+            )
+            dispatch.feedback.notify({
+              type: "error",
+              message: `Application Error: Failed to open Google Sign In popup: ${err.details}`,
+            })
+
+            break
+          }
+          case "immediate_failed": {
+            dispatch.logger.logError(
+              `Failed to force silent sign in: ${JSON.stringify(err, null, 2)}`
+            )
+            dispatch.feedback.notify({
+              type: "error",
+              message: "Application Error: Failed to sign into Google Account automatically",
+            })
+
+            break
+          }
+          case "popup_closed_by_user": {
+            dispatch.logger.logInfo("User closed Google OAuth popup manually")
+            break
+          }
+          default: {
+            assertNever(errorCode)
+          }
+        }
+      }
     },
 
     handleGoogleAuthSignedIn(currentUser: gapi.auth2.GoogleUser) {
