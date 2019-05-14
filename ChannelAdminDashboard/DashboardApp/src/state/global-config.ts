@@ -7,6 +7,10 @@ import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { Left, Right } from "../data/Either"
+import { None, Some } from "../data/Option"
+import { prettyPrint } from "../lib/json"
+import { Config as mockGlobalConfigs } from "../mock-data/global-config.json"
+import * as Store from "./store.types"
 import {
   ConfigType,
   InProgressLocalDraftConfig,
@@ -15,10 +19,6 @@ import {
   mkCompleteRemoteUpdateDraft,
   PersistedConfig,
 } from "../data/GlobalConfig.Config"
-import { None, Some } from "../data/Option"
-import { prettyPrint } from "../lib/json"
-import { Config as mockGlobalConfigs } from "../mock-data/global-config.json"
-import * as Store from "./store.types"
 
 declare module "./store.types" {
   interface AppModels {
@@ -101,9 +101,13 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
     async createRemoteConfig(draft) {
       return mkCompleteLocalDraft(draft).fold(
         Left(async (errs) => {
-          return dispatch.logger.logError(
+          dispatch.logger.logError(
             `createRemoteConfig error:\n${errs.join("\n")}\n\nInvalid config params:\n${draft}`
           )
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Form contains invalid data and cannot be submitted.`,
+          })
         }),
         Right(async (completeDraft) => {
           const response = await dispatch.remoteDataClient.globalConfigsInsert({
@@ -125,9 +129,17 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                       draft
                     )}`
                   )
+                  dispatch.feedback.notify({
+                    type: "error",
+                    message: `Failed to save Global Config: ${reason}`,
+                  })
                 },
                 Unauthorized: () => {
                   dispatch.logger.logError(`Unauthorized to create config:\n${prettyPrint(draft)}`)
+                  dispatch.feedback.notify({
+                    type: "error",
+                    message: `You do not have permission to create a Global Config. Please check with your administrator.`,
+                  })
                 },
                 OK: (createdConfigs) => {
                   return head(createdConfigs).foldL(
@@ -135,12 +147,21 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                       dispatch.logger.logError(
                         `web service for state.globalConfig.createConfig returned nothing`
                       )
+                      dispatch.feedback.notify({
+                        type: "error",
+                        message: `Server Error: An unknown error occurred while processing this request.`,
+                      })
                     }),
                     Some((createdConfig) => {
-                      return dispatch.globalConfig.insertLocalConfig({
+                      dispatch.globalConfig.insertLocalConfig({
                         ...createdConfig,
                         config: some(draft.config),
                         type: completeDraft.type,
+                      })
+
+                      dispatch.feedback.notify({
+                        type: "success",
+                        message: `Global Config created`,
                       })
                     })
                   )
@@ -165,6 +186,12 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   (id) => `${id}\n`
                 )}`
               )
+              dispatch.feedback.notify({
+                type: "error",
+                message: `Server Exception: Failed to delete global config${
+                  ids.length === 1 ? "" : "s"
+                }`,
+              })
             },
             Unauthorized() {
               dispatch.globalConfig.update({
@@ -181,9 +208,19 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   (id) => `${id}\n`
                 )}`
               )
+              dispatch.feedback.notify({
+                type: "error",
+                message: `You do not have permission to delete ${
+                  ids.length === 1 ? "this Global Config" : "these Global Configs"
+                }`,
+              })
             },
             OK() {
               dispatch.globalConfig.rmLocalConfigsById(ids)
+              dispatch.feedback.notify({
+                type: "success",
+                message: `Global Config Deleted`,
+              })
             },
           })
         })
@@ -204,12 +241,20 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               dispatch.logger.logError(
                 `ServerException "${reason}" occured while attempting to load remote configs`
               )
+              dispatch.feedback.notify({
+                type: "error",
+                message: `Failed to load remote configs: ${reason}`,
+              })
             },
             Unauthorized: () => {
               dispatch.globalConfig.update({
                 configs: failure(new Error(`Unauthorized to load GlobalConfig`)),
               })
               dispatch.logger.logError(`Unauthorized attempt to load remote configs`)
+              dispatch.feedback.notify({
+                type: "error",
+                message: `You do not have permission to load the Global Config list`,
+              })
             },
             OK: (configs) => {
               dispatch.globalConfig.update({ configs: success(configs) })
@@ -226,6 +271,10 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               "\n"
             )}\n\nInvalid update values:\n${prettyPrint(draft)}`
           )
+          dispatch.feedback.notify({
+            type: "error",
+            message: `Form contains invalid data and cannot be submitted.`,
+          })
         }),
         Right(async (completeDraft) => {
           const result = await dispatch.remoteDataClient.globalConfigsUpdate(completeDraft)
@@ -238,16 +287,28 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   dispatch.logger.logError(
                     `Error "ServerException"; could not update remote config ${prettyPrint(draft)}`
                   )
+                  dispatch.feedback.notify({
+                    type: "error",
+                    message: `ServerException: Failed to save Global Config`,
+                  })
                 },
                 Unauthorized() {
                   dispatch.logger.logError(
                     `Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`
                   )
+                  dispatch.feedback.notify({
+                    type: "error",
+                    message: `You do not have permission to update this Global Config`,
+                  })
                 },
                 OK() {
                   dispatch.globalConfig.updateLocalConfig({
                     ...completeDraft,
                     config: some(completeDraft.config),
+                  })
+                  dispatch.feedback.notify({
+                    type: "success",
+                    message: `Global Config updated.`,
                   })
                 },
               })

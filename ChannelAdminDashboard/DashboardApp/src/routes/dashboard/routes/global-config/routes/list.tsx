@@ -1,5 +1,18 @@
-import { Atom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
+import { ClickParam } from "antd/lib/menu"
+import { ColumnProps } from "antd/lib/table"
+import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
+import { ordString } from "fp-ts/lib/Ord"
+import * as Record from "fp-ts/lib/Record"
+import { setoidString } from "fp-ts/lib/Setoid"
+import { Branded } from "io-ts"
+import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import React from "react"
+import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
+import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { useRematch } from "../../../../../hooks/use-rematch"
+import { WithRouteProps } from "../../../../../state/navigation"
+import { store } from "../../../../../state/store"
 import {
   AutoComplete,
   Button,
@@ -18,20 +31,6 @@ import {
   Tag,
   Typography,
 } from "antd"
-import { ClickParam } from "antd/lib/menu"
-import { ColumnProps } from "antd/lib/table"
-import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
-import { ordString } from "fp-ts/lib/Ord"
-import * as Record from "fp-ts/lib/Record"
-import { setoidString } from "fp-ts/lib/Setoid"
-import { Branded } from "io-ts"
-import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
-import React from "react"
-import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
-import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
-import { useRematch } from "../../../../../hooks/use-rematch"
-import { WithRouteProps } from "../../../../../state/navigation"
-import { store } from "../../../../../state/store"
 
 interface Props {}
 
