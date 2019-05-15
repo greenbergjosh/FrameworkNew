@@ -52,6 +52,7 @@ namespace Utility
         private static readonly ReaderWriterLockSlim ReadWriteLock = new ReaderWriterLockSlim();
 
         //https://johandorper.com/log/
+        // I'm pretty sure the way this is implemented it puts a lock on all file writing used by this method regardless if it's different files
         public static void WriteLineToFileThreadSafe(string path, string text)
         {
             // Set Status to Locked
