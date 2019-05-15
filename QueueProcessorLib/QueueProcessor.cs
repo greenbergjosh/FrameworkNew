@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Utility;
@@ -43,13 +42,6 @@ namespace QueueProcessorLib
                 _runRetryQueue = _fw.StartupConfiguration.GetB("Config/QueueProcessor/RunRetryQueue");
 
                 _queueItemProcessorLbmId = Guid.Parse(_fw.StartupConfiguration.GetS("Config/QueueProcessor/QueueItemProcessorLbmId"));
-
-                var err = _fw.Err;
-                _fw.Err = (int severity, string method, string descriptor, string message) =>
-                {
-                    Debug.WriteLine($"{DateTime.Now}: {method} {descriptor} {message}");
-                    return err(severity, method, descriptor, message);
-                };
             }
             catch (Exception ex)
             {
