@@ -8,7 +8,6 @@ declare const styles: {
   readonly "topToolbar": string;
   readonly "trigger": string;
   readonly "layoutContainer": string;
-  readonly "layoutContent": string;
   readonly "logo": string;
   readonly "logoCollapsed": string;
 };

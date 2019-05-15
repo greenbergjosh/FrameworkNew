@@ -1,5 +1,6 @@
 declare const styles: {
   readonly "app": string;
+  readonly "appLoadingIndicator": string;
   readonly "transition-group": string;
   readonly "router": string;
   readonly "page": string;

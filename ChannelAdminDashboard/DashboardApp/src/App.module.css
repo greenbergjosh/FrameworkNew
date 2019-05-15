@@ -8,6 +8,15 @@
   flex-direction: column;
 }
 
+.appLoadingIndicator {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  flex: 1;
+  height: 100vh;
+}
+
 .transition-group {
   flex: 1;
   position: relative;
