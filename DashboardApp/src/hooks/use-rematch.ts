@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
+
 import { store } from "../state/store"
 
 /* ---------- HELPERS -------------- */
@@ -34,15 +35,9 @@ export function useRematch<Selected>(
   selectState: (state: import("../state/store.types").AppState) => Selected,
   deps: Array<unknown> = []
 ): [Selected, import("../state/store.types").AppDispatch] {
-  const [selectedState, setCurrSelectedState] = useState(() =>
-    selectState(store.getState())
-  )
+  const [selectedState, setCurrSelectedState] = useState(() => selectState(store.getState()))
 
-  const nextSelectedState = useMemo(() => selectState(store.getState()), deps)
   useEffect(() => {
-    if (nextSelectedState !== selectedState) {
-      setCurrSelectedState(nextSelectedState)
-    }
     const unsubscribe = store.subscribe(function useRematchSubscription() {
       const _nextSelectedState = selectState(store.getState())
       if (!isShallowEqual(selectedState, _nextSelectedState)) {
@@ -53,7 +48,7 @@ export function useRematch<Selected>(
     return function onUnmount() {
       unsubscribe()
     }
-  }, deps)
+  }, [selectedState, ...deps])
 
   return [selectedState, store.dispatch]
 }
