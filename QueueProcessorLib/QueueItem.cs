@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace QueueProcessorLib
 {
@@ -8,13 +9,17 @@ namespace QueueProcessorLib
         public string Discriminator { get; }
         public string Payload { get; }
         public DateTime CreateDate { get; }
+        public int RetryNumber { get; }
 
-        public QueueItem(long id, string discriminator, string payload, DateTime createDate)
+        public QueueItem(long id, string discriminator, string payload, DateTime createDate, int retryNumber = -1)
         {
             Id = id;
             Discriminator = discriminator;
             Payload = payload;
             CreateDate = createDate;
+            RetryNumber = retryNumber;
         }
+
+        public override string ToString() => JsonConvert.SerializeObject(this);
     }
 }

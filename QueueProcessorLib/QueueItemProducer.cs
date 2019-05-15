@@ -12,21 +12,23 @@ namespace QueueProcessorLib
         private FrameworkWrapper _fw;
         private bool _started = false;
 
-        private readonly QueueItemProducerConfig _config;
+        public QueueItemProducerConfig Config { get; }
 
-        private string LogMethod => $"{_config.Name} QueueItemProducer";
+        private string LogMethod => $"{Config.Name} QueueItemProducer";
+
+        public QueueItem[] QueueSnapshot => Config.Queue.ToArray();
 
         public QueueItemProducer(FrameworkWrapper fw, QueueItemProducerConfig config)
         {
             _fw = fw;
-            _config = config;
+            Config = config;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
             if (_started)
             {
-                throw new InvalidOperationException($"{_config.Name} producer is already started.");
+                throw new InvalidOperationException($"{Config.Name} producer is already started.");
             }
             _started = true;
 
@@ -38,7 +40,7 @@ namespace QueueProcessorLib
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    batch = await _config.ItemGetter();//)?.Select(item => new QueueItem((long)item["id"], (string)item["discriminator"], (string)item["payload"], (DateTime)item["createDate"]));
+                    batch = await Config.ItemGetter(Config.BatchSize);
 
                     var shouldSleep = false;
 
@@ -46,18 +48,18 @@ namespace QueueProcessorLib
                     {
                         foreach (var queueItem in batch)
                         {
-                            if (_config.DiscriminatorsInRetry.Contains(queueItem.Discriminator))
+                            if (Config.DiscriminatorsInRetry.Contains(queueItem.Discriminator))
                             {
-                                await _config.SendToRetryQueue(queueItem);
+                                await Config.SendToRetryQueue(queueItem);
                             }
                             else
                             {
-                                _config.Queue.Add(queueItem, cancellationToken);
+                                Config.Queue.Add(queueItem, cancellationToken);
                             }
                         }
 
                         // Sleep if the batch wasn't a full batch or we're above our low watermark
-                        shouldSleep = batch.Count() < _config.BatchSize || _config.Queue.Count >= _config.LowWatermark;
+                        shouldSleep = batch.Count() < Config.BatchSize || Config.Queue.Count >= Config.LowWatermark;
                     }
                     else
                     {
@@ -66,8 +68,8 @@ namespace QueueProcessorLib
 
                     if (shouldSleep && !cancellationToken.IsCancellationRequested)
                     {
-                        await _fw.Trace(LogMethod, $"Sleeping for {_config.SleepInterval}ms");
-                        await Task.Delay(_config.SleepInterval);
+                        //await _fw.Trace(LogMethod, $"Sleeping for {Config.SleepInterval}ms");
+                        await Task.Delay(Config.SleepInterval, cancellationToken);
                     }
                 }
             }
@@ -92,12 +94,12 @@ namespace QueueProcessorLib
             var queueItemIds = new List<long>();
 
             // Gather items left in the queue
-            while (_config.Queue.TryTake(out var queueItem))
+            while (Config.Queue.TryTake(out var queueItem))
             {
                 queueItemIds.Add(queueItem.Id);
             }
 
-            // Gather items let in the current batch
+            // Gather items left in the current batch
             if (batch != null)
             {
                 foreach (var queueItem in batch)
@@ -106,8 +108,12 @@ namespace QueueProcessorLib
                 }
             }
 
-            await _fw.Log(LogMethod, $"Saving {queueItemIds.Count} unprocessed items");
-            await _config.SendToRestartQueue(queueItemIds);
+            if (queueItemIds.Count > 0)
+            {
+                await _fw.Log(LogMethod, $"Saving {queueItemIds.Count} unprocessed items");
+                await Config.SendToRestartQueue(queueItemIds);
+                await _fw.Log(LogMethod, $"Saved {queueItemIds.Count} unprocessed items");
+            }
         }
     }
 }
