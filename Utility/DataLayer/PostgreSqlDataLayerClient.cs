@@ -92,9 +92,9 @@ namespace Utility.DataLayer
                         cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
                         cmd.CommandTimeout = timeout;
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        var outval = (bool)cmd.Parameters["@Return"].Value;
+                        var outval = (string)cmd.Parameters["@Return"].Value;
                         // Remove this once the function is changed to be consistent with what we expect ("Success" for no errors)
-                        result = outval ? "Success" : "Failure";
+                        result = outval == "200 ok" ? "Success" : "Failure";
                         cn.Close();
                     }
                 }
