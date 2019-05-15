@@ -6,6 +6,7 @@ import {
   } from "antd"
 import React from "react"
 import { Components, Form, FormBuilder } from "../../../../components/form-io"
+import ButtonFormComponent from "../../../../components/form-io/button/ButtonFormComponent"
 import CodeEditorFormComponent from "../../../../components/form-io/code-editor/CodeEditorFormComponent"
 import DateRangeFormComponent from "../../../../components/form-io/date-range/DateRangeFormComponent"
 import DateFormComponent from "../../../../components/form-io/date/DateFormComponent"
@@ -14,6 +15,7 @@ import { WithRouteProps } from "../../../../state/navigation"
 import CheckMatrix from "./components/CheckMatrix"
 
 Components.setComponents({
+  button: ButtonFormComponent,
   checkmatrix: CheckMatrix,
   "code-editor": CodeEditorFormComponent,
   date: DateFormComponent,

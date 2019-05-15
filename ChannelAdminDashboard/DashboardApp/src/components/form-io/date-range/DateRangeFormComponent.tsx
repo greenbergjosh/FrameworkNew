@@ -1,6 +1,5 @@
-import { StringLiteralTypeAnnotation } from "@babel/types"
 import { DatePicker } from "antd"
-import { RangePickerPresetRange, RangePickerValue } from "antd/lib/date-picker/interface"
+import { RangePickerValue } from "antd/lib/date-picker/interface"
 import moment from "moment"
 import React from "react"
 import ReactFormBase from "../ReactFormBase"
