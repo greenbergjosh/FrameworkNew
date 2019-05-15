@@ -1,13 +1,29 @@
 import * as Reach from "@reach/router"
-import { Alert, Button, Card, Empty, Form, Input, Skeleton, Typography } from "antd"
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  Skeleton,
+  Typography
+  } from "antd"
 import * as Formik from "formik"
+import { array } from "fp-ts/lib/Array"
+import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
-import { fromEither, none, some } from "fp-ts/lib/Option"
+import {
+  fromEither,
+  none,
+  Option,
+  some
+  } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
+import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import React from "react"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
-import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
 import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
@@ -15,6 +31,10 @@ import { useRematch } from "../../../../../hooks/use-rematch"
 import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
+import {
+  PersistedConfig,
+  InProgressRemoteUpdateDraft,
+} from "../../../../../data/GlobalConfig.Config"
 
 interface Props {
   configId: string
@@ -57,12 +77,17 @@ export function EditGlobalConfig({
 
 function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
   const [fromStore, dispatch] = useRematch((s) => ({
+    configs: s.globalConfig.configs,
     configNames: store.select.globalConfig.configNames(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
     isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
   }))
+
+  const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(
+    none
+  )
 
   const entityTypeConfig = React.useMemo(
     () => record.lookup(props.config.type, fromStore.entityTypes),
@@ -86,6 +111,30 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     config: props.config.config.map((c) => c.toString()).getOrElse(""),
     name: props.config.name,
   }
+
+  /* afterCreate */
+  React.useEffect(() => {
+    updatedConfig.chain(findInStore).foldL(
+      None(() => {}),
+      Some((c) => {
+        dispatch.navigation.showGlobalConfigById({ id: c.id, navOpts: { replace: true } })
+      })
+    )
+
+    function findInStore(c: InProgressRemoteUpdateDraft): Option<PersistedConfig> {
+      return findFirst(array)(fromStore.configs.getOrElse([]), (c1) =>
+        equals(c, { ...c1, config: c1.config.getOrElse("") })
+      )
+    }
+    function equals<T extends InProgressRemoteUpdateDraft>(a: T, b: T): boolean {
+      return getStructSetoid({
+        config: setoidString,
+        id: setoidString,
+        name: setoidString,
+        type: setoidString,
+      }).equals(a, b)
+    }
+  }, [dispatch, fromStore.configs, updatedConfig])
 
   return (
     <>
@@ -122,6 +171,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
             .extract()
         }
         onSubmit={(values, { setSubmitting }) => {
+          setUpdatedConfig(some({ ...props.config, ...values }))
           dispatch.globalConfig
             .updateRemoteConfig({
               ...props.config,
