@@ -1,5 +1,13 @@
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
+import { identity } from "fp-ts/lib/function"
+import { some, toArray } from "fp-ts/lib/Record"
+import React from "react"
+import { Space } from "../../components/space"
+import { useRematch } from "../../hooks"
+import { Profile } from "../../state/iam"
+import { RouteMeta, WithRouteProps } from "../../state/navigation"
+import styles from "./dashboard.module.css"
 import {
   Avatar,
   Breadcrumb,
@@ -12,14 +20,6 @@ import {
   Row,
   Typography,
 } from "antd"
-import { identity } from "fp-ts/lib/function"
-import { some, toArray } from "fp-ts/lib/Record"
-import React from "react"
-import { Space } from "../../components/space"
-import { useRematch } from "../../hooks"
-import { Profile } from "../../state/iam"
-import { RouteMeta, WithRouteProps } from "../../state/navigation"
-import styles from "./dashboard.module.css"
 
 interface Props {
   profile: Profile
@@ -183,7 +183,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
 
-        <Layout.Content className={`${styles.layoutContainer}  ${styles.layoutContent}`}>
+        <Layout.Content className={`${styles.layoutContainer}`}>
           {props.children}
         </Layout.Content>
 
