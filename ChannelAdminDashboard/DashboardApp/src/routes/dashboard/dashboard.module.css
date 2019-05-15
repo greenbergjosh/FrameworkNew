@@ -57,10 +57,6 @@
   padding-right: 32px;
 }
 
-.layoutContent {
-  max-width: 1200px;
-}
-
 .logo {
   display: flex;
   justify-content: center;

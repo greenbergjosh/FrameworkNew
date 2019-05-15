@@ -110,7 +110,9 @@ export function Landing(props: WithRouteProps<Props>) {
                   <Layout.Content className={styles.sidebarRightContent}>
                     <Layout.Content className={styles.welcomeBackArea}>
                       <Row>
-                        <h1 className={styles.title}>INSIGHTS</h1>
+                        <Typography.Title level={1} className={styles.title}>
+                          ONPOINT ADMIN
+                        </Typography.Title>
                       </Row>
 
                       <Space.Horizontal height={25} />

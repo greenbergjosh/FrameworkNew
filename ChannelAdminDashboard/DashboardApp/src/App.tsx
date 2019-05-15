@@ -1,9 +1,11 @@
 import * as Reach from "@reach/router"
 import { getPersistor } from "@rematch/persist"
+import { Spin } from "antd"
 import { flatten } from "fp-ts/lib/Array"
 import { toArray } from "fp-ts/lib/Record"
 import React from "react"
 import * as ReactRedux from "react-redux"
+import { CSSTransition, TransitionGroup } from "react-transition-group"
 import { PersistGate } from "redux-persist/integration/react"
 import styles from "./App.module.css"
 import "./App.scss"
@@ -15,10 +17,18 @@ import { store } from "./state/store"
 
 const persistor = getPersistor()
 
+function AppLoadingScreen() {
+  return (
+    <div className={`${styles.appLoadingIndicator}`}>
+      <Spin size="large" tip="Initializing OnPoint Admin" />
+    </div>
+  )
+}
+
 export function App(): JSX.Element {
   const [fromStore, dispatch] = useRematch((s) => ({
     profile: s.iam.profile,
-    routes: store.select.navigation.routes(s),
+    isCheckingSession: s.loading.effects.iam.attemptResumeSession,
   }))
 
   React.useEffect(() => {
@@ -26,59 +36,68 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   return (
-    <PersistGate persistor={persistor}>
+    <PersistGate persistor={persistor} loading={<AppLoadingScreen />}>
       <div className={`${styles.app}`}>
         <ReactRedux.Provider store={store}>
-          <Reach.Router>
-            {(function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-              return toArray(routes).map(([k, route]) =>
-                route.requiresAuthentication === true ? (
-                  fromStore.profile.foldL(
-                    None(() => (
-                      <Reach.Redirect
-                        key={route.abs}
-                        from={`${route.abs}/*`}
-                        state={{ redirectedFrom: window.location.pathname }}
-                        noThrow
-                        to={fromStore.routes.login.abs}
-                      />
-                    )),
-                    Some((prof) => (
-                      <route.component key={route.abs} profile={prof} {...route}>
-                        {renderRoutes(route.subroutes)}
-                      </route.component>
-                    ))
-                  )
-                ) : (
-                  <route.component key={route.abs} {...route}>
-                    {renderRoutes(route.subroutes)}
-                  </route.component>
-                )
-              )
-            })(fromStore.routes)}
-
-            {(function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
-              return flatten(
-                toArray(routes).map(([k, route]) => {
-                  return route.redirectFrom
-                    .map((url) => (
-                      <Reach.Redirect
-                        key={url.concat(route.abs)}
-                        noThrow
-                        from={url}
-                        to={route.abs}
-                      />
-                    ))
-                    .concat(renderRedirects(route.subroutes))
-                })
-              )
-            })(fromStore.routes)}
-
-            <NotFound default />
-          </Reach.Router>
+          {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
+            <AppLoadingScreen />
+          ) : (
+            <Routes />
+          )}
         </ReactRedux.Provider>
       </div>
     </PersistGate>
+  )
+}
+
+function Routes() {
+  const [fromStore, dispatch] = useRematch((s) => ({
+    profile: s.iam.profile,
+    routes: store.select.navigation.routes(s),
+  }))
+  return (
+    <Reach.Router>
+      {(function renderRoutes(routes: Record<string, RouteMeta>): Array<JSX.Element> {
+        return toArray(routes).map(([k, route]) =>
+          route.requiresAuthentication === true ? (
+            fromStore.profile.foldL(
+              None(() => (
+                <Reach.Redirect
+                  key={route.abs}
+                  from={`${route.abs}/*`}
+                  state={{ redirectedFrom: window.location.pathname }}
+                  noThrow
+                  to={fromStore.routes.login.abs}
+                />
+              )),
+              Some((prof) => (
+                <route.component key={route.abs} profile={prof} {...route}>
+                  {renderRoutes(route.subroutes)}
+                </route.component>
+              ))
+            )
+          ) : (
+            <route.component key={route.abs} {...route}>
+              {renderRoutes(route.subroutes)}
+            </route.component>
+          )
+        )
+      })(fromStore.routes)}
+
+      {(function renderRedirects(routes: Record<string, RouteMeta>): Array<JSX.Element> {
+        return flatten(
+          toArray(routes).map(([k, route]) => {
+            return route.redirectFrom
+              .map((url) => (
+                <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />
+              ))
+              .concat(renderRedirects(route.subroutes))
+          })
+        )
+      })(fromStore.routes)}
+
+      <NotFound default />
+    </Reach.Router>
   )
 }
 
