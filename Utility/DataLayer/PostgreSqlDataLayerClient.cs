@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Npgsql;
 
 namespace Utility.DataLayer
 {
@@ -11,23 +11,21 @@ namespace Utility.DataLayer
 
         public async Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120)
         {
-            using (NpgsqlConnection cn = new NpgsqlConnection(connectionString))
+            using (var cn = new NpgsqlConnection(connectionString))
             {
                 var results = new List<Dictionary<string, object>>();
 
                 cn.Open();
-                var sql = $"SELECT * from {sproc}({parameters.Select(p=>$"{p.Key} := '{p.Value}'").Join(",")})";
+                var sql = $"SELECT * from {sproc}({parameters.Select(p => $"{p.Key} := '{p.Value}'").Join(",")})";
 
 
                 using (var cmd = new NpgsqlCommand(sql, cn) { CommandTimeout = timeout })
                 {
-                    //foreach (var p in parameters) cmd.Parameters.AddWithValue($"@{p.Key}", p.Value);
-
                     using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(continueOnCapturedContext: false))
                     {
                         var fields = new string[rdr.FieldCount];
 
-                        for (int i = 0; i < rdr.FieldCount; i++)
+                        for (var i = 0; i < rdr.FieldCount; i++)
                         {
                             fields[i] = rdr.GetName(i);
                         }
@@ -40,7 +38,10 @@ namespace Utility.DataLayer
                             {
                                 var val = rdr[f];
 
-                                if (val == DBNull.Value) val = null;
+                                if (val == DBNull.Value)
+                                {
+                                    val = null;
+                                }
 
                                 row.Add(f, val);
                             }
@@ -100,7 +101,10 @@ namespace Utility.DataLayer
             }
             catch (NpgsqlException sqlex)
             {
-                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) result = "Walkaway";
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
+                {
+                    result = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -138,7 +142,10 @@ namespace Utility.DataLayer
             }
             catch (NpgsqlException sqlex)
             {
-                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) outval = "Walkaway";
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -159,9 +166,9 @@ namespace Utility.DataLayer
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout })
                     {
-                        cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Varchar, postType);
-                        cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.Timestamp, postDate);
-                        cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Text, payload);
+                        cmd.Parameters.AddWithValue("@post_type", NpgsqlTypes.NpgsqlDbType.Text, postType);
+                        cmd.Parameters.AddWithValue("@post_date", NpgsqlTypes.NpgsqlDbType.TimestampTz, postDate);
+                        cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
                         cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                         cmd.CommandTimeout = timeout;
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
@@ -173,7 +180,10 @@ namespace Utility.DataLayer
             }
             catch (NpgsqlException sqlex)
             {
-                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed")) outval = "Walkaway";
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
+                {
+                    outval = "Walkaway";
+                }
             }
             catch (Exception ex)
             {
@@ -183,6 +193,41 @@ namespace Utility.DataLayer
             return outval;
         }
 
-        public Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120) => throw new NotImplementedException();
+        public async Task<string> BulkInsertPostingQueue(string connectionString, string payload, int timeout = 120)
+        {
+            string outval = null;
+
+            try
+            {
+                using (var cn = new NpgsqlConnection(connectionString))
+                {
+                    cn.Open();
+                    using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue_bulk(@payload)", cn) { CommandTimeout = timeout })
+                    {
+                        cmd.Parameters.AddWithValue("@payload", NpgsqlTypes.NpgsqlDbType.Json, payload);
+                        cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
+                        cmd.CommandTimeout = timeout;
+                        await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                        outval = (string)cmd.Parameters["@Return"].Value;
+                        cn.Close();
+                    }
+
+                }
+            }
+            catch (NpgsqlException sqlex)
+            {
+                if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
+                {
+                    outval = "Walkaway";
+                }
+            }
+            catch (Exception ex)
+            {
+                outval = $"Exception::{ex.ToString()}";
+            }
+
+            return outval;
+        }
+
     }
 }

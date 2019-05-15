@@ -1,10 +1,11 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
 using Utility.EDW.Queueing;
@@ -38,7 +39,10 @@ namespace Utility
 
                 ConfigurationKeys = configuration.GetSection("Application:Instance").GetChildren().Select(c => c.Value).ToArray();
 
-                if (!ConfigurationKeys.Any()) ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
+                if (!ConfigurationKeys.Any())
+                {
+                    ConfigurationKeys = new[] { configuration.GetValue<string>("Application:Instance") };
+                }
 
                 StartupConfiguration = Data.Initialize(
                     configuration.GetValue<string>("ConnectionString:ConnectionString"),
@@ -47,12 +51,12 @@ namespace Utility
                     configuration.GetValue<string>("ConnectionString:DataLayer:SelectConfigFunction"),
                     commandLineArgs)
                     .GetAwaiter().GetResult();
-                
+
                 Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
                 var scripts = new List<ScriptDescriptor>();
                 var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
-                
-				TraceLogging = StartupConfiguration.GetB("Config/EnableTraceLogging");
+
+                TraceLogging = StartupConfiguration.GetB("Config/EnableTraceLogging");
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
@@ -67,7 +71,14 @@ namespace Utility
                 Err =
                     async (int severity, string method, string descriptor, string message) =>
                     {
-                        if(!TraceLogging && descriptor == ErrorDescriptor.Trace) return;
+#if DEBUG
+                        Debug.WriteLine($"{DateTime.Now}: {method} {descriptor} {message}");
+#endif
+                        if (!TraceLogging && descriptor == ErrorDescriptor.Trace)
+                        {
+                            return;
+                        }
+
                         await ErrorWriter.Write(new ErrorLogError(severity, appName, method, descriptor, message));
                     };
             }
