@@ -1,7 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
 using Utility.GenericEntity;
@@ -10,6 +12,7 @@ using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGr
 using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
 using ScopeDic = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
 using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
+using Jw = Utility.JsonWrapper;
 
 namespace TheGreatWallOfDataLib.Scopes
 {
@@ -34,6 +37,14 @@ namespace TheGreatWallOfDataLib.Scopes
             {
                 ("login", new ApiFunc(async (s, f, p, i) => await Authentication.Login(p))),
                 ("userDetails", new ApiFunc(async (s, f, p, i) => await Authentication.GetUserDetails(i)))
+            }),
+            ("edw182", new []
+            {
+                ("getLogs", DbFunc( "err", payload => (args: payload, payload: Jw.Empty) ))
+            }),
+            ("edw214", new []
+            {
+                ("getLogs", DbFunc( "err", payload => (args: payload, payload: Jw.Empty) ))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
@@ -58,6 +69,62 @@ namespace TheGreatWallOfDataLib.Scopes
             return func ?? DbFunc();
         }
 
+        private static ApiFunc DbFunc(string errorJsonPath, Func<string, (string args, string payload)> payloadMutation = null, Func<IGenericEntity, JObject> mutateResponse = null)
+        {
+            return async (scope, funcName, payload, identity) =>
+            {
+                if (!await Authentication.HasPermissions(scope, funcName, identity)) throw new FunctionException(106, $"Permission denied: Identity: {identity} Scope: {scope} Func: {funcName}");
+
+                IGenericEntity res;
+
+                if (payloadMutation != null)
+                {
+                    (string args, string payload) ap;
+
+                    try
+                    {
+                        ap = payloadMutation(payload);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new FunctionException(100, "Failed to mutate payload", e);
+                    }
+
+                    res = await Data.CallFn(scope, funcName, ap.args, ap.payload);
+                }
+                else
+                {
+                    res = await Data.CallFn(scope, funcName, payload: payload);
+                }
+
+                if (res?.GetS("").IsNullOrWhitespace() != false) throw new FunctionException(100, "Empty DB response");
+
+                var r = res.GetS(errorJsonPath);
+
+                if (!r.IsNullOrWhitespace()) throw new FunctionException(100, $"Failed db response {res.GetS("")}");
+
+                try
+                {
+
+                    if (mutateResponse != null)
+                    {
+                        var mutated = mutateResponse(res);
+
+                        mutated["r"] = 0;
+
+                        res = Jw.ToGenericEntity(mutated);
+                    }
+                    else res = Jw.ToGenericEntity(new { r = 0, result = Jw.TryParse(res.GetS("")) });
+                }
+                catch (Exception e)
+                {
+                    throw new FunctionException(100, "DB response mutation failed", e);
+                }
+
+                return res;
+            };
+        }
+
         private static ApiFunc DbFunc()
         {
             return async (scope, funcName, payload, identity) =>
@@ -70,15 +137,9 @@ namespace TheGreatWallOfDataLib.Scopes
 
                 var r = res.GetS("r")?.ParseInt();
 
-                if (!r.HasValue)
-                {
-                    throw new FunctionException(100, $"Invalid db response {res.GetS("")}");
-                }
+                if (!r.HasValue) throw new FunctionException(100, $"Invalid db response {res.GetS("")}");
 
-                if (r.Value != 0)
-                {
-                    throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
-                }
+                if (r.Value != 0) throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
 
                 return res;
             };
