@@ -303,7 +303,10 @@ const ReportBody = React.memo(
           .map((childReport) => (parentData: JSONRecord) => (
             <Report
               report={childReport}
-              data={{ ...parameterValues.getOrElse(record.empty), ...parentData }}
+              data={{
+                ...flattenObject(parameterValues.getOrElse(record.empty)),
+                ...flattenObject(parentData),
+              }}
             />
           ))
           .toUndefined(),
