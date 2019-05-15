@@ -30,7 +30,7 @@ namespace SimpleImportExport
 
                 if (!Guid.TryParse(jobIdStr, out var jobId))
                 {
-                    await _fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"Invalid Job Id: {jobName}:{jobIdStr}");
+                    await _fw.Error($"{nameof(Program)}", $"Invalid Job Id: {jobName}:{jobIdStr}");
                     Console.WriteLine("Invalid Job Id");
                     return;
                 }
@@ -41,6 +41,7 @@ namespace SimpleImportExport
 
                 var src = await GetEnpointConfig(jobCfg, "Source");
                 var dest = await GetEnpointConfig(jobCfg, "Destination");
+                var commitAfterPost = jobCfg.GetS("Config/CommitAfterPostProcess").ParseBool() ?? false;
                 var jobPost = jobCfg.GetS("Config/JobPostProcess");
                 var srcPost = await FilePostProcess(jobCfg.GetS("Config/Source/PostProcess"), jobName);
                 var destPost = await FilePostProcess(jobCfg.GetS("Config/Destination/PostProcess"), jobName);
@@ -52,25 +53,32 @@ namespace SimpleImportExport
                 {
                     try
                     {
-                        var shouldDownload = await Data.CallFnString("SimpleImportExport", "spShouldTransfer", Jw.Json(new { JobId = jobId, FileName = f.name }), "", sqlTimeoutSec);
+                        var shouldDownload = await Data.CallFn("SimpleImportExport", "spShouldTransfer", Jw.Serialize(new { JobId = jobId, FileName = f.name }));
 
-                        if (shouldDownload == "1")
+                        if (shouldDownload.GetS("") == "1" || shouldDownload?.GetS("Result")?.ParseBool() == true)
                         {
-                            await _fw.Err(ErrorSeverity.Log, $"{nameof(Program)}", ErrorDescriptor.Log, $"{jobName}\tCopying {f.name}:\n\tFrom: {src}\n\tTo: {dest}\n\t{f.srcPath} -> {f.destPath}");
+                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopying {f.name}:\n\tFrom: {src}\n\tTo: {dest}\n\t{f.srcPath} -> {f.destPath}");
 
                             var fileSize = await dest.SendStream(f, src);
                             var sargs = Jw.Json(new { JobId = jobId, FileName = f.name, FileSize = fileSize, FileLineCount = 0 });
-                            var res = await Data.CallFn("SimpleImportExport", "LogTransfer", sargs, "", timeout: sqlTimeoutSec);
+                            async Task Commit()
+                            {
+                                var res = await Data.CallFn("SimpleImportExport", "LogTransfer", sargs, "", timeout: sqlTimeoutSec);
 
-                            if (res.GetS("Result") != "Success") throw new Exception($"Sql exception logging download: {res.GetS("Message")} Args: {sargs}");
+                                if (res.GetS("Result") != "Success") throw new Exception($"Sql exception logging download: {res.GetS("Message")} Args: {sargs}");
+                            };
+
+                            if (!commitAfterPost) await Commit();
 
                             await srcPost(f.srcPath, src);
                             await destPost(f.destPath, dest);
+
+                            if (commitAfterPost) await Commit();
                         }
                     }
                     catch (Exception e)
                     {
-                        await _fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"{jobName}\tError processing {f.name}: {e}");
+                        await _fw.Error($"{nameof(Program)}", $"{jobName}\tError processing {f.name}: {e.UnwrapForLog()}");
                     }
                 }
 
@@ -82,15 +90,15 @@ namespace SimpleImportExport
                     }
                     catch (Exception e)
                     {
-                        await _fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"{jobName}\tError Post Processing: {e}");
+                        await _fw.Error($"{nameof(Program)}", $"{jobName}\tError Post Processing: {e.UnwrapForLog()}");
                     }
                 }
 
-                await _fw.Err(ErrorSeverity.Log, $"{nameof(Program)}", ErrorDescriptor.Log, $"{jobName}\tCompleted");
+                await _fw.Error($"{nameof(Program)}", $"{jobName}\tCompleted");
             }
             catch (Exception e)
             {
-                await _fw.Err(ErrorSeverity.Error, $"{nameof(Program)}", ErrorDescriptor.Exception, $"{jobName}\tFailed to load: {e}");
+                await _fw.Error($"{nameof(Program)}", $"{jobName}\tFailed to load: {e}");
             }
         }
 
@@ -100,7 +108,7 @@ namespace SimpleImportExport
             {
                 var url = postProcessCmd.Substring(9);
 
-                await _fw.Err(ErrorSeverity.Log, $"{nameof(JobPostProcess)}:Http:Get", ErrorDescriptor.Log, $"{jobName}\t{url}");
+                await _fw.Log($"{nameof(JobPostProcess)}:Http:Get", $"{jobName}\t{url}");
                 await ProtocolClient.HttpGetAsync(url, null, 30);
             }
         }
@@ -113,7 +121,7 @@ namespace SimpleImportExport
                 {
                     return async (fileRelativePath, endpoint) =>
                     {
-                        await _fw.Err(ErrorSeverity.Log, $"{nameof(FilePostProcess)}:Delete", ErrorDescriptor.Log, $"{jobName}\t{fileRelativePath}");
+                        await _fw.Log($"{nameof(FilePostProcess)}:Delete", $"{jobName}\t{fileRelativePath}");
                         await endpoint.Delete(fileRelativePath);
                     };
                 }
@@ -124,7 +132,7 @@ namespace SimpleImportExport
 
                     return async (fileRelativePath, endpoint) =>
                     {
-                        await _fw.Err(ErrorSeverity.Log, $"{nameof(FilePostProcess)}:Move", ErrorDescriptor.Log, $"{jobName}\t{fileRelativePath} -> {toRelativePath}");
+                        await _fw.Log($"{nameof(FilePostProcess)}:Move", $"{jobName}\t{fileRelativePath} -> {toRelativePath}");
                         await endpoint.Move(fileRelativePath, toRelativePath);
                     };
                 }
@@ -154,6 +162,27 @@ namespace SimpleImportExport
 
                         await _fw.Error($"{nameof(FilePostProcess)}", $"Invalid config for Rename: {postProcessCmd}");
                     }
+
+                    if (cmd == "CallFn")
+                    {
+                        var argsTemplate = ppge.GetS("args");
+                        var payloadTemplate = ppge.GetS("payload");
+                        var connection = ppge.GetS("connection");
+                        var function = ppge.GetS("function");
+                        var errorJsonPath = ppge.GetS("errorJsonPath");
+
+                        return async (fileRelativePath, endpoint) =>
+                        {
+                            var args = argsTemplate?.Replace("{fileRelativePath}", fileRelativePath);
+                            var payload = payloadTemplate?.Replace("{fileRelativePath}", fileRelativePath);
+                            var res = await Data.CallFn(connection, function, args, payload);
+
+                            if (res?.GetS("").IsNullOrWhitespace() != false) throw new Exception($"Post Process CallFn failed. DB null response. {endpoint}\r\nConfig: {ppge.GetS("")}");
+
+                            if (res?.GetS(errorJsonPath).IsNullOrWhitespace() == false) throw new Exception($"Post Process CallFn failed ({endpoint}). DB response: {res.GetS("")}\r\nConfig: {ppge.GetS("")}");
+                        };
+                    }
+
                 }
             }
 
