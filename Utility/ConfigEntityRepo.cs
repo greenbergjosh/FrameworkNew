@@ -19,8 +19,15 @@ namespace Utility
         public async Task<IGenericEntity> GetEntityGe(Guid id)
         {
             IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(JsonWrapper.Json(new { Config = await GetEntity(id) }, new[] { false }));
-            gp.InitializeEntity(null, null, gpstate);
+            var conf = await GetEntity(id);
+
+            if (conf.IsNullOrWhitespace()) return null;
+
+            var jo = JsonWrapper.TryParseObject(conf);
+
+            if (jo == null) throw new Exception($"Invalid Json for Config {id}");
+
+            gp.InitializeEntity(null, null, jo);
 
             return gp;
         }
