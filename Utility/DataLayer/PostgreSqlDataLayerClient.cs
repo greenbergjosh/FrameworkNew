@@ -79,7 +79,7 @@ namespace Utility.DataLayer
 
         public async Task<string> InsertEdwPayload(string connectionString, string payload, int timeout = 120, byte debug = 0)
         {
-            string result = null;
+            string outval = null;
 
             try
             {
@@ -92,9 +92,7 @@ namespace Utility.DataLayer
                         cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
                         cmd.CommandTimeout = timeout;
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
-                        var outval = (string)cmd.Parameters["@Return"].Value;
-                        // Remove this once the function is changed to be consistent with what we expect ("Success" for no errors)
-                        result = outval == "200 ok" ? "Success" : "Failure";
+                        outval = (string)cmd.Parameters["@Return"].Value;
                         cn.Close();
                     }
                 }
@@ -103,15 +101,15 @@ namespace Utility.DataLayer
             {
                 if (sqlex.Message.Contains("Timeout") || sqlex.Message.Contains("login failed"))
                 {
-                    result = "Walkaway";
+                    outval = "Walkaway";
                 }
             }
             catch (Exception ex)
             {
-                result = $"Exception::{ex.UnwrapForLog()}";
+                outval = $"Exception::{ex.UnwrapForLog()}";
             }
 
-            return result;
+            return outval;
         }
 
         public async Task<string> InsertErrorLog(string connectionString, int sequence, int severity,
