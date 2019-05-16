@@ -1,9 +1,13 @@
 import { Button, Card, Icon } from "antd"
 import { identity } from "fp-ts/lib/function"
-import { Option } from "fp-ts/lib/Option"
+import { Option, some } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
 import * as iots from "io-ts"
+import { IPosition, Range } from "monaco-editor"
+import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
 import { None, Some } from "../data/Option"
+import { store } from "../state/store"
 import MonacoEditor, {
   MonacoDiffEditor,
   MonacoEditorBaseProps,
@@ -14,11 +18,11 @@ export type EditorTheme = "vs" | "vs-dark" | "hc-black"
 export type EditorLang = iots.TypeOf<typeof EditorLangCodec>
 
 export const editorLanguages = {
-  csharp: identity<"csharp">("csharp"),
-  json: identity<"json">("json"),
-  javascript: identity<"javascript">("javascript"),
-  typescript: identity<"typescript">("typescript"),
-  sql: identity<"sql">("sql"),
+  csharp: "csharp" as const,
+  json: "json" as const,
+  javascript: "javascript" as const,
+  typescript: "typescript" as const,
+  sql: "sql" as const,
 }
 export const EditorLangCodec = iots.keyof(editorLanguages)
 
@@ -77,7 +81,11 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
                 theme="vs-dark"
                 {...props}
                 {...editorProps}
-                editorWillMount={editorWillMount}
+                editorWillMount={(monaco) => {
+                  const adapter = new GUIDEditorServiceAdapter(monaco, store)
+                  monaco.languages.registerLinkProvider("json", adapter)
+                  monaco.languages.registerHoverProvider("json", adapter)
+                }}
               />
             )}
           </>
@@ -138,54 +146,56 @@ const diffEditorSettings = {
   renderSideBySide: true,
 }
 
-function editorWillMount(monaco: any) {
-  monaco.languages.registerLinkProvider("json", new GUIDLinkAdapter(monaco))
-  monaco.languages.registerHoverProvider("json", new GUIDHoverAdapter(monaco))
-}
+// function editorWillMount(monaco: typeof monacoEditor) {
+//   const adapter = new GUIDEditorServiceAdapter(monaco)
+//   monaco.languages.registerLinkProvider("json", adapter)
+//   monaco.languages.registerHoverProvider("json", adapter)
+// }
 
-class GUIDLinkAdapter {
-  _monaco: any
+class GUIDEditorServiceAdapter
+  implements monacoEditor.languages.LinkProvider, monacoEditor.languages.HoverProvider {
+  constructor(private monaco: typeof monacoEditor, private applicationStore: typeof store) {}
 
-  constructor(_monaco: MonacoEditor) {
-    this._monaco = _monaco
-  }
-
-  provideLinks(model: any, token: any) {
-    return extractGuidRangeItems(model, this._monaco).map(({ range, guid }) => ({
+  provideLinks(model: monacoEditor.editor.ITextModel, token: monacoEditor.CancellationToken) {
+    return extractGuidRangeItems(model).map(({ range, guid }) => ({
       range,
       url: `${window.location.origin}/dashboard/global-config/${guid}`,
     }))
   }
-}
 
-class GUIDHoverAdapter {
-  _monaco: any
-
-  constructor(_monaco: MonacoEditor) {
-    this._monaco = _monaco
-  }
-
-  provideHover(model: any, position: Position) {
-    const hoveredGuid = extractGuidRangeItems(model, this._monaco).find(({ range, guid }) =>
+  provideHover(model: monacoEditor.editor.ITextModel, position: IPosition) {
+    const hoveredGuid = extractGuidRangeItems(model).find(({ range, guid }) =>
       range.containsPosition(position)
     )
 
     if (hoveredGuid) {
-      return {
-        range: hoveredGuid.range,
-        contents: [{ value: `**${hoveredGuid.guid}**` }],
-      }
+      const configsById = this.applicationStore.select.globalConfig.configsById(
+        this.applicationStore.getState()
+      )
+      return record
+        .lookup(hoveredGuid.guid.toLowerCase(), configsById)
+        .map((config) => ({
+          range: hoveredGuid.range,
+          contents: [{ value: `**${config.type}:** ${config.name}` }],
+        }))
+        .alt(
+          some({
+            range: hoveredGuid.range,
+            contents: [
+              {
+                value: `**Unknown GUID**\n\n_${hoveredGuid.guid}_ is not a known Global Config ID`,
+              },
+            ],
+          })
+        )
+        .toUndefined()
     }
   }
 }
 
-interface TextModel {
-  getValue(): string
-}
-
-function extractGuidRangeItems(model: TextModel, monaco: any) {
+function extractGuidRangeItems(model: monacoEditor.editor.ITextModel) {
   const guidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi
-  const text: string = model.getValue()
+  const text = model.getValue()
 
   let match
   const items = []
@@ -199,7 +209,7 @@ function extractGuidRangeItems(model: TextModel, monaco: any) {
     const endColumnNumber = startColumnNumber + match[0].length
 
     items.push({
-      range: new monaco.Range(lineNumber, startColumnNumber, lineNumber, endColumnNumber),
+      range: new Range(lineNumber, startColumnNumber, lineNumber, endColumnNumber),
       guid: match[0],
     })
   }

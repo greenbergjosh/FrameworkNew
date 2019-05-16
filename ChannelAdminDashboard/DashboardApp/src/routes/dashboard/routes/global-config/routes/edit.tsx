@@ -54,7 +54,7 @@ export function EditGlobalConfig({
   }))
 
   const [focusedConfig, prevFocusedConfig] = useMemoPlus(
-    () => record.lookup(configId, fromStore.configsById),
+    () => record.lookup(configId.toLowerCase(), fromStore.configsById),
     [configId, fromStore.configsById]
   )
 
