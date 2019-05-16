@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Utility;
 using Utility.DataLayer;
-using Utility.EDW.Queueing;
 
 namespace QueueProcessorLib
 {
@@ -163,22 +162,32 @@ namespace QueueProcessorLib
 
         private async Task<bool> ProcessItem(string queueName, QueueItem queueItem)
         {
-            // The lbm should handle the QueueItem and return true or false to represent success
-            var lbm = await _fw.Entities.GetEntity(_queueItemProcessorLbmId);
-
-            var processedSuccessfully = (bool)await _fw.RoslynWrapper.Evaluate(_queueItemProcessorLbmId, lbm, new { fw = _fw, queueName, queueItem }, new StateWrapper());
-
-            // If this was a retry and it succeeded, update the Retry Queue Progress to release
-            // the rest of the QueueItems for this Discriminator
-            if (processedSuccessfully && queueItem.RetryNumber > -1)
+            try
             {
-                await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", null, JsonConvert.SerializeObject(new
-                {
-                    queueItem.Discriminator
-                }));
-            }
+                // The lbm should handle the QueueItem and return true or false to represent success
+                var lbm = await _fw.Entities.GetEntity(_queueItemProcessorLbmId);
 
-            return processedSuccessfully;
+                var scope = new { fw = _fw, queueName, queueItem, WriteOutput = GetQueueItemOutputWriter(queueItem) };
+
+                var processedSuccessfully = (bool)await _fw.RoslynWrapper.Evaluate(_queueItemProcessorLbmId, lbm, scope, new StateWrapper());
+
+                // If this was a retry and it succeeded, update the Retry Queue Progress to release
+                // the rest of the QueueItems for this Discriminator
+                if (processedSuccessfully && queueItem.RetryNumber > -1)
+                {
+                    await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", null, JsonConvert.SerializeObject(new
+                    {
+                        queueItem.Discriminator
+                    }));
+                }
+
+                return processedSuccessfully;
+            }
+            catch (Exception ex)
+            {
+                await _fw.Error("QueueProcessor.ProcessItem", $"Unhandled exception processing item: {queueItem} exception: {ex}");
+                return false;
+            }
         }
 
         private Task SendToRestartQueue(IEnumerable<long> queueItemIds) => Data.CallFn("QueueProcessor", "RestartQueueAddBulk", null, JsonConvert.SerializeObject(queueItemIds));
@@ -211,32 +220,27 @@ namespace QueueProcessorLib
         /// </summary>
         private DateTime GetNextRetryDate(int retryNumber, DateTime timeFrom) => timeFrom.Add(TimeSpan.FromSeconds(Math.Exp(retryNumber) * 10));
 
+        private Func<object, Task> GetQueueItemOutputWriter(QueueItem queueItem)
+        {
+            return (output) =>
+            {
+                return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", null, JsonConvert.SerializeObject(new
+                {
+                    QueueItemId = queueItem.Id,
+                    Output = output
+                }));
+            };
+        }
+
         public async Task HandleHttpRequest(HttpContext context)
         {
             context.Response.ContentType = "application/json";
-            if (context.Request.Query["post"] == "1")
+            var statuses = _runners.Select(runner => new
             {
-                var result = await _fw.PostingQueueWriter.Write(new List<PostingQueueEntry>() {
-                    new PostingQueueEntry("test", DateTime.UtcNow, "{}"),
-                    new PostingQueueEntry("test2", DateTime.UtcNow.AddSeconds(10), "{\"Delayed\": true}"),
-                    new PostingQueueEntry("test3", DateTime.UtcNow, "{}"),
-                });
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(result.ToString()));
-            }
-            else if (context.Request.Query["post"] == "2")
-            {
-                var result = await _fw.PostingQueueWriter.Write(new PostingQueueEntry("test2", DateTime.UtcNow.AddSeconds(10), "{\"Delayed\": true}"));
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(result.ToString()));
-            }
-            else
-            {
-                var statuses = _runners.Select(runner => new
-                {
-                    status = runner.GetStatus()
-                });
+                status = runner.GetStatus()
+            });
 
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(statuses));
-            }
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(statuses));
         }
     }
 }
