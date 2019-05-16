@@ -111,3 +111,20 @@ export function mkCompleteLocalDraft(
 ): Either<Array<string>, CompleteLocalDraft> {
   return CompleteLocalDraftCodec.decode(draft).mapLeft(failure)
 }
+
+//
+// ────────────────────────────────────────────────────────────────────────  ──────────
+//   :::::: A S S O C I A T I O N S   M A P : :  :   :    :     :        :          :
+// ──────────────────────────────────────────────────────────────────────────────────
+//
+
+export interface Associations {
+  usedBy: Array<PersistedConfig["id"]>
+  uses: Array<PersistedConfig["id"]>
+  referencedBy: Array<PersistedConfig["id"]>
+  references: Array<PersistedConfig["id"]>
+}
+
+export function Associations(a: Associations): Associations {
+  return a
+}
