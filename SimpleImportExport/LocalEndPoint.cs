@@ -39,7 +39,7 @@ namespace SimpleImportExport
             return await Task.FromResult(File.OpenRead(Path.Combine(BaseDir.FullName, fileRelativePath)));
         }
 
-        public override async Task<long> SendStream((string srcPath, string destPath, string name) file, Endpoint source)
+        public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern) file, Endpoint source)
         {
             var destFile = new FileInfo(Path.Combine(BaseDir.FullName, file.destPath.Replace("/", "\\")));
 
@@ -54,11 +54,11 @@ namespace SimpleImportExport
             }
         }
 
-        public override async Task<IEnumerable<(string srcPath, string destPath, string name)>> GetFiles()
+        public override async Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern)>> GetFiles()
         {
-            if (!Patterns.Any()) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name)));
+            if (Patterns?.Any() != true) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name, (Pattern) null)));
 
-            var files = new List<(string srcPath, string destPath, string name)>();
+            var files = new List<(string srcPath, string destPath, string name, Pattern pattern)>();
 
             foreach (var p in Patterns)
             {
@@ -69,7 +69,7 @@ namespace SimpleImportExport
                 var dirFiles = dir.GetFiles().Where(f => p.Rx.IsMatch(f.Name)).ToArray();
 
                 if (dirFiles.Any())
-                    files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(p.SourceRelativePath, f.Name), destPath: CombineUrl(p.SourceRelativePath, f.Name), name: f.Name)));
+                    files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(p.SourceRelativePath, f.Name), destPath: CombineUrl(p.SourceRelativePath, f.Name), name: f.Name, pattern: p)));
             }
 
             return files;

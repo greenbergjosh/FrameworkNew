@@ -18,13 +18,13 @@ namespace SimpleImportExport
     {
         protected Endpoint(IGenericEntity ge)
         {
-            Patterns = ge.GetL("Patterns")?.Select(p => new Pattern(p)) ?? new Pattern[0];
+            Patterns = ge.GetL("Patterns")?.Select(p => new Pattern(p)).ToArray() ?? new Pattern[0];
         }
 
         public abstract EndpointType Type { get; }
         public abstract Task<Stream> GetStream(string fileRelativePath);
-        public abstract Task<long> SendStream((string srcPath, string destPath, string name) file, Endpoint source);
-        public abstract Task<IEnumerable<(string srcPath, string destPath, string name)>> GetFiles();
+        public abstract Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern) file, Endpoint source);
+        public abstract Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern)>> GetFiles();
         public abstract Task Delete(string fileRelativePath);
         public Task Move(string fileRelativePath, string relativeBasePath) => Move(fileRelativePath, relativeBasePath, false);
         public abstract Task Move(string fileRelativePath, string relativeBasePath, bool overwrite);
