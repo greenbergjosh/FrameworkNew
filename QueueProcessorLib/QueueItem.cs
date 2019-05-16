@@ -3,7 +3,7 @@ using System;
 
 namespace QueueProcessorLib
 {
-    internal sealed class QueueItem
+    public sealed class QueueItem
     {
         public long Id { get; }
         public string Discriminator { get; }
