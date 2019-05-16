@@ -26,8 +26,8 @@ namespace Utility.EDW.Logging
                 s = Severity,
                 p = Process,
                 m = Method,
-                d = Utility.Hashing.EncodeTo64(Descriptor),
-                g = Utility.Hashing.EncodeTo64(Message)
+                d = Descriptor,
+                g = Message
             });
         }
 
