@@ -1,3 +1,4 @@
+import { flattenComponents } from "formiojs/utils/formUtils"
 import debounce from "lodash.debounce"
 import React from "react"
 import { Form } from "react-formio"
@@ -27,17 +28,23 @@ export interface FormState {
   }
 }
 
+const generatedSubmitButton = {
+  type: "button",
+  label: "Generate Report",
+  // key: "submit",
+  disableOnInvalid: true,
+  theme: "primary",
+  input: true,
+  tableView: true,
+}
+
 const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
   display: "form",
-  components: layout.concat({
-    type: "button",
-    label: "Generate Report",
-    // key: "submit",
-    disableOnInvalid: true,
-    theme: "primary",
-    input: true,
-    tableView: true,
-  }),
+  components: flattenComponents(layout).find(({ type }: { type: string }) =>
+    ["button", "submit"].includes(type.toLowerCase())
+  )
+    ? layout
+    : layout.concat(generatedSubmitButton),
 })
 
 // const handleSubmit = debounce((uncleanParameterValues: FormIOState, ...args: any[]) => {
