@@ -5,7 +5,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Utility
@@ -48,14 +50,18 @@ namespace Utility
             {
                 return new Lazy<ScriptDescriptor>(() =>
                 {
+                    var dynamicAssemblies = Regex.Matches(sd.Code, @"#r\s+""([A-Za-z][^ \r\n]+)\.dll""\s*\r\n").Select(match => Assembly.Load(match.Groups[1].Value)).ToArray();
+
+                    sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
                     var scriptOptions = ScriptOptions.Default
                             .AddReferences(
                                 Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
                                 Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
                                 Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
-                                Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),  // TODO: Use Assembly.Load() from db list
+                                Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
                                 Assembly.GetAssembly(typeof(JsonWrapper))
                                 )
+                            .AddReferences(dynamicAssemblies)
                             .AddImports("System.Dynamic", "System.Xml");
 
                     if (sd.Debug)
