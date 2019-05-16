@@ -11,10 +11,12 @@ namespace SimpleImportExport
             Rx = new Regex(ge.GetS("Pattern"), RegexOptions.Compiled | RegexOptions.IgnoreCase);
             SourceRelativePath = ge.GetS("SourcePath");
             DestinationRelativePath = ge.GetS("DestinationPath");
+            TokenFields = ge.GetE("TokenFields");
         }
 
         public Regex Rx { get; }
         public string SourceRelativePath { get; }
         public string DestinationRelativePath { get; }
+        public IGenericEntity TokenFields { get; }
     }
 }

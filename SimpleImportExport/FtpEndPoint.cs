@@ -30,7 +30,7 @@ namespace SimpleImportExport
             return await ProtocolClient.GetFtpFileStream(CombineUrl(BasePath, fileRelativePath), Host, User, Password);
         }
 
-        public override async Task<long> SendStream((string srcPath, string destPath, string name) file, Endpoint source)
+        public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern) file, Endpoint source)
         {
             using (var srcStream = await source.GetStream(file.srcPath))
             using (var ms = new MemoryStream())
@@ -45,17 +45,17 @@ namespace SimpleImportExport
             }
         }
 
-        public override async Task<IEnumerable<(string srcPath, string destPath, string name)>> GetFiles()
+        public override async Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern)>> GetFiles()
         {
-            if (!Patterns.Any()) return (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password)).Select(f => (srcPath: f, destPath: f, name: f));
+            if (Patterns?.Any() != true) return (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password)).Select(f => (srcPath: f, destPath: f, name: f, (Pattern) null));
 
-            var files = new List<(string srcPath, string destPath, string name)>();
+            var files = new List<(string srcPath, string destPath, string name, Pattern pattern)>();
 
             foreach (var p in Patterns)
             {
                 var dirFiles = (await ProtocolClient.FtpGetFiles(CombineUrl(BasePath, p.SourceRelativePath), Host, User, Password)).Where(f => p.Rx.IsMatch(f)).ToArray();
 
-                if (dirFiles.Any()) files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(BasePath, p.SourceRelativePath, f), destPath: CombineUrl(p.DestinationRelativePath, f), name: f)));
+                if (dirFiles.Any()) files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(BasePath, p.SourceRelativePath, f), destPath: CombineUrl(p.DestinationRelativePath, f), name: f, pattern: p)));
             }
 
             return files;

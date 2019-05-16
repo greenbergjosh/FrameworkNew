@@ -511,7 +511,7 @@ namespace VisitorIdLib
                             var s = await fw.Entities.GetEntityGe(new Guid(CookieMd5Pid));
                             return new VisitorIdResponse(Jw.Json(new
                             {
-                                config = s.GetS("Config"),
+                                config = s.GetS(""),
                                 sid,
                                 md5pid = CookieMd5Pid,
                                 slot,
@@ -622,7 +622,7 @@ namespace VisitorIdLib
 
                         return new VisitorIdResponse(Jw.Json(new
                         {
-                            config = ReplaceToken(s.GetS("Config"), opaque64),
+                            config = ReplaceToken(s.GetS(""), opaque64),
                             sid,
                             md5pid,
                             slot,
@@ -1030,7 +1030,7 @@ namespace VisitorIdLib
                     {
                         errorContext = $"GetEntity {emailpid}";
                         var emlProvider = await fw.Entities.GetEntityGe(new Guid(emailpid));
-                        lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
+                        lbmId = new Guid(emlProvider.GetS("LbmId"));
                         var lbm = await fw.Entities.GetEntity(lbmId);
 
                         await fw.Trace(nameof(DoEmailProviders), $"Prior to evaluating LBM lbmId : {lbmId.ToString()}, lbm body: {lbm}, context is not null {context != null}, md5 : {md5 ?? ""}, emlProvider is not null: {emlProvider != null}");
@@ -1051,7 +1051,7 @@ namespace VisitorIdLib
                                 await fw.EdwWriter.Write(be);
                             }
 
-                            var writeImmediatelyToContact = emlProvider.GetS("Config/DirectWriteToContact").ParseBool() ?? false;
+                            var writeImmediatelyToContact = emlProvider.GetS("DirectWriteToContact").ParseBool() ?? false;
                             if (writeImmediatelyToContact)
                             {
                                 await Data.CallFn("VisitorId", "ContactEmailMerge", Jw.Json(new { email = eml }), "", null, null, SqlTimeoutSec);
