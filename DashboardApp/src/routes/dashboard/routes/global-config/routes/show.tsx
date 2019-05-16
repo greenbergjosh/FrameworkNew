@@ -1,7 +1,7 @@
 import * as Reach from "@reach/router"
-import { Alert, Button, Card, Empty, Form, Icon, Skeleton, Typography } from "antd"
+import { TreeNode } from "antd/lib/tree-select"
 import { fromEither, none } from "fp-ts/lib/Option"
-import { lookup } from "fp-ts/lib/Record"
+import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
@@ -9,6 +9,20 @@ import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Empty,
+  Form,
+  Icon,
+  Row,
+  Skeleton,
+  Tree,
+  Typography,
+  Tag,
+} from "antd"
 interface Props {
   configId: string
 }
@@ -25,6 +39,7 @@ export function ShowGlobalConfig({
   uri,
 }: WithRouteProps<Props>): JSX.Element {
   const [fromStore, dispatch] = useRematch((s) => ({
+    associations: store.select.globalConfig.associations(s),
     configs: s.globalConfig.configs,
     configsById: store.select.globalConfig.configsById(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
@@ -33,12 +48,14 @@ export function ShowGlobalConfig({
   }))
 
   const { focusedConfig, entityTypeConfig, editorLanguage } = React.useMemo(() => {
-    const focusedConfig = lookup(normalizeURLParams(configId), fromStore.configsById)
-    const entityTypeConfig = focusedConfig.chain((c) => lookup(c.type, fromStore.entityTypes))
+    const focusedConfig = record.lookup(normalizeURLParams(configId), fromStore.configsById)
+    const entityTypeConfig = focusedConfig.chain((c) =>
+      record.lookup(c.type, fromStore.entityTypes)
+    )
     const editorLanguage = entityTypeConfig
       .chain((etc) => etc.config)
       .chain(fromStrToJSONRec)
-      .chain((config) => lookup("lang", config))
+      .chain((config) => record.lookup("lang", config))
       .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
       .getOrElse(fromStore.defaultEntityTypeConfig.lang)
 
@@ -50,6 +67,8 @@ export function ShowGlobalConfig({
     fromStore.defaultEntityTypeConfig.lang,
   ])
 
+  const association = focusedConfig.chain(({ id }) => record.lookup(id, fromStore.associations))
+  console.log("associations", fromStore.associations)
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
       {focusedConfig.foldL(
@@ -109,6 +128,61 @@ export function ShowGlobalConfig({
                   />
                 </Form.Item>
               </Form>
+            </Card>
+            <Card>
+              <div>
+                <Typography.Title>Relationships</Typography.Title>
+                {association.foldL(
+                  () => (
+                    <Empty description={`No configs found related to ${configId}`} />
+                  ),
+                  (assoc) => (
+                    <>
+                      {config.name}
+                      <Tree.DirectoryTree showLine>
+                        {record.toArray(assoc).map(([key, guidArray]) => (
+                          <Tree.TreeNode
+                            selectable={false}
+                            title={`${key} (${guidArray.length})`}
+                            key={key}>
+                            {guidArray.map((guid) => {
+                              const associatedRecord = record.lookup(guid, fromStore.configsById)
+                              return associatedRecord.foldL(
+                                () => (
+                                  <Tree.TreeNode
+                                    isLeaf
+                                    selectable={false}
+                                    title={
+                                      <>
+                                        <Tag>Unknown GUID</Tag>
+                                        {guid} is not a known Global Config ID
+                                      </>
+                                    }
+                                    key={guid}
+                                  />
+                                ),
+                                (r) => (
+                                  <Tree.TreeNode
+                                    isLeaf
+                                    selectable={false}
+                                    title={
+                                      <>
+                                        <Tag>{r.type}</Tag>
+                                        {r.name}
+                                      </>
+                                    }
+                                    key={guid}
+                                  />
+                                )
+                              )
+                            })}
+                          </Tree.TreeNode>
+                        ))}
+                      </Tree.DirectoryTree>
+                    </>
+                  )
+                )}
+              </div>
             </Card>
           </>
         ))
