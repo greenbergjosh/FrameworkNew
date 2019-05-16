@@ -49,7 +49,7 @@ namespace Utility.DataLayer
 
                 var gc = Jw.JsonToGenericEntity(Jw.Json(new { Config = configStr }, new bool[] { false }));
 
-                await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
+                if (!gc.GetS("Config/ConnectionStrings").IsNullOrWhitespace()) await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
 
                 return gc;
             }
