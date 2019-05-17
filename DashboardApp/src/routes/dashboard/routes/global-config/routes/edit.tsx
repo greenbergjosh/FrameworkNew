@@ -112,6 +112,8 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     name: props.config.name,
   }
 
+  const [configErrors, setConfigErrors] = React.useState([] as string[])
+
   /* afterCreate */
   React.useEffect(() => {
     updatedConfig.chain(findInStore).foldL(
@@ -157,7 +159,11 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           new Identity({})
             .map((errs) => ({
               ...errs,
-              config: isWhitespace(vs.config) ? some("Cannot be empty") : none,
+              config: configErrors.length
+                ? some(configErrors.join("\n"))
+                : isWhitespace(vs.config)
+                ? some("Cannot be empty")
+                : none,
             }))
             .map((errs) => ({
               ...errs,
@@ -186,6 +192,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
               extra={
                 <Button.Group size="small">
                   <Button
+                    disabled={!form.isValid}
                     form="edit-config-form"
                     htmlType="submit"
                     icon={fromStore.isUpdatingRemoteConfig ? "loading" : "save"}
@@ -268,8 +275,11 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     height={500}
                     language={configLang}
                     width="100%"
-                    onChange={(val) => {
-                      form.setFieldValue("config", val)
+                    onChange={({ value, errors }) => {
+                      errors.map((errors) => {
+                        setConfigErrors(errors)
+                      })
+                      form.setFieldValue("config", value)
                       form.setFieldTouched("config", true)
                     }}
                   />

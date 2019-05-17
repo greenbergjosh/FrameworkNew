@@ -330,7 +330,6 @@ function ConfigTable({ configs }: ConfigTableProps) {
         rowKey={(config) => config.id}
         rowSelection={{
           onChange: (keys, cs) => {
-            console.log("rowSelection.onChange", { keys, cs })
             setSelectedRowKeys(
               iots
                 .array(NonEmptyString)
