@@ -495,12 +495,24 @@ namespace VisitorIdLib
 
                         if (md5.IsNullOrWhitespace())
                         {
-                            var lookupGe = await Data.CallFn("VisitorId",
+
+                            //lookup against pg first
+                            var lookupGe = await Data.CallFn("VisitorId-Pg",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookieData.sid }),
                                "{}", null, null, SqlTimeoutSec);
                             eml = lookupGe.GetS("Em");
                             md5 = lookupGe.GetS("Md5");
+
+                            if (eml.IsNullOrWhitespace() || md5.IsNullOrWhitespace())
+                            {
+                                lookupGe = await Data.CallFn("VisitorId",
+                                   "LookupBySessionId",
+                                   Jw.Json(new { Sid = cookieData.sid }),
+                                   "{}", null, null, SqlTimeoutSec);
+                                eml = lookupGe.GetS("Em");
+                                md5 = lookupGe.GetS("Md5");
+                            }
                         }
 
                         var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData, c.Connection.RemoteIpAddress.ToString(), c.Request.Headers["User-Agent"]);
@@ -708,6 +720,7 @@ namespace VisitorIdLib
                     null, PL.O(new
                     {
                         et = "Md5ProviderResponse",
+                        md5 = md5 ?? "",
                         md5pid,
                         slot,
                         page,
@@ -1135,6 +1148,7 @@ namespace VisitorIdLib
             {
                 await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSessionEmailMd5), loc = "body", sid, email, md5 }), rsids);
                 await Data.CallFn(connection, "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
+                await Data.CallFn("VisitorId-Pg", "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
                 await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {sid}, Email: {email}, Md5: {md5}");
             }
             catch (Exception e)
