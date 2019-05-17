@@ -1,12 +1,22 @@
 import * as Reach from "@reach/router"
 import { ClickParam } from "antd/lib/menu"
 import { ColumnProps } from "antd/lib/table"
-import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
+import {
+  isEmpty,
+  mapOption,
+  range,
+  sort,
+  uniq
+  } from "fp-ts/lib/Array"
+import { none } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
+import { delay, Task, task } from "fp-ts/lib/Task"
 import { Branded } from "io-ts"
+import * as iots from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import queryString from "query-string"
 import React from "react"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
@@ -87,9 +97,33 @@ function ConfigTable({ configs }: ConfigTableProps) {
     )
   }, [potentiallyStaleSelectedRowKeys, fromStore.configsById])
 
-  const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>([])
+  const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>(() =>
+    iots
+      .type({ configTypeFilters: iots.array(iots.string) })
+      .decode(queryString.parse(window.location.search, { arrayFormat: "comma" }))
+      .map(({ configTypeFilters }) => configTypeFilters)
+      .getOrElse([])
+  )
 
-  const [configNameFilterVal, setConfigNameFilterVal] = React.useState("")
+  const [configNameFilterVal, setConfigNameFilterVal] = React.useState(() =>
+    iots
+      .type({ configNameFilterVal: iots.string })
+      .decode(queryString.parse(window.location.search, { arrayFormat: "comma" }))
+      .map(({ configNameFilterVal }) => configNameFilterVal)
+      .getOrElse("")
+  )
+
+  React.useEffect(() => {
+    dispatch.navigation.navigate(
+      `?${queryString.stringify(
+        {
+          configTypeFilters,
+          configNameFilterVal,
+        },
+        { arrayFormat: "comma" }
+      )}`
+    )
+  }, [dispatch, configTypeFilters, configNameFilterVal])
 
   const [isConfirmBatchDelete, setIsConfirmBatchDelete] = React.useState(false)
 
@@ -112,6 +146,8 @@ function ConfigTable({ configs }: ConfigTableProps) {
       ].some((cond) => cond === true)
     }
   }, [configs, configNameFilterVal, configTypeFilters])
+
+  const nameFilterAutoComplete = React.useRef<AutoComplete>(null)
 
   const columns = React.useMemo<Array<ColumnProps<PersistedConfig>>>(
     () => [
@@ -136,17 +172,27 @@ function ConfigTable({ configs }: ConfigTableProps) {
         sorter: (a, b) => ordString.compare(a.name, b.name),
         filters: filtered.configNames.map((n) => ({ text: n, value: n })),
         filteredValue: configNameFilterVal ? [configNameFilterVal] : [],
-        filterDropdown: (
+        filterDropdown: () => (
           <AutoComplete
+            ref={nameFilterAutoComplete}
             allowClear
+            autoFocus
+            placeholder="Search by Name"
             dataSource={filtered.configNames}
             value={configNameFilterVal}
             onChange={(val) => {
               return val ? setConfigNameFilterVal(val.toString()) : setConfigNameFilterVal("")
-            }}>
-            <Input placeholder="Search by Name" />
-          </AutoComplete>
+            }}
+          />
         ),
+        onFilterDropdownVisibleChange: (visible: boolean) => {
+          const { current } = nameFilterAutoComplete
+          visible &&
+            current &&
+            delay(0, current)
+              .chain((instance) => task.of(instance.focus()))
+              .run()
+        },
         render: (text, config, idx) => (
           <Typography.Text ellipsis={true}>
             <Reach.Link to={config.id}>{text}</Reach.Link>
