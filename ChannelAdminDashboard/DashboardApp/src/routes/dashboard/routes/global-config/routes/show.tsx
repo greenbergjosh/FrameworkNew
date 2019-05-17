@@ -68,7 +68,6 @@ export function ShowGlobalConfig({
   ])
 
   const association = focusedConfig.chain(({ id }) => record.lookup(id, fromStore.associations))
-  console.log("associations", fromStore.associations)
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
       {focusedConfig.foldL(
@@ -139,7 +138,7 @@ export function ShowGlobalConfig({
                   (assoc) => (
                     <>
                       {config.name}
-                      <Tree.DirectoryTree showLine>
+                      <Tree.DirectoryTree>
                         {record.toArray(assoc).map(([key, guidArray]) => (
                           <Tree.TreeNode
                             selectable={false}
@@ -155,7 +154,8 @@ export function ShowGlobalConfig({
                                     title={
                                       <>
                                         <Tag>Unknown GUID</Tag>
-                                        {guid} is not a known Global Config ID
+                                        <Reach.Link to={`../${guid}`}>{guid}</Reach.Link> is not a
+                                        known Global Config ID
                                       </>
                                     }
                                     key={guid}
@@ -168,7 +168,7 @@ export function ShowGlobalConfig({
                                     title={
                                       <>
                                         <Tag>{r.type}</Tag>
-                                        {r.name}
+                                        <Reach.Link to={`../${guid}`}>{r.name}</Reach.Link>
                                       </>
                                     }
                                     key={guid}
