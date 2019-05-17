@@ -15,7 +15,7 @@ import { setoidString } from "fp-ts/lib/Setoid"
 import { delay, Task, task } from "fp-ts/lib/Task"
 import { Branded } from "io-ts"
 import * as iots from "io-ts"
-import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import queryString from "query-string"
 import React from "react"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
@@ -329,7 +329,15 @@ function ConfigTable({ configs }: ConfigTableProps) {
         }}
         rowKey={(config) => config.id}
         rowSelection={{
-          onChange: (keys, cs) => setSelectedRowKeys(cs.map((c) => c.id)),
+          onChange: (keys, cs) => {
+            console.log("rowSelection.onChange", { keys, cs })
+            setSelectedRowKeys(
+              iots
+                .array(NonEmptyString)
+                .decode(keys)
+                .getOrElse([])
+            )
+          },
           selectedRowKeys,
         }}
         size="middle"
