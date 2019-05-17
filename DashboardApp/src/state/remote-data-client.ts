@@ -65,7 +65,7 @@ export interface Effects {
   }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<PersistedConfig>>>>
 
   globalConfigsUpdate(
-    config: Pick<Overwrite<PersistedConfig, { config: string }>, "id" | "config">
+    config: Overwrite<PersistedConfig, { name: string; config: string }>
   ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
 
   reportQueryGet(payload: {
@@ -330,10 +330,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       return request({
         body: {
           i: remoteDataClient.token,
-          "config:update": {
-            id: config.id,
-            config: config.config,
-          },
+          "config:update": config,
         },
         expect: AdminApi.globalConfigResponsePayloadCodec.update,
         headers: {},
