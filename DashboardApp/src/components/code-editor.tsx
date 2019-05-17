@@ -1,9 +1,10 @@
+import Component from "@reach/component-component"
 import { Button, Card, Icon } from "antd"
 import { identity } from "fp-ts/lib/function"
 import { Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import * as iots from "io-ts"
-import { IPosition, Range } from "monaco-editor"
+import { IDisposable, IPosition, Range } from "monaco-editor"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
 import { None, Some } from "../data/Option"
@@ -77,16 +78,27 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
             {state.showDiff ? (
               <MonacoDiffEditor theme="vs-dark" {...props} {...editorProps} />
             ) : (
-              <MonacoEditor
-                theme="vs-dark"
-                {...props}
-                {...editorProps}
-                editorWillMount={(monaco) => {
-                  const adapter = new GUIDEditorServiceAdapter(monaco, store)
-                  monaco.languages.registerLinkProvider("json", adapter)
-                  monaco.languages.registerHoverProvider("json", adapter)
-                }}
-              />
+              <Component
+                initialState={{ disposables: [] as IDisposable[] }}
+                willUnmount={({ state }) => state.disposables.forEach((f) => f.dispose())}>
+                {({ setState }) => (
+                  <MonacoEditor
+                    theme="vs-dark"
+                    {...props}
+                    {...editorProps}
+                    editorWillMount={(monaco) => {
+                      const adapter = new GUIDEditorServiceAdapter(monaco, store)
+                      const linkDisposable = monaco.languages.registerLinkProvider("json", adapter)
+                      const hoverDisposable = monaco.languages.registerHoverProvider(
+                        "json",
+                        adapter
+                      )
+
+                      setState({ disposables: [linkDisposable, hoverDisposable] })
+                    }}
+                  />
+                )}
+              </Component>
             )}
           </>
         }

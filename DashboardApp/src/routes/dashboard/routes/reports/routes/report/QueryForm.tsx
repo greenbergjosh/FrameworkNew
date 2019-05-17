@@ -87,14 +87,14 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
   //   layout
   // )
 
-  const foo = React.useEffect(() => {
-    console.log("QueryForm.onMount")
-    return () => console.log("QueryForm.onUnmount")
-  }, [])
+  // const foo = React.useEffect(() => {
+  //   console.log("QueryForm.onMount")
+  //   return () => console.log("QueryForm.onUnmount")
+  // }, [])
 
   const handleSubmit = React.useCallback(
     debounce((formState: FormState) => {
-      console.log("QueryForm.Form.onSubmit", formState)
+      // console.log("QueryForm.Form.onSubmit", formState)
       const { submit, ...cleanParameterValues } = formState.data
       onSubmit(cleanParameterValues, formState)
     }, 50),
