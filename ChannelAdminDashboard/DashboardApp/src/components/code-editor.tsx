@@ -1,7 +1,7 @@
 import Component from "@reach/component-component"
 import { Button, Card, Icon } from "antd"
 import { identity } from "fp-ts/lib/function"
-import { Option, some } from "fp-ts/lib/Option"
+import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import * as iots from "io-ts"
 import { IDisposable, IPosition, Range } from "monaco-editor"
@@ -34,12 +34,13 @@ interface Props extends Required<Pick<MonacoEditorProps, "height" | "width">> {
   contentDraft: Option<string>
   theme?: EditorTheme
   language: EditorLang
-  onChange?: (draft: string) => void
+  onChange?: (x: { value: string; errors: Option<string[]> }) => void
 }
 
 export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Element {
   const [state, setState] = React.useState({
     showDiff: false,
+    monaco: null as typeof monacoEditor | null,
   })
 
   const editorProps = React.useMemo(() => {
@@ -59,6 +60,12 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
     )
   }, [props.content, props.contentDraft])
 
+  const onChange = (draft: string) => {
+    if (props.onChange) {
+      return props.onChange({ value: draft, errors: none })
+    }
+  }
+
   return (
     <div>
       <Card
@@ -76,16 +83,17 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
               <Button disabled>{props.language}</Button>
             </Button.Group>
             {state.showDiff ? (
-              <MonacoDiffEditor theme="vs-dark" {...props} {...editorProps} />
+              <MonacoDiffEditor theme="vs-dark" {...props} {...editorProps} onChange={onChange} />
             ) : (
               <Component
                 initialState={{ disposables: [] as IDisposable[] }}
                 willUnmount={({ state }) => state.disposables.forEach((f) => f.dispose())}>
-                {({ setState }) => (
+                {({ setState: setLocalState }) => (
                   <MonacoEditor
                     theme="vs-dark"
                     {...props}
                     {...editorProps}
+                    onChange={onChange}
                     editorWillMount={(monaco) => {
                       const adapter = new GUIDEditorServiceAdapter(monaco, store)
                       const linkDisposable = monaco.languages.registerLinkProvider("json", adapter)
@@ -93,8 +101,28 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
                         "json",
                         adapter
                       )
+                      const oldSetModelMarkers = monaco.editor.setModelMarkers
+                      monaco.editor.setModelMarkers = (model, language, markers) => {
+                        console.log("setModelMarkers", markers)
+                        oldSetModelMarkers.call(monaco.editor, model, language, markers)
+                        const errors = markers
+                          .filter((marker) => marker.severity === monacoEditor.MarkerSeverity.Error)
+                          .map(
+                            (marker) =>
+                              `${marker.message} on line ${marker.startLineNumber}:${
+                                marker.startColumn
+                              }`
+                          )
+                        if (props.onChange) {
+                          props.onChange({
+                            value: model.getValue(),
+                            errors: some(errors),
+                          })
+                        }
+                      }
 
-                      setState({ disposables: [linkDisposable, hoverDisposable] })
+                      setLocalState({ disposables: [linkDisposable, hoverDisposable] })
+                      setState({ ...state, monaco })
                     }}
                   />
                 )}

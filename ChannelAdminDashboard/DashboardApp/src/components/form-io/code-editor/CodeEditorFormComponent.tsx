@@ -60,7 +60,7 @@ export default class CodeEditorFormComponent extends ReactFormBase<EditorOptions
         language={lang}
         theme={theme}
         width="100%"
-        onChange={(value) => this.setState({ value })}
+        onChange={({ value }) => this.setState({ value })}
       />
     )
   }
