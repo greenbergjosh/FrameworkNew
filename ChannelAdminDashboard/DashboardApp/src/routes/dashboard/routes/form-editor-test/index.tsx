@@ -5,6 +5,7 @@ import {
   Typography
   } from "antd"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { Components, Form, FormBuilder } from "../../../../components/form-io"
 import ButtonFormComponent from "../../../../components/form-io/button/ButtonFormComponent"
 import CodeEditorFormComponent from "../../../../components/form-io/code-editor/CodeEditorFormComponent"
@@ -30,6 +31,10 @@ export function FormEditorTest({ children, ...props }: WithRouteProps<Props>): J
 
   return (
     <div>
+      <Helmet>
+        <title>Form Editor Test | Channel Admin | OPG</title>
+      </Helmet>
+
       <Card>
         Form Editor Test
         <FormBuilder

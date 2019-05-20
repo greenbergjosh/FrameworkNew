@@ -103,7 +103,6 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
                       )
                       const oldSetModelMarkers = monaco.editor.setModelMarkers
                       monaco.editor.setModelMarkers = (model, language, markers) => {
-                        console.log("setModelMarkers", markers)
                         oldSetModelMarkers.call(monaco.editor, model, language, markers)
                         const errors = markers
                           .filter((marker) => marker.severity === monacoEditor.MarkerSeverity.Error)

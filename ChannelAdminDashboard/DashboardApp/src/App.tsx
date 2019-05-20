@@ -4,6 +4,7 @@ import { Spin } from "antd"
 import { flatten } from "fp-ts/lib/Array"
 import { toArray } from "fp-ts/lib/Record"
 import React from "react"
+import { Helmet } from "react-helmet"
 import * as ReactRedux from "react-redux"
 import { CSSTransition, TransitionGroup } from "react-transition-group"
 import { PersistGate } from "redux-persist/integration/react"
@@ -19,9 +20,15 @@ const persistor = getPersistor()
 
 function AppLoadingScreen() {
   return (
-    <div className={`${styles.appLoadingIndicator}`}>
-      <Spin size="large" tip="Initializing OnPoint Admin" />
-    </div>
+    <>
+      <Helmet>
+        <title>Loading... | Channel Admin | OPG</title>
+      </Helmet>
+
+      <div className={`${styles.appLoadingIndicator}`}>
+        <Spin size="large" tip="Initializing OnPoint Admin" />
+      </div>
+    </>
   )
 }
 
