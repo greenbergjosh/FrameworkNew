@@ -1,7 +1,19 @@
 import * as Reach from "@reach/router"
-import { Avatar, Button, Col, Divider, Form, Icon, Input, Layout, Row, Typography } from "antd"
+import {
+  Avatar,
+  Button,
+  Col,
+  Divider,
+  Form,
+  Icon,
+  Input,
+  Layout,
+  Row,
+  Typography
+  } from "antd"
 import { none } from "fp-ts/lib/Option"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { GoogleAuth } from "../../components/auth/GoogleAuth"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks/use-rematch"
@@ -55,6 +67,10 @@ export function Landing(props: WithRouteProps<Props>) {
               {fromStore.iam.profile.foldL(
                 () => (
                   <Layout.Content className={styles.sidebarRightContent}>
+                    <Helmet>
+                      <title>Sign in | Channel Admin | OPG</title>
+                    </Helmet>
+
                     <Row>
                       <Typography.Title level={1} className={styles.title}>
                         ONPOINT ADMIN
@@ -108,6 +124,10 @@ export function Landing(props: WithRouteProps<Props>) {
                 // ------------------------------
                 (profile) => (
                   <Layout.Content className={styles.sidebarRightContent}>
+                    <Helmet>
+                      <title>Welcome Back | Channel Admin | OPG</title>
+                    </Helmet>
+
                     <Layout.Content className={styles.welcomeBackArea}>
                       <Row>
                         <Typography.Title level={1} className={styles.title}>

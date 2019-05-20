@@ -40,7 +40,7 @@ const generatedSubmitButton = {
 
 const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
   display: "form",
-  components: flattenComponents(layout).find(({ type }: { type: string }) =>
+  components: Object.values(flattenComponents(layout)).find(({ type }: any) =>
     ["button", "submit"].includes(type.toLowerCase())
   )
     ? layout

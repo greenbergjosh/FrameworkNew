@@ -18,6 +18,7 @@ import * as iots from "io-ts"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import queryString from "query-string"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { useRematch } from "../../../../../hooks/use-rematch"
@@ -227,6 +228,10 @@ function ConfigTable({ configs }: ConfigTableProps) {
 
   return (
     <>
+      <Helmet>
+        <title>Manage Configurations | Channel Admin | OPG</title>
+      </Helmet>
+
       <Card bordered={false} size="small">
         <Row align="middle" type="flex">
           <Col span={12}>

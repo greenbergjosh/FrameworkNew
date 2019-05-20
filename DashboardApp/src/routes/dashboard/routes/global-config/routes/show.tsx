@@ -3,6 +3,7 @@ import { TreeNode } from "antd/lib/tree-select"
 import { fromEither, none } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
@@ -70,6 +71,10 @@ export function ShowGlobalConfig({
   const association = focusedConfig.chain(({ id }) => record.lookup(id, fromStore.associations))
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
+      <Helmet>
+        <title>No Configuration Found | Channel Admin | OPG</title>
+      </Helmet>
+
       {focusedConfig.foldL(
         None(() => <Empty description={`No config found with id ${configId}`} />),
         Some((config) => (
@@ -85,6 +90,9 @@ export function ShowGlobalConfig({
                 type="warning"
               />
             )}
+            <Helmet>
+              <title>{config.name} | Configuration | Channel Admin | OPG</title>
+            </Helmet>
 
             <Card
               bordered={false}
@@ -128,9 +136,10 @@ export function ShowGlobalConfig({
                 </Form.Item>
               </Form>
             </Card>
-            <Card>
+            <br />
+            <Card bordered={false} title="Relationships">
               <div>
-                <Typography.Title>Relationships</Typography.Title>
+                {/* <Typography.Title>Relationships</Typography.Title> */}
                 {association.foldL(
                   () => (
                     <Empty description={`No configs found related to ${configId}`} />
