@@ -1,9 +1,33 @@
-import { Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton } from "antd"
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Icon,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Skeleton
+  } from "antd"
 import * as Formik from "formik"
 import { Do } from "fp-ts-contrib/lib/Do"
 import { array } from "fp-ts/lib/Array"
 import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
+import * as record from "fp-ts/lib/Record"
+import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
+import React from "react"
+import { Helmet } from "react-helmet"
+import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
+import { Space } from "../../../../../components/space"
+import { fromStrToJSONRec } from "../../../../../data/JSON"
+import { None, Some } from "../../../../../data/Option"
+import { useRematch } from "../../../../../hooks/use-rematch"
+import { useStatePlus } from "../../../../../hooks/use-state-plus"
+import { isWhitespace } from "../../../../../lib/string"
+import { WithRouteProps } from "../../../../../state/navigation"
+import { store } from "../../../../../state/store"
 import {
   fromEither,
   getSetoid as getOptionSetoid,
@@ -12,22 +36,10 @@ import {
   option,
   some,
 } from "fp-ts/lib/Option"
-import * as record from "fp-ts/lib/Record"
-import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
-import React from "react"
-import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
-import { Space } from "../../../../../components/space"
 import {
   InProgressLocalDraftConfig,
   PersistedConfig,
 } from "../../../../../data/GlobalConfig.Config"
-import { fromStrToJSONRec } from "../../../../../data/JSON"
-import { None, Some } from "../../../../../data/Option"
-import { useRematch } from "../../../../../hooks/use-rematch"
-import { useStatePlus } from "../../../../../hooks/use-state-plus"
-import { isWhitespace } from "../../../../../lib/string"
-import { WithRouteProps } from "../../../../../state/navigation"
-import { store } from "../../../../../state/store"
 
 interface Props {
   configId: "create"
@@ -53,6 +65,8 @@ export function CreateGlobalConfig({
     shouldShowCreateEntityModal: false,
     createdConfig: none as Option<InProgressLocalDraftConfig>,
   })
+
+  const [configErrors, setConfigErrors] = React.useState([] as string[])
 
   const entityTypeNames = React.useMemo(() => {
     return Object.values(fromStore.entityTypeConfigs).map((c) => c.name)
@@ -104,7 +118,11 @@ export function CreateGlobalConfig({
           new Identity({})
             .map((errs) => ({
               ...errs,
-              config: isWhitespace(vs.config) ? some("Cannot be empty") : none,
+              config: configErrors.length
+                ? some(configErrors.join("\n"))
+                : isWhitespace(vs.config)
+                ? some("Cannot be empty")
+                : none,
             }))
             .map((errs) => ({
               ...errs,
@@ -131,6 +149,12 @@ export function CreateGlobalConfig({
         }}>
         {(form) => (
           <>
+            <Helmet>
+              <title>
+                {form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG
+              </title>
+            </Helmet>
+
             <Card
               bordered={false}
               extra={
@@ -224,8 +248,11 @@ export function CreateGlobalConfig({
                       .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
                       .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
                     width="100%"
-                    onChange={(val) => {
-                      form.setFieldValue("config", val)
+                    onChange={({ value, errors }) => {
+                      errors.map((errors) => {
+                        setConfigErrors(errors)
+                      })
+                      form.setFieldValue("config", value)
                       form.setFieldTouched("config", true)
                     }}
                   />

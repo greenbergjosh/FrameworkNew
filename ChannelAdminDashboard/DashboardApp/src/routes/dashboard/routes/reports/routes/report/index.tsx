@@ -9,6 +9,7 @@ import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { Errors } from "io-ts"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { Left, Right } from "../../../../../../data/Either"
 import { JSONRecord } from "../../../../../../data/JSON"
 import { useRematch } from "../../../../../../hooks"
@@ -133,13 +134,19 @@ const childGridOptions: GridModel = {
 
 export function ReportView(props: WithRouteProps<ViewProps>): JSX.Element {
   return (
-    <Report
-      report={{
-        type: "GlobalConfigReference",
-        id: props.context.id,
-      }}
-      title={props.title}
-    />
+    <>
+      <Helmet>
+        <title>{props.title || "Unknown Report"} | Channel Admin | OPG</title>
+      </Helmet>
+
+      <Report
+        report={{
+          type: "GlobalConfigReference",
+          id: props.context.id,
+        }}
+        title={props.title}
+      />
+    </>
   )
 }
 

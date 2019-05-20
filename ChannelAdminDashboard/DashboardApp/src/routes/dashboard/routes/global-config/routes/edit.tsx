@@ -22,6 +22,7 @@ import {
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
@@ -67,6 +68,10 @@ export function EditGlobalConfig({
 
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
+      <Helmet>
+        <title>No Configuration Found | Channel Admin | OPG</title>
+      </Helmet>
+
       {focusedConfig.foldL(
         None(() => <Empty description={`No config found with id ${configId}`} />),
         Some((config) => <UpdatePersistedConfigForm config={config} />)
@@ -187,6 +192,10 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
         }}>
         {(form) => (
           <>
+            <Helmet>
+              <title>{form.values.name} | Edit Configuration | Channel Admin | OPG</title>
+            </Helmet>
+
             <Card
               bordered={false}
               extra={
