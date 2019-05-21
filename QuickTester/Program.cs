@@ -39,6 +39,10 @@ namespace QuickTester
         static async Task Main(string[] args)
         {
 
+            var u = new Uri("./abc/123.txt", UriKind.RelativeOrAbsolute);
+
+            return;
+
             var lines = new List<string>();
 
             for (int k = 0; k < 50000; k++)
