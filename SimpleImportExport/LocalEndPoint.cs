@@ -39,7 +39,7 @@ namespace SimpleImportExport
             return await Task.FromResult(File.OpenRead(Path.Combine(BaseDir.FullName, fileRelativePath)));
         }
 
-        public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern) file, Endpoint source)
+        public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate) file, Endpoint source)
         {
             var destFile = new FileInfo(Path.Combine(BaseDir.FullName, file.destPath.Replace("/", "\\")));
 
@@ -54,11 +54,11 @@ namespace SimpleImportExport
             }
         }
 
-        public override async Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern)>> GetFiles()
+        public override async Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>> GetFiles()
         {
-            if (Patterns?.Any() != true) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name, (Pattern) null)));
+            if (Patterns?.Any() != true) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name, (Pattern)null, (DateTime?)null)));
 
-            var files = new List<(string srcPath, string destPath, string name, Pattern pattern)>();
+            var files = new List<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>();
 
             foreach (var p in Patterns)
             {
@@ -66,10 +66,9 @@ namespace SimpleImportExport
 
                 if (!p.SourceRelativePath.IsNullOrWhitespace()) dir = new DirectoryInfo(Path.Combine(BaseDir.FullName, p.SourceRelativePath));
 
-                var dirFiles = dir.GetFiles().Where(f => p.Rx.IsMatch(f.Name)).ToArray();
+                var dirFiles = dir.GetFiles().Select(f => ApplyPattern(p, f.Name)).Where(f => f.isMatch).ToArray();
 
-                if (dirFiles.Any())
-                    files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(p.SourceRelativePath, f.Name), destPath: CombineUrl(p.SourceRelativePath, f.Name), name: f.Name, pattern: p)));
+                if (dirFiles.Any()) files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(p.SourceRelativePath, f.fileName), destPath: CombineUrl(p.SourceRelativePath, f.fileName), name: f.fileName, pattern: p, f.fileDate)));
             }
 
             return files;
