@@ -1167,7 +1167,9 @@ namespace VisitorIdLib
             {
                 return false; // callers just go about their business
             }
+            // double-write to Postgres and SqlServer, use SQL server response
             var result = await Data.CallFnString("VisitorId", "ProviderSessionMd5Check", "", Jw.Json(new { pid = md5pid, vid = sid, md5 }));
+            await Data.CallFnString("VisitorId-Pg", "ProviderSessionMd5Check", Jw.Json(new { provider_id = md5pid, session_id = sid, md5 }), Jw.Empty);
             IGenericEntity geResult;
             try
             {
