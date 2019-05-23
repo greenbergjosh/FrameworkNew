@@ -32,6 +32,9 @@ namespace SignalApiLib
             try
             {
                 requestFromPost = await ctx.GetRawBodyStringAsync();
+
+                await _fw.Trace(nameof(Run), requestFromPost);
+
                 var res = await HandleRequest(sourceStr, requestFromPost, ctx);
 
                 if (!res.IsNullOrWhitespace()) result = res;
