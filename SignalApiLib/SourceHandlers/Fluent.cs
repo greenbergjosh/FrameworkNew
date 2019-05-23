@@ -36,7 +36,7 @@ namespace SignalApiLib.SourceHandlers
 
         private void LogRequest(string req)
         {
-            if (_traceLog)
+            if (_traceLog && Directory.Exists(_traceLogRootPath))
             {
                 var now = DateTime.Now;
 
@@ -82,7 +82,7 @@ namespace SignalApiLib.SourceHandlers
 
                     try
                     {
-                        var tasks = new []
+                        var tasks = new[]
                         {
                             Task.Run(async () =>
                             {
@@ -122,7 +122,7 @@ namespace SignalApiLib.SourceHandlers
                             }),
                             PostToQueue(payloads)
                         };
-                        
+
                         await Task.WhenAll(tasks);
                     }
                     catch (Exception e)

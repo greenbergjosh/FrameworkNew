@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -12,6 +13,7 @@ using System.Runtime.CompilerServices;
 using Utility;
 using static Utility.EDW.Reporting.EdwBulkEvent;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -38,8 +40,62 @@ namespace QuickTester
 
         static async Task Main(string[] args)
         {
+            var rx = new Regex(@"^(?<drive>[^\s]+)\s+(?<mbBlocks>\d+)MB\s+(?<used>\d+)MB\s+(?<available>\d+)MB\s+(?<usePerc>\d+)%\s+(?<mountedOn>.+)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Multiline);
 
-            var u = new Uri("./abc/123.txt", UriKind.RelativeOrAbsolute);
+            var psi = new ProcessStartInfo
+            {
+                FileName = "sh",
+                Arguments = "-c \"df --block-size=MB\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            var proc = new Process
+            {
+                StartInfo = psi
+            };
+
+            proc.Start();
+
+            var error = proc.StandardError.ReadToEnd();
+
+            var output = proc.StandardOutput.ReadToEnd();
+
+            proc.WaitForExit();
+
+            if (!error.IsNullOrWhitespace())
+            {
+                Console.WriteLine($"Error");
+                Console.WriteLine(error);
+                return;
+            }
+
+            Console.WriteLine("Out");
+            Console.WriteLine(output);
+
+            Console.WriteLine();
+            Console.WriteLine();
+
+            var drives = rx.Matches(output).Select(m => new
+            {
+                drive = m.Groups["drive"]?.Value.Trim(),
+                usedPerc = m.Groups["usePerc"]?.Value.ParseInt(),
+                used = m.Groups["used"]?.Value.ParseInt(),
+                available = m.Groups["available"]?.Value.ParseInt()
+            })
+                .Where(d => d.usedPerc.HasValue).ToArray();
+
+
+            Console.WriteLine("Drives");
+
+            drives.ForEach(d =>
+            {
+                var usedGB = d.used.HasValue ? Math.Round((decimal)(d.used / 1000.0m), 3, MidpointRounding.AwayFromZero).ToString(CultureInfo.CurrentCulture) : "null";
+                var availGB = d.available.HasValue ? Math.Round((decimal)(d.available / 1000.0m), 3, MidpointRounding.AwayFromZero).ToString(CultureInfo.CurrentCulture) : "null";
+
+                Console.WriteLine($"{d.drive} :: {d.usedPerc} :: {d.used}MB :: {usedGB}GB :: {d.available} :: {availGB}GB");
+            });
 
             return;
 
