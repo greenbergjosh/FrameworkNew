@@ -8,13 +8,13 @@ using Utility;
 using Utility.DataLayer;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
-using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
-using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>;
-using ScopeDic = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
-using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Scopes.Routing.ApiFunc>>;
+using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>;
+using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>;
+using ScopeDic = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>>;
+using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>>;
 using Jw = Utility.JsonWrapper;
 
-namespace TheGreatWallOfDataLib.Scopes
+namespace TheGreatWallOfDataLib.Routing
 {
     public static class Routing
     {
