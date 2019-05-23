@@ -24,6 +24,7 @@ namespace TraverseDataLib
         private List<Guid> md5ExcludeList;
         private static int excludeSpanDays;
         private const string responseMd5Key = "emailMd5Lower";
+        private string sessionCacheKey;
 
         public void Config(FrameworkWrapper fw)
         {
@@ -37,6 +38,7 @@ namespace TraverseDataLib
                 30 :
                 (int)fw.StartupConfiguration.GetS("Config/ExcludeSpanDays").ParseInt();
             PrimeCache().GetAwaiter().GetResult();
+            sessionCacheKey = fw.StartupConfiguration.GetS("Config/SessionCacheKey") ?? "PageVisit";
         }
 
         public static bool ExistsOrAddToMemoryCache(PidSidMd5 pidSidMd5, double cacheTimeInDays)
@@ -65,7 +67,7 @@ namespace TraverseDataLib
                         case "TraverseResponse":
                             var (fullBodyGe, opaqueGe) = await TraverseResponseAsGe(context);
                             var (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, _, _) = VisitorIdDataService.ValsFromOpaque(opaqueGe);
-                            var pidSidMd5 = new PidSidMd5() { Pid = md5pid, Sid = sid, Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
+                            var pidSidMd5 = new PidSidMd5() { Pid = md5pid, Sid = (string)rsids[sessionCacheKey], Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
 
                             var vidResp = new VisitorIdResponse("", "", "", null);
                             try
