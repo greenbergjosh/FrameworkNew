@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -30,7 +31,7 @@ namespace SimpleImportExport
             return await ProtocolClient.GetFtpFileStream(CombineUrl(BasePath, fileRelativePath), Host, User, Password);
         }
 
-        public override async Task<long> SendStream((string srcPath, string destPath, string name) file, Endpoint source)
+        public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate) file, Endpoint source)
         {
             using (var srcStream = await source.GetStream(file.srcPath))
             using (var ms = new MemoryStream())
@@ -45,17 +46,17 @@ namespace SimpleImportExport
             }
         }
 
-        public override async Task<IEnumerable<(string srcPath, string destPath, string name)>> GetFiles()
+        public override async Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>> GetFiles()
         {
-            if (!Patterns.Any()) return (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password)).Select(f => (srcPath: f, destPath: f, name: f));
+            if (Patterns?.Any() != true) return (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password)).Select(f => (srcPath: f, destPath: f, name: f, (Pattern)null, (DateTime?)null));
 
-            var files = new List<(string srcPath, string destPath, string name)>();
+            var files = new List<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>();
 
             foreach (var p in Patterns)
             {
-                var dirFiles = (await ProtocolClient.FtpGetFiles(CombineUrl(BasePath, p.SourceRelativePath), Host, User, Password)).Where(f => p.Rx.IsMatch(f)).ToArray();
+                var dirFiles = (await ProtocolClient.FtpGetFiles(CombineUrl(BasePath, p.SourceRelativePath), Host, User, Password)).Select(fileName => ApplyPattern(p, fileName)).Where(f => f.isMatch).ToArray();
 
-                if (dirFiles.Any()) files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(BasePath, p.SourceRelativePath, f), destPath: CombineUrl(p.DestinationRelativePath, f), name: f)));
+                if (dirFiles.Any()) files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(BasePath, p.SourceRelativePath, f.fileName), destPath: CombineUrl(p.DestinationRelativePath, f.fileName), name: f.fileName, pattern: p, f.fileDate)));
             }
 
             return files;

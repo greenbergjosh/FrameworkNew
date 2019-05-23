@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Utility;
 using Utility.DataLayer;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
-namespace TheGreatWallOfDataLib.Scopes
+namespace TheGreatWallOfDataLib.Routing
 {
     public static class Config
     {

@@ -77,12 +77,19 @@ namespace Utility.GenericEntity
         public override IGenericEntity GetE(string path)
         {
             GenericEntityJson entity = new GenericEntityJson();
-            entity.InitializeEntity(this.rw, null, _root.SelectToken(ConvertPath(path)));
+            var data = _root.SelectToken(ConvertPath(path));
+
+            if (data == null) return null;
+
+            entity.InitializeEntity(this.rw, null, data);
             return entity;
         }
 
         public override IEnumerable<Tuple<string, string>> GetD(string path)
         {
+            // 
+            // THIS IS NOT NULL SAFE
+            //
             GenericEntityJson entity = new GenericEntityJson();
             entity.InitializeEntity(this.rw, null, _root.SelectToken(ConvertPath(path)));
             foreach (var je in entity._root.AsJEnumerable())

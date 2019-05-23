@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Utility;
 using Utility.GenericEntity;
 
-namespace TheGreatWallOfDataLib.Scopes
+namespace TheGreatWallOfDataLib.Routing
 {
     public static class Authentication
     {

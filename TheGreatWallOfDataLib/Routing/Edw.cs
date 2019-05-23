@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
-namespace TheGreatWallOfDataLib.Scopes
+namespace TheGreatWallOfDataLib.Routing
 {
     public static class Edw
     {

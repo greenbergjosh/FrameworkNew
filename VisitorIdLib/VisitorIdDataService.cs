@@ -495,12 +495,24 @@ namespace VisitorIdLib
 
                         if (md5.IsNullOrWhitespace())
                         {
-                            var lookupGe = await Data.CallFn("VisitorId",
+
+                            //lookup against pg first
+                            var lookupGe = await Data.CallFn("VisitorId-Pg",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookieData.sid }),
                                "{}", null, null, SqlTimeoutSec);
                             eml = lookupGe.GetS("Em");
                             md5 = lookupGe.GetS("Md5");
+
+                            if (eml.IsNullOrWhitespace() || md5.IsNullOrWhitespace())
+                            {
+                                lookupGe = await Data.CallFn("VisitorId",
+                                   "LookupBySessionId",
+                                   Jw.Json(new { Sid = cookieData.sid }),
+                                   "{}", null, null, SqlTimeoutSec);
+                                eml = lookupGe.GetS("Em");
+                                md5 = lookupGe.GetS("Md5");
+                            }
                         }
 
                         var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData, c.Connection.RemoteIpAddress.ToString(), c.Request.Headers["User-Agent"]);
@@ -511,7 +523,7 @@ namespace VisitorIdLib
                             var s = await fw.Entities.GetEntityGe(new Guid(CookieMd5Pid));
                             return new VisitorIdResponse(Jw.Json(new
                             {
-                                config = s.GetS("Config"),
+                                config = s.GetS(""),
                                 sid,
                                 md5pid = CookieMd5Pid,
                                 slot,
@@ -622,7 +634,7 @@ namespace VisitorIdLib
 
                         return new VisitorIdResponse(Jw.Json(new
                         {
-                            config = ReplaceToken(s.GetS("Config"), opaque64),
+                            config = ReplaceToken(s.GetS(""), opaque64),
                             sid,
                             md5pid,
                             slot,
@@ -708,6 +720,7 @@ namespace VisitorIdLib
                     null, PL.O(new
                     {
                         et = "Md5ProviderResponse",
+                        md5 = md5 ?? "",
                         md5pid,
                         slot,
                         page,
@@ -1030,7 +1043,7 @@ namespace VisitorIdLib
                     {
                         errorContext = $"GetEntity {emailpid}";
                         var emlProvider = await fw.Entities.GetEntityGe(new Guid(emailpid));
-                        lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
+                        lbmId = new Guid(emlProvider.GetS("LbmId"));
                         var lbm = await fw.Entities.GetEntity(lbmId);
 
                         await fw.Trace(nameof(DoEmailProviders), $"Prior to evaluating LBM lbmId : {lbmId.ToString()}, lbm body: {lbm}, context is not null {context != null}, md5 : {md5 ?? ""}, emlProvider is not null: {emlProvider != null}");
@@ -1051,7 +1064,7 @@ namespace VisitorIdLib
                                 await fw.EdwWriter.Write(be);
                             }
 
-                            var writeImmediatelyToContact = emlProvider.GetS("Config/DirectWriteToContact").ParseBool() ?? false;
+                            var writeImmediatelyToContact = emlProvider.GetS("DirectWriteToContact").ParseBool() ?? false;
                             if (writeImmediatelyToContact)
                             {
                                 await Data.CallFn("VisitorId", "ContactEmailMerge", Jw.Json(new { email = eml }), "", null, null, SqlTimeoutSec);
@@ -1135,6 +1148,7 @@ namespace VisitorIdLib
             {
                 await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSessionEmailMd5), loc = "body", sid, email, md5 }), rsids);
                 await Data.CallFn(connection, "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
+                await Data.CallFn("VisitorId-Pg", "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
                 await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {sid}, Email: {email}, Md5: {md5}");
             }
             catch (Exception e)
@@ -1153,7 +1167,9 @@ namespace VisitorIdLib
             {
                 return false; // callers just go about their business
             }
+            // double-write to Postgres and SqlServer, use SQL server response
             var result = await Data.CallFnString("VisitorId", "ProviderSessionMd5Check", "", Jw.Json(new { pid = md5pid, vid = sid, md5 }));
+            await Data.CallFnString("VisitorId-Pg", "ProviderSessionMd5Check", Jw.Json(new { provider_id = md5pid, session_id = sid, md5 }), Jw.Empty);
             IGenericEntity geResult;
             try
             {
