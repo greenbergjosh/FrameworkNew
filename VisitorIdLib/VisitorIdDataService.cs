@@ -833,7 +833,7 @@ namespace VisitorIdLib
             var md5 = opge.GetS("md5");
             var eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
             var qstr = opge.GetS("qs");
-            var uri = new Uri(HttpUtility.UrlDecode(qstr));
+            var uri = new Uri(HttpUtility.UrlDecode(qstr.IfNullOrWhitespace("about:blank")));
             var host = uri.Host ?? "";
             var lv = opge.GetS("lv");
             var afid = opge.GetS("afid");
