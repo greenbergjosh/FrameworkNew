@@ -132,11 +132,11 @@ namespace VisitorIdLib
                     emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : emailMd5;
                     if (string.IsNullOrWhiteSpace(emailMd5))
                     {
-                        await fw.Err(1, "ProcessTowerMessage", "Error", "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                        await fw.Log(nameof(ProcessTowerMessage), "Step2Fail: " + "No md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
                     }
                     else
                     {
-                        await fw.Err(1, "ProcessTowerMessage", "Tracking", "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
+                        await fw.Log(nameof(ProcessTowerMessage), "Step2Success: " + "Found md5" + "::" + result + "::ip=" + context.Connection.RemoteIpAddress);
                     }
                 }
             }
@@ -159,7 +159,7 @@ namespace VisitorIdLib
 
             try
             {
-                await fw.Err(1, "ProcessTowerMessage", "Tracking", "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
+                await fw.Log(nameof(ProcessTowerMessage), "Before Parsing Label: " + $"{opaque}" + "::ip=" + context.Connection.RemoteIpAddress);
 
                 return (opaque: Vutil.OpaqueFromBase64(opaque, async (method, message) => { await fw.Log(method, message); }), md5: emailMd5);
             }
