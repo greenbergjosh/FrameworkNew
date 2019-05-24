@@ -56,6 +56,10 @@ export const ReportOrErrors = React.memo(
                         </Typography.Paragraph>
                         <Typography.Paragraph type="danger">
                           {`Unable to parse Report.Query config associated with Report config with id ${id}`}
+                          {console.debug("ReportOrErrors", {
+                            report: reportConfig1,
+                            query: queryConfig1,
+                          })}
                         </Typography.Paragraph>
                       </>
                     )),
@@ -75,6 +79,10 @@ export const ReportOrErrors = React.memo(
                                 </Reach.Link>
                               )
                             )}
+                            {console.debug("ReportOrErrors", {
+                              report: reportConfig1,
+                              query: queryConfig1,
+                            })}
                           </Typography.Paragraph>
                         )),
 

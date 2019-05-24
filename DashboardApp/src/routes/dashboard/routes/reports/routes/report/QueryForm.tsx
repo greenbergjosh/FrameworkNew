@@ -40,6 +40,7 @@ const generatedSubmitButton = {
 
 const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
   display: "form",
+  _context: { randomStuff: true },
   components: Object.values(flattenComponents(layout)).find(({ type }: any) =>
     ["button", "submit"].includes(type.toLowerCase())
   )
@@ -47,50 +48,8 @@ const generateFormFromLayout = (layout: QueryConfig["layout"]) => ({
     : layout.concat(generatedSubmitButton),
 })
 
-// const handleSubmit = debounce((uncleanParameterValues: FormIOState, ...args: any[]) => {
-//   console.log("QueryForm.Form.onSubmit", uncleanParameterValues, args)
-//   const { submit, ...cleanParameterValues } = uncleanParameterValues.data
-//   onSubmit(cleanParameterValues)
-// })
-
 export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSubmit }: Props) => {
   const [fromStore, dispatch] = useRematch((s) => null)
-
-  // const TaskRemoteQueryDependencies = useTaskRemoteData(
-  //   (parameters: QueryConfig["parameters"], layout: QueryConfig["layout"]) =>
-  //     new Task(() => {
-  //       // Step 1) Traverse parameters. Find any remote datasource requests
-  //       const needRemoteData = parameters.filter(
-  //         (parameter) => parameter.type === "select" && parameter.options.dataLocation === "remote"
-  //       )
-  //       // Step 2) If needed, generate a layout from the parameters
-  //       const realLayout = layout.length
-  //         ? layout
-  //         : parameters.length
-  //         ? generateLayoutFromParameters(parameters)
-  //         : []
-
-  //       // Step 3) If there were remote data sources, then traverse the layout
-  //       // if (needRemoteData.length && realLayout.length) {
-  //       //   const recursiveKeys = ["components", "columns"]
-  //       //   const realLayout
-  //       //   // 3a) Find match up of layoutItem.key === parameterItem.name
-  //       //   needRemoteData.forEach((neededItem) => {
-  //       //     array.lookup()
-  //       //   })
-  //       //   // 3b) Inject loaded data into layoutItem
-  //       // }
-
-  //       return realLayout
-  //     }),
-  //   parameters,
-  //   layout
-  // )
-
-  // const foo = React.useEffect(() => {
-  //   console.log("QueryForm.onMount")
-  //   return () => console.log("QueryForm.onUnmount")
-  // }, [])
 
   const handleSubmit = React.useCallback(
     debounce((formState: FormState) => {
@@ -107,22 +66,25 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
     ? generateLayoutFromParameters(parameters)
     : null
 
+  //: {[key: string]: string | boolean | number}
   if (realLayout) {
-    // return (
-    //   <TaskRemoteQueryDependencies.Fold>
-    //     {{
-    //       Initial: () => <p>initial</p>,
-    //       Pending: (prev) => <p>initial</p>,
-    //       Failure: (err) => <p>err: {err.message}</p>,
-    //       Success: (val) => <p>{val}</p>,
-    //     }}
-    //   </TaskRemoteQueryDependencies.Fold>
-    // )
+    const defaultParameters = parameters.reduce(
+      (acc, parameter) => {
+        if (parameter.defaultValue.isSome()) {
+          acc[parameter.name] = parameter.defaultValue.toUndefined()
+        }
+
+        return acc
+      },
+      {} as any
+    )
+
     return (
       <Form
         form={generateFormFromLayout(realLayout)}
-        submission={{ data: parameterValues }}
+        submission={{ data: { ...defaultParameters, ...parameterValues } }}
         onSubmit={handleSubmit}
+        options={{ reactContext: { test: "Hello" } }}
       />
     )
   }
