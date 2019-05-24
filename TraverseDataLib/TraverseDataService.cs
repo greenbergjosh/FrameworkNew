@@ -164,7 +164,7 @@ namespace TraverseDataLib
             }
         }
 
-        private async Task<IGenericEntity> GetRecentResponseMd5s() => await Data.CallFn("TraverseResponse", "LookupRecentMd5Responses", JsonConvert.SerializeObject(new { days_ago = excludeSpanDays, exclude_list = md5ExcludeList }), Jw.Empty);
+        private async Task<IGenericEntity> GetRecentResponseMd5s() => await Data.CallFn("TraverseResponse", "LookupRecentMd5Responses", JsonConvert.SerializeObject(new { days_ago = excludeSpanDays, exclude_list = md5ExcludeList }), "");
 
 
         public async Task<bool> ExistsOrAddToDbCache(PidSidMd5 pidSidMd5) => await Vid.ProviderSessionMd5Exists(Fw, pidSidMd5.Pid, pidSidMd5.Sid, pidSidMd5.Md5);
