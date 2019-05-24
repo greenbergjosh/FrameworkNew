@@ -500,7 +500,7 @@ namespace VisitorIdLib
                             var lookupGe = await Data.CallFn("VisitorId-Pg",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookieData.sid }),
-                               "{}", null, null, SqlTimeoutSec);
+                               "", null, null, SqlTimeoutSec);
                             eml = lookupGe.GetS("Em");
                             md5 = lookupGe.GetS("Md5");
 
@@ -509,7 +509,7 @@ namespace VisitorIdLib
                                 lookupGe = await Data.CallFn("VisitorId",
                                    "LookupBySessionId",
                                    Jw.Json(new { Sid = cookieData.sid }),
-                                   "{}", null, null, SqlTimeoutSec);
+                                   "", null, null, SqlTimeoutSec);
                                 eml = lookupGe.GetS("Em");
                                 md5 = lookupGe.GetS("Md5");
                             }
@@ -1168,8 +1168,8 @@ namespace VisitorIdLib
                 return false; // callers just go about their business
             }
             // double-write to Postgres and SqlServer, use SQL server response
-            var result = await Data.CallFnString("VisitorId", "ProviderSessionMd5Check", "", Jw.Json(new { pid = md5pid, vid = sid, md5 }));
-            await Data.CallFnString("VisitorId-Pg", "ProviderSessionMd5Check", Jw.Json(new { provider_id = md5pid, session_id = sid, md5 }), Jw.Empty);
+            var result = await Data.CallFnString("VisitorId", "ProviderSessionMd5Check", Jw.Json(new { pid = md5pid, vid = sid, md5 }), "");
+            await Data.CallFnString("VisitorId-Pg", "ProviderSessionMd5Check", Jw.Json(new { provider_id = md5pid, session_id = sid, md5 }), "");
             IGenericEntity geResult;
             try
             {
