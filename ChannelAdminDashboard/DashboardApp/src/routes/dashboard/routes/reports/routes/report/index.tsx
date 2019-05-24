@@ -297,8 +297,8 @@ const ReportBody = React.memo(
       }
     }, [
       dispatch,
-      unsatisfiedByParentParams,
-      queryResultData,
+      unsatisfiedByParentParams.length,
+      queryResultData.isNone(),
       queryConfig.query,
       satisfiedByParentParams,
       fromStore.isExecutingQuery,
