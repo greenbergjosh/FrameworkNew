@@ -41,7 +41,7 @@ namespace ReadPixelLib
                         stopWatch.Stop();
                         long duration = stopWatch.ElapsedMilliseconds;
                         string result = await Data.CallFnString("ReadPixel", "ReadPixelFire",
-                        Jw.Json(new { Duration = duration, PixelValue = pixelValue }), Jw.Empty);
+                        Jw.Json(new { Duration = duration, PixelValue = pixelValue }), "");
                     });
 
                     await Task.Delay(this.PixelDuration * 1000);
