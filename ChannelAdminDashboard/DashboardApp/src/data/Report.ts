@@ -1,7 +1,7 @@
 import { Option } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
-import { JSONRecordCodec, JSONRecord } from "./JSON"
+import { JSONRecord, JSONRecordCodec } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({
@@ -63,37 +63,55 @@ export const _BaseParameterItemCodec = iots.type({
 export type StringParameterItem = iots.TypeOf<typeof StringParameterItemCodec>
 export const StringParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
-  iots.type({ type: iots.literal("string") }),
+  iots.type({
+    type: iots.literal("string"),
+    defaultValue: iotst.createOptionFromNullable(iots.string),
+  }),
 ])
 
 export type IntegerParameterItem = iots.TypeOf<typeof IntegerParameterItemCodec>
 export const IntegerParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
-  iots.type({ type: iots.literal("integer") }),
+  iots.type({
+    type: iots.literal("integer"),
+    defaultValue: iotst.createOptionFromNullable(iots.number),
+  }),
 ])
 
 export type FloatParameterItem = iots.TypeOf<typeof FloatParameterItemCodec>
 export const FloatParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
-  iots.type({ type: iots.literal("float") }),
+  iots.type({
+    type: iots.literal("float"),
+    defaultValue: iotst.createOptionFromNullable(iots.number),
+  }),
 ])
 
 export type DateParameterItem = iots.TypeOf<typeof DateParameterItemCodec>
 export const DateParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
-  iots.type({ type: iots.literal("date") }),
+  iots.type({
+    type: iots.literal("date"),
+    defaultValue: iotst.createOptionFromNullable(iots.string),
+  }),
 ])
 
 export type DateRangeParameterItem = iots.TypeOf<typeof DateRangeParameterItemCodec>
 export const DateRangeParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
-  iots.type({ type: iots.literal("date-range") }),
+  iots.type({
+    type: iots.literal("date-range"),
+    defaultValue: iotst.createOptionFromNullable(iots.string),
+  }),
 ])
 
 export type BooleanParametItem = iots.TypeOf<typeof BooleanParameterItemCodec>
 export const BooleanParameterItemCodec = iots.intersection([
   _BaseParameterItemCodec,
-  iots.type({ type: iots.literal("boolean") }),
+  iots.type({
+    type: iots.literal("boolean"),
+    defaultValue: iotst.createOptionFromNullable(iots.boolean),
+  }),
 ])
 
 export type SelectOptionItem = iots.TypeOf<typeof SelectOptionItemCodec>
@@ -123,6 +141,7 @@ export const SelectParameterItemCodec = iots.intersection([
   iots.type({
     options: SelectParameterItemOptionsCodec,
     type: iots.literal("select"),
+    defaultValue: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
