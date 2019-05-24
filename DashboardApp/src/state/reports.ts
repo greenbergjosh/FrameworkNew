@@ -62,7 +62,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
   effects: (dispatch) => ({
     executeQuery({ resultURI: lookupKey, query, params }) {
-      dispatch.remoteDataClient
+      return dispatch.remoteDataClient
         .reportQueryGet({
           query,
           params,
