@@ -104,16 +104,16 @@ namespace Utility
         {
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = contentType;
-            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
-            await ctx.Response.WriteAsync(response);
+            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response ?? "").Length : response?.Length ?? 0;
+            await ctx.Response.WriteAsync(response ?? "");
         }
 
         public static async Task WriteFailureRespAsync(this HttpContext ctx, string response, Encoding enc = null, string contentType = "application/json")
         {
             ctx.Response.StatusCode = 500;
             ctx.Response.ContentType = contentType;
-            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response).Length : response.Length;
-            await ctx.Response.WriteAsync(response);
+            ctx.Response.ContentLength = enc != null ? Encoding.UTF8.GetBytes(response ?? "").Length : response?.Length ?? 0;
+            await ctx.Response.WriteAsync(response ?? "");
         }
 
         public static void AddCorsAccessForOriginHost(this HttpContext ctx, IGenericEntity ge)
@@ -124,7 +124,7 @@ namespace Utility
 
             // Nothing to do if we don't have an "Origin:" header or if our config is missing
             // the "allow-origin" directive
-            if (! ctx.Request.Headers.TryGetValue("Origin", out StringValues originHost) ||
+            if (!ctx.Request.Headers.TryGetValue("Origin", out StringValues originHost) ||
                 ge.GetS("allow-origin") == null
                 ) return;
 
@@ -152,14 +152,14 @@ namespace Utility
             // Comma-separates a list of values into the "Access-Control-Allow-Headers" response header
             if (ge.GetS("allow-headers") != null)
             {
-                ctx.Response.Headers.Add("Access-Control-Allow-Headers",string.Join(",", ge.GetL("allow-headers").Select(x => x.GetS(""))));
+                ctx.Response.Headers.Add("Access-Control-Allow-Headers", string.Join(",", ge.GetL("allow-headers").Select(x => x.GetS(""))));
             }
             // "allow-methods": [ "PUT", "POST", "GET", "PATCH", "HEAD" ],
             //
             // Comma-separates a list of values into the "Access-Control-Allow-Methods" response header
             if (ge.GetS("allow-methods") != null)
             {
-                ctx.Response.Headers.Add("Access-Control-Allow-Methods",string.Join(",", ge.GetL("allow-methods").Select(x => x.GetS(""))));
+                ctx.Response.Headers.Add("Access-Control-Allow-Methods", string.Join(",", ge.GetL("allow-methods").Select(x => x.GetS(""))));
             }
 
             // "allow-credentials": "true"
@@ -167,12 +167,12 @@ namespace Utility
             // Sets the "Access-Control-Allow-Credentials" response value to a bool to indicate cross-site cookie policy
             if (ge.GetS("allow-credentials") != null)
             {
-                ctx.Response.Headers.Add("Access-Control-Allow-Credentials",ge.GetS("allow-credentials"));
+                ctx.Response.Headers.Add("Access-Control-Allow-Credentials", ge.GetS("allow-credentials"));
             }
         }
 
         // based off of: https://referencesource.microsoft.com/#System.Web/WorkerRequest.cs,ab8517882440da8b
-        public static bool IsLocal (this HttpContext ctx)
+        public static bool IsLocal(this HttpContext ctx)
         {
             var connection = ctx.Connection;
 
@@ -180,15 +180,15 @@ namespace Utility
 
             // if unknown, assume not local
             if (String.IsNullOrEmpty(remoteAddress))
-               return false;
+                return false;
 
             // check if localhost
             if (remoteAddress == "127.0.0.1" || remoteAddress == "::1")
-               return true;
+                return true;
 
             // compare with local address
             if (remoteAddress == connection.LocalIpAddress.ToString())
-               return true;
+                return true;
 
             return false;
         }

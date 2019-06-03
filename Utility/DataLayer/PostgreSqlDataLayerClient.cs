@@ -69,7 +69,9 @@ namespace Utility.DataLayer
                     cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload);
                     cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
-                    outval = (string)cmd.Parameters["@Return"].Value;
+                    var res = cmd.Parameters["@Return"].Value;
+
+                    outval = res == DBNull.Value ? null : (string) res;
                 }
                 cn.Close();
             }
