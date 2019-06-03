@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TheGreatWallOfDataLib.Scopes;
+using TheGreatWallOfDataLib.Routing;
 using Utility;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
@@ -49,28 +49,28 @@ namespace TheGreatWallOfDataLib
 
                 async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                 {
-                    var reqFunc = p.Item1;
+                    var scopeFunc = p.Item1;
+                    var args = p.Item2;
 
                     if (cancellation.Token.IsCancellationRequested)
                     {
-                        return (reqFunc, null);
+                        return (scopeFunc, null);
                     }
 
                     IGenericEntity fResult = null;
-                    var funcParts = reqFunc.Split(':');
+                    var funcParts = scopeFunc.Split(':');
                     var scope = funcParts[0];
-                    var func = funcParts[1];
-                    var payload = p.Item2;
+                    var funcName = funcParts[1];
 
                     try
                     {
-                        fResult = await Routing.GetFunc(scope, func)(scope, func, payload, identity);
+                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity);
                     }
                     catch (Exception e)
                     {
                         var identityStr = identity == null ? "" : $"\r\nIdentity: \r\n{identity}\r\n";
                         var payloadStr = p.Item2 == null ? "null" : $"\r\n{p.Item2}\r\n";
-                        var funcContext = $"\r\nName: {reqFunc}{identityStr}\r\nArgs: {payloadStr}\r\nRequestId: {requestId}";
+                        var funcContext = $"\r\nName: {scopeFunc}{identityStr}\r\nArgs: {payloadStr}\r\nRequestId: {requestId}";
 
                         var fe = e as FunctionException;
 
@@ -83,7 +83,7 @@ namespace TheGreatWallOfDataLib
                         {
                             var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
 
-                            await Fw.Error($"DB:{reqFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                            await Fw.Error($"DB:{scopeFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
 
                             fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
                         }
@@ -95,7 +95,7 @@ namespace TheGreatWallOfDataLib
                         }
                     }
 
-                    return (reqFunc, fResult.GetS(""));
+                    return (scopeFunc, fResult.GetS(""));
                 }
 
                 var tasks = funcs.Select(HandleFunc).ToArray();

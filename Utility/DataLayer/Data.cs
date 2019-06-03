@@ -106,6 +106,10 @@ namespace Utility.DataLayer
 
             async Task<JObject> LoadConfig(JObject config, string key)
             {
+                // this is not important for the DB, but it is for the local cache.
+                // ToDo: We should change it to GUID and that would solve it but not sure if that might break something
+                key = key.ToLower();
+
                 if (loaded.Contains(key))
                 {
                     return config;
