@@ -930,19 +930,7 @@ namespace VisitorIdLib
                         eml = lookupGe.GetS("Em");
                     }
 
-                    if (!eml.IsNullOrWhitespace())
-                    {
-                        cookieEml = eml;
-                        var postData = await PostVisitorIdToConsole(fw, eml, CookieEmailPid, host, clientIp, userAgent, lastVisit);
-                        if (!postData.IsNullOrWhitespace())
-                        {
-                            be = new EdwBulkEvent();
-                            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid = CookieEmailPid })));
-                            await fw.EdwWriter.Write(be);
-                        }
-
-                    }
+                    if (!eml.IsNullOrWhitespace()) { cookieEml = eml; }
 
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
@@ -1055,14 +1043,6 @@ namespace VisitorIdLib
                         if (!eml.IsNullOrWhitespace())
                         {
                             await SaveSessionEmailMd5(fw, sid, eml, md5, rsids);
-                            var postData = await PostVisitorIdToConsole(fw, eml, emailpid, host, clientIp, userAgent, lastVisit);
-                            if (!postData.IsNullOrWhitespace())
-                            {
-                                be = new EdwBulkEvent();
-                                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                    null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid })));
-                                await fw.EdwWriter.Write(be);
-                            }
 
                             var writeImmediatelyToContact = emlProvider.GetS("DirectWriteToContact").ParseBool() ?? false;
                             if (writeImmediatelyToContact)
@@ -1230,32 +1210,6 @@ namespace VisitorIdLib
             await fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}, as: {ge.GetS("Email")}");
             PostDataToConsole(fw, ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
             await WriteCodePathEvent(PL.O(new { branch = nameof(PostMd5LeadDataToConsole), loc = "end" }), new Dictionary<string, object>());
-            return body;
-        }
-
-        public async Task<string> PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
-        {
-            await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "start" }), new Dictionary<string, object>());
-
-            if (OnPointConsoleDomainId.IsNullOrWhitespace())
-            {
-                await fw.Error(nameof(PostVisitorIdToConsole), $"Console domain id is not set, still posting to Console for email {plainTextEmail}");
-            }
-            var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
-            var body = Jw.Json(new
-            {
-                domain_id = OnPointConsoleDomainId,
-                email = plainTextEmail,
-                user_ip = clientIp,
-                user_agent = userAgent,
-                email_source = "visitorid",
-                provider,
-                isFinal = "true",
-                label_domain = domain,
-                lastVisit
-            });
-            PostDataToConsole(fw, plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
-            await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "end" }), new Dictionary<string, object>());
             return body;
         }
 
