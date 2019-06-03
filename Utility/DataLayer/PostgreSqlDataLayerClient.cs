@@ -66,7 +66,7 @@ namespace Utility.DataLayer
                 using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload)", cn) { CommandTimeout = timeout })
                 {
                     cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace(JsonWrapper.Empty));
-                    cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload);
+                    cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload ?? string.Empty);
                     cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Text)).Direction = System.Data.ParameterDirection.Output;
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                     outval = (string)cmd.Parameters["@Return"].Value;
