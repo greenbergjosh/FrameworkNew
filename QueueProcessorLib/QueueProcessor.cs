@@ -175,7 +175,7 @@ namespace QueueProcessorLib
                 // the rest of the QueueItems for this Discriminator
                 if (processedSuccessfully && queueItem.RetryNumber > -1)
                 {
-                    await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", null, JsonConvert.SerializeObject(new
+                    await Data.CallFn("QueueProcessor", "RetryQueueProgressRelease", JsonConvert.SerializeObject(new
                     {
                         queueItem.Discriminator
                     }));
@@ -190,7 +190,7 @@ namespace QueueProcessorLib
             }
         }
 
-        private Task SendToRestartQueue(IEnumerable<long> queueItemIds) => Data.CallFn("QueueProcessor", "RestartQueueAddBulk", null, JsonConvert.SerializeObject(queueItemIds));
+        private Task SendToRestartQueue(IEnumerable<long> queueItemIds) => Data.CallFn("QueueProcessor", "RestartQueueAddBulk", JsonConvert.SerializeObject(queueItemIds));
 
         private async Task SendToRetryQueue(QueueItem queueItem)
         {
@@ -203,7 +203,7 @@ namespace QueueProcessorLib
                 await _fw.Log("QueueProcessor.SendToRetryQueue", $"Discriminator {queueItem.Discriminator} has exhausted retries and will no longer be processed.  QueueItem.Id: {queueItem.Id}");
             }
 
-            await Data.CallFn("QueueProcessor", "RetryQueueMerge", null, JsonConvert.SerializeObject(new
+            await Data.CallFn("QueueProcessor", "RetryQueueMerge", JsonConvert.SerializeObject(new
             {
                 QueueItemId = queueItem.Id,
                 queueItem.Discriminator,
@@ -224,7 +224,7 @@ namespace QueueProcessorLib
         {
             return (output) =>
             {
-                return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", null, JsonConvert.SerializeObject(new
+                return Data.CallFn("QueueProcessor", "QueueItemOutputAdd", JsonConvert.SerializeObject(new
                 {
                     QueueItemId = queueItem.Id,
                     Output = output
