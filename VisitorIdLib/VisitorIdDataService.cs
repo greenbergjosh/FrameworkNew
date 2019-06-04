@@ -495,24 +495,12 @@ namespace VisitorIdLib
 
                         if (md5.IsNullOrWhitespace())
                         {
-
-                            //lookup against pg first
-                            var lookupGe = await Data.CallFn("VisitorId-Pg",
+                            var lookupGe = await Data.CallFn("VisitorId",
                                "LookupBySessionId",
                                Jw.Json(new { Sid = cookieData.sid }),
                                "", null, null, SqlTimeoutSec);
                             eml = lookupGe.GetS("Em");
                             md5 = lookupGe.GetS("Md5");
-
-                            if (eml.IsNullOrWhitespace() || md5.IsNullOrWhitespace())
-                            {
-                                lookupGe = await Data.CallFn("VisitorId",
-                                   "LookupBySessionId",
-                                   Jw.Json(new { Sid = cookieData.sid }),
-                                   "", null, null, SqlTimeoutSec);
-                                eml = lookupGe.GetS("Em");
-                                md5 = lookupGe.GetS("Md5");
-                            }
                         }
 
                         var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData, c.Connection.RemoteIpAddress.ToString(), c.Request.Headers["User-Agent"]);
@@ -780,20 +768,6 @@ namespace VisitorIdLib
                 );
             }
 
-            if (!email.IsNullOrWhitespace() &&
-                 !md5.IsNullOrWhitespace() &&
-                 !md5pid.IsNullOrWhitespace())
-            {
-                var postData = await PostMd5LeadDataToConsole(fw, md5, host, md5pid);
-                if (!postData.IsNullOrWhitespace())
-                {
-                    var be = new EdwBulkEvent();
-                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                        null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostLeadData" })));
-                    await fw.EdwWriter.Write(be);
-                }
-            }
-
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "end" }), rsids);
             return new VisitorIdResponse(Jw.Json(new { slot, page, lv = lastVisit }), md5, email, cookieData);
         }
@@ -933,15 +907,6 @@ namespace VisitorIdLib
                     if (!eml.IsNullOrWhitespace())
                     {
                         cookieEml = eml;
-                        var postData = await PostVisitorIdToConsole(fw, eml, CookieEmailPid, host, clientIp, userAgent, lastVisit);
-                        if (!postData.IsNullOrWhitespace())
-                        {
-                            be = new EdwBulkEvent();
-                            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid = CookieEmailPid })));
-                            await fw.EdwWriter.Write(be);
-                        }
-
                     }
 
                     be = new EdwBulkEvent();
@@ -1055,19 +1020,11 @@ namespace VisitorIdLib
                         if (!eml.IsNullOrWhitespace())
                         {
                             await SaveSessionEmailMd5(fw, sid, eml, md5, rsids);
-                            var postData = await PostVisitorIdToConsole(fw, eml, emailpid, host, clientIp, userAgent, lastVisit);
-                            if (!postData.IsNullOrWhitespace())
-                            {
-                                be = new EdwBulkEvent();
-                                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
-                                    null, PL.FromJsonString(postData).Add(PL.O(new { et = "ConsoleMd5PostVisitorIdData", emailpid })));
-                                await fw.EdwWriter.Write(be);
-                            }
 
                             var writeImmediatelyToContact = emlProvider.GetS("DirectWriteToContact").ParseBool() ?? false;
                             if (writeImmediatelyToContact)
                             {
-                                await Data.CallFn("VisitorId", "ContactEmailMerge", Jw.Json(new { email = eml }), "", null, null, SqlTimeoutSec);
+                                await Data.CallFn("Contact", "ContactEmailMerge", Jw.Json(new { email = eml }), "", null, null, SqlTimeoutSec);
                             }
                         }
                     }
@@ -1148,7 +1105,6 @@ namespace VisitorIdLib
             {
                 await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSessionEmailMd5), loc = "body", sid, email, md5 }), rsids);
                 await Data.CallFn(connection, "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
-                await Data.CallFn("VisitorId-Pg", "SaveSessionIdEmailMd5", JsonWrapper.Json(new { Sid = sid, Email = email, Md5 = md5 }), "");
                 await fw.Log(nameof(SaveSessionEmailMd5), $"Successfully saved Visitor SessionId: {sid}, Email: {email}, Md5: {md5}");
             }
             catch (Exception e)
@@ -1167,9 +1123,7 @@ namespace VisitorIdLib
             {
                 return false; // callers just go about their business
             }
-            // double-write to Postgres and SqlServer, use SQL server response
-            var result = await Data.CallFnString("VisitorId", "ProviderSessionMd5Check", Jw.Json(new { pid = md5pid, vid = sid, md5 }), "");
-            await Data.CallFnString("VisitorId-Pg", "ProviderSessionMd5Check", Jw.Json(new { provider_id = md5pid, session_id = sid, md5 }), "");
+            var result = await Data.CallFnString(DataLayerName, "ProviderSessionMd5Check", Jw.Json(new { pid = md5pid, vid = sid, md5 }), "");
             IGenericEntity geResult;
             try
             {
@@ -1200,63 +1154,6 @@ namespace VisitorIdLib
                 await fw.Error(nameof(ProviderSessionMd5Exists), $"Error checking for record on Md5 Provider {md5pid} for md5 {md5} for session {sid}: Unexpected response from database");
                 return true; // count this as a dupe since we don't want to add another Md5ProviderResponse to the EDW
             }
-        }
-
-        public async Task<string> PostMd5LeadDataToConsole(FrameworkWrapper fw, string md5, string domain, string provider)
-        {
-            await WriteCodePathEvent(PL.O(new { branch = nameof(PostMd5LeadDataToConsole), loc = "start" }), new Dictionary<string, object>());
-            var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
-            var result = await Data.CallFnString("VisitorId", "LookupLeadByMd5", Jw.Json(new { md5 }), "{}", SqlTimeoutSec);
-            if (result == null || result == Jw.Empty)
-            {
-                await fw.Log(nameof(PostMd5LeadDataToConsole), $"Unable to find adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}");
-                return "";
-            }
-
-            var ge = JsonWrapper.JsonToGenericEntity(result);
-            var body = Jw.Json(new
-            {
-                domain_id = fw.StartupConfiguration.GetS("Config/OnPointConsoleDomainId"),
-                email = ge.GetS("Email"),
-                first_name = ge.GetS("FirstName"),
-                last_name = ge.GetS("LastName"),
-                zip_code = ge.GetS("Zip"),
-                original_optin_date = ge.GetS("OptInDate"),
-                original_optin_domain = ge.GetS("OptInDomain"),
-                ip_address = ge.GetS("IP"),
-                label_domain = domain,
-                provider
-            });
-            await fw.Log(nameof(PostMd5LeadDataToConsole), $"Found adequate lead data for md5: {md5} on domain: {domain} from pid: {provider}, as: {ge.GetS("Email")}");
-            PostDataToConsole(fw, ge.GetS("Email"), header, body, nameof(PostMd5LeadDataToConsole));
-            await WriteCodePathEvent(PL.O(new { branch = nameof(PostMd5LeadDataToConsole), loc = "end" }), new Dictionary<string, object>());
-            return body;
-        }
-
-        public async Task<string> PostVisitorIdToConsole(FrameworkWrapper fw, string plainTextEmail, string provider, string domain, string clientIp, string userAgent, string lastVisit)
-        {
-            await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "start" }), new Dictionary<string, object>());
-
-            if (OnPointConsoleDomainId.IsNullOrWhitespace())
-            {
-                await fw.Error(nameof(PostVisitorIdToConsole), $"Console domain id is not set, still posting to Console for email {plainTextEmail}");
-            }
-            var header = Jw.Json(new { svc = 1, page = -1 }, new bool[] { false, false });
-            var body = Jw.Json(new
-            {
-                domain_id = OnPointConsoleDomainId,
-                email = plainTextEmail,
-                user_ip = clientIp,
-                user_agent = userAgent,
-                email_source = "visitorid",
-                provider,
-                isFinal = "true",
-                label_domain = domain,
-                lastVisit
-            });
-            PostDataToConsole(fw, plainTextEmail, header, body, nameof(PostVisitorIdToConsole));
-            await WriteCodePathEvent(PL.O(new { branch = nameof(PostVisitorIdToConsole), loc = "end" }), new Dictionary<string, object>());
-            return body;
         }
 
         public bool? IsExpenseGenerating(FrameworkWrapper fw, string host, string lastSelectedTimeStr, string pid)
@@ -1299,34 +1196,6 @@ namespace VisitorIdLib
             }
             fw.Trace(nameof(IsExpenseGenerating), $"Billing model for host {host} on pid {pid} determined provider response is {(isExpenseGenerating == true ? "" : "not ")}expense generating");
             return isExpenseGenerating;
-        }
-
-        public void PostDataToConsole(FrameworkWrapper fw, string key, string header, string body, string caller)
-        {
-            if (OnPointConsoleUrl.IsNullOrWhitespace())
-            {
-                fw.Error(caller, $"Console endpoint is not set. Failed to post {key} to Console  with data {body}");
-            }
-            var postData = "";
-            var task = new Func<Task>(async () =>
-            {
-                try
-                {
-                    postData = Jw.Json(new
-                    {
-                        header,
-                        body
-                    }, new bool[] { false, false });
-                    await ProtocolClient.HttpPostAsync(OnPointConsoleUrl, postData, "application/json");
-
-                    await fw.Trace(caller, $"Successfully posted {key} to Console endpoint {OnPointConsoleUrl} with data {postData}.");
-                }
-                catch (Exception e)
-                {
-                    await fw.Error(caller, $"Failed to post {key} to Console endpoint {OnPointConsoleUrl} with data {postData}. Exception: {e.UnwrapForLog()}");
-                }
-            });
-            Task.Run(task);
         }
 
         public async Task WriteCodePathRs(PL payload, DateTime timestamp, Guid codePathRsGuid, bool sendPayloadToLog = true)
