@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlTokenizer", "XmlTokenize
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SsisWrapper", "SsisWrapper\SsisWrapper.csproj", "{CC0D9611-69CC-4F52-A7C9-90E562E73BE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeleniumSandbox", "SeleniumSandbox\SeleniumSandbox.csproj", "{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoslynArticleTester", "RoslynArticleTester\RoslynArticleTester.csproj", "{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Seeder", "Seeder", "{5B0E3B8A-B8FE-4948-B66C-C67325A5245B}"
@@ -89,7 +87,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueProcessorLib", "QueueP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadPixelDataLib", "ReadPixelLib\ReadPixelDataLib.csproj", "{8AC259EB-DA55-4B04-AC27-7C7F01810440}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CountdownGeneratorLib", "CountdownGeneratorLib\CountdownGeneratorLib.csproj", "{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountdownGeneratorLib", "CountdownGeneratorLib\CountdownGeneratorLib.csproj", "{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeleniumPostmaster", "SeleniumPostmaster\SeleniumPostmaster.csproj", "{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -158,12 +158,6 @@ Global
 		{CC0D9611-69CC-4F52-A7C9-90E562E73BE3}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{CC0D9611-69CC-4F52-A7C9-90E562E73BE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC0D9611-69CC-4F52-A7C9-90E562E73BE3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A6844695-9E6A-45BB-A6B4-4BA74856A2BA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E521BB46-BB03-467F-B5B5-B102EF2C3E1A}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -320,6 +314,12 @@ Global
 		{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -354,6 +354,7 @@ Global
 		{0559F8C5-7837-4E0A-AD28-422E1E563943} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{8AC259EB-DA55-4B04-AC27-7C7F01810440} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
