@@ -502,8 +502,8 @@
     <access>Native</access>
     <database>signal</database>
     <port>5432</port>
-    <username>admin_user</username>
-    <password>Encrypted 2be98afc85ac9a2abfa17ba318cc2fe83</password>
+    <username>migration_user</username>
+    <password>Encrypted 2be98afc86aa7cbd4f215a17cd782a0ca</password>
     <servername/>
     <data_tablespace/>
     <index_tablespace/>
