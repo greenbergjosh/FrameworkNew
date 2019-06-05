@@ -1,16 +1,5 @@
 import * as Reach from "@reach/router"
-import {
-  Avatar,
-  Button,
-  Col,
-  Divider,
-  Form,
-  Icon,
-  Input,
-  Layout,
-  Row,
-  Typography
-  } from "antd"
+import { Avatar, Button, Col, Divider, Form, Icon, Input, Layout, Row, Typography } from "antd"
 import { none } from "fp-ts/lib/Option"
 import React from "react"
 import { Helmet } from "react-helmet"

@@ -1,18 +1,5 @@
-import {
-  failure,
-  initial,
-  pending,
-  RemoteData,
-  success
-  } from "@devexperts/remote-data-ts"
-import {
-  array,
-  head,
-  mapOption,
-  snoc,
-  sort,
-  uniq
-  } from "fp-ts/lib/Array"
+import { failure, initial, pending, RemoteData, success } from "@devexperts/remote-data-ts"
+import { array, head, mapOption, snoc, sort, uniq } from "fp-ts/lib/Array"
 import { concat, identity, tuple } from "fp-ts/lib/function"
 import { fromNullable, some } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
