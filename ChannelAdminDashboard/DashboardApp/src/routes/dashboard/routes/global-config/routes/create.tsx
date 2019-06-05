@@ -1,15 +1,4 @@
-import {
-  Button,
-  Card,
-  Col,
-  Form,
-  Icon,
-  Input,
-  Modal,
-  Row,
-  Select,
-  Skeleton
-  } from "antd"
+import { Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton } from "antd"
 import * as Formik from "formik"
 import { Do } from "fp-ts-contrib/lib/Do"
 import { array } from "fp-ts/lib/Array"
