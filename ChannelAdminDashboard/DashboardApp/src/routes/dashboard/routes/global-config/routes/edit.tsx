@@ -1,24 +1,10 @@
 import * as Reach from "@reach/router"
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Form,
-  Input,
-  Skeleton,
-  Typography
-  } from "antd"
+import { Alert, Button, Card, Empty, Form, Input, Skeleton, Typography } from "antd"
 import * as Formik from "formik"
 import { array } from "fp-ts/lib/Array"
 import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
-import {
-  fromEither,
-  none,
-  Option,
-  some
-  } from "fp-ts/lib/Option"
+import { fromEither, none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import React from "react"

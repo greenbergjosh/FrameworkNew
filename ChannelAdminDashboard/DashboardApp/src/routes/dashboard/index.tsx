@@ -183,9 +183,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
 
-        <Layout.Content className={`${styles.layoutContainer}`}>
-          {props.children}
-        </Layout.Content>
+        <Layout.Content className={`${styles.layoutContainer}`}>{props.children}</Layout.Content>
 
         <Layout.Footer className={`${styles.layoutContainer}`} style={{ textAlign: "center" }}>
           {`OnPoint Global © ${new Date().getFullYear()}`}

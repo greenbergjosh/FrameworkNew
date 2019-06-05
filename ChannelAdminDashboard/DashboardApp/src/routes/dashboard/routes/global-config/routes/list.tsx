@@ -1,13 +1,7 @@
 import * as Reach from "@reach/router"
 import { ClickParam } from "antd/lib/menu"
 import { ColumnProps } from "antd/lib/table"
-import {
-  isEmpty,
-  mapOption,
-  range,
-  sort,
-  uniq
-  } from "fp-ts/lib/Array"
+import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
 import { none } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
