@@ -1,9 +1,4 @@
-import {
-  Button,
-  Card,
-  Divider,
-  Typography
-  } from "antd"
+import { Button, Card, Divider, Typography } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { ComponentDefinition } from "../../../../components/interface-builder/components/BaseInterfaceComponent"
