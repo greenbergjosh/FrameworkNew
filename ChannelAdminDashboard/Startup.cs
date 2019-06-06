@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using React.AspNet;
 
-namespace OnPoint.Channel.Admin
+namespace Channel.Admin.Dashboard
 {
 	public class Startup
 	{
