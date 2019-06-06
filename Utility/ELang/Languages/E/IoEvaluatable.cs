@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Framework.Core.Languages.E
 {
@@ -13,7 +12,7 @@ namespace Framework.Core.Languages.E
     {
         private static async Task<IDictionary<string, object>> Evaluate(Request request, DictionaryStack parameters)
         {
-            var context = (HttpContextBase)request["HttpContext"];
+            var context = (HttpContext)request["HttpContext"];
 
             var method = parameters.Get<string>("Method");
 
@@ -27,15 +26,13 @@ namespace Framework.Core.Languages.E
             if (method == "Write")
             {
                 string message = string.Concat(Enumerable.Repeat("&nbsp;", indent * 2)) + parameters.Get("Message", "");
-                var bytes = Encoding.Default.GetBytes(message);
-                await context.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+                await context.Response.WriteAsync(message);
                 Debug.Write(message);
             }
             else if (method == "WriteLine")
             {
                 string message = string.Concat(Enumerable.Repeat("&nbsp;", indent * 2)) + parameters.Get("Message", "") + "<br/>" + Environment.NewLine;
-                var bytes = Encoding.Default.GetBytes(message);
-                await context.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+                await context.Response.WriteAsync(message);
                 Debug.Write(message);
             }
             else if (method == "Indent")
