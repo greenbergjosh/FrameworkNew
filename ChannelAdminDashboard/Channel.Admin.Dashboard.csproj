@@ -3,6 +3,9 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore" Version="3.0.1" />
     <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.linux-x64" Version="3.0.1" />
     <PackageReference Include="JavaScriptEngineSwitcher.ChakraCore.Native.osx-x64" Version="3.0.1" />

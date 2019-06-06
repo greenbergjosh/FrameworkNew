@@ -1,0 +1,76 @@
+$white: #fff;
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #868e96;
+$gray-700: #495057;
+$gray-800: #373a3c;
+$gray-900: #212529;
+$black: #000;
+
+$blue: #2780e3;
+$indigo: #6610f2;
+$purple: #613d7c;
+$pink: #e83e8c;
+$red: #ff0039;
+$orange: #f2661f;
+$yellow: #bed32b;
+$green: #3fb618;
+$teal: #20c997;
+$cyan: #9954bb;
+$lightblue: lighten($blue, 20%);
+
+$primary: $blue;
+$secondary: $orange;
+$success: $green;
+$info: $lightblue;
+$warning: $yellow;
+$danger: $red;
+$light: $gray-100;
+$dark: $gray-800;
+
+@import "~bootswatch/dist/simplex/_variables.scss";
+@import "~bootstrap/scss/bootstrap.scss";
+@import "~bootswatch/dist/simplex/_bootswatch.scss";
+@import "~font-awesome/css/font-awesome.css";
+@import "~formiojs/dist/formio.full.css";
+
+.logo {
+  height: 1.9em;
+}
+
+.text-blue {
+  color: #127abf;
+}
+
+.text-green {
+  color: #449414;
+}
+
+.hero-image {
+  display: inline;
+  height: 2em;
+}
+
+#main {
+  margin-top: 10px;
+}
+
+.large-container {
+  min-height: 300px;
+  width: 100%;
+}
+
+.anticon svg {
+  vertical-align: baseline;
+}
+
+button.btn.btn-block.builder-group-button {
+  padding: 2px 7px;
+}
+
+.formio-form .alert.alert-success {
+  display: none;
+}
