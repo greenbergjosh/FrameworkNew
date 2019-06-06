@@ -101,23 +101,30 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
                         "json",
                         adapter
                       )
-                      const oldSetModelMarkers = monaco.editor.setModelMarkers
-                      monaco.editor.setModelMarkers = (model, language, markers) => {
-                        oldSetModelMarkers.call(monaco.editor, model, language, markers)
-                        const errors = markers
-                          .filter((marker) => marker.severity === monacoEditor.MarkerSeverity.Error)
-                          .map(
-                            (marker) =>
-                              `${marker.message} on line ${marker.startLineNumber}:${
-                                marker.startColumn
-                              }`
-                          )
-                        if (props.onChange) {
-                          props.onChange({
-                            value: model.getValue(),
-                            errors: some(errors),
-                          })
+                      //@ts-ignore
+                      if (!monaco.editor.setModelMarkers._monkeyPatched) {
+                        const oldSetModelMarkers = monaco.editor.setModelMarkers
+                        monaco.editor.setModelMarkers = (model, language, markers) => {
+                          oldSetModelMarkers.call(monaco.editor, model, language, markers)
+                          const errors = markers
+                            .filter(
+                              (marker) => marker.severity === monacoEditor.MarkerSeverity.Error
+                            )
+                            .map(
+                              (marker) =>
+                                `${marker.message} on line ${marker.startLineNumber}:${
+                                  marker.startColumn
+                                }`
+                            )
+                          if (props.onChange) {
+                            props.onChange({
+                              value: model.getValue(),
+                              errors: some(errors),
+                            })
+                          }
                         }
+                        //@ts-ignore
+                        monaco.editor.setModelMarkers._monkeyPatched = true
                       }
 
                       setLocalState({ disposables: [linkDisposable, hoverDisposable] })

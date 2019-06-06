@@ -1,8 +1,11 @@
+import { init } from "@rematch/core"
 import React from "react"
 import ReactFormBase from "../ReactFormBase"
 import editForm from "./date.form"
 
-interface DateOptions {}
+interface DateOptions {
+  value: string
+}
 
 export default class DateFormComponent extends ReactFormBase<DateOptions> {
   static schema(...extend: any[]) {
@@ -27,8 +30,9 @@ export default class DateFormComponent extends ReactFormBase<DateOptions> {
 
   constructor(component: any, options: any, data: any) {
     super(component, options, data)
-
-    this.state = {}
+    this.state = {
+      value: "",
+    }
   }
 
   render(): JSX.Element {
@@ -36,7 +40,7 @@ export default class DateFormComponent extends ReactFormBase<DateOptions> {
   }
 
   get emptyValue() {
-    return {}
+    return ""
   }
 
   get defaultSchema() {

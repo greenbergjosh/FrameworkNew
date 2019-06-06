@@ -8,9 +8,11 @@ import editForm from "./date-range.form"
 type ISO8601String = string
 
 interface DateRangeOptions {
-  _unrollValue: boolean
-  data: {
-    [key: string]: ISO8601String | null
+  value: {
+    _unrollValue: boolean
+    data: {
+      [key: string]: ISO8601String | null
+    }
   }
 }
 
@@ -75,20 +77,22 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
 
   constructor(component: any, options: any, data: any) {
     super(component, options, data)
-
     const range = DateRangeFormComponent.standardRanges()[component.defaultRangeValue]
 
     this.state = {
-      _unrollValue: true,
-      data: {
-        [component.startDateKey]: Array.isArray(range) && range[0] ? range[0].toISOString() : null,
-        [component.endDateKey]: Array.isArray(range) && range[1] ? range[1].toISOString() : null,
+      value: {
+        _unrollValue: true,
+        data: {
+          [component.startDateKey]:
+            Array.isArray(range) && range[0] ? range[0].toISOString() : null,
+          [component.endDateKey]: Array.isArray(range) && range[1] ? range[1].toISOString() : null,
+        },
       },
     }
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
-    this.setState({
+    this.setValue({
       _unrollValue: true,
       data: {
         [this.component.startDateKey]:
@@ -100,8 +104,8 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
   }
 
   render(): JSX.Element {
-    const startDateValue = this.state.data[this.component.startDateKey]
-    const endDateValue = this.state.data[this.component.endDateKey]
+    const startDateValue = this.state.value.data[this.component.startDateKey]
+    const endDateValue = this.state.value.data[this.component.endDateKey]
     const value = [moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]
     return (
       <DatePicker.RangePicker
@@ -112,7 +116,7 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
     )
   }
 
-  isEmpty(value: DateRangeOptions) {
+  isEmpty(value: DateRangeOptions["value"]) {
     return (
       !value ||
       !value.data ||
@@ -134,7 +138,7 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
     }
   }
 
-  setValue(value: DateRangeOptions) {
+  setValue(value: DateRangeOptions["value"]) {
     super.setValue(value)
   }
 

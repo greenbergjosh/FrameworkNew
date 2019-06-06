@@ -1,3 +1,4 @@
+import { init } from "@rematch/core"
 import { some } from "fp-ts/lib/Option"
 import React from "react"
 import { CodeEditor } from "../../code-editor"
@@ -45,7 +46,7 @@ export default class CodeEditorFormComponent extends ReactFormBase<EditorOptions
     this.state = {
       lang: component.defaultLanguage,
       theme: component.defaultTheme,
-      value: component.defaultValue,
+      value: this.emptyValue,
     }
   }
 
@@ -60,17 +61,15 @@ export default class CodeEditorFormComponent extends ReactFormBase<EditorOptions
         language={lang}
         theme={theme}
         width="100%"
-        onChange={({ value }) => this.setState({ value })}
+        onChange={({ value: newValue }) =>
+          (newValue || "") !== (value || "") && this.setState({ value: newValue, lang, theme })
+        }
       />
     )
   }
 
   get emptyValue() {
-    return {
-      lang: this.component.defaultLanguage || "json",
-      theme: this.component.defaultTheme || "vs",
-      value: this.component.defaultValue || 'function foo() {\n  console.log("Hello World!")\n}',
-    }
+    return this.component.defaultValue || 'function foo() {\n  console.log("Hello World!")\n}'
   }
 
   get defaultSchema() {
