@@ -1,0 +1,2505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>Materialized Dimensions</name>
+    <description/>
+    <extended_description/>
+    <trans_version/>
+    <trans_type>Normal</trans_type>
+    <trans_status>0</trans_status>
+    <directory>/</directory>
+    <parameters>
+    </parameters>
+    <log>
+      <trans-log-table>
+        <connection/>
+        <schema/>
+        <table/>
+        <size_limit_lines/>
+        <interval/>
+        <timeout_days/>
+        <field>
+          <id>ID_BATCH</id>
+          <enabled>Y</enabled>
+          <name>ID_BATCH</name>
+        </field>
+        <field>
+          <id>CHANNEL_ID</id>
+          <enabled>Y</enabled>
+          <name>CHANNEL_ID</name>
+        </field>
+        <field>
+          <id>TRANSNAME</id>
+          <enabled>Y</enabled>
+          <name>TRANSNAME</name>
+        </field>
+        <field>
+          <id>STATUS</id>
+          <enabled>Y</enabled>
+          <name>STATUS</name>
+        </field>
+        <field>
+          <id>LINES_READ</id>
+          <enabled>Y</enabled>
+          <name>LINES_READ</name>
+          <subject/>
+        </field>
+        <field>
+          <id>LINES_WRITTEN</id>
+          <enabled>Y</enabled>
+          <name>LINES_WRITTEN</name>
+          <subject/>
+        </field>
+        <field>
+          <id>LINES_UPDATED</id>
+          <enabled>Y</enabled>
+          <name>LINES_UPDATED</name>
+          <subject/>
+        </field>
+        <field>
+          <id>LINES_INPUT</id>
+          <enabled>Y</enabled>
+          <name>LINES_INPUT</name>
+          <subject/>
+        </field>
+        <field>
+          <id>LINES_OUTPUT</id>
+          <enabled>Y</enabled>
+          <name>LINES_OUTPUT</name>
+          <subject/>
+        </field>
+        <field>
+          <id>LINES_REJECTED</id>
+          <enabled>Y</enabled>
+          <name>LINES_REJECTED</name>
+          <subject/>
+        </field>
+        <field>
+          <id>ERRORS</id>
+          <enabled>Y</enabled>
+          <name>ERRORS</name>
+        </field>
+        <field>
+          <id>STARTDATE</id>
+          <enabled>Y</enabled>
+          <name>STARTDATE</name>
+        </field>
+        <field>
+          <id>ENDDATE</id>
+          <enabled>Y</enabled>
+          <name>ENDDATE</name>
+        </field>
+        <field>
+          <id>LOGDATE</id>
+          <enabled>Y</enabled>
+          <name>LOGDATE</name>
+        </field>
+        <field>
+          <id>DEPDATE</id>
+          <enabled>Y</enabled>
+          <name>DEPDATE</name>
+        </field>
+        <field>
+          <id>REPLAYDATE</id>
+          <enabled>Y</enabled>
+          <name>REPLAYDATE</name>
+        </field>
+        <field>
+          <id>LOG_FIELD</id>
+          <enabled>Y</enabled>
+          <name>LOG_FIELD</name>
+        </field>
+        <field>
+          <id>EXECUTING_SERVER</id>
+          <enabled>N</enabled>
+          <name>EXECUTING_SERVER</name>
+        </field>
+        <field>
+          <id>EXECUTING_USER</id>
+          <enabled>N</enabled>
+          <name>EXECUTING_USER</name>
+        </field>
+        <field>
+          <id>CLIENT</id>
+          <enabled>N</enabled>
+          <name>CLIENT</name>
+        </field>
+      </trans-log-table>
+      <perf-log-table>
+        <connection/>
+        <schema/>
+        <table/>
+        <interval/>
+        <timeout_days/>
+        <field>
+          <id>ID_BATCH</id>
+          <enabled>Y</enabled>
+          <name>ID_BATCH</name>
+        </field>
+        <field>
+          <id>SEQ_NR</id>
+          <enabled>Y</enabled>
+          <name>SEQ_NR</name>
+        </field>
+        <field>
+          <id>LOGDATE</id>
+          <enabled>Y</enabled>
+          <name>LOGDATE</name>
+        </field>
+        <field>
+          <id>TRANSNAME</id>
+          <enabled>Y</enabled>
+          <name>TRANSNAME</name>
+        </field>
+        <field>
+          <id>STEPNAME</id>
+          <enabled>Y</enabled>
+          <name>STEPNAME</name>
+        </field>
+        <field>
+          <id>STEP_COPY</id>
+          <enabled>Y</enabled>
+          <name>STEP_COPY</name>
+        </field>
+        <field>
+          <id>LINES_READ</id>
+          <enabled>Y</enabled>
+          <name>LINES_READ</name>
+        </field>
+        <field>
+          <id>LINES_WRITTEN</id>
+          <enabled>Y</enabled>
+          <name>LINES_WRITTEN</name>
+        </field>
+        <field>
+          <id>LINES_UPDATED</id>
+          <enabled>Y</enabled>
+          <name>LINES_UPDATED</name>
+        </field>
+        <field>
+          <id>LINES_INPUT</id>
+          <enabled>Y</enabled>
+          <name>LINES_INPUT</name>
+        </field>
+        <field>
+          <id>LINES_OUTPUT</id>
+          <enabled>Y</enabled>
+          <name>LINES_OUTPUT</name>
+        </field>
+        <field>
+          <id>LINES_REJECTED</id>
+          <enabled>Y</enabled>
+          <name>LINES_REJECTED</name>
+        </field>
+        <field>
+          <id>ERRORS</id>
+          <enabled>Y</enabled>
+          <name>ERRORS</name>
+        </field>
+        <field>
+          <id>INPUT_BUFFER_ROWS</id>
+          <enabled>Y</enabled>
+          <name>INPUT_BUFFER_ROWS</name>
+        </field>
+        <field>
+          <id>OUTPUT_BUFFER_ROWS</id>
+          <enabled>Y</enabled>
+          <name>OUTPUT_BUFFER_ROWS</name>
+        </field>
+      </perf-log-table>
+      <channel-log-table>
+        <connection/>
+        <schema/>
+        <table/>
+        <timeout_days/>
+        <field>
+          <id>ID_BATCH</id>
+          <enabled>Y</enabled>
+          <name>ID_BATCH</name>
+        </field>
+        <field>
+          <id>CHANNEL_ID</id>
+          <enabled>Y</enabled>
+          <name>CHANNEL_ID</name>
+        </field>
+        <field>
+          <id>LOG_DATE</id>
+          <enabled>Y</enabled>
+          <name>LOG_DATE</name>
+        </field>
+        <field>
+          <id>LOGGING_OBJECT_TYPE</id>
+          <enabled>Y</enabled>
+          <name>LOGGING_OBJECT_TYPE</name>
+        </field>
+        <field>
+          <id>OBJECT_NAME</id>
+          <enabled>Y</enabled>
+          <name>OBJECT_NAME</name>
+        </field>
+        <field>
+          <id>OBJECT_COPY</id>
+          <enabled>Y</enabled>
+          <name>OBJECT_COPY</name>
+        </field>
+        <field>
+          <id>REPOSITORY_DIRECTORY</id>
+          <enabled>Y</enabled>
+          <name>REPOSITORY_DIRECTORY</name>
+        </field>
+        <field>
+          <id>FILENAME</id>
+          <enabled>Y</enabled>
+          <name>FILENAME</name>
+        </field>
+        <field>
+          <id>OBJECT_ID</id>
+          <enabled>Y</enabled>
+          <name>OBJECT_ID</name>
+        </field>
+        <field>
+          <id>OBJECT_REVISION</id>
+          <enabled>Y</enabled>
+          <name>OBJECT_REVISION</name>
+        </field>
+        <field>
+          <id>PARENT_CHANNEL_ID</id>
+          <enabled>Y</enabled>
+          <name>PARENT_CHANNEL_ID</name>
+        </field>
+        <field>
+          <id>ROOT_CHANNEL_ID</id>
+          <enabled>Y</enabled>
+          <name>ROOT_CHANNEL_ID</name>
+        </field>
+      </channel-log-table>
+      <step-log-table>
+        <connection/>
+        <schema/>
+        <table/>
+        <timeout_days/>
+        <field>
+          <id>ID_BATCH</id>
+          <enabled>Y</enabled>
+          <name>ID_BATCH</name>
+        </field>
+        <field>
+          <id>CHANNEL_ID</id>
+          <enabled>Y</enabled>
+          <name>CHANNEL_ID</name>
+        </field>
+        <field>
+          <id>LOG_DATE</id>
+          <enabled>Y</enabled>
+          <name>LOG_DATE</name>
+        </field>
+        <field>
+          <id>TRANSNAME</id>
+          <enabled>Y</enabled>
+          <name>TRANSNAME</name>
+        </field>
+        <field>
+          <id>STEPNAME</id>
+          <enabled>Y</enabled>
+          <name>STEPNAME</name>
+        </field>
+        <field>
+          <id>STEP_COPY</id>
+          <enabled>Y</enabled>
+          <name>STEP_COPY</name>
+        </field>
+        <field>
+          <id>LINES_READ</id>
+          <enabled>Y</enabled>
+          <name>LINES_READ</name>
+        </field>
+        <field>
+          <id>LINES_WRITTEN</id>
+          <enabled>Y</enabled>
+          <name>LINES_WRITTEN</name>
+        </field>
+        <field>
+          <id>LINES_UPDATED</id>
+          <enabled>Y</enabled>
+          <name>LINES_UPDATED</name>
+        </field>
+        <field>
+          <id>LINES_INPUT</id>
+          <enabled>Y</enabled>
+          <name>LINES_INPUT</name>
+        </field>
+        <field>
+          <id>LINES_OUTPUT</id>
+          <enabled>Y</enabled>
+          <name>LINES_OUTPUT</name>
+        </field>
+        <field>
+          <id>LINES_REJECTED</id>
+          <enabled>Y</enabled>
+          <name>LINES_REJECTED</name>
+        </field>
+        <field>
+          <id>ERRORS</id>
+          <enabled>Y</enabled>
+          <name>ERRORS</name>
+        </field>
+        <field>
+          <id>LOG_FIELD</id>
+          <enabled>N</enabled>
+          <name>LOG_FIELD</name>
+        </field>
+      </step-log-table>
+      <metrics-log-table>
+        <connection/>
+        <schema/>
+        <table/>
+        <timeout_days/>
+        <field>
+          <id>ID_BATCH</id>
+          <enabled>Y</enabled>
+          <name>ID_BATCH</name>
+        </field>
+        <field>
+          <id>CHANNEL_ID</id>
+          <enabled>Y</enabled>
+          <name>CHANNEL_ID</name>
+        </field>
+        <field>
+          <id>LOG_DATE</id>
+          <enabled>Y</enabled>
+          <name>LOG_DATE</name>
+        </field>
+        <field>
+          <id>METRICS_DATE</id>
+          <enabled>Y</enabled>
+          <name>METRICS_DATE</name>
+        </field>
+        <field>
+          <id>METRICS_CODE</id>
+          <enabled>Y</enabled>
+          <name>METRICS_CODE</name>
+        </field>
+        <field>
+          <id>METRICS_DESCRIPTION</id>
+          <enabled>Y</enabled>
+          <name>METRICS_DESCRIPTION</name>
+        </field>
+        <field>
+          <id>METRICS_SUBJECT</id>
+          <enabled>Y</enabled>
+          <name>METRICS_SUBJECT</name>
+        </field>
+        <field>
+          <id>METRICS_TYPE</id>
+          <enabled>Y</enabled>
+          <name>METRICS_TYPE</name>
+        </field>
+        <field>
+          <id>METRICS_VALUE</id>
+          <enabled>Y</enabled>
+          <name>METRICS_VALUE</name>
+        </field>
+      </metrics-log-table>
+    </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+    </maxdate>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>50000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <step_performance_capturing_size_limit>100</step_performance_capturing_size_limit>
+    <dependencies>
+    </dependencies>
+    <partitionschemas>
+    </partitionschemas>
+    <slaveservers>
+    </slaveservers>
+    <clusterschemas>
+    </clusterschemas>
+    <created_user>-</created_user>
+    <created_date>2019/04/30 15:19:01.136</created_date>
+    <modified_user>-</modified_user>
+    <modified_date>2019/04/30 15:19:01.136</modified_date>
+    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
+    <is_key_private>N</is_key_private>
+  </info>
+  <notepads>
+  </notepads>
+  <connection>
+    <name>PG.dims on 54.39.100.10</name>
+    <server>54.39.100.10</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>signal</database>
+    <port>5432</port>
+    <username>migration_user</username>
+    <password>Encrypted 2be98afc86aa7cbd4f215a17cd782a0ca</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_LOWERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_UPPERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>IS_CLUSTERED</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>PORT_NUMBER</code>
+        <attribute>5432</attribute>
+      </attribute>
+      <attribute>
+        <code>PRESERVE_RESERVED_WORD_CASE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>QUOTE_ALL_FIELDS</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_BOOLEAN_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_TIMESTAMP_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>USE_POOLING</code>
+        <attribute>N</attribute>
+      </attribute>
+    </attributes>
+  </connection>
+  <order>
+    <hop>
+      <from>staged rent_or_own</from>
+      <to>-> dims.rent_or_own</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged charity</from>
+      <to>-> dims.charity</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged education</from>
+      <to>-> dims.education</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged ethnicity</from>
+      <to>-> dims.ethnicity</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged gender</from>
+      <to>-> dims.gender</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged height</from>
+      <to>-> dims.height</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged home_value</from>
+      <to>-> dims.home_value</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged household_income</from>
+      <to>-> dims.household_income</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged language</from>
+      <to>-> dims.language</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged magazine</from>
+      <to>-> dims.magazine</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged merchandise</from>
+      <to>-> dims.merchandise</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged mortgage</from>
+      <to>-> dims.mortgage</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged music_song</from>
+      <to>-> dims.music_song</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged occupation</from>
+      <to>-> dims.occupation</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged religion</from>
+      <to>-> dims.religion</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged wealth_rating</from>
+      <to>-> dims.wealth_rating</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>staged weight</from>
+      <to>-> dims.weight</to>
+      <enabled>Y</enabled>
+    </hop>
+  </order>
+  <step>
+    <name>-> dims.charity</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>charity</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>charity_type_id</stream_name>
+      <field_name>charity_type_id</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.education</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>education</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>education_type_id</stream_name>
+      <field_name>id</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>112</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.ethnicity</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>ethnicity</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>ethnicity_type_id</stream_name>
+      <field_name>ethnicity_type_id</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>206</xloc>
+      <yloc>180</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.gender</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>gender</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>gender</stream_name>
+      <field_name>min</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.height</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>height</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>height</stream_name>
+      <field_name>max</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.home_value</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>home_value</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>home_value</stream_name>
+      <field_name>home_value</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>368</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.household_income</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>household_income</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>income_bracket</stream_name>
+      <field_name>max</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>432</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.language</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>language</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>language_type_id</stream_name>
+      <field_name>language_type_id</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>496</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.magazine</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>magazine</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>magazine_type_id</stream_name>
+      <field_name>magazine_type_id</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>208</xloc>
+      <yloc>560</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.merchandise</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>merchandise</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>merchandise_type_id</stream_name>
+      <field_name>merchandise_type_id</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.mortgage</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>mortgage</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>lender</stream_name>
+      <field_name>lender</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>loan_type</stream_name>
+      <field_name>loan_type</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>term_in_months</stream_name>
+      <field_name>term_in_months</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>rate_type</stream_name>
+      <field_name>rate_type</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>amount</stream_name>
+      <field_name>amount</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>home_purchase_date</stream_name>
+      <field_name>home_purchase_date</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>112</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.music_song</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>music_song</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>music_song</stream_name>
+      <field_name>music_song</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>176</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.occupation</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>occupation</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>occupation</stream_name>
+      <field_name>occupation</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.religion</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>religion</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>religion</stream_name>
+      <field_name>religion</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.rent_or_own</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>rent_or_own</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>rent_or_own</stream_name>
+      <field_name>rent_or_own</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>368</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.wealth_rating</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>wealth_rating</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>wealth_rating</stream_name>
+      <field_name>wealth_rating</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>432</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>-> dims.weight</name>
+    <type>PGBulkLoader</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <schema>dimensions_by_email_id</schema>
+    <table>weight</table>
+    <load_action>TRUNCATE</load_action>
+    <dbname_override/>
+    <enclosure>"</enclosure>
+    <delimiter>;</delimiter>
+    <stop_on_error>N</stop_on_error>
+    <mapping>
+      <stream_name>first_seen_date</stream_name>
+      <field_name>first_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>last_seen_date</stream_name>
+      <field_name>last_seen_date</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>count_seen</stream_name>
+      <field_name>count_seen</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>email_id</stream_name>
+      <field_name>email_md5</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>min_weight</stream_name>
+      <field_name>min</field_name>
+      <date_mask/>
+    </mapping>
+    <mapping>
+      <stream_name>max_weight</stream_name>
+      <field_name>max</field_name>
+      <date_mask/>
+    </mapping>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>496</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged charity</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	charity_type_id,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.charity dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.charity dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY charity_type_id, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged education</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	(select id
+	 from shared_dimensions.education_type_with_priority
+	 where seq_priority=MIN(t.seq_priority)),
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.education dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.education dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) x
+inner join shared_dimensions.education_type_with_priority t
+	ON x.education_type_id=t.id
+GROUP BY email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>112</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged ethnicity</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	ethnicity_type_id,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.ethnicity dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.ethnicity dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY ethnicity_type_id, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>176</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged gender</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	MIN(gender),
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.gender dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.gender dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged height</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	MAX(height),
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.height dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.height dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged home_value</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	home_value,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.home_value dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.home_value dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY home_value, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>368</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged household_income</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	MAX(income_bracket),
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.household_income dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.household_income dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>432</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged language</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	language_type_id,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.language dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.language dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY language_type_id, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>496</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged magazine</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	magazine_type_id,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.magazine dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.magazine dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY magazine_type_id, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>80</xloc>
+      <yloc>560</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged merchandise</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	merchandise_type_id,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.merchandise dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.merchandise dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY merchandise_type_id, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged mortgage</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	lender, loan_type, rate_type, amount, term_in_months, home_purchase_date,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.mortgage dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.mortgage dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY lender, loan_type, rate_type, amount, term_in_months, home_purchase_date, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>112</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged music_song</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	music_song,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.music_song dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.music_song dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY music_song, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>176</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged occupation</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	occupation,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.occupation dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.occupation dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY occupation, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>240</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged religion</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	religion,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.religion dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.religion dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY religion, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>304</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged rent_or_own</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	rent_or_own, 
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		rent_or_own
+	from migration_staging.rent_or_own dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		rent_or_own
+	from migration_staging.rent_or_own dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY rent_or_own, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>368</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged wealth_rating</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	wealth_rating,
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.wealth_rating dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.wealth_rating dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY wealth_rating, email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>432</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>staged weight</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>PG.dims on 54.39.100.10</connection>
+    <sql>
+SELECT 
+	email_md5,
+	MIN(min_weight),
+	MAX(max_weight),
+	'1/1/2013' first_seen_date, 
+	'1/1/2013' last_seen_date, 
+	count(email_md5) count_seen
+FROM (
+	select 
+		md5(lower(e.email))::uuid email_md5,
+		dim.*
+	from migration_staging.weight dim 
+	inner join migration_staging.email e on dim.email_id = e.email_id
+		union
+	select
+		d.email_md5,
+		dim.*
+	from migration_staging.weight dim 
+	inner join migration_staging.email_md5 d on dim.email_id = d.email_id
+) _
+GROUP BY email_md5
+</sql>
+    <limit>0</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>496</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step_error_handling>
+  </step_error_handling>
+  <slave-step-copy-partition-distribution>
+  </slave-step-copy-partition-distribution>
+  <slave_transformation>N</slave_transformation>
+  <attributes/>
+</transformation>

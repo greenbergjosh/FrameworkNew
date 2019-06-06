@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://tempuri.org/XMLSchema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:mstns="http://tempuri.org/XMLSchema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:complexType name="valueType" mixed="true">
+    <xs:choice>
+      <xs:element name="dict" type="dictType" minOccurs="0" />
+      <xs:element name="list" type="listType" minOccurs="0" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="dictType">
+    <xs:sequence>
+      <xs:element name="pair" type="pairType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="pairType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="value" type="valueType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="listType">
+    <xs:sequence>
+      <xs:element name="item" type="itemType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="itemType">
+    <xs:sequence>
+      <xs:element name="value" type="valueType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="value" type="valueType"/>
+</xs:schema>
