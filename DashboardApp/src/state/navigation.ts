@@ -15,6 +15,7 @@ import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/route
 import { Reports } from "../routes/dashboard/routes/reports"
 import { ReportView } from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
+import { UserInterfaceTest } from "../routes/dashboard/routes/user-interface-test"
 import { Landing } from "../routes/landing"
 import { Profile } from "./iam"
 import * as Store from "./store.types"
@@ -245,6 +246,19 @@ const FormEditorSandbox = mkAuthenticatedRoute({
   subroutes: {},
 })
 
+const UserInterfaceSandbox = mkAuthenticatedRoute({
+  abs: "/dashboard/user-interface-test",
+  component: UserInterfaceTest,
+  description: "User Interface Test",
+  title: "User Interface Test",
+  iconType: "form",
+  path: "user-interface-test",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
+  shouldAppearInSideNav: true,
+  subroutes: {},
+})
+
 const staticRoutesMap = {
   login: {
     abs: "/login",
@@ -380,6 +394,18 @@ const staticRoutesMap = {
         title: "Form Editor Test",
         iconType: "form",
         path: "form-editor-test",
+        redirectFrom: [],
+        requiresAuthentication: true as const,
+        shouldAppearInSideNav: true,
+        subroutes: {},
+      },
+      "user-interface-test": {
+        abs: "/dashboard/user-interface-test",
+        component: UserInterfaceTest,
+        description: "User Interface Test",
+        title: "User Interface Test",
+        iconType: "form",
+        path: "user-interface-test",
         redirectFrom: [],
         requiresAuthentication: true as const,
         shouldAppearInSideNav: true,

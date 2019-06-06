@@ -16,13 +16,16 @@ Components.setComponents({
   "code-editor": CodeEditorFormComponent,
   date: DateFormComponent,
   "date-range": DateRangeFormComponent,
-  // select: SelectFormComponent,
+  select: SelectFormComponent,
 })
 
 interface Props {}
 
 export function FormEditorTest({ children, ...props }: WithRouteProps<Props>): JSX.Element {
-  const [schema, setSchema] = React.useState({ display: "form" })
+  const [schema, setSchema] = React.useState({
+    display: "form",
+    context: { sssdfsfd: "Sfsdfdfff" },
+  })
 
   return (
     <div>
