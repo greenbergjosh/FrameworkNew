@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{d0fa4e13-c6ad-4947-831e-90c5e6f84d25}</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <ProjectView>ShowAllFiles</ProjectView>
+    <StartupFile />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <EnableTypeScript>true</EnableTypeScript>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">16.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <StartWebBrowser>True</StartWebBrowser>
+    <Environment>scripts-prepend-node-path=true</Environment>
+    <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
+    <NodeExePath>C:\Program Files\nodejs\node.exe</NodeExePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <ItemGroup>
+    <Content Include="package-lock.json" />
+    <Content Include="package.json" />
+    <None Include="tsconfig.json" />
+    <Content Include="README.md" />
+    <Content Include="public\index.html" />
+    <Content Include="public\favicon.ico" />
+    <Content Include="public\manifest.json" />
+    <Content Include="src\App.module.css" />
+    <Content Include="src\index.css" />
+    <None Include="src\App.module.css.d.ts" />
+    <None Include="src\react-app-env.d.ts" />
+    <None Include="src\serviceWorker.ts" />
+    <None Include="src\App.test.tsx" />
+    <None Include="src\App.tsx" />
+    <None Include="src\index.tsx" />
+    <None Include="types\formiojs.d.ts" />
+    <None Include="src\@types\antd.d.ts" />
+    <None Include="src\@types\dom.d.ts" />
+    <None Include="src\@types\global.d.ts" />
+    <None Include="src\@types\reach__component-component.d.ts" />
+    <None Include="src\components\code-editor.tsx" />
+    <None Include="src\components\loading.tsx" />
+    <None Include="src\components\space.tsx" />
+    <None Include="src\data\AdminApi.ts" />
+    <None Include="src\data\Either.ts" />
+    <None Include="src\data\GlobalConfig.Config.ts" />
+    <None Include="src\data\JSON.ts" />
+    <None Include="src\data\Option.ts" />
+    <None Include="src\data\Report.ts" />
+    <None Include="src\data\These.ts" />
+    <None Include="src\data\Validator.ts" />
+    <None Include="src\hooks\index.ts" />
+    <None Include="src\hooks\use-memo-plus.ts" />
+    <None Include="src\hooks\use-rematch.ts" />
+    <None Include="src\hooks\use-state-plus.ts" />
+    <None Include="src\hooks\use-task-remote-data.ts" />
+    <Content Include="src\images\go-get-em-coffee-mug.jpg" />
+    <None Include="src\lib\assert-never.ts" />
+    <None Include="src\lib\decoder.ts" />
+    <None Include="src\lib\http.ts" />
+    <None Include="src\lib\json.ts" />
+    <None Include="src\lib\object.ts" />
+    <None Include="src\lib\regexp.ts" />
+    <None Include="src\lib\string.ts" />
+    <Content Include="src\mock-data\admin-config.json" />
+    <Content Include="src\mock-data\entity-manager.json" />
+    <Content Include="src\mock-data\global-config.json" />
+    <Content Include="src\mock-data\report-config.json" />
+    <Content Include="src\mock-data\visitor-id-report-details.json" />
+    <Content Include="src\mock-data\visitor-id-report.json" />
+    <None Include="src\state\admin-config.ts" />
+    <None Include="src\state\feedback.ts" />
+    <None Include="src\state\gapi-auth.ts" />
+    <None Include="src\state\global-config.ts" />
+    <None Include="src\state\iam.ts" />
+    <None Include="src\state\loading.ts" />
+    <None Include="src\state\logger.ts" />
+    <None Include="src\state\navigation.ts" />
+    <None Include="src\state\remote-data-client.ts" />
+    <None Include="src\state\reports.ts" />
+    <None Include="src\state\store.ts" />
+    <None Include="src\state\store.types.ts" />
+    <None Include="src\state\__template_model__.ts" />
+    <None Include="src\@types\formio\index.d.ts" />
+    <None Include="src\@types\react-formio\index.d.ts" />
+    <None Include="src\components\auth\GoogleAuth.tsx" />
+    <None Include="src\components\button\confirmable-delete.tsx" />
+    <None Include="src\components\form-io\index.ts" />
+    <None Include="src\components\form-io\ReactFormBase.tsx" />
+    <Content Include="src\components\mock-dnd-dashboard-panel\sample-dash.png" />
+    <None Include="src\components\mock-dnd-dashboard-panel\index.tsx" />
+    <None Include="src\components\form-io\button\ButtonFormComponent.tsx" />
+    <None Include="src\components\form-io\code-editor\CodeEditorFormComponent.tsx" />
+    <None Include="src\components\form-io\date\DateFormComponent.tsx" />
+    <None Include="src\components\form-io\date-range\DateRangeFormComponent.tsx" />
+    <None Include="src\components\form-io\select\SelectFormComponent.tsx" />
+    <Content Include="src\routes\dashboard\dashboard.module.css" />
+    <None Include="src\routes\dashboard\dashboard.module.css.d.ts" />
+    <None Include="src\routes\dashboard\index.tsx" />
+    <Content Include="src\routes\landing\landing.module.css" />
+    <None Include="src\routes\landing\landing.module.css.d.ts" />
+    <None Include="src\routes\landing\index.tsx" />
+    <None Include="src\routes\not-found\index.tsx" />
+    <None Include="src\routes\dashboard\routes\form-editor-test\index.tsx" />
+    <None Include="src\routes\dashboard\routes\global-config\index.tsx" />
+    <None Include="src\routes\dashboard\routes\reports\index.tsx" />
+    <None Include="src\routes\dashboard\routes\summary\index.tsx" />
+    <None Include="src\routes\dashboard\routes\global-config\routes\create.tsx" />
+    <None Include="src\routes\dashboard\routes\global-config\routes\edit.tsx" />
+    <None Include="src\routes\dashboard\routes\global-config\routes\list.tsx" />
+    <None Include="src\routes\dashboard\routes\global-config\routes\show.tsx" />
+    <None Include="src\routes\dashboard\routes\reports\routes\report\generators.ts" />
+    <None Include="src\routes\dashboard\routes\reports\routes\report\ReportOrErrors.module.scss.d.ts" />
+    <None Include="src\routes\dashboard\routes\reports\routes\report\index.tsx" />
+    <None Include="src\routes\dashboard\routes\reports\routes\report\QueryForm.tsx" />
+    <None Include="src\routes\dashboard\routes\reports\routes\report\ReportOrErrors.tsx" />
+    <Content Include="src\styles\syncfusion\bootstrap4-orange.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="public" />
+    <Folder Include="src" />
+    <Folder Include="src\@types" />
+    <Folder Include="src\@types\formio" />
+    <Folder Include="src\@types\react-formio" />
+    <Folder Include="src\components" />
+    <Folder Include="src\components\auth" />
+    <Folder Include="src\components\button" />
+    <Folder Include="src\components\form-io" />
+    <Folder Include="src\components\form-io\button" />
+    <Folder Include="src\components\form-io\code-editor" />
+    <Folder Include="src\components\form-io\date" />
+    <Folder Include="src\components\form-io\date-range" />
+    <Folder Include="src\components\form-io\select" />
+    <Folder Include="src\components\mock-dnd-dashboard-panel" />
+    <Folder Include="src\data" />
+    <Folder Include="src\hooks" />
+    <Folder Include="src\images" />
+    <Folder Include="src\lib" />
+    <Folder Include="src\mock-data" />
+    <Folder Include="src\routes" />
+    <Folder Include="src\routes\dashboard" />
+    <Folder Include="src\routes\dashboard\routes" />
+    <Folder Include="src\routes\dashboard\routes\form-editor-test" />
+    <Folder Include="src\routes\dashboard\routes\form-editor-test\components" />
+    <Folder Include="src\routes\dashboard\routes\global-config" />
+    <Folder Include="src\routes\dashboard\routes\global-config\routes" />
+    <Folder Include="src\routes\dashboard\routes\reports" />
+    <Folder Include="src\routes\dashboard\routes\reports\routes" />
+    <Folder Include="src\routes\dashboard\routes\reports\routes\report" />
+    <Folder Include="src\routes\dashboard\routes\summary" />
+    <Folder Include="src\routes\landing" />
+    <Folder Include="src\routes\not-found" />
+    <Folder Include="src\state" />
+    <Folder Include="src\styles" />
+    <Folder Include="src\styles\syncfusion" />
+    <Folder Include="types" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
