@@ -91,7 +91,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountdownGeneratorLib", "Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeleniumPostmaster", "SeleniumPostmaster\SeleniumPostmaster.csproj", "{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "NodeChannelAdmin", "ChannelAdminDashboard\DashboardApp\NodeChannelAdmin.njsproj", "{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}"
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "NodeChannelAdmin", "DashboardApp\NodeChannelAdmin.njsproj", "{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
