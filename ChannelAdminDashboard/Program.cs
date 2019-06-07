@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace OnPoint.Channel.Admin
+namespace Channel.Admin.Dashboard
 {
 	public class Program
 	{
