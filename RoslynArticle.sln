@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlRegularExpressions", "SqlRegularExpressions\SqlRegularExpressions.csproj", "{3B4842DC-B8F0-4508-8837-6DC4BE76256C}"
 EndProject
@@ -77,8 +77,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalApiLib", "SignalApiLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwsKinesisConsumerDataLib", "AwsKinesisConsumerDataLib\AwsKinesisConsumerDataLib.csproj", "{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Channel.Admin.Dashboard", "ChannelAdminDashboard\Channel.Admin.Dashboard.csproj", "{29257159-9ACC-4ACE-A12A-009B8A125AD1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGreatWallOfDataLib", "TheGreatWallOfDataLib\TheGreatWallOfDataLib.csproj", "{079A16A3-B443-49B7-9CF6-3444D0841214}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailReports", "EmailReports\EmailReports.csproj", "{473221BA-2366-4A24-B6AF-7600F7EEA230}"
@@ -91,7 +89,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadPixelDataLib", "ReadPix
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountdownGeneratorLib", "CountdownGeneratorLib\CountdownGeneratorLib.csproj", "{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeleniumPostmaster", "SeleniumPostmaster\SeleniumPostmaster.csproj", "{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeleniumPostmaster", "SeleniumPostmaster\SeleniumPostmaster.csproj", "{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}"
+EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "NodeChannelAdmin", "ChannelAdminDashboard\DashboardApp\NodeChannelAdmin.njsproj", "{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -280,12 +280,6 @@ Global
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{950FAC9E-B1D6-4CDD-8411-18F4E49A3933}.Release|Any CPU.Build.0 = Release|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{29257159-9ACC-4ACE-A12A-009B8A125AD1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{079A16A3-B443-49B7-9CF6-3444D0841214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{079A16A3-B443-49B7-9CF6-3444D0841214}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{079A16A3-B443-49B7-9CF6-3444D0841214}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -328,6 +322,12 @@ Global
 		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
