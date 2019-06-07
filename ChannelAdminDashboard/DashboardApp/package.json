@@ -45,6 +45,7 @@
     "typescript": "3.4.5"
   },
   "scripts": {
+    "clean" : "echo cleaned",
     "dev": "concurrently \"npm:start\"  \"npm:watch-*\"",
     "watch-css": "tcm --watch -p src/**/*.module.css",
     "watch-scss": "tsm --watch src/**/*.module.scss",
