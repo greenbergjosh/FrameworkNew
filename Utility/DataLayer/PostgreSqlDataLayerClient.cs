@@ -1,6 +1,7 @@
 ﻿using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,10 +9,19 @@ namespace Utility.DataLayer
 {
     public class PostgreSqlDataLayerClient : IDataLayerClient
     {
+        private string PrepareConnectionString(string connectionString)
+        {
+            var builder = new NpgsqlConnectionStringBuilder(connectionString);
+            if (string.IsNullOrWhiteSpace(builder.ApplicationName))
+            {
+                builder.ApplicationName = Path.GetFileName(Directory.GetCurrentDirectory());
+            }
+            return builder.ToString();
+        }
 
         public async Task<List<Dictionary<string, object>>> CallStoredFunction(IDictionary<string, object> parameters, string sproc, string connectionString, int timeout = 120)
         {
-            using (var cn = new NpgsqlConnection(connectionString))
+            using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
             {
                 var results = new List<Dictionary<string, object>>();
 
@@ -60,7 +70,7 @@ namespace Utility.DataLayer
         public async Task<string> CallStoredFunction(string args, string payload, string sproc, string connectionString, int timeout = 120)
         {
             string outval;
-            using (var cn = new NpgsqlConnection(connectionString))
+            using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
             {
                 cn.Open();
                 using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload)", cn) { CommandTimeout = timeout })
@@ -71,7 +81,7 @@ namespace Utility.DataLayer
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(continueOnCapturedContext: false);
                     var res = cmd.Parameters["@Return"].Value;
 
-                    outval = res == DBNull.Value ? null : (string) res;
+                    outval = res == DBNull.Value ? null : (string)res;
                 }
                 cn.Close();
             }
@@ -85,7 +95,7 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT data.p_submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
@@ -121,7 +131,7 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT error_log.insert_error_log(@sequence, @severity, @process, @method, @descriptor, @message)", cn) { CommandTimeout = timeout })
@@ -161,7 +171,7 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue(@post_type, @post_date, @payload)", cn) { CommandTimeout = timeout })
@@ -199,7 +209,7 @@ namespace Utility.DataLayer
 
             try
             {
-                using (var cn = new NpgsqlConnection(connectionString))
+                using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
                 {
                     cn.Open();
                     using (var cmd = new NpgsqlCommand($"SELECT posting_queue.insert_posting_queue_bulk(@payload)", cn) { CommandTimeout = timeout })
