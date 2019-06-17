@@ -2,9 +2,13 @@ import { DatePicker } from "antd"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import moment from "moment"
 import React from "react"
-import { BaseInterfaceComponent, ComponentDefinition } from "./BaseInterfaceComponent"
+import { dateRangeManageForm } from "./date-range-manage-form"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinitionNamedProps,
+} from "../../base/BaseInterfaceComponent"
 
-export interface DateRangeInterfaceComponentProps extends ComponentDefinition {
+export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-range"
   startDateKey: string
   endDateKey: string
@@ -29,8 +33,15 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
       name: "date-range",
       title: "Date Range",
       icon: "calendar",
+      formControl: true,
+      componentDefinition: {
+        component: "date-range",
+        label: "Date Range",
+      },
     }
   }
+
+  static manageForm = dateRangeManageForm
 
   static standardRanges(): { [range: string]: [moment.Moment, moment.Moment] } {
     const now = moment.utc()
