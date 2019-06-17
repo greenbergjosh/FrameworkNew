@@ -2,21 +2,21 @@ import { Divider, Layout, Typography } from "antd"
 import _ from "lodash"
 import { get, set } from "lodash/fp"
 import React from "react"
+import rainy_window_png from "../../images/rainy-window.png"
 import { moveInList } from "../../lib/move-in-list"
 import { ComponentRenderer } from "./ComponentRenderer"
-import { ComponentDefinition } from "./components/BaseInterfaceComponent"
+import { ComponentDefinition, LayoutDefinition } from "./components/base/BaseInterfaceComponent"
+import { DraggedItemProps, DroppableTargetProps } from "./dnd"
+import DragDropContext from "./dnd/util/DragDropContext"
 import { InterfaceComponentChoices } from "./InterfaceComponentChoices"
+import { ManageComponentModal } from "./manage/ManageComponentModal"
 import { ComponentRegistryContext, registry } from "./registry"
-import {
-  DragDropContext,
-  DragStart,
-  DragUpdate,
-  ResponderProvided,
-  DropResult,
-} from "react-beautiful-dnd"
+import "./user-interface.scss"
 
 interface IUserInterfaceProps {
+  data?: any
   mode: "display" | "edit"
+  onChangeData?: () => void
   components: ComponentDefinition[]
 }
 
@@ -26,141 +26,103 @@ interface DisplayUserInterfaceProps extends IUserInterfaceProps {
 
 interface EditUserInterfaceProps extends IUserInterfaceProps {
   mode: "edit"
-  onChange: (schema: ComponentDefinition[]) => void
+  onChangeSchema: (schema: ComponentDefinition[]) => void
 }
 
 export type UserInterfaceProps = DisplayUserInterfaceProps | EditUserInterfaceProps
 
-export class UserInterface extends React.Component<UserInterfaceProps> {
-  onBeforeDragStart = (start: DragStart) => {
-    console.log("Drag Start", start)
-  }
-  onDragStart = (start: DragStart, provided: ResponderProvided) => {}
-  onDragUpdate = (update: DragUpdate, provided: ResponderProvided) => {
-    // relocatePlaceholder(update.destination)
-  }
-  onDragEnd = (result: DropResult, provided: ResponderProvided) => {
+export interface UserInterfaceState extends DropHelperResult {
+  error: null | string
+}
+
+export class UserInterface extends React.Component<UserInterfaceProps, UserInterfaceState> {
+  state = { components: [], itemToAdd: null, error: null } as UserInterfaceState
+
+  handleDrop = (draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps) => {
     if (this.props.mode === "edit") {
-      console.log("Drag End ", result)
-      const { components, onChange } = this.props
-      const { destination, source } = result
-      // Whatever was dragged wasn't dropped anywhere, or was dropped in its original location
-      if (
-        !destination ||
-        (destination.droppableId === source.droppableId && destination.index === source.index)
-      ) {
-        return
-      }
+      // You can't move a parent into a child, so we'll ignore those drops
+      if (dropTarget.droppableId.startsWith(`${draggedItem.draggableId}.`)) return
 
-      // Rearranged in the same list
-      if (destination.droppableId === source.droppableId) {
-        const list =
-          destination.droppableId === "UI-Root"
-            ? components
-            : (get(destination.droppableId, components) as ComponentDefinition[])
-        const updatedList = moveInList(list, source.index, destination.index)
-        const newComponents =
-          destination.droppableId === "UI-Root"
-            ? updatedList
-            : set(destination.droppableId, updatedList, components)
+      const { components, onChangeSchema } = this.props
 
-        onChange && onChange(newComponents)
-      } else if (!selfContainedDrop(source.droppableId, source.index, destination.droppableId)) {
-        const sourceList =
-          source.droppableId === "UI-Root"
-            ? components
-            : (get(source.droppableId, components) as ComponentDefinition[])
-        const updatedSourceList = [
-          ...sourceList.slice(0, source.index),
-          ...sourceList.slice(source.index + 1),
-        ]
-
-        const destinationList =
-          destination.droppableId === "UI-Root"
-            ? components
-            : (get(destination.droppableId, components) as ComponentDefinition[])
-        const updatedDestinationList = [
-          ...destinationList.slice(0, destination.index),
-          sourceList[source.index],
-          ...destinationList.slice(destination.index),
-        ]
-
-        if (source.droppableId === "UI-Root") {
-          const newComponents = set(
-            destination.droppableId,
-            updatedDestinationList,
-            updatedSourceList
-          )
-          onChange && onChange(newComponents)
-        } else if (destination.droppableId === "UI-Root") {
-          const newComponents = set(source.droppableId, updatedSourceList, updatedDestinationList)
-          onChange && onChange(newComponents)
-        } else if (source.droppableId.startsWith(destination.droppableId)) {
-          const interimComponents = set(source.droppableId, updatedSourceList, components)
-          const destinationList =
-            destination.droppableId === "UI-Root"
-              ? interimComponents
-              : (get(destination.droppableId, interimComponents) as ComponentDefinition[])
-          const updatedDestinationList = [
-            ...destinationList.slice(0, destination.index),
-            sourceList[source.index],
-            ...destinationList.slice(destination.index),
-          ]
-
-          const newComponents = set(
-            destination.droppableId,
-            updatedDestinationList,
-            interimComponents
-          )
-          onChange && onChange(newComponents)
-        } else {
-          const newComponents = set(
-            destination.droppableId,
-            updatedDestinationList,
-            set(source.droppableId, updatedSourceList, components)
-          )
-          onChange && onChange(newComponents)
-        }
+      const dropHelperResult = handleDropHelper(components, draggedItem, dropTarget)
+      console.log("UserInterface.onDrop", { dropHelperResult })
+      if (!dropHelperResult.itemToAdd) {
+        onChangeSchema(dropHelperResult.components)
+      } else {
+        this.setState(dropHelperResult)
       }
     }
   }
 
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("UserInterface.componentDidCatch", error, info)
+    this.setState({ error: error.toString() })
+  }
+
   render() {
     const { mode, components } = this.props
+    const { error, itemToAdd } = this.state
 
-    const content = <ComponentRenderer components={components} mode={mode} />
+    if (error) {
+      return (
+        <img
+          src={rainy_window_png}
+          alt="A window showing a rainy day with text 'Something went wrong'"
+        />
+      )
+    }
+
+    const content = (
+      <ComponentRenderer components={components} mode={mode} onDrop={this.handleDrop} />
+    )
 
     return (
-      <ComponentRegistryContext.Provider value={{ componentRegistry: registry }}>
-        {mode === "edit" ? (
-          <DragDropContext
-            onBeforeDragStart={this.onBeforeDragStart}
-            onDragStart={this.onDragStart}
-            onDragUpdate={this.onDragUpdate}
-            onDragEnd={this.onDragEnd}>
-            <Layout>
-              <Layout.Sider style={{ background: "#fff" }}>
-                <Typography.Title level={4}>Components</Typography.Title>
-                <Divider />
-                <InterfaceComponentChoices />
-              </Layout.Sider>
+      <div className="user-iterface-builder">
+        <ComponentRegistryContext.Provider value={{ componentRegistry: registry }}>
+          {mode === "edit" ? (
+            <DragDropContext.HTML5>
               <Layout>
-                <Layout.Content
-                  style={{
-                    margin: "24px 16px",
-                    padding: 24,
-                    background: "#fff",
-                    minHeight: 280,
-                  }}>
-                  {content}
-                </Layout.Content>
+                <Layout.Sider style={{ background: "#fff" }}>
+                  <Typography.Title level={4}>Components</Typography.Title>
+                  <Divider />
+                  <InterfaceComponentChoices />
+                </Layout.Sider>
+                <Layout>
+                  <Layout.Content
+                    style={{
+                      margin: "24px 16px",
+                      padding: 24,
+                      background: "#fff",
+                      minHeight: 280,
+                    }}>
+                    {content}
+                  </Layout.Content>
+                </Layout>
               </Layout>
-            </Layout>
-          </DragDropContext>
-        ) : (
-          content
-        )}
-      </ComponentRegistryContext.Provider>
+              {console.log(
+                "UserInterface.render",
+                "itemToAdd.componentDefinition",
+                itemToAdd && itemToAdd.componentDefinition
+              )}
+              <ManageComponentModal
+                componentDefinition={itemToAdd && itemToAdd.componentDefinition}
+                onCancel={() => {
+                  console.log("UserInterface.onCancel")
+                  this.setState({ itemToAdd: null })
+                }}
+                onConfirm={(componentDefinition) => {
+                  // TODO: If we're adding the item, insert it
+                  // If we're editing the item, replace it in
+                  //        onChangeSchema(updatedComponents)
+                }}
+              />
+            </DragDropContext.HTML5>
+          ) : (
+            content
+          )}
+        </ComponentRegistryContext.Provider>
+      </div>
     )
   }
 }
@@ -191,52 +153,203 @@ function createPlaceholderFromShiftedItem(
   return <PlaceholderComponent style={style} />
 }
 
-function relocatePlaceholder(destination: DragUpdate["destination"]) {
-  if (destination) {
-    const destinationDroppable = document.getElementById(destination.droppableId)
-
-    if (destinationDroppable) {
-      const shiftedItem = destinationDroppable.querySelectorAll(
-        `[data-react-beautiful-dnd-draggable="${destination.index}"]`
-      )[0] as HTMLElement
-
-      const placeholderItem = destinationDroppable.querySelectorAll(
-        `[data-react-beautiful-dnd-placeholder]`
-      )[0] as HTMLElement
-
-      if (placeholderItem) {
-        if (shiftedItem && shiftedItem.style.transform) {
-          const [_, widthFactor, heightFactor] = shiftedItem.style.transform.match(
-            /translate\((\d+)px, (\d+)px\)/
-          )
-          const rect = shiftedItem.getBoundingClientRect()
-
-          const style = {
-            position: "absolute",
-            // width: widthFactor || "100%",
-            // height: heightFactor || "100%",
-            top: rect.top,
-            left: rect.left,
-          }
-          Object.assign(placeholderItem.style, style)
-        } else {
-          placeholderItem.style.position = "static"
-        }
-      }
-
-      // if (!shiftedItem || !shiftedItem.style.transform) return
-    }
+export interface DropHelperResult {
+  components: ComponentDefinition[]
+  itemToAdd: null | {
+    componentDefinition: Partial<ComponentDefinition>
+    path: string
+    index: number
   }
 }
 
-export function selfContainedDrop(
-  sourceId: string,
-  sourceIndex: number | null,
-  destinationId: string
-) {
-  const sourcePath = `${
-    sourceId === "UI-Root" ? sourceIndex : sourceId + (sourceIndex ? "." + sourceIndex : "")
-  }.`
-  console.log("selfContainedDrop", { destinationId, sourcePath })
-  return destinationId.startsWith(sourcePath)
+export function handleDropHelper(
+  components: ComponentDefinition[],
+  draggedItem: DraggedItemProps,
+  dropTarget: DroppableTargetProps
+): DropHelperResult {
+  console.log("UserInterface/handleDropHelper", ...components)
+
+  // If this dragged item has a componentDefinition, it must be to create a new component, not rearrange existing ones
+  if (draggedItem.item && (draggedItem.item as LayoutDefinition).componentDefinition) {
+    return {
+      components,
+      itemToAdd: {
+        componentDefinition: (draggedItem.item as LayoutDefinition).componentDefinition,
+        path: dropTarget.droppableId,
+        index: dropTarget.dropIndex,
+      },
+    }
+  }
+  // Rearranged in the same list
+  else if (dropTarget.droppableId === draggedItem.parentDroppableId) {
+    const originalList =
+      dropTarget.droppableId === "UI-Root"
+        ? components
+        : (get(dropTarget.droppableId, components) as ComponentDefinition[])
+    const updatedList = moveInList(originalList, draggedItem.index, dropTarget.dropIndex)
+    return {
+      components:
+        dropTarget.droppableId === "UI-Root"
+          ? updatedList
+          : set(dropTarget.droppableId, updatedList, components),
+      itemToAdd: null,
+    }
+  }
+  // This item came from another droppable list. We should remove it from that list and move it to this one
+  else if (draggedItem.parentDroppableId) {
+    // If one of the two lists is the root, we have to take some special actions
+    if (draggedItem.parentDroppableId === "UI-Root" || dropTarget.droppableId === "UI-Root") {
+      // Find the sublist the dragged item came from and remove it
+      const sourceList =
+        draggedItem.parentDroppableId === "UI-Root"
+          ? components
+          : (get(draggedItem.parentDroppableId, components) as ComponentDefinition[])
+      const updatedSourceList = [
+        ...sourceList.slice(0, draggedItem.index),
+        ...sourceList.slice(draggedItem.index + 1),
+      ]
+
+      // Find the sublist the drop occurred in, and add the dragged item
+      const destinationList =
+        dropTarget.droppableId === "UI-Root"
+          ? components
+          : (get(dropTarget.droppableId, components) as ComponentDefinition[])
+      const updatedDestinationList = [
+        ...destinationList.slice(0, dropTarget.dropIndex),
+        sourceList[draggedItem.index],
+        ...destinationList.slice(dropTarget.dropIndex),
+      ]
+
+      // We know both lists can't be "root" because then we'd have hit the outer if instead
+      // If the item was dragged from the root, take the update source list as the new root
+      // Alter it to add the updated destination information
+      if (draggedItem.parentDroppableId === "UI-Root") {
+        return {
+          components: set(dropTarget.droppableId, updatedDestinationList, updatedSourceList),
+          itemToAdd: null,
+        }
+      }
+      // If the item was dragged from a sublist to the root, take the destination as the new root
+      // Alter it to add the updated source information
+      else if (dropTarget.droppableId === "UI-Root") {
+        return {
+          components: set(draggedItem.parentDroppableId, updatedSourceList, updatedDestinationList),
+          itemToAdd: null,
+        }
+      }
+    }
+    // Neither list was the root, so we have to modify the root to account for both sets of changes without
+    // having the changes overwrite each other
+    // Check to see if the dropTarget is a parent/ancestor of the item being dragged
+    else if (draggedItem.parentDroppableId.startsWith(`${dropTarget.droppableId}.`)) {
+      // Find the sublist the dragged item came from and remove it
+      const sourceList = get(draggedItem.parentDroppableId, components) as ComponentDefinition[]
+      const updatedSourceList = [
+        ...sourceList.slice(0, draggedItem.index),
+        ...sourceList.slice(draggedItem.index + 1),
+      ]
+
+      // We modify the component list to get a new component list for the deeper item that
+      // will fail if we modify the outer item first
+      const interimComponents = set(draggedItem.parentDroppableId, updatedSourceList, components)
+
+      // Find the sublist the drop occurred in, and add the dragged item
+      // By using the interim components, we'll include the dragged item removal from above
+      const destinationList = get(
+        dropTarget.droppableId,
+        interimComponents
+      ) as ComponentDefinition[]
+      const updatedDestinationList = [
+        ...destinationList.slice(0, dropTarget.dropIndex),
+        sourceList[draggedItem.index],
+        ...destinationList.slice(dropTarget.dropIndex),
+      ]
+
+      return {
+        components: set(dropTarget.droppableId, updatedDestinationList, interimComponents),
+        itemToAdd: null,
+      }
+    }
+    // Check to see if the draggedItem comes from a parent/ancestor of the dropTarget
+    else if (dropTarget.droppableId.startsWith(`${draggedItem.parentDroppableId}.`)) {
+      const tmpSourceList = get(draggedItem.parentDroppableId, components) as ComponentDefinition[]
+
+      // Find the sublist the dropTarget came from and add the dragged item into it
+      const destinationList = get(dropTarget.droppableId, components) as ComponentDefinition[]
+      const updatedDestinationList = [
+        ...destinationList.slice(0, dropTarget.dropIndex),
+        tmpSourceList[draggedItem.index],
+        ...destinationList.slice(dropTarget.dropIndex),
+      ]
+
+      // We modify the component list to get a new component list for the deeper item that
+      // will fail if we modify the outer item first
+      const interimComponents = set(dropTarget.droppableId, updatedDestinationList, components)
+
+      // Find the sublist the draggedItem came from, and remote it
+      // By using the interim components, we'll include the dragged item addition from above
+      const sourceList = get(
+        draggedItem.parentDroppableId,
+        interimComponents
+      ) as ComponentDefinition[]
+      const updatedSourceList = [
+        ...sourceList.slice(0, draggedItem.index),
+        ...sourceList.slice(draggedItem.index + 1),
+      ]
+
+      return {
+        components: set(draggedItem.parentDroppableId, updatedSourceList, interimComponents),
+        itemToAdd: null,
+      }
+    } else {
+      // Find the sublist the dragged item came from and remove it
+      const sourceList = get(draggedItem.parentDroppableId, components) as ComponentDefinition[]
+      const updatedSourceList = [
+        ...sourceList.slice(0, draggedItem.index),
+        ...sourceList.slice(draggedItem.index + 1),
+      ]
+
+      // Capture the interim modification state of the whole component list
+      const interimComponents = set(draggedItem.parentDroppableId, updatedSourceList, components)
+
+      // Find the sublist the drop occurred in, and add the dragged item
+      const destinationList = get(
+        dropTarget.droppableId,
+        interimComponents
+      ) as ComponentDefinition[]
+      const updatedDestinationList = [
+        ...destinationList.slice(0, dropTarget.dropIndex),
+        sourceList[draggedItem.index],
+        ...destinationList.slice(dropTarget.dropIndex),
+      ]
+
+      return {
+        components: set(dropTarget.droppableId, updatedDestinationList, interimComponents),
+        itemToAdd: null,
+      }
+    }
+  }
+  // The dragged item did not come from a droppable list, so we simply need to add to the destination
+  else {
+    // Find the destination list and add the dragged item contents
+    const destinationList =
+      dropTarget.droppableId === "UI-Root"
+        ? components
+        : (get(dropTarget.droppableId, components) as ComponentDefinition[])
+    const updatedDestinationList = [
+      ...destinationList.slice(0, dropTarget.dropIndex),
+      draggedItem.item as ComponentDefinition,
+      ...destinationList.slice(dropTarget.dropIndex),
+    ]
+    return {
+      components:
+        dropTarget.droppableId === "UI-Root"
+          ? updatedDestinationList
+          : set(dropTarget.droppableId, updatedDestinationList, components),
+      itemToAdd: null,
+    }
+  }
+
+  console.warn("UserInterface/handleDrop", "Failed to handle component update")
+  return { components, itemToAdd: null }
 }

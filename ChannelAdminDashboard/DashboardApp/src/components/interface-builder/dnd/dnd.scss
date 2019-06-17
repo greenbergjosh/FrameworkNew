@@ -1,0 +1,43 @@
+.dnd-droppable {
+  position: relative;
+  border: 1px solid transparent;
+  padding: 5px 5px 15px 5px;
+  border-radius: 10px;
+
+  transition: 0.1s padding-bottom ease-out;
+
+  &.accept-drop {
+    border: 1px dashed lightgray;
+    padding-bottom: 15px;
+  }
+
+  &.has-placeholder {
+    padding-bottom: 105px;
+
+    > .dnd-draggable.placeholder-above > * {
+      transform: translateY(75px);
+    }
+  }
+
+  .droppable-placeholder {
+    height: 65px;
+    background-color: #f2f4f5;
+    border: none;
+    border-radius: 10px;
+    position: absolute;
+    transition: 0.1s top ease-out;
+    z-index: 10;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+.dnd-draggable {
+  padding: 0;
+  cursor: move;
+
+  & > * {
+    transition: 0.1s transform ease-out;
+  }
+}

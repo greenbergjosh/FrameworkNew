@@ -1,50 +1,71 @@
-import { Button, Card, Divider, Typography } from "antd"
+import {
+  Button,
+  Card,
+  Divider,
+  Typography
+  } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { ComponentDefinition } from "../../../../components/interface-builder/components/BaseInterfaceComponent"
-import { FormInterfaceComponentProps } from "../../../../components/interface-builder/components/FormInterfaceComponent"
+import { ComponentDefinition } from "../../../../components/interface-builder/components/base/BaseInterfaceComponent"
+import { FormInterfaceComponentProps } from "../../../../components/interface-builder/components/form/FormInterfaceComponent"
 import { UserInterface } from "../../../../components/interface-builder/UserInterface"
 import { WithRouteProps } from "../../../../state/navigation"
-
-// Components.setComponents({
-//   button: ButtonFormComponent,
-//   checkmatrix: CheckMatrix,
-//   "code-editor": CodeEditorFormComponent,
-//   date: DateFormComponent,
-//   "date-range": DateRangeFormComponent,
-//   select: SelectFormComponent,
-// })
 
 interface Props {}
 
 export function UserInterfaceTest({ children, ...props }: WithRouteProps<Props>): JSX.Element {
+  const [data, setData] = React.useState({})
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([
     {
       component: "form",
+      key: "outer",
       label: "Query Form",
-      data: { sssdfsfd: "Sfsdfdfff" },
       components: [
         {
-          label: "Date 1",
-          component: "date-range",
-        },
-        {
-          component: "form",
-          label: "Query Form",
-          data: { sssdfsfd: "Sfsdfdfff" },
-          components: [
+          key: "tabs",
+          defaultActiveKey: "tab1",
+          label: "Some Tabs",
+          component: "tabs",
+          tabs: [
             {
-              label: "Date 2",
-              component: "date-range",
+              key: "tab1",
+              label: "First Tab",
+              component: "tab",
+              components: [
+                {
+                  key: "pick1",
+                  label: "Pick Something",
+                  component: "select",
+                },
+                {
+                  key: "write1",
+                  label: "Write something",
+                  component: "input",
+                },
+              ],
             },
             {
-              label: "Date 3",
-              component: "date-range",
+              key: "tab2",
+              label: "Second Tab",
+              component: "tab",
+              components: [
+                {
+                  key: "write2",
+                  label: "Write Something Else",
+                  component: "input",
+                },
+                {
+                  key: "pick2",
+                  label: "Pick something Else",
+                  component: "select",
+                },
+              ],
             },
           ],
         },
         {
-          label: "Date 4",
+          key: "date1",
+          label: "Date 1",
           component: "date-range",
         },
       ],
@@ -62,7 +83,7 @@ export function UserInterfaceTest({ children, ...props }: WithRouteProps<Props>)
         <UserInterface
           mode="edit"
           components={schema}
-          onChange={(newSchema) => {
+          onChangeSchema={(newSchema) => {
             console.log("New Schema", newSchema)
             setSchema(newSchema)
           }}

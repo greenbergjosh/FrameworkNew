@@ -1,7 +1,11 @@
 import React from "react"
-import { BaseInterfaceComponent } from "./components/BaseInterfaceComponent"
-import { DateRangeInterfaceComponent } from "./components/DateRangeInterfaceComponent"
-import { FormInterfaceComponent } from "./components/FormInterfaceComponent"
+import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
+import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
+import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
+import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
+import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
+import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
+import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 
 export interface ComponentRegistry {
   cache: ComponentRegistryCache
@@ -15,8 +19,12 @@ export interface ComponentRegistryCache {
 
 export const registry: ComponentRegistry = {
   cache: {
+    checkbox: CheckboxInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     form: FormInterfaceComponent,
+    input: InputInterfaceComponent,
+    select: SelectInterfaceComponent,
+    tabs: TabsInterfaceComponent,
   },
   lookup(key: string) {
     return registry.cache[key]
