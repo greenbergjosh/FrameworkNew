@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,18 +7,86 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Fs = Utility.FileSystem;
+using Fw = Utility.FrameworkWrapper;
 
 namespace Utility
 {
     public static class UnixWrapper
     {
-        // Should allow location of unix utilities to be configured
-        public static string exeUnzip = @"C:\Program Files\Git\usr\bin\unzip";
+        static string exeDiff, exeGrep, exeSort, exeTr, exeUniq, exeUnzip, _sep, platform;
+
+        static void ConfirmPlatform(ref string platform)
+        {
+            if ("Auto".Equals(platform, StringComparison.InvariantCultureIgnoreCase))
+            {
+                platform = Environment.OSVersion.Platform.ToString();
+            }
+        }
+
+        public static Func<string, string> AppSettingsFuncCtor(string configDir = null)
+        {
+            configDir = configDir ?? Directory.GetCurrentDirectory();
+
+            var cfg = new ConfigurationBuilder()
+                .SetBasePath(configDir)
+                .AddJsonFile("appsettings.json")
+                .Build()
+                .GetSection("UnixWrapper");
+
+            platform = platform ?? cfg.GetValue<string>("Platform") ?? "Auto";
+            ConfirmPlatform(ref platform);
+
+            var basePath = cfg.GetValue<string>($"{platform}:BasePath");
+
+            return (string bin) =>
+            {
+                var z = cfg.GetValue<string>($"Paths:{bin}") ?? bin;
+                var x = $"{basePath}{z}";
+                return x;
+            };
+        }
+
+        public static Func<string, string> FwSettingsFuncCtor(Fw fw)
+        {
+            if (fw == null) return (string bin) => null;
+            const string configPath = "Config/UnixWrapper";
+
+            var cfg = fw.StartupConfiguration;
+            platform = cfg.GetS($"{configPath}/Platform");
+            ConfirmPlatform(ref platform);
+            var basePath = cfg.GetS($"{configPath}/{platform}/BasePath");
+
+            return (string bin) =>
+            {
+                var z = cfg.GetS($"{configPath}/Paths/{bin}");
+                var x = $"{basePath}{z}";
+                return x;
+            };
+        }
+
+        public static void Config(Fw fw = null, string configDir = null)
+        {
+            _sep = Path.DirectorySeparatorChar.ToString();
+            var GetFwConfig = FwSettingsFuncCtor(fw);
+            var GetAppSetting = AppSettingsFuncCtor();
+            string GetConfig(string bin) { return GetFwConfig(bin) ?? GetAppSetting(bin); };
+
+            exeDiff = GetConfig("diff");
+            exeGrep = GetConfig("grep");
+            exeSort = GetConfig("sort");
+            exeTr = GetConfig("tr");
+            exeUniq = GetConfig("uniq");
+            exeUnzip = GetConfig("unzip");
+        }
+
+        static UnixWrapper()
+        {
+            Config();
+        }
 
         public static async Task UnzipZip(string ZipFileDirectory, string zipFileName,
             string UnzippedDirectory, int timeout = 1000 * 60 * 5)
         {
-            //Directory.CreateDirectory(UnzippedDirectory);
             try
             {
                 using (var outs = new StringWriter())
@@ -44,8 +113,6 @@ namespace Utility
             }
         }
 
-        public static string exeSort = @"C:\Program Files\Git\usr\bin\sort";
-
         public static async Task SortFile(string sourcePath, string inputFile,
             string outputFile, bool caseSensitive, bool unique,
             int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "")
@@ -62,69 +129,28 @@ namespace Utility
                         null).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        public static string exeTr = @"C:\Program Files\Git\usr\bin\tr";
-
         public static async Task RemoveNonAsciiFromFile(string sourcePath, string inputFile,
             string outputFile, int timeout = 1000 * 60 * 5)
         {
-            // This version is too slow
-            //using (var inf = new FileStream(sourcePath + "\\" + inputFile, FileMode.Open))
-            //{
-            //    using (var outf = File.CreateText(sourcePath + "\\" + outputFile))
-            //    {
-            //          var exitCode = await ProcessWrapper.StartProcess(
-            //            exeTr,
-            //            $"-cd '\\11\\12\\15\\40-\\176'",
-            //            sourcePath,
-            //            timeout,
-            //            outf,
-            //            null,
-            //            inf).ConfigureAwait(continueOnCapturedContext: false);
-            //    }
-            //}
-
-            var inf = sourcePath + "\\" + inputFile;
-            var outf = sourcePath + "\\" + outputFile;
-            var pProcess = new Process();
-            pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
-            pProcess.StartInfo.Verb = "runas";
-            pProcess.StartInfo.Arguments = "/c " +
-                Fs.QuotePathParts(exeTr) + $" -cd '\\11\\12\\15\\40-\\176' < " +
-                Fs.QuotePathParts(inf) + " > " + Fs.QuotePathParts(outf);
-            pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            pProcess.StartInfo.UseShellExecute = true;
-            pProcess.StartInfo.WorkingDirectory = @"C:\Windows\System32";
-            pProcess.Start();
-            await pProcess.WaitForExitAsync();
-            pProcess.Close();
+            await ProcessWrapper.Redirect(
+                exeTr,
+                $" -cd '\\11\\12\\15\\40-\\176' < ",
+                sourcePath,
+                inputFile,
+                outputFile,
+                platform);
         }
-
-        public static string exeGrep = @"C:\Program Files\Git\usr\bin\grep";
 
         public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile,
             string outputFile, int timeout = 1000 * 60 * 5)
         {
-            try
-            {
-                var inf = sourcePath + "\\" + inputFile;
-                var outf = sourcePath + "\\" + outputFile;
-                var pProcess = new Process();
-                pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
-                pProcess.StartInfo.Verb = "runas";
-                pProcess.StartInfo.Arguments = "/c " +
-                    Fs.QuotePathParts(exeGrep) + " -P -i '[0-9a-f]{32}' " + Fs.QuotePathParts(inf) +
-                    " > " + Fs.QuotePathParts(outf);
-                pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                pProcess.StartInfo.UseShellExecute = true;
-                pProcess.StartInfo.WorkingDirectory = @"C:\Windows\System32";
-                pProcess.Start();
-                await pProcess.WaitForExitAsync();
-                pProcess.Close();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            await ProcessWrapper.Redirect(
+                exeGrep,
+                " -P -i '[0-9a-f]{32}' ",
+                sourcePath,
+                inputFile,
+                outputFile,
+                platform);
         }
 
         private static void OutputRedirection(object sendingProcess,
@@ -194,7 +220,7 @@ namespace Utility
                         }
                     }
 
-                    if(f) found.Add(md5);
+                    if (f) found.Add(md5);
                     else notFound.Add(md5);
                 }
             }
@@ -202,7 +228,8 @@ namespace Utility
             return (found, notFound);
         }
 
-        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
+        public static async Task<(List<string> found, List<string> notFound)>
+            BinarySearchSortedMd5File(string filePath, List<string> keys)
         {
             var notFound = new List<string>();
             var found = new List<string>();
@@ -352,10 +379,10 @@ namespace Utility
         public static async Task<bool> BinarySearchSortedMd5File(string sourcePath, string file, string key)
         {
             var lkey = key.ToLower();
-            var fPath = sourcePath + "\\" + file;
+            var fPath = sourcePath + _sep + file;
 
-            var fLength = new System.IO.FileInfo(fPath).Length;
-			
+            var fLength = new FileInfo(fPath).Length;
+
             if (fLength < 33) return false;
 
             using (var fsSource = new FileStream(fPath, FileMode.Open, FileAccess.Read))
@@ -363,7 +390,7 @@ namespace Utility
                 var lLength = 0;
                 var bytes = new byte[34];
                 var n = await fsSource.ReadAsync(bytes, 0, 34);
-				
+
                 if (bytes[32] == 10) lLength = 33;
                 else if (bytes[32] == 13 && bytes[33] == 10) lLength = 34;
                 else throw new System.Exception("Unexpected line termination character");
@@ -389,12 +416,10 @@ namespace Utility
             return false;
         }
 
-        public static string exeDiff = @"C:\Program Files\Git\usr\bin\diff";
-
         public static async Task<bool> DiffFiles(string oldFile, string newFile, string sourcePath,
             string diffFile, int timeout = 1000 * 60 * 5)
         {
-            var swOut = new StreamWriter(sourcePath + "\\" + diffFile, true);
+            var swOut = new StreamWriter(sourcePath + _sep + diffFile, true);
             var timedOut = false;
             try
             {
@@ -420,17 +445,15 @@ namespace Utility
             return timedOut;
         }
 
-        public static string exeUniq = @"C:\Program Files\Git\usr\bin\uniq";
-
         public static async Task<bool> Unique(string oldFile, string newFile, string sourcePath, int timeout = 1000 * 60 * 5)
         {
-            var swOut = new StreamWriter(sourcePath + "\\" + newFile, true);
+            var swOut = new StreamWriter(sourcePath + _sep + newFile, true);
             var timedOut = false;
             try
             {
                 var exitCode = await ProcessWrapper.StartProcess(
                     exeUniq,
-                    "-i " + sourcePath + "\\" + oldFile,
+                    "-i " + sourcePath + _sep + oldFile,
                     sourcePath,
                     timeout,
                     swOut,
