@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Fs = Utility.FileSystem;
 
 namespace Utility
 {
@@ -71,7 +71,7 @@ namespace Utility
                     //await input.CopyToAsync(process.StandardInput.BaseStream);
                     input.CopyTo(process.StandardInput.BaseStream);
                     process.StandardInput.BaseStream.Close();
-                }                
+                }
 
                 await Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext: false);
                 return process.ExitCode;
@@ -159,6 +159,47 @@ namespace Utility
             }
 
             return taskCompletionSource.Task;
+        }
+
+        static string _sep = Path.DirectorySeparatorChar.ToString();
+
+        public static async Task Redirect(
+            string bin,
+            string args,
+            string workingDir,
+            string inputFile,
+            string outputFile,
+            string platform = null)
+        {
+            if (platform == null)
+            {
+                platform = Environment.OSVersion.Platform.ToString();
+            }
+
+            var inf = workingDir + _sep + inputFile;
+            var outf = workingDir + _sep + outputFile;
+            var pProcess = new Process();
+            pProcess.StartInfo.WorkingDirectory = workingDir;
+
+            if ("Win32NT" == platform)
+            {
+                pProcess.StartInfo.FileName = @"C:\\Windows\\System32\\cmd.exe";
+                pProcess.StartInfo.Verb = "runas";
+                pProcess.StartInfo.Arguments = "/c " +
+                    Fs.QuotePathParts(bin) + args +
+                    Fs.QuotePathParts(inf) + " > " + Fs.QuotePathParts(outf);
+            }
+            else if ("Unix" == platform)
+            {
+                pProcess.StartInfo.FileName = "/bin/sh";
+                pProcess.StartInfo.Arguments = $"-c \"{bin} {args} {inf} > {outf}\"";
+                pProcess.StartInfo.UseShellExecute = false;
+                pProcess.StartInfo.CreateNoWindow = true;
+            }
+
+            pProcess.Start();
+            await pProcess.WaitForExitAsync();
+            pProcess.Close();
         }
     }
 }
