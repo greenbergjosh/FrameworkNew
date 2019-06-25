@@ -1,16 +1,35 @@
 import * as Reach from "@reach/router"
-import { Alert, Button, Card, Empty, Form, Input, Skeleton, Typography } from "antd"
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  Skeleton,
+  Tabs,
+  Typography
+  } from "antd"
 import * as Formik from "formik"
 import { array } from "fp-ts/lib/Array"
 import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
-import { fromEither, none, Option, some } from "fp-ts/lib/Option"
+import {
+  fromEither,
+  none,
+  Option,
+  some,
+  tryCatch
+  } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
+import { ComponentDefinition } from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
+import { UserInterface } from "../../../../../components/interface-builder/UserInterface"
+import { UserInterfaceContextManager } from "../../../../../components/interface-builder/UserInterfaceContextManager"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
 import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
@@ -22,6 +41,36 @@ import {
   PersistedConfig,
   InProgressRemoteUpdateDraft,
 } from "../../../../../data/GlobalConfig.Config"
+
+const ROOT_CONFIG_COMPONENTS = [
+  {
+    key: "lang",
+    valueKey: "lang",
+    component: "select",
+    label: "Language",
+    dataHandlerType: "local",
+    data: {
+      values: [{ label: "JSON", value: "json" }, { label: "C#", value: "csharp" }],
+    },
+  },
+  {
+    key: "layout",
+    label: "Root Layout Creator",
+    valueKey: "layout",
+    component: "user-interface",
+    defaultDataValue: {},
+    defaultValue: [],
+    mode: "edit",
+    visibilityConditions: {
+      "===": [
+        "json",
+        {
+          var: ["lang"],
+        },
+      ],
+    },
+  },
+] as ComponentDefinition[]
 
 interface Props {
   configId: string
@@ -69,12 +118,26 @@ export function EditGlobalConfig({
 function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
   const [fromStore, dispatch] = useRematch((s) => ({
     configs: s.globalConfig.configs,
+    configsById: store.select.globalConfig.configsById(s),
     configNames: store.select.globalConfig.configNames(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
     isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
   }))
+
+  const userInterfaceContextManager: UserInterfaceContextManager = {
+    executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
+    loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
+      return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
+    },
+    loadById: (id: string) => {
+      return record.lookup(id, fromStore.configsById).toNullable()
+    },
+    loadByURL: (url: string) => {
+      return [] // axios
+    },
+  }
 
   const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(
     none
@@ -84,6 +147,17 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     () => record.lookup(props.config.type, fromStore.entityTypes),
     [fromStore.entityTypes, props.config.type]
   )
+
+  const isRootConfig = entityTypeConfig.map(({ id }) => id === props.config.id).getOrElse(false)
+  const configComponents = isRootConfig
+    ? ROOT_CONFIG_COMPONENTS
+    : (entityTypeConfig
+        .map((parentType) => {
+          return tryCatch(() => JSON.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
+            ROOT_CONFIG_COMPONENTS
+          )
+        })
+        .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[])
 
   const configLang = React.useMemo(() => {
     return entityTypeConfig
@@ -264,20 +338,46 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                   label="Config"
                   required={true}
                   validateStatus={form.errors.config ? "error" : "success"}>
-                  <CodeEditor
-                    content={props.config.config.getOrElse("")}
-                    contentDraft={some(form.values.config)}
-                    height={500}
-                    language={configLang}
-                    width="100%"
-                    onChange={({ value, errors }) => {
-                      errors.map((errors) => {
-                        setConfigErrors(errors)
-                      })
-                      form.setFieldValue("config", value)
-                      form.setFieldTouched("config", true)
-                    }}
-                  />
+                  <Tabs defaultActiveKey={"form"}>
+                    <Tabs.TabPane key={"form"} tab={"Properties"} disabled={!!form.errors.config}>
+                      {form.errors.config ? (
+                        <Alert
+                          type="error"
+                          description="Please correct errors in the JSON before attempting to edit the layout."
+                          message="JSON Errors"
+                        />
+                      ) : (
+                        <UserInterface
+                          contextManager={userInterfaceContextManager}
+                          data={tryCatch(() => JSON.parse(form.values.config)).getOrElse({})}
+                          onChangeData={(value) => {
+                            console.log("edit", "UserInterface.onChangeData", "new config", value)
+                            form.setFieldValue("config", JSON.stringify(value, null, 2))
+                            form.setFieldTouched("config", true)
+                          }}
+                          mode="display"
+                          components={configComponents}
+                        />
+                      )}
+                      {/* <Alert type="info" message={form.values.config} /> */}
+                    </Tabs.TabPane>
+                    <Tabs.TabPane key={"json"} tab={"Developer JSON"}>
+                      <CodeEditor
+                        content={props.config.config.getOrElse("")}
+                        contentDraft={some(form.values.config)}
+                        height={500}
+                        language={configLang}
+                        width="100%"
+                        onChange={({ value, errors }) => {
+                          errors.map((errors) => {
+                            setConfigErrors(errors)
+                          })
+                          form.setFieldValue("config", value)
+                          form.setFieldTouched("config", true)
+                        }}
+                      />
+                    </Tabs.TabPane>
+                  </Tabs>
                 </Form.Item>
               </Form>
             </Card>

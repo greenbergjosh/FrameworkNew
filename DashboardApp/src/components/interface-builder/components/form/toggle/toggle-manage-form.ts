@@ -19,6 +19,10 @@ const toggleManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "label",
                 defaultValue: "Toggle",
               },
+              {
+                key: "valueKey",
+                defaultValue: "value",
+              },
             ],
           },
         ],

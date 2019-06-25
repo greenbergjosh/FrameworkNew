@@ -1,46 +1,60 @@
-import { Alert } from "antd"
 import React from "react"
 import { DataPathContext } from "../DataPathContext"
 import { ComponentDefinition } from "./components/base/BaseInterfaceComponent"
-import { Droppable, DroppableContextType, DroppablePlaceholder } from "./dnd"
+import { Droppable, DroppableContextType } from "./dnd"
 import { ComponentRegistryContext } from "./registry"
 import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
 import { UserInterfaceProps } from "./UserInterface"
 
 interface ComponentRendererProps {
   components: ComponentDefinition[]
+  data: UserInterfaceProps["data"]
   mode?: UserInterfaceProps["mode"]
+  onChangeData: UserInterfaceProps["onChangeData"]
   onDrop?: DroppableContextType["onDrop"]
 }
 
 const ComponentRendererModeContext = React.createContext<UserInterfaceProps["mode"]>("display")
 
+export const UI_ROOT = "UI-Root"
+
 export const ComponentRenderer = ({
   components,
+  data,
   mode: propMode,
+  onChangeData,
   onDrop,
 }: ComponentRendererProps) => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
   const contextMode = React.useContext(ComponentRendererModeContext)
   const mode = propMode || contextMode
 
-  const content = components.length ? (
-    components.map((componentDefinition, index) => (
-      <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
-        {(path) => (
-          <RenderInterfaceComponent
-            Component={componentRegistry.lookup(componentDefinition.component)}
-            componentDefinition={componentDefinition}
-            index={index}
-            mode={mode}
-            path={path}
-          />
-        )}
-      </DataPathContext>
-    ))
-  ) : (
-    <DroppablePlaceholder x={0} y={0} width={0} />
-  )
+  // console.log("ComponentRenderer.render", { components, data, onChangeData })
+
+  const content = components.map((componentDefinition, index) => (
+    <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
+      {(path) => (
+        <RenderInterfaceComponent
+          Component={componentRegistry.lookup(componentDefinition.component)}
+          componentDefinition={componentDefinition}
+          data={data}
+          index={index}
+          mode={mode}
+          onChangeData={(newData) => {
+            console.log("ComponentRenderer.render", "onChangeData", {
+              componentDefinition,
+              newData,
+              onChangeData,
+            })
+            onChangeData && onChangeData(newData)
+          }}
+          path={path}
+        />
+      )}
+    </DataPathContext>
+  ))
+
+  console.log("ComponentRenderer.render", components)
 
   return (
     <div>
@@ -48,10 +62,12 @@ export const ComponentRenderer = ({
         {mode === "edit" ? (
           <DataPathContext>
             {(path) => (
-              <Droppable droppableId={path || "UI-Root"} onDrop={onDrop} type="INTERFACE_COMPONENT">
-                {({ isOver }) => {
-                  return <>{content}</>
-                }}
+              <Droppable
+                data={components}
+                droppableId={path || UI_ROOT}
+                onDrop={onDrop}
+                type="INTERFACE_COMPONENT">
+                {({ isOver }) => content}
               </Droppable>
             )}
           </DataPathContext>
@@ -71,4 +87,8 @@ export const ComponentRenderer = ({
       </ComponentRendererModeContext.Provider>
     </div>
   )
+}
+
+ComponentRenderer.defaultProps = {
+  components: [],
 }
