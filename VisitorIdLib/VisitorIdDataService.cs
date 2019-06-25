@@ -921,6 +921,7 @@ namespace VisitorIdLib
                             md5pid,
                             md5Slot,
                             md5Page,
+                            eml = eml.IsNullOrWhitespace() ? "" : eml,
                             succ = eml.IsNullOrWhitespace() ? "0" : "1"
                         }));
                     await fw.EdwWriter.Write(be);
@@ -1056,6 +1057,7 @@ namespace VisitorIdLib
                                 md5pid,
                                 md5Slot,
                                 md5Page,
+                                eml = eml.IsNullOrWhitespace() ? "" : eml,
                                 succ = eml.IsNullOrWhitespace() ? "0" : "1"
                             }));
                         await fw.EdwWriter.Write(be);
