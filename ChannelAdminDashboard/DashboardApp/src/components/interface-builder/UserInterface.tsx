@@ -4,7 +4,8 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import rainy_window_png from "../../images/rainy-window.png"
 import { moveInList } from "../../lib/move-in-list"
-import { ComponentRenderer } from "./ComponentRenderer"
+import { DataPathContext } from "../DataPathContext"
+import { ComponentRenderer, UI_ROOT } from "./ComponentRenderer"
 import { ComponentDefinition, LayoutDefinition } from "./components/base/BaseInterfaceComponent"
 import { DraggedItemProps, DroppableTargetProps } from "./dnd"
 import DragDropContext from "./dnd/util/DragDropContext"
@@ -12,11 +13,13 @@ import { InterfaceComponentChoices } from "./InterfaceComponentChoices"
 import { ManageComponentModal } from "./manage/ManageComponentModal"
 import { ComponentRegistryContext, registry } from "./registry"
 import "./user-interface.scss"
+import { UserInterfaceContext, UserInterfaceContextManager } from "./UserInterfaceContextManager"
 
 interface IUserInterfaceProps {
   data?: any
+  contextManager?: UserInterfaceContextManager
   mode: "display" | "edit"
-  onChangeData?: () => void
+  onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
 }
 
@@ -61,7 +64,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
   }
 
   render() {
-    const { mode, components } = this.props
+    const { components, contextManager, data, mode, onChangeData } = this.props
     const { error, itemToAdd } = this.state
 
     if (error) {
@@ -74,54 +77,96 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     }
 
     const content = (
-      <ComponentRenderer components={components} mode={mode} onDrop={this.handleDrop} />
+      <ComponentRenderer
+        components={components}
+        data={data}
+        mode={mode}
+        onChangeData={onChangeData}
+        onDrop={this.handleDrop}
+      />
+    )
+
+    const contentWithContext = contextManager ? (
+      <UserInterfaceContext.Provider value={contextManager}>
+        {content}
+      </UserInterfaceContext.Provider>
+    ) : (
+      content
     )
 
     return (
       <div className="user-iterface-builder">
-        <ComponentRegistryContext.Provider value={{ componentRegistry: registry }}>
-          {mode === "edit" ? (
-            <DragDropContext.HTML5>
-              <Layout>
-                <Layout.Sider style={{ background: "#fff" }}>
-                  <Typography.Title level={4}>Components</Typography.Title>
-                  <Divider />
-                  <InterfaceComponentChoices />
-                </Layout.Sider>
-                <Layout>
-                  <Layout.Content
-                    style={{
-                      margin: "24px 16px",
-                      padding: 24,
-                      background: "#fff",
-                      minHeight: 280,
-                    }}>
-                    {content}
-                  </Layout.Content>
-                </Layout>
-              </Layout>
-              {console.log(
-                "UserInterface.render",
-                "itemToAdd.componentDefinition",
-                itemToAdd && itemToAdd.componentDefinition
-              )}
-              <ManageComponentModal
-                componentDefinition={itemToAdd && itemToAdd.componentDefinition}
-                onCancel={() => {
-                  console.log("UserInterface.onCancel")
-                  this.setState({ itemToAdd: null })
-                }}
-                onConfirm={(componentDefinition) => {
-                  // TODO: If we're adding the item, insert it
-                  // If we're editing the item, replace it in
-                  //        onChangeSchema(updatedComponents)
-                }}
-              />
-            </DragDropContext.HTML5>
-          ) : (
-            content
+        <DataPathContext>
+          {(parentPath) => (
+            <DataPathContext reset>
+              <ComponentRegistryContext.Provider value={{ componentRegistry: registry }}>
+                {mode === "edit" ? (
+                  <DragDropContext.HTML5>
+                    <Layout>
+                      <Layout.Sider style={{ background: "#fff" }}>
+                        <Typography.Title level={4}>Components</Typography.Title>
+                        <Divider />
+                        <InterfaceComponentChoices />
+                      </Layout.Sider>
+                      <Layout>
+                        <Layout.Content
+                          style={{
+                            margin: "24px 16px",
+                            padding: 24,
+                            background: "#fff",
+                            minHeight: 280,
+                          }}>
+                          {contentWithContext}
+                        </Layout.Content>
+                      </Layout>
+                    </Layout>
+
+                    <ManageComponentModal
+                      componentDefinition={itemToAdd && itemToAdd.componentDefinition}
+                      onCancel={() => {
+                        console.log("UserInterface.onCancel")
+                        this.setState({ itemToAdd: null })
+                      }}
+                      onConfirm={(componentDefinition) => {
+                        console.log("UserInterface.onConfirm", { componentDefinition })
+                        if (this.props.mode === "edit") {
+                          // If we're adding the item, insert it
+                          if (itemToAdd) {
+                            // Find which component list we're inserting into
+                            const relevantList =
+                              itemToAdd.path === UI_ROOT
+                                ? components
+                                : get(itemToAdd.path, components)
+                            // Slice this item into the list
+                            const updatedList = [
+                              ...relevantList.slice(0, itemToAdd.index),
+                              componentDefinition,
+                              ...relevantList.slice(itemToAdd.index),
+                            ]
+                            // Merge back into the parent component list
+                            const updatedComponents =
+                              itemToAdd.path === UI_ROOT
+                                ? updatedList
+                                : set(itemToAdd.path, updatedList, components)
+
+                            // Clear the modal and all adding state
+                            this.setState({ itemToAdd: null })
+                            // Fire the schema change up the chain
+                            this.props.onChangeSchema(updatedComponents)
+                          }
+                          // TODO: If we're editing the item, replace it in
+                          //        onChangeSchema(updatedComponents)
+                        }
+                      }}
+                    />
+                  </DragDropContext.HTML5>
+                ) : (
+                  contentWithContext
+                )}
+              </ComponentRegistryContext.Provider>
+            </DataPathContext>
           )}
-        </ComponentRegistryContext.Provider>
+        </DataPathContext>
       </div>
     )
   }
@@ -183,13 +228,13 @@ export function handleDropHelper(
   // Rearranged in the same list
   else if (dropTarget.droppableId === draggedItem.parentDroppableId) {
     const originalList =
-      dropTarget.droppableId === "UI-Root"
+      dropTarget.droppableId === UI_ROOT
         ? components
         : (get(dropTarget.droppableId, components) as ComponentDefinition[])
     const updatedList = moveInList(originalList, draggedItem.index, dropTarget.dropIndex)
     return {
       components:
-        dropTarget.droppableId === "UI-Root"
+        dropTarget.droppableId === UI_ROOT
           ? updatedList
           : set(dropTarget.droppableId, updatedList, components),
       itemToAdd: null,
@@ -198,10 +243,10 @@ export function handleDropHelper(
   // This item came from another droppable list. We should remove it from that list and move it to this one
   else if (draggedItem.parentDroppableId) {
     // If one of the two lists is the root, we have to take some special actions
-    if (draggedItem.parentDroppableId === "UI-Root" || dropTarget.droppableId === "UI-Root") {
+    if (draggedItem.parentDroppableId === UI_ROOT || dropTarget.droppableId === UI_ROOT) {
       // Find the sublist the dragged item came from and remove it
       const sourceList =
-        draggedItem.parentDroppableId === "UI-Root"
+        draggedItem.parentDroppableId === UI_ROOT
           ? components
           : (get(draggedItem.parentDroppableId, components) as ComponentDefinition[])
       const updatedSourceList = [
@@ -211,7 +256,7 @@ export function handleDropHelper(
 
       // Find the sublist the drop occurred in, and add the dragged item
       const destinationList =
-        dropTarget.droppableId === "UI-Root"
+        dropTarget.droppableId === UI_ROOT
           ? components
           : (get(dropTarget.droppableId, components) as ComponentDefinition[])
       const updatedDestinationList = [
@@ -223,7 +268,7 @@ export function handleDropHelper(
       // We know both lists can't be "root" because then we'd have hit the outer if instead
       // If the item was dragged from the root, take the update source list as the new root
       // Alter it to add the updated destination information
-      if (draggedItem.parentDroppableId === "UI-Root") {
+      if (draggedItem.parentDroppableId === UI_ROOT) {
         return {
           components: set(dropTarget.droppableId, updatedDestinationList, updatedSourceList),
           itemToAdd: null,
@@ -231,7 +276,7 @@ export function handleDropHelper(
       }
       // If the item was dragged from a sublist to the root, take the destination as the new root
       // Alter it to add the updated source information
-      else if (dropTarget.droppableId === "UI-Root") {
+      else if (dropTarget.droppableId === UI_ROOT) {
         return {
           components: set(draggedItem.parentDroppableId, updatedSourceList, updatedDestinationList),
           itemToAdd: null,
@@ -333,7 +378,7 @@ export function handleDropHelper(
   else {
     // Find the destination list and add the dragged item contents
     const destinationList =
-      dropTarget.droppableId === "UI-Root"
+      dropTarget.droppableId === UI_ROOT
         ? components
         : (get(dropTarget.droppableId, components) as ComponentDefinition[])
     const updatedDestinationList = [
@@ -343,7 +388,7 @@ export function handleDropHelper(
     ]
     return {
       components:
-        dropTarget.droppableId === "UI-Root"
+        dropTarget.droppableId === UI_ROOT
           ? updatedDestinationList
           : set(dropTarget.droppableId, updatedDestinationList, components),
       itemToAdd: null,

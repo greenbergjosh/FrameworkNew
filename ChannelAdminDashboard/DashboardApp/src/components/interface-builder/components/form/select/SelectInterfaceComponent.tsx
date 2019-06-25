@@ -1,6 +1,20 @@
 import { Select } from "antd"
+import { tryCatch } from "fp-ts/lib/Option"
+import { Branded } from "io-ts"
+import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import jsonLogic from "json-logic-js"
+import { set } from "lodash/fp"
 import React from "react"
+import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { QueryConfig } from "../../../../../data/Report"
+import { cheapHash } from "../../../../../lib/json"
+import { UserInterfaceProps } from "../../../UserInterface"
 import { selectManageForm } from "./select-manage-form"
+import {
+  UserInterfaceContext,
+  UserInterfaceContextManager,
+} from "../../../UserInterfaceContextManager"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -11,16 +25,22 @@ interface SelectOption {
   label: string
   value: string
 }
+
+type LocalDataHandlerType = "local"
+type RemoteDataHandlerType = "remote-config" | "remote-query" | "remote-url"
+
 export interface ISelectInterfaceComponentProps extends ComponentDefinitionNamedProps {
   allowClear: boolean
   component: "select"
   defaultValue?: string
+  disabled?: boolean
   multiple?: boolean
+  onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
+  userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
-  value: string
 
-  dataHandlerType: "local" | "remote"
+  dataHandlerType: LocalDataHandlerType | RemoteDataHandlerType
   data: {}
 }
 
@@ -31,23 +51,34 @@ interface SelectInterfaceComponentPropsLocalData extends ISelectInterfaceCompone
   }
 }
 
-interface SelectInterfaceComponentPropsRemoteData extends ISelectInterfaceComponentProps {
-  dataHandlerType: "remote"
-  data: {
-    source: {}
-  }
+interface SelectInterfaceComponentPropsRemoteConfigData extends ISelectInterfaceComponentProps {
+  dataHandlerType: "remote-config"
+  remoteConfigType?: string
+  remoteDataFilter?: JSONObject
+}
+
+interface SelectInterfaceComponentPropsRemoteQueryData extends ISelectInterfaceComponentProps {
+  dataHandlerType: "remote-query"
+  remoteQuery?: string
+  remoteDataFilter: JSONObject
+}
+
+interface SelectInterfaceComponentPropsRemoteURLData extends ISelectInterfaceComponentProps {
+  dataHandlerType: "remote-url"
+  remoteURL: string
 }
 
 export type SelectInterfaceComponentProps = (
   | SelectInterfaceComponentPropsLocalData
-  | SelectInterfaceComponentPropsRemoteData) &
+  | SelectInterfaceComponentPropsRemoteConfigData
+  | SelectInterfaceComponentPropsRemoteQueryData
+  | SelectInterfaceComponentPropsRemoteURLData) &
   ComponentRenderMetaProps
 
 interface SelectInterfaceComponentState {
   loadError: string | null
   loadStatus: "none" | "loading" | "loaded" | "error"
   options: SelectOption[]
-  value: string
 }
 
 export class SelectInterfaceComponent extends BaseInterfaceComponent<
@@ -74,20 +105,10 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  static manageForm = selectManageForm
+  static contextType = UserInterfaceContext
+  context!: React.ContextType<typeof UserInterfaceContext>
 
-  // static getDerivedStateFromProps(props: SelectInterfaceComponentProps, state: SelectInterfaceComponentState) {
-  //   // Any time the current user changes,
-  //   // Reset any parts of state that are tied to that user.
-  //   // In this simple example, that's just the email.
-  //   if (state.options.length && !state.loading && !state.loaded) {
-  //     return {
-  //       prevPropsUserID: props.userID,
-  //       email: props.defaultEmail,
-  //     }
-  //   }
-  //   return null
-  // }
+  static manageForm = selectManageForm
 
   constructor(props: SelectInterfaceComponentProps) {
     super(props)
@@ -96,7 +117,6 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
       loadError: null,
       loadStatus: "none",
       options: [],
-      value: this.props.value || this.props.defaultValue || "",
     }
   }
 
@@ -104,38 +124,155 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     props: SelectInterfaceComponentProps,
     state: SelectInterfaceComponentState
   ) {
-    if (state.loadStatus === "none") {
-      switch (props.dataHandlerType) {
-        case "local": {
-          return { options: props.data.values, loadStatus: "loaded" }
-        }
-        case "remote": {
-          return { loadStatus: "loading" }
-          // TODO: Use remote data layer provided by context
-          // Invoke fetch
-          // Parse and set options into state
-        }
-      }
+    if (state.loadStatus === "none" && props.dataHandlerType === "local") {
+      return { options: (props.data && props.data.values) || [], loadStatus: "loaded" }
     }
     return null
   }
 
   handleChange = (value: string) => {
-    const { onDataChanged, valueKey } = this.props
-    this.setState({ value })
-    onDataChanged && onDataChanged({ [valueKey]: value })
+    const { onChangeData, userInterfaceData, valueKey } = this.props
+    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
   }
 
-  resolveOptions = () => {}
+  static isRemoteDataType = (dataHandlerType: string): dataHandlerType is RemoteDataHandlerType => {
+    // Is the current handler type a remote data type?
+    return (
+      dataHandlerType === "remote-config" ||
+      dataHandlerType === "remote-query" ||
+      dataHandlerType === "remote-url"
+    )
+  }
+
+  loadRemoteData = () => {
+    if (
+      (this.props.dataHandlerType === "remote-config" ||
+        this.props.dataHandlerType === "remote-query") &&
+      this.context
+    ) {
+      const { loadById, loadByFilter, executeQuery } = this.context
+      const { remoteDataFilter } = this.props
+      console.log("SelectInterfaceComponent.loadRemoteData", this.props, loadByFilter)
+
+      switch (this.props.dataHandlerType) {
+        case "remote-config": {
+          const { remoteConfigType } = this.props
+          const configType =
+            remoteConfigType && (remoteConfigType as Branded<string, NonEmptyStringBrand>)
+          const remoteConfigTypeParent = configType && loadById(configType)
+          const remoteConfigTypeParentName = remoteConfigTypeParent && remoteConfigTypeParent.name
+
+          const predicate = remoteDataFilter
+            ? (config: PersistedConfig) => {
+                const parsedConfig = {
+                  ...config,
+                  config: config.config
+                    .chain((cfg) => tryCatch(() => JSON.parse(cfg)))
+                    .toNullable(),
+                }
+
+                const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
+                return remoteConfigType
+                  ? (config.type === remoteConfigType ||
+                      config.type === remoteConfigTypeParentName) &&
+                      dataFilterResult
+                  : dataFilterResult
+              }
+            : remoteConfigType
+            ? (config: PersistedConfig) =>
+                config.type === remoteConfigType || config.type === remoteConfigTypeParentName
+            : (config: PersistedConfig) => true
+
+          const options = loadByFilter(predicate).map(({ id, name }) => ({
+            label: name,
+            value: id,
+          }))
+          this.setState({ options })
+          return
+        }
+        case "remote-query": {
+          if (this.props.remoteQuery) {
+            const queryId = this.props.remoteQuery as Branded<string, NonEmptyStringBrand>
+            const queryGlobalConfig = loadById(queryId)
+            if (queryGlobalConfig) {
+              const queryConfig = tryCatch(
+                () => JSON.parse(queryGlobalConfig.config.getOrElse("")) as QueryConfig
+              ).toNullable()
+
+              if (queryConfig) {
+                const queryResultURI = cheapHash(queryConfig.query, {})
+
+                console.log("SelectInterfaceComponent.loadRemoteData", "remote-query", "execute", {
+                  resultURI: queryResultURI,
+                  query: queryConfig.query,
+                  params: {},
+                })
+                executeQuery({
+                  resultURI: queryResultURI,
+                  query: queryConfig.query,
+                  params: {},
+                })
+                return
+              }
+            }
+          }
+        }
+      }
+
+      this.setState({ options: [] })
+    }
+  }
+
+  componentDidMount() {
+    // If the data type is remote, load the data
+    if (SelectInterfaceComponent.isRemoteDataType(this.props.dataHandlerType)) {
+      this.loadRemoteData()
+    }
+  }
+
+  componentDidUpdate(
+    prevProps: SelectInterfaceComponentProps,
+    prevState: SelectInterfaceComponentState
+  ) {
+    // If the data handler type has changed, and the new type is remote
+    // or if the remote config type has changed
+    // or if the remote query has changed
+    if (
+      (this.props.dataHandlerType !== prevProps.dataHandlerType ||
+        (this.props.dataHandlerType === "remote-config" &&
+          prevProps.dataHandlerType === "remote-config" &&
+          this.props.remoteConfigType !== prevProps.remoteConfigType) ||
+        (this.props.dataHandlerType === "remote-query" &&
+          prevProps.dataHandlerType === "remote-query" &&
+          this.props.remoteQuery !== prevProps.remoteQuery)) &&
+      SelectInterfaceComponent.isRemoteDataType(this.props.dataHandlerType)
+    ) {
+      this.loadRemoteData()
+    }
+  }
 
   render(): JSX.Element {
-    const { allowClear, multiple, placeholder } = this.props
-    const { loadStatus, options, value } = this.state
+    const {
+      allowClear,
+      defaultValue,
+      disabled,
+      multiple,
+      placeholder,
+      userInterfaceData,
+      valueKey,
+    } = this.props
+    const { loadStatus, options } = this.state
+
+    const value =
+      typeof userInterfaceData[valueKey] !== "undefined"
+        ? userInterfaceData[valueKey]
+        : defaultValue
 
     return (
       <Select
         allowClear={allowClear}
         defaultValue={value}
+        disabled={disabled}
         loading={loadStatus === "loading"}
         mode={multiple ? "multiple" : "default"}
         onChange={this.handleChange}

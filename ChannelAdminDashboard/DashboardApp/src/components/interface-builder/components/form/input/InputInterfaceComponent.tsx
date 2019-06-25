@@ -1,5 +1,7 @@
 import { Form, Input } from "antd"
+import { throttle } from "lodash/fp"
 import React from "react"
+import { UserInterfaceProps } from "../../../UserInterface"
 import { inputManageForm } from "./input-manage-form"
 import {
   BaseInterfaceComponent,
@@ -9,19 +11,15 @@ import {
 export interface InputInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "input"
   defaultValue?: string
+  onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
+  userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
-  value: string
 }
 
-interface InputInterfaceComponentState {
-  value: string
-}
+interface InputInterfaceComponentState {}
 
-export class InputInterfaceComponent extends BaseInterfaceComponent<
-  InputInterfaceComponentProps,
-  InputInterfaceComponentState
-> {
+export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -45,21 +43,18 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<
 
   constructor(props: InputInterfaceComponentProps) {
     super(props)
-    const { defaultValue, value } = props
-
-    this.state = { value: value || defaultValue || "" }
   }
 
   handleChange = ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ value })
+    const { onChangeData, userInterfaceData, valueKey } = this.props
+    onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: value })
   }
-
   render(): JSX.Element {
-    return <Input onChange={this.handleChange} value={this.state.value} />
-    // return (
-    //   <Form.Item label={this.props.label}>
-    //     <Input />
-    //   </Form.Item>
-    // )
+    const { defaultValue, userInterfaceData, valueKey } = this.props
+    const value =
+      typeof userInterfaceData[valueKey] !== "undefined"
+        ? userInterfaceData[valueKey]
+        : defaultValue
+    return <Input onChange={this.handleChange} value={value} />
   }
 }

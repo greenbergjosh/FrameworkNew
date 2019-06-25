@@ -14,7 +14,16 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
         tabs: [
           {
             key: "data",
-            components: [],
+            components: [
+              {
+                key: "label",
+                defaultValue: "Input Text",
+              },
+              {
+                key: "valueKey",
+                defaultValue: "value",
+              },
+            ],
           },
         ],
       },

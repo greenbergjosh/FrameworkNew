@@ -2,6 +2,7 @@ import { Form } from "antd"
 import React from "react"
 import { DataPathContext } from "../../../DataPathContext"
 import { ComponentRenderer } from "../../ComponentRenderer"
+import { UserInterfaceProps } from "../../UserInterface"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -21,8 +22,9 @@ const defaultFormLayout = {
 
 export interface FormInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "form"
-  data?: unknown
   components?: ComponentDefinition[]
+  onChangeData: UserInterfaceProps["onChangeData"]
+  userInterfaceData?: UserInterfaceProps["data"]
 }
 
 export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterfaceComponentProps> {
@@ -34,15 +36,21 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
       componentDefinition: {
         component: "form",
         label: "Form",
+        components: [],
       },
     }
   }
   render() {
-    const { components } = this.props
+    const { components, onChangeData, userInterfaceData } = this.props
+    // console.log("FormInterfaceComponent.render", { userInterfaceData, onChangeData })
     return (
       <Form style={{ padding: "15px" }} {...defaultFormLayout}>
         <DataPathContext path="components">
-          <ComponentRenderer components={components || ([] as ComponentDefinition[])} />
+          <ComponentRenderer
+            components={components || ([] as ComponentDefinition[])}
+            data={userInterfaceData}
+            onChangeData={onChangeData}
+          />
         </DataPathContext>
       </Form>
     )

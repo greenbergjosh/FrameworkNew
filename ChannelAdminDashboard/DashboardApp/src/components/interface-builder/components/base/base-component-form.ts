@@ -1,4 +1,4 @@
-import { mergeAllWith, mergeWith } from "lodash/fp"
+import { mergeWith } from "lodash/fp"
 import { ComponentDefinition } from "./BaseInterfaceComponent"
 
 interface HasKey {
@@ -19,28 +19,21 @@ const mergeHandler = (value: any, srcValue: any, key?: any) => {
       },
       { items: [], remaining: [...value] }
     )
-    console.log("base-component-form.mergeHandler", "both array", {
-      items,
-      remaining,
-      result: items.concat(remaining),
-    })
+    // console.log("base-component-form.mergeHandler", "both array", {
+    //   items,
+    //   remaining,
+    //   result: items.concat(remaining),
+    // })
     return items.concat(remaining)
   } else {
-    console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
+    // console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
   }
 }
 
-export const baseManageForm = (...extend: Partial<ComponentDefinition>[]) => {
-  if (extend.length) {
-    return mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[]
-    // return _(baseManageFormDefinition)
-    //   .concat(...(extend as ComponentDefinition[]))
-    //   .groupBy("key")
-    //   .map(_.spread(_.merge))
-    //   .value()
-  }
-  return baseManageFormDefinition
-}
+export const baseManageForm = (...extend: Partial<ComponentDefinition>[]) =>
+  extend.length
+    ? (mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[])
+    : baseManageFormDefinition
 
 const baseManageFormDefinition: ComponentDefinition[] = [
   {
@@ -60,6 +53,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
             components: [
               {
                 key: "hideLabel",
+                valueKey: "hideLabel",
                 ordinal: 0,
                 component: "checkbox",
                 defaultValue: false,
@@ -68,7 +62,8 @@ const baseManageFormDefinition: ComponentDefinition[] = [
               },
               {
                 key: "label",
-                ordinal: 0,
+                valueKey: "label",
+                ordinal: 0.1,
                 component: "input",
                 label: "Label",
                 visibilityConditions: {
@@ -80,6 +75,14 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                   ],
                 },
               },
+              {
+                key: "valueKey",
+                valueKey: "valueKey",
+                ordinal: 2,
+                component: "input",
+                label: "API Key",
+                help: "The API property name to use for this input component.",
+              },
             ],
           },
           {
@@ -90,6 +93,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
             components: [
               {
                 key: "hidden",
+                valueKey: "hidden",
                 ordinal: 10,
                 component: "checkbox",
                 label: "Hidden",

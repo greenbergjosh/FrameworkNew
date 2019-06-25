@@ -4,6 +4,7 @@ import {
   Icon,
   Tooltip
   } from "antd"
+import jsonLogic from "json-logic-js"
 import React from "react"
 import { Draggable } from "./dnd"
 import { UserInterfaceProps } from "./UserInterface"
@@ -15,8 +16,10 @@ import {
 interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
+  data: UserInterfaceProps["data"]
   index: number
   mode: UserInterfaceProps["mode"]
+  onChangeData: UserInterfaceProps["onChangeData"]
   path: string
 }
 
@@ -36,8 +39,22 @@ export class RenderInterfaceComponent extends React.Component<
   }
 
   render() {
-    const { Component, componentDefinition, index, mode, path } = this.props
+    const { Component, componentDefinition, data, index, mode, onChangeData, path } = this.props
     const { error } = this.state
+
+    // console.log("RenderInterfaceComponent.render", {
+    //   data,
+    //   onChangeData,
+    //   component: componentDefinition.component,
+    // })
+
+    if (
+      componentDefinition.hidden ||
+      (componentDefinition.visibilityConditions &&
+        !jsonLogic.apply(componentDefinition.visibilityConditions, data))
+    ) {
+      return null
+    }
 
     if (error) {
       return (
@@ -65,11 +82,13 @@ export class RenderInterfaceComponent extends React.Component<
     const content = Component ? (
       <Component
         {...componentDefinition}
+        userInterfaceData={data}
         mode={mode}
-        onDataChanged={(props: unknown) => {
-          console.log("Update User Interface Data", props)
+        onChangeData={(props: UserInterfaceProps["data"]) => {
+          console.log("RenderInterfaceComponent.onChangeData", props, onChangeData)
+          onChangeData && onChangeData(props)
         }}
-        onStateChanged={(props: unknown) => {
+        onChangeState={(props: unknown) => {
           console.log("Update User Interface State", props)
         }}
       />
@@ -110,6 +129,7 @@ export class RenderInterfaceComponent extends React.Component<
       <Draggable
         data={componentDefinition}
         draggableId={path}
+        editable
         index={index}
         type="INTERFACE_COMPONENT">
         {({ isDragging }) => {

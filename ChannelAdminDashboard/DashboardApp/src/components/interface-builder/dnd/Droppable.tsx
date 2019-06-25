@@ -101,7 +101,6 @@ const dropHandlers = {
               const finalHoverBoundingRect = finalHoverElement.getBoundingClientRect()
 
               // insert a display placeholder at an appropriate position
-              // const dragDir = draggedIndex > hoveredIndex ? "up" : "down"
               const newPlaceholder = {
                 index: hoveredIndex,
                 x: finalHoverBoundingRect.left - droppableBoundingRect.left + 5,
@@ -139,7 +138,7 @@ const dropHandlers = {
             if (draggedIndex === hoveredIndex && parentDroppableId === droppableId) return
             // Simulate hovering the 0th item
             const fauxHoveredElement = droppableElement.children.item(hoveredIndex)
-            if (fauxHoveredElement) {
+            if (fauxHoveredElement && !isPlaceholderElement(fauxHoveredElement)) {
               const hoverBoundingRect = fauxHoveredElement.getBoundingClientRect()
               const newPlaceholder = {
                 index: hoveredIndex,
@@ -171,7 +170,7 @@ const dropHandlers = {
               return
             // Simulate hovering the last item
             const fauxHoveredElement = droppableElement.children.item(hoveredIndex - 1)
-            if (fauxHoveredElement) {
+            if (fauxHoveredElement && !isPlaceholderElement(fauxHoveredElement)) {
               const hoverBoundingRect = fauxHoveredElement.getBoundingClientRect()
               const newPlaceholder = {
                 index: hoveredIndex,
@@ -246,16 +245,16 @@ function collect(connect: DropTargetConnector, monitor: DropTargetMonitor) {
 
 export interface DroppableInnerProps {
   canDrop: boolean
-  children: (props: DroppableChildProps) => JSX.Element
+  children: DroppableProps["children"]
   connectDropTarget: ConnectDropTarget
-  disabled?: boolean
-  droppableId: string
+  disabled?: DroppableProps["disabled"]
+  droppableId: DroppableProps["droppableId"]
   innerRef: React.RefObject<HTMLDivElement>
   isOver: boolean
   onDrop?: DroppableProps["onDrop"]
   placeholder: DroppablePlaceholderState | null
   setPlaceholder: (placeholder: DroppablePlaceholderState | null) => void
-  type: string | symbol
+  type: DroppableProps["type"]
 }
 
 function DroppableInner({
@@ -268,6 +267,10 @@ function DroppableInner({
   placeholder,
   setPlaceholder,
 }: DroppableInnerProps) {
+  const childrenResult = children({ isOver })
+  const childCount = Array.isArray(childrenResult) ? childrenResult.length : 1
+  const emptyContainer = childCount === 0
+  // console.log("DroppableInner.render", { childrenResult, childCount })
   return connectDropTarget(
     <div
       data-droppable-component
@@ -276,17 +279,18 @@ function DroppableInner({
         "has-placeholder": !!placeholder && canDrop && isOver,
       })}
       ref={innerRef}>
-      {/* Placeholder at{" "}
-      {placeholder && `index: ${placeholder.index} (${placeholder.x}, ${placeholder.y})`} */}
-      {children({ isOver })}
-      {placeholder && isOver && (
+      {/* Id {droppableId} | Placeholder at{" "}
+      {placeholder && `index: ${placeholder.index} (${placeholder.x}, ${placeholder.y})`} | Child
+      Count: {childCount} */}
+      {childrenResult}
+      {((placeholder && isOver) || emptyContainer) && (
         <DroppablePlaceholder
-          x={(placeholder || { x: 0 }).x}
-          y={(placeholder || { y: 0 }).y}
-          width={(placeholder || { width: 100 }).width}
+          emptyContainer={emptyContainer}
+          x={(placeholder || { x: 5 }).x}
+          y={(placeholder || { y: 5 }).y}
+          width={(placeholder || { width: "95%" }).width}
         />
       )}
-      {/* TODO: Detect no children for placeholder */}
     </div>
   )
 }
@@ -296,7 +300,8 @@ export interface DroppableChildProps {
 }
 
 export interface DroppableProps {
-  children: (props: DroppableChildProps) => JSX.Element
+  children: (props: DroppableChildProps) => JSX.Element | JSX.Element[]
+  data?: any
   disabled?: boolean
   droppableId: string
   onDrop?: DroppableContextType["onDrop"]
@@ -308,6 +313,8 @@ const DroppableComponent = DropTarget(({ type }) => type, dropHandlers, collect)
 export const Droppable = React.memo(
   ({ children, disabled, droppableId, onDrop, type }: DroppableProps) => {
     const innerRef = React.useRef(null)
+
+    console.log("Droppable.memo.render")
 
     const [placeholder, setPlaceholder] = React.useState<DroppablePlaceholderState | null>(null)
 
@@ -330,5 +337,5 @@ export const Droppable = React.memo(
       </DroppableContext.Provider>
     )
   },
-  shallowPropCheck(["disabled", "droppableId", "type"])
+  shallowPropCheck(["data", "disabled", "droppableId", "type"])
 )

@@ -20,7 +20,12 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "Date Range",
               },
               {
+                key: "valueKey",
+                hidden: true,
+              },
+              {
                 key: "defaultRangeValue",
+                valueKey: "defaultRangeValue",
                 ordinal: 0,
                 component: "select",
                 label: "Default Range Value",
@@ -42,6 +47,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "startDateKey",
+                valueKey: "startDateKey",
                 ordinal: 10,
                 component: "input",
                 defaultValue: "startDate",
@@ -50,6 +56,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "endDateKey",
+                valueKey: "endDateKey",
                 ordinal: 11,
                 component: "input",
                 defaultValue: "endDate",
@@ -58,6 +65,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "useWrapperObject",
+                valueKey: "useWrapperObject",
                 ordinal: 20,
                 component: "checkbox",
                 defaultValue: false,
@@ -67,9 +75,10 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "wrapperObjectKey",
+                valueKey: "wrapperObjectKey",
                 ordinal: 21,
                 component: "input",
-                defaultValue: false,
+                defaultValue: "dateRange",
                 label: "Wrapper Object API Name",
                 help: "The name of the wrapper object field in the API endpoint.",
                 visibilityConditions: {

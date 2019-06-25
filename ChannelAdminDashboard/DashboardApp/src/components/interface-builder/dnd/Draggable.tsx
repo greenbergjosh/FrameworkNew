@@ -1,6 +1,7 @@
 import classNames from "classnames"
 import React from "react"
 import { ConnectDragSource, DragSource, DragSourceConnector } from "react-dnd"
+import { DraggableEditButtons } from "./util/DraggableEditButtons"
 import { DraggedItemProps, DroppableContext } from "./util/DroppableContext"
 import { shallowPropCheck } from "./util/shallow-prop-check"
 
@@ -28,6 +29,7 @@ export interface DraggableInnerProps {
   connectDragSource: ConnectDragSource
   data: unknown
   draggableId: string
+  editable?: boolean
   index: number
   innerRef: React.RefObject<HTMLDivElement>
   isDragging: boolean
@@ -39,6 +41,7 @@ function DraggableInner({
   children,
   connectDragSource,
   data,
+  editable,
   innerRef,
   isDragging,
   makeRoomForPlaceholder,
@@ -49,6 +52,23 @@ function DraggableInner({
       ref={innerRef}
       className={classNames("dnd-draggable", { "placeholder-above": makeRoomForPlaceholder })}>
       {children({ data, isDragging })}
+      {editable && (
+        <DraggableEditButtons
+          canPaste
+          onCopy={() => {
+            console.log("Draggable onCopy", data)
+          }}
+          onDelete={() => {
+            console.log("Draggable onDelete", data)
+          }}
+          onEdit={() => {
+            console.log("Draggable onEdit", data)
+          }}
+          onPaste={() => {
+            console.log("Draggable onPaste", data)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -62,6 +82,7 @@ export interface DraggableProps {
   children: (props: DraggableChildProps) => JSX.Element
   data: unknown
   draggableId: string
+  editable?: boolean
   index: number
   type: string | symbol
 }
@@ -69,7 +90,7 @@ export interface DraggableProps {
 const DraggableComponent = DragSource(({ type }) => type, dragHandlers, collect)(DraggableInner)
 
 export const Draggable = React.memo(
-  ({ children, data, draggableId, index, type }: DraggableProps) => {
+  ({ children, data, draggableId, editable, index, type }: DraggableProps) => {
     const innerRef = React.useRef(null)
     const droppableContext = React.useContext(DroppableContext)
 
@@ -77,6 +98,7 @@ export const Draggable = React.memo(
       <DraggableComponent
         data={data}
         draggableId={draggableId}
+        editable={editable}
         parentDroppableId={droppableContext && droppableContext.droppableId}
         makeRoomForPlaceholder={
           !!droppableContext &&

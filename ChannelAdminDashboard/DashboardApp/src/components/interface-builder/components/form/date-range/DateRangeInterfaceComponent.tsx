@@ -2,29 +2,33 @@ import { DatePicker } from "antd"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
 import moment from "moment"
 import React from "react"
+import { UserInterfaceProps } from "../../../UserInterface"
 import { dateRangeManageForm } from "./date-range-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
+  ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
 
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-range"
+  defaultRangeValue: string
+  onChangeData: UserInterfaceProps["onChangeData"]
   startDateKey: string
   endDateKey: string
+  userInterfaceData: UserInterfaceProps["data"]
+  useWrapperObject?: boolean
+  wrapperObjectKey?: string
 }
 
-interface DateRangeInterfaceComponentState {
-  _unrollValue: boolean
-  data: { [key: string]: string | null }
-}
+interface DateRangeInterfaceComponentState {}
 
 export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   DateRangeInterfaceComponentProps,
   DateRangeInterfaceComponentState
 > {
   static defaultProps = {
-    startDateKey: "startData",
+    startDateKey: "startDate",
     endDateKey: "endDate",
   }
 
@@ -42,6 +46,24 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = dateRangeManageForm
+
+  static getDefintionDefaultValue({
+    defaultRangeValue,
+    endDateKey,
+    startDateKey,
+    useWrapperObject,
+    wrapperObjectKey,
+  }: DateRangeInterfaceComponentProps) {
+    const [startDate, endDate] = this.standardRanges()[defaultRangeValue]
+    const defaultValue = {
+      [startDateKey]: startDate,
+      [endDateKey]: endDate,
+    }
+
+    return useWrapperObject && wrapperObjectKey
+      ? { [wrapperObjectKey]: defaultValue }
+      : defaultValue
+  }
 
   static standardRanges(): { [range: string]: [moment.Moment, moment.Moment] } {
     const now = moment.utc()
@@ -75,28 +97,48 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  constructor(props: DateRangeInterfaceComponentProps) {
-    super(props)
+  handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
+    const {
+      endDateKey,
+      startDateKey,
+      onChangeData,
+      userInterfaceData,
+      useWrapperObject,
+      wrapperObjectKey,
+    } = this.props
 
-    this.state = {
-      _unrollValue: true,
-      data: {},
+    const newValue = {
+      [startDateKey]: Array.isArray(dates) && dates[0] ? dates[0].toISOString() : null,
+      [endDateKey]: Array.isArray(dates) && dates[1] ? dates[1].toISOString() : null,
     }
+
+    const finalObject =
+      useWrapperObject && wrapperObjectKey ? { [wrapperObjectKey]: newValue } : newValue
+
+    onChangeData &&
+      onChangeData({
+        ...userInterfaceData,
+        ...finalObject,
+      })
   }
 
-  handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
-    this.setState({
-      data: {
-        [this.props.startDateKey]: Array.isArray(dates) && dates[0] ? dates[0].toISOString() : null,
-        [this.props.endDateKey]: Array.isArray(dates) && dates[1] ? dates[1].toISOString() : null,
-      },
-    })
+  getValues = () => {
+    const {
+      endDateKey,
+      startDateKey,
+      userInterfaceData,
+      useWrapperObject,
+      wrapperObjectKey,
+    } = this.props
+
+    const wrapper =
+      useWrapperObject && wrapperObjectKey ? userInterfaceData[wrapperObjectKey] : userInterfaceData
+
+    return [wrapper[startDateKey], wrapper[endDateKey]]
   }
 
   render(): JSX.Element {
-    const startDateValue = this.state.data[this.props.startDateKey]
-    const endDateValue = this.state.data[this.props.endDateKey]
-    const value = [moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]
+    const [startDateValue, endDateValue] = this.getValues()
     return (
       <DatePicker.RangePicker
         style={{ display: "block" }}

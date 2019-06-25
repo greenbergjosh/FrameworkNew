@@ -83,6 +83,11 @@ export function UserInterfaceTest({ children, ...props }: WithRouteProps<Props>)
         <UserInterface
           mode="edit"
           components={schema}
+          data={data}
+          onChangeData={(newData) => {
+            console.log("New Data", newData)
+            setData(newData)
+          }}
           onChangeSchema={(newSchema) => {
             console.log("New Schema", newSchema)
             setSchema(newSchema)
@@ -90,8 +95,17 @@ export function UserInterfaceTest({ children, ...props }: WithRouteProps<Props>)
         />
         <Divider />
         <Typography.Title>Rendered</Typography.Title>
-        <Button onClick={() => setSchema({ ...schema })}>Refresh Render</Button>
-        <UserInterface mode="display" components={schema} />
+        <UserInterface
+          mode="display"
+          components={schema}
+          data={data}
+          onChangeData={(newData) => {
+            console.log("New Data", newData)
+            setData(newData)
+          }}
+        />
+        <Typography.Title underline>Data</Typography.Title>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
         <Typography.Title underline>Schema</Typography.Title>
         <pre>{JSON.stringify(schema, null, 2)}</pre>
         <Typography.Title>View Props</Typography.Title>

@@ -2,6 +2,8 @@ import { Tabs } from "antd"
 import React from "react"
 import { DataPathContext } from "../../../../DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
+import { UserInterfaceProps } from "../../../UserInterface"
+import { tabsManageForm } from "./tabs-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -12,7 +14,9 @@ import {
 export interface TabsInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "tabs"
   defaultActiveKey: string
+  onChangeData: UserInterfaceProps["onChangeData"]
   tabs?: ComponentDefinition[]
+  userInterfaceData?: UserInterfaceProps["data"]
 }
 
 export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterfaceComponentProps> {
@@ -26,8 +30,11 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
       },
     }
   }
+
+  static manageForm = tabsManageForm
+
   render() {
-    const { tabs, defaultActiveKey } = this.props
+    const { defaultActiveKey, onChangeData, tabs, userInterfaceData } = this.props
     return (
       <DataPathContext path="tabs">
         <Tabs defaultActiveKey={defaultActiveKey}>
@@ -39,6 +46,8 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
                     (tab as ComponentDefinitionRecursiveProp).components ||
                     ([] as ComponentDefinition[])
                   }
+                  data={userInterfaceData}
+                  onChangeData={onChangeData}
                 />
               </Tabs.TabPane>
             ))}

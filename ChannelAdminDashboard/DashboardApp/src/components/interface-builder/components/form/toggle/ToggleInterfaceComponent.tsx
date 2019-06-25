@@ -4,6 +4,7 @@ import { toggleManageForm } from "./toggle-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
+  ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
 
 export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -29,7 +30,7 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
   static getLayoutDefinition() {
     return {
       name: "toggle",
-      title: "Toggler",
+      title: "Toggle",
       icon: "login",
       formControl: true,
       componentDefinition: {
