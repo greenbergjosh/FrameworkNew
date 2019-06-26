@@ -6,6 +6,7 @@ using Jw = Utility.JsonWrapper;
 using System.Threading.Tasks;
 using Utility.EDW;
 using Utility.EDW.Reporting;
+using System.Linq;
 
 namespace VisitorIdLib
 {
@@ -48,6 +49,9 @@ namespace VisitorIdLib
 
         }
 
+        [JsonIgnore]
+        public DateTime LastDomainVisitDate;
+
         public CookieData() { }
 
         public CookieData (DateTime timeOfCurrentVisit, string cookieAsString, string version, string host, string path, TimeSpan sessionDuration, (Guid VidRsid, Guid DomainRsid, Guid PageRsid) RsConfigIds, bool newlyConstructed = false)
@@ -82,6 +86,7 @@ namespace VisitorIdLib
 
             // Cookie exists in some form
             CookieData deserialized = JsonConvert.DeserializeObject<CookieData>(cookieAsString);
+            LastDomainVisitDate = deserialized.Domains.Aggregate((x, y) => x.Value.VisitDateTime > y.Value.VisitDateTime ? x : y).Value.VisitDateTime;
 
             // Existing domain, increment stats, or expire
             if (deserialized.Domains.ContainsKey(host))
@@ -186,6 +191,7 @@ namespace VisitorIdLib
             eventList.Add(this.PageVisit.VisitEvent(payload, this.RsIdDict));
             if (DomainVisit.VisitNum == 1) // Every new domain visit has a DomainVisit
             {
+                payload.Add(PL.O(new { LastDomainVisitDate })); // Date of the last domain visit across all domains
                 rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: payload));
                 eventList.Add(this.DomainVisit.VisitEvent(payload,this.RsIdDict));
             }
