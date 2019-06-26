@@ -20,21 +20,20 @@ import {
 } from "./util"
 
 const dropHandlers = {
-  // TODO: Wire up canDrop
-  // canDrop(props: any) {
-  //   console.log("Droppable.canDrop", props.disabled, { props })
-  //   return true
+  // canDrop(props: DroppableInnerProps) {
+  //   return props.allowDrop !== false
   // },
   hover: function(props: DroppableInnerProps, monitor: DropTargetMonitor, component: any) {
     const item = monitor.getItem() as DraggableInnerProps
     const { index: draggedIndex, draggableId, parentDroppableId } = item
     const {
+      allowDrop,
       innerRef: { current: droppableElement },
       placeholder,
       droppableId,
     } = props
 
-    if (droppableElement) {
+    if (droppableElement && allowDrop) {
       // Determine the child element being hovered over
       const clientOffset = monitor.getClientOffset()
       const hoverElement = findDraggableOrPlaceholder(droppableElement, clientOffset)
@@ -244,6 +243,7 @@ function collect(connect: DropTargetConnector, monitor: DropTargetMonitor) {
 }
 
 export interface DroppableInnerProps {
+  allowDrop?: boolean
   canDrop: boolean
   children: DroppableProps["children"]
   connectDropTarget: ConnectDropTarget
@@ -258,6 +258,7 @@ export interface DroppableInnerProps {
 }
 
 function DroppableInner({
+  allowDrop,
   canDrop,
   children,
   connectDropTarget,
@@ -275,15 +276,15 @@ function DroppableInner({
     <div
       data-droppable-component
       className={classNames("dnd-droppable", {
-        "accept-drop": canDrop && isOver,
-        "has-placeholder": !!placeholder && canDrop && isOver,
+        "accept-drop": canDrop && isOver && allowDrop,
+        "has-placeholder": !!placeholder && canDrop && isOver && allowDrop,
       })}
       ref={innerRef}>
       {/* Id {droppableId} | Placeholder at{" "}
       {placeholder && `index: ${placeholder.index} (${placeholder.x}, ${placeholder.y})`} | Child
       Count: {childCount} */}
       {childrenResult}
-      {((placeholder && isOver) || emptyContainer) && (
+      {allowDrop && ((placeholder && isOver) || emptyContainer) && (
         <DroppablePlaceholder
           emptyContainer={emptyContainer}
           x={(placeholder || { x: 5 }).x}
@@ -300,6 +301,7 @@ export interface DroppableChildProps {
 }
 
 export interface DroppableProps {
+  allowDrop?: boolean
   children: (props: DroppableChildProps) => JSX.Element | JSX.Element[]
   data?: any
   disabled?: boolean
@@ -311,7 +313,7 @@ export interface DroppableProps {
 const DroppableComponent = DropTarget(({ type }) => type, dropHandlers, collect)(DroppableInner)
 
 export const Droppable = React.memo(
-  ({ children, disabled, droppableId, onDrop, type }: DroppableProps) => {
+  ({ allowDrop = true, children, disabled, droppableId, onDrop, type }: DroppableProps) => {
     const innerRef = React.useRef(null)
 
     console.log("Droppable.memo.render")
@@ -325,6 +327,7 @@ export const Droppable = React.memo(
     return (
       <DroppableContext.Provider value={{ droppableId, onDrop: finalDropHandler, placeholder }}>
         <DroppableComponent
+          allowDrop={allowDrop}
           disabled={disabled}
           droppableId={droppableId}
           innerRef={innerRef}
@@ -337,5 +340,5 @@ export const Droppable = React.memo(
       </DroppableContext.Provider>
     )
   },
-  shallowPropCheck(["data", "disabled", "droppableId", "type"])
+  shallowPropCheck(["allowDrop", "data", "disabled", "droppableId", "type"])
 )

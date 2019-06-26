@@ -52,6 +52,11 @@
     width: 100%;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.5);
+    .dnd-draggable-edit-title {
+      margin-right: 15px;
+    }
   }
 
   &:hover > .dnd-draggable-edit-buttons {

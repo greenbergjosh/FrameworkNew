@@ -6,6 +6,7 @@ import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInt
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
+import { ListInterfaceComponent } from "./components/form/list/ListInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
@@ -29,6 +30,7 @@ export const registry: ComponentRegistry = {
     "date-range": DateRangeInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,
+    list: ListInterfaceComponent,
     select: SelectInterfaceComponent,
     tabs: TabsInterfaceComponent,
     toggle: ToggleInterfaceComponent,

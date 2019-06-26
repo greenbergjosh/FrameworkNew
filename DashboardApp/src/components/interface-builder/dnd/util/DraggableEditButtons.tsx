@@ -7,6 +7,7 @@ export interface DraggableEditButtonsProps {
   onDelete: () => void
   onEdit: () => void
   onPaste: () => void
+  title?: string
 }
 
 export const DraggableEditButtons = ({
@@ -14,9 +15,11 @@ export const DraggableEditButtons = ({
   onDelete,
   onEdit,
   onPaste,
+  title,
 }: DraggableEditButtonsProps) => {
   return (
     <div className="dnd-draggable-edit-buttons">
+      {title && <span className="dnd-draggable-edit-title">{title}</span>}
       <Button.Group>
         <Button icon="edit" onClick={onEdit} />
         <Button icon="snippets" onClick={onPaste} />

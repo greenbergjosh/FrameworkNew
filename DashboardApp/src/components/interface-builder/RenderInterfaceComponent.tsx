@@ -131,6 +131,7 @@ export class RenderInterfaceComponent extends React.Component<
         draggableId={path}
         editable
         index={index}
+        title={layoutDefintion && layoutDefintion.title}
         type="INTERFACE_COMPONENT">
         {({ isDragging }) => {
           return wrapper

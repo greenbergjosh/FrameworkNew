@@ -35,6 +35,7 @@ export interface DraggableInnerProps {
   isDragging: boolean
   makeRoomForPlaceholder: boolean
   parentDroppableId: string | null
+  title: string
   type: string | symbol
 }
 function DraggableInner({
@@ -45,6 +46,7 @@ function DraggableInner({
   innerRef,
   isDragging,
   makeRoomForPlaceholder,
+  title,
 }: DraggableInnerProps) {
   return connectDragSource(
     <div
@@ -67,6 +69,7 @@ function DraggableInner({
           onPaste={() => {
             console.log("Draggable onPaste", data)
           }}
+          title={title}
         />
       )}
     </div>
@@ -84,13 +87,14 @@ export interface DraggableProps {
   draggableId: string
   editable?: boolean
   index: number
+  title: string
   type: string | symbol
 }
 
 const DraggableComponent = DragSource(({ type }) => type, dragHandlers, collect)(DraggableInner)
 
 export const Draggable = React.memo(
-  ({ children, data, draggableId, editable, index, type }: DraggableProps) => {
+  ({ children, data, draggableId, editable, index, title, type }: DraggableProps) => {
     const innerRef = React.useRef(null)
     const droppableContext = React.useContext(DroppableContext)
 
@@ -107,6 +111,7 @@ export const Draggable = React.memo(
         }
         innerRef={innerRef}
         index={index}
+        title={title}
         type={type}>
         {children}
       </DraggableComponent>

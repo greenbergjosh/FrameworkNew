@@ -7,6 +7,7 @@ import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
 import { UserInterfaceProps } from "./UserInterface"
 
 interface ComponentRendererProps {
+  componentLimit?: number
   components: ComponentDefinition[]
   data: UserInterfaceProps["data"]
   mode?: UserInterfaceProps["mode"]
@@ -14,11 +15,14 @@ interface ComponentRendererProps {
   onDrop?: DroppableContextType["onDrop"]
 }
 
-const ComponentRendererModeContext = React.createContext<UserInterfaceProps["mode"]>("display")
+export const ComponentRendererModeContext = React.createContext<UserInterfaceProps["mode"]>(
+  "display"
+)
 
 export const UI_ROOT = "UI-Root"
 
 export const ComponentRenderer = ({
+  componentLimit,
   components,
   data,
   mode: propMode,
@@ -64,6 +68,7 @@ export const ComponentRenderer = ({
             {(path) => (
               <Droppable
                 data={components}
+                allowDrop={!componentLimit || components.length < componentLimit}
                 droppableId={path || UI_ROOT}
                 onDrop={onDrop}
                 type="INTERFACE_COMPONENT">

@@ -19,6 +19,7 @@ export const InterfaceComponentChoices = ({  }: InterfaceComponentChoicesProps) 
           data={layoutDefinition}
           draggableId={layoutDefinition.name}
           index={index}
+          title={layoutDefinition.title}
           type="INTERFACE_COMPONENT">
           {({ isDragging }) => (
             <div style={{ width: "100%", cursor: "pointer" }}>

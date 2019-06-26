@@ -14,7 +14,16 @@ const userInterfaceManageFormDefinition: Partial<ComponentDefinition>[] = [
         tabs: [
           {
             key: "data",
-            components: [],
+            components: [
+              {
+                key: "label",
+                defaultValue: "Layout Creator",
+              },
+              {
+                key: "valueKey",
+                defaultValue: "layout",
+              },
+            ],
           },
         ],
       },
