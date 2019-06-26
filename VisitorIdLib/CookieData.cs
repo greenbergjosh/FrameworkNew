@@ -191,8 +191,8 @@ namespace VisitorIdLib
             eventList.Add(this.PageVisit.VisitEvent(payload, this.RsIdDict));
             if (DomainVisit.VisitNum == 1) // Every new domain visit has a DomainVisit
             {
-                payload.Add(PL.O(new { LastDomainVisitDate })); // Date of the last domain visit across all domains
-                rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: payload));
+                var domainPL = PL.O(new { LastDomainVisitDate }).Add(payload); // Date of the last domain visit across all domains
+                rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: domainPL));
                 eventList.Add(this.DomainVisit.VisitEvent(payload,this.RsIdDict));
             }
             if (VidVisit != null ) // Visitor is new to VID pixel
