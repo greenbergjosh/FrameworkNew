@@ -15,7 +15,7 @@ namespace VisitorIdLib
         public string em;
         public Guid sid;
 
-        [JsonProperty("lv")]
+        [JsonIgnore]
         public string LastVisit
         {
             get
