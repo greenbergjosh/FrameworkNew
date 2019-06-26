@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Utility;
@@ -13,10 +14,14 @@ namespace SignalApiLib.SourceHandlers
         private const string MsConn = "OnPointConsole";
         private const string PgConn = "Signal";
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
+        private readonly bool _writeToMs;
+        private readonly bool _writeToPg;
 
-        public ConsoleFeed(FrameworkWrapper fw)
+        public ConsoleFeed(FrameworkWrapper fw, bool writeToPg, bool writeToMs)
         {
             _fw = fw;
+            _writeToMs = writeToMs;
+            _writeToPg = writeToPg;
         }
 
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
@@ -60,9 +65,11 @@ namespace SignalApiLib.SourceHandlers
 
             try
             {
-                var tasks = new Task[]
+                var tasks = new List<Task>();
+
+                if (_writeToMs)
                 {
-                    Task.Run(async () =>
+                    tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
@@ -74,21 +81,27 @@ namespace SignalApiLib.SourceHandlers
                         {
                             await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"MSSql write failed. {e.UnwrapForLog()}\r\nBody: {request}");
                         }
-                    }),
-                    Task.Run(async () =>
+                    }));
+                }
+
+                if (_writeToPg)
+                {
+                    tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
                             var res = await Data.CallFn(PgConn, "consoleLiveFeed", payload: request);
 
                             if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"PG write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+
+                            if (_writeToPg && !_writeToMs) result = res;
                         }
                         catch (Exception e)
                         {
                             await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"PG write failed {e.UnwrapForLog()}\r\nBody: {request}");
                         }
-                    })
-                };
+                    }));
+                }
 
                 await Task.WhenAll(tasks);
             }
@@ -106,9 +119,11 @@ namespace SignalApiLib.SourceHandlers
 
             try
             {
-                var tasks = new []
+                var tasks = new List<Task>();
+
+                if (_writeToMs)
                 {
-                    Task.Run(async () =>
+                    tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
@@ -120,21 +135,27 @@ namespace SignalApiLib.SourceHandlers
                         {
                             await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"MSSql write failed. {e.UnwrapForLog()}\r\nBody: {request}");
                         }
-                    }),
-                    Task.Run(async () =>
+                    }));
+                }
+
+                if (_writeToPg)
+                {
+                    tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
                             var res = await Data.CallFn(PgConn, "consoleEvent", payload: request);
 
                             if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"PG write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+
+                            if (_writeToPg && !_writeToMs) result = res;
                         }
                         catch (Exception e)
                         {
                             await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"PG write failed {e.UnwrapForLog()}\r\nBody: {request}");
                         }
-                    })
-                };
+                    }));
+                }
 
                 await Task.WhenAll(tasks);
             }
