@@ -27,6 +27,7 @@ namespace Utility
         public ErrorDelegate Err;
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
         public bool TraceLogging = true;
+        public bool TraceToConsole = false;
 
         public FrameworkWrapper(string[] commandLineArgs = null)
         {
@@ -57,6 +58,7 @@ namespace Utility
                 var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
 
                 TraceLogging = StartupConfiguration.GetB("Config/EnableTraceLogging");
+                TraceToConsole = StartupConfiguration.GetB("Config/TraceToConsole");
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
@@ -74,6 +76,9 @@ namespace Utility
 #if DEBUG
                         Debug.WriteLine($"{DateTime.Now}: {method} {descriptor} {message}");
 #endif
+
+                        if (TraceToConsole) Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{severity}\t{descriptor}\t{method}\t{message}");
+
                         if (!TraceLogging && descriptor == ErrorDescriptor.Trace)
                         {
                             return;
