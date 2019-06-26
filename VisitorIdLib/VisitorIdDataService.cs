@@ -274,7 +274,7 @@ namespace VisitorIdLib
 
         public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, bool bootstrap, Dictionary<string, object> codePathRsidDict)
         {
-            string opaque64, opaque = null, afid, tpid, eml, md5, osid, sid, qstr, host, path, qury, lv, lst, omd5pid;
+            string opaque64, opaque = null, afid, tpid, eml, md5, osid, sid, qstr, host, path, qury, lst, omd5pid;
             IGenericEntity opge;
             bool pfail;
             int slot, page, pfailSlot, pfailPage;
@@ -297,7 +297,6 @@ namespace VisitorIdLib
                 osid = opqVals.sid.IsNullOrWhitespace() ? "" : opqVals.sid;
                 qstr = opqVals.qstr;
                 lst = opqVals.lst;
-                lv = opqVals.lv ?? "";
                 var u = opqVals.uri;
                 host = u.Host ?? "";
                 path = u.AbsolutePath ?? "";
@@ -326,13 +325,11 @@ namespace VisitorIdLib
                 codePathRsidDict.Add(rsid.Key, rsid.Value);
             }
 
-            lv = cookieData.LastVisit == null ? "" : cookieData.LastVisit.ToString();
             sid = cookieData.sid.ToString();
 
             if (!osid.IsNullOrWhitespace() && osid != sid)
             {
-                var lvToNow = visitTime - Convert.ToDateTime(lv.IsNullOrWhitespace() || lv == null ? DateTime.MinValue.ToString() : lv);
-                var msg = $"Mismatch between opaque session id '{osid}' and cookie session id '{sid}'. Last visit delta: {lvToNow.TotalMinutes} mins";
+                var msg = $"Mismatch between opaque session id '{osid}' and cookie session id '{sid}'";
                 await fw.Err(ErrorSeverity.Warn, nameof(DoVisitorId), ErrorDescriptor.Log, msg);
                 await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "body", msg, osid, sid }), codePathRsidDict);
             }
@@ -365,8 +362,7 @@ namespace VisitorIdLib
                     afid,
                     tpid,
                     ua = c.Request.Headers["User-Agent"],
-                    vt = visitTime.ToString(),
-                    lv
+                    vt = visitTime.ToString()
                 });
 
                 eventPayload.Add(PL.O(new { op = opaque }, new bool[] { false }));
@@ -385,7 +381,7 @@ namespace VisitorIdLib
                     be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, PL.O(new { et = "ThirdPartyCookieDisabled" }).Add(eventPayload));
                     await fw.EdwWriter.Write(be);
-                    return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: new CookieData());
+                    return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: cookieData);
                 }
 
                 CookieData.WriteVisitEvents(visitEvents, fw.EdwWriter);
@@ -476,7 +472,7 @@ namespace VisitorIdLib
                             md5 = lookupGe.GetS("Md5");
                         }
 
-                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, lv, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData, c.Connection.RemoteIpAddress.ToString(), c.Request.Headers["User-Agent"]);
+                        var vidResp = await SaveSession(fw, c, sid, CookieMd5Pid, slot, page, md5, eml, isAsync, visitorIdEmailProviderSequence, cookieData.RsIdDict, true, DateTime.UtcNow.ToString(), cookieData.VeryFirstVisit, afid, tpid, host, path, cookieData, c.Connection.RemoteIpAddress.ToString(), c.Request.Headers["User-Agent"]);
                         eml = vidResp.Email;
 
                         if (!md5.IsNullOrWhitespace())
@@ -490,7 +486,6 @@ namespace VisitorIdLib
                                 slot,
                                 page,
                                 isAsync = isAsync ? "true" : "false",
-                                lv,
                                 vieps = visitorIdEmailProviderSequence,
                                 md5,
                                 email = eml
@@ -514,7 +509,7 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid, lv }), md5, eml, cookieData);
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, cookieData);
                         }
                     }
                     else if (nextTask.ToLower() == "continueonsuccessemail")
@@ -526,14 +521,14 @@ namespace VisitorIdLib
                         }
                         else
                         {
-                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid, lv }), md5, eml, cookieData);
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, cookieData);
                         }
                     }
                     else if (nextTask.ToLower() == "breakonsuccessmd5")
                     {
                         if (!md5.IsNullOrWhitespace())
                         {
-                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid, lv }), md5, eml, cookieData);
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, cookieData);
                         }
                         else
                         {
@@ -545,7 +540,7 @@ namespace VisitorIdLib
                     {
                         if (!eml.IsNullOrWhitespace())
                         {
-                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid, lv }), md5, eml, cookieData);
+                            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, cookieData);
                         }
                         else
                         {
@@ -555,7 +550,7 @@ namespace VisitorIdLib
                     }
                     else if (nextTask.ToLower() == "break")
                     {
-                        return new VisitorIdResponse(Jw.Json(new { done = "1", sid, lv }), md5, eml, cookieData);
+                        return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, cookieData);
                     }
                     else if (nextTask[0] == '@')
                     {
@@ -571,7 +566,6 @@ namespace VisitorIdLib
                         opq["vieps"] = visitorIdEmailProviderSequence;
                         opq["slot"] = slot;
                         opq["page"] = page;
-                        opq["lv"] = lv;
                         opq["lst"] = cookieData.LastSelectTime(md5pid);
                         opq["vft"] = cookieData.VeryFirstVisit;
                         opq["rsid"] = JsonConvert.SerializeObject(cookieData.RsIdDict);
@@ -601,7 +595,6 @@ namespace VisitorIdLib
                             slot,
                             page,
                             isAsync = isAsync ? "true" : "false",
-                            lv,
                             vieps = visitorIdEmailProviderSequence
                         },
                         new bool[] { false, true, true, true, true, true }), md5, eml, cookieData);
@@ -633,15 +626,15 @@ namespace VisitorIdLib
 
             await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "end" }), codePathRsidDict);
 
-            return new VisitorIdResponse(Jw.Json(new { done = "1", sid, lv }), md5, eml, cookieData);
+            return new VisitorIdResponse(Jw.Json(new { done = "1", sid }), md5, eml, cookieData);
         }
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, string sid,
             string md5pid, int slot, int page, string md5, string email, bool isAsync, string visitorIdEmailProviderSequence,
-            Dictionary<string, object> rsids, bool hasClientContext, string lastVisit, string lst, bool vft, string afid, string tpid, string host, string path, CookieData cookieData, string ip, string ua)
+            Dictionary<string, object> rsids, bool hasClientContext, string lst, bool vft, string afid, string tpid, string host, string path, CookieData cookieData, string ip, string ua)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "start" }), rsids);
-            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "args", sid = sid ?? "''", md5pid = md5pid ?? "''", slot, page, md5 = md5 ?? "''", email = email ?? "''", vieps = visitorIdEmailProviderSequence ?? "''", lv = lastVisit ?? "''", lst = lst ?? "''", vft, afid = afid ?? "''", host }), rsids);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "args", sid = sid ?? "''", md5pid = md5pid ?? "''", slot, page, md5 = md5 ?? "''", email = email ?? "''", vieps = visitorIdEmailProviderSequence ?? "''", lst = lst ?? "''", vft, afid = afid ?? "''", host }), rsids);
             var success = !md5.IsNullOrWhitespace();
             var foundMd5ProviderPid = false;
 
@@ -687,7 +680,6 @@ namespace VisitorIdLib
                         page,
                         lst = lst ?? "",
                         domain = host,
-                        lv = lastVisit ?? "",
                         eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
                         succ = success ? "1" : "0"
                     }));
@@ -700,7 +692,7 @@ namespace VisitorIdLib
 
             if (!success)
             {
-                return new VisitorIdResponse(Jw.Json(new { Result = "Failure", slot, page, lv = lastVisit }), md5, email, cookieData);
+                return new VisitorIdResponse(Jw.Json(new { Result = "Failure", slot, page }), md5, email, cookieData);
             }
 
             string clientIp = null, userAgent = null;
@@ -717,7 +709,7 @@ namespace VisitorIdLib
             }
 
             string emailpid = null;
-            (email, emailpid) = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? ("", null) : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, md5pid, slot, page, host, clientIp, userAgent, lastVisit, cookieData);
+            (email, emailpid) = visitorIdEmailProviderSequence.IsNullOrWhitespace() ? ("", null) : await DoEmailProviders(fw, c, sid, md5, email, isAsync, visitorIdEmailProviderSequence, rsids, md5pid, slot, page, host, clientIp, userAgent, cookieData);
 
             if (!Md5ExcludeList.Contains(Guid.Parse(md5)))
             {
@@ -742,7 +734,7 @@ namespace VisitorIdLib
             }
 
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "end" }), rsids);
-            return new VisitorIdResponse(Jw.Json(new { slot, page, lv = lastVisit }), md5, email, cookieData);
+            return new VisitorIdResponse(Jw.Json(new { slot, page }), md5, email, cookieData);
         }
 
         public static (
@@ -825,13 +817,13 @@ namespace VisitorIdLib
 
             }
 
-            var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, hasClientContext, opqVals.lv, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.tpid, opqVals.host, opqVals.uri.AbsolutePath, cookieData, opqVals.ip, opqVals.ua);
+            var response = await SaveSession(fw, c, opqVals.sid, opqVals.md5pid, opqVals.slot, opqVals.page, (md5 ?? opqVals.md5), opqVals.eml, opqVals.isAsync, opqVals.vieps, opqVals.rsids, hasClientContext, opqVals.lst, opqVals.vft, opqVals.afid, opqVals.tpid, opqVals.host, opqVals.uri.AbsolutePath, cookieData, opqVals.ip, opqVals.ua);
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "end" }), opqVals.rsids);
             return response;
         }
 
         public async Task<(string email, string emailpid)> DoEmailProviders(FrameworkWrapper fw, HttpContext context, string sid,
-            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, string md5pid, int md5Slot, int md5Page, string host, string clientIp, string userAgent, string lastVisit, CookieData cookieData)
+            string md5, string email, bool isAsync, string visitorIdEmailProviderSequence, Dictionary<string, object> rsids, string md5pid, int md5Slot, int md5Page, string host, string clientIp, string userAgent, CookieData cookieData)
         {
             await WriteCodePathEvent(PL.O(new { branch = nameof(DoEmailProviders), loc = "start" }), rsids);
             var cookieEml = "";
@@ -1062,8 +1054,7 @@ namespace VisitorIdLib
                        page,
                        md5pid,
                        md5Slot,
-                       md5Page,
-                       lastVisit
+                       md5Page
                    })
                    .Add(PL.N("seq", SL.C(VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])))
                    .Add(PL.N("rsids", PL.D(rsids))).ToString()));
