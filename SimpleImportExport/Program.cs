@@ -20,12 +20,22 @@ namespace SimpleImportExport
 
         public static async Task Main(string[] args)
         {
+            if (!args.Any()) throw new Exception("Job name parameter not provided");
+
             var jobName = args[0];
 
             try
             {
                 _fw = new FrameworkWrapper();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Failed to load FrameworkWrapper {e.UnwrapForLog()}");
+                throw;
+            }
 
+            try
+            {
                 _fw.LogMethodPrefix = $"{jobName}::";
 
                 var jobIdStr = _fw.StartupConfiguration.GetS("Config/Jobs/" + jobName);
@@ -63,6 +73,7 @@ namespace SimpleImportExport
 
                             var refId = Guid.NewGuid();
                             var fileSize = await dest.SendStream(f, src);
+                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopy complete {f.name}:\n\tFrom: {src}\n\tTo: {dest}\n\t{f.srcPath} -> {f.destPath}");
                             var sargs = Jw.Json(new { JobId = jobId, FileName = f.name, FileSize = fileSize, Ref = refId, FileDate = f.fileDate });
                             async Task Commit()
                             {
@@ -185,6 +196,7 @@ namespace SimpleImportExport
                             if (fileDate.HasValue) args["file_date"] = fileDate;
 
                             var payload = ReplacePatternTokens(payloadTemplate, pattern)?.Replace("{fileRelativePath}", fileRelativePath).Replace("{ref}", refId.ToString());
+                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tRunning post process. Ref: {refId} {endpoint}:\r\nConfig: {ppge.GetS("")}\r\nArgs: {args}\r\nPayload: {payload}");
                             var res = await Data.CallFn(connection, function, args.ToString(), payload);
 
                             if (res?.GetS("").IsNullOrWhitespace() != false)
