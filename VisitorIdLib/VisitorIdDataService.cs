@@ -315,30 +315,6 @@ namespace VisitorIdLib
             }
 
             var visitTime = DateTime.UtcNow;
-            if (!c.Request.Cookies.ContainsKey(CookieName))
-            {
-                await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "body", msg = "cannot write 3rd party cookie" }), codePathRsidDict);
-                var noCookieRsid = Guid.NewGuid();
-                var eventPayload = PL.O(new
-                {
-                    ua = c.Request.Headers["User-Agent"],
-                    qs = qstr,
-                    ip = c.Connection.RemoteIpAddress,
-                    h = host,
-                    p = path,
-                    q = qury,
-                    afid,
-                    tpid,
-                });
-                eventPayload.Add(PL.O(new { qjs = QueryStringUtil.ParseQueryStringToJsonOrLog(qury, async (method, message) => { await Fw.Log(method, message); }) }, new bool[] { false }));
-
-                be = new EdwBulkEvent();
-                be.AddRS(EdwBulkEvent.EdwType.Immediate, noCookieRsid, DateTime.UtcNow, eventPayload, RsConfigIds.PageRsid);
-                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { typeof(PageVisit).Name, noCookieRsid } }, null, PL.O(new { et = "ThirdPartyCookieDisabled" }).Add(eventPayload));
-                await fw.EdwWriter.Write(be);
-                return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: new CookieData());
-            }
-
             var cookieData = new CookieData(visitTime, c.Request.Cookies[CookieName], CookieVersion, host, path, SessionDuration, RsConfigIds, newlyConstructed: bootstrap);
             foreach (var rsid in opqRsids)
             {
@@ -381,8 +357,6 @@ namespace VisitorIdLib
             {
                 var eventPayload = PL.O(new
                 {
-                    op = opaque,
-                    qjs = QueryStringUtil.ParseQueryStringToJsonOrLog(qury, async (method, message) => { await Fw.Log(method, message); }),
                     qs = qstr,
                     ip = c.Connection.RemoteIpAddress,
                     h = host,
@@ -393,27 +367,26 @@ namespace VisitorIdLib
                     ua = c.Request.Headers["User-Agent"],
                     vt = visitTime.ToString(),
                     lv
-                }, new bool[]
-                {
-                    false, //op
-                    false, //qjs
-                    true,  //qs
-                    true,  //ip
-                    true,  //h
-                    true,  //p
-                    true,  //q
-                    true,  //afid
-                    true,  //tpid
-                    true,  //u
-                    true,  //
-                    true   //lv
                 });
+
+                eventPayload.Add(PL.O(new { op = opaque }, new bool[] { false }));
+                eventPayload.Add(PL.O(new { qjs = QueryStringUtil.ParseQueryStringToJsonOrLog(qury, async (method, message) => { await Fw.Log(method, message); }) }, new bool[] { false }));
 
                 var visitEvents = cookieData.VisitEventsWithPayload(eventPayload);
                 visitEvents.RsList.ForEach(async rs => await fw.Trace(nameof(DoVisitorId), $"Preparing to write Reporting Sequence event: {rs.ToString()}"));
                 visitEvents.EventList.ForEach(async evt => await fw.Trace(nameof(DoVisitorId), $"Preparing to write Session event: {evt.ToString()}"));
                 await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "body", eventPayload = eventPayload.ToString() },
                                        new bool[] { true, true, false }), codePathRsidDict);
+
+                if (!c.Request.Cookies.ContainsKey(CookieName))
+                {
+                    await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "body", msg = "cannot write 3rd party cookie" }), codePathRsidDict);
+                    visitEvents.RsList.ForEach(async rs => await fw.EdwWriter.Write(rs));
+                    be = new EdwBulkEvent();
+                    be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, PL.O(new { et = "ThirdPartyCookieDisabled" }).Add(eventPayload));
+                    await fw.EdwWriter.Write(be);
+                    return new VisitorIdResponse(result: "", md5: "", email: "", cookieData: new CookieData());
+                }
 
                 CookieData.WriteVisitEvents(visitEvents, fw.EdwWriter);
             }
