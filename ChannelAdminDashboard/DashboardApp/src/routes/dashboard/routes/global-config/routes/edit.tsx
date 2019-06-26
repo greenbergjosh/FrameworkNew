@@ -179,6 +179,8 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
 
   const [configErrors, setConfigErrors] = React.useState([] as string[])
 
+  const [previewData, setPreviewData] = React.useState({})
+
   /* afterCreate */
   React.useEffect(() => {
     updatedConfig.chain(findInStore).foldL(
@@ -360,6 +362,35 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                         />
                       )}
                       {/* <Alert type="info" message={form.values.config} /> */}
+                    </Tabs.TabPane>
+                    <Tabs.TabPane key={"display"} tab={"Preview"} disabled={!!form.errors.config}>
+                      {form.errors.config ? (
+                        <Alert
+                          type="error"
+                          description="Please correct errors in the JSON before attempting to preview the layout."
+                          message="JSON Errors"
+                        />
+                      ) : (
+                        <UserInterface
+                          contextManager={userInterfaceContextManager}
+                          data={previewData}
+                          onChangeData={(value) => {
+                            console.log(
+                              "edit",
+                              "UserInterface.onChangeData",
+                              "display config",
+                              value
+                            )
+                            setPreviewData(value)
+                            // form.setFieldValue("config", JSON.stringify(value, null, 2))
+                            // form.setFieldTouched("config", true)
+                          }}
+                          mode="display"
+                          components={tryCatch(
+                            () => JSON.parse(form.values.config).layout
+                          ).getOrElse([])}
+                        />
+                      )}
                     </Tabs.TabPane>
                     <Tabs.TabPane key={"json"} tab={"Developer JSON"}>
                       <CodeEditor
