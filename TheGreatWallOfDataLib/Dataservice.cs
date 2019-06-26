@@ -14,6 +14,7 @@ namespace TheGreatWallOfDataLib
     public class DataService
     {
         public static FrameworkWrapper Fw = null;
+        private bool _traceLogResponse = false;
 
         public void Config(FrameworkWrapper fw)
         {
@@ -21,6 +22,7 @@ namespace TheGreatWallOfDataLib
             {
                 Fw = fw;
                 Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
+                _traceLogResponse = fw.StartupConfiguration.GetS("Config/TraceResponse").ParseBool() ?? false;
                 Authentication.Initialize(fw).Wait();
             }
             catch (Exception ex)
@@ -122,7 +124,7 @@ namespace TheGreatWallOfDataLib
 
             var resp = body.ToString();
 
-            await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            if(_traceLogResponse) await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
             await context.WriteSuccessRespAsync(resp);
         }
