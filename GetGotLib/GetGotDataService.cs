@@ -228,6 +228,9 @@ namespace GetGotLib
                     case ContactType.Email:
                         var (code, accountName, res) = await GetAvailableConfirmationCode(contact.Cleaned);
 
+#if DEBUG
+                        if(System.Diagnostics.Debugger.IsAttached) break;
+#endif
                         if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
                         else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
                         else
