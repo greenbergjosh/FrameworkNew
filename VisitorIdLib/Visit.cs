@@ -66,6 +66,8 @@ namespace VisitorIdLib
         public Guid PageReportingSequenceId { get; set; }
         public DateTime PageVisitDateTime { get; set; }
 
+        public DateTime LastVisitDateTime { get; set; }
+
         [JsonIgnore]
         public DateTime? ExpiredVisitDateTime { get; set; }
         [JsonIgnore]
@@ -96,8 +98,8 @@ namespace VisitorIdLib
 
         public void Expire(DateTime newVisitDateTime)
         {
-
             ExpiredVisitDateTime = VisitDateTime;
+            LastVisitDateTime = VisitDateTime;
             ExpiredVisitNum = VisitNum;
             ExpiredReportingSequenceId = ReportingSequenceId;
             VisitNum = 1;
@@ -110,6 +112,7 @@ namespace VisitorIdLib
         {
             VisitNum++;
             PageVisitDateTime = newVisitDateTime;
+            LastVisitDateTime = VisitDateTime;
         }
 
         public override PL ReportingSequencePayload()
