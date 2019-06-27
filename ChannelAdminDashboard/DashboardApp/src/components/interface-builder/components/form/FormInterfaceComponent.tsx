@@ -3,6 +3,7 @@ import React from "react"
 import { DataPathContext } from "../../../DataPathContext"
 import { ComponentRenderer } from "../../ComponentRenderer"
 import { UserInterfaceProps } from "../../UserInterface"
+import { formManageForm } from "./form-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -40,11 +41,14 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
       },
     }
   }
+
+  static manageForm = formManageForm
+
   render() {
     const { components, onChangeData, userInterfaceData } = this.props
     // console.log("FormInterfaceComponent.render", { userInterfaceData, onChangeData })
     return (
-      <Form style={{ padding: "15px" }} {...defaultFormLayout}>
+      <Form style={{ padding: "5px" }} layout="vertical" {...defaultFormLayout}>
         <DataPathContext path="components">
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}

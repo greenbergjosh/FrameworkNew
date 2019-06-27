@@ -120,6 +120,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     configs: s.globalConfig.configs,
     configsById: store.select.globalConfig.configsById(s),
     configNames: store.select.globalConfig.configNames(s),
+    configsByType: store.select.globalConfig.configsByType(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
@@ -151,13 +152,66 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
   const isRootConfig = entityTypeConfig.map(({ id }) => id === props.config.id).getOrElse(false)
   const configComponents = isRootConfig
     ? ROOT_CONFIG_COMPONENTS
-    : (entityTypeConfig
-        .map((parentType) => {
-          return tryCatch(() => JSON.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
-            ROOT_CONFIG_COMPONENTS
+    : (() => {
+        // First check in the manual overrides
+        const layoutMappingRecords = record.lookup("LayoutMapping", fromStore.configsByType)
+        // TODO: Traverse up the type-of relationship to find if a parent type has layout assignments
+        const collectedLayoutOverrides = layoutMappingRecords
+          .map((layoutMappings) =>
+            layoutMappings.reduce(
+              (result, layoutMapping) => {
+                const configOption = tryCatch(() =>
+                  JSON.parse(layoutMapping.config.getOrElse("{}"))
+                )
+
+                configOption.map(({ layout, entityTypes, configs }) => {
+                  if (layout) {
+                    if (configs && configs.includes(props.config.id)) {
+                      result.byConfigId.push(layout)
+                    }
+                    if (
+                      entityTypes &&
+                      entityTypeConfig.map(({ id }) => entityTypes.includes(id)).getOrElse(false)
+                    ) {
+                      result.byEntityType.push(layout)
+                    }
+                  }
+                })
+
+                return result
+              },
+              { byEntityType: [] as string[], byConfigId: [] as string[] }
+            )
           )
-        })
-        .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[])
+          .toNullable()
+
+        // Were there any LayoutMapping assignments for this item?
+        if (collectedLayoutOverrides) {
+          console.log("GlobalConfig.edit", collectedLayoutOverrides)
+          if (collectedLayoutOverrides.byConfigId.length) {
+            // TODO: Eventually merge these layouts, perhaps?
+            const layout = record
+              .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
+              .chain(({ config }) =>
+                tryCatch(() => JSON.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
+              )
+              .toNullable()
+
+            if (layout) {
+              return layout
+            }
+          } else if (collectedLayoutOverrides.byConfigId.length) {
+          }
+        }
+
+        return entityTypeConfig
+          .map((parentType) => {
+            return tryCatch(() => JSON.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
+              ROOT_CONFIG_COMPONENTS
+            )
+          })
+          .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
+      })()
 
   const configLang = React.useMemo(() => {
     return entityTypeConfig
@@ -386,9 +440,10 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                             // form.setFieldTouched("config", true)
                           }}
                           mode="display"
-                          components={tryCatch(
-                            () => JSON.parse(form.values.config).layout
-                          ).getOrElse([])}
+                          components={tryCatch(() => {
+                            const layout = JSON.parse(form.values.config).layout
+                            return layout && (Array.isArray(layout) ? layout : [layout])
+                          }).getOrElse([])}
                         />
                       )}
                     </Tabs.TabPane>

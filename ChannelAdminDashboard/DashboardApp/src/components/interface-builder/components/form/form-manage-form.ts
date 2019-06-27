@@ -17,11 +17,11 @@ const formManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Toggle",
+                defaultValue: "Form",
               },
               {
                 key: "valueKey",
-                defaultValue: "value",
+                hidden: true,
               },
             ],
           },
