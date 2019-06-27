@@ -177,7 +177,7 @@ namespace VisitorIdLib
             eventList.Add(this.PageVisit.VisitEvent(payload, this.RsIdDict));
             if (DomainVisit.VisitNum == 1) // Every new domain visit has a DomainVisit
             {
-                var domainPL = PL.O(new { LastDomainVisitDate }).Add(payload); // Date of the last domain visit across all domains
+                var domainPL = PL.O(new { LastDomainVisitDate = LastDomainVisitDate == DateTime.MinValue ? null : LastDomainVisitDate.ToString() }).Add(payload); // Date of the last domain visit across all domains
                 rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: domainPL));
                 eventList.Add(this.DomainVisit.VisitEvent(payload,this.RsIdDict));
             }
