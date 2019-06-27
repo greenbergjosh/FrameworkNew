@@ -42,12 +42,6 @@ export class RenderInterfaceComponent extends React.Component<
     const { Component, componentDefinition, data, index, mode, onChangeData, path } = this.props
     const { error } = this.state
 
-    // console.log("RenderInterfaceComponent.render", {
-    //   data,
-    //   onChangeData,
-    //   component: componentDefinition.component,
-    // })
-
     if (
       componentDefinition.hidden ||
       (componentDefinition.visibilityConditions &&
@@ -106,6 +100,7 @@ export class RenderInterfaceComponent extends React.Component<
       componentDefinition.label && componentDefinition.hideLabel !== true ? (
         layoutDefintion && layoutDefintion.formControl ? (
           <Form.Item
+            colon={false}
             label={
               <>
                 {componentDefinition.label} {helpContent}

@@ -36,7 +36,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     return {
       name: "list",
       title: "List",
-      formControl: true,
+      // formControl: true,
       icon: "unordered-list",
       componentDefinition: {
         component: "list",

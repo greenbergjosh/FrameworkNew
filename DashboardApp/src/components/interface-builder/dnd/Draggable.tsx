@@ -1,6 +1,7 @@
 import classNames from "classnames"
 import React from "react"
 import { ConnectDragSource, DragSource, DragSourceConnector } from "react-dnd"
+import { DraggableContext } from "./util/DraggableContext"
 import { DraggableEditButtons } from "./util/DraggableEditButtons"
 import { DraggedItemProps, DroppableContext } from "./util/DroppableContext"
 import { shallowPropCheck } from "./util/shallow-prop-check"
@@ -8,9 +9,9 @@ import { shallowPropCheck } from "./util/shallow-prop-check"
 const dragHandlers = {
   beginDrag(props: DraggableInnerProps): DraggedItemProps {
     return {
-      item: props.data,
       draggableId: props.draggableId,
       index: props.index,
+      item: props.data,
       parentDroppableId: props.parentDroppableId,
       type: props.type,
     }
@@ -29,6 +30,7 @@ export interface DraggableInnerProps {
   connectDragSource: ConnectDragSource
   data: unknown
   draggableId: string
+  draggableItem: DraggedItemProps
   editable?: boolean
   index: number
   innerRef: React.RefObject<HTMLDivElement>
@@ -37,15 +39,28 @@ export interface DraggableInnerProps {
   parentDroppableId: string | null
   title: string
   type: string | symbol
+
+  // DraggableContextProps
+  canPaste?: boolean
+  onCopy?: (draggableItem: DraggedItemProps) => void
+  onDelete?: (draggableItem: DraggedItemProps) => void
+  onEdit?: (draggableItem: DraggedItemProps) => void
+  onPaste?: (draggableItem: DraggedItemProps) => void
 }
 function DraggableInner({
+  canPaste,
   children,
   connectDragSource,
   data,
+  draggableItem,
   editable,
   innerRef,
   isDragging,
   makeRoomForPlaceholder,
+  onCopy,
+  onDelete,
+  onEdit,
+  onPaste,
   title,
 }: DraggableInnerProps) {
   return connectDragSource(
@@ -56,19 +71,11 @@ function DraggableInner({
       {children({ data, isDragging })}
       {editable && (
         <DraggableEditButtons
-          canPaste
-          onCopy={() => {
-            console.log("Draggable onCopy", data)
-          }}
-          onDelete={() => {
-            console.log("Draggable onDelete", data)
-          }}
-          onEdit={() => {
-            console.log("Draggable onEdit", data)
-          }}
-          onPaste={() => {
-            console.log("Draggable onPaste", data)
-          }}
+          canPaste={canPaste}
+          onCopy={onCopy && (() => onCopy(draggableItem))}
+          onDelete={onDelete && (() => onDelete(draggableItem))}
+          onEdit={onEdit && (() => onEdit(draggableItem))}
+          onPaste={onPaste && (() => onPaste(draggableItem))}
           title={title}
         />
       )}
@@ -89,28 +96,85 @@ export interface DraggableProps {
   index: number
   title: string
   type: string | symbol
+
+  canPaste?: boolean
+  onCopy?: (draggedItem: DraggedItemProps) => void
+  onDelete?: (draggedItem: DraggedItemProps) => void
+  onEdit?: (draggedItem: DraggedItemProps) => void
+  onPaste?: (draggedItem: DraggedItemProps) => void
 }
 
 const DraggableComponent = DragSource(({ type }) => type, dragHandlers, collect)(DraggableInner)
 
 export const Draggable = React.memo(
-  ({ children, data, draggableId, editable, index, title, type }: DraggableProps) => {
+  ({
+    canPaste,
+    children,
+    data,
+    draggableId,
+    editable,
+    index,
+    onCopy,
+    onDelete,
+    onEdit,
+    onPaste,
+    title,
+    type,
+  }: DraggableProps) => {
     const innerRef = React.useRef(null)
     const droppableContext = React.useContext(DroppableContext)
+    const draggableContext = React.useContext(DraggableContext)
+
+    const finalCanPaste =
+      typeof canPaste !== "undefined"
+        ? canPaste
+        : draggableContext
+        ? draggableContext.canPaste
+        : void 0
+    const finalOnCopy =
+      typeof onCopy !== "undefined" ? onCopy : draggableContext ? draggableContext.onCopy : void 0
+    const finalOnDelete =
+      typeof onDelete !== "undefined"
+        ? onDelete
+        : draggableContext
+        ? draggableContext.onDelete
+        : void 0
+    const finalOnEdit =
+      typeof onEdit !== "undefined" ? onEdit : draggableContext ? draggableContext.onEdit : void 0
+    const finalOnPaste =
+      typeof onPaste !== "undefined"
+        ? onPaste
+        : draggableContext
+        ? draggableContext.onPaste
+        : void 0
+
+    const draggableItem = {
+      draggableId,
+      index,
+      item: data,
+      parentDroppableId: droppableContext && droppableContext.droppableId,
+      type,
+    }
 
     return (
       <DraggableComponent
+        canPaste={finalCanPaste}
         data={data}
         draggableId={draggableId}
+        draggableItem={draggableItem}
         editable={editable}
-        parentDroppableId={droppableContext && droppableContext.droppableId}
+        index={index}
+        innerRef={innerRef}
         makeRoomForPlaceholder={
           !!droppableContext &&
           droppableContext.placeholder !== null &&
           droppableContext.placeholder.index <= index
         }
-        innerRef={innerRef}
-        index={index}
+        onCopy={finalOnCopy}
+        onDelete={finalOnDelete}
+        onEdit={finalOnEdit}
+        onPaste={finalOnPaste}
+        parentDroppableId={droppableContext && droppableContext.droppableId}
         title={title}
         type={type}>
         {children}
