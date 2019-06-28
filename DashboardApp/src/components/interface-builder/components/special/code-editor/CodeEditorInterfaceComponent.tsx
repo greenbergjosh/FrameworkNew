@@ -38,6 +38,7 @@ export class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
 
   static getLayoutDefinition() {
     return {
+      category: "Special",
       name: "code-editor",
       title: "Code Editor",
       icon: "code",

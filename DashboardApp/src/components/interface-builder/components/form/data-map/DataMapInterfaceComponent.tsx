@@ -48,6 +48,7 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
 
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "data-map",
       title: "Data Map",
       icon: "appstore",

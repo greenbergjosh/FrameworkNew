@@ -4,6 +4,8 @@ import React from "react"
 import { registry } from "../../registry"
 
 export interface LayoutDefinition {
+  /** A grouping of the component in the component selection */
+  category: string
   /** A unique name for this component */
   name: string
   /** The display text of this component */
@@ -12,7 +14,7 @@ export interface LayoutDefinition {
   icon?: string
   /** Whether or not this component is a form control */
   formControl?: boolean
-  /** The initial ComponentDefinition when creating an instance of this*/
+  /** The initial ComponentDefinition when creating an instance of this */
   componentDefinition: Partial<ComponentDefinition>
 }
 

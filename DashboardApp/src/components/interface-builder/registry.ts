@@ -1,5 +1,6 @@
 import React from "react"
 import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
+import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
@@ -35,6 +36,9 @@ export const registry: ComponentRegistry = {
     tabs: TabsInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
+
+    // Custom items really should be added as a third party registration
+    "slot-config": SlotConfigInterfaceComponent,
   },
   lookup(key: string) {
     return registry.cache[key]

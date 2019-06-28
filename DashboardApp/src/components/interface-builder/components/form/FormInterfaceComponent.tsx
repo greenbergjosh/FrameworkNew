@@ -31,6 +31,7 @@ export interface FormInterfaceComponentProps extends ComponentDefinitionNamedPro
 export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterfaceComponentProps> {
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "form",
       title: "Form",
       icon: "form",

@@ -19,7 +19,14 @@ import {
 export interface ListInterfaceComponentProps extends ComponentDefinitionNamedProps {
   addItemLabel: string
   component: "list"
-  items: [ComponentDefinition]
+  /** Interleave:
+   * As a list component, this describes in what manner to repeat, if there are multiple components.
+   * "none" - There can only be a single component, it alone is repeated every time. (Default)
+   * "round-robin" - Every component in the list is rotated through with each addition.
+   * "set" - The entire set of components is repeated with each iteration.
+   */
+  interleave?: "none" | "round-robin" | "set"
+  components: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
@@ -28,27 +35,46 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
   static defaultProps = {
     addItemLabel: "Add Item",
+    interleave: "none",
     userInterfaceData: {},
-    valueKey: "items",
+    valueKey: "data",
   }
 
   static getLayoutDefinition() {
     return {
+      category: "Display",
       name: "list",
       title: "List",
-      // formControl: true,
       icon: "unordered-list",
       componentDefinition: {
         component: "list",
-        items: [],
+        components: [],
       },
     }
   }
 
   static manageForm = listManageForm
 
+  handleAddClick = () => {
+    const { components, interleave, onChangeData, userInterfaceData, valueKey } = this.props
+    const entriesToAdd = interleave === "set" ? components.map(() => ({})) : [{}]
+    onChangeData &&
+      onChangeData({
+        ...userInterfaceData,
+        [valueKey]: [...(userInterfaceData[valueKey] || []), ...entriesToAdd],
+      })
+  }
+
   render() {
-    const { addItemLabel, items, onChangeData, userInterfaceData, valueKey } = this.props
+    const {
+      addItemLabel,
+      components,
+      interleave,
+      onChangeData,
+      userInterfaceData,
+      valueKey,
+    } = this.props
+
     // Get the list data from the data set
     const data = userInterfaceData[valueKey] || []
     return (
@@ -57,14 +83,13 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
           {(mode) => {
             switch (mode) {
               case "display": {
-                const repeatedComponentDefinition = (items && items[0]) || {}
-                const components = (data.map(() => ({ ...repeatedComponentDefinition })) ||
-                  []) as ComponentDefinition[]
+                const finalComponents = repeatedInterleave(interleave, components, data.length)
 
+                console.log("ListInterfaceComponent.render", { data })
                 return (
                   <>
-                    {components.length ? (
-                      components.map((iteratedComponent, index) => (
+                    {finalComponents.length ? (
+                      finalComponents.map((iteratedComponent, index) => (
                         <ComponentRenderer
                           key={index}
                           components={[iteratedComponent]}
@@ -85,12 +110,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                       <Empty />
                     )}
 
-                    <Button
-                      style={{ display: "block" }}
-                      onClick={() =>
-                        onChangeData &&
-                        onChangeData({ ...userInterfaceData, [valueKey]: [...data, {}] })
-                      }>
+                    <Button style={{ display: "block" }} onClick={this.handleAddClick}>
                       {addItemLabel}
                     </Button>
                   </>
@@ -99,9 +119,9 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
               case "edit": {
                 // Repeat the component once per item in the list
                 return (
-                  <DataPathContext path="items">
+                  <DataPathContext path="components">
                     <ComponentRenderer
-                      components={items}
+                      components={components}
                       componentLimit={1}
                       data={data}
                       onChangeData={(newData) =>
@@ -117,5 +137,28 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
         {/* <Alert message="List Data" description={JSON.stringify(userInterfaceData)} type="warning" /> */}
       </div>
     )
+  }
+}
+
+function repeatedInterleave(
+  interleave: ListInterfaceComponentProps["interleave"],
+  items: any[],
+  count: number
+): ComponentDefinition[] {
+  switch (interleave) {
+    case "none": {
+      const singleItem = items[0]
+      return [...Array(count)].map(() => ({ ...singleItem }))
+    }
+    case "round-robin": {
+      return [...Array(count)].map((_, index) => ({ ...items[index % items.length] }))
+    }
+    case "set": {
+      const realCount = Math.ceil(count / (items.length || 1)) * items.length
+      return [...Array(realCount)].map((_, index) => ({ ...items[index % items.length] }))
+    }
+    default: {
+      return []
+    }
   }
 }

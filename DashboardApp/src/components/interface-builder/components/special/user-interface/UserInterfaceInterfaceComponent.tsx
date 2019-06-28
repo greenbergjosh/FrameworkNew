@@ -34,6 +34,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
 
   static getLayoutDefinition() {
     return {
+      category: "Special",
       name: "user-interface",
       title: "Layout Creator",
       icon: "build",

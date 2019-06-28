@@ -39,6 +39,8 @@ export interface ISelectInterfaceComponentProps extends ComponentDefinitionNamed
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
+  valuePrefix?: string
+  valueSuffix?: string
 
   dataHandlerType: LocalDataHandlerType | RemoteDataHandlerType
   data: {}
@@ -90,10 +92,13 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     valueKey: "value",
     defaultValue: "",
     placeholder: "Choose one",
+    valuePrefix: "",
+    valueSuffix: "",
   }
 
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "select",
       title: "Select",
       icon: "bars",
@@ -131,8 +136,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
   }
 
   handleChange = (value: string) => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
+    const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    onChangeData &&
+      onChangeData(set(valueKey, `${valuePrefix}${value}${valueSuffix}`, userInterfaceData))
   }
 
   static isRemoteDataType = (dataHandlerType: string): dataHandlerType is RemoteDataHandlerType => {
@@ -251,22 +257,31 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  getCleanValue = () => {
+    const { defaultValue, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+
+    const rawValue =
+      typeof userInterfaceData[valueKey] !== "undefined"
+        ? (userInterfaceData[valueKey] as string)
+        : defaultValue
+
+    const noPrefix =
+      rawValue && valuePrefix && rawValue.startsWith(valuePrefix)
+        ? rawValue.substring(valuePrefix.length)
+        : rawValue
+    const noSuffix =
+      noPrefix && valueSuffix && noPrefix.endsWith(valueSuffix)
+        ? noPrefix.substr(0, noPrefix.length - valueSuffix.length)
+        : noPrefix
+
+    return noSuffix
+  }
+
   render(): JSX.Element {
-    const {
-      allowClear,
-      defaultValue,
-      disabled,
-      multiple,
-      placeholder,
-      userInterfaceData,
-      valueKey,
-    } = this.props
+    const { allowClear, disabled, multiple, placeholder } = this.props
     const { loadStatus, options } = this.state
 
-    const value =
-      typeof userInterfaceData[valueKey] !== "undefined"
-        ? userInterfaceData[valueKey]
-        : defaultValue
+    const value = this.getCleanValue()
 
     return (
       <Select
