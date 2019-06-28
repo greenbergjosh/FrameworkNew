@@ -274,7 +274,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         ? noPrefix.substr(0, noPrefix.length - valueSuffix.length)
         : noPrefix
 
-    return noSuffix
+    return noSuffix && noSuffix.toLowerCase()
   }
 
   render(): JSX.Element {
@@ -294,7 +294,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         placeholder={placeholder}
         showSearch>
         {options.map((option) => (
-          <Select.Option key={`${option.value}`} value={option.value}>
+          <Select.Option key={`${option.value}`} value={option.value.toLowerCase()}>
             {option.label}
           </Select.Option>
         ))}
