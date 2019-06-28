@@ -23,8 +23,8 @@ export const DraggableEditButtons = ({
       {title && <span className="dnd-draggable-edit-title">{title}</span>}
       <Button.Group>
         {onEdit && <Button icon="edit" onClick={onEdit} />}
-        {onPaste && canPaste && <Button icon="snippets" onClick={onPaste} />}
-        {onCopy && <Button icon="copy" onClick={onCopy} />}
+        {onPaste && canPaste && <Button icon="snippets" onClick={onPaste} disabled />}
+        {onCopy && <Button icon="copy" onClick={onCopy} disabled />}
         {onDelete && <Button type="danger" icon="delete" onClick={onDelete} />}
       </Button.Group>
     </div>
