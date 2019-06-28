@@ -426,8 +426,8 @@ namespace VisitorIdLib
                             {
                                 et = "Md5ProviderSelectionInitiate",
                                 count = visitorIdMd5ProviderSequence.Count,
-                                slot,
-                                page
+                                md5slot = slot,
+                                md5page = page
                             }));
                         await fw.EdwWriter.Write(be);
                     }
@@ -444,8 +444,8 @@ namespace VisitorIdLib
                             {
                                 et = "Md5ProviderSelected",
                                 md5pid = CookieMd5Pid,
-                                slot,
-                                page,
+                                md5slot = slot,
+                                md5page = page
                             }));
                         await fw.EdwWriter.Write(be);
                         cookieData.AddOrUpdateProviderSelect(CookieMd5Pid, DateTime.UtcNow);
@@ -581,8 +581,8 @@ namespace VisitorIdLib
                             {
                                 et = "Md5ProviderSelected",
                                 md5pid,
-                                slot,
-                                page,
+                                md5slot = slot,
+                                md5page = page
                             }));
                         await fw.EdwWriter.Write(be);
                         cookieData.AddOrUpdateProviderSelect(md5pid, DateTime.UtcNow);
@@ -613,8 +613,8 @@ namespace VisitorIdLib
                         {
                             et = "Md5ProviderSelectionTermination",
                             count = visitorIdMd5ProviderSequence.Count,
-                            slot,
-                            page
+                            md5slot = slot,
+                            md5page = page
                         }));
                     await fw.EdwWriter.Write(be);
                 }
@@ -676,8 +676,8 @@ namespace VisitorIdLib
                         et = "Md5ProviderResponse",
                         md5 = md5 ?? "",
                         md5pid,
-                        slot,
-                        page,
+                        md5slot = slot,
+                        md5page = page,
                         lst = lst ?? "",
                         domain = host,
                         eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
@@ -829,8 +829,8 @@ namespace VisitorIdLib
             var cookieEml = "";
             var eml = "";
             var emailpid = "";
-            var slot = 0;
-            var page = 0;
+            var emailslot = 0;
+            var emailpage = 0;
 
             foreach (var s in VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence])
             {
@@ -850,8 +850,8 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderSelected",
                             emailpid = CookieEmailPid,
-                            slot,
-                            page,
+                            emailslot,
+                            emailpage,
                             md5pid,
                             md5Slot,
                             md5Page
@@ -881,8 +881,8 @@ namespace VisitorIdLib
                             et = "EmailProviderResponse",
                             emailpid = CookieEmailPid,
                             eg = 0,
-                            slot,
-                            page,
+                            emailslot,
+                            emailpage,
                             md5pid,
                             md5Slot,
                             md5Page,
@@ -891,17 +891,17 @@ namespace VisitorIdLib
                         }));
                     await fw.EdwWriter.Write(be);
 
-                    slot++;
+                    emailslot++;
                     if (!eml.IsNullOrWhitespace())
                     {
-                        page++;
+                        emailpage++;
                     }
 
                     continue;
                 }
                 else if (s.ToLower() == "continue")
                 {
-                    slot++;
+                    emailslot++;
                     if (isAsync)
                     {
                         break;
@@ -914,7 +914,7 @@ namespace VisitorIdLib
                 {
                     if (!eml.IsNullOrWhitespace())
                     {
-                        slot++;
+                        emailslot++;
                         if (isAsync)
                         {
                             break;
@@ -936,7 +936,7 @@ namespace VisitorIdLib
                     }
                     else
                     {
-                        slot++;
+                        emailslot++;
                         if (isAsync)
                         {
                             break;
@@ -959,8 +959,8 @@ namespace VisitorIdLib
                         {
                             et = "EmailProviderSelected",
                             emailpid,
-                            slot,
-                            page,
+                            emailslot,
+                            emailpage,
                             md5pid,
                             md5Slot,
                             md5Page
@@ -997,8 +997,8 @@ namespace VisitorIdLib
                     catch (Exception ex)
                     {
                         await fw.Err(ErrorSeverity.Error, nameof(DoEmailProviders), ErrorDescriptor.Exception, $"Failed to evaluate LBM {lbmId} for email provider {emailpid}. ErrorContext: {errorContext} Exception: {ex}");
-                        slot++;
-                        page++;
+                        emailslot++;
+                        emailpage++;
                         continue;
                     }
 
@@ -1017,8 +1017,8 @@ namespace VisitorIdLib
                                 et = "EmailProviderResponse",
                                 eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
                                 emailpid,
-                                slot,
-                                page,
+                                emailslot,
+                                emailpage,
                                 md5pid,
                                 md5Slot,
                                 md5Page,
@@ -1032,17 +1032,17 @@ namespace VisitorIdLib
                         await Fw.Error(nameof(SaveSession), $"Caught exception attempting to write EmailProviderResponse for pid: '{emailpid ?? ""}': {e.UnwrapForLog()}");
                     }
 
-                    slot++;
-                    page++;
+                    emailslot++;
+                    emailpage++;
                 }
                 else
                 {
-                    await fw.Err(1000, "DoVisitorId", "Error", $"Unknown Email Provider Task Type: {s} Slot: {slot} Page: {page}");
-                    slot++;
+                    await fw.Err(1000, "DoVisitorId", "Error", $"Unknown Email Provider Task Type: {s} Slot: {emailslot} Page: {emailpage}");
+                    emailslot++;
                 }
             }
 
-            if (isAsync && (slot < VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
+            if (isAsync && (emailslot < VisitorIdEmailProviderSequences[visitorIdEmailProviderSequence].Count))
             {
                 // ToDo: For this to work we need to remove the dependency on HttpContext
                 await fw.PostingQueueWriter.Write(new PostingQueueEntry(DataLayerName, DateTime.Now,
@@ -1050,8 +1050,8 @@ namespace VisitorIdLib
                    {
                        rsids,
                        sid,
-                       slot,
-                       page,
+                       emailslot,
+                       emailpage,
                        md5pid,
                        md5Slot,
                        md5Page
