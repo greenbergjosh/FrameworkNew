@@ -1,4 +1,4 @@
-import { Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton } from "antd"
+import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Formik from "formik"
 import { Do } from "fp-ts-contrib/lib/Do"
 import { array } from "fp-ts/lib/Array"
@@ -9,6 +9,9 @@ import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
+import { ComponentDefinition } from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
+import { UserInterface } from "../../../../../components/interface-builder/UserInterface"
+import { UserInterfaceContextManager } from "../../../../../components/interface-builder/UserInterfaceContextManager"
 import { Space } from "../../../../../components/space"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
@@ -18,12 +21,27 @@ import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
 import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Icon,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Skeleton,
+  Tabs,
+  Alert,
+} from "antd"
+import {
   fromEither,
   getSetoid as getOptionSetoid,
   none,
   Option,
   option,
   some,
+  tryCatch,
 } from "fp-ts/lib/Option"
 import {
   InProgressLocalDraftConfig,
@@ -43,8 +61,11 @@ export function CreateGlobalConfig({
 }: WithRouteProps<Props>): JSX.Element {
   const [fromStore, dispatch] = useRematch((s) => ({
     configs: s.globalConfig.configs,
+    configsById: store.select.globalConfig.configsById(s),
+    configsByType: store.select.globalConfig.configsByType(s),
     configNames: store.select.globalConfig.configNames(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     entityTypeConfigs: store.select.globalConfig.entityTypeConfigs(s),
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
   }))
@@ -71,6 +92,21 @@ export function CreateGlobalConfig({
       shouldShowConfigTypeSelectDropdown: !s.shouldShowConfigTypeSelectDropdown,
     }))
   }, [setState])
+
+  const userInterfaceContextManager: UserInterfaceContextManager = {
+    executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
+    loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
+      return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
+    },
+    loadById: (id: string) => {
+      return record.lookup(id, fromStore.configsById).toNullable()
+    },
+    loadByURL: (url: string) => {
+      return [] // axios
+    },
+  }
+
+  const [previewData, setPreviewData] = React.useState({})
 
   /* afterCreate */
   React.useEffect(() => {
@@ -136,125 +172,254 @@ export function CreateGlobalConfig({
           setState({ createdConfig: some(values) })
           dispatch.globalConfig.createRemoteConfig(values).then(() => setSubmitting(false))
         }}>
-        {(form) => (
-          <>
-            <Helmet>
-              <title>
-                {form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG
-              </title>
-            </Helmet>
+        {(form) => {
+          const entityTypeConfig = record.lookup(form.values.type, fromStore.entityTypes)
 
-            <Card
-              bordered={false}
-              extra={
-                <>
-                  {/* --------- Save Button ----------- */}
-                  <Button
-                    htmlType="submit"
-                    form="create-config-form"
-                    icon={fromStore.isCreatingConfig ? "loading" : "save"}
-                    key="save"
-                    loading={fromStore.isCreatingConfig}
-                    size="small"
-                    type="primary">
-                    Save
-                  </Button>
-                </>
+          const configComponents = (() => {
+            // First check in the manual overrides
+            const layoutMappingRecords = record.lookup("LayoutMapping", fromStore.configsByType)
+            // TODO: Traverse up the type-of relationship to find if a parent type has layout assignments
+            const collectedLayoutOverrides = layoutMappingRecords
+              .map((layoutMappings) =>
+                layoutMappings.reduce(
+                  (result, layoutMapping) => {
+                    const configOption = tryCatch(() =>
+                      JSON.parse(layoutMapping.config.getOrElse("{}"))
+                    )
+
+                    configOption.map(({ layout, entityTypes, configs }) => {
+                      if (layout) {
+                        if (
+                          entityTypes &&
+                          entityTypeConfig
+                            .map(({ id }) => entityTypes.includes(id))
+                            .getOrElse(false)
+                        ) {
+                          result.byEntityType.push(layout)
+                        }
+                      }
+                    })
+
+                    return result
+                  },
+                  { byEntityType: [] as string[], byConfigId: [] as string[] }
+                )
+              )
+              .toNullable()
+
+            // Were there any LayoutMapping assignments for this item?
+            if (collectedLayoutOverrides) {
+              if (collectedLayoutOverrides.byConfigId.length) {
+                // TODO: Eventually merge these layouts, perhaps?
+                const layout = record
+                  .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
+                  .chain(({ config }) =>
+                    tryCatch(
+                      () => JSON.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
+                    )
+                  )
+                  .toNullable()
+
+                if (layout) {
+                  return layout
+                }
+              } else if (collectedLayoutOverrides.byConfigId.length) {
               }
-              title={`Create Config`}>
-              <Form
-                id="create-config-form"
-                labelAlign="left"
-                layout="horizontal"
-                onSubmit={form.handleSubmit}
-                {...formItemLayout}
-                style={{ width: "100%" }}>
-                {/* ---------- Config.Type Input ---------------- */}
-                <Form.Item
-                  hasFeedback={form.touched.type}
-                  help={form.touched.type && form.errors.type}
-                  label="Type"
-                  required={true}
-                  validateStatus={form.touched.type && form.errors.type ? "error" : "success"}>
-                  <Select
-                    dropdownRender={(menu) => (
-                      <>
-                        {menu}
-                        <Button
-                          block
-                          ghost
-                          type="primary"
-                          onMouseDown={toggleCreateEntityTypeModal}>
-                          <Icon type="plus-circle" /> New Entity Type
-                        </Button>
-                      </>
-                    )}
-                    open={state.shouldShowConfigTypeSelectDropdown}
-                    placeholder="Select a config type"
-                    style={{ width: "100%" }}
-                    onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
-                    value={form.values.type}
-                    onBlur={() => form.handleBlur({ target: { name: "type" } })}
-                    onChange={(val) => form.setFieldValue("type", val)}>
-                    {entityTypeNames.map((type) => (
-                      <Select.Option key={type}>{type}</Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+            }
 
-                {/* ---------- Config.Name Input ---------------- */}
-                <Form.Item
-                  hasFeedback={form.touched.name}
-                  help={form.touched.name && form.errors.name}
-                  label="Name"
-                  required={true}
-                  validateStatus={form.touched.name && form.errors.name ? "error" : "success"}>
-                  <Input
-                    placeholder="Enter a unique config name"
-                    name="name"
-                    value={form.values.name}
-                    onBlur={form.handleBlur}
-                    onChange={form.handleChange}
-                  />
-                </Form.Item>
+            return entityTypeConfig
+              .map((parentType) => {
+                return tryCatch(
+                  () => JSON.parse(parentType.config.getOrElse("{}")).layout
+                ).getOrElse(ROOT_CONFIG_COMPONENTS)
+              })
+              .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
+          })()
 
-                {/* ---------- Config.Config Input ---------------- */}
-                <Form.Item
-                  hasFeedback={form.touched.config}
-                  help={form.touched.config && form.errors.config}
-                  label="Config"
-                  required={true}
-                  validateStatus={form.errors.config ? "error" : "success"}>
-                  <CodeEditor
-                    content={""}
-                    contentDraft={some(form.values.config)}
-                    height={500}
-                    language={record
-                      .lookup(form.values.type, fromStore.entityTypeConfigs)
-                      .chain((etc) => etc.config)
-                      .chain(fromStrToJSONRec)
-                      .chain((config) => record.lookup("lang", config))
-                      .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
-                      .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
-                    width="100%"
-                    onChange={({ value, errors }) => {
-                      errors.map((errors) => {
-                        setConfigErrors(errors)
-                      })
-                      form.setFieldValue("config", value)
-                      form.setFieldTouched("config", true)
-                    }}
-                  />
-                </Form.Item>
-              </Form>
-            </Card>
-            <CreateEntityTypeModal
-              isVisible={state.shouldShowCreateEntityModal}
-              onDidCreate={(config) => form.setFieldValue("type", config.name)}
-              onRequestClose={toggleCreateEntityTypeModal}
-            />
-          </>
-        )}
+          return (
+            <>
+              <Helmet>
+                <title>
+                  {form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG
+                </title>
+              </Helmet>
+
+              <Card
+                bordered={false}
+                extra={
+                  <>
+                    {/* --------- Save Button ----------- */}
+                    <Button
+                      htmlType="submit"
+                      form="create-config-form"
+                      icon={fromStore.isCreatingConfig ? "loading" : "save"}
+                      key="save"
+                      loading={fromStore.isCreatingConfig}
+                      size="small"
+                      type="primary">
+                      Save
+                    </Button>
+                  </>
+                }
+                title={`Create Config`}>
+                <Form
+                  id="create-config-form"
+                  labelAlign="left"
+                  layout="horizontal"
+                  onSubmit={form.handleSubmit}
+                  {...formItemLayout}
+                  style={{ width: "100%" }}>
+                  {/* ---------- Config.Type Input ---------------- */}
+                  <Form.Item
+                    hasFeedback={form.touched.type}
+                    help={form.touched.type && form.errors.type}
+                    label="Type"
+                    required={true}
+                    validateStatus={form.touched.type && form.errors.type ? "error" : "success"}>
+                    <Select
+                      dropdownRender={(menu) => (
+                        <>
+                          {menu}
+                          <Button
+                            block
+                            ghost
+                            type="primary"
+                            onMouseDown={toggleCreateEntityTypeModal}>
+                            <Icon type="plus-circle" /> New Entity Type
+                          </Button>
+                        </>
+                      )}
+                      open={state.shouldShowConfigTypeSelectDropdown}
+                      placeholder="Select a config type"
+                      style={{ width: "100%" }}
+                      onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
+                      value={form.values.type}
+                      onBlur={() => form.handleBlur({ target: { name: "type" } })}
+                      onChange={(val: any) => form.setFieldValue("type", val)}>
+                      {entityTypeNames.map((type) => (
+                        <Select.Option key={type}>{type}</Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* ---------- Config.Name Input ---------------- */}
+                  <Form.Item
+                    hasFeedback={form.touched.name}
+                    help={form.touched.name && form.errors.name}
+                    label="Name"
+                    required={true}
+                    validateStatus={form.touched.name && form.errors.name ? "error" : "success"}>
+                    <Input
+                      placeholder="Enter a unique config name"
+                      name="name"
+                      value={form.values.name}
+                      onBlur={form.handleBlur}
+                      onChange={form.handleChange}
+                    />
+                  </Form.Item>
+
+                  {/* ---------- Config.Config Input ---------------- */}
+                  <Form.Item
+                    hasFeedback={form.touched.config}
+                    help={form.touched.config && form.errors.config}
+                    label="Config"
+                    required={true}
+                    validateStatus={form.errors.config ? "error" : "success"}>
+                    <Tabs
+                      defaultActiveKey={
+                        configComponents && configComponents.length ? "form" : "editor"
+                      }>
+                      <Tabs.TabPane
+                        key={"form"}
+                        tab={"Properties"}
+                        disabled={
+                          !configComponents || !configComponents.length || !!form.errors.config
+                        }>
+                        {form.errors.config ? (
+                          <Alert
+                            type="error"
+                            description="Please correct errors in the JSON before attempting to edit the layout."
+                            message="JSON Errors"
+                          />
+                        ) : (
+                          <UserInterface
+                            contextManager={userInterfaceContextManager}
+                            data={tryCatch(() => JSON.parse(form.values.config)).getOrElse({})}
+                            onChangeData={(value) => {
+                              console.log("edit", "UserInterface.onChangeData", "new config", value)
+                              form.setFieldValue("config", JSON.stringify(value, null, 2))
+                              form.setFieldTouched("config", true)
+                            }}
+                            mode="display"
+                            components={configComponents}
+                          />
+                        )}
+                        {/* <Alert type="info" message={form.values.config} /> */}
+                      </Tabs.TabPane>
+                      <Tabs.TabPane key={"display"} tab={"Preview"} disabled={!!form.errors.config}>
+                        {form.errors.config ? (
+                          <Alert
+                            type="error"
+                            description="Please correct errors in the JSON before attempting to preview the layout."
+                            message="JSON Errors"
+                          />
+                        ) : (
+                          <UserInterface
+                            contextManager={userInterfaceContextManager}
+                            data={previewData}
+                            onChangeData={(value) => {
+                              console.log(
+                                "edit",
+                                "UserInterface.onChangeData",
+                                "display config",
+                                value
+                              )
+                              setPreviewData(value)
+                              // form.setFieldValue("config", JSON.stringify(value, null, 2))
+                              // form.setFieldTouched("config", true)
+                            }}
+                            mode="display"
+                            components={tryCatch(() => {
+                              const layout = JSON.parse(form.values.config).layout
+                              return layout && (Array.isArray(layout) ? layout : [layout])
+                            }).getOrElse([])}
+                          />
+                        )}
+                      </Tabs.TabPane>
+                      <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
+                        <CodeEditor
+                          content={""}
+                          contentDraft={some(form.values.config)}
+                          height={500}
+                          language={record
+                            .lookup(form.values.type, fromStore.entityTypeConfigs)
+                            .chain((etc) => etc.config)
+                            .chain(fromStrToJSONRec)
+                            .chain((config) => record.lookup("lang", config))
+                            .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
+                            .getOrElse(fromStore.defaultEntityTypeConfig.lang)}
+                          width="100%"
+                          onChange={({ value, errors }) => {
+                            errors.map((errors) => {
+                              setConfigErrors(errors)
+                            })
+                            form.setFieldValue("config", value)
+                            form.setFieldTouched("config", true)
+                          }}
+                        />
+                      </Tabs.TabPane>
+                    </Tabs>
+                  </Form.Item>
+                </Form>
+              </Card>
+              <CreateEntityTypeModal
+                isVisible={state.shouldShowCreateEntityModal}
+                onDidCreate={(config) => form.setFieldValue("type", config.name)}
+                onRequestClose={toggleCreateEntityTypeModal}
+              />
+            </>
+          )
+        }}
       </Formik.Formik>
     </Skeleton>
   )

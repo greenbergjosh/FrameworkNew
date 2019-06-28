@@ -63,7 +63,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
         key: "slot-config",
         valueKey: "data",
         component: "list",
-        interleave: "set",
+        interleave: "round-robin",
         components: [
           {
             key: "slot-config-guid",
