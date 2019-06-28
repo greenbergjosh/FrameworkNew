@@ -25,6 +25,9 @@ using Utility.EDW.Reporting;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
 using Random = Utility.Crypto.Random;
+using gudusoft.gsqlparser;
+using gudusoft.gsqlparser.stmt;
+using gudusoft.gsqlparser.nodes;
 
 namespace QuickTester
 {
@@ -38,135 +41,339 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
+        static void sqlcompiler()
+        {
+            TGSqlParser sqlparser = new TGSqlParser(EDbVendor.dbvoracle);
+            sqlparser.sqltext = "SELECT e.last_name AS name,\n" +
+            " e.commission_pct comm,\n" +
+            " e.salary * 12 \"Annual Salary\"\n" +
+            "FROM scott.employees AS e\n" +
+            "WHERE e.salary > 1000\n" +
+            "ORDER BY\n" +
+            " e.first_name,\n" +
+            " e.last_name;";
+            int ret = sqlparser.parse();
+            if (ret == 0)
+            {
+                for (int i = 0; i < sqlparser.sqlstatements.size(); i++)
+                {
+                    analyzeStmt(sqlparser.sqlstatements.get(i));
+                    Console.WriteLine("");
+                }
+            }
+            else
+            {
+                Console.WriteLine(sqlparser.Errormessage);
+            }
+        }
+
+        protected static void analyzeStmt(TCustomSqlStatement stmt)
+        {
+            switch (stmt.sqlstatementtype)
+            {
+                case ESqlStatementType.sstselect:
+                    analyzeSelectStmt((TSelectSqlStatement)stmt);
+                    break;
+                case ESqlStatementType.sstupdate:
+                    break;
+                case ESqlStatementType.sstcreatetable:
+                    break;
+                case ESqlStatementType.sstaltertable:
+                    break;
+                case ESqlStatementType.sstcreateview:
+                    break;
+                default:
+                    Console.WriteLine(stmt.sqlstatementtype.ToString());
+                    break;
+            }
+        }
+
+        protected static void analyzeSelectStmt(TSelectSqlStatement pStmt)
+        {
+            Console.WriteLine("\nSelect statement:");
+            if (pStmt.CombinedQuery)
+            {
+                String setstr = "";
+                switch (pStmt.SetOperator)
+                {
+                    case 1: setstr = "union"; break;
+                    case 2: setstr = "union all"; break;
+                    case 3: setstr = "intersect"; break;
+                    case 4: setstr = "intersect all"; break;
+                    case 5: setstr = "minus"; break;
+                    case 6: setstr = "minus all"; break;
+                    case 7: setstr = "except"; break;
+                    case 8: setstr = "except all"; break;
+                }
+                Console.WriteLine("set type: %s\n", setstr);
+                Console.WriteLine("left select:");
+                analyzeSelectStmt(pStmt.LeftStmt);
+                Console.WriteLine("right select:");
+                analyzeSelectStmt(pStmt.RightStmt);
+                if (pStmt.OrderbyClause != null)
+                {
+                    Console.WriteLine($"order by clause {pStmt.OrderbyClause.ToString()}" + Environment.NewLine);
+                }
+            }
+            else
+            {
+                //select list   
+                for (int i = 0; i < pStmt.ResultColumnList.size(); i++)
+                {
+                    TResultColumn resultColumn =
+                    pStmt.ResultColumnList.getResultColumn(i);
+                    Console.WriteLine($"\tColumn: {resultColumn.Expr.ToString()}, Alias: {((resultColumn.AliasClause == null) ? "" : resultColumn.AliasClause.ToString())}" + Environment.NewLine);
+                }
+                //from clause, check this document for detailed information
+                //http://www.sqlparser.com/sql-parser-query-join-table.php
+                for (int i = 0; i < pStmt.joins.size(); i++)
+                {
+                    TJoin join = pStmt.joins.getJoin(i);
+                    switch (join.Kind)
+                    {
+                        case TBaseType.join_source_fake:
+                            Console.WriteLine($"\ntable: \n\t{join.Table.ToString()}, alias: {((join.Table.AliasClause != null) ? join.Table.AliasClause.ToString() : "")}" + Environment.NewLine);
+                        break;
+
+                        case TBaseType.join_source_table:
+                            Console.WriteLine($"\ntable: \n\t{join.Table.ToString()}, alias: {((join.Table.AliasClause != null) ? join.Table.AliasClause.ToString() : "")}" + Environment.NewLine);
+
+                            for (int j = 0; j < join.JoinItems.size(); j++)
+                            {
+                                TJoinItem joinItem = join.JoinItems.getJoinItem(j);
+                                Console.WriteLine($"Join type: {joinItem.JoinType.ToString()}" + Environment.NewLine);
+                                Console.WriteLine($"table: {joinItem.Table.ToString()}, alias: {((joinItem.Table.AliasClause != null) ? joinItem.Table.AliasClause.ToString() : "")}" + Environment.NewLine);
+
+                                if (joinItem.OnCondition != null)
+                                {
+                                    Console.WriteLine($"On: {joinItem.OnCondition.ToString()}" + Environment.NewLine);
+                                }
+                                else if (joinItem.UsingColumns != null)
+                                {
+                                    Console.WriteLine($"using: {joinItem.UsingColumns.ToString()}" + Environment.NewLine);
+                                }
+                            }
+                            break;
+
+                        case TBaseType.join_source_join:
+                            TJoin source_join = join.Join;
+                            Console.WriteLine($"\ntable: \n\t{source_join.Table.ToString()}, alias: {((source_join.Table.AliasClause != null) ? source_join.Table.AliasClause.ToString():"") }\n");
+                            for (int j = 0; j < source_join.JoinItems.size(); j++)
+                            {
+                                TJoinItem joinItem = source_join.JoinItems.getJoinItem(j);
+                                Console.WriteLine($"source_join type: {joinItem.JoinType.ToString()}\n");
+                                Console.WriteLine($"table: {joinItem.Table.ToString()}, alias: {((joinItem.Table.AliasClause != null) ? joinItem.Table.AliasClause.ToString() : "")}\n");
+                                if (joinItem.OnCondition != null)
+                                {
+                                    Console.WriteLine($"On: {joinItem.OnCondition.ToString()}\n");
+                                }
+                                else if (joinItem.UsingColumns != null)
+                                {
+                                    Console.WriteLine($"using: {joinItem.UsingColumns.ToString()}\n");
+                                }
+                            }
+
+                            for(int j=0;j<join.JoinItems.size(); j++) {
+                                TJoinItem joinItem = join.JoinItems.getJoinItem(j);
+                                        Console.WriteLine($"Join type: {joinItem.JoinType.ToString()}\n");
+                                        Console.WriteLine($"table: {joinItem.Table.ToString()}, alias: {((joinItem.Table.AliasClause != null) ? joinItem.Table.AliasClause.ToString() : "")}\n");
+                                if (joinItem.OnCondition != null) {
+                                    Console.WriteLine($"On: {joinItem.OnCondition.ToString()}\n");
+                                }
+                                else if (joinItem.UsingColumns != null) {
+                                    Console.WriteLine("using: {joinItem.UsingColumns.ToString()}\n");
+                                }
+                            }
+                            break;
+
+                        default:
+                            Console.WriteLine("unknown type in join!");
+                        break;
+                    }
+                }
+
+                //where clause
+                if (pStmt.WhereClause != null){
+                    Console.WriteLine($"\nwhere clause: \n\t{pStmt.WhereClause.Condition.ToString()}\n");
+                }
+                // group by
+                if (pStmt.GroupByClause != null){
+                    Console.WriteLine($"\ngroup by: \n\t{pStmt.GroupByClause.ToString()}\n");
+                }
+                // order by
+                if (pStmt.OrderbyClause != null){
+                    Console.WriteLine("\norder by:");
+                    for(int i=0;i<pStmt.OrderbyClause.Items.size(); i++) {
+                        Console.WriteLine($"\n\t{pStmt.OrderbyClause.Items.getOrderByItem(i).ToString()}");
+                    }
+                }
+
+                // for update
+                if (pStmt.ForUpdateClause != null) {
+                Console.WriteLine($"for update:\n{pStmt.ForUpdateClause.ToString()}\n");
+                }
+
+                // top clause
+                if (pStmt.TopClause != null) {
+                    Console.WriteLine($"top clause:\n{ pStmt.TopClause.ToString() }\n");
+                }
+                // limit clause
+                if (pStmt.LimitClause != null) {
+                Console.WriteLine($"top clause:\n{ pStmt.LimitClause.ToString() }\n");
+                }
+}
+} 
+
+        static void Test2()
+        {
+            // Create an empty Array
+            string t1 = A.C().ToString();
+
+            // Create an empty array using an SL (string list)
+            string t2 = A.C(SL.C()).ToString();
+
+            // Create an array from a list of strings - should work for a list of anything that can be ToString'd, but it doesn't because of C# type system
+            IEnumerable<object> ldt1 = new List<string>() { "a", "b", "c" };
+            string t3 = A.C(SL.C(ldt1)).ToString();
+
+            // Create an array from a list of strings - should work for a list of anything that can be ToString'd, but it doesn't because of C# type system
+            //IEnumerable<object> ldt2 = new List<string>() { "a", "b", "c" };
+            //IEnumerable<object> ldt3 = new List<string>() { "d", "e", "f" };
+            //string t4 = A.C(SL.C(ldt2).Add(ldt3)).ToString();
+        }
+
         static async Task Main(string[] args)
         {
-            var rx = new Regex(@"^(?<drive>[^\s]+)\s+(?<mbBlocks>\d+)MB\s+(?<used>\d+)MB\s+(?<available>\d+)MB\s+(?<usePerc>\d+)%\s+(?<mountedOn>.+)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Multiline);
+            sqlcompiler();
+            int sql = 0;
+            //Test2();
+            //var rx = new Regex(@"^(?<drive>[^\s]+)\s+(?<mbBlocks>\d+)MB\s+(?<used>\d+)MB\s+(?<available>\d+)MB\s+(?<usePerc>\d+)%\s+(?<mountedOn>.+)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Multiline);
 
-            var psi = new ProcessStartInfo
-            {
-                FileName = "sh",
-                Arguments = "-c \"df --block-size=MB\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+            //var psi = new ProcessStartInfo
+            //{
+            //    FileName = "sh",
+            //    Arguments = "-c \"df --block-size=MB\"",
+            //    UseShellExecute = false,
+            //    RedirectStandardOutput = true,
+            //    RedirectStandardError = true
+            //};
 
-            var proc = new Process
-            {
-                StartInfo = psi
-            };
+            //var proc = new Process
+            //{
+            //    StartInfo = psi
+            //};
 
-            proc.Start();
+            //proc.Start();
 
-            var error = proc.StandardError.ReadToEnd();
+            //var error = proc.StandardError.ReadToEnd();
 
-            var output = proc.StandardOutput.ReadToEnd();
+            //var output = proc.StandardOutput.ReadToEnd();
 
-            proc.WaitForExit();
+            //proc.WaitForExit();
 
-            if (!error.IsNullOrWhitespace())
-            {
-                Console.WriteLine($"Error");
-                Console.WriteLine(error);
-                return;
-            }
+            //if (!error.IsNullOrWhitespace())
+            //{
+            //    Console.WriteLine($"Error");
+            //    Console.WriteLine(error);
+            //    return;
+            //}
 
-            Console.WriteLine("Out");
-            Console.WriteLine(output);
+            //Console.WriteLine("Out");
+            //Console.WriteLine(output);
 
-            Console.WriteLine();
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine();
 
-            var drives = rx.Matches(output).Select(m => new
-            {
-                drive = m.Groups["drive"]?.Value.Trim(),
-                usedPerc = m.Groups["usePerc"]?.Value.ParseInt(),
-                used = m.Groups["used"]?.Value.ParseInt(),
-                available = m.Groups["available"]?.Value.ParseInt()
-            })
-                .Where(d => d.usedPerc.HasValue).ToArray();
+            //var drives = rx.Matches(output).Select(m => new
+            //{
+            //    drive = m.Groups["drive"]?.Value.Trim(),
+            //    usedPerc = m.Groups["usePerc"]?.Value.ParseInt(),
+            //    used = m.Groups["used"]?.Value.ParseInt(),
+            //    available = m.Groups["available"]?.Value.ParseInt()
+            //})
+            //    .Where(d => d.usedPerc.HasValue).ToArray();
 
 
-            Console.WriteLine("Drives");
+            //Console.WriteLine("Drives");
 
-            drives.ForEach(d =>
-            {
-                var usedGB = d.used.HasValue ? Math.Round((decimal)(d.used / 1000.0m), 3, MidpointRounding.AwayFromZero).ToString(CultureInfo.CurrentCulture) : "null";
-                var availGB = d.available.HasValue ? Math.Round((decimal)(d.available / 1000.0m), 3, MidpointRounding.AwayFromZero).ToString(CultureInfo.CurrentCulture) : "null";
+            //drives.ForEach(d =>
+            //{
+            //    var usedGB = d.used.HasValue ? Math.Round((decimal)(d.used / 1000.0m), 3, MidpointRounding.AwayFromZero).ToString(CultureInfo.CurrentCulture) : "null";
+            //    var availGB = d.available.HasValue ? Math.Round((decimal)(d.available / 1000.0m), 3, MidpointRounding.AwayFromZero).ToString(CultureInfo.CurrentCulture) : "null";
 
-                Console.WriteLine($"{d.drive} :: {d.usedPerc} :: {d.used}MB :: {usedGB}GB :: {d.available} :: {availGB}GB");
-            });
+            //    Console.WriteLine($"{d.drive} :: {d.usedPerc} :: {d.used}MB :: {usedGB}GB :: {d.available} :: {availGB}GB");
+            //});
 
-            return;
+            //return;
 
-            var lines = new List<string>();
+            //var lines = new List<string>();
 
-            for (int k = 0; k < 50000; k++)
-            {
-                lines.Add(new int[1000].Select(_ => k.ToString()).Join(""));
-            }
+            //for (int k = 0; k < 50000; k++)
+            //{
+            //    lines.Add(new int[1000].Select(_ => k.ToString()).Join(""));
+            //}
 
-            var tasks = lines.Select(l =>
-            {
-                return Task.Run(() =>
-                {
-                    try
-                    {
-                        //File.AppendAllText("C:/Users/OnPoint Global/Documents/dev/Workspace/fileWriteTests/f.txt", $"{l}\r\n");
-                        FileSystem.WriteLineToFileThreadSafe("C:/Users/OnPoint Global/Documents/dev/Workspace/fileWriteTests/f.txt", l);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
-                });
-            });
+            //var tasks = lines.Select(l =>
+            //{
+            //    return Task.Run(() =>
+            //    {
+            //        try
+            //        {
+            //            //File.AppendAllText("C:/Users/OnPoint Global/Documents/dev/Workspace/fileWriteTests/f.txt", $"{l}\r\n");
+            //            FileSystem.WriteLineToFileThreadSafe("C:/Users/OnPoint Global/Documents/dev/Workspace/fileWriteTests/f.txt", l);
+            //        }
+            //        catch (Exception e)
+            //        {
+            //            Console.WriteLine(e.Message);
+            //        }
+            //    });
+            //});
 
-            try
-            {
-                await tasks.WhenAll();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            //try
+            //{
+            //    await tasks.WhenAll();
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //}
 
-            //var fw1 = new FrameworkWrapper();
+            ////var fw1 = new FrameworkWrapper();
 
-            //await Auth.Initialize(fw1);
+            ////await Auth.Initialize(fw1);
 
-            //var wpl = Jw.JsonToGenericEntity(
-            //    "{\"sso\": \"mock\", \"t\": \"ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ\"}");
+            ////var wpl = Jw.JsonToGenericEntity(
+            ////    "{\"sso\": \"mock\", \"t\": \"ya29.GlzpBrjQBGKmq-PyLYArCzP3SOxwrxkBAP1ofrWgOIGLeK829hdkqzzLAmpavQ8JTyKtXkfjalUwkGshwmGYoO2WepM7rds0G7tvNKFDeVH8j9wPgNoRA8WWm1xoyQ\"}");
 
-            //var sec = await Auth.GetSecurables();
+            ////var sec = await Auth.GetSecurables();
 
-            return;
+            //return;
 
-            var js = Jw.JsonToGenericEntity("{\"a\":[1,2,3]}");
-            var vals = js.GetL("a").Select(g => g.GetS(""));
+            //var js = Jw.JsonToGenericEntity("{\"a\":[1,2,3]}");
+            //var vals = js.GetL("a").Select(g => g.GetS(""));
 
-            string h = null;
-            var plObj = new { a = 1, b = "1", c = "abc", e = DateTime.UtcNow, f = true, g = 1.01, i = new { a = 2 }, d = new[] { 1, 2, 3 } };
+            //string h = null;
+            //var plObj = new { a = 1, b = "1", c = "abc", e = DateTime.UtcNow, f = true, g = 1.01, i = new { a = 2 }, d = new[] { 1, 2, 3 } };
 
-            var uid = Guid.NewGuid();
-            var tms = DateTime.UtcNow;
-            PL payload = PL.O(plObj, new[] { false, true, true });
-            var configId = Guid.NewGuid();
+            //var uid = Guid.NewGuid();
+            //var tms = DateTime.UtcNow;
+            //PL payload = PL.O(plObj, new[] { false, true, true });
+            //var configId = Guid.NewGuid();
 
-            var ljw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                .Add(PL.N("payload", PL.C(payload)))
-                .Add(PL.C("rsid", configId.ToString())).ToString();
+            //var ljw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+            //    .Add(PL.N("payload", PL.C(payload)))
+            //    .Add(PL.C("rsid", configId.ToString())).ToString();
 
-            var j = JsonConvert.SerializeObject(plObj);
-            payload = PL.FromJsonString(j);
+            //var j = JsonConvert.SerializeObject(plObj);
+            //payload = PL.FromJsonString(j);
 
-            //var jw = PL.C("whatev", j, false);
-            var jw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                .Add(PL.N("payload", PL.C(payload)))
-                .Add(PL.C("rsid", configId.ToString())).ToString();
+            ////var jw = PL.C("whatev", j, false);
+            //var jw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+            //    .Add(PL.N("payload", PL.C(payload)))
+            //    .Add(PL.C("rsid", configId.ToString())).ToString();
 
-            return;
-            var nl = Environment.NewLine;
+            //return;
+            //var nl = Environment.NewLine;
             //var unsubFile = new FileInfo(Path.GetFullPath(args[0]));
             //var opFile = new FileInfo(Path.Combine(unsubFile.DirectoryName, $"{unsubFile.Name.Replace(unsubFile.Extension, "")}_md5s{unsubFile.Extension}"));
             //var totalMd5s = unsubFile.Length / 34;
@@ -225,86 +432,86 @@ namespace QuickTester
 
             //return;
 
-            var checkFile = new FileInfo(Path.GetFullPath(args[1]));
-            var searchFile = new FileInfo(Path.GetFullPath(args[0]));
-            var outputFile = new FileInfo(Path.Combine(checkFile.DirectoryName, $"{checkFile.Name.Replace(checkFile.Extension, "")}_results{checkFile.Extension}"));
-            string md5Str;
+            //var checkFile = new FileInfo(Path.GetFullPath(args[1]));
+            //var searchFile = new FileInfo(Path.GetFullPath(args[0]));
+            //var outputFile = new FileInfo(Path.Combine(checkFile.DirectoryName, $"{checkFile.Name.Replace(checkFile.Extension, "")}_results{checkFile.Extension}"));
+            //string md5Str;
 
-            Console.WriteLine($"Getting MD5 list from {checkFile.FullName}");
-            using (var fs = checkFile.OpenText())
-            {
-                md5Str = await fs.ReadToEndAsync();
-            }
+            //Console.WriteLine($"Getting MD5 list from {checkFile.FullName}");
+            //using (var fs = checkFile.OpenText())
+            //{
+            //    md5Str = await fs.ReadToEndAsync();
+            //}
 
-            var md5s = md5Str.Split(new[] { ',', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(m => m.Trim()).ToList();
-            var res = (found: new List<string>(), notFound: new List<string>());
+            //var md5s = md5Str.Split(new[] { ',', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(m => m.Trim()).ToList();
+            //var res = (found: new List<string>(), notFound: new List<string>());
 
-            var sw = Stopwatch.StartNew();
+            //var sw = Stopwatch.StartNew();
 
-            await md5s.ForEachAsync(10, async md5 =>
-            {
-                var f = await UnixWrapper.BinarySearchSortedMd5File(searchFile.DirectoryName, searchFile.Name, md5);
+            //await md5s.ForEachAsync(10, async md5 =>
+            //{
+            //    var f = await UnixWrapper.BinarySearchSortedMd5File(searchFile.DirectoryName, searchFile.Name, md5);
 
-                if (f) res.found.Add(md5);
-                else res.notFound.Add(md5);
-            });
+            //    if (f) res.found.Add(md5);
+            //    else res.notFound.Add(md5);
+            //});
 
-            sw.Stop();
+            //sw.Stop();
 
-            Console.WriteLine($"Processed in {sw.Elapsed.TotalSeconds}s ~{(int)(md5s.Count / sw.Elapsed.TotalSeconds)} records/s");
+            //Console.WriteLine($"Processed in {sw.Elapsed.TotalSeconds}s ~{(int)(md5s.Count / sw.Elapsed.TotalSeconds)} records/s");
 
-            if (outputFile.Exists) outputFile.Delete();
+            //if (outputFile.Exists) outputFile.Delete();
 
-            using (var fs = outputFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            {
-                await fs.WriteAsync(Encoding.ASCII.GetBytes($"Found:{nl}"));
-                await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
-                await fs.WriteAsync(Encoding.ASCII.GetBytes($"{nl}Not Found:{nl}"));
-                await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
-            }
+            //using (var fs = outputFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            //{
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes($"Found:{nl}"));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes($"{nl}Not Found:{nl}"));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
+            //}
 
-            return;
+            //return;
 
-            Test1();
-            var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
-            var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
-            var query = QueryHelpers.ParseQuery(uri.Query);
-            string opaque = query.ContainsKey("label") ? query["label"][0] : "";
-            string emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : "";
-
-
-            List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
-            string scriptsPath = @"e:\workspace\scripts";
-            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
-            string scriptFlatFileColumnGenerator =
-                @"int i = 0;
-                  foreach (var x in p.ge.GetL(""""))
-                  {
-                    XmlNode cln = p.cn.Clone();
-                    ((XmlElement)cln).RemoveAttribute(""TokenizerReplace"" + [=i=]);
-                    await f.TokenReplaceXmlR(new {pn = cln, ge = x}, s);
-                    p.cn.ParentNode.AppendChild(cln);
-                    i++;
-                  }
-                  p.cn.ParentNode.RemoveChild(p.cn);""""";
-            //for (int ij = 0; ij < 100; ij++)
-            //    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
-            //        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
+            //Test1();
+            //var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
+            //var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
+            //var query = QueryHelpers.ParseQuery(uri.Query);
+            //string opaque = query.ContainsKey("label") ? query["label"][0] : "";
+            //string emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : "";
 
 
-            string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
-            string result = SqlWrapper.SqlServerProviderEntry(constr, "SelectConfig", JsonWrapper.Json(new { InstanceId = "3B93EB28-79B6-489E-95D1-6EAA392536B5" }), "").GetAwaiter().GetResult();
+            //List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
+            //string scriptsPath = @"e:\workspace\scripts";
+            //var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            //string scriptFlatFileColumnGenerator =
+            //    @"int i = 0;
+            //      foreach (var x in p.ge.GetL(""""))
+            //      {
+            //        XmlNode cln = p.cn.Clone();
+            //        ((XmlElement)cln).RemoveAttribute(""TokenizerReplace"" + [=i=]);
+            //        await f.TokenReplaceXmlR(new {pn = cln, ge = x}, s);
+            //        p.cn.ParentNode.AppendChild(cln);
+            //        i++;
+            //      }
+            //      p.cn.ParentNode.RemoveChild(p.cn);""""";
+            ////for (int ij = 0; ij < 100; ij++)
+            ////    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
+            ////        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
 
-            string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
-            IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(json);
-            gp.InitializeEntity(null, null, gpstate);
 
-            foreach (var t in gp.GetD("x"))
-            {
-                string nm = t.Item1;
-                string vl = t.Item2;
-            }
+            //string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
+            //string result = SqlWrapper.SqlServerProviderEntry(constr, "SelectConfig", JsonWrapper.Json(new { InstanceId = "3B93EB28-79B6-489E-95D1-6EAA392536B5" }), "").GetAwaiter().GetResult();
+
+            //string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
+            //IGenericEntity gp = new GenericEntityJson();
+            //var gpstate = JsonConvert.DeserializeObject(json);
+            //gp.InitializeEntity(null, null, gpstate);
+
+            //foreach (var t in gp.GetD("x"))
+            //{
+            //    string nm = t.Item1;
+            //    string vl = t.Item2;
+            //}
 
 
 
@@ -329,18 +536,18 @@ namespace QuickTester
             //    string s = (string)mi.Invoke(null, parms);
             //}
 
-            MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
-                "Utility.FileSystem", "QuotePathParts", null);
-            object[] parms = new object[]
-                {
-                    @"c:\program files\long line\abc\efg.txt"
-                };
-            string s = (string)mi.Invoke(null, parms);
-            mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
-                "Utility.FileSystem", "QuotePathParts", null);
-            s = (string)mi.Invoke(null, parms);
+            //MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
+            //    "Utility.FileSystem", "QuotePathParts", null);
+            //object[] parms = new object[]
+            //    {
+            //        @"c:\program files\long line\abc\efg.txt"
+            //    };
+            //string s = (string)mi.Invoke(null, parms);
+            //mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
+            //    "Utility.FileSystem", "QuotePathParts", null);
+            //s = (string)mi.Invoke(null, parms);
 
-            int zz = 0;
+            //int zz = 0;
 
             //var result = SqlWrapper.SqlServerProviderEntry("Data Source =.;Initial Catalog = dataMail;Integrated Security = SSPI;",
             //                "SelectProvider",
