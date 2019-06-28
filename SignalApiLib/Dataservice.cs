@@ -13,13 +13,18 @@ namespace SignalApiLib
         private FrameworkWrapper _fw;
         private Dictionary<string,ISourceHandler> _sourceHandlers;
 
+        private bool _writeToMs = true;
+        private bool _writeToPg = true;
+
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
+            _writeToMs = _fw.StartupConfiguration.GetS("Config/WriteToMs").ParseBool() ?? true;
+            _writeToPg = _fw.StartupConfiguration.GetS("Config/WriteToPg").ParseBool() ?? true;
             _sourceHandlers = new Dictionary<string, ISourceHandler>
             {
-                {"fluent", new Fluent(_fw)},
-                {"console", new ConsoleFeed(_fw)}
+                //{"fluent", new Fluent(_fw,_writeToPg,_writeToMs)},
+                {"console", new ConsoleFeed(_fw,_writeToPg,_writeToMs)}
             };
         }
 

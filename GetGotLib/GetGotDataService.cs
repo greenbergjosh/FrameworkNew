@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
@@ -72,7 +73,7 @@ namespace GetGotLib
 
                 if (rc == RC.Success)
                 {
-                    var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
+                    var identity = req.GetS("i/t");
                     var funcs = req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid").ToArray();
                     var cancellation = new CancellationTokenSource();
 
@@ -225,8 +226,11 @@ namespace GetGotLib
                 switch (contact.Type)
                 {
                     case ContactType.Email:
-                        var (code, accountName, res) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned }));
+                        var (code, accountName, res) = await GetAvailableConfirmationCode(contact.Cleaned);
 
+#if DEBUG
+                        if(System.Diagnostics.Debugger.IsAttached) break;
+#endif
                         if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
                         else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
                         else
@@ -251,17 +255,17 @@ namespace GetGotLib
             }
         }
 
-        private async Task<(string code, string accountName, IGenericEntity)> GetAvailableConfirmationCode(string args)
+        private async Task<(string code, string accountName, IGenericEntity)> GetAvailableConfirmationCode(string contact, bool isPwdReset = false)
         {
-            var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => args, () => Jw.Serialize(Random.Numbers(MinConfCode, MaxConfCode, 6)), (i, result, resultCode) =>
-            {
-                if (resultCode == 109) throw new FunctionException(resultCode.Value, $"Contact doesn't exist: {args}");
+            var res = await RetryDbCallOnFailure("GetAvailableConfirmationCode", 3, () => Jw.Serialize(new { u = contact, pwdReset = isPwdReset, randomCodes = Random.Numbers(MinConfCode, MaxConfCode, 6) }), () => null, (i, result, resultCode) =>
+                {
+                    if (resultCode == 109) throw new FunctionException(resultCode.Value, $"Contact doesn't exist: {contact}");
 
-                return Task.CompletedTask;
-            });
+                    return Task.CompletedTask;
+                });
             var rc = res.GetS("r").ParseInt() ?? 100;
 
-            if (rc == 109) throw new FunctionException(rc, $"Contact doesn't exist: {args}");
+            if (rc == 109) throw new FunctionException(rc, $"Contact doesn't exist: {contact}");
 
             if (rc != 0) throw new FunctionException(rc, $"DB failure generating conf code: {res.GetS("")}");
 
@@ -320,7 +324,7 @@ namespace GetGotLib
                 switch (contact.Type)
                 {
                     case ContactType.Email:
-                        var (code, accountName, cres) = await GetAvailableConfirmationCode(Jw.Serialize(new { u = contact.Cleaned, pwdReset = true }));
+                        var (code, accountName, cres) = await GetAvailableConfirmationCode(contact.Cleaned, true);
 
                         if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Password Reset", code.PadLeft(6, '0'));
                         else await _fw.Error(nameof(SendResetPasswordCode), $"Bad DB response generating password rest code: {reqId} {contact.Cleaned} {cres.GetS("")}");
@@ -350,7 +354,7 @@ namespace GetGotLib
         {
             if (code < MinConfCode || code > MaxConfCode) throw new FunctionException(101, $"Code outside of range {code}");
 
-            var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Empty, Jw.Serialize(new { u = contact.Cleaned, code }));
+            var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Serialize(new { u = contact.Cleaned, code }));
             var rc = res?.GetS("r");
 
             if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.GetS("") ?? "null"}");
@@ -369,7 +373,7 @@ namespace GetGotLib
 
             var (uid, pwdHash) = await GetPasswordHashFromContact(contact, password);
 
-            return await Data.CallFn(Conn, "ChangePassword", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { uid, pwdHash }));
+            return await Data.CallFn(Conn, "ChangePassword", Jw.Serialize(new { u = contact.Cleaned, code, uid, pwdHash }));
         }
 
         public async Task<IGenericEntity> CommitUserRegistration(string payload, string sid, string requestBody)
@@ -393,11 +397,16 @@ namespace GetGotLib
             var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
             // end Fake data
             var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(requestBody));
-            var args = Jw.Serialize(new { u = contact.Cleaned, code });
+            var args = JObject.FromObject(new { u = contact.Cleaned, code, handle, email, phone, sid, sourceId = srcId, saltHash, initHash });
             var altHandles = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) }).ToArray();
             var handlesAttempted = altHandles.Length + 1;
 
-            var res = await RetryDbCallOnFailure("CreateUser", 10, () => args, () => Jw.Serialize(new { handle, handleAlts = altHandles, email, phone, sid, sourceId = srcId, saltHash, initHash }), (i, result, resultCode) =>
+            var res = await RetryDbCallOnFailure("CreateUser", 10, () =>
+            {
+                args["handleAlts"] = JArray.FromObject(altHandles);
+
+                return args.ToString();
+            }, () => null, (i, result, resultCode) =>
             {
                 if (resultCode == 108)
                 {
@@ -427,7 +436,7 @@ namespace GetGotLib
 
             var pwdHash = GeneratePasswordHash(password, new[] { sid, srcId, initHash, uid, saltHash });
 
-            res = await Data.CallFn(Conn, "SetInitialPassword", Jw.Serialize(new { u = contact.Cleaned, code }), Jw.Serialize(new { uid, pwdHash }));
+            res = await Data.CallFn(Conn, "SetInitialPassword", Jw.Serialize(new { u = contact.Cleaned, code, uid, pwdHash }));
 
             rc = res?.GetS("r");
             if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error saving password: {res?.GetS("") ?? "null"}");
@@ -440,7 +449,7 @@ namespace GetGotLib
 
         private async Task<(string uid, string password)> GetPasswordHashFromContact(Contact contact, string password)
         {
-            var res = await Data.CallFn(Conn, "GetUserLoginDetails", payload: contact.ToJson());
+            var res = await Data.CallFn(Conn, "GetUserLoginDetails", contact.ToJson());
             var rc = res?.GetS("r");
 
             if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error getting login details: {res?.GetS("") ?? "null"}");
@@ -454,9 +463,9 @@ namespace GetGotLib
             return (uid, GeneratePasswordHash(password, new[] { seid, srcId, initHash, uid, saltHash }));
         }
 
-        private async Task<IGenericEntity> Login(string payload)
+        private async Task<IGenericEntity> Login(string args)
         {
-            var ge = Jw.JsonToGenericEntity(payload);
+            var ge = Jw.JsonToGenericEntity(args);
             var password = ge?.GetS("p") ?? "";
 
             if (!ValidatePasswordRules(password)) throw new FunctionException(106, "Password doesn't satisfy rules");
@@ -470,7 +479,7 @@ namespace GetGotLib
 
         private async Task<IGenericEntity> Login(string uid, string passwordHash, string deviceName)
         {
-            var res = await Data.CallFn(Conn, "GetAuthToken", Jw.Empty, Jw.Serialize(new { uid, passwordHash, deviceName }));
+            var res = await Data.CallFn(Conn, "GetAuthToken", Jw.Serialize(new { uid, passwordHash, deviceName }));
             var rc = res?.GetS("r");
 
             if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
@@ -529,14 +538,23 @@ namespace GetGotLib
             return password.Length >= 8;
         }
 
-        private async Task<IGenericEntity> ExecuteDbFunc(string name, string payload, string identity)
+        private async Task<IGenericEntity> ExecuteDbFunc(string name, string args, string identity)
         {
             var fc = name?.FirstOrDefault();
 
             // If first char is not lower case a-z then function is private
             if (fc > 122 || fc < 97) throw new FunctionException(100, $"{name.IfNullOrWhitespace("[empty]")} is an invalid or private function");
 
-            var res = await Data.CallFn(Conn, name, identity, payload);
+            if (!identity.IsNullOrWhitespace())
+            {
+                var a = Jw.TryParseObject(args);
+
+                a["t"] = identity;
+
+                args = a.ToString();
+            }
+
+            var res = await Data.CallFn(Conn, name, args);
 
             if (res == null) throw new FunctionException(100, "Empty DB response");
 
