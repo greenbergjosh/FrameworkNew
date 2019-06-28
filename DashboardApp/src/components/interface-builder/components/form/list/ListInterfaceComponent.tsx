@@ -94,7 +94,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                           key={index}
                           components={[iteratedComponent]}
                           componentLimit={1}
-                          data={data[index]}
+                          data={data[index] || {}}
                           onChangeData={(newData) =>
                             (console.log("ListInterfaceComponent.render", "onChangeData", {
                               data,

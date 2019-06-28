@@ -46,11 +46,6 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = slotConfigManageForm
 
-  // handleChange = ({ target: { checked } }: CheckboxChangeEvent) => {
-  //   const { onChangeData, userInterfaceData, valueKey } = this.props
-  //   onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: checked })
-  // }
-
   render(): JSX.Element {
     const {
       actionType,
