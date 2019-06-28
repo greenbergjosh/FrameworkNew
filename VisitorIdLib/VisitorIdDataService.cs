@@ -341,8 +341,8 @@ namespace VisitorIdLib
                 {
                     et = "Md5ProviderFailure",
                     md5pid = omd5pid,
-                    slot = pfailSlot,
-                    page = pfailPage
+                    md5slot = pfailSlot,
+                    md5page = pfailPage
                 });
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, eventPayload);
                 await fw.EdwWriter.Write(be);
