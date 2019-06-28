@@ -1,3 +1,4 @@
+import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
 import {
   Alert,
@@ -41,36 +42,6 @@ import {
   PersistedConfig,
   InProgressRemoteUpdateDraft,
 } from "../../../../../data/GlobalConfig.Config"
-
-const ROOT_CONFIG_COMPONENTS = [
-  {
-    key: "lang",
-    valueKey: "lang",
-    component: "select",
-    label: "Language",
-    dataHandlerType: "local",
-    data: {
-      values: [{ label: "JSON", value: "json" }, { label: "C#", value: "csharp" }],
-    },
-  },
-  {
-    key: "layout",
-    label: "Root Layout Creator",
-    valueKey: "layout",
-    component: "user-interface",
-    defaultDataValue: {},
-    defaultValue: [],
-    mode: "edit",
-    visibilityConditions: {
-      "===": [
-        "json",
-        {
-          var: ["lang"],
-        },
-      ],
-    },
-  },
-] as ComponentDefinition[]
 
 interface Props {
   configId: string
@@ -394,8 +365,16 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                   label="Config"
                   required={true}
                   validateStatus={form.errors.config ? "error" : "success"}>
-                  <Tabs defaultActiveKey={"form"}>
-                    <Tabs.TabPane key={"form"} tab={"Properties"} disabled={!!form.errors.config}>
+                  <Tabs
+                    defaultActiveKey={
+                      configComponents && configComponents.length ? "form" : "editor"
+                    }>
+                    <Tabs.TabPane
+                      key={"form"}
+                      tab={"Properties"}
+                      disabled={
+                        !configComponents || !configComponents.length || !!form.errors.config
+                      }>
                       {form.errors.config ? (
                         <Alert
                           type="error"
@@ -417,7 +396,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                       )}
                       {/* <Alert type="info" message={form.values.config} /> */}
                     </Tabs.TabPane>
-                    <Tabs.TabPane key={"display"} tab={"Preview"} disabled={!!form.errors.config}>
+                    <Tabs.TabPane
+                      key={"display"}
+                      tab={"Preview"}
+                      disabled={
+                        !configComponents || !configComponents.length || !!form.errors.config
+                      }>
                       {form.errors.config ? (
                         <Alert
                           type="error"
@@ -447,7 +431,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                         />
                       )}
                     </Tabs.TabPane>
-                    <Tabs.TabPane key={"json"} tab={"Developer JSON"}>
+                    <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
                       <CodeEditor
                         content={props.config.config.getOrElse("")}
                         contentDraft={some(form.values.config)}
