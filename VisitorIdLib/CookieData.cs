@@ -74,7 +74,7 @@ namespace VisitorIdLib
 
             // Cookie exists in some form
             CookieData deserialized = JsonConvert.DeserializeObject<CookieData>(cookieAsString);
-            LastDomainVisitDate = deserialized.Domains.Aggregate((x, y) => x.Value.VisitDateTime > y.Value.VisitDateTime ? x : y).Value.VisitDateTime;
+            LastDomainVisitDate = deserialized.Domains.Values.Max(v => v.VisitDateTime);
 
             // Existing domain, increment stats, or expire
             if (deserialized.Domains.ContainsKey(host))
