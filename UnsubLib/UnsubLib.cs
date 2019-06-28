@@ -33,6 +33,8 @@ namespace UnsubLib
         public string ClientWorkingDirectory;
         public string SearchDirectory;
         public string FileCacheDirectory;
+        public string FileImportDBDirectory;
+        public string FileImportStagingDirectory;
         public string FileCacheFtpServer;
         public string FileCacheFtpUser;
         public string FileCacheFtpPassword;
@@ -66,6 +68,8 @@ namespace UnsubLib
             ClientWorkingDirectory = config.GetS("Config/ClientWorkingDirectory");
             SearchDirectory = config.GetS("Config/SearchDirectory");
             FileCacheDirectory = config.GetS("Config/FileCacheDirectory");
+            FileImportDBDirectory = config.GetS("Config/FileImportDBDirectory");
+            FileImportStagingDirectory = config.GetS("Config/FileImportStagingDirectory");
             FileCacheFtpServer = config.GetS("Config/FileCacheFtpServer");
             FileCacheFtpUser = config.GetS("Config/FileCacheFtpUser");
             FileCacheFtpPassword = config.GetS("Config/FileCacheFtpPassword");
@@ -902,18 +906,34 @@ namespace UnsubLib
                         tmpFileName = await GetFileFromFileId(fileId, ".txt", ServerWorkingDirectory,
                             WorkingFileCacheSize, Guid.NewGuid().ToString().ToLower() + ".tmd");
 
-                        var wd = ServerWorkingDirectory.Replace("\\", "\\\\");
-                        await _fw.Log(nameof(LoadUnsubFiles), $"Calling spUploadDomainUnsubFile: {campaignId}::{wd}::{fileId}::{tmpFileName}");
-                        await Data.CallFn(Conn, "UploadDomainUnsubFile", Jw.Json(new { CId = campaignId, Ws = wd, FId = fileId, Fn = tmpFileName }), "");
-                        await _fw.Log(nameof(LoadUnsubFiles), $"Called spUploadDomainUnsubFile: {campaignId}::{wd}::{fileId}::{tmpFileName}");
+                        if (!FileImportStagingDirectory.IsNullOrWhitespace())
+                        {
+                            var sf = new FileInfo(Path.Combine(ServerWorkingDirectory, tmpFileName));
 
-                        Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + tmpFileName);
+                            sf.CopyTo(Path.Combine(FileImportStagingDirectory, tmpFileName), true);
+                        }
+
+                        var importDir = FileImportDBDirectory.IfNullOrWhitespace(ServerWorkingDirectory);
+
+                        await _fw.Log(nameof(LoadUnsubFiles), $"Before domain unsub insert: {campaignId}::{importDir}::{fileId}::{tmpFileName}");
+                        var uplRes = await Data.CallFn(Conn, "UploadDomainUnsubFile", Jw.Json(new { CId = campaignId, Ws = importDir, FId = fileId, Fn = tmpFileName }), "");
+
+                        if (uplRes.GetS("Result") == "success")
+                        {
+                            await _fw.Log(nameof(LoadUnsubFiles), $"Domain unsub insert successful: {campaignId}::{importDir}::{fileId}::{tmpFileName} Response: {uplRes.GetS("")}");
+
+                            Fs.TryDeleteFile(Path.Combine(importDir, tmpFileName));
+                        }
+                        else
+                        {
+                            await _fw.Error(nameof(LoadUnsubFiles), $"Domain unsub insert failed:  {campaignId}::{importDir}::{fileId}::{tmpFileName} Response: {uplRes.GetS("")}");
+                        }
                     }
                     catch (Exception exDomUnsub)
                     {
                         Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + tmpFileName);
 
-                        await _fw.Error(nameof(LoadUnsubFiles), $"spUploadDomainUnsubFile: {campaignId}::{fileId}::{tmpFileName}::{exDomUnsub}");
+                        await _fw.Error(nameof(LoadUnsubFiles), $"Domain unsub insert failed: {campaignId}::{fileId}::{tmpFileName}::{exDomUnsub}");
                     }
                 });
 
@@ -984,15 +1004,33 @@ namespace UnsubLib
 
                             await _fw.Trace(nameof(LoadUnsubFiles), $"After Diffing: {oldf}::{newf}");
 
-                            var wd = ServerWorkingDirectory.Replace("\\", "\\\\");
+                            if (!FileImportStagingDirectory.IsNullOrWhitespace())
+                            {
+                                var sf = new FileInfo(Path.Combine(ServerWorkingDirectory, diffname));
 
-                            await Data.CallFn(Conn, "UploadDiffFile", Jw.Json(new { Ws = wd, Fn = diffname }), "");
-                            await _fw.Trace(nameof(LoadUnsubFiles), $"After BulkInsert: {oldf}::{newf}");
+                                sf.CopyTo(Path.Combine(FileImportStagingDirectory, diffname), true);
+                            }
+
+                            var importDir = FileImportDBDirectory.IfNullOrWhitespace(ServerWorkingDirectory);
+
+                            await _fw.Trace(nameof(LoadUnsubFiles), $"Before Diff Insert: {oldf}::{newf}");
+                            var uplRes = await Data.CallFn(Conn, "UploadDiffFile", Jw.Serialize(new { Ws = importDir, Fn = diffname }), "");
+
+                            if (uplRes.GetS("Result") == "success")
+                            {
+                                await _fw.Trace(nameof(LoadUnsubFiles), $"Diff Insert successful: {oldf}::{newf} Response: {uplRes.GetS("")}");
+
+                                if (!FileImportStagingDirectory.IsNullOrWhitespace()) Fs.TryDeleteFile(Path.Combine(importDir, diffname));
+                            }
+                            else
+                            {
+                                await _fw.Error(nameof(LoadUnsubFiles), $"Diff insert failed: {oldf}::{newf} Response: {uplRes.GetS("")}");
+                            }
                         }
                     }
                     catch (Exception exDiff)
                     {
-                        await _fw.Error(nameof(LoadUnsubFiles), $"Diff Failed: {oldfname}::{newfname}::{exDiff}");
+                        await _fw.Error(nameof(LoadUnsubFiles), $"Diff insert failed: {oldfname}::{newfname}::{exDiff}");
                     }
                     finally
                     {
@@ -1017,8 +1055,7 @@ namespace UnsubLib
         {
             try
             {
-                // ToDo: Change to SelectNetworkCampaigns and pass {"Base64Payload": true}
-                return await Data.CallFn(Conn, "SelectNetworkCampaignsWithPayload", "", "");
+                return await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Serialize(new { Base64Payload = true }));
             }
             catch (Exception ex)
             {
