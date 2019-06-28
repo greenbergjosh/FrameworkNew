@@ -34,6 +34,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
 
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "date-range",
       title: "Date Range",
       icon: "calendar",

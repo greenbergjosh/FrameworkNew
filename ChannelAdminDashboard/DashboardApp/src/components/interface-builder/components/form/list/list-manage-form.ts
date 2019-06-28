@@ -17,7 +17,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Items",
+                defaultValue: "Components",
               },
               {
                 key: "hideLabel",
@@ -25,7 +25,32 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "valueKey",
-                defaultValue: "items",
+                defaultValue: "components",
+              },
+              {
+                key: "interleave",
+                valueKey: "interleave",
+                label: "Interleave",
+                help:
+                  "None - Single component repeated; Round Robin - Each component used in turn; Whole Set - Each component used every time.",
+                component: "select",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "None",
+                      value: "none",
+                    },
+                    {
+                      label: "Round Robin",
+                      value: "round-robin",
+                    },
+                    {
+                      label: "Whole Set",
+                      value: "set",
+                    },
+                  ],
+                },
               },
               {
                 key: "addItemLabel",

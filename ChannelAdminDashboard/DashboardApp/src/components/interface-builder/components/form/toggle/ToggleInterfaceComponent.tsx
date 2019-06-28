@@ -29,6 +29,7 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
 
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "toggle",
       title: "Toggle",
       icon: "login",

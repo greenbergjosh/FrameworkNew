@@ -10,6 +10,7 @@ interface ComponentRendererProps {
   componentLimit?: number
   components: ComponentDefinition[]
   data: UserInterfaceProps["data"]
+  dragDropDisabled?: boolean
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   onDrop?: DroppableContextType["onDrop"]
@@ -25,6 +26,7 @@ export const ComponentRenderer = ({
   componentLimit,
   components,
   data,
+  dragDropDisabled,
   mode: propMode,
   onChangeData,
   onDrop,
@@ -63,7 +65,7 @@ export const ComponentRenderer = ({
   return (
     <div>
       <ComponentRendererModeContext.Provider value={mode}>
-        {mode === "edit" ? (
+        {mode === "edit" && !dragDropDisabled ? (
           <DataPathContext>
             {(path) => (
               <Droppable

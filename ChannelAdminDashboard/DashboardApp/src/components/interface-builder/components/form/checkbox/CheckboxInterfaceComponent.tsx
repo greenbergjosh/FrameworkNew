@@ -32,6 +32,7 @@ export class CheckboxInterfaceComponent extends BaseInterfaceComponent<
 
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "checkbox",
       title: "Checkbox",
       icon: "check-square",

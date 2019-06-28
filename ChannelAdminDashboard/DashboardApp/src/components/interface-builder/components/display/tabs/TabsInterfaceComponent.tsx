@@ -22,6 +22,7 @@ export interface TabsInterfaceComponentProps extends ComponentDefinitionNamedPro
 export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterfaceComponentProps> {
   static getLayoutDefinition() {
     return {
+      category: "Display",
       name: "tabs",
       title: "Tabs",
       icon: "folder",

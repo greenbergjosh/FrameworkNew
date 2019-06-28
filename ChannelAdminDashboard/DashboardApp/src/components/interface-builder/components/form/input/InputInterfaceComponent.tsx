@@ -28,6 +28,7 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
 
   static getLayoutDefinition() {
     return {
+      category: "Form",
       name: "input",
       title: "Text Input",
       icon: "edit",
