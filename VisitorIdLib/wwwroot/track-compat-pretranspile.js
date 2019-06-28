@@ -36,7 +36,7 @@
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "3", lv: res.lv, pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
+            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "3", pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
         };
 
         if (res.config.SaveSession === 'true') {
