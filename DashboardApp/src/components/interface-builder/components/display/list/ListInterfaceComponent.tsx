@@ -1,9 +1,5 @@
-import {
-  Alert,
-  Button,
-  Empty,
-  Tabs
-  } from "antd"
+import { Button, Empty } from "antd"
+import classNames from "classnames"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../../DataPathContext"
@@ -19,6 +15,8 @@ import {
 export interface ListInterfaceComponentProps extends ComponentDefinitionNamedProps {
   addItemLabel: string
   component: "list"
+  emptyText?: string
+  orientation?: "horizontal" | "vertical"
   /** Interleave:
    * As a list component, this describes in what manner to repeat, if there are multiple components.
    * "none" - There can only be a single component, it alone is repeated every time. (Default)
@@ -35,6 +33,7 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
   static defaultProps = {
     addItemLabel: "Add Item",
+    orientation: "vertical",
     interleave: "none",
     userInterfaceData: {},
     valueKey: "data",
@@ -69,8 +68,10 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     const {
       addItemLabel,
       components,
+      emptyText,
       interleave,
       onChangeData,
+      orientation,
       userInterfaceData,
       valueKey,
     } = this.props
@@ -78,22 +79,26 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     // Get the list data from the data set
     const data = userInterfaceData[valueKey] || []
     return (
-      <div>
-        <ComponentRendererModeContext.Consumer>
-          {(mode) => {
-            switch (mode) {
-              case "display": {
-                const finalComponents = repeatedInterleave(interleave, components, data.length)
+      <ComponentRendererModeContext.Consumer>
+        {(mode) => {
+          switch (mode) {
+            case "display": {
+              const finalComponents = repeatedInterleave(interleave, components, data.length)
 
-                console.log("ListInterfaceComponent.render", { data })
-                return (
-                  <>
+              console.log("ListInterfaceComponent.render", { data })
+              return (
+                <>
+                  <div
+                    className={classNames("ui-list", {
+                      "ui-list-horizontal": orientation === "horizontal",
+                      "ui-list-vertical": orientation === "vertical",
+                    })}>
                     {finalComponents.length ? (
                       finalComponents.map((iteratedComponent, index) => (
                         <ComponentRenderer
                           key={index}
                           components={[iteratedComponent]}
-                          componentLimit={1}
+                          componentLimit={interleave === "none" ? 1 : 0}
                           data={data[index] || {}}
                           onChangeData={(newData) =>
                             (console.log("ListInterfaceComponent.render", "onChangeData", {
@@ -107,35 +112,33 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                         />
                       ))
                     ) : (
-                      <Empty />
+                      <Empty description={emptyText} />
                     )}
-
-                    <Button style={{ display: "block" }} onClick={this.handleAddClick}>
-                      {addItemLabel}
-                    </Button>
-                  </>
-                )
-              }
-              case "edit": {
-                // Repeat the component once per item in the list
-                return (
-                  <DataPathContext path="components">
-                    <ComponentRenderer
-                      components={components}
-                      componentLimit={1}
-                      data={data}
-                      onChangeData={(newData) =>
-                        onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: newData })
-                      }
-                    />
-                  </DataPathContext>
-                )
-              }
+                  </div>
+                  <Button style={{ display: "block" }} onClick={this.handleAddClick}>
+                    {addItemLabel}
+                  </Button>
+                </>
+              )
             }
-          }}
-        </ComponentRendererModeContext.Consumer>
-        {/* <Alert message="List Data" description={JSON.stringify(userInterfaceData)} type="warning" /> */}
-      </div>
+            case "edit": {
+              // Repeat the component once per item in the list
+              return (
+                <DataPathContext path="components">
+                  <ComponentRenderer
+                    components={components}
+                    componentLimit={1}
+                    data={data}
+                    onChangeData={(newData) =>
+                      onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: newData })
+                    }
+                  />
+                </DataPathContext>
+              )
+            }
+          }
+        }}
+      </ComponentRendererModeContext.Consumer>
     )
   }
 }

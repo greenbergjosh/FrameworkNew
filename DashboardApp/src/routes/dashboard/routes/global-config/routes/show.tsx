@@ -3,6 +3,7 @@ import * as Reach from "@reach/router"
 import { TreeNode } from "antd/lib/tree-select"
 import { fromEither, none, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
+import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
@@ -19,17 +20,16 @@ import {
   Alert,
   Button,
   Card,
-  Col,
   Empty,
   Form,
   Icon,
-  Row,
   Skeleton,
   Tree,
   Typography,
   Tag,
   Tabs,
 } from "antd"
+
 interface Props {
   configId: string
 }
@@ -101,7 +101,7 @@ export function ShowGlobalConfig({
             layoutMappings.reduce(
               (result, layoutMapping) => {
                 const configOption = tryCatch(() =>
-                  JSON.parse(layoutMapping.config.getOrElse("{}"))
+                  JSON5.parse(layoutMapping.config.getOrElse("{}"))
                 )
 
                 configOption.map(({ layout, entityTypes, configs }) => {
@@ -133,7 +133,7 @@ export function ShowGlobalConfig({
             const layout = record
               .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
               .chain(({ config }) =>
-                tryCatch(() => JSON.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
+                tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
               )
               .toNullable()
 
@@ -146,7 +146,7 @@ export function ShowGlobalConfig({
 
         return entityTypeConfig
           .map((parentType) => {
-            return tryCatch(() => JSON.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
+            return tryCatch(() => JSON5.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
               ROOT_CONFIG_COMPONENTS
             )
           })
@@ -155,7 +155,7 @@ export function ShowGlobalConfig({
 
   const config = focusedConfig.toNullable()
   const jsonData = (editorLanguage === "json" && config
-    ? tryCatch(() => JSON.parse(config.config.getOrElse("")))
+    ? tryCatch(() => JSON5.parse(config.config.getOrElse("")))
     : none
   ).toNullable()
   const jsonHasErrors = !jsonData

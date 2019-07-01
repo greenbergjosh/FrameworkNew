@@ -77,9 +77,15 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           mode="vertical"
           defaultOpenKeys={activeMenuKeys}
           selectedKeys={activeMenuKeys}>
-          {(function renderRoutesAsMenuItems(appRoutes: Record<string, RouteMeta>) {
+          {(function renderRoutesAsMenuItems(
+            appRoutes: Record<string, RouteMeta>,
+            nested?: boolean
+          ) {
             return toArray(appRoutes)
               .filter(([path, route]) => route.shouldAppearInSideNav)
+              .sort(([pathA, routeA], [pathB, routeB]) =>
+                nested ? routeB.title.localeCompare(routeA.title) : 0
+              )
               .map(([path, route]) => {
                 return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
                   <Menu.SubMenu
@@ -90,7 +96,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                         <span>{route.title}</span>
                       </span>
                     }>
-                    {renderRoutesAsMenuItems(route.subroutes)}
+                    {renderRoutesAsMenuItems(route.subroutes, true)}
                   </Menu.SubMenu>
                 ) : (
                   <Menu.Item key={route.abs}>

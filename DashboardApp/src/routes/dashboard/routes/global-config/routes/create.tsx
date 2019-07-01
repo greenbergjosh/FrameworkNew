@@ -6,6 +6,7 @@ import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
+import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
@@ -184,7 +185,7 @@ export function CreateGlobalConfig({
                 layoutMappings.reduce(
                   (result, layoutMapping) => {
                     const configOption = tryCatch(() =>
-                      JSON.parse(layoutMapping.config.getOrElse("{}"))
+                      JSON5.parse(layoutMapping.config.getOrElse("{}"))
                     )
 
                     configOption.map(({ layout, entityTypes, configs }) => {
@@ -215,7 +216,7 @@ export function CreateGlobalConfig({
                   .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
                   .chain(({ config }) =>
                     tryCatch(
-                      () => JSON.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
+                      () => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
                     )
                   )
                   .toNullable()
@@ -230,7 +231,7 @@ export function CreateGlobalConfig({
             return entityTypeConfig
               .map((parentType) => {
                 return tryCatch(
-                  () => JSON.parse(parentType.config.getOrElse("{}")).layout
+                  () => JSON5.parse(parentType.config.getOrElse("{}")).layout
                 ).getOrElse(ROOT_CONFIG_COMPONENTS)
               })
               .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
@@ -344,7 +345,7 @@ export function CreateGlobalConfig({
                         ) : (
                           <UserInterface
                             contextManager={userInterfaceContextManager}
-                            data={tryCatch(() => JSON.parse(form.values.config)).getOrElse({})}
+                            data={tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})}
                             onChangeData={(value) => {
                               console.log("edit", "UserInterface.onChangeData", "new config", value)
                               form.setFieldValue("config", JSON.stringify(value, null, 2))
@@ -380,7 +381,7 @@ export function CreateGlobalConfig({
                             }}
                             mode="display"
                             components={tryCatch(() => {
-                              const layout = JSON.parse(form.values.config).layout
+                              const layout = JSON5.parse(form.values.config).layout
                               return layout && (Array.isArray(layout) ? layout : [layout])
                             }).getOrElse([])}
                           />

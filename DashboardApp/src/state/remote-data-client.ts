@@ -1,5 +1,6 @@
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
+import JSON5 from "json5"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
 import { CompleteLocalDraft, PersistedConfig } from "../data/GlobalConfig.Config"
@@ -99,7 +100,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         method: "POST",
         timeout: none,
         transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON.parse(data)
+          const jsonThingHopefullyIsData = JSON5.parse(data)
           return typeof jsonThingHopefullyIsData["auth:userDetails"].r === "undefined"
             ? {
                 "auth:login": {
@@ -135,7 +136,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         method: "POST",
         timeout: none,
         transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON.parse(data)
+          const jsonThingHopefullyIsData = JSON5.parse(data)
           return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
             ? {
                 "auth:login": {
@@ -170,7 +171,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         method: "POST",
         timeout: none,
         transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON.parse(data)
+          const jsonThingHopefullyIsData = JSON5.parse(data)
           return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
             ? {
                 "auth:login": {

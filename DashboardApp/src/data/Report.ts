@@ -23,15 +23,15 @@ export const LayoutItemCodec = iots.taggedUnion("component", [
 
 export type RemoteReportConfig = {
   type: "ReportConfig"
-  query: Nullable<GlobalConfigReference>
-  layout: LayoutItem
-  details: Nullable<GlobalConfigReference | RemoteReportConfig>
+  query: string
+  // layout: LayoutItem
+  details: string
 }
 export type LocalReportConfig = {
   type: "ReportConfig"
-  query: Option<GlobalConfigReference>
-  layout: LayoutItem
-  details: Option<GlobalConfigReference | LocalReportConfig>
+  query: string
+  columns: [iots.UnknownRecordC]
+  details: string
 }
 export const ReportConfigCodec = iots.recursion<
   LocalReportConfig,
@@ -41,11 +41,9 @@ export const ReportConfigCodec = iots.recursion<
 >("ReportConfig", (_ReportConfigCodec) =>
   iots.type({
     type: iots.literal("ReportConfig"),
-    query: iotst.createOptionFromNullable(GlobalConfigReferenceCodec),
-    layout: LayoutItemCodec,
-    details: iotst.createOptionFromNullable(
-      iots.taggedUnion("type", [GlobalConfigReferenceCodec, _ReportConfigCodec])
-    ),
+    query: iots.string,
+    columns: iots.any,
+    details: iots.any,
   })
 )
 

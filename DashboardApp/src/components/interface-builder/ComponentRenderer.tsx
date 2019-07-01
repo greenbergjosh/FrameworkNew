@@ -35,8 +35,6 @@ export const ComponentRenderer = ({
   const contextMode = React.useContext(ComponentRendererModeContext)
   const mode = propMode || contextMode
 
-  // console.log("ComponentRenderer.render", { components, data, onChangeData })
-
   const content = components.map((componentDefinition, index) => (
     <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
       {(path) => (
@@ -44,6 +42,7 @@ export const ComponentRenderer = ({
           Component={componentRegistry.lookup(componentDefinition.component)}
           componentDefinition={componentDefinition}
           data={data}
+          dragDropDisabled={dragDropDisabled}
           index={index}
           mode={mode}
           onChangeData={(newData) => {
@@ -60,7 +59,7 @@ export const ComponentRenderer = ({
     </DataPathContext>
   ))
 
-  console.log("ComponentRenderer.render", components)
+  console.log("ComponentRenderer.render", { components, data })
 
   return (
     <div>

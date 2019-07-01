@@ -59,6 +59,13 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "Add Item",
                 label: "'Add' Button Text",
               },
+              {
+                key: "emptyText",
+                valueKey: "emptyText",
+                component: "input",
+                defaultValue: "No Items",
+                label: "Empty Text",
+              },
             ],
           },
         ],
