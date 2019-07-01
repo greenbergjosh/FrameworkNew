@@ -13,7 +13,8 @@ namespace Utility
 {
     public static class UnixWrapper
     {
-        static string exeDiff, exeGrep, exeSort, exeTr, exeUniq, exeUnzip, _sep, platform;
+        static string exeDiff, exeGrep, exeSort, exeTr,
+            exeUniq, exeUnzip, _sep, platform, basePath;
 
         static void ConfirmPlatform(ref string platform)
         {
@@ -23,27 +24,17 @@ namespace Utility
             }
         }
 
-        public static Func<string, string> AppSettingsFuncCtor(string configDir = null)
+        static Func<string, string> AutoConfigure()
         {
-            configDir = configDir ?? Directory.GetCurrentDirectory();
-
-            var cfg = new ConfigurationBuilder()
-                .SetBasePath(configDir)
-                .AddJsonFile("appsettings.json")
-                .Build()
-                .GetSection("UnixWrapper");
-
-            platform = platform ?? cfg.GetValue<string>("Platform") ?? "Auto";
-            ConfirmPlatform(ref platform);
-
-            var basePath = cfg.GetValue<string>($"{platform}:BasePath");
-
-            return (string bin) =>
+            if (basePath == null)
             {
-                var z = cfg.GetValue<string>($"Paths:{bin}") ?? bin;
-                var x = $"{basePath}{z}";
-                return x;
-            };
+                platform = platform ?? "Auto";
+                ConfirmPlatform(ref platform);
+                if (platform == "Win32NT") { basePath = "C:\\Program Files\\Git\\usr\\bin\\"; }
+                else if (platform == "Unix") { basePath = "/usr/bin/"; }
+            }
+
+            return (string bin) => $"{basePath}{bin}";
         }
 
         public static Func<string, string> FwSettingsFuncCtor(Fw fw)
@@ -54,7 +45,7 @@ namespace Utility
             var cfg = fw.StartupConfiguration;
             platform = cfg.GetS($"{configPath}/Platform");
             ConfirmPlatform(ref platform);
-            var basePath = cfg.GetS($"{configPath}/{platform}/BasePath");
+            basePath = cfg.GetS($"{configPath}/{platform}/BasePath");
 
             return (string bin) =>
             {
@@ -64,11 +55,11 @@ namespace Utility
             };
         }
 
-        public static void Config(Fw fw = null, string configDir = null)
+        public static void Config(Fw fw)
         {
             _sep = Path.DirectorySeparatorChar.ToString();
             var GetFwConfig = FwSettingsFuncCtor(fw);
-            var GetAppSetting = AppSettingsFuncCtor();
+            var GetAppSetting = AutoConfigure();
             string GetConfig(string bin) { return GetFwConfig(bin) ?? GetAppSetting(bin); };
 
             exeDiff = GetConfig("diff");
@@ -81,7 +72,7 @@ namespace Utility
 
         static UnixWrapper()
         {
-            Config();
+            Config(null);
         }
 
         public static async Task UnzipZip(string ZipFileDirectory, string zipFileName,
