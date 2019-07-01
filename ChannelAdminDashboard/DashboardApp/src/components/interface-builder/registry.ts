@@ -1,13 +1,15 @@
 import React from "react"
 import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
 import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
+import { CardInterfaceComponent } from "./components/display/card/CardInterfaceComponent"
+import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
+import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
-import { ListInterfaceComponent } from "./components/form/list/ListInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
@@ -25,6 +27,7 @@ export interface ComponentRegistryCache {
 
 export const registry: ComponentRegistry = {
   cache: {
+    card: CardInterfaceComponent,
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
@@ -34,6 +37,7 @@ export const registry: ComponentRegistry = {
     list: ListInterfaceComponent,
     select: SelectInterfaceComponent,
     tabs: TabsInterfaceComponent,
+    table: TableInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
 

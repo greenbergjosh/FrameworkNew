@@ -1,5 +1,6 @@
 import { Switch } from "antd"
 import React from "react"
+import { UserInterfaceProps } from "../../../UserInterface"
 import { toggleManageForm } from "./toggle-manage-form"
 import {
   BaseInterfaceComponent,
@@ -10,6 +11,8 @@ import {
 export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "toggle"
   defaultValue?: boolean
+  onChangeData: UserInterfaceProps["onChangeData"]
+  userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
   value: boolean
 }
@@ -43,20 +46,17 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = toggleManageForm
 
-  constructor(props: ToggleInterfaceComponentProps) {
-    super(props)
-
-    const { defaultValue, value } = props
-
-    this.state = { value: value || defaultValue || false }
-  }
-
   handleChange = (checked: boolean) => {
-    this.setState({ value: checked })
+    const { onChangeData, userInterfaceData, valueKey } = this.props
+    onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: checked })
   }
 
   render(): JSX.Element {
-    const value = this.state.value
+    const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
+    const value =
+      typeof userInterfaceData[valueKey] !== "undefined"
+        ? userInterfaceData[valueKey]
+        : defaultValue
     return <Switch onChange={this.handleChange} checked={value} />
   }
 }

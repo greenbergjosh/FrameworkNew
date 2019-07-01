@@ -13,12 +13,16 @@ import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/route
 import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
 import { Reports } from "../routes/dashboard/routes/reports"
-import { ReportView } from "../routes/dashboard/routes/reports/routes/report"
+import ReportView from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { UserInterfaceTest } from "../routes/dashboard/routes/user-interface-test"
 import { Landing } from "../routes/landing"
 import { Profile } from "./iam"
 import * as Store from "./store.types"
+import {
+  BusinessApplications,
+  BusinessApplicationView,
+} from "../routes/dashboard/routes/business-application"
 
 declare module "./store.types" {
   interface AppModels {
@@ -164,6 +168,20 @@ const DashReports = mkAuthenticatedRoute({
   path: "reports",
   redirectFrom: [],
   requiresAuthentication: true as const,
+  shouldAppearInSideNav: false,
+  subroutes: {},
+})
+
+const DashBusinessApplications = mkAuthenticatedRoute({
+  abs: "/dashboard/apps",
+  // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
+  component: BusinessApplications,
+  description: "Manage On Point Business Applications",
+  title: "Business Applications",
+  iconType: "deployment-unit",
+  path: "apps",
+  redirectFrom: [],
+  requiresAuthentication: true as const,
   shouldAppearInSideNav: true,
   subroutes: {},
 })
@@ -300,13 +318,39 @@ const staticRoutesMap = {
         subroutes: {},
       },
       reports: {
-        abs: "/dashboard/reports",
+        abs: "/dashboard/reports/",
         // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
         component: Reports,
         description: "Generate and export reports",
         title: "Reports",
         iconType: "table",
         path: "reports",
+        redirectFrom: [],
+        requiresAuthentication: true as const,
+        shouldAppearInSideNav: false,
+        subroutes: {
+          reports: {
+            abs: "/dashboard/reports/:reportId",
+            component: ReportView,
+            description: "Application Report",
+            title: "Reports",
+            iconType: "bar-chart",
+            path: ":reportId",
+            redirectFrom: [],
+            requiresAuthentication: true as const,
+            shouldAppearInSideNav: false,
+            subroutes: {},
+          },
+        },
+      },
+      apps: {
+        abs: "/dashboard/apps",
+        // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
+        component: BusinessApplications,
+        description: "Manage On Point Business Applications",
+        title: "Business Applications",
+        iconType: "deployment-unit",
+        path: "apps",
         redirectFrom: [],
         requiresAuthentication: true as const,
         shouldAppearInSideNav: true,
@@ -396,7 +440,7 @@ const staticRoutesMap = {
         path: "form-editor-test",
         redirectFrom: [],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: true,
+        shouldAppearInSideNav: false,
         subroutes: {},
       },
       "user-interface-test": {
@@ -408,7 +452,7 @@ const staticRoutesMap = {
         path: "user-interface-test",
         redirectFrom: [],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: true,
+        shouldAppearInSideNav: false,
         subroutes: {},
       },
     },
@@ -456,17 +500,17 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
         (state) => select.globalConfig.configsByType(state),
         (configsByType) => {
           return record
-            .lookup("Report", configsByType)
+            .lookup("BusinessApplication", configsByType)
             .map((records) =>
-              records.map((report) => ({
-                [report.id]: {
-                  abs: `/dashboard/reports/${report.id}`,
-                  component: ReportView,
+              records.map((businessApplication) => ({
+                [businessApplication.id]: {
+                  abs: `/dashboard/apps/${businessApplication.id}`,
+                  component: BusinessApplicationView,
                   description: "",
-                  title: report.name as string,
-                  iconType: "bar-chart",
-                  path: report.id as string,
-                  context: { id: report.id as string },
+                  title: businessApplication.name as string,
+                  iconType: "appstore",
+                  path: businessApplication.id as string,
+                  context: { id: businessApplication.id as string },
                   redirectFrom: [],
                   shouldAppearInSideNav: true,
                   subroutes: {},
@@ -483,8 +527,8 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
               )
             )
             .map((routesDict) =>
-              reportsSubroutes.set({
-                ...reportsSubroutes.get(staticRoutesMap),
+              appsSubroutes.set({
+                ...appsSubroutes.get(staticRoutesMap),
                 ...routesDict,
               })(staticRoutesMap)
             )
@@ -505,3 +549,4 @@ const reportsSubroutes = Lens.fromPath<RoutesMap>()([
   "reports",
   "subroutes",
 ])
+const appsSubroutes = Lens.fromPath<RoutesMap>()(["dashboard", "subroutes", "apps", "subroutes"])

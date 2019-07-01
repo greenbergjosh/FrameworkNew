@@ -17,6 +17,7 @@ interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
   data: UserInterfaceProps["data"]
+  dragDropDisabled?: boolean
   index: number
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
@@ -39,7 +40,16 @@ export class RenderInterfaceComponent extends React.Component<
   }
 
   render() {
-    const { Component, componentDefinition, data, index, mode, onChangeData, path } = this.props
+    const {
+      Component,
+      componentDefinition,
+      data,
+      dragDropDisabled,
+      index,
+      mode,
+      onChangeData,
+      path,
+    } = this.props
     const { error } = this.state
 
     if (
@@ -120,7 +130,7 @@ export class RenderInterfaceComponent extends React.Component<
         content
       )
 
-    return mode === "edit" ? (
+    return mode === "edit" && !dragDropDisabled ? (
       <Draggable
         data={componentDefinition}
         draggableId={path}

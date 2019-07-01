@@ -27,11 +27,15 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "tabNames",
                 ordinal: 20,
                 component: "list",
-                itemsAs: {
-                  component: "input",
-                  label: "Tab {tabNames.index} name",
-                  defaultValue: "Tab {tabNames.index}",
-                },
+                components: [
+                  {
+                    key: "tabName",
+                    valueKey: "tabName",
+                    component: "input",
+                    label: "Tab",
+                    defaultValue: "Tab",
+                  },
+                ],
               },
             ],
           },

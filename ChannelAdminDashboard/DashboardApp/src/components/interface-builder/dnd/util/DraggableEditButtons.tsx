@@ -1,5 +1,6 @@
 import { Button } from "antd"
 import React from "react"
+import { ConfirmableDeleteButton } from "../../../button/confirmable-delete"
 
 export interface DraggableEditButtonsProps {
   canPaste?: boolean
@@ -25,7 +26,13 @@ export const DraggableEditButtons = ({
         {onEdit && <Button icon="edit" onClick={onEdit} />}
         {onPaste && canPaste && <Button icon="snippets" onClick={onPaste} disabled />}
         {onCopy && <Button icon="copy" onClick={onCopy} disabled />}
-        {onDelete && <Button type="danger" icon="delete" onClick={onDelete} />}
+        {onDelete && (
+          <ConfirmableDeleteButton
+            confirmationMessage={`Are you sure want to delete this ${title || "item"}?`}
+            confirmationTitle={`Confirm Delete`}
+            onDelete={onDelete}
+          />
+        )}
       </Button.Group>
     </div>
   )

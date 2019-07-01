@@ -24,6 +24,7 @@ import {
   } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
+import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
@@ -132,7 +133,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
             layoutMappings.reduce(
               (result, layoutMapping) => {
                 const configOption = tryCatch(() =>
-                  JSON.parse(layoutMapping.config.getOrElse("{}"))
+                  JSON5.parse(layoutMapping.config.getOrElse("{}"))
                 )
 
                 configOption.map(({ layout, entityTypes, configs }) => {
@@ -164,7 +165,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
             const layout = record
               .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
               .chain(({ config }) =>
-                tryCatch(() => JSON.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
+                tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
               )
               .toNullable()
 
@@ -177,7 +178,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
 
         return entityTypeConfig
           .map((parentType) => {
-            return tryCatch(() => JSON.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
+            return tryCatch(() => JSON5.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
               ROOT_CONFIG_COMPONENTS
             )
           })
@@ -299,27 +300,26 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     Save
                   </Button>
 
-                  {form.dirty ? (
-                    <Button
-                      icon="close-circle"
-                      key="cancel"
-                      size="small"
-                      type="default"
-                      onClick={form.handleReset}>
-                      Cancel
-                    </Button>
-                  ) : (
-                    <ConfirmableDeleteButton
-                      confirmationMessage={`Are you sure want to delete?`}
-                      confirmationTitle={`Confirm Delete`}
-                      loading={fromStore.isDeletingRemoteConfig}
-                      size="small"
-                      onDelete={() =>
-                        dispatch.globalConfig.deleteRemoteConfigsById([props.config.id])
-                      }>
-                      Delete
-                    </ConfirmableDeleteButton>
-                  )}
+                  <Button
+                    icon="rollback"
+                    key="revert"
+                    size="small"
+                    type="default"
+                    disabled={!form.dirty}
+                    onClick={form.handleReset}>
+                    Revert
+                  </Button>
+
+                  <ConfirmableDeleteButton
+                    confirmationMessage={`Are you sure want to delete?`}
+                    confirmationTitle={`Confirm Delete`}
+                    loading={fromStore.isDeletingRemoteConfig}
+                    size="small"
+                    onDelete={() =>
+                      dispatch.globalConfig.deleteRemoteConfigsById([props.config.id])
+                    }>
+                    Delete
+                  </ConfirmableDeleteButton>
                 </Button.Group>
               }
               title={`Create Config`}>
@@ -384,7 +384,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                       ) : (
                         <UserInterface
                           contextManager={userInterfaceContextManager}
-                          data={tryCatch(() => JSON.parse(form.values.config)).getOrElse({})}
+                          data={tryCatch(() => JSON5.parse(form.values.config)).getOrElse({})}
                           onChangeData={(value) => {
                             console.log("edit", "UserInterface.onChangeData", "new config", value)
                             form.setFieldValue("config", JSON.stringify(value, null, 2))
@@ -425,7 +425,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                           }}
                           mode="display"
                           components={tryCatch(() => {
-                            const layout = JSON.parse(form.values.config).layout
+                            const layout = JSON5.parse(form.values.config).layout
                             return layout && (Array.isArray(layout) ? layout : [layout])
                           }).getOrElse([])}
                         />

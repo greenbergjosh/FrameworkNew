@@ -4,17 +4,15 @@ import { Branded } from "io-ts"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import jsonLogic from "json-logic-js"
+import JSON5 from "json5"
 import { set } from "lodash/fp"
 import React from "react"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { QueryConfig } from "../../../../../data/Report"
 import { cheapHash } from "../../../../../lib/json"
 import { UserInterfaceProps } from "../../../UserInterface"
+import { UserInterfaceContext } from "../../../UserInterfaceContextManager"
 import { selectManageForm } from "./select-manage-form"
-import {
-  UserInterfaceContext,
-  UserInterfaceContextManager,
-} from "../../../UserInterfaceContextManager"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -135,10 +133,17 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     return null
   }
 
-  handleChange = (value: string) => {
+  handleChange = (value: string | string[]) => {
     const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
-    onChangeData &&
-      onChangeData(set(valueKey, `${valuePrefix}${value}${valueSuffix}`, userInterfaceData))
+
+    const newValue =
+      valuePrefix || valueSuffix
+        ? Array.isArray(value)
+          ? value.map((v) => `${valuePrefix}${v}${valueSuffix}`)
+          : `${valuePrefix}${value}${valueSuffix}`
+        : value
+
+    onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
   }
 
   static isRemoteDataType = (dataHandlerType: string): dataHandlerType is RemoteDataHandlerType => {
@@ -173,7 +178,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
                 const parsedConfig = {
                   ...config,
                   config: config.config
-                    .chain((cfg) => tryCatch(() => JSON.parse(cfg)))
+                    .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
                     .toNullable(),
                 }
 
@@ -202,7 +207,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
             const queryGlobalConfig = loadById(queryId)
             if (queryGlobalConfig) {
               const queryConfig = tryCatch(
-                () => JSON.parse(queryGlobalConfig.config.getOrElse("")) as QueryConfig
+                () => JSON5.parse(queryGlobalConfig.config.getOrElse("")) as QueryConfig
               ).toNullable()
 
               if (queryConfig) {
@@ -262,19 +267,16 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
 
     const rawValue =
       typeof userInterfaceData[valueKey] !== "undefined"
-        ? (userInterfaceData[valueKey] as string)
+        ? (userInterfaceData[valueKey] as string | string[])
         : defaultValue
 
-    const noPrefix =
-      rawValue && valuePrefix && rawValue.startsWith(valuePrefix)
-        ? rawValue.substring(valuePrefix.length)
-        : rawValue
-    const noSuffix =
-      noPrefix && valueSuffix && noPrefix.endsWith(valueSuffix)
-        ? noPrefix.substr(0, noPrefix.length - valueSuffix.length)
-        : noPrefix
+    const result =
+      rawValue &&
+      (Array.isArray(rawValue)
+        ? rawValue.map((value) => cleanText(value, valuePrefix, valueSuffix).toLowerCase())
+        : cleanText(rawValue, valuePrefix, valueSuffix).toLowerCase())
 
-    return noSuffix && noSuffix.toLowerCase()
+    return result
   }
 
   render(): JSX.Element {
@@ -301,4 +303,14 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
       </Select>
     )
   }
+}
+
+const cleanText = (text: string, prefix?: string, suffix?: string) => {
+  const noPrefix = text && prefix && text.startsWith(prefix) ? text.substring(text.length) : text
+  const noSuffix =
+    noPrefix && suffix && noPrefix.endsWith(suffix)
+      ? noPrefix.substr(0, noPrefix.length - suffix.length)
+      : noPrefix
+
+  return noSuffix
 }
