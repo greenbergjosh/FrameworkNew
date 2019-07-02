@@ -48,14 +48,5 @@ namespace UtilityTest
             File.Delete("ascii");
             Assert.True(ascii.SequenceEqual(expected));
         }
-
-        [Fact]
-        public void RedirectTest()
-        {
-            ProcessWrapper.Redirect("cat", "", cwd, "oldfile", "old.bak").Wait();
-            var bak = File.Exists("old.bak");
-            File.Delete("old.bak");
-            Assert.True(bak);
-        }
     }
 }

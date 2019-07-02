@@ -6,15 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Fs = Utility.FileSystem;
 using Fw = Utility.FrameworkWrapper;
 
 namespace Utility
 {
     public static class UnixWrapper
     {
-        static string exeDiff, exeGrep, exeSort, exeTr,
-            exeUniq, exeUnzip, _sep, platform, basePath;
+        static string exeDiff, exeGrep, exeSort, exeTr, exeUniq, exeUnzip, _sep, platform, basePath;
 
         static void ConfirmPlatform(ref string platform)
         {
@@ -30,7 +28,7 @@ namespace Utility
             {
                 platform = platform ?? "Auto";
                 ConfirmPlatform(ref platform);
-                if (platform == "Win32NT") { basePath = "C:\\Program Files\\Git\\usr\\bin\\"; }
+                if (platform == "Win32NT") { basePath = @"C:\\""Program Files""\\Git\\usr\\bin\\"; }
                 else if (platform == "Unix") { basePath = "/usr/bin/"; }
             }
 
@@ -78,79 +76,54 @@ namespace Utility
         public static async Task UnzipZip(string ZipFileDirectory, string zipFileName,
             string UnzippedDirectory, int timeout = 1000 * 60 * 5)
         {
-            try
-            {
-                using (var outs = new StringWriter())
-                {
-                    using (var errs = new StringWriter())
-                    {
-                        var exitCode = await ProcessWrapper.StartProcess(
-                            exeUnzip,
-                            $"\"{zipFileName}\" -d \"{UnzippedDirectory}\"",
-                            ZipFileDirectory,
-                            timeout,
-                            outs,
-                            errs).ConfigureAwait(continueOnCapturedContext: false);
+            var inf = $"{ZipFileDirectory}{_sep}{zipFileName}";
+            var outf = $"{ZipFileDirectory}{_sep}{UnzippedDirectory}";
+            var cmd = $"{exeUnzip} {inf} -d {outf}";
 
-                        var err = errs.ToString();
-
-                        if (!err.IsNullOrWhitespace()) throw new Exception($"Unzip failed: {err}");
-                    }
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                throw;
-            }
+            var err = await cmd.Shell(platform);
         }
 
         public static async Task SortFile(string sourcePath, string inputFile,
             string outputFile, bool caseSensitive, bool unique,
             int timeout = 1000 * 60 * 5, int parallel = 4, string mem = "")
         {
-            var exitCode = await ProcessWrapper.StartProcess(
-                        exeSort,
-                        $"--parallel={parallel} {inputFile}"
-                            + (String.IsNullOrEmpty(mem) ? "" : (" --buffer-size=" + mem))
-                            + $" --output={outputFile}"
-                            + (caseSensitive ? "" : " -f") + (unique ? " -u" : ""),
-                        sourcePath,
-                        timeout,
-                        null,
-                        null).ConfigureAwait(continueOnCapturedContext: false);
+            var bufferFlag = (String.IsNullOrEmpty(mem) ? "" : (" --buffer-size=" + mem));
+            var caseFlag = caseSensitive ? "" : " -f ";
+            var uniqFlag = unique ? " -u " : "";
+
+            var inf = $"{sourcePath}{_sep}{inputFile}";
+            var outf = $"{sourcePath}{_sep}{outputFile}";
+            var cmd = $"{exeSort} {bufferFlag} {caseFlag} {uniqFlag} {inf} > {outf}";
+
+            var err = await cmd.Shell(platform);
         }
 
         public static async Task RemoveNonAsciiFromFile(string sourcePath, string inputFile,
             string outputFile, int timeout = 1000 * 60 * 5)
         {
-            await ProcessWrapper.Redirect(
-                exeTr,
-                $" -cd '\\11\\12\\15\\40-\\176' < ",
-                sourcePath,
-                inputFile,
-                outputFile,
-                platform);
+            var inf = $"{sourcePath}{_sep}{inputFile}";
+            var outf = $"{sourcePath}{_sep}{outputFile}";
+            var cmd = $"{exeTr} -cd '\\11\\12\\15\\40-\\176' < {inf} > {outf}";
+
+            var err = await cmd.Shell(platform);
         }
 
         public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile,
             string outputFile, int timeout = 1000 * 60 * 5)
         {
-            await ProcessWrapper.Redirect(
-                exeGrep,
-                " -P -i '[0-9a-f]{32}' ",
-                sourcePath,
-                inputFile,
-                outputFile,
-                platform);
+            var args = " -P -i '[0-9a-f]{32}' ";
+            var inf = $"{sourcePath}{_sep}{inputFile}";
+            var outf = $"{sourcePath}{_sep}{outputFile}";
+            var cmd = $"{exeSort} {args} {inf} > {outf}";
+
+            var err = await cmd.Shell(platform);
         }
 
-        private static void OutputRedirection(object sendingProcess,
-                              DataReceivedEventArgs outLine)
+        private static void OutputRedirection(object sendingProcess, DataReceivedEventArgs outLine)
         {
             try
             {
                 if (outLine.Data != null) Console.WriteLine(outLine.Data);
-                // or collect the data, etc
             }
             catch (Exception ex)
             {
@@ -384,7 +357,7 @@ namespace Utility
 
                 if (bytes[32] == 10) lLength = 33;
                 else if (bytes[32] == 13 && bytes[33] == 10) lLength = 34;
-                else throw new System.Exception("Unexpected line termination character");
+                else throw new Exception("Unexpected line termination character");
 
                 var numRec = fLength / lLength;
 
@@ -410,56 +383,25 @@ namespace Utility
         public static async Task<bool> DiffFiles(string oldFile, string newFile, string sourcePath,
             string diffFile, int timeout = 1000 * 60 * 5)
         {
-            var swOut = new StreamWriter(sourcePath + _sep + diffFile, true);
-            var timedOut = false;
-            try
-            {
-                var exitCode = await ProcessWrapper.StartProcess(
-                exeDiff,
-                "--changed-group-format=\"%>\" --unchanged-group-format=\"\" "
-                    + oldFile + " "
-                    + newFile,
-                sourcePath,
-                timeout,
-                swOut,
-                null).ConfigureAwait(continueOnCapturedContext: false);
-            }
-            catch (TaskCanceledException)
-            {
-                timedOut = true;
-            }
-            finally
-            {
-                swOut.Close();
-            }
+            var changed = "--changed-group-format='%>'";
+            var unchanged = "--unchanged-group-format=''";
+            var oldf = $"{sourcePath}{_sep}{oldFile}";
+            var newf = $"{sourcePath}{_sep}{newFile}";
+            var outf = $"{sourcePath}{_sep}{diffFile}";
+            var cmd = $"{exeDiff} {changed} {unchanged} {oldf} {newf} > {outf}";
 
-            return timedOut;
+            var err = await cmd.Shell(platform);
+            return !err.IsNullOrWhitespace();
         }
 
         public static async Task<bool> Unique(string oldFile, string newFile, string sourcePath, int timeout = 1000 * 60 * 5)
         {
-            var swOut = new StreamWriter(sourcePath + _sep + newFile, true);
-            var timedOut = false;
-            try
-            {
-                var exitCode = await ProcessWrapper.StartProcess(
-                    exeUniq,
-                    "-i " + sourcePath + _sep + oldFile,
-                    sourcePath,
-                    timeout,
-                    swOut,
-                    null).ConfigureAwait(continueOnCapturedContext: false);
-            }
-            catch (TaskCanceledException)
-            {
-                timedOut = true;
-            }
-            finally
-            {
-                swOut.Close();
-            }
+            var inf = $"{sourcePath}{_sep}{oldFile}";
+            var outf = $"{sourcePath}{_sep}{newFile}";
+            var cmd = $"{exeUniq} {inf} > {outf}";
 
-            return timedOut;
+            var err = await cmd.Shell(platform);
+            return !err.IsNullOrWhitespace();
         }
 
         public static async Task<int> LineCount(string fileName) => (await File.ReadAllLinesAsync(fileName)).Count();
@@ -469,7 +411,6 @@ namespace Utility
             var curFileLineCount = 0;
             var newFileLineCount = 0;
             var deltaLineCount = 0;
-            //List<string> delta = new List<string>();
             using (var diff = new StreamWriter(diffFile))
             {
                 using (var oldRdr = File.OpenText(curFile))
@@ -485,11 +426,10 @@ namespace Utility
                             if (readOld) { oldLine = oldRdr.ReadLine(); curFileLineCount++; }
                             if (readNew) { newLine = newRdr.ReadLine(); newFileLineCount++; }
                             var cmp = newLine.ToLower().CompareTo(oldLine.ToLower());
-                            //String.CompareOrdinal(newLine, oldLine);
+
                             if (cmp == 0) { readOld = true; readNew = true; continue; }
                             if (cmp > 0) { readOld = true; readNew = false; continue; }
                             {
-                                //delta.Add(newLine);
                                 diff.WriteLine();
                                 deltaLineCount++;
                                 readOld = false;
@@ -498,7 +438,6 @@ namespace Utility
                         }
                         while (!newRdr.EndOfStream)
                         {
-                            //delta.Add(await newRdr.ReadLineAsync());
                             diff.WriteLine();
                             newFileLineCount++;
                             deltaLineCount++;
@@ -506,7 +445,6 @@ namespace Utility
                     }
                 }
             }
-            //return delta;
         }
     }
 }
