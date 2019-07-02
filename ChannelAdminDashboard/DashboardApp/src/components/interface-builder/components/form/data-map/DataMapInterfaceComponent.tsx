@@ -4,6 +4,8 @@ import { get, set } from "lodash/fp"
 import moment from "moment"
 import React from "react"
 import { DataMap } from "../../../../data-map/DataMap"
+import { DataPathContext } from "../../../../DataPathContext"
+import { ComponentRenderer } from "../../../ComponentRenderer"
 import { RenderInterfaceComponent } from "../../../RenderInterfaceComponent"
 import { UserInterface, UserInterfaceProps } from "../../../UserInterface"
 import { dataMapManageForm } from "./data-map-manage-form"
@@ -33,13 +35,15 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
 > {
   static defaultProps = {
     keyComponent: {
-      label: "Key",
+      hideLabel: false,
+      label: "Value",
       component: "input",
       valueKey: "key",
     },
     multiple: true,
     valueComponent: {
-      label: "Value",
+      hideLabel: false,
+      label: "Label",
       component: "input",
       valueKey: "value",
     },
@@ -55,7 +59,7 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
       formControl: true,
       componentDefinition: {
         component: "data-map",
-        label: "Date Range",
+        label: "Data Map",
       },
     }
   }
@@ -95,22 +99,26 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
         multiple={multiple}
         renderKeyComponent={(dataItem, onChangeData) => {
           return (
-            <UserInterface
-              mode="display"
-              components={[{ ...keyComponent, hideLabel: true }]}
-              data={dataItem}
-              onChangeData={onChangeData}
-            />
+            <DataPathContext path="keyComponent">
+              <ComponentRenderer
+                componentLimit={1}
+                components={[{ ...keyComponent, hideLabel: true }]}
+                data={dataItem}
+                onChangeData={onChangeData}
+              />
+            </DataPathContext>
           )
         }}
         renderValueComponent={(dataItem, onChangeData) => {
           return (
-            <UserInterface
-              mode="display"
-              components={[{ ...valueComponent, hideLabel: true }]}
-              data={dataItem}
-              onChangeData={onChangeData}
-            />
+            <DataPathContext path="valueComponent">
+              <ComponentRenderer
+                componentLimit={1}
+                components={[{ ...valueComponent, hideLabel: true }]}
+                data={dataItem}
+                onChangeData={onChangeData}
+              />
+            </DataPathContext>
           )
         }}
         valueLabel={valueComponent.label}

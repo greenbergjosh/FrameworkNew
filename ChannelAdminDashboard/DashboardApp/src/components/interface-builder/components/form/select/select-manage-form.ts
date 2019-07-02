@@ -41,6 +41,10 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                       value: "remote-config",
                     },
                     {
+                      label: "Remote (Key Value Pair)",
+                      value: "remote-kvp",
+                    },
+                    {
                       label: "Remote (Query)",
                       value: "remote-query",
                     },
@@ -92,6 +96,27 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                     {
                       "===": [
                         "remote-query",
+                        {
+                          var: ["dataHandlerType"],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+              {
+                key: "remoteKeyValuePair",
+                valueKey: "remoteKeyValuePair",
+                label: "Remote Key Value Pair",
+                component: "select",
+                help: "User must select from configured Key Value Pairs.",
+                dataHandlerType: "remote-config",
+                remoteConfigType: "KeyValuePairs",
+                visibilityConditions: {
+                  and: [
+                    {
+                      "===": [
+                        "remote-kvp",
                         {
                           var: ["dataHandlerType"],
                         },

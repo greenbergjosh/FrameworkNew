@@ -1,5 +1,18 @@
 import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Icon,
+  Skeleton,
+  Tabs,
+  Tag,
+  Tree,
+  Typography
+  } from "antd"
 import { TreeNode } from "antd/lib/tree-select"
 import { fromEither, none, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
@@ -16,19 +29,6 @@ import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Form,
-  Icon,
-  Skeleton,
-  Tree,
-  Typography,
-  Tag,
-  Tabs,
-} from "antd"
 
 interface Props {
   configId: string

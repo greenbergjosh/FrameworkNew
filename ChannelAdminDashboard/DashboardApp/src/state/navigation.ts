@@ -318,7 +318,7 @@ const staticRoutesMap = {
         subroutes: {},
       },
       reports: {
-        abs: "/dashboard/reports/",
+        abs: "/dashboard/reports",
         // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
         component: Reports,
         description: "Generate and export reports",

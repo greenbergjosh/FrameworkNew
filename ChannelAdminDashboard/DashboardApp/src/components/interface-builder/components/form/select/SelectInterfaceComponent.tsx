@@ -7,6 +7,7 @@ import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
 import { set } from "lodash/fp"
 import React from "react"
+import { KeyValuePairConfig } from "../../../../../data/AdminApi"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { QueryConfig } from "../../../../../data/Report"
 import { cheapHash } from "../../../../../lib/json"
@@ -25,7 +26,7 @@ interface SelectOption {
 }
 
 type LocalDataHandlerType = "local"
-type RemoteDataHandlerType = "remote-config" | "remote-query" | "remote-url"
+type RemoteDataHandlerType = "remote-config" | "remote-kvp" | "remote-query" | "remote-url"
 
 export interface ISelectInterfaceComponentProps extends ComponentDefinitionNamedProps {
   allowClear: boolean
@@ -57,6 +58,12 @@ interface SelectInterfaceComponentPropsRemoteConfigData extends ISelectInterface
   remoteDataFilter?: JSONObject
 }
 
+interface SelectInterfaceComponentPropsRemoteKeyValueData extends ISelectInterfaceComponentProps {
+  dataHandlerType: "remote-kvp"
+  remoteKeyValuePair?: string
+  remoteDataFilter: JSONObject
+}
+
 interface SelectInterfaceComponentPropsRemoteQueryData extends ISelectInterfaceComponentProps {
   dataHandlerType: "remote-query"
   remoteQuery?: string
@@ -71,6 +78,7 @@ interface SelectInterfaceComponentPropsRemoteURLData extends ISelectInterfaceCom
 export type SelectInterfaceComponentProps = (
   | SelectInterfaceComponentPropsLocalData
   | SelectInterfaceComponentPropsRemoteConfigData
+  | SelectInterfaceComponentPropsRemoteKeyValueData
   | SelectInterfaceComponentPropsRemoteQueryData
   | SelectInterfaceComponentPropsRemoteURLData) &
   ComponentRenderMetaProps
@@ -150,6 +158,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     // Is the current handler type a remote data type?
     return (
       dataHandlerType === "remote-config" ||
+      dataHandlerType === "remote-kvp" ||
       dataHandlerType === "remote-query" ||
       dataHandlerType === "remote-url"
     )
@@ -158,6 +167,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
   loadRemoteData = () => {
     if (
       (this.props.dataHandlerType === "remote-config" ||
+        this.props.dataHandlerType === "remote-kvp" ||
         this.props.dataHandlerType === "remote-query") &&
       this.context
     ) {
@@ -223,10 +233,33 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
                   query: queryConfig.query,
                   params: {},
                 })
-                return
               }
             }
           }
+          return
+        }
+        case "remote-kvp": {
+          if (this.props.remoteKeyValuePair) {
+            const keyValuePairId = this.props.remoteKeyValuePair as Branded<
+              string,
+              NonEmptyStringBrand
+            >
+            const keyValuePairGlobalConfig = loadById(keyValuePairId)
+            if (keyValuePairGlobalConfig) {
+              const keyValuePairConfig = tryCatch(
+                () =>
+                  JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig
+              ).toNullable()
+
+              if (keyValuePairConfig) {
+                const options =
+                  keyValuePairConfig.items &&
+                  keyValuePairConfig.items.map(({ key: value, value: label }) => ({ label, value }))
+                this.setState({ options })
+              }
+            }
+          }
+          return
         }
       }
 
@@ -255,7 +288,10 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
           this.props.remoteConfigType !== prevProps.remoteConfigType) ||
         (this.props.dataHandlerType === "remote-query" &&
           prevProps.dataHandlerType === "remote-query" &&
-          this.props.remoteQuery !== prevProps.remoteQuery)) &&
+          this.props.remoteQuery !== prevProps.remoteQuery) ||
+        (this.props.dataHandlerType === "remote-kvp" &&
+          prevProps.dataHandlerType === "remote-kvp" &&
+          this.props.remoteKeyValuePair !== prevProps.remoteKeyValuePair)) &&
       SelectInterfaceComponent.isRemoteDataType(this.props.dataHandlerType)
     ) {
       this.loadRemoteData()
@@ -264,19 +300,52 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
 
   getCleanValue = () => {
     const { defaultValue, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
+    const { options } = this.state
 
     const rawValue =
       typeof userInterfaceData[valueKey] !== "undefined"
         ? (userInterfaceData[valueKey] as string | string[])
         : defaultValue
 
-    const result =
+    const anyCaseResult =
       rawValue &&
       (Array.isArray(rawValue)
-        ? rawValue.map((value) => cleanText(value, valuePrefix, valueSuffix).toLowerCase())
-        : cleanText(rawValue, valuePrefix, valueSuffix).toLowerCase())
+        ? rawValue.map(
+            (value) => cleanText(value, valuePrefix, valueSuffix) //.toLowerCase()
+          )
+        : cleanText(rawValue, valuePrefix, valueSuffix)) //.toLowerCase()
 
-    return result
+    console.log("SelectInterfaceComponent.getCleanValue", { anyCaseResult, options })
+    if (!Array.isArray(anyCaseResult)) {
+      return (
+        options &&
+        (
+          options.find(
+            ({ value }) =>
+              (console.log("SelectInterfaceComponent.getCleanValue X1", { value, anyCaseResult }),
+              0) ||
+              (value && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
+          ) || { value: anyCaseResult }
+        ).value
+      )
+    } else {
+      return options
+        ? anyCaseResult.map(
+            (resultItem) =>
+              (
+                options.find(
+                  ({ value }) =>
+                    (console.log("SelectInterfaceComponent.getCleanValue X2", {
+                      value,
+                      resultItem,
+                    }),
+                    0) ||
+                    (value && value.toLowerCase()) === (resultItem && resultItem.toLowerCase())
+                ) || { value: resultItem }
+              ).value
+          )
+        : anyCaseResult
+    }
   }
 
   render(): JSX.Element {
@@ -290,9 +359,13 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         allowClear={allowClear}
         defaultValue={value}
         disabled={disabled}
+        filterOption={(input: any, option: any) =>
+          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+        }
         loading={loadStatus === "loading"}
         mode={multiple ? "multiple" : "default"}
         onChange={this.handleChange}
+        optionFilterProp="label"
         placeholder={placeholder}
         showSearch>
         {options.map((option) => (
@@ -306,7 +379,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
 }
 
 const cleanText = (text: string, prefix?: string, suffix?: string) => {
-  const noPrefix = text && prefix && text.startsWith(prefix) ? text.substring(text.length) : text
+  const noPrefix = text && prefix && text.startsWith(prefix) ? text.substring(prefix.length) : text
   const noSuffix =
     noPrefix && suffix && noPrefix.endsWith(suffix)
       ? noPrefix.substr(0, noPrefix.length - suffix.length)

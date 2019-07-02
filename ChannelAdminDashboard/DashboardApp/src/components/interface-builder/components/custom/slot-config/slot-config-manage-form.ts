@@ -40,6 +40,7 @@ const slotConfigManageFormDefinition: Partial<ComponentDefinition>[] = [
                 placeholder: "Select an Action Type",
                 required: true,
                 dataHandlerType: "remote-config",
+                remoteConfigType: "KeyValuePairs",
               },
             ],
           },
