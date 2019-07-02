@@ -161,45 +161,38 @@ namespace Utility
             return taskCompletionSource.Task;
         }
 
-        static string _sep = Path.DirectorySeparatorChar.ToString();
-
-        public static async Task Redirect(
-            string bin,
-            string args,
-            string workingDir,
-            string inputFile,
-            string outputFile,
-            string platform = null)
+        static (string sh, string pre, string cmd) ShellPrep(string cmd, string platform)
         {
-            if (platform == null)
+            switch (platform ?? Environment.OSVersion.Platform.ToString())
             {
-                platform = Environment.OSVersion.Platform.ToString();
+                case "Win32NT":
+                    return (@"C:\\Windows\\System32\\cmd.exe", @"/c", cmd.Replace("\"", "\\\""));
+                case "Unix":
+                    return ("/bin/bash", "-c", cmd);
+                default:
+                    throw new ArgumentException("Cannot exec in shell for an unknown platform");
             }
+        }
 
-            var inf = workingDir + _sep + inputFile;
-            var outf = workingDir + _sep + outputFile;
-            var pProcess = new Process();
-            pProcess.StartInfo.WorkingDirectory = workingDir;
+        public static async Task<string> Shell(this string cmd, string platform = null)
+        {
+            var x = ShellPrep(cmd, platform);
 
-            if ("Win32NT" == platform)
+            var process = new Process()
             {
-                pProcess.StartInfo.FileName = @"C:\\Windows\\System32\\cmd.exe";
-                pProcess.StartInfo.Verb = "runas";
-                pProcess.StartInfo.Arguments = "/c " +
-                    Fs.QuotePathParts(bin) + args +
-                    Fs.QuotePathParts(inf) + " > " + Fs.QuotePathParts(outf);
-            }
-            else if ("Unix" == platform)
-            {
-                pProcess.StartInfo.FileName = "/bin/sh";
-                pProcess.StartInfo.Arguments = $"-c \"{bin} {args} {inf} > {outf}\"";
-                pProcess.StartInfo.UseShellExecute = false;
-                pProcess.StartInfo.CreateNoWindow = true;
-            }
-
-            pProcess.Start();
-            await pProcess.WaitForExitAsync();
-            pProcess.Close();
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = x.sh,
+                    Arguments = $"{x.pre} \"{x.cmd}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true
+                }
+            };
+            process.Start();
+            await process.WaitForExitAsync();
+            var error = process.StandardError.ReadToEnd();
+            return error;
         }
     }
 }
