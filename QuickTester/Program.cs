@@ -25,6 +25,7 @@ using Utility.EDW.Reporting;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
 using Random = Utility.Crypto.Random;
+using Ps = Utility.ProcessWrapper;
 
 namespace QuickTester
 {
@@ -38,8 +39,64 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
+        static async Task UnixWrapperTests(string[] args)
+        {
+            var cwd = Directory.GetCurrentDirectory();
+            try
+            {
+                var cmd = args[0];
+                var watch = new Stopwatch();
+
+                switch (cmd)
+                {
+                    case "search":
+                        var searchListF = args[2];
+                        var searchList = await File.ReadAllLinesAsync(
+                            $"{cwd}{Path.DirectorySeparatorChar}{searchListF}");
+
+                        watch.Restart();
+                        var result = await UnixWrapper.BinarySearchSortedMd5File(
+                            $"{cwd}{Path.DirectorySeparatorChar}{ args[1]}",
+                            searchList.ToList());
+                        watch.Stop();
+
+                        Console.WriteLine($"Timing: {watch.ElapsedMilliseconds}; " +
+                            $"Hits: {result.found.Count}; " +
+                            $"Misses: {result.notFound.Count}");
+                        break;
+
+                    case "sort":
+                        watch.Restart();
+                        await UnixWrapper.SortFile(cwd, args[1], args[2], false, false);
+                        watch.Stop();
+
+                        Console.WriteLine($"Timing: {watch.ElapsedMilliseconds}");
+                        break;
+
+                    case "diff":
+                        watch.Restart();
+                        await UnixWrapper.DiffFiles(args[1], args[2], cwd, args[3]);
+                        watch.Stop();
+
+                        Console.WriteLine($"Timing: {watch.ElapsedMilliseconds}");
+                        break;
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Usage:\n\t" +
+                    "diff \toldFile \tnewFile \tdiffFile\n\t" +
+                    "search \tsearchFile \tmd5KeyFile\n\t" +
+                    "sort \tinputFile \toutputFile\n\t");
+            }
+
+        }
+
         static async Task Main(string[] args)
         {
+            await UnixWrapperTests(args);
+            return;
+
             var rx = new Regex(@"^(?<drive>[^\s]+)\s+(?<mbBlocks>\d+)MB\s+(?<used>\d+)MB\s+(?<available>\d+)MB\s+(?<usePerc>\d+)%\s+(?<mountedOn>.+)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Multiline);
 
             var psi = new ProcessStartInfo
