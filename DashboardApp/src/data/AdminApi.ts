@@ -132,3 +132,11 @@ export function ServerException<T>(err: { reason: string }): ApiResponse<T> {
 export function Unauthorized<T>(): ApiResponse<T> {
   return ({ Unauthorized: f }) => f()
 }
+
+export interface KeyValuePair {
+  key: string
+  value: string
+}
+export interface KeyValuePairConfig {
+  items: KeyValuePair[]
+}

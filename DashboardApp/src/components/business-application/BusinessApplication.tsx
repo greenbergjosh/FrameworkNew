@@ -1,13 +1,13 @@
 import * as Reach from "@reach/router"
 import {
-    Button,
-    Card,
-    Col,
-    Empty,
-    PageHeader,
-    Row,
-    Typography
-    } from "antd"
+  Button,
+  Card,
+  Col,
+  Empty,
+  PageHeader,
+  Row,
+  Typography
+  } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
@@ -52,7 +52,10 @@ export const BusinessApplication = ({
     // reportDataByQuery: s.reports.reportDataByQuery,
   }))
 
-  const businessApplicationRecord = record.lookup(applicationId, fromStore.configsById)
+  const businessApplicationRecord = record.lookup(
+    applicationId.toLowerCase(),
+    fromStore.configsById
+  )
   const businessApplicationConfig = {
     ...DEFAULT_BUSINESS_APPLICATION_CONFIG,
     ...(businessApplicationRecord
@@ -87,7 +90,7 @@ export const BusinessApplication = ({
             <Card title="Reports" bordered={false}>
               {businessApplicationConfig.report.length ? (
                 businessApplicationConfig.report.map((reportId) => {
-                  const reportRecord = record.lookup(reportId, fromStore.configsById)
+                  const reportRecord = record.lookup(reportId.toLowerCase(), fromStore.configsById)
                   return reportRecord
                     .map((report) => (
                       <div key={report.id}>
@@ -107,7 +110,7 @@ export const BusinessApplication = ({
             <Card title="Contacts" bordered={false}>
               {businessApplicationConfig.owner.length ? (
                 businessApplicationConfig.owner.map((ownerId) => {
-                  const ownerRecord = record.lookup(ownerId, fromStore.configsById)
+                  const ownerRecord = record.lookup(ownerId.toLowerCase(), fromStore.configsById)
                   return ownerRecord
                     .map((owner) => (
                       <div key={owner.id}>
@@ -127,7 +130,7 @@ export const BusinessApplication = ({
               {businessApplicationConfig.application_config.length ? (
                 businessApplicationConfig.application_config.map((applicationConfigId) => {
                   const applicationConfigRecord = record.lookup(
-                    applicationConfigId,
+                    applicationConfigId.toLowerCase(),
                     fromStore.configsById
                   )
                   return applicationConfigRecord
@@ -151,7 +154,10 @@ export const BusinessApplication = ({
             <Card title="Import & Ingestion" bordered={false}>
               {businessApplicationConfig.ingest_config.length ? (
                 businessApplicationConfig.ingest_config.map((ingestConfigId) => {
-                  const ingestConfigRecord = record.lookup(ingestConfigId, fromStore.configsById)
+                  const ingestConfigRecord = record.lookup(
+                    ingestConfigId.toLowerCase(),
+                    fromStore.configsById
+                  )
                   return ingestConfigRecord
                     .map((ingestConfig) => (
                       <div key={ingestConfig.id}>
@@ -171,7 +177,10 @@ export const BusinessApplication = ({
             <Card title="Export" bordered={false}>
               {businessApplicationConfig.export_config.length ? (
                 businessApplicationConfig.export_config.map((exportConfigId) => {
-                  const exportConfigRecord = record.lookup(exportConfigId, fromStore.configsById)
+                  const exportConfigRecord = record.lookup(
+                    exportConfigId.toLowerCase(),
+                    fromStore.configsById
+                  )
                   return exportConfigRecord
                     .map((exportConfig) => (
                       <div key={exportConfig.id}>
@@ -183,7 +192,7 @@ export const BusinessApplication = ({
                     .toNullable()
                 })
               ) : (
-                <Empty description="No Configured Export" />
+                <Empty description="No Configured Exports" />
               )}
             </Card>
           </Col>

@@ -115,7 +115,9 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                       <Empty description={emptyText} />
                     )}
                   </div>
-                  <Button style={{ display: "block" }} onClick={this.handleAddClick}>
+                  <Button
+                    style={{ display: "block", marginTop: "10px", marginBottom: "10px" }}
+                    onClick={this.handleAddClick}>
                     {addItemLabel}
                   </Button>
                 </>

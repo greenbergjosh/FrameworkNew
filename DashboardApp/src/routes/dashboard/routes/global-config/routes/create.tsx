@@ -190,10 +190,13 @@ export function CreateGlobalConfig({
 
                     configOption.map(({ layout, entityTypes, configs }) => {
                       if (layout) {
-                        if (
+                        const entityTypesLower =
                           entityTypes &&
+                          entityTypes.map((entityType: string) => entityType.toLowerCase())
+                        if (
+                          entityTypesLower &&
                           entityTypeConfig
-                            .map(({ id }) => entityTypes.includes(id))
+                            .map(({ id }) => entityTypesLower.includes(id.toLowerCase()))
                             .getOrElse(false)
                         ) {
                           result.byEntityType.push(layout)
@@ -213,7 +216,10 @@ export function CreateGlobalConfig({
               if (collectedLayoutOverrides.byConfigId.length) {
                 // TODO: Eventually merge these layouts, perhaps?
                 const layout = record
-                  .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
+                  .lookup(
+                    collectedLayoutOverrides.byConfigId[0].toLowerCase(),
+                    fromStore.configsById
+                  )
                   .chain(({ config }) =>
                     tryCatch(
                       () => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
@@ -427,7 +433,7 @@ export function CreateGlobalConfig({
 }
 
 const initialFormState = {
-  config: "",
+  config: '{"lang":"json"}',
   name: "",
   type: "",
 }

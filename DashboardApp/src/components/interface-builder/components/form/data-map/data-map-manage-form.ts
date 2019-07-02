@@ -24,18 +24,6 @@ const dataMapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "value",
               },
               {
-                key: "labelComponent",
-                valueKey: "labelComponent",
-                label: "Label Component",
-                component: "component-picker",
-              },
-              {
-                key: "valueComponent",
-                valueKey: "valueComponent",
-                label: "Value Component",
-                component: "component-picker",
-              },
-              {
                 key: "multiple",
                 valueKey: "multiple",
                 label: "Multiple",
