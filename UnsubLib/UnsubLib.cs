@@ -136,9 +136,22 @@ namespace UnsubLib
 
             await _fw.Err(ErrorSeverity.Log, nameof(ForceUnsub), ErrorDescriptor.Log, $"Starting ForceUnsub: {forceName}");
 
-            var network = await Data.CallFn(Conn, "SelectNetwork", "{}", "");
+            var res = await Data.CallFn(Conn, "SelectNetwork", "{}", "");
+            var network = res?.GetL("");
 
-            foreach (var n in network.GetL(""))
+            if (network == null)
+            {
+                await _fw.Error(nameof(ForceUnsub), $"GetNetworks DB call failed. Response: {res?.GetS("")}");
+                return Jw.Serialize(new { Result = "Failed" });
+            }
+
+            if (!network.Any())
+            {
+                await _fw.Error(nameof(ForceUnsub), $"Network(s) not found. Response: {res.GetS("")}");
+                return Jw.Serialize(new { Result = "Failed" });
+            }
+
+            foreach (var n in network)
             {
                 var networkName = n.GetS("Name");
 
@@ -223,7 +236,11 @@ namespace UnsubLib
                             });
                             var res = await Data.CallFn(Conn, "MergeNetworkCampaigns", args, campaignJson);
 
-                            unsubFiles.Add((cd.unsubFile, new[] { res }));
+                            if (res == null || res.GetS("result") == "failed")
+                            {
+                                await _fw.Error($"{nameof(ManualDirectory)}-{networkName}", $"Failed to merge campaings. Response: {res?.GetS("") ?? "[null]"}");
+                            }
+                            else unsubFiles.Add((cd.unsubFile, new[] { res }));
                         }
                         else
                         {
@@ -232,7 +249,7 @@ namespace UnsubLib
                             if (res?.GetS("Id").ParseGuid().HasValue != true)
                             {
                                 await _fw.Error($"{nameof(ManualJob)}-{networkName}",
-                                    $"Failed to retrieve campaign details from db: NetworkCampaignId:{networkCampaignId} NetworkId:{networkId}");
+                                    $"Failed to retrieve campaign details from db: NetworkCampaignId:{networkCampaignId} NetworkId:{networkId} Response: {res?.GetS("") ?? "[null]"}");
                                 continue;
                             }
 
@@ -243,6 +260,13 @@ namespace UnsubLib
                     {
                         var unsubRelId = cd.id;
                         var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Serialize(new { nr = unsubRelId, NetworkId = networkId }));
+
+                        if (res == null || res.GetS("result") == "failed")
+                        {
+                            await _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Campaign lookup failed. Response: {res?.GetS("") ?? "[null]"}");
+                            continue;
+                        }
+
                         var cmps = res?.GetL("").ToArray();
 
                         if (!cmps.Any())
@@ -290,6 +314,7 @@ namespace UnsubLib
         public async Task ScheduledUnsubJob(IGenericEntity network, string networkCampaignId = null)
         {
             // Get campaigns
+            var networkId = network.GetS("Id");
             var networkName = network.GetS("Name");
             var networkProvider = NetworkProviders.Factory.GetInstance(_fw, network);
 
@@ -318,7 +343,15 @@ namespace UnsubLib
             }
             else
             {
-                var campaign = (await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Json(new { NetworkId = network.GetS("Id") }), ""))
+                var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Json(new { NetworkId = networkId }), "");
+
+                if (res == null || res.GetS("result") == "failed")
+                {
+                    await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"Campaign lookup failed. Response: {res?.GetS("") ?? "[null]"}");
+                    return;
+                }
+
+                var campaign = res
                     .GetL("")?.FirstOrDefault(c => c.GetS("NetworkCampaignId") == networkCampaignId);
 
                 if (campaign == null)
@@ -414,7 +447,10 @@ namespace UnsubLib
                         campaignsWithPositiveDelta.Add(cmp.Key, cmp.Value);
                 }
 
-                await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
+                var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
+
+                if(res?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files for {networkName}. Response: {res?.GetS("")??"[null]"}");
+
             }
             catch (Exception exUpdateCampaigns)
             {
@@ -751,7 +787,14 @@ namespace UnsubLib
 
         public async Task CleanUnusedFiles()
         {
-            var campaigns = await Data.CallFn(Conn, "SelectNetworkCampaigns", "{}", ""); var refdFiles = new HashSet<string>();
+            var campaigns = await Data.CallFn(Conn, "SelectNetworkCampaigns", "{}", "");
+            var refdFiles = new HashSet<string>();
+
+            if (campaigns == null || campaigns.GetS("result") == "failed")
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"Campaign lookup failed. Response: {campaigns?.GetS("") ?? "[null]"}");
+                throw new HaltingException($"Campaign lookup failed. Response: {campaigns?.GetS("") ?? "[null]"}", null);
+            }
 
             foreach (var c in campaigns.GetL(""))
             {
@@ -819,18 +862,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+            }
 #if DEBUG
             }
 #endif
@@ -856,11 +899,6 @@ namespace UnsubLib
                 await _fw.Error(nameof(CleanUnusedFilesServer), $"CleanUnusedFilesServer: " + exClean.ToString());
             }
             return Jw.Json(new { Result = "Success" });
-        }
-
-        public async Task<IGenericEntity> GetNetworkConfiguration(string conString, string networkName)
-        {
-            return await Data.CallFn(Conn, "SelectNetwork", Jw.Json(new { NetworkName = networkName }), "");
         }
 
         public async Task<string> LoadUnsubFiles(IGenericEntity dtve)
@@ -1055,7 +1093,15 @@ namespace UnsubLib
         {
             try
             {
-                return await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Serialize(new { Base64Payload = true }));
+                var res = await Data.CallFn(Conn, "SelectNetworkCampaigns", Jw.Serialize(new { Base64Payload = true }));
+
+                if (res == null || res.GetS("result") == "failed")
+                {
+                    await _fw.Error(nameof(GetCampaigns), $"Campaign lookup failed. Response: {res?.GetS("") ?? "[null]"}");
+                    return null;
+                }
+
+                return res;
             }
             catch (Exception ex)
             {

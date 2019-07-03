@@ -43,6 +43,7 @@ namespace UnsubLib.NetworkProviders
             {
                 var networkName = network.GetS("Name");
                 var networkId = network.GetS("Id");
+                var dataPath = network.GetS("Credentials/CampaignDataPath");
                 var relationshipPath = network.GetS("Credentials/UnsubRelationshipPath");
                 var campaignIdPath = network.GetS("Credentials/CampaignIdPath");
                 var campaignNamePath = network.GetS("Credentials/CampaignNamePath");
@@ -58,18 +59,18 @@ namespace UnsubLib.NetworkProviders
                     if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
                     var jbody = Jw.TryParseObject(resp.body);
 
-                    if(jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
+                    if (jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
 
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                     respBody = resp.body;
-                    
+
                     var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,
                             PayloadType = "json",
-                            DataPath = "$.data",
+                            DataPath = dataPath,
                             CampaignIdPath = campaignIdPath,
                             NamePath = campaignNamePath,
                             RelationshipPath = relationshipPath
