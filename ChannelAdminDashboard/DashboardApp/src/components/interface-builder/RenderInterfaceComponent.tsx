@@ -52,11 +52,12 @@ export class RenderInterfaceComponent extends React.Component<
     } = this.props
     const { error } = this.state
 
-    if (
+    const shouldBeHidden =
       componentDefinition.hidden ||
       (componentDefinition.visibilityConditions &&
         !jsonLogic.apply(componentDefinition.visibilityConditions, data))
-    ) {
+
+    if (shouldBeHidden) {
       return null
     }
 
