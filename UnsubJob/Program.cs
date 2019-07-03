@@ -23,7 +23,7 @@ namespace UnsubJob
             var nw = new UnsubLib.UnsubLib(Fw);
 
             IEnumerable<IGenericEntity> networks = null;
-            
+
             try
             {
                 await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
@@ -53,11 +53,19 @@ namespace UnsubJob
 
             try
             {
-                networks = (await nw.GetNetworks(singleNetworkName))?.GetL("");
+                var res = await nw.GetNetworks(singleNetworkName);
+
+                networks = res?.GetL("");
+
+                if (networks == null)
+                {
+                    await Fw.Error(nameof(Main), $"GetNetworks DB call failed. Response: {res?.GetS("")}");
+                    return;
+                }
 
                 if (!networks.Any())
                 {
-                    await Fw.Error(nameof(Main), $"Network(s) not found {args.Join(" ")}");
+                    await Fw.Error(nameof(Main), $"Network(s) not found {args.Join(" ")}  Response: {res?.GetS("")}");
                     return;
                 }
             }
