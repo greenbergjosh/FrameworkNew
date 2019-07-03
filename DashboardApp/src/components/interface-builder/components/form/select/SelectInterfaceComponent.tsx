@@ -5,7 +5,7 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
-import { set } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { KeyValuePairConfig } from "../../../../../data/AdminApi"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
@@ -173,7 +173,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     ) {
       const { loadById, loadByFilter, executeQuery } = this.context
       const { remoteDataFilter } = this.props
-      console.log("SelectInterfaceComponent.loadRemoteData", this.props, loadByFilter)
+      // console.log("SelectInterfaceComponent.loadRemoteData", this.props, loadByFilter)
 
       switch (this.props.dataHandlerType) {
         case "remote-config": {
@@ -223,11 +223,11 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
               if (queryConfig) {
                 const queryResultURI = cheapHash(queryConfig.query, {})
 
-                console.log("SelectInterfaceComponent.loadRemoteData", "remote-query", "execute", {
-                  resultURI: queryResultURI,
-                  query: queryConfig.query,
-                  params: {},
-                })
+                // console.log("SelectInterfaceComponent.loadRemoteData", "remote-query", "execute", {
+                //   resultURI: queryResultURI,
+                //   query: queryConfig.query,
+                //   params: {},
+                // })
                 executeQuery({
                   resultURI: queryResultURI,
                   query: queryConfig.query,
@@ -303,8 +303,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     const { options } = this.state
 
     const rawValue =
-      typeof userInterfaceData[valueKey] !== "undefined"
-        ? (userInterfaceData[valueKey] as string | string[])
+      typeof get(valueKey, userInterfaceData) !== "undefined"
+        ? (get(valueKey, userInterfaceData) as string | string[])
         : defaultValue
 
     const anyCaseResult =
@@ -315,15 +315,15 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
           )
         : cleanText(rawValue, valuePrefix, valueSuffix)) //.toLowerCase()
 
-    console.log("SelectInterfaceComponent.getCleanValue", { anyCaseResult, options })
+    // console.log("SelectInterfaceComponent.getCleanValue", { anyCaseResult, options })
     if (!Array.isArray(anyCaseResult)) {
       return (
         options &&
         (
           options.find(
             ({ value }) =>
-              (console.log("SelectInterfaceComponent.getCleanValue X1", { value, anyCaseResult }),
-              0) ||
+              // (console.log("SelectInterfaceComponent.getCleanValue X1", { value, anyCaseResult }),
+              // 0) ||
               (value && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
           ) || { value: anyCaseResult }
         ).value
@@ -335,11 +335,11 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
               (
                 options.find(
                   ({ value }) =>
-                    (console.log("SelectInterfaceComponent.getCleanValue X2", {
-                      value,
-                      resultItem,
-                    }),
-                    0) ||
+                    // (console.log("SelectInterfaceComponent.getCleanValue X2", {
+                    //   value,
+                    //   resultItem,
+                    // }),
+                    // 0) ||
                     (value && value.toLowerCase()) === (resultItem && resultItem.toLowerCase())
                 ) || { value: resultItem }
               ).value
@@ -356,6 +356,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
 
     return (
       <Select
+        key={value && value.toString()}
         allowClear={allowClear}
         defaultValue={value}
         disabled={disabled}

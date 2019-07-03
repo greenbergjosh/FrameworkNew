@@ -1,3 +1,4 @@
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterface, UserInterfaceProps } from "../../../UserInterface"
 import { userInterfaceManageForm } from "./user-interface-manage-form"
@@ -58,8 +59,8 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
 
   handleChangeSchema = (schema: ComponentDefinition[]) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    console.log("UserInterfaceInterfaceComponent.handleChangeSchema", schema, onChangeData)
-    onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: schema })
+    // console.log("UserInterfaceInterfaceComponent.handleChangeSchema", schema, onChangeData)
+    onChangeData && onChangeData(set(valueKey, schema, userInterfaceData))
   }
 
   render(): JSX.Element {
@@ -67,7 +68,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
     const { data } = this.state
     return (
       <UserInterface
-        components={userInterfaceData[valueKey] || defaultValue}
+        components={get(valueKey, userInterfaceData) || defaultValue}
         data={data}
         mode="edit"
         onChangeData={this.handleChangeData}

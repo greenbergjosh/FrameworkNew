@@ -66,16 +66,6 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = dataMapManageForm
 
-  static getDefintionDefaultValue({  }: DataMapInterfaceComponentProps) {
-    return []
-  }
-
-  handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
-    const { onChangeData, userInterfaceData } = this.props
-
-    onChangeData && onChangeData({ ...userInterfaceData })
-  }
-
   render(): JSX.Element {
     const {
       count,

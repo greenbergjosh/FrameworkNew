@@ -1,6 +1,8 @@
+import Component from "@reach/component-component"
 import { Option } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
+import { ComponentDefinition } from "../components/interface-builder/components/base/BaseInterfaceComponent"
 import { JSONRecord, JSONRecordCodec } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
@@ -31,7 +33,7 @@ export type LocalReportConfig = {
   type: "ReportConfig"
   query: string
   columns: [iots.UnknownRecordC]
-  details: string
+  details: string | ReportDetails | LocalReportConfig
 }
 export const ReportConfigCodec = iots.recursion<
   LocalReportConfig,
@@ -176,3 +178,37 @@ export const QueryConfigCodec = iots.taggedUnion("format", [
   SQLQueryConfigCodec,
   StoredProcQueryConfigCodec,
 ])
+
+export interface IReportDetails {
+  type: "report" | "layout"
+}
+
+export interface IReportDetailsAsReport extends IReportDetails {
+  type: "report"
+  reportType: "inline" | "config"
+}
+
+export interface ReportDetailsAsInlineReport extends IReportDetailsAsReport {
+  type: "report"
+  reportType: "inline"
+  data: LocalReportConfig
+}
+
+export interface ReportDetailsAsConfigReport extends IReportDetailsAsReport {
+  type: "report"
+  reportType: "config"
+  report: GlobalConfigReference["id"]
+}
+
+export interface ReportDetailsAsLayout extends IReportDetails {
+  type: "layout"
+  layout: ComponentDefinition[]
+}
+
+export type ReportDetailsAsReport = ReportDetailsAsInlineReport | ReportDetailsAsConfigReport
+export type ReportDetails = ReportDetailsAsReport | ReportDetailsAsLayout
+
+export interface SimpleLayoutConfig {
+  type: "SimpleLayoutConfig"
+  layout: ComponentDefinition[]
+}

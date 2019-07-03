@@ -1,3 +1,4 @@
+import { get, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -34,7 +35,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
 
   render() {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    const dataArray = userInterfaceData[valueKey] || []
+    const dataArray = get(valueKey, userInterfaceData) || []
 
     return (
       <ComponentRendererModeContext.Consumer>
@@ -49,12 +50,12 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
               data={data}
               dragDropDisabled
               onChangeData={(newData) => {
-                console.log("TableInterfaceComponent.render", "onChangeData", { data, newData })
-                console.log("TableInterfaceComponent.render", "onChangeData2", {
-                  userInterfaceData,
-                  userInterfaceData2: { ...userInterfaceData, [valueKey]: newData.columns },
-                })
-                onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: newData.columns })
+                // console.log("TableInterfaceComponent.render", "onChangeData", { data, newData })
+                // console.log("TableInterfaceComponent.render", "onChangeData2", {
+                //   userInterfaceData,
+                //   userInterfaceData2: set(valueKey, newData.columns, userInterfaceData),
+                // })
+                onChangeData && onChangeData(set(valueKey, newData.columns, userInterfaceData))
               }}
             />
           )

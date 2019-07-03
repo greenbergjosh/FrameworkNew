@@ -1,4 +1,5 @@
 import { Switch } from "antd"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { toggleManageForm } from "./toggle-manage-form"
@@ -14,16 +15,10 @@ export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
-  value: boolean
-}
-
-interface ToggleInterfaceComponentState {
-  value: boolean
 }
 
 export class ToggleInterfaceComponent extends BaseInterfaceComponent<
-  ToggleInterfaceComponentProps,
-  ToggleInterfaceComponentState
+  ToggleInterfaceComponentProps
 > {
   static defaultProps = {
     valueKey: "value",
@@ -48,15 +43,13 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
 
   handleChange = (checked: boolean) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: checked })
+    onChangeData && onChangeData(set(valueKey, checked, userInterfaceData))
   }
 
   render(): JSX.Element {
-    const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
-    const value =
-      typeof userInterfaceData[valueKey] !== "undefined"
-        ? userInterfaceData[valueKey]
-        : defaultValue
+    const { defaultValue, userInterfaceData, valueKey } = this.props
+    const rawValue = get(valueKey, userInterfaceData)
+    const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     return <Switch onChange={this.handleChange} checked={value} />
   }
 }

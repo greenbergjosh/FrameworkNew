@@ -1,3 +1,4 @@
+import { get, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -56,7 +57,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
       valueKey,
     } = this.props
 
-    const dataArray = userInterfaceData[valueKey] || defaultValue || []
+    const dataArray = get(valueKey, userInterfaceData) || defaultValue || []
 
     const components: ComponentDefinition[] = [
       {
@@ -95,10 +96,13 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
         dragDropDisabled
         onChangeData={(newData) => {
           onChangeData &&
-            onChangeData({
-              ...userInterfaceData,
-              [valueKey]: newData.data.map(({ value }: { value: any }) => value),
-            })
+            onChangeData(
+              set(
+                valueKey,
+                newData.data.map(({ value }: { value: any }) => value),
+                userInterfaceData
+              )
+            )
         }}
       />
     )

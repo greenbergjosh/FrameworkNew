@@ -13,6 +13,7 @@ import { InputInterfaceComponent } from "./components/form/input/InputInterfaceC
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
+import { RemoteComponentInterfaceComponent } from "./components/special/remote-component/RemoteComponentInterfaceComponent"
 import { UserInterfaceInterfaceComponent } from "./components/special/user-interface/UserInterfaceInterfaceComponent"
 
 export interface ComponentRegistry {
@@ -35,6 +36,7 @@ export const registry: ComponentRegistry = {
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
+    "remote-component": RemoteComponentInterfaceComponent,
     select: SelectInterfaceComponent,
     tabs: TabsInterfaceComponent,
     table: TableInterfaceComponent,

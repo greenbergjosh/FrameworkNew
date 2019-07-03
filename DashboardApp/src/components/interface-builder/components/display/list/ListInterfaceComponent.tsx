@@ -1,6 +1,6 @@
 import { Button, Empty } from "antd"
 import classNames from "classnames"
-import { set } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../../DataPathContext"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
@@ -58,10 +58,13 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     const { components, interleave, onChangeData, userInterfaceData, valueKey } = this.props
     const entriesToAdd = interleave === "set" ? components.map(() => ({})) : [{}]
     onChangeData &&
-      onChangeData({
-        ...userInterfaceData,
-        [valueKey]: [...(userInterfaceData[valueKey] || []), ...entriesToAdd],
-      })
+      onChangeData(
+        set(
+          valueKey,
+          [...(get(valueKey, userInterfaceData) || []), ...entriesToAdd],
+          userInterfaceData
+        )
+      )
   }
 
   render() {
@@ -77,7 +80,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     } = this.props
 
     // Get the list data from the data set
-    const data = userInterfaceData[valueKey] || []
+    const data = get(valueKey, userInterfaceData) || []
     return (
       <ComponentRendererModeContext.Consumer>
         {(mode) => {
@@ -132,7 +135,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     componentLimit={1}
                     data={data}
                     onChangeData={(newData) =>
-                      onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: newData })
+                      onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
                     }
                   />
                 </DataPathContext>

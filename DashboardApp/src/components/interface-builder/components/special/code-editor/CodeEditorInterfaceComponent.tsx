@@ -1,6 +1,6 @@
 import { init } from "@rematch/core"
 import { some } from "fp-ts/lib/Option"
-import { set } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { CodeEditor } from "../../../../code-editor"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -54,16 +54,16 @@ export class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
 
   handleChange = ({ value: newValue }: { value: string }) => {
     const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
-    const value = userInterfaceData[valueKey] || defaultValue
+    const value = get(valueKey, userInterfaceData) || defaultValue
     if ((newValue || "") !== (value || "")) {
-      set(valueKey, value, userInterfaceData)
+      onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
     }
   }
 
   render(): JSX.Element {
     const { defaultLanguage, defaultTheme, defaultValue, userInterfaceData, valueKey } = this.props
 
-    const value = userInterfaceData[valueKey] || defaultValue
+    const value = get(valueKey, userInterfaceData) || defaultValue
 
     return (
       <CodeEditor

@@ -1,5 +1,6 @@
 import { Checkbox } from "antd"
 import { CheckboxChangeEvent } from "antd/lib/checkbox"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { checkboxManageForm } from "./checkbox-manage-form"
@@ -51,19 +52,19 @@ export class CheckboxInterfaceComponent extends BaseInterfaceComponent<
 
     const { defaultValue, userInterfaceData, valueKey } = props
 
-    this.state = { value: userInterfaceData[valueKey] || defaultValue || false }
+    this.state = { value: get(valueKey, userInterfaceData) || defaultValue || false }
   }
 
   handleChange = ({ target: { checked } }: CheckboxChangeEvent) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: checked })
+    onChangeData && onChangeData(set(valueKey, checked, userInterfaceData))
   }
 
   render(): JSX.Element {
     const { defaultValue, userInterfaceData, valueKey } = this.props
+    const rawValue = get(valueKey, userInterfaceData)
 
-    const value =
-      typeof userInterfaceData[valueKey] === "boolean" ? userInterfaceData[valueKey] : defaultValue
+    const value = typeof rawValue === "boolean" ? rawValue : defaultValue
     return <Checkbox onChange={this.handleChange} checked={value} />
   }
 }

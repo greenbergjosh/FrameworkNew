@@ -6,11 +6,23 @@ import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { JSONRecord } from "../../data/JSON"
-import { LocalReportConfig, ParameterItem, QueryConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
 import { cheapHash } from "../../lib/json"
+import { UserInterface } from "../interface-builder/UserInterface"
 import { QueryForm } from "./QueryForm"
 import { Report } from "./Report"
+import {
+  GlobalConfigReference,
+  LocalReportConfig,
+  ParameterItem,
+  QueryConfig,
+  RemoteReportConfig,
+  ReportDetails,
+  ReportDetailsAsReport,
+  ReportDetailsAsLayout,
+  LayoutItem,
+  SimpleLayoutConfig,
+} from "../../data/Report"
 import {
   Aggregate,
   ColumnChooser,
@@ -155,24 +167,15 @@ export const ReportBody = React.memo(
     ])
 
     const createDetailTemplate = React.useMemo(
-      () =>
-        reportConfig.details
-          ? (parentData: JSONRecord) => (
-              <Report
-                report={{ type: "GlobalConfigReference", id: reportConfig.details }}
-                data={{
-                  ...flattenObject(parameterValues.getOrElse(record.empty)),
-                  ...flattenObject(parentData),
-                }}
-              />
-            )
-          : "",
+      () => reportDetailsToComponent(reportConfig.details, parameterValues.toUndefined()),
       [parameterValues, reportConfig.details]
     )
 
     return (
       <>
-        {(reportId.isSome() || title !== undefined || !isEmpty(unsatisfiedByParentParams)) && (
+        {(reportId.isSome() ||
+          typeof title !== "undefined" ||
+          !isEmpty(unsatisfiedByParentParams)) && (
           <PageHeader
             extra={reportId.fold(null, (id) => (
               <Button.Group size="small">
@@ -290,4 +293,65 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => ({
       grid.current.pdfExport()
     }
   }
+}
+
+const reportDetailsToComponent = (
+  details: string | ReportDetails | LocalReportConfig,
+  parameterValues?: JSONRecord
+) => {
+  const resolved = resolveDetails(details)
+  console.log("ReportBody.reportDetailsToComponent", { details, resolved })
+  if (resolved) {
+    if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
+      return (parentData: JSONRecord) => (
+        <Report
+          report={resolved}
+          data={{
+            ...flattenObject(parameterValues || record.empty),
+            ...flattenObject(parentData),
+          }}
+        />
+      )
+    } else if (resolved.type === "SimpleLayoutConfig") {
+      return (parentData: JSONRecord) => (
+        <UserInterface
+          mode="display"
+          components={resolved.layout}
+          data={{
+            ...flattenObject(parameterValues || record.empty),
+            ...flattenObject(parentData),
+          }}
+        />
+      )
+    }
+  }
+
+  return null
+}
+
+const resolveDetails = (
+  details: string | ReportDetails | LocalReportConfig | SimpleLayoutConfig
+): GlobalConfigReference | LocalReportConfig | SimpleLayoutConfig | null => {
+  if (!details) {
+    return null
+  } else if (typeof details === "string") {
+    return { type: "GlobalConfigReference", id: details } as GlobalConfigReference
+  } else if (details.type === "report") {
+    if (details.reportType === "config") {
+      return { type: "GlobalConfigReference", id: details.report } as GlobalConfigReference
+    } else if (details.reportType === "inline") {
+      return {
+        type: "ReportConfig",
+        columns: details.data.columns,
+        details: resolveDetails(details.data.details),
+        query: details.data.query,
+      } as LocalReportConfig
+    }
+  } else if (details.type === "layout") {
+    return { type: "SimpleLayoutConfig", layout: details.layout } as SimpleLayoutConfig
+  } else if (details.type === "ReportConfig" || details.type === "SimpleLayoutConfig") {
+    return details
+  }
+
+  return null
 }

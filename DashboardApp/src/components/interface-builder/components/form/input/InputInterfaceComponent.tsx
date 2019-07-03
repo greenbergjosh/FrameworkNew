@@ -1,5 +1,5 @@
 import { Form, Input } from "antd"
-import { throttle } from "lodash/fp"
+import { get, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { inputManageForm } from "./input-manage-form"
@@ -48,14 +48,12 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
 
   handleChange = ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData({ ...userInterfaceData, [valueKey]: value })
+    onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
   }
   render(): JSX.Element {
     const { defaultValue, userInterfaceData, valueKey } = this.props
-    const value =
-      typeof userInterfaceData[valueKey] !== "undefined"
-        ? userInterfaceData[valueKey]
-        : defaultValue
+    const rawValue = get(valueKey, userInterfaceData)
+    const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     return <Input onChange={this.handleChange} value={value} />
   }
 }
