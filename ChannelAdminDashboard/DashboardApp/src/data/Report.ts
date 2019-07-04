@@ -26,7 +26,6 @@ export const LayoutItemCodec = iots.taggedUnion("component", [
 export type RemoteReportConfig = {
   type: "ReportConfig"
   query: string
-  // layout: LayoutItem
   details: string
 }
 export type LocalReportConfig = {

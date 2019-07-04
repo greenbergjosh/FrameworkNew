@@ -322,7 +322,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                   </ConfirmableDeleteButton>
                 </Button.Group>
               }
-              title={`Create Config`}>
+              title={`Edit Config`}>
               <Form
                 id="edit-config-form"
                 labelAlign="left"

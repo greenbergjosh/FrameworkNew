@@ -10,6 +10,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
+  getDefaultsFromComponentDefinitions,
 } from "../../base/BaseInterfaceComponent"
 
 export interface ListInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -28,6 +29,7 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+  preconfigured?: boolean
 }
 
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
@@ -56,7 +58,18 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
 
   handleAddClick = () => {
     const { components, interleave, onChangeData, userInterfaceData, valueKey } = this.props
-    const entriesToAdd = interleave === "set" ? components.map(() => ({})) : [{}]
+    const entriesToAdd =
+      interleave === "set"
+        ? components.map((component, index) => getDefaultsFromComponentDefinitions([component]))
+        : interleave === "none"
+        ? [getDefaultsFromComponentDefinitions([components[0]])]
+        : interleave === "round-robin"
+        ? [
+            getDefaultsFromComponentDefinitions([
+              components[(get(valueKey, userInterfaceData) || []) % components.length],
+            ]),
+          ]
+        : []
     onChangeData &&
       onChangeData(
         set(
@@ -75,6 +88,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       interleave,
       onChangeData,
       orientation,
+      preconfigured,
       userInterfaceData,
       valueKey,
     } = this.props
@@ -134,6 +148,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     components={components}
                     componentLimit={1}
                     data={data}
+                    dragDropDisabled={!!preconfigured}
                     onChangeData={(newData) =>
                       onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
                     }

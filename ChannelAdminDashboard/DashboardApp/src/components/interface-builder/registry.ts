@@ -3,6 +3,7 @@ import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent
 import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
 import { CardInterfaceComponent } from "./components/display/card/CardInterfaceComponent"
 import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
+import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
@@ -37,6 +38,7 @@ export const registry: ComponentRegistry = {
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
     "remote-component": RemoteComponentInterfaceComponent,
+    "sectioned-navigation": SectionedNavigationInterfaceComponent,
     select: SelectInterfaceComponent,
     tabs: TabsInterfaceComponent,
     table: TableInterfaceComponent,

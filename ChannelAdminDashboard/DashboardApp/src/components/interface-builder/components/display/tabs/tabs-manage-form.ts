@@ -25,6 +25,7 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "tabNames",
+                valueKey: "tabNames",
                 ordinal: 20,
                 component: "list",
                 components: [

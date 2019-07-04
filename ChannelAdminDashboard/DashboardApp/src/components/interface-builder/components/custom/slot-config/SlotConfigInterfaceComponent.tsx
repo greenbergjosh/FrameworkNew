@@ -20,11 +20,8 @@ export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNa
   valueKey: string
 }
 
-interface SlotConfigInterfaceComponentState {}
-
 export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
-  SlotConfigInterfaceComponentProps,
-  SlotConfigInterfaceComponentState
+  SlotConfigInterfaceComponentProps
 > {
   static defaultProps = {
     valueKey: "seqs",

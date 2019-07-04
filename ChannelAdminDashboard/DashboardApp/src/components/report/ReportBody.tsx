@@ -29,6 +29,7 @@ import {
   DetailDataBoundEventArgs,
   DetailRow,
   ExcelExport,
+  FilterSettingsModel,
   Freeze,
   GridComponent,
   GridModel,
@@ -37,6 +38,7 @@ import {
   Resize,
   Sort,
   Toolbar,
+  Filter,
 } from "@syncfusion/ej2-react-grids"
 
 const commonGridOptions = {
@@ -50,35 +52,40 @@ const commonGridOptions = {
   allowResizing: true,
   allowReordering: true,
   allowSorting: true,
+  allowFiltering: true,
 }
 
-const gridColumns = [
-  {
-    field: "Date",
-    type: "date",
-    format: { type: "date", format: "yyyy-MM-dd" },
-    width: "100",
-  },
-  {
-    field: "VisitCount",
-    width: "100",
-  },
-]
+// const gridColumns = [
+//   {
+//     field: "Date",
+//     type: "date",
+//     format: { type: "date", format: "yyyy-MM-dd" },
+//     width: "100",
+//   },
+//   {
+//     field: "VisitCount",
+//     width: "100",
+//   },
+// ]
 
-const childGridOptions: GridModel = {
-  allowResizing: true,
-  queryString: "Date",
-  columns: [
-    { field: "Domain", textAlign: "Right", width: 120 },
-    { field: "Publisher", width: 80 },
-    { field: "Slot", width: 50 },
-    { field: "Page", width: 50 },
-    { field: "MD5 Provider", width: 120 },
-    { field: "MD5ProviderId", width: 150 },
-    { field: "Selected", width: 50 },
-    { field: "Responded", width: 50 },
-    { field: "Succeeded", width: 50 },
-  ],
+// const childGridOptions: GridModel = {
+//   allowResizing: true,
+//   queryString: "Date",
+//   columns: [
+//     { field: "Domain", textAlign: "Right", width: 120 },
+//     { field: "Publisher", width: 80 },
+//     { field: "Slot", width: 50 },
+//     { field: "Page", width: 50 },
+//     { field: "MD5 Provider", width: 120 },
+//     { field: "MD5ProviderId", width: 150 },
+//     { field: "Selected", width: 50 },
+//     { field: "Responded", width: 50 },
+//     { field: "Succeeded", width: 50 },
+//   ],
+// }
+
+const filterSettings: FilterSettingsModel = {
+  type: "Menu",
 }
 
 export interface ReportBodyProps {
@@ -199,6 +206,7 @@ export const ReportBody = React.memo(
           <PureGridComponent
             ref={grid}
             {...commonGridOptions}
+            filterSettings={filterSettings}
             toolbarClick={handleToolbarClick}
             detailTemplate={createDetailTemplate}
             dataSource={queryResultData.getOrElse(emptyArray)}
@@ -221,6 +229,7 @@ const gridComponentServices = [
   ExcelExport,
   PdfExport,
   Sort,
+  Filter,
   Freeze,
   Aggregate,
 ]

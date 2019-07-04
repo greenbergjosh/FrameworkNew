@@ -2,7 +2,7 @@ export const tableDataTypes = [
   {
     option: {
       label: "Text",
-      value: "text",
+      value: "string",
     },
     form: [],
   },

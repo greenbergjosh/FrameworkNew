@@ -29,11 +29,11 @@ interface IUserInterfaceProps {
   components: ComponentDefinition[]
 }
 
-interface DisplayUserInterfaceProps extends IUserInterfaceProps {
+export interface DisplayUserInterfaceProps extends IUserInterfaceProps {
   mode: "display"
 }
 
-interface EditUserInterfaceProps extends IUserInterfaceProps {
+export interface EditUserInterfaceProps extends IUserInterfaceProps {
   mode: "edit"
   onChangeSchema: (schema: ComponentDefinition[]) => void
 }
@@ -97,6 +97,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         data={data}
         mode={mode}
         onChangeData={onChangeData}
+        onChangeSchema={this.props.mode === "edit" ? this.props.onChangeSchema : undefined}
         onDrop={this.handleDrop}
       />
     )

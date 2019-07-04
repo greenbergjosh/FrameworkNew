@@ -1,7 +1,7 @@
 import { get, set } from "lodash/fp"
 import React from "react"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
-import { UserInterfaceProps } from "../../../UserInterface"
+import { EditUserInterfaceProps, UserInterfaceProps } from "../../../UserInterface"
 import { tableDataTypes } from "./table-data-types-form"
 import { tableManageForm } from "./table-manage-form"
 import {
@@ -10,12 +10,28 @@ import {
   ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
 
-export interface TableInterfaceComponentProps extends ComponentDefinitionNamedProps {
+interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
+  abstract?: boolean
   component: "table"
+  mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
 }
+
+interface TableInterfaceComponentDisplayModeProps extends ITableInterfaceComponentProps {
+  mode: "display"
+}
+
+interface TableInterfaceComponentEditModeProps extends ITableInterfaceComponentProps {
+  mode: "edit"
+  onChangeSchema?: (newSchema: ComponentDefinition) => void
+  userInterfaceSchema?: ComponentDefinition
+}
+
+type TableInterfaceComponentProps =
+  | TableInterfaceComponentDisplayModeProps
+  | TableInterfaceComponentEditModeProps
 
 export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfaceComponentProps> {
   static getLayoutDefinition() {
@@ -34,36 +50,56 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
   static manageForm = tableManageForm
 
   render() {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
+    const { abstract, onChangeData, userInterfaceData, valueKey } = this.props
     const dataArray = get(valueKey, userInterfaceData) || []
 
     return (
       <ComponentRendererModeContext.Consumer>
         {(mode) => {
-          // switch (mode) {
-          //   case "edit": {
+          console.log("TableInterfaceComponent.render", { props: this.props, mode })
           const data = { columns: dataArray }
-
-          return (
-            <ComponentRenderer
-              components={editComponents}
-              data={data}
-              dragDropDisabled
-              onChangeData={(newData) => {
-                // console.log("TableInterfaceComponent.render", "onChangeData", { data, newData })
-                // console.log("TableInterfaceComponent.render", "onChangeData2", {
-                //   userInterfaceData,
-                //   userInterfaceData2: set(valueKey, newData.columns, userInterfaceData),
-                // })
-                onChangeData && onChangeData(set(valueKey, newData.columns, userInterfaceData))
-              }}
-            />
-          )
-          //   }
-          //   case "display": {
-          //     return <div />
-          //   }
-          // }
+          if (abstract) {
+            return (
+              <ComponentRenderer
+                components={editComponents}
+                data={data}
+                dragDropDisabled
+                onChangeData={(newData) => {
+                  // console.log("TableInterfaceComponent.render", "onChangeData", { data, newData })
+                  onChangeData && onChangeData(set(valueKey, newData.columns, userInterfaceData))
+                }}
+              />
+            )
+          } else {
+            switch (this.props.mode) {
+              case "edit": {
+                const { onChangeSchema, userInterfaceSchema } = this.props
+                return (
+                  <ComponentRenderer
+                    components={editComponents}
+                    data={userInterfaceSchema}
+                    mode="display"
+                    onChangeData={(newData) => {
+                      console.log("TableInterfaceComponent.render", "onChangeData", {
+                        abstract,
+                        mode,
+                        data,
+                        newData,
+                        onChangeSchema,
+                        userInterfaceSchema,
+                      })
+                      onChangeSchema &&
+                        userInterfaceSchema &&
+                        onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
+                    }}
+                  />
+                )
+              }
+              case "display": {
+                return <div>RENDER TABLE HERE</div>
+              }
+            }
+          }
         }}
       </ComponentRendererModeContext.Consumer>
     )
@@ -74,10 +110,12 @@ const editComponents: ComponentDefinition[] = [
   {
     key: "columns",
     valueKey: "columns",
+    label: "Columns",
     addItemLabel: "Add Column",
     component: "list",
     emptyText: "No Configured Columns",
     orientation: "horizontal",
+    preconfigured: true,
     components: [
       {
         key: "column",
@@ -106,7 +144,7 @@ const editComponents: ComponentDefinition[] = [
             data: {
               values: tableDataTypes.map((type) => type.option),
             },
-            defaultValue: "text",
+            defaultValue: "string",
           },
           ...tableDataTypes.flatMap((type) =>
             type.form.map((formItem) => ({
