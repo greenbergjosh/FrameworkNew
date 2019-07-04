@@ -7,7 +7,7 @@ import {
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { Draggable } from "./dnd"
-import { UserInterfaceProps } from "./UserInterface"
+import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -21,6 +21,7 @@ interface RenderInterfaceComponentProps {
   index: number
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeSchema?: (newComponentDefinition: ComponentDefinition) => void
   path: string
 }
 
@@ -48,6 +49,7 @@ export class RenderInterfaceComponent extends React.Component<
       index,
       mode,
       onChangeData,
+      onChangeSchema,
       path,
     } = this.props
     const { error } = this.state
@@ -93,9 +95,15 @@ export class RenderInterfaceComponent extends React.Component<
           console.log("RenderInterfaceComponent.onChangeData", props, onChangeData)
           onChangeData && onChangeData(props)
         }}
-        onChangeState={(props: unknown) => {
-          console.log("Update User Interface State", props)
+        onChangeSchema={(newComponentDefinition: ComponentDefinition) => {
+          console.log(
+            "RenderInterfaceComponent.onChangeSchema",
+            newComponentDefinition,
+            onChangeSchema
+          )
+          onChangeSchema && onChangeSchema(newComponentDefinition)
         }}
+        userInterfaceSchema={componentDefinition}
       />
     ) : (
       <DebugComponent componentDefinition={componentDefinition} index={index} mode={mode} />

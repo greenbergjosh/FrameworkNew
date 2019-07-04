@@ -26,6 +26,18 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "columns",
+                visibilityConditions: {
+                  "===": [true, { var: "abstract" }],
+                },
+              },
+              {
+                key: "abstract",
+                valueKey: "abstract",
+                label: "Abstract Component",
+                component: "toggle",
+                defaultValue: false,
+                help:
+                  'Mark this component as "Abstract" which will force it to be configured in a child screen',
               },
             ],
           },

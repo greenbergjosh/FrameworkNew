@@ -2,6 +2,7 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { merge } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
+import { UserInterfaceProps } from "../../UserInterface"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -24,6 +25,7 @@ export interface ChangeObject {
 
 export interface ComponentDefinitionNamedProps {
   key: string
+  abstract?: boolean
   component: string
   help?: string
   hidden?: boolean
@@ -41,10 +43,11 @@ export type ComponentDefinition =
   | ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp
 
 export interface ComponentRenderMetaProps {
-  // mode: UserInterfaceProps["mode"]
+  mode?: UserInterfaceProps["mode"]
   userInterfaceData?: any
   onChangeData?: (newData: ChangeObject) => void
-  onChangeState?: (newState: ChangeObject) => void
+  onChangeSchema?: (newSchema: ComponentDefinition) => void
+  userInterfaceSchema?: ComponentDefinition
 }
 
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps
@@ -76,7 +79,7 @@ export abstract class BaseInterfaceComponent<
   }
 }
 
-function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]) {
+export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]) {
   // Iterate over all the definitions to accumulate their defaults
   return componentDefinitions.reduce((acc, componentDefinition) => {
     // Check to see if there's a component type for this object

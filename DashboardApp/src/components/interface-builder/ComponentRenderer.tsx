@@ -1,10 +1,11 @@
+import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../DataPathContext"
 import { ComponentDefinition } from "./components/base/BaseInterfaceComponent"
 import { Droppable, DroppableContextType } from "./dnd"
 import { ComponentRegistryContext } from "./registry"
 import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
-import { UserInterfaceProps } from "./UserInterface"
+import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
 
 interface ComponentRendererProps {
   componentLimit?: number
@@ -13,6 +14,7 @@ interface ComponentRendererProps {
   dragDropDisabled?: boolean
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeSchema?: EditUserInterfaceProps["onChangeSchema"]
   onDrop?: DroppableContextType["onDrop"]
 }
 
@@ -29,6 +31,7 @@ export const ComponentRenderer = ({
   dragDropDisabled,
   mode: propMode,
   onChangeData,
+  onChangeSchema,
   onDrop,
 }: ComponentRendererProps) => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
@@ -52,6 +55,17 @@ export const ComponentRenderer = ({
               onChangeData,
             })
             onChangeData && onChangeData(newData)
+          }}
+          onChangeSchema={(newComponentDefinition) => {
+            if (mode === "edit") {
+              console.log("ComponentRenderer.render", "onChangeSchema", {
+                componentDefinition,
+                newComponentDefinition,
+                onChangeSchema,
+                path,
+              })
+              onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
+            }
           }}
           path={path}
         />
