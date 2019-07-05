@@ -93,6 +93,7 @@ namespace UnsubJob
                     }
                     catch (UnsubLib.NetworkProviders.HaltingException e)
                     {
+                        await Fw.Error(nameof(UnsubJob), $"Network fatal error for {name}: {e.UnwrapForLog()}");
                         await Fw.Alert(nameof(UnsubJob), "Unsub Fatal Error", $"Network fatal error for {name}: {e.UnwrapForLog()}");
                         continue;
                     }

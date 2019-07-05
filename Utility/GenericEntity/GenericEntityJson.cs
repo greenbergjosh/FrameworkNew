@@ -87,15 +87,12 @@ namespace Utility.GenericEntity
 
         public override IEnumerable<Tuple<string, string>> GetD(string path)
         {
-            // 
-            // THIS IS NOT NULL SAFE
-            //
-            GenericEntityJson entity = new GenericEntityJson();
-            entity.InitializeEntity(this.rw, null, _root.SelectToken(ConvertPath(path)));
-            foreach (var je in entity._root.AsJEnumerable())
+            if (_root.SelectToken(ConvertPath(path)) is JObject jo)
             {
-                yield return new Tuple<string, string>(((JProperty)je).Name,
-                    ((JProperty)je).Value.ToString());
+                foreach (var je in jo.Properties())
+                {
+                    yield return new Tuple<string, string>(je.Name, je.Value.ToString());
+                }
             }
         }
 
