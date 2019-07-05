@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "n:Amobee"
+      "commandLineArgs": "\"n:Direct Agents\""
     }
   }
 }

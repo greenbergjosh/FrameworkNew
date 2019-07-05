@@ -325,6 +325,12 @@ namespace UnsubLib
             {
                 cse = await GetCampaignsScheduledJobs(network, networkProvider);
 
+                if (cse == null)
+                {
+                    await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"GetUnsubUris({networkName}): Null campaigns returned");
+                    return;
+                }
+
                 if (network.GetS("Credentials/ManualFile").ParseBool() == true) return;
 
                 // Get uris of files to download - maintain campaign association
@@ -392,6 +398,7 @@ namespace UnsubLib
             // Generate diff list
             var campaignsWithNegativeDelta = new List<string>();
             var diffs = new HashSet<Tuple<string, string>>();
+
             foreach (var c in cse)
             {
                 if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
@@ -400,19 +407,30 @@ namespace UnsubLib
                     var newFileName = newFileId + ".txt.srt";
                     var newFileSize = await GetFileSize(newFileName);
 
+                    if (!newFileSize.HasValue)
+                    {
+                        await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"New file not found. File Name: {newFileName} Campaign: {c.GetS("") ?? "[null]"}");
+                        continue;
+                    }
+
                     if (!string.IsNullOrEmpty(c.GetS("MostRecentUnsubFileId")))
                     {
                         var oldFileId = c.GetS("MostRecentUnsubFileId").ToLower();
                         var oldFileName = oldFileId + ".txt.srt";
                         var oldFileSize = await GetFileSize(oldFileName);
 
-                        if ((c.GetS("MostRecentUnsubFileId").Length == 36) &&
-                            (newFileSize > oldFileSize))
+                        if (!oldFileSize.HasValue)
+                        {
+                            await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Old file not found. File Name: {oldFileName} Campaign: {c.GetS("") ?? "[null]"}");
+                            continue;
+                        }
+
+                        if (c.GetS("MostRecentUnsubFileId").Length == 36 && newFileSize.Value > oldFileSize.Value)
                         {
                             diffs.Add(new Tuple<string, string>(oldFileId, newFileId));
                         }
 
-                        if (newFileSize < oldFileSize)
+                        if (newFileSize.Value < oldFileSize.Value)
                         {
                             campaignsWithNegativeDelta.Add(c.GetS("Id"));
 
@@ -449,7 +467,7 @@ namespace UnsubLib
 
                 var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
 
-                if(res?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files for {networkName}. Response: {res?.GetS("")??"[null]"}");
+                if (res?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files for {networkName}. Response: {res?.GetS("") ?? "[null]"}");
 
             }
             catch (Exception exUpdateCampaigns)
@@ -487,7 +505,7 @@ namespace UnsubLib
             {
                 campaigns = await networkProvider.GetCampaigns(network);
 
-                File.WriteAllText(localNetworkFilePath, campaigns.GetS(""));
+                if (campaigns != null) File.WriteAllText(localNetworkFilePath, campaigns.GetS(""));
             }
 
             return campaigns;
@@ -500,6 +518,8 @@ namespace UnsubLib
             var uris = new ConcurrentDictionary<string, List<IGenericEntity>>();
             var cancelToken = new CancellationTokenSource();
             Task task = null;
+
+            parallelism = MaxParallelism < parallelism ? MaxParallelism : parallelism;
 
             try
             {
@@ -537,11 +557,11 @@ namespace UnsubLib
 
                 await task;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 foreach (var e in task.Exception.InnerExceptions)
                 {
-                    if (e is HaltingException) throw e;
+                    if (e is HaltingException) throw ex;
                 }
 
                 await _fw.Error($"{nameof(GetUnsubUris)}-{networkName}", $"Parallelism threw unhandled exception {task.Exception.UnwrapForLog()}");
@@ -556,6 +576,8 @@ namespace UnsubLib
             var isSchedWithManual = network.GetS("Credentials/ManualFile").ParseBool() == true;
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
+
+            parallelism = MaxParallelism < parallelism ? MaxParallelism : parallelism;
 
             await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting file downloads for {networkName}");
 
@@ -862,18 +884,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+                }
 #if DEBUG
             }
 #endif
@@ -1110,9 +1132,9 @@ namespace UnsubLib
             }
         }
 
-        public async Task<long> GetFileSize(string fileName)
+        public async Task<long?> GetFileSize(string fileName)
         {
-            long fileSize = 0;
+            long? fileSize = null;
 
             try
             {
@@ -1558,7 +1580,7 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
             var uri = new Uri(unsubUrl);
-            var authString = network.GetD("Credentials/DomainAuthStrings").FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
+            var authString = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
             dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
                 new Dictionary<string, Func<FileInfo, Task<object>>>()

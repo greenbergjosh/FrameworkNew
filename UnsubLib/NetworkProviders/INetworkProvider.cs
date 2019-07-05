@@ -76,6 +76,12 @@ namespace UnsubLib.NetworkProviders
                             RelationshipPath = relationshipPath
                         }), respBody);
 
+                    if (res == null || res.GetS("result") == "failed")
+                    {
+                        await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res.GetS("")??"[null]"}\r\nApi Response:\r\n{respBody ?? "[null]"}");
+                        return null;
+                    }
+
                     return res;
                 }
                 catch (HaltingException) { throw; }
@@ -172,7 +178,21 @@ namespace UnsubLib.NetworkProviders
 
                     await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
                     campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
-                    await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
+
+                    // PLEASE WAIT A FEW MINUTES BEFORE NEXT API CALL
+
+                    var xml = new XmlDocument();
+
+                    try
+                    {
+                        xml.LoadXml(campaignXml);
+                        await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
+                    }
+                    catch
+                    {
+                        await _fw.Error(_logMethod, $"Campaign response from {networkName} was invalid xml.\r\nResponse:\r\n{campaignXml}");
+                        return null;
+                    }
 
                     var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
@@ -185,6 +205,12 @@ namespace UnsubLib.NetworkProviders
                             RelationshipPath = "campaignid"
                         }),
                         campaignXml);
+
+                    if (res == null || res.GetS("result") == "failed")
+                    {
+                        await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{campaignXml ?? "null"}");
+                        return null;
+                    }
 
                     return res;
                 }
