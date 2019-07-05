@@ -64,6 +64,7 @@ async function visitorId(url, opaque, future) {
 }
 
 window[window.visitorIdObject].visitorId = visitorId;
+window[window.visitorIdObject].emailSubmitted = emailSubmitted;
 
 async function emailSubmitted(email) {
     res = await window.genericFetch(url + '?m=emailSubmitted&email=' + base64UrlSafe(email) + '&op=' + base64UrlSafe(JSON.stringify(opaque)),
