@@ -162,7 +162,6 @@ function _visitorId() {
                                 vieps: res.vieps,
                                 md5pid: res.md5pid,
                                 tjsv: "3",
-                                lv: res.lv,
                                 pfail: providerFailed,
                                 pfailSlot: res.slot,
                                 pfailPage: res.page
