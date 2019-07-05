@@ -5,6 +5,7 @@
     <meta name="referrer" content="always">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
     <script>
         (function (w, d, e, t, u, j, n, o, f, i) {
             document.addEventListener(e,
@@ -20,9 +21,12 @@
                     };
                 });
         })(window, document, 'DOMContentLoaded', 'script', '//localhost:21339', '/track.js', 'visid', { afid: '00000000-0000-0000-0000-000000000017', tpid: '', rsid: {} });
-    </script>
+
+/**/</script>
 </head>
 <body>
-    <div id="aid"></div>
+<div id="aid"></div>
+<input type="text" id="email" value=""/>
+<button value="Send" onclick="window[window.visitorIdObject].emailSubmitted($('#email').val())"></button>
 </body>
 </html>
