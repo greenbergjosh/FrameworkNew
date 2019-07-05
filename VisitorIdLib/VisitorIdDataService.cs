@@ -324,7 +324,7 @@ namespace VisitorIdLib
                 et = "emailSubmitted",
                 email = Hashing.Base64DecodeFromUrl(c.Request.Query["email"]),
             });
-            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<string, object> { { cookieData.PageVisit.ReportingSequenceName, cookieData.PageVisit.ReportingSequenceId } }, null, eventPayload);
+            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, eventPayload);
             await fw.EdwWriter.Write(be);
             await WriteCodePathEvent(PL.O(new { branch = nameof(EmailSubmitted), loc = "body", eventPayload = eventPayload.ToString()}), codePathRsidDict);
         }
