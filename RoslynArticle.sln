@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlRegularExpressions", "SqlRegularExpressions\SqlRegularExpressions.csproj", "{3B4842DC-B8F0-4508-8837-6DC4BE76256C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeIntegration", "CakeIntegration\CakeIntegration.csproj", "{74871A6E-9DE6-4588-8504-0A3C393FDDA5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpJobs", "IpJobs\IpJobs.csproj", "{7E50F1D6-9F92-47BB-B987-2C4005C26521}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility", "Utility\Utility.csproj", "{FAB3FBA3-AB13-4953-B3C4-A7D9519E149E}"
@@ -93,6 +91,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeleniumPostmaster", "Selen
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "NodeChannelAdmin", "DashboardApp\NodeChannelAdmin.njsproj", "{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrameworkTests", "FrameworkTests\FrameworkTests.csproj", "{BC4B015F-F942-4D62-BE05-16F8C0B52E93}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FAB3FBA3-AB13-4953-B3C4-A7D9519E149E} = {FAB3FBA3-AB13-4953-B3C4-A7D9519E149E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,12 +109,6 @@ Global
 		{3B4842DC-B8F0-4508-8837-6DC4BE76256C}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{3B4842DC-B8F0-4508-8837-6DC4BE76256C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B4842DC-B8F0-4508-8837-6DC4BE76256C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74871A6E-9DE6-4588-8504-0A3C393FDDA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74871A6E-9DE6-4588-8504-0A3C393FDDA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74871A6E-9DE6-4588-8504-0A3C393FDDA5}.Development|Any CPU.ActiveCfg = Debug|Any CPU
-		{74871A6E-9DE6-4588-8504-0A3C393FDDA5}.Development|Any CPU.Build.0 = Debug|Any CPU
-		{74871A6E-9DE6-4588-8504-0A3C393FDDA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74871A6E-9DE6-4588-8504-0A3C393FDDA5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E50F1D6-9F92-47BB-B987-2C4005C26521}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7E50F1D6-9F92-47BB-B987-2C4005C26521}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E50F1D6-9F92-47BB-B987-2C4005C26521}.Development|Any CPU.ActiveCfg = Debug|Any CPU
@@ -328,6 +325,12 @@ Global
 		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0FA4E13-C6AD-4947-831E-90C5E6F84D25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -363,6 +366,7 @@ Global
 		{8AC259EB-DA55-4B04-AC27-7C7F01810440} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
+		{BC4B015F-F942-4D62-BE05-16F8C0B52E93} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}

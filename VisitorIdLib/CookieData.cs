@@ -6,6 +6,7 @@ using Jw = Utility.JsonWrapper;
 using System.Threading.Tasks;
 using Utility.EDW;
 using Utility.EDW.Reporting;
+using System.Linq;
 
 namespace VisitorIdLib
 {
@@ -14,18 +15,6 @@ namespace VisitorIdLib
         public string md5;
         public string em;
         public Guid sid;
-
-        [JsonProperty("lv")]
-        public string LastVisit
-        {
-            get
-            {
-                if (this.DomainVisit == null) return "";
-                if (this.DomainVisit.VisitDateTime == DateTime.MinValue) return "";
-                return this.DomainVisit.VisitDateTime.ToString();
-            }
-        }
-
         public string version;
         public Dictionary<string, DomainVisit> Domains = new Dictionary<string, DomainVisit>();
         public Dictionary<string, DateTime> ProviderLastSelectTime = new Dictionary<string, DateTime>();
@@ -47,6 +36,9 @@ namespace VisitorIdLib
             }
 
         }
+
+        [JsonIgnore]
+        public DateTime LastDomainVisitDate;
 
         public CookieData() { }
 
@@ -82,13 +74,12 @@ namespace VisitorIdLib
 
             // Cookie exists in some form
             CookieData deserialized = JsonConvert.DeserializeObject<CookieData>(cookieAsString);
+            LastDomainVisitDate = deserialized.Domains.Values.Max(v => v.VisitDateTime);
 
             // Existing domain, increment stats, or expire
             if (deserialized.Domains.ContainsKey(host))
             {
                 var existingDomainVisit = deserialized.Domains[host];
-                var lastVisitDateTime = existingDomainVisit.PageVisitDateTime;
-                var lastVisitcount = existingDomainVisit.VisitNum;
 
                 // Expire only if we're in the beginning of a run. Wait until
                 // the next visit to do so otherwise, so we don't split our
@@ -186,7 +177,8 @@ namespace VisitorIdLib
             eventList.Add(this.PageVisit.VisitEvent(payload, this.RsIdDict));
             if (DomainVisit.VisitNum == 1) // Every new domain visit has a DomainVisit
             {
-                rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: payload));
+                var domainPL = PL.O(new { LastDomainVisitDate = LastDomainVisitDate == DateTime.MinValue ? null : LastDomainVisitDate.ToString() }).Add(payload); // Date of the last domain visit across all domains
+                rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: domainPL));
                 eventList.Add(this.DomainVisit.VisitEvent(payload,this.RsIdDict));
             }
             if (VidVisit != null ) // Visitor is new to VID pixel
