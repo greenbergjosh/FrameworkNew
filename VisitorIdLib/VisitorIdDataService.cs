@@ -321,7 +321,7 @@ namespace VisitorIdLib
             be = new EdwBulkEvent();
             var eventPayload = PL.O(new
             {
-                et = "emailSubmitted",
+                et = "EmailSubmitted",
                 email = Hashing.Base64DecodeFromUrl(c.Request.Query["email"]),
             });
             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, eventPayload);
