@@ -95,6 +95,13 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
                 components={[{ ...keyComponent, hideLabel: true }]}
                 data={dataItem}
                 onChangeData={onChangeData}
+                onChangeSchema={(newSchema) => {
+                  console.warn(
+                    "DataMapInterfaceComponent.render",
+                    "TODO: Cannot alter schema inside ComponentRenderer in DataMap",
+                    { newSchema }
+                  )
+                }}
               />
             </DataPathContext>
           )
@@ -107,6 +114,13 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
                 components={[{ ...valueComponent, hideLabel: true }]}
                 data={dataItem}
                 onChangeData={onChangeData}
+                onChangeSchema={(newSchema) => {
+                  console.warn(
+                    "DataMapInterfaceComponent.render",
+                    "TODO: Cannot alter schema inside ComponentRenderer in DataMap",
+                    { newSchema }
+                  )
+                }}
               />
             </DataPathContext>
           )

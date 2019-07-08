@@ -17,8 +17,15 @@ export const ManageComponentForm = ({
   return (
     <ComponentRenderer
       components={Array.isArray(manageForm) ? manageForm : [manageForm]}
-      onChangeData={onChangeDefinition}
       data={componentDefinition}
+      onChangeData={onChangeDefinition}
+      onChangeSchema={(newSchema) => {
+        console.warn(
+          "ManageComponentForm.render",
+          "TODO: Cannot alter schema inside ComponentRenderer in ManageComponentForm",
+          { newSchema }
+        )
+      }}
     />
   )
 }

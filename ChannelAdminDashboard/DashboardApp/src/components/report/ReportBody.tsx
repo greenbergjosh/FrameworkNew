@@ -16,11 +16,7 @@ import {
   LocalReportConfig,
   ParameterItem,
   QueryConfig,
-  RemoteReportConfig,
   ReportDetails,
-  ReportDetailsAsReport,
-  ReportDetailsAsLayout,
-  LayoutItem,
   SimpleLayoutConfig,
 } from "../../data/Report"
 import {
@@ -32,7 +28,6 @@ import {
   FilterSettingsModel,
   Freeze,
   GridComponent,
-  GridModel,
   Inject,
   PdfExport,
   Resize,
@@ -54,35 +49,6 @@ const commonGridOptions = {
   allowSorting: true,
   allowFiltering: true,
 }
-
-// const gridColumns = [
-//   {
-//     field: "Date",
-//     type: "date",
-//     format: { type: "date", format: "yyyy-MM-dd" },
-//     width: "100",
-//   },
-//   {
-//     field: "VisitCount",
-//     width: "100",
-//   },
-// ]
-
-// const childGridOptions: GridModel = {
-//   allowResizing: true,
-//   queryString: "Date",
-//   columns: [
-//     { field: "Domain", textAlign: "Right", width: 120 },
-//     { field: "Publisher", width: 80 },
-//     { field: "Slot", width: 50 },
-//     { field: "Page", width: 50 },
-//     { field: "MD5 Provider", width: 120 },
-//     { field: "MD5ProviderId", width: 150 },
-//     { field: "Selected", width: 50 },
-//     { field: "Responded", width: 50 },
-//     { field: "Succeeded", width: 50 },
-//   ],
-// }
 
 const filterSettings: FilterSettingsModel = {
   type: "Menu",

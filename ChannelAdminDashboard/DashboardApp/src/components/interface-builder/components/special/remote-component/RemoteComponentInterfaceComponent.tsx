@@ -75,7 +75,18 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
         ).toNullable()
         if (Array.isArray(layout)) {
           const content = (
-            <ComponentRenderer components={layout} data={data} onChangeData={this.handleChange} />
+            <ComponentRenderer
+              components={layout}
+              data={data}
+              onChangeData={this.handleChange}
+              onChangeSchema={(newSchema) => {
+                console.warn(
+                  "RemoteComponentInterfaceComponent.render",
+                  "TODO: Cannot alter schema inside ComponentRenderer in RemoteComponent",
+                  { newSchema }
+                )
+              }}
+            />
           )
 
           const wrappedContent = collapsible ? (

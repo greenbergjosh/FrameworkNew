@@ -178,6 +178,53 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
               {
+                key: "allowCreateNew",
+                valueKey: "allowCreateNew",
+                label: "Create New Option?",
+                help:
+                  "Allow the user to select 'Create New...' to create an option that doesn't currently exist.",
+                component: "toggle",
+                defaultValue: false,
+                hidden: true,
+                visibilityConditions: {
+                  "===": [
+                    "remote-config",
+                    {
+                      var: ["dataHandlerType"],
+                    },
+                  ],
+                },
+              },
+              {
+                key: "createNewLabel",
+                valueKey: "createNewLabel",
+                label: "'Create New...' Label",
+                help: "The text to display for the option to create a new entry",
+                component: "input",
+                defaultValue: "Create New...",
+                hidden: true,
+                visibilityConditions: {
+                  and: [
+                    {
+                      "===": [
+                        "remote-config",
+                        {
+                          var: ["dataHandlerType"],
+                        },
+                      ],
+                    },
+                    {
+                      "===": [
+                        true,
+                        {
+                          var: ["allowCreateNew"],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+              {
                 key: "remoteURL",
                 valueKey: "remoteURL",
                 label: "Remote URL",

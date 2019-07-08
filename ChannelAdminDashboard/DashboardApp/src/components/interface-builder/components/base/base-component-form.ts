@@ -97,6 +97,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 ordinal: 10,
                 component: "checkbox",
                 label: "Hidden",
+                defaultValue: false,
               },
             ],
           },

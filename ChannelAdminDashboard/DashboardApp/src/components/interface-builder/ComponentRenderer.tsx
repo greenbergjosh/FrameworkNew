@@ -14,7 +14,7 @@ interface ComponentRendererProps {
   dragDropDisabled?: boolean
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
-  onChangeSchema?: EditUserInterfaceProps["onChangeSchema"]
+  onChangeSchema: EditUserInterfaceProps["onChangeSchema"]
   onDrop?: DroppableContextType["onDrop"]
 }
 
@@ -63,8 +63,11 @@ export const ComponentRenderer = ({
                 newComponentDefinition,
                 onChangeSchema,
                 path,
+                index,
+                components,
               })
-              onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
+              // onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
+              onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
             }
           }}
           path={path}

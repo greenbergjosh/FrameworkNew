@@ -49,6 +49,13 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
                   }
                   data={userInterfaceData}
                   onChangeData={onChangeData}
+                  onChangeSchema={(newSchema) => {
+                    console.warn(
+                      "TabsInterfaceComponent.render",
+                      "TODO: Cannot alter schema inside ComponentRenderer in Tabs",
+                      { newSchema }
+                    )
+                  }}
                 />
               </Tabs.TabPane>
             ))}

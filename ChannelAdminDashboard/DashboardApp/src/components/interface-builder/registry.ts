@@ -2,6 +2,7 @@ import React from "react"
 import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
 import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
 import { CardInterfaceComponent } from "./components/display/card/CardInterfaceComponent"
+import { ColumnInterfaceComponent } from "./components/display/column/ColumnInterfaceComponent"
 import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
@@ -11,6 +12,7 @@ import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInt
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
+import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
@@ -32,11 +34,13 @@ export const registry: ComponentRegistry = {
     card: CardInterfaceComponent,
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
+    column: ColumnInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
+    "number-input": NumberInputInterfaceComponent,
     "remote-component": RemoteComponentInterfaceComponent,
     "sectioned-navigation": SectionedNavigationInterfaceComponent,
     select: SelectInterfaceComponent,

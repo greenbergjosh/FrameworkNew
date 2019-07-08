@@ -23,6 +23,30 @@ const formManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 hidden: true,
               },
+              {
+                key: "orientation",
+                valueKey: "orientation",
+                label: "Orientation",
+                component: "select",
+                dataHandlerType: "local",
+                defaultValue: "vertical",
+                data: {
+                  values: [
+                    {
+                      label: "Vertical",
+                      value: "vertical",
+                    },
+                    {
+                      label: "Horizontal",
+                      value: "horizontal",
+                    },
+                    {
+                      label: "Inline",
+                      value: "inline",
+                    },
+                  ],
+                },
+              },
             ],
           },
         ],

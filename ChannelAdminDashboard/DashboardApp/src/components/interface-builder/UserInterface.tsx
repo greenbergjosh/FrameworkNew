@@ -97,7 +97,18 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         data={data}
         mode={mode}
         onChangeData={onChangeData}
-        onChangeSchema={this.props.mode === "edit" ? this.props.onChangeSchema : undefined}
+        onChangeSchema={
+          this.props.mode === "edit"
+            ? this.props.onChangeSchema
+            : (newSchema) => {
+                console.warn(
+                  "UserInterface.render",
+                  "ComponentRenderer/onChangeSchema",
+                  "Cannot invoke onChangeSchema when UserInterface is not in 'edit' mode",
+                  { newSchema }
+                )
+              }
+        }
         onDrop={this.handleDrop}
       />
     )
@@ -188,9 +199,9 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                             if (itemToAdd) {
                               // Find which component list we're inserting into
                               const relevantList =
-                                itemToAdd.path === UI_ROOT
+                                (itemToAdd.path === UI_ROOT
                                   ? components
-                                  : get(itemToAdd.path, components)
+                                  : get(itemToAdd.path, components)) || []
                               // Slice this item into the list
                               const updatedList = [
                                 ...relevantList.slice(0, itemToAdd.index),
@@ -210,9 +221,9 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                             } else if (itemToEdit) {
                               // Find which component list we're inserting into
                               const relevantList =
-                                itemToEdit.path === UI_ROOT
+                                (itemToEdit.path === UI_ROOT
                                   ? components
-                                  : get(itemToEdit.path, components)
+                                  : get(itemToEdit.path, components)) || []
                               // Slice this item into the list, replacing the existing item
                               const updatedList = [
                                 ...relevantList.slice(0, itemToEdit.index),

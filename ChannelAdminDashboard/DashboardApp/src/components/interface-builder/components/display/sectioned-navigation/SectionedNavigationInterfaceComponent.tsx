@@ -6,10 +6,11 @@ import {
   PageHeader,
   Popover
   } from "antd"
+import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../../DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
-import { UserInterfaceProps } from "../../../UserInterface"
+import { EditUserInterfaceProps, UserInterfaceProps } from "../../../UserInterface"
 import { sectionedNavigationManageForm } from "./sectioned-navigation-manage-form"
 import {
   BaseInterfaceComponent,
@@ -22,14 +23,31 @@ interface NavigationSection {
   components: ComponentDefinition[]
 }
 
-export interface SectionedNavigationInterfaceComponentProps extends ComponentDefinitionNamedProps {
+export interface ISectionedNavigationInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "sectioned-navigation"
   sections: NavigationSection[]
   defaultActiveKey?: string
+  mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   title?: string
   userInterfaceData?: UserInterfaceProps["data"]
 }
+
+interface SectionedNavigationInterfaceComponentDisplayModeProps
+  extends ISectionedNavigationInterfaceComponentProps {
+  mode: "display"
+}
+
+interface SectionedNavigationInterfaceComponentEditModeProps
+  extends ISectionedNavigationInterfaceComponentProps {
+  mode: "edit"
+  onChangeSchema?: (newSchema: ComponentDefinition) => void
+  userInterfaceSchema?: ComponentDefinition
+}
+
+type SectionedNavigationInterfaceComponentProps =
+  | SectionedNavigationInterfaceComponentDisplayModeProps
+  | SectionedNavigationInterfaceComponentEditModeProps
 
 export interface SectionedNavigationInterfaceComponentState {
   activeKey: string | null
@@ -67,7 +85,7 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
   }
 
   render() {
-    const { sections, onChangeData, title, userInterfaceData } = this.props
+    const { onChangeData, sections, title, userInterfaceData } = this.props
     const { activeKey } = this.state
     const activeSectionKey = activeKey || (sections[0] && sections[0].title)
 
@@ -93,13 +111,33 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
         }>
         <DataPathContext path="sections">
           <>
-            {sections.map(({ title, components }, index) => (
+            {sections.map(({ title, components }, sectionIndex) => (
               <Card hidden={title !== activeSectionKey} title={title}>
-                <DataPathContext path={`${index}.components`}>
+                <DataPathContext path={`${sectionIndex}.components`}>
                   <ComponentRenderer
                     components={components}
                     data={userInterfaceData}
                     onChangeData={onChangeData}
+                    onChangeSchema={(newSchema) => {
+                      if (this.props.mode === "edit") {
+                        const { onChangeSchema, userInterfaceSchema } = this.props
+                        console.warn("SectionedNavigationInterfaceComponent.render", {
+                          newSchema,
+                          sectionIndex,
+                          onChangeSchema: this.props.onChangeSchema,
+                          userInterfaceSchema: this.props.userInterfaceSchema,
+                        })
+                        onChangeSchema &&
+                          userInterfaceSchema &&
+                          onChangeSchema(
+                            set(
+                              `sections.${sectionIndex}.components`,
+                              newSchema,
+                              userInterfaceSchema
+                            )
+                          )
+                      }
+                    }}
                   />
                 </DataPathContext>
               </Card>

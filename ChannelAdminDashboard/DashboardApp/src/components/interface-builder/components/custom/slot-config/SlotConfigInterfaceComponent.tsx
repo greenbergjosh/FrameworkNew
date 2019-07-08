@@ -61,15 +61,23 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
         key: "slot-config",
         valueKey: "data",
         component: "list",
+        orientation: "horizontal",
         interleave: "round-robin",
         components: [
           {
-            key: "slot-config-guid",
-            valueKey: "value",
-            component: "select",
-            dataHandlerType: "remote-config",
-            remoteConfigType: providerType,
-            valuePrefix: "@",
+            key: "provider",
+            valueKey: "provider",
+            component: "card",
+            components: [
+              {
+                key: "slot-config-guid",
+                valueKey: "value",
+                component: "select",
+                dataHandlerType: "remote-config",
+                remoteConfigType: providerType,
+                valuePrefix: "@",
+              },
+            ],
           },
           {
             key: "slot-config-action",
@@ -100,6 +108,13 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
                 userInterfaceData
               )
             )
+        }}
+        onChangeSchema={(newSchema) => {
+          console.warn(
+            "SlotConfigInterfaceComponent.render",
+            "TODO: Cannot alter schema inside ComponentRenderer in SlotConfig",
+            { newSchema }
+          )
         }}
       />
     )
