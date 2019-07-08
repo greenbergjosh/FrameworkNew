@@ -25,6 +25,7 @@ export interface FormInterfaceComponentProps extends ComponentDefinitionNamedPro
   component: "form"
   components?: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
+  orientation: "inline" | "horizontal" | "vertical"
   userInterfaceData?: UserInterfaceProps["data"]
 }
 
@@ -46,15 +47,22 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
   static manageForm = formManageForm
 
   render() {
-    const { components, onChangeData, userInterfaceData } = this.props
+    const { components, onChangeData, orientation, userInterfaceData } = this.props
     // console.log("FormInterfaceComponent.render", { userInterfaceData, onChangeData })
     return (
-      <Form style={{ padding: "5px" }} layout="vertical" {...defaultFormLayout}>
+      <Form style={{ padding: "5px" }} layout={orientation} {...defaultFormLayout}>
         <DataPathContext path="components">
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
             data={userInterfaceData}
             onChangeData={onChangeData}
+            onChangeSchema={(newSchema) => {
+              console.warn(
+                "FormInterfaceComponent.render",
+                "TODO: Cannot alter schema inside ComponentRenderer in Form",
+                { newSchema }
+              )
+            }}
           />
         </DataPathContext>
       </Form>

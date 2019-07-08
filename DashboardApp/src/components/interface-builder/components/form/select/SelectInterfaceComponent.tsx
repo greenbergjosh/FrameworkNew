@@ -30,7 +30,9 @@ type RemoteDataHandlerType = "remote-config" | "remote-kvp" | "remote-query" | "
 
 export interface ISelectInterfaceComponentProps extends ComponentDefinitionNamedProps {
   allowClear: boolean
+  allowCreateNew?: boolean
   component: "select"
+  createNewLabel: string
   defaultValue?: string
   disabled?: boolean
   multiple?: boolean
@@ -95,6 +97,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
 > {
   static defaultProps = {
     allowClear: true,
+    createNewLabel: "Create New...",
     valueKey: "value",
     defaultValue: "",
     placeholder: "Choose one",
@@ -349,7 +352,14 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { allowClear, disabled, multiple, placeholder } = this.props
+    const {
+      allowClear,
+      allowCreateNew,
+      createNewLabel,
+      disabled,
+      multiple,
+      placeholder,
+    } = this.props
     const { loadStatus, options } = this.state
 
     const value = this.getCleanValue()
@@ -374,6 +384,11 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
             {option.label}
           </Select.Option>
         ))}
+        {allowCreateNew && (
+          <Select.Option key={`create_new_entry`} value={"create_new"}>
+            {createNewLabel}
+          </Select.Option>
+        )}
       </Select>
     )
   }

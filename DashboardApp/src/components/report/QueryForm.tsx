@@ -4,7 +4,7 @@ import debounce from "lodash.debounce"
 import React from "react"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../data/JSON"
-import { QueryConfig } from "../../data/Report"
+import { ParameterItem, QueryConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
 import { generateLayoutFromParameters } from "../../routes/dashboard/routes/reports/routes/report/generators"
 import { store } from "../../state/store"
@@ -73,7 +73,19 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
     },
   }
 
-  const [formState, updateFormState] = React.useState({})
+  const defaultFormState = React.useMemo(() => {
+    return parameters.reduce(
+      (acc: { [key: string]: any }, parameter: ParameterItem) => {
+        if (parameter.defaultValue.isSome()) {
+          acc[parameter.name] = parameter.defaultValue.toUndefined()
+        }
+        return acc
+      },
+      {} as { [key: string]: any }
+    )
+  }, [])
+
+  const [formState, updateFormState] = React.useState(defaultFormState)
 
   const handleSubmit = React.useCallback(
     debounce(() => {

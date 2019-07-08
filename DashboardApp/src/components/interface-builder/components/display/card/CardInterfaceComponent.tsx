@@ -69,6 +69,13 @@ export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterface
             data={userInterfaceData}
             dragDropDisabled={!!preconfigured}
             onChangeData={onChangeData}
+            onChangeSchema={(newSchema) => {
+              console.warn(
+                "CardInterfaceComponent.render",
+                "TODO: Cannot alter schema inside ComponentRenderer in Card",
+                { newSchema }
+              )
+            }}
           />
         </DataPathContext>
       </Card>

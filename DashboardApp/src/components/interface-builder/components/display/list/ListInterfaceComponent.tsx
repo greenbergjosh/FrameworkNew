@@ -126,6 +126,13 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                             (onChangeData &&
                               onChangeData(set([valueKey, index], newData, userInterfaceData)))
                           }
+                          onChangeSchema={(newSchema) => {
+                            console.warn(
+                              "ListInterfaceComponent.render",
+                              "TODO: Cannot alter schema inside ComponentRenderer in List.",
+                              { newSchema }
+                            )
+                          }}
                         />
                       ))
                     ) : (
@@ -146,12 +153,19 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                 <DataPathContext path="components">
                   <ComponentRenderer
                     components={components}
-                    componentLimit={1}
+                    componentLimit={interleave === "none" ? 1 : 0}
                     data={data}
                     dragDropDisabled={!!preconfigured}
                     onChangeData={(newData) =>
                       onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
                     }
+                    onChangeSchema={(newSchema) => {
+                      console.warn(
+                        "ListInterfaceComponent.render",
+                        "TODO: Cannot alter schema inside ComponentRenderer in List",
+                        { newSchema }
+                      )
+                    }}
                   />
                 </DataPathContext>
               )
