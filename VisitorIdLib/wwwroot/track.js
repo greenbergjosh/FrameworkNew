@@ -67,7 +67,7 @@ window[window.visitorIdObject].visitorId = visitorId;
 window[window.visitorIdObject].emailSubmitted = emailSubmitted;
 
 async function emailSubmitted(email) {
-    res = await window.genericFetch(url + '?m=emailSubmitted&email=' + base64UrlSafe(email) + '&op=' + base64UrlSafe(JSON.stringify(opaque)),
+    res = await window.genericFetch(lastUrlUsed + '?m=emailSubmitted&email=' + base64UrlSafe(email) + '&op=' + base64UrlSafe(JSON.stringify(lastOpaqueUsed)),
         { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
         'json', '');
 }
