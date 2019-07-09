@@ -257,7 +257,7 @@ namespace UnsubLib.NetworkProviders
                 }
                 catch (Exception findUnsubException)
                 {
-                    await _fw.Error(_logMethod, $"Exception finding unsub file source fro {networkName} {unsubRelationshipId}: {suppDetails ?? "null"}::{findUnsubException}");
+                    await _fw.Error(_logMethod, $"Exception finding unsub file source from {networkName} {unsubRelationshipId}: {suppDetails ?? "null"}::{findUnsubException}");
                     return null;
                 }
             }
