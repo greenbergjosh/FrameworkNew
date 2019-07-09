@@ -441,7 +441,7 @@ namespace Utility
 
         public static async Task<Stream> GetFtpFileStream(string sourceFile, string host, string userName, string password)
         {
-            var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + sourceFile));
+            var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/" + sourceFile));
 
             request.ServicePoint.ConnectionLimit = 10;
             request.Method = WebRequestMethods.Ftp.DownloadFile;

@@ -884,18 +884,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+            }
 #if DEBUG
             }
 #endif
@@ -1257,12 +1257,14 @@ namespace UnsubLib
 
                     if (fileCopyInProgress)
                     {
+                        await _fw.Trace(nameof(GetFileFromFileId), $"Waiting for in process copy to finish for {finalFile}");
                         await WaitForFileCopyInProcess(finalFile);
 
                         return finalFile.Name;
                     }
                     else
                     {
+                        await _fw.Trace(nameof(GetFileFromFileId), $"Making room for {finalFile}");
                         success = await MakeRoom(fileName, cacheSize);
 
                         if (!success)
@@ -1276,7 +1278,14 @@ namespace UnsubLib
                         {
                             if (!String.IsNullOrEmpty(FileCacheDirectory))
                             {
-                                var cacheFile = new FileInfo($"{FileCacheDirectory}\\{fileName}");
+                                var cacheFile = new FileInfo(Path.Combine(FileCacheDirectory, fileName));
+
+                                if (!cacheFile.Exists)
+                                {
+                                    var msg = $"Cache file does not exist {cacheFile.FullName}";
+                                    await _fw.Error(nameof(GetFileFromFileId), msg);
+                                    throw new Exception(msg);
+                                }
 
                                 cacheFile.CopyTo(tempFile.FullName, true);
                                 tempFile.MoveTo(finalFile.FullName);
@@ -1392,7 +1401,11 @@ namespace UnsubLib
             var c = await Data.CallFn(Conn, "SelectNetworkCampaign", Jw.Json(new { CId = campaignId }), "");
             var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
 
-            if (fileId == null) return null;
+            if (fileId == null)
+            {
+                await _fw.Trace(nameof(GetFileFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
+                return null;
+            }
 
             return await GetFileFromFileId(fileId, ext, destDir, cacheSize);
         }
@@ -1506,10 +1519,13 @@ namespace UnsubLib
 
                 if (globalSupp)
                 {
-                    var res = await Data.CallFn(Conn, "AreSuppressed", Jw.Serialize(new { md5s = md5sNotFound, emails = emailsNotFound }), "");
+                    var args = Jw.Serialize(new { md5s = md5sNotFound, emails = emailsNotFound });
 
-                    emailsNotFound = res.GetL("notFound/emails").Select(g => g.GetS("e")).ToArray();
-                    md5sNotFound = res.GetL("notFound/md5s").Select(g => g.GetS("m")).ToArray();
+                    await _fw.Trace(nameof(IsUnsubList), $"Checking global suppression\n{args}");
+                    var res = await Data.CallFn(Conn, "AreSuppressed", args);
+
+                    emailsNotFound = res.GetL("notFound/emails").Select(g => g.GetS("")).ToArray();
+                    md5sNotFound = res.GetL("notFound/md5s").Select(g => g.GetS("")).ToArray();
                 }
 
                 return Jw.Serialize(new { NotUnsub = emailsNotFound.Union(md5sNotFound) });
@@ -1523,6 +1539,12 @@ namespace UnsubLib
 
         public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)
         {
+            if (unsubRelationshipId.IsNullOrWhitespace())
+            {
+                await _fw.Error(nameof(GetSuppressionFileUri), $"Empty unsubRelationshipId");
+                return null;
+            }
+
             string uri = null;
             var networkName = network.GetS("Name");
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]

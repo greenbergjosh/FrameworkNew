@@ -47,7 +47,10 @@ namespace UnsubServerWeb
                     case "CleanUnusedFilesServer":
                         result = await nw.CleanUnusedFilesServer();
                         break;
-
+                    case "setTrace":
+                        _fw.TraceLogging = dtve.GetS("trace").ParseBool() == true;
+                        result = JsonWrapper.Serialize(new { trace = _fw.TraceLogging });
+                        break;
                     default:
                         File.AppendAllText("UnsubServer.log", $@"{DateTime.Now}::{requestFromPost}::Unknown method" +
                             Environment.NewLine);
