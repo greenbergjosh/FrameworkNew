@@ -28,7 +28,9 @@ namespace SimpleImportExport
 
         public override async Task<Stream> GetStream(string fileRelativePath)
         {
-            return await ProtocolClient.GetFtpFileStream(CombineUrl(BasePath, fileRelativePath), Host, User, Password);
+            // Confused does fileRelativePath sometimes come without BasePath already combined
+            // return await ProtocolClient.GetFtpFileStream(CombineUrl(BasePath, fileRelativePath), Host, User, Password);
+            return await ProtocolClient.GetFtpFileStream(fileRelativePath, Host, User, Password);
         }
 
         public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate) file, Endpoint source)
