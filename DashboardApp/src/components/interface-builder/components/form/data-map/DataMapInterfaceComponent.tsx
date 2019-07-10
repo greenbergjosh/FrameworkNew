@@ -1,18 +1,14 @@
-import { DatePicker } from "antd"
-import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { get, set } from "lodash/fp"
-import moment from "moment"
 import React from "react"
 import { DataMap } from "../../../../data-map/DataMap"
 import { DataPathContext } from "../../../../DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
-import { RenderInterfaceComponent } from "../../../RenderInterfaceComponent"
-import { UserInterface, UserInterfaceProps } from "../../../UserInterface"
+import { UserInterfaceProps } from "../../../UserInterface"
 import { dataMapManageForm } from "./data-map-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 export interface DataMapInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -84,7 +80,14 @@ export class DataMapInterfaceComponent extends BaseInterfaceComponent<
         data={values}
         keyLabel={keyComponent.label}
         onDataChanged={(newData) =>
-          onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
+          (console.log("DataMapInterfaceComponent.onDataChanged", {
+            valueKey,
+            newData,
+            userInterfaceData,
+            result: set(valueKey, newData, userInterfaceData),
+          }),
+          0) ||
+          (onChangeData && onChangeData(set(valueKey, newData, userInterfaceData)))
         }
         multiple={multiple}
         renderKeyComponent={(dataItem, onChangeData) => {

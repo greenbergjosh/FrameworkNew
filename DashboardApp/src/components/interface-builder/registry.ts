@@ -7,6 +7,7 @@ import { ListInterfaceComponent } from "./components/display/list/ListInterfaceC
 import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
+import { WizardInterfaceComponent } from "./components/display/wizard/WizardInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
@@ -34,7 +35,7 @@ export const registry: ComponentRegistry = {
     card: CardInterfaceComponent,
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
-    column: ColumnInterfaceComponent,
+    // column: ColumnInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     form: FormInterfaceComponent,
@@ -48,6 +49,7 @@ export const registry: ComponentRegistry = {
     table: TableInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
+    wizard: WizardInterfaceComponent,
 
     // Custom items really should be added as a third party registration
     "slot-config": SlotConfigInterfaceComponent,

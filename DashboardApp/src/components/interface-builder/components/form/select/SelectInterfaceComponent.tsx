@@ -1,6 +1,8 @@
 import { Select } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
+import * as record from "fp-ts/lib/Record"
 import { Branded } from "io-ts"
+import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import jsonLogic from "json-logic-js"
@@ -8,9 +10,12 @@ import JSON5 from "json5"
 import { get, set } from "lodash/fp"
 import React from "react"
 import { KeyValuePairConfig } from "../../../../../data/AdminApi"
+import { Right } from "../../../../../data/Either"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
-import { QueryConfig } from "../../../../../data/Report"
+import { JSONRecord } from "../../../../../data/JSON"
+import { QueryConfigCodec } from "../../../../../data/Report"
 import { cheapHash } from "../../../../../lib/json"
+import { DataMapProps } from "../../../../data-map/DataMap"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { UserInterfaceContext } from "../../../UserInterfaceContextManager"
 import { selectManageForm } from "./select-manage-form"
@@ -70,6 +75,7 @@ interface SelectInterfaceComponentPropsRemoteQueryData extends ISelectInterfaceC
   dataHandlerType: "remote-query"
   remoteQuery?: string
   remoteDataFilter: JSONObject
+  remoteQueryMapping: [{ label: "label"; value: string }, { label: "value"; value: string }]
 }
 
 interface SelectInterfaceComponentPropsRemoteURLData extends ISelectInterfaceComponentProps {
@@ -138,6 +144,12 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     props: SelectInterfaceComponentProps,
     state: SelectInterfaceComponentState
   ) {
+    console.log(
+      "SelectInterfaceComponent.getDerivedStateFromProps",
+      state.loadStatus,
+      props.dataHandlerType,
+      props.data
+    )
     if (state.loadStatus === "none" && props.dataHandlerType === "local") {
       return { options: (props.data && props.data.values) || [], loadStatus: "loaded" }
     }
@@ -167,6 +179,35 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     )
   }
 
+  updateOptionsFromValues = (values: JSONRecord[]) => {
+    const remoteQueryMapping =
+      (this.props.dataHandlerType === "remote-query" && this.props.remoteQueryMapping) || []
+    const remoteDataFilter =
+      (this.props.dataHandlerType === "remote-query" && this.props.remoteDataFilter) || null
+    const labelKey =
+      (
+        remoteQueryMapping.find(({ label }) => label === "label") || {
+          value: "label",
+        }
+      ).value || "label"
+    const valueKey =
+      (
+        remoteQueryMapping.find(({ label }) => label === "value") || {
+          value: "value",
+        }
+      ).value || "value"
+
+    this.setState({
+      options: values
+        .filter((value) => !remoteDataFilter || jsonLogic.apply(remoteDataFilter, value))
+        .map((value, index) => ({
+          label: (get(labelKey, value) as string) || `Option ${index + 1}`,
+          value: String(get(valueKey, value)),
+        })),
+      loadStatus: "loaded",
+    })
+  }
+
   loadRemoteData = () => {
     if (
       (this.props.dataHandlerType === "remote-config" ||
@@ -174,9 +215,10 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         this.props.dataHandlerType === "remote-query") &&
       this.context
     ) {
-      const { loadById, loadByFilter, executeQuery } = this.context
-      const { remoteDataFilter } = this.props
-      // console.log("SelectInterfaceComponent.loadRemoteData", this.props, loadByFilter)
+      const { loadById, loadByFilter, executeQuery, reportDataByQuery } = this.context
+      const { hidden, remoteDataFilter } = this.props
+
+      console.log("SelectInterfaceComponent.render", { reportDataByQuery })
 
       switch (this.props.dataHandlerType) {
         case "remote-config": {
@@ -215,28 +257,60 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
           return
         }
         case "remote-query": {
-          if (this.props.remoteQuery) {
-            const queryId = this.props.remoteQuery as Branded<string, NonEmptyStringBrand>
+          const { remoteQuery, remoteQueryMapping } = this.props
+
+          if (!hidden && remoteQuery) {
+            const queryId = remoteQuery as Branded<string, NonEmptyStringBrand>
             const queryGlobalConfig = loadById(queryId)
             if (queryGlobalConfig) {
-              const queryConfig = tryCatch(
-                () => JSON5.parse(queryGlobalConfig.config.getOrElse("")) as QueryConfig
-              ).toNullable()
+              const queryConfig = QueryConfigCodec.decode(
+                JSON5.parse(queryGlobalConfig.config.getOrElse(""))
+              )
+              queryConfig.fold(
+                (errors) => {
+                  console.error(
+                    "SelectInterfaceComponent.render",
+                    "Invalid Query",
+                    reporter(queryConfig)
+                  )
+                },
+                Right((queryConfig) => {
+                  console.log(
+                    "SelectInterfaceComponent.render",
+                    "Checking for loaded values",
+                    queryConfig
+                  )
 
-              if (queryConfig) {
-                const queryResultURI = cheapHash(queryConfig.query, {})
+                  const parameterValues = queryConfig.parameters.reduce(
+                    (acc, { name, defaultValue }) => (
+                      (acc[name] = defaultValue && defaultValue.toNullable()), acc
+                    ),
+                    {} as JSONObject
+                  )
+                  const queryResultURI = cheapHash(queryConfig.query, parameterValues)
 
-                // console.log("SelectInterfaceComponent.loadRemoteData", "remote-query", "execute", {
-                //   resultURI: queryResultURI,
-                //   query: queryConfig.query,
-                //   params: {},
-                // })
-                executeQuery({
-                  resultURI: queryResultURI,
-                  query: queryConfig.query,
-                  params: {},
+                  const queryResult = record.lookup(queryResultURI, reportDataByQuery)
+
+                  queryResult.foldL(
+                    () => {
+                      console.log("SelectInterfaceComponent.render", "Loading")
+                      this.setState({ loadStatus: "loading" })
+                      executeQuery({
+                        resultURI: queryResultURI,
+                        query: queryConfig.query,
+                        params: parameterValues,
+                      }).then(() => {
+                        console.log("SelectInterfaceComponent.render", "Clear loading state")
+                        this.setState({ loadStatus: "none" })
+                      })
+                    },
+                    (resultValues) => {
+                      console.log("SelectInterfaceComponent.render", "Loaded, no remote")
+                      this.updateOptionsFromValues(resultValues)
+                    }
+                  )
                 })
-              }
+              )
             }
           }
           return
@@ -266,6 +340,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         }
       }
 
+      console.log("Failed to load remote data for", this.props)
       this.setState({ options: [] })
     }
   }
@@ -281,6 +356,10 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     prevProps: SelectInterfaceComponentProps,
     prevState: SelectInterfaceComponentState
   ) {
+    console.log("SelectInterfaceComponent.componentDidUpdate", {
+      was: prevState.loadStatus,
+      is: this.state.loadStatus,
+    })
     // If the data handler type has changed, and the new type is remote
     // or if the remote config type has changed
     // or if the remote query has changed
@@ -296,6 +375,12 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
           prevProps.dataHandlerType === "remote-kvp" &&
           this.props.remoteKeyValuePair !== prevProps.remoteKeyValuePair)) &&
       SelectInterfaceComponent.isRemoteDataType(this.props.dataHandlerType)
+    ) {
+      this.loadRemoteData()
+    } else if (
+      SelectInterfaceComponent.isRemoteDataType(this.props.dataHandlerType) &&
+      this.state.loadStatus === "none" &&
+      prevState.loadStatus === "loading"
     ) {
       this.loadRemoteData()
     }
@@ -325,9 +410,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         (
           options.find(
             ({ value }) =>
-              // (console.log("SelectInterfaceComponent.getCleanValue X1", { value, anyCaseResult }),
-              // 0) ||
-              (value && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
+              value === anyCaseResult ||
+              (typeof value === "string" && value.toLowerCase()) ===
+                (anyCaseResult && anyCaseResult.toLowerCase())
           ) || { value: anyCaseResult }
         ).value
       )
@@ -338,12 +423,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
               (
                 options.find(
                   ({ value }) =>
-                    // (console.log("SelectInterfaceComponent.getCleanValue X2", {
-                    //   value,
-                    //   resultItem,
-                    // }),
-                    // 0) ||
-                    (value && value.toLowerCase()) === (resultItem && resultItem.toLowerCase())
+                    value === resultItem ||
+                    (typeof value === "string" && value.toLowerCase()) ===
+                      (resultItem && resultItem.toLowerCase())
                 ) || { value: resultItem }
               ).value
           )
@@ -380,7 +462,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         placeholder={placeholder}
         showSearch>
         {options.map((option) => (
-          <Select.Option key={`${option.value}`} value={option.value.toLowerCase()}>
+          <Select.Option key={`${option.value}`} value={option.value}>
             {option.label}
           </Select.Option>
         ))}

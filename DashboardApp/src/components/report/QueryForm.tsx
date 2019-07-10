@@ -58,10 +58,12 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
     isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
+    reportDataByQuery: s.reports.reportDataByQuery,
   }))
 
   const userInterfaceContextManager: UserInterfaceContextManager = {
     executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
+    reportDataByQuery: fromStore.reportDataByQuery,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
       return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
     },
