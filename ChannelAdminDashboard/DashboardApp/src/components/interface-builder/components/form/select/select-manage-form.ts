@@ -48,10 +48,10 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                       label: "Remote (Query)",
                       value: "remote-query",
                     },
-                    {
-                      label: "Remote (URL)",
-                      value: "remote-url",
-                    },
+                    // {
+                    //   label: "Remote (URL)",
+                    //   value: "remote-url",
+                    // },
                   ],
                 },
                 defaultValue: "local",
@@ -89,7 +89,15 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 help: "Only queries without parameters can be used as Select box options.",
                 dataHandlerType: "remote-config",
-                remoteDataFilter: { "!": { var: ["config.parameters"] } },
+                remoteDataFilter: {
+                  // Set of both
+                  or: [
+                    // Queries with no parameter options
+                    { "!": { var: "config.parameters" } },
+                    // and Queries with all parameter options filled in
+                    { all: [{ var: "config.parameters" }, { "!!": { var: "defaultValue" } }] },
+                  ],
+                },
                 remoteConfigType: "Report.Query",
                 visibilityConditions: {
                   and: [
@@ -229,6 +237,7 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "remoteURL",
                 label: "Remote URL",
                 component: "input",
+                hidden: true,
                 visibilityConditions: {
                   "===": [
                     "remote-url",

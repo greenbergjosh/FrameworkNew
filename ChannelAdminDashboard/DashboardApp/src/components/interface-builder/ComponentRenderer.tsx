@@ -53,6 +53,7 @@ export const ComponentRenderer = ({
               componentDefinition,
               newData,
               onChangeData,
+              data,
             })
             onChangeData && onChangeData(newData)
           }}

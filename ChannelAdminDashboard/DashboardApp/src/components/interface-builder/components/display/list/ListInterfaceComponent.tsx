@@ -124,7 +124,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                             }),
                             0) ||
                             (onChangeData &&
-                              onChangeData(set([valueKey, index], newData, userInterfaceData)))
+                              onChangeData(set(`${valueKey}.${index}`, newData, userInterfaceData)))
                           }
                           onChangeSchema={(newSchema) => {
                             console.warn(

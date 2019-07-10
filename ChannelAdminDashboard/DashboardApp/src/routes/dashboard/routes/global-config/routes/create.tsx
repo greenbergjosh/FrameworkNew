@@ -69,6 +69,7 @@ export function CreateGlobalConfig({
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     entityTypeConfigs: store.select.globalConfig.entityTypeConfigs(s),
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
+    reportDataByQuery: s.reports.reportDataByQuery,
   }))
 
   const [setState, state, prevState] = useStatePlus({
@@ -96,6 +97,7 @@ export function CreateGlobalConfig({
 
   const userInterfaceContextManager: UserInterfaceContextManager = {
     executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
+    reportDataByQuery: fromStore.reportDataByQuery,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
       return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
     },

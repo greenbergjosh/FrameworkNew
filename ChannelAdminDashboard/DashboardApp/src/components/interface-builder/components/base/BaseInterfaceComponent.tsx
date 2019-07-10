@@ -1,5 +1,5 @@
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { merge } from "lodash/fp"
+import { merge, set } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
@@ -67,7 +67,7 @@ export abstract class BaseInterfaceComponent<
       typeof componentDefinition.valueKey === "string" &&
       typeof componentDefinition.defaultValue !== "undefined"
     ) {
-      return { [componentDefinition.valueKey]: componentDefinition.defaultValue }
+      return set(componentDefinition.valueKey, componentDefinition.defaultValue, {})
     }
     return {}
   }

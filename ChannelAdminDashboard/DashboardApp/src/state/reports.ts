@@ -34,7 +34,7 @@ export interface Effects {
     resultURI: string
     query: Pick<QueryConfig, "query">["query"]
     params: JSONRecord | JSONArray
-  }): void
+  }): Promise<any>
 }
 
 export interface Selectors {
