@@ -52,38 +52,75 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     startDateKey,
   }: DateRangeInterfaceComponentProps) {
     const [startDate, endDate] = this.standardRanges()[defaultRangeValue]
-    return set(startDateKey, startDate, set(endDateKey, endDate, {}))
+    return set(startDateKey, startDate.toISOString(), set(endDateKey, endDate.toISOString(), {}))
   }
 
   static standardRanges(): { [range: string]: [moment.Moment, moment.Moment] } {
     const now = moment.utc()
 
     return {
-      Today: [now.clone(), now.clone()],
-      Yesterday: [now.clone().subtract(1, "day"), now.clone().subtract(1, "day")],
-      "This Week": [now.clone().startOf("week"), now.clone().endOf("week")],
+      Today: [now.clone().startOf("day"), now.clone().endOf("day")],
+      Yesterday: [
+        now
+          .clone()
+          .subtract(1, "day")
+          .startOf("day"),
+        now
+          .clone()
+          .subtract(1, "day")
+          .endOf("day"),
+      ],
+      "This Week": [
+        now
+          .clone()
+          .startOf("week")
+          .startOf("day"),
+        now
+          .clone()
+          .endOf("week")
+          .endOf("day"),
+      ],
       "Last Week": [
         now
           .clone()
           .subtract(1, "week")
-          .startOf("week"),
+          .startOf("week")
+          .startOf("day"),
         now
           .clone()
           .subtract(1, "week")
-          .endOf("week"),
+          .endOf("week")
+          .endOf("day"),
       ],
-      "This Month": [now.clone().startOf("month"), now.clone().endOf("month")],
+      "This Month": [
+        now
+          .clone()
+          .startOf("month")
+          .startOf("day"),
+        now
+          .clone()
+          .endOf("month")
+          .endOf("day"),
+      ],
       "Last Month": [
         now
           .clone()
           .subtract(1, "month")
-          .startOf("month"),
+          .startOf("month")
+          .startOf("day"),
         now
           .clone()
           .subtract(1, "month")
-          .endOf("month"),
+          .endOf("month")
+          .endOf("day"),
       ],
-      YTD: [now.clone().startOf("year"), now.clone()],
+      YTD: [
+        now
+          .clone()
+          .startOf("year")
+          .startOf("day"),
+        now.clone().endOf("day"),
+      ],
     }
   }
 
@@ -95,6 +132,10 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
 
     onChangeData &&
       onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+  }
+
+  getDefaultValue = () => {
+    return DateRangeInterfaceComponent.getDefintionDefaultValue(this.props)
   }
 
   getValues = () => {

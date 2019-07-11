@@ -27,6 +27,7 @@ export interface ComponentDefinitionNamedProps {
   key: string
   abstract?: boolean
   component: string
+  defaultValue?: any
   help?: string
   hidden?: boolean
   hideLabel?: boolean
@@ -71,11 +72,24 @@ export abstract class BaseInterfaceComponent<
     }
     return {}
   }
+
   static manageForm(...extend: ComponentDefinition[]): ComponentDefinition[] {
     return extend || []
   }
+
   static getManageFormDefaults(): { [key: string]: any } {
     return getDefaultsFromComponentDefinitions(this.manageForm())
+  }
+
+  getDefaultValue(): unknown {
+    if (typeof this.props.defaultValue !== "undefined") {
+      return this.props.defaultValue
+    } else {
+      return ((this
+        .constructor as unknown) as typeof BaseInterfaceComponent).getDefintionDefaultValue(
+        this.props
+      )
+    }
   }
 }
 

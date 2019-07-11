@@ -1,6 +1,7 @@
 import { Button } from "antd"
 import * as record from "fp-ts/lib/Record"
 import debounce from "lodash.debounce"
+import { merge } from "lodash/fp"
 import React from "react"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../data/JSON"
@@ -8,9 +9,14 @@ import { ParameterItem, QueryConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
 import { generateLayoutFromParameters } from "../../routes/dashboard/routes/reports/routes/report/generators"
 import { store } from "../../state/store"
-import { ComponentDefinition } from "../interface-builder/components/base/BaseInterfaceComponent"
+import { registry } from "../interface-builder/registry"
 import { UserInterface } from "../interface-builder/UserInterface"
 import { UserInterfaceContextManager } from "../interface-builder/UserInterfaceContextManager"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinition,
+  getDefaultsFromComponentDefinitions,
+} from "../interface-builder/components/base/BaseInterfaceComponent"
 
 interface Props {
   layout: QueryConfig["layout"]
@@ -59,24 +65,33 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
     isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
     reportDataByQuery: s.reports.reportDataByQuery,
+    userInterfaceContextManager: {
+      executeQuery: store.dispatch.reports.executeQuery.bind(store.dispatch.reports),
+      reportDataByQuery: s.reports.reportDataByQuery,
+      loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
+        return s.globalConfig.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
+      },
+      loadById: (id: string) => {
+        return record.lookup(id, store.select.globalConfig.configsById(s)).toNullable()
+      },
+      loadByURL: (url: string) => {
+        return [] // TODO: axios
+      },
+    } as UserInterfaceContextManager,
   }))
 
-  const userInterfaceContextManager: UserInterfaceContextManager = {
-    executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
-    reportDataByQuery: fromStore.reportDataByQuery,
-    loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
-      return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
-    },
-    loadById: (id: string) => {
-      return record.lookup(id, fromStore.configsById).toNullable()
-    },
-    loadByURL: (url: string) => {
-      return [] // axios
-    },
-  }
-
   const defaultFormState = React.useMemo(() => {
-    return parameters.reduce(
+    const defaultComponentValues = ((layout || []) as ComponentDefinition[]).reduce(
+      (acc, layoutItem: ComponentDefinition) => {
+        // const Component = registry.lookup(layoutItem.component)
+        // if (Component) {
+        return merge(acc, getDefaultsFromComponentDefinitions([layoutItem]))
+        // }
+        // return acc
+      },
+      {} as JSONRecord
+    )
+    const defaultParameters = parameters.reduce(
       (acc: { [key: string]: any }, parameter: ParameterItem) => {
         if (parameter.defaultValue.isSome()) {
           acc[parameter.name] = parameter.defaultValue.toUndefined()
@@ -85,6 +100,8 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
       },
       {} as { [key: string]: any }
     )
+
+    return merge(defaultParameters, defaultComponentValues)
   }, [])
 
   const [formState, updateFormState] = React.useState(defaultFormState)
@@ -97,25 +114,7 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
     [onSubmit, formState]
   )
 
-  const realLayout = layout.length
-    ? layout
-    : parameters.length
-    ? generateLayoutFromParameters(parameters)
-    : null
-
-  //: {[key: string]: string | boolean | number}
-  if (realLayout) {
-    const defaultParameters = parameters.reduce(
-      (acc, parameter) => {
-        if (parameter.defaultValue.isSome()) {
-          acc[parameter.name] = parameter.defaultValue.toUndefined()
-        }
-
-        return acc
-      },
-      {} as any
-    )
-
+  if (layout) {
     console.log("QueryForm.render", { layout })
 
     return (
@@ -125,18 +124,12 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
           components={(layout as unknown) as ComponentDefinition[]}
           data={formState}
           onChangeData={updateFormState}
-          contextManager={userInterfaceContextManager}
+          contextManager={fromStore.userInterfaceContextManager}
         />
         <div style={{ marginTop: "10px" }}>
           <Button onClick={handleSubmit}>Generate Report</Button>
         </div>
       </>
-      // <Form
-      //   form={generateFormFromLayout(realLayout)}
-      //   submission={{ data: { ...defaultParameters, ...parameterValues } }}
-      //   onSubmit={handleSubmit}
-      //   options={{ reactContext: { test: "Hello" } }}
-      // />
     )
   }
 

@@ -1,19 +1,14 @@
 import Component from "@reach/component-component"
 import { Button, Card, Icon } from "antd"
-import { identity } from "fp-ts/lib/function"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import * as iots from "io-ts"
 import { IDisposable, IPosition, Range } from "monaco-editor"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
+import MonacoEditor, { MonacoDiffEditor, MonacoEditorProps } from "react-monaco-editor"
 import { None, Some } from "../data/Option"
 import { store } from "../state/store"
-import MonacoEditor, {
-  MonacoDiffEditor,
-  MonacoEditorBaseProps,
-  MonacoEditorProps,
-} from "react-monaco-editor"
 
 export type EditorTheme = "vs" | "vs-dark" | "hc-black"
 export type EditorLang = iots.TypeOf<typeof EditorLangCodec>

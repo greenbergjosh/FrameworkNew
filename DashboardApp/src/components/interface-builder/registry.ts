@@ -2,6 +2,7 @@ import React from "react"
 import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
 import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
 import { CardInterfaceComponent } from "./components/display/card/CardInterfaceComponent"
+import { CollapseInterfaceComponent } from "./components/display/collapse/CollapseInterfaceComponent"
 import { ColumnInterfaceComponent } from "./components/display/column/ColumnInterfaceComponent"
 import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
@@ -35,6 +36,7 @@ export const registry: ComponentRegistry = {
     card: CardInterfaceComponent,
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
+    collapse: CollapseInterfaceComponent,
     // column: ColumnInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,

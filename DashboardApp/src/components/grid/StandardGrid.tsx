@@ -1,7 +1,10 @@
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
-import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import { Spin } from "antd"
+import { cloneDeep } from "lodash/fp"
 import React from "react"
+import { JSONRecord } from "../../data/JSON"
+import { deepDiff } from "../../lib/deep-diff"
 import { shallowPropCheck } from "../interface-builder/dnd/util/shallow-prop-check"
 import {
   Aggregate,
@@ -21,9 +24,20 @@ import {
   Sort,
   Toolbar,
   DialogEditEventArgs,
+  SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 
-const PureGridComponent = React.memo(GridComponent, shallowPropCheck(["columns", "data"]))
+const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
+  // @ts-ignore
+  const simplePropEquality = shallowPropCheck(["columns", "data"])(prevProps, nextProps)
+  const runDeepDiff = () =>
+    deepDiff(prevProps, nextProps, (k) =>
+      ["children", "detailTemplate", "valueAccessor"].includes(k)
+    )
+  // console.log("PureGridComponent.memo", simplePropEquality, runDeepDiff(), { prevProps, nextProps })
+
+  return simplePropEquality && !runDeepDiff()
+})
 
 const gridComponentServices = [
   Toolbar,
@@ -73,7 +87,7 @@ const actionComplete = (args: DialogEditEventArgs): void => {
     const dialog: Dialog = args.dialog as Dialog
     dialog.height = 400
     // change the header of the dialog
-    dialog.header = args.requestType === "beginEdit" ? "Record of XYZ" : "New Row"
+    dialog.header = args.requestType === "beginEdit" ? "Existing Record" : "New Row"
   }
 }
 
@@ -82,8 +96,10 @@ export interface StandardGridComponentProps {
   allowDeleting?: boolean
   allowEditing?: boolean
   columns: ColumnModel[]
-  data: JSONObject[]
+  data: JSONRecord[]
   detailTemplate?: string | Function | any
+  loading?: boolean
+  sortSettings?: SortSettingsModel
   //   editSettingsTemplate?: string | Function | any
   //   groupSettingsCaptionTemplate?: string | Function | any
   //   onToolbarClick: (args?: ClickEventArgs) => void
@@ -101,6 +117,8 @@ export const StandardGrid = React.forwardRef(
       columns,
       data,
       detailTemplate,
+      loading,
+      sortSettings,
     }: StandardGridComponentProps,
     ref?: React.Ref<GridComponent>
   ) => {
@@ -110,6 +128,8 @@ export const StandardGrid = React.forwardRef(
       () => (ref && typeof ref === "object" && handleToolbarItemClicked(ref)) || undefined,
       [ref]
     )
+
+    const usableColumns = React.useMemo(() => cloneDeep(columns), [])
 
     // const createDetailTemplate = React.useMemo(() => {
     //   console.log("StandardGrid.render", "detailTemplate 2", detailTemplate)
@@ -124,18 +144,21 @@ export const StandardGrid = React.forwardRef(
     )
 
     return (
-      <PureGridComponent
-        ref={ref}
-        {...commonGridOptions}
-        toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
-        actionComplete={actionComplete}
-        columns={columns}
-        dataSource={data}
-        detailTemplate={detailTemplate}
-        editOptions={editOptions}
-        toolbarClick={handleToolbarClick}>
-        <Inject services={gridComponentServices} />
-      </PureGridComponent>
+      <Spin spinning={loading}>
+        <PureGridComponent
+          ref={ref}
+          {...commonGridOptions}
+          toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
+          actionComplete={actionComplete}
+          columns={usableColumns}
+          dataSource={data}
+          detailTemplate={detailTemplate}
+          editOptions={editOptions}
+          sortSettings={sortSettings}
+          toolbarClick={handleToolbarClick}>
+          <Inject services={gridComponentServices} />
+        </PureGridComponent>
+      </Spin>
     )
   }
 )
