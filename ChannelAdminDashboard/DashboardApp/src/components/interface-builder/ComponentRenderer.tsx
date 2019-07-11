@@ -1,8 +1,9 @@
 import { set } from "lodash/fp"
 import React from "react"
+import { deepDiff } from "../../lib/deep-diff"
 import { DataPathContext } from "../DataPathContext"
 import { ComponentDefinition } from "./components/base/BaseInterfaceComponent"
-import { Droppable, DroppableContextType } from "./dnd"
+import { Droppable, DroppableContextType, shallowPropCheck } from "./dnd"
 import { ComponentRegistryContext } from "./registry"
 import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
 import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
@@ -24,7 +25,7 @@ export const ComponentRendererModeContext = React.createContext<UserInterfacePro
 
 export const UI_ROOT = "UI-Root"
 
-export const ComponentRenderer = ({
+export const _ComponentRenderer = ({
   componentLimit,
   components,
   data,
@@ -98,21 +99,21 @@ export const ComponentRenderer = ({
         ) : (
           content
         )}
-
-        {/* <Alert
-          type="info"
-          message={
-            <>
-              Mode: {mode}
-              <pre>{JSON.stringify(components, null, 2)}</pre>
-            </>
-          }
-        /> */}
       </ComponentRendererModeContext.Provider>
     </div>
   )
 }
 
-ComponentRenderer.defaultProps = {
+_ComponentRenderer.defaultProps = {
   components: [],
 }
+
+export const ComponentRenderer = React.memo(_ComponentRenderer, (prevProps, nextProps) => {
+  // @ts-ignore
+  const simplePropEquality = shallowPropCheck(["components", "data", "mode"])(prevProps, nextProps)
+  const runDeepDiff = () =>
+    deepDiff(prevProps, nextProps, (k) => ["onChangeSchema", "onChangeData"].includes(k))
+  // console.log("ComponentRenderer.memo", simplePropEquality, runDeepDiff())
+
+  return simplePropEquality && !runDeepDiff()
+})

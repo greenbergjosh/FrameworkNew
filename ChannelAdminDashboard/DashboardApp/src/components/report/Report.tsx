@@ -56,6 +56,12 @@ export const Report = (props: ReportProps): JSX.Element => {
   )
 
   console.log("Report.render", { reportConfig, queryConfig })
+  // React.useEffect(() => {
+  //   console.log("Report.construct", { reportConfig, queryConfig })
+  //   return () => {
+  //     console.log("Report.destroy", { reportConfig, queryConfig })
+  //   }
+  // })
 
   return (
     <div>

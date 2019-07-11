@@ -4,10 +4,12 @@ import { Button, PageHeader } from "antd"
 import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
+import { sortBy } from "lodash/fp"
 import React from "react"
 import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
 import { cheapHash } from "../../lib/json"
+import { StandardGrid } from "../grid/StandardGrid"
 import { UserInterface } from "../interface-builder/UserInterface"
 import { QueryForm } from "./QueryForm"
 import { Report } from "./Report"
@@ -34,25 +36,9 @@ import {
   Sort,
   Toolbar,
   Filter,
+  SortDescriptorModel,
+  ColumnModel,
 } from "@syncfusion/ej2-react-grids"
-
-const commonGridOptions = {
-  // detailDataBound: detailMapper([]),
-  columnMenuItems: ["SortAscending", "SortDescending"],
-  toolbar: ["CsvExport", "ExcelExport", "PdfExport", "Print", "ColumnChooser"],
-  showColumnChooser: true,
-  allowExcelExport: true,
-  allowMultiSorting: true,
-  allowPdfExport: true,
-  allowResizing: true,
-  allowReordering: true,
-  allowSorting: true,
-  allowFiltering: true,
-}
-
-const filterSettings: FilterSettingsModel = {
-  type: "Menu",
-}
 
 export interface ReportBodyProps {
   parentData?: JSONRecord
@@ -116,8 +102,6 @@ export const ReportBody = React.memo(
       [dispatch.reports, queryConfig.query, satisfiedByParentParams]
     )
 
-    const handleToolbarClick = React.useMemo(() => handleToolbarItemClicked(grid), [])
-
     React.useEffect(() => {
       if (
         !fromStore.isExecutingQuery &&
@@ -144,6 +128,25 @@ export const ReportBody = React.memo(
       [parameterValues, reportConfig.details]
     )
 
+    const sortSettings = {
+      columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce(
+        (acc, column) => {
+          if (column.sortDirection && column.field) {
+            acc.push({ field: column.field, direction: column.sortDirection })
+          }
+          return acc
+        },
+        [] as SortDescriptorModel[]
+      ),
+    }
+
+    // React.useEffect(() => {
+    //   console.log("ReportBody.construct", { reportConfig, queryConfig })
+    //   return () => {
+    //     console.log("ReportBody.destroy", { reportConfig, queryConfig })
+    //   }
+    // })
+
     return (
       <>
         {(reportId.isSome() ||
@@ -169,16 +172,25 @@ export const ReportBody = React.memo(
         )}
 
         <div>
-          <PureGridComponent
+          {/* <PureGridComponent
             ref={grid}
             {...commonGridOptions}
             filterSettings={filterSettings}
             toolbarClick={handleToolbarClick}
             detailTemplate={createDetailTemplate}
             dataSource={queryResultData.getOrElse(emptyArray)}
+            sortSettings={sortSettings}
             columns={reportConfig.columns}>
             <Inject services={gridComponentServices} />
-          </PureGridComponent>
+          </PureGridComponent> */}
+          <StandardGrid
+            ref={grid}
+            data={queryResultData.getOrElse(emptyArray)}
+            detailTemplate={createDetailTemplate}
+            columns={reportConfig.columns as ColumnModel[]}
+            loading={fromStore.isExecutingQuery}
+            sortSettings={sortSettings}
+          />
         </div>
       </>
     )

@@ -1,9 +1,8 @@
-import Component from "@reach/component-component"
-import { Option } from "fp-ts/lib/Option"
+import { none, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
 import { ComponentDefinition } from "../components/interface-builder/components/base/BaseInterfaceComponent"
-import { JSONRecord, JSONRecordCodec } from "./JSON"
+import { JSONRecord } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({
@@ -190,12 +189,14 @@ export interface IReportDetailsAsReport extends IReportDetails {
 export interface ReportDetailsAsInlineReport extends IReportDetailsAsReport {
   type: "report"
   reportType: "inline"
+  help: string
   data: LocalReportConfig
 }
 
 export interface ReportDetailsAsConfigReport extends IReportDetailsAsReport {
   type: "report"
   reportType: "config"
+  help: number
   report: GlobalConfigReference["id"]
 }
 

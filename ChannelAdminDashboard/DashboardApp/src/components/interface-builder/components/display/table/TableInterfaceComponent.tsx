@@ -1,6 +1,6 @@
-import { ColumnModel } from "@syncfusion/ej2-react-grids"
+import { ColumnModel, SortDescriptor, SortDescriptorModel } from "@syncfusion/ej2-react-grids"
 import { Typography } from "antd"
-import { get, set } from "lodash/fp"
+import { get, set, sortBy } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../../DataPathContext"
 import { StandardGrid } from "../../../../grid/StandardGrid"
@@ -14,12 +14,19 @@ import {
   ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
 
+interface ColumnSortOptions {
+  sortDirection?: "Ascending" | "Descending"
+  sortOrder?: number
+}
+
+type ColumnConfig = ColumnModel & ColumnSortOptions
+
 interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
   allowAdding?: boolean
   allowDeleting?: boolean
   allowEditing?: boolean
-  columns: ColumnModel[]
+  columns: ColumnConfig[]
   component: "table"
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
@@ -168,6 +175,18 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
               }
               case "display": {
                 const dataArray = get(valueKey, userInterfaceData) || [userInterfaceData]
+                const sortSettings = {
+                  columns: sortBy("sortOrder", columns).reduce(
+                    (acc, column) => {
+                      if (column.sortDirection && column.field) {
+                        acc.push({ field: column.field, direction: column.sortDirection })
+                      }
+                      return acc
+                    },
+                    [] as SortDescriptorModel[]
+                  ),
+                }
+
                 console.log("TableInterfaceComponent.render", "Display", this.props, {
                   dataArray,
                   rowDetails,
@@ -179,6 +198,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     allowEditing={allowEditing}
                     columns={columns}
                     data={dataArray}
+                    sortSettings={sortSettings}
                     detailTemplate={
                       rowDetails && rowDetails.length
                         ? (parentData: any) => {
@@ -282,6 +302,54 @@ const editComponents: ComponentDefinition[] = [
               },
             }))
           ),
+          {
+            hideLabel: true,
+            label: "",
+            key: "details",
+            valueKey: "",
+            component: "collapse",
+            sections: [
+              {
+                title: "Sort",
+                components: [
+                  {
+                    key: "allowSorting",
+                    valueKey: "allowSorting",
+                    label: "Allow Sorting",
+                    component: "toggle",
+                    defaultValue: true,
+                  },
+                  {
+                    key: "sortDirection",
+                    valueKey: "sortDirection",
+                    label: "Direction",
+                    component: "select",
+                    dataHandlerType: "local",
+                    data: {
+                      values: [
+                        {
+                          label: "Ascending",
+                          value: "Ascending",
+                        },
+                        {
+                          label: "Descending",
+                          value: "Descending",
+                        },
+                      ],
+                    },
+                  },
+                  {
+                    key: "sortOrder",
+                    valueKey: "sortOrder",
+                    label: "Order",
+                    help:
+                      "The lowest Order is the first column sorted, followed by the next lowest, and so on",
+                    component: "number-input",
+                  },
+                ],
+              },
+            ],
+          },
         ],
       },
     ],
