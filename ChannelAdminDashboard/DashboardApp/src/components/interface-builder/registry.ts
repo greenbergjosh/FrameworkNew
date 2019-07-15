@@ -37,7 +37,7 @@ export const registry: ComponentRegistry = {
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
     collapse: CollapseInterfaceComponent,
-    // column: ColumnInterfaceComponent,
+    column: ColumnInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     form: FormInterfaceComponent,

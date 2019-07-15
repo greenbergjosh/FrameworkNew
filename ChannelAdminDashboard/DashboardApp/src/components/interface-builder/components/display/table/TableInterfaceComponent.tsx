@@ -292,14 +292,11 @@ const editComponents: ComponentDefinition[] = [
           ...tableDataTypes.flatMap((type) =>
             type.form.map((formItem) => ({
               ...formItem,
-              visibilityConditions: {
-                "===": [
-                  type.option.value,
-                  {
-                    var: ["type"],
-                  },
-                ],
-              },
+              visibilityConditions: formItem.visibilityConditions
+                ? {
+                    and: [formItem.visibilityConditions, visiblityConditionType(type.option.value)],
+                  }
+                : visiblityConditionType(type.option.value),
             }))
           ),
           {
@@ -355,3 +352,14 @@ const editComponents: ComponentDefinition[] = [
     ],
   },
 ]
+
+function visiblityConditionType(type: string) {
+  return {
+    "===": [
+      type,
+      {
+        var: ["type"],
+      },
+    ],
+  }
+}
