@@ -177,6 +177,9 @@ namespace VisitorIdLib
                             context.SetCookie(CookieName, resDV.CookieData.ToJson(), CookieExpirationDate);
                             await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "end", cookieData = resDV.CookieData.ToJson() },
                                                    new bool[] { true, true, false }), codePathRsidDict);
+                            break;
+                        case "emailSubmitted":
+                            await EmailSubmitted(Fw, context, codePathRsidDict);
 
                             break;
                         case "SaveSession":
@@ -270,6 +273,60 @@ namespace VisitorIdLib
             }
             await WriteCodePathEvent(PL.O(new { branch = nameof(WriteBlankCookieUnlessExists), loc = "end" }), codePathRsidDict);
             return new VisitorIdResponse(result: Jw.Json(new { Initialized = true }), md5: "", email: "", cookieData: new CookieData());
+        }
+
+        public async Task EmailSubmitted(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
+        {
+            string opaque64, opaque = null, qstr, host, path, lst;
+            IGenericEntity opge;
+            EdwBulkEvent be = null;
+            var opqRsids = new Dictionary<string, object>();
+            await WriteCodePathEvent(PL.O(new { branch = nameof(EmailSubmitted), loc = "start" }), codePathRsidDict);
+
+            try
+            {
+                opaque64 = c.Get("op", "");
+                opaque = Hashing.Base64DecodeFromUrl(opaque64);
+                opge = Jw.JsonToGenericEntity(opaque);
+                var opqVals = ValsFromOpaque(opge);
+                qstr = opqVals.qstr;
+                lst = opqVals.lst;
+                var u = opqVals.uri;
+                host = u.Host ?? "";
+                path = u.AbsolutePath ?? "";
+                opqRsids = opqVals.rsids;
+            }
+            catch (Exception e)
+            {
+                await fw.Err(ErrorSeverity.Error, nameof(DoVisitorId), ErrorDescriptor.Exception, $"Failed to load state data. Exception: {e.Message} Opaque: {(opaque.IsNullOrWhitespace() ? "Opaque was empty" : opaque)}");
+                throw;
+            }
+
+            var visitTime = DateTime.UtcNow;
+            if (c.Request.Cookies[CookieName].IsNullOrWhitespace())
+            {
+                return;
+            }
+            var cookieData = new CookieData(visitTime, c.Request.Cookies[CookieName], CookieVersion, host, path, SessionDuration, RsConfigIds, newlyConstructed: false);
+            foreach (var rsid in opqRsids)
+            {
+                cookieData.RsIdDict.Add(rsid.Key, rsid.Value);
+            }
+
+            foreach (var rsid in cookieData.RsIdDict)
+            {
+                codePathRsidDict.Add(rsid.Key, rsid.Value);
+            }
+
+            be = new EdwBulkEvent();
+            var eventPayload = PL.O(new
+            {
+                et = "EmailSubmitted",
+                email = Hashing.Base64DecodeFromUrl(c.Request.Query["email"]),
+            });
+            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, eventPayload);
+            await fw.EdwWriter.Write(be);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(EmailSubmitted), loc = "body", eventPayload = eventPayload.ToString()}), codePathRsidDict);
         }
 
         public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, bool bootstrap, Dictionary<string, object> codePathRsidDict)
