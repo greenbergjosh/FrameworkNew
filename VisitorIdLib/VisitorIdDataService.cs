@@ -901,12 +901,13 @@ namespace VisitorIdLib
                 }
                 else if (s.ToLower() == "cookie" || s == $"@{CookieEmailPid}")
                 {
+                    emailpid = CookieEmailPid;
                     var be = new EdwBulkEvent();
                     be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids,
                         null, PL.O(new
                         {
                             et = "EmailProviderSelected",
-                            emailpid = CookieEmailPid,
+                            emailpid,
                             emailslot,
                             emailpage,
                             md5pid,
@@ -936,7 +937,7 @@ namespace VisitorIdLib
                         null, PL.O(new
                         {
                             et = "EmailProviderResponse",
-                            emailpid = CookieEmailPid,
+                            emailpid,
                             eg = 0,
                             emailslot,
                             emailpage,
