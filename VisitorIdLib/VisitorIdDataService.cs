@@ -737,7 +737,7 @@ namespace VisitorIdLib
                         md5page = page,
                         lst = lst ?? "",
                         domain = host,
-                        eg = egBool == null ? "" : (egBool == true ? "1" : "0"),
+                        eg = egBool == null ? null : (egBool == true ? "1" : "0"),
                         succ = success ? "1" : "0"
                     }));
                 await fw.EdwWriter.Write(be);
