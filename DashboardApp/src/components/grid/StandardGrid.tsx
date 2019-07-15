@@ -25,16 +25,26 @@ import {
   Toolbar,
   DialogEditEventArgs,
   SortSettingsModel,
+  EditSettingsModel,
+  EditMode,
 } from "@syncfusion/ej2-react-grids"
+
+interface EnrichedColumnDefinition extends ColumnModel {
+  skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
+  customFormat?: string
+  precision?: number
+}
 
 const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
   // @ts-ignore
-  const simplePropEquality = shallowPropCheck(["columns", "data"])(prevProps, nextProps)
+  // Returns true if we should not re-render
+  const simplePropEquality = shallowPropCheck(["columns", "dataSource"])(prevProps, nextProps)
+  // Returns null if we should not re-render
   const runDeepDiff = () =>
     deepDiff(prevProps, nextProps, (k) =>
       ["children", "detailTemplate", "valueAccessor"].includes(k)
     )
-  // console.log("PureGridComponent.memo", simplePropEquality, runDeepDiff(), { prevProps, nextProps })
+  console.log("PureGridComponent.memo", simplePropEquality, runDeepDiff(), { prevProps, nextProps })
 
   return simplePropEquality && !runDeepDiff()
 })
@@ -82,12 +92,12 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
   }
 }
 
-const actionComplete = (args: DialogEditEventArgs): void => {
-  if (args.requestType === "beginEdit" || args.requestType === "add") {
-    const dialog: Dialog = args.dialog as Dialog
+const actionComplete = (arg?: DialogEditEventArgs): void => {
+  if (arg && (arg.requestType === "beginEdit" || arg.requestType === "add")) {
+    const dialog = arg.dialog as Dialog
     dialog.height = 400
     // change the header of the dialog
-    dialog.header = args.requestType === "beginEdit" ? "Existing Record" : "New Row"
+    dialog.header = arg.requestType === "beginEdit" ? "Existing Record" : "New Row"
   }
 }
 
@@ -129,14 +139,43 @@ export const StandardGrid = React.forwardRef(
       [ref]
     )
 
-    const usableColumns = React.useMemo(() => cloneDeep(columns), [])
+    const usableColumns = React.useMemo(
+      () =>
+        cloneDeep(columns).map((column) => {
+          const col = column as EnrichedColumnDefinition
+          // Intentionally mutating a clone
+
+          if (["date", "dateTime"].includes(col.type || "")) {
+            col.format =
+              col.skeletonFormat === "custom"
+                ? { type: col.type, format: col.customFormat }
+                : { type: col.type, skeleton: col.skeletonFormat || "short" }
+            delete col.type
+          } else if (["number"].includes(col.type || "")) {
+            col.format = {
+              format:
+                col.format === "standard"
+                  ? `N${col.precision || 2}`
+                  : col.format === "percentage"
+                  ? `P${col.precision || 2}`
+                  : col.format === "currency"
+                  ? `C${col.precision || 2}`
+                  : undefined,
+            }
+            delete col.type
+          }
+
+          return col
+        }),
+      []
+    )
 
     // const createDetailTemplate = React.useMemo(() => {
     //   console.log("StandardGrid.render", "detailTemplate 2", detailTemplate)
     //   return typeof detailTemplate === "function" ? detailTemplate() : detailTemplate
     // }, [detailTemplate])
 
-    const editOptions = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" }
+    const editSettings = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" as EditMode }
     const editingToolbarItems = ([] as string[]).concat(
       allowAdding ? "Add" : [],
       allowEditing ? "Edit" : [],
@@ -153,7 +192,7 @@ export const StandardGrid = React.forwardRef(
           columns={usableColumns}
           dataSource={data}
           detailTemplate={detailTemplate}
-          editOptions={editOptions}
+          editSettings={editSettings}
           sortSettings={sortSettings}
           toolbarClick={handleToolbarClick}>
           <Inject services={gridComponentServices} />

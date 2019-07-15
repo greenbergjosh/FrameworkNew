@@ -1,4 +1,7 @@
+import { Col, Row } from "antd"
 import React from "react"
+import { DataPathContext } from "../../../../DataPathContext"
+import { ComponentRenderer } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { columnManageForm } from "./column-manage-form"
 import {
@@ -7,9 +10,16 @@ import {
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
-export interface ColumnInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "column"
+interface ColumnModelColumnInterfaceComponent {
+  title?: string
+  hideTitle?: boolean
   components: ComponentDefinition[]
+}
+
+export interface ColumnInterfaceComponentProps extends ComponentDefinitionNamedProps {
+  columns: ColumnModelColumnInterfaceComponent[]
+  component: "column"
+  gutter?: number
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
@@ -20,8 +30,8 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<
 > {
   static defaultProps = {
     addItemLabel: "Add Item",
-    orientation: "vertical",
-    interleave: "none",
+    columns: [],
+    gutter: 8,
     userInterfaceData: {},
     valueKey: "data",
   }
@@ -42,8 +52,36 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = columnManageForm
 
   render() {
-    const {} = this.props
+    const { columns, gutter, onChangeData, userInterfaceData } = this.props
 
-    return <div>Columns</div>
+    const colSpan = Math.floor(24 / (columns.length || 1))
+
+    return (
+      <DataPathContext path="columns">
+        <Row type="flex" justify="space-between" gutter={gutter}>
+          {columns.map(({ components, hideTitle, title }, columnIndex) => (
+            <DataPathContext path={`${columnIndex}`} key={columnIndex}>
+              <Col span={colSpan}>
+                {hideTitle !== true && title ? <div>{title}</div> : null}
+                <DataPathContext path={`components`}>
+                  <ComponentRenderer
+                    components={components}
+                    data={userInterfaceData}
+                    onChangeData={onChangeData}
+                    onChangeSchema={(newSchema) => {
+                      console.warn(
+                        "SlotConfigInterfaceComponent.render",
+                        "TODO: Cannot alter schema inside ComponentRenderer in SlotConfig",
+                        { newSchema }
+                      )
+                    }}
+                  />
+                </DataPathContext>
+              </Col>
+            </DataPathContext>
+          ))}
+        </Row>
+      </DataPathContext>
+    )
   }
 }

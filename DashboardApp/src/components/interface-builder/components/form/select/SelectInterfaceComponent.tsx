@@ -105,7 +105,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     allowClear: true,
     createNewLabel: "Create New...",
     valueKey: "value",
-    defaultValue: "",
+    defaultValue: undefined,
     placeholder: "Choose one",
     valuePrefix: "",
     valueSuffix: "",

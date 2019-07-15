@@ -11,6 +11,7 @@
 
 .ui-card {
   min-width: 200px;
+  margin-bottom: 25px;
 }
 
 .ui-list.ui-list-horizontal {
@@ -22,5 +23,19 @@
   margin: 0 !important;
   .ant-form-item-label {
     line-height: 21px !important;
+  }
+}
+
+.ant-col {
+  .ant-form-item-children {
+    .ant-select {
+      display: block;
+    }
+  }
+}
+
+.ant-card {
+  .ant-collapse {
+    margin: 10px 0;
   }
 }

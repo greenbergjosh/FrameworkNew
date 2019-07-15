@@ -24,6 +24,14 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "value",
               },
               {
+                key: "placeholder",
+                valueKey: "placeholder",
+                label: "Placeholder",
+                help: "The greyed out text to appear in the box when no item is selected",
+                component: "input",
+                defaultValue: null,
+              },
+              {
                 key: "dataHandlerType",
                 valueKey: "dataHandlerType",
                 label: "Data Source Location",
