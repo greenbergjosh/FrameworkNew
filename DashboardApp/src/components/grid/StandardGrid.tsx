@@ -203,20 +203,6 @@ export const StandardGrid = React.forwardRef(
       allowDeleting ? "Delete" : []
     )
 
-    // React.useEffect(() => {
-    //   console.log(
-    //     "StandardGrid.render",
-    //     "data changed useEffect",
-    //     data,
-    //     ref,
-    //     !!(data && data.length && ref && typeof ref === "object" && ref.current)
-    //   )
-    //   if (data && data.length && ref && typeof ref === "object" && ref.current) {
-    //     ref.current.refresh()
-    //     ref.current.forceUpdate()
-    //   }
-    // }, [data])
-
     return (
       <Spin spinning={loading}>
         <PureGridComponent
