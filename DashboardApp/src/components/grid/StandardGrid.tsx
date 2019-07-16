@@ -2,6 +2,7 @@ import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
 import { Spin } from "antd"
 import { cloneDeep } from "lodash/fp"
+import moment from "moment"
 import React from "react"
 import { JSONRecord } from "../../data/JSON"
 import { deepDiff } from "../../lib/deep-diff"
@@ -170,6 +171,26 @@ export const StandardGrid = React.forwardRef(
       []
     )
 
+    const usableData = React.useMemo(
+      () =>
+        cloneDeep(data).map((dataRow) => {
+          columns.forEach(({ field, type }) => {
+            if (field) {
+              const value = dataRow[field]
+              if (
+                (typeof value === "string" || typeof value === "number") &&
+                ["date", "dateTime"].includes(type || "")
+              ) {
+                dataRow[field] = moment(value).toDate() as any
+              }
+            }
+          })
+
+          return dataRow
+        }),
+      [data]
+    )
+
     // const createDetailTemplate = React.useMemo(() => {
     //   console.log("StandardGrid.render", "detailTemplate 2", detailTemplate)
     //   return typeof detailTemplate === "function" ? detailTemplate() : detailTemplate
@@ -182,6 +203,20 @@ export const StandardGrid = React.forwardRef(
       allowDeleting ? "Delete" : []
     )
 
+    // React.useEffect(() => {
+    //   console.log(
+    //     "StandardGrid.render",
+    //     "data changed useEffect",
+    //     data,
+    //     ref,
+    //     !!(data && data.length && ref && typeof ref === "object" && ref.current)
+    //   )
+    //   if (data && data.length && ref && typeof ref === "object" && ref.current) {
+    //     ref.current.refresh()
+    //     ref.current.forceUpdate()
+    //   }
+    // }, [data])
+
     return (
       <Spin spinning={loading}>
         <PureGridComponent
@@ -190,7 +225,7 @@ export const StandardGrid = React.forwardRef(
           toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
           actionComplete={actionComplete}
           columns={usableColumns}
-          dataSource={data}
+          dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
           sortSettings={sortSettings}
