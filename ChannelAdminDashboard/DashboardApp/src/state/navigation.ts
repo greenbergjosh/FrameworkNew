@@ -6,7 +6,6 @@ import React from "react"
 import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { None, Some } from "../data/Option"
 import { Dashboard } from "../routes/dashboard"
-import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
 import { GlobalConfigAdmin } from "../routes/dashboard/routes/global-config"
 import { CreateGlobalConfig } from "../routes/dashboard/routes/global-config/routes/create"
 import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/routes/edit"
@@ -19,6 +18,7 @@ import { UserInterfaceTest } from "../routes/dashboard/routes/user-interface-tes
 import { Landing } from "../routes/landing"
 import { Profile } from "./iam"
 import * as Store from "./store.types"
+// import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
 import {
   BusinessApplications,
   BusinessApplicationView,
@@ -250,19 +250,19 @@ const GlobalConfigShow = mkAuthenticatedRoute({
   subroutes: {},
 })
 
-const FormEditorSandbox = mkAuthenticatedRoute({
-  abs: "/dashboard/form-editor-test",
-  // component: React.lazy(() => import("../routes/dashboard/routes/form-editor-test")), // FormEditorTest,
-  component: FormEditorTest,
-  description: "Form Editor Test",
-  title: "Form Editor Test",
-  iconType: "form",
-  path: "form-editor-test",
-  redirectFrom: [],
-  requiresAuthentication: true as const,
-  shouldAppearInSideNav: true,
-  subroutes: {},
-})
+// const FormEditorSandbox = mkAuthenticatedRoute({
+//   abs: "/dashboard/form-editor-test",
+//   // component: React.lazy(() => import("../routes/dashboard/routes/form-editor-test")), // FormEditorTest,
+//   component: FormEditorTest,
+//   description: "Form Editor Test",
+//   title: "Form Editor Test",
+//   iconType: "form",
+//   path: "form-editor-test",
+//   redirectFrom: [],
+//   requiresAuthentication: true as const,
+//   shouldAppearInSideNav: true,
+//   subroutes: {},
+// })
 
 const UserInterfaceSandbox = mkAuthenticatedRoute({
   abs: "/dashboard/user-interface-test",
@@ -430,19 +430,19 @@ const staticRoutesMap = {
           },
         },
       },
-      "form-editor-test": {
-        abs: "/dashboard/form-editor-test",
-        // component: React.lazy(() => import("../routes/dashboard/routes/form-editor-test")), // FormEditorTest,
-        component: FormEditorTest,
-        description: "Form Editor Test",
-        title: "Form Editor Test",
-        iconType: "form",
-        path: "form-editor-test",
-        redirectFrom: [],
-        requiresAuthentication: true as const,
-        shouldAppearInSideNav: false,
-        subroutes: {},
-      },
+      // "form-editor-test": {
+      //   abs: "/dashboard/form-editor-test",
+      //   // component: React.lazy(() => import("../routes/dashboard/routes/form-editor-test")), // FormEditorTest,
+      //   component: FormEditorTest,
+      //   description: "Form Editor Test",
+      //   title: "Form Editor Test",
+      //   iconType: "form",
+      //   path: "form-editor-test",
+      //   redirectFrom: [],
+      //   requiresAuthentication: true as const,
+      //   shouldAppearInSideNav: false,
+      //   subroutes: {},
+      // },
       "user-interface-test": {
         abs: "/dashboard/user-interface-test",
         component: UserInterfaceTest,
