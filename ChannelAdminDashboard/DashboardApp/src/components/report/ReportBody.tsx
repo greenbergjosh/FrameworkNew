@@ -46,10 +46,11 @@ export interface ReportBodyProps {
   reportConfig: LocalReportConfig
   reportId: Option<string>
   title?: string
+  withoutHeader?: boolean
 }
 
 export const ReportBody = React.memo(
-  ({ parentData, queryConfig, reportConfig, reportId, title }: ReportBodyProps) => {
+  ({ parentData, queryConfig, reportConfig, reportId, title, withoutHeader }: ReportBodyProps) => {
     const [fromStore, dispatch] = useRematch((state) => ({
       reportDataByQuery: state.reports.reportDataByQuery,
       globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
@@ -149,34 +150,32 @@ export const ReportBody = React.memo(
 
     return (
       <>
-        {(reportId.isSome() ||
-          typeof title !== "undefined" ||
-          !isEmpty(unsatisfiedByParentParams)) && (
-          <PageHeader
-            extra={reportId.fold(null, (id) => (
-              <Button.Group size="small">
-                <Button>
-                  <Reach.Link to={`${fromStore.globalConfigPath}/${id}`}>View Config</Reach.Link>
-                </Button>
-              </Button.Group>
-            ))}
-            style={{ padding: "15px" }}
-            title={title && `Report: ${title}`}>
-            <QueryForm
-              layout={queryConfig.layout}
-              parameters={unsatisfiedByParentParams}
-              parameterValues={parameterValues.getOrElse(record.empty)}
-              onSubmit={handleQueryFormSubmit}
-            />
-          </PageHeader>
-        )}
+        {withoutHeader !== true &&
+          (reportId.isSome() ||
+            typeof title !== "undefined" ||
+            !isEmpty(unsatisfiedByParentParams)) && (
+            <PageHeader
+              extra={reportId.fold(null, (id) => (
+                <Button.Group size="small">
+                  <Button>
+                    <Reach.Link to={`${fromStore.globalConfigPath}/${id}`}>View Config</Reach.Link>
+                  </Button>
+                </Button.Group>
+              ))}
+              style={{ padding: "15px" }}
+              title={title && `Report: ${title}`}>
+              <QueryForm
+                layout={queryConfig.layout}
+                parameters={unsatisfiedByParentParams}
+                parameterValues={parameterValues.getOrElse(record.empty)}
+                onSubmit={handleQueryFormSubmit}
+              />
+            </PageHeader>
+          )}
 
         <div>
           {/* <PureGridComponent
             ref={grid}
-            {...commonGridOptions}
-            filterSettings={filterSettings}
-            toolbarClick={handleToolbarClick}
             detailTemplate={createDetailTemplate}
             dataSource={queryResultData.getOrElse(emptyArray)}
             sortSettings={sortSettings}
@@ -297,6 +296,7 @@ const reportDetailsToComponent = (
             ...flattenObject(parameterValues || record.empty),
             ...flattenObject(parentData),
           }}
+          withoutHeader
         />
       )
     } else if (resolved.type === "SimpleLayoutConfig") {

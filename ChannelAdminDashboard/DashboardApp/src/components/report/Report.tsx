@@ -13,9 +13,10 @@ import { ReportBody } from "./ReportBody"
 import { ReportOrErrors } from "./ReportOrErrors"
 
 export interface ReportProps {
+  data?: JSONRecord
   report: GlobalConfigReference | LocalReportConfig
   title?: string
-  data?: JSONRecord
+  withoutHeader?: boolean
 }
 
 export const Report = (props: ReportProps): JSX.Element => {
@@ -73,6 +74,7 @@ export const Report = (props: ReportProps): JSX.Element => {
             reportConfig={reportConfig}
             reportId={reportId}
             title={reportGlobalConfig && reportGlobalConfig.name}
+            withoutHeader={props.withoutHeader}
           />
         )}
       </ReportOrErrors>
