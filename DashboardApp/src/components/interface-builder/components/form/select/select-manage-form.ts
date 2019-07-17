@@ -32,6 +32,14 @@ const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
               },
               {
+                key: "multiple",
+                valueKey: "multiple",
+                label: "Allow Multiple?",
+                help: "Allow the user to select multiple items?",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
                 key: "dataHandlerType",
                 valueKey: "dataHandlerType",
                 label: "Data Source Location",
