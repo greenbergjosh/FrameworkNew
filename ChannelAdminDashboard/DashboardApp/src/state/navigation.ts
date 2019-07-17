@@ -13,6 +13,7 @@ import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/route
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
 import { Reports } from "../routes/dashboard/routes/reports"
 import ReportView from "../routes/dashboard/routes/reports/routes/report"
+import ImportIngestionReportView from "../routes/dashboard/routes/reports/routes/import-ingestion"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { UserInterfaceTest } from "../routes/dashboard/routes/user-interface-test"
 import { Landing } from "../routes/landing"
@@ -336,6 +337,18 @@ const staticRoutesMap = {
             title: "Reports",
             iconType: "bar-chart",
             path: ":reportId",
+            redirectFrom: [],
+            requiresAuthentication: true as const,
+            shouldAppearInSideNav: false,
+            subroutes: {},
+          },
+          "import-ingestion": {
+            abs: "/dashboard/reports/import-ingestion",
+            component: ImportIngestionReportView,
+            description: "Import Ingestion Live Report",
+            title: "Import Ingestion",
+            iconType: "bar-chart",
+            path: "import-ingestion",
             redirectFrom: [],
             requiresAuthentication: true as const,
             shouldAppearInSideNav: false,
