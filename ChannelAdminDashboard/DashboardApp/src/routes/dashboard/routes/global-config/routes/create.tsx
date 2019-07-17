@@ -255,10 +255,33 @@ export function CreateGlobalConfig({
                           // When changing the type, if there are 3 or fewer lines of config
                           // then it's pretty safe to assume that the config has not been edited
                           // So, set the form to its defaults
-                          const newConfig = configComponents
-                            ? getDefaultsFromComponentDefinitions(configComponents)
-                            : { lang: "json" }
-                          console.log("create", "update type", { newConfig, configComponents })
+                          const newEntityTypeConfig = record.lookup(val, fromStore.entityTypes)
+
+                          const newComponents = determineLayoutComponents(
+                            fromStore.configsById,
+                            fromStore.configsByType,
+                            newEntityTypeConfig
+                          )
+                          if (newComponents) {
+                            const configDefaults = JSON.stringify(
+                              getDefaultsFromComponentDefinitions(newComponents)
+                            )
+                            console.log("create", "update type", { configDefaults, newComponents })
+                            form.setFieldValue("config", configDefaults)
+                          } else {
+                            const lang = newEntityTypeConfig
+                              .chain(({ config }) =>
+                                config.chain((cfg) =>
+                                  tryCatch(() => JSON5.parse(cfg).lang as string)
+                                )
+                              )
+                              .getOrElse("json")
+
+                            const configDefaults =
+                              lang === "json" ? JSON.stringify({ lang: "json" }) : ""
+                            console.log("create", "update type", { configDefaults, newComponents })
+                            form.setFieldValue("config", configDefaults)
+                          }
                         }
                       }}>
                       {entityTypeNames.map((type) => (
