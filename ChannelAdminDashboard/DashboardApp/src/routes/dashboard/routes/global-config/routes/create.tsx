@@ -1,4 +1,3 @@
-import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Formik from "formik"
 import { Do } from "fp-ts-contrib/lib/Do"
 import { array } from "fp-ts/lib/Array"
@@ -10,7 +9,6 @@ import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
-import { ComponentDefinition } from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterface } from "../../../../../components/interface-builder/UserInterface"
 import { UserInterfaceContextManager } from "../../../../../components/interface-builder/UserInterfaceContextManager"
 import { Space } from "../../../../../components/space"
@@ -18,9 +16,15 @@ import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { useStatePlus } from "../../../../../hooks/use-state-plus"
+import { determineLayoutComponents } from "../../../../../lib/determine-layout-components"
 import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
+import {
+  ComponentDefinition,
+  BaseInterfaceComponent,
+  getDefaultsFromComponentDefinitions,
+} from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
 import {
   Button,
   Card,
@@ -178,72 +182,11 @@ export function CreateGlobalConfig({
         {(form) => {
           const entityTypeConfig = record.lookup(form.values.type, fromStore.entityTypes)
 
-          const configComponents = (() => {
-            // First check in the manual overrides
-            const layoutMappingRecords = record.lookup("LayoutMapping", fromStore.configsByType)
-            // TODO: Traverse up the type-of relationship to find if a parent type has layout assignments
-            const collectedLayoutOverrides = layoutMappingRecords
-              .map((layoutMappings) =>
-                layoutMappings.reduce(
-                  (result, layoutMapping) => {
-                    const configOption = tryCatch(() =>
-                      JSON5.parse(layoutMapping.config.getOrElse("{}"))
-                    )
-
-                    configOption.map(({ layout, entityTypes, configs }) => {
-                      if (layout) {
-                        const entityTypesLower =
-                          entityTypes &&
-                          entityTypes.map((entityType: string) => entityType.toLowerCase())
-                        if (
-                          entityTypesLower &&
-                          entityTypeConfig
-                            .map(({ id }) => entityTypesLower.includes(id.toLowerCase()))
-                            .getOrElse(false)
-                        ) {
-                          result.byEntityType.push(layout)
-                        }
-                      }
-                    })
-
-                    return result
-                  },
-                  { byEntityType: [] as string[], byConfigId: [] as string[] }
-                )
-              )
-              .toNullable()
-
-            // Were there any LayoutMapping assignments for this item?
-            if (collectedLayoutOverrides) {
-              if (collectedLayoutOverrides.byConfigId.length) {
-                // TODO: Eventually merge these layouts, perhaps?
-                const layout = record
-                  .lookup(
-                    collectedLayoutOverrides.byConfigId[0].toLowerCase(),
-                    fromStore.configsById
-                  )
-                  .chain(({ config }) =>
-                    tryCatch(
-                      () => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
-                    )
-                  )
-                  .toNullable()
-
-                if (layout) {
-                  return layout
-                }
-              } else if (collectedLayoutOverrides.byConfigId.length) {
-              }
-            }
-
-            return entityTypeConfig
-              .map((parentType) => {
-                return tryCatch(
-                  () => JSON5.parse(parentType.config.getOrElse("{}")).layout
-                ).getOrElse(ROOT_CONFIG_COMPONENTS)
-              })
-              .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
-          })()
+          const configComponents = determineLayoutComponents(
+            fromStore.configsById,
+            fromStore.configsByType,
+            entityTypeConfig
+          )
 
           return (
             <>
@@ -304,7 +247,20 @@ export function CreateGlobalConfig({
                       onDropdownVisibleChange={setShouldShowConfigTypeSelectDropdown}
                       value={form.values.type}
                       onBlur={() => form.handleBlur({ target: { name: "type" } })}
-                      onChange={(val: any) => form.setFieldValue("type", val)}>
+                      onChange={(val: any) => {
+                        form.setFieldValue("type", val)
+                        const countConfigLines = form.values.config.split("\n").length
+
+                        if (countConfigLines <= 3) {
+                          // When changing the type, if there are 3 or fewer lines of config
+                          // then it's pretty safe to assume that the config has not been edited
+                          // So, set the form to its defaults
+                          const newConfig = configComponents
+                            ? getDefaultsFromComponentDefinitions(configComponents)
+                            : { lang: "json" }
+                          console.log("create", "update type", { newConfig, configComponents })
+                        }
+                      }}>
                       {entityTypeNames.map((type) => (
                         <Select.Option key={type}>{type}</Select.Option>
                       ))}
