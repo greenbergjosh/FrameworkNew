@@ -311,33 +311,42 @@ export function handleDropHelper(
   else if (draggedItem.parentDroppableId) {
     // If one of the two lists is the root, we have to take some special actions
     if (draggedItem.parentDroppableId === UI_ROOT || dropTarget.droppableId === UI_ROOT) {
-      // Find the sublist the dragged item came from and remove it
+      // Find the sublist the dragged item came from
       const sourceList =
         draggedItem.parentDroppableId === UI_ROOT
           ? components
           : (get(draggedItem.parentDroppableId, components) as ComponentDefinition[])
-      const updatedSourceList = [
-        ...sourceList.slice(0, draggedItem.index),
-        ...sourceList.slice(draggedItem.index + 1),
-      ]
 
       // Find the sublist the drop occurred in, and add the dragged item
       const destinationList =
         dropTarget.droppableId === UI_ROOT
           ? components
           : (get(dropTarget.droppableId, components) as ComponentDefinition[])
-      const updatedDestinationList = [
-        ...destinationList.slice(0, dropTarget.dropIndex),
-        sourceList[draggedItem.index],
-        ...destinationList.slice(dropTarget.dropIndex),
-      ]
 
       // We know both lists can't be "root" because then we'd have hit the outer if instead
       // If the item was dragged from the root, take the update source list as the new root
       // Alter it to add the updated destination information
       if (draggedItem.parentDroppableId === UI_ROOT) {
+        // Add the dragged item to the destination list
+        const updatedDestinationList = [
+          ...destinationList.slice(0, dropTarget.dropIndex),
+          sourceList[draggedItem.index],
+          ...destinationList.slice(dropTarget.dropIndex),
+        ]
+        // Since the destination is nested, we update it into components first because the
+        // source update changes the indices
+        const componentsWithUpdatedDestination = set(
+          dropTarget.droppableId,
+          updatedDestinationList,
+          components
+        )
+        // Remove the draggedItem from the source (root) list
+        const updatedComponents = [
+          ...componentsWithUpdatedDestination.slice(0, draggedItem.index),
+          ...componentsWithUpdatedDestination.slice(draggedItem.index + 1),
+        ]
         return {
-          components: set(dropTarget.droppableId, updatedDestinationList, updatedSourceList),
+          components: updatedComponents,
           itemToAdd: null,
           itemToEdit: null,
         }
@@ -345,8 +354,26 @@ export function handleDropHelper(
       // If the item was dragged from a sublist to the root, take the destination as the new root
       // Alter it to add the updated source information
       else if (dropTarget.droppableId === UI_ROOT) {
+        // Remove the dragged item from the source list
+        const updatedSourceList = [
+          ...sourceList.slice(0, draggedItem.index),
+          ...sourceList.slice(draggedItem.index + 1),
+        ]
+        // Since the destination is nested, we update it into components first because the
+        // source update changes the indices
+        const componentsWithUpdatedSource = set(
+          draggedItem.parentDroppableId,
+          updatedSourceList,
+          components
+        )
+        // Add the draggedItem to the destination (root) list
+        const updatedComponents = [
+          ...componentsWithUpdatedSource.slice(0, dropTarget.dropIndex),
+          sourceList[draggedItem.index],
+          ...componentsWithUpdatedSource.slice(dropTarget.dropIndex),
+        ]
         return {
-          components: set(draggedItem.parentDroppableId, updatedSourceList, updatedDestinationList),
+          components: updatedComponents,
           itemToAdd: null,
           itemToEdit: null,
         }
