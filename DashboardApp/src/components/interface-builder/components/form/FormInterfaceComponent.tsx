@@ -13,11 +13,15 @@ import {
 const defaultFormLayout = {
   labelCol: {
     sm: { span: 24 },
-    md: { span: 8 },
+    md: { span: 7 },
+    lg: { span: 5 },
+    xl: { span: 4 },
   },
   wrapperCol: {
     sm: { span: 24 },
-    md: { span: 14 },
+    md: { span: 17 },
+    lg: { span: 19 },
+    xl: { span: 20 },
   },
 }
 
