@@ -8,6 +8,7 @@ import { sortBy } from "lodash/fp"
 import React from "react"
 import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
+import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../lib/json"
 import { StandardGrid } from "../grid/StandardGrid"
 import { UserInterface } from "../interface-builder/UserInterface"
@@ -223,28 +224,6 @@ const flattenObject = (obj: any) => {
   })
 
   return flattened
-}
-
-function determineSatisfiedParameters(
-  parameters: ParameterItem[],
-  parentData: JSONRecord
-): { unsatisfiedByParentParams: ParameterItem[]; satisfiedByParentParams: JSONRecord } {
-  return parameters.reduce<ReturnType<typeof determineSatisfiedParameters>>(
-    (acc, parameter) =>
-      typeof parentData[parameter.name] !== "undefined"
-        ? {
-            ...acc,
-            satisfiedByParentParams: {
-              ...acc.satisfiedByParentParams,
-              [parameter.name]: parentData[parameter.name],
-            },
-          }
-        : {
-            ...acc,
-            unsatisfiedByParentParams: [...acc.unsatisfiedByParentParams, parameter],
-          },
-    { unsatisfiedByParentParams: [], satisfiedByParentParams: {} }
-  )
 }
 
 const detailMapper = (childData: any[]) => ({

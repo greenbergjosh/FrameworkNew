@@ -82,13 +82,8 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
 
   const defaultFormState = React.useMemo(() => {
     const defaultComponentValues = ((layout || []) as ComponentDefinition[]).reduce(
-      (acc, layoutItem: ComponentDefinition) => {
-        // const Component = registry.lookup(layoutItem.component)
-        // if (Component) {
-        return merge(acc, getDefaultsFromComponentDefinitions([layoutItem]))
-        // }
-        // return acc
-      },
+      (acc, layoutItem: ComponentDefinition) =>
+        merge(acc, getDefaultsFromComponentDefinitions([layoutItem])),
       {} as JSONRecord
     )
     const defaultParameters = parameters.reduce(
@@ -108,7 +103,7 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
 
   const handleSubmit = React.useCallback(
     debounce(() => {
-      console.log("handleSubmit", formState)
+      console.log("QueryForm.handleSubmit", formState)
       onSubmit(formState)
     }, 50),
     [onSubmit, formState]
