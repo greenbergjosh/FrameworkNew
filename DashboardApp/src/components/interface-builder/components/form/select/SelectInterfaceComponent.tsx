@@ -1,10 +1,8 @@
 import { Select } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
-import { Branded } from "io-ts"
 import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
 import { get, set } from "lodash/fp"
@@ -15,15 +13,10 @@ import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../../../../data/JSON"
 import { QueryConfigCodec } from "../../../../../data/Report"
 import { cheapHash } from "../../../../../lib/json"
-import { DataMapProps } from "../../../../data-map/DataMap"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { UserInterfaceContext } from "../../../UserInterfaceContextManager"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps, ComponentRenderMetaProps } from "../../base/BaseInterfaceComponent"
 import { selectManageForm } from "./select-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-  ComponentRenderMetaProps,
-} from "../../base/BaseInterfaceComponent"
 
 interface SelectOption {
   label: string
@@ -61,19 +54,19 @@ interface SelectInterfaceComponentPropsLocalData extends ISelectInterfaceCompone
 
 interface SelectInterfaceComponentPropsRemoteConfigData extends ISelectInterfaceComponentProps {
   dataHandlerType: "remote-config"
-  remoteConfigType?: string
+  remoteConfigType?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
 }
 
 interface SelectInterfaceComponentPropsRemoteKeyValueData extends ISelectInterfaceComponentProps {
   dataHandlerType: "remote-kvp"
-  remoteKeyValuePair?: string
+  remoteKeyValuePair?: PersistedConfig["id"]
   remoteDataFilter: JSONObject
 }
 
 interface SelectInterfaceComponentPropsRemoteQueryData extends ISelectInterfaceComponentProps {
   dataHandlerType: "remote-query"
-  remoteQuery?: string
+  remoteQuery?: PersistedConfig["id"]
   remoteDataFilter: JSONObject
   remoteQueryMapping: [{ label: "label"; value: string }, { label: "value"; value: string }]
 }
@@ -223,9 +216,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
       switch (this.props.dataHandlerType) {
         case "remote-config": {
           const { remoteConfigType } = this.props
-          const configType =
-            remoteConfigType && (remoteConfigType as Branded<string, NonEmptyStringBrand>)
-          const remoteConfigTypeParent = configType && loadById(configType)
+          const remoteConfigTypeParent = remoteConfigType && loadById(remoteConfigType)
           const remoteConfigTypeParentName = remoteConfigTypeParent && remoteConfigTypeParent.name
 
           const predicate = remoteDataFilter
@@ -260,8 +251,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
           const { remoteQuery, remoteQueryMapping } = this.props
 
           if (!hidden && remoteQuery) {
-            const queryId = remoteQuery as Branded<string, NonEmptyStringBrand>
-            const queryGlobalConfig = loadById(queryId)
+            const queryGlobalConfig = loadById(remoteQuery)
             if (queryGlobalConfig) {
               const queryConfig = QueryConfigCodec.decode(
                 JSON5.parse(queryGlobalConfig.config.getOrElse(""))
@@ -317,11 +307,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         }
         case "remote-kvp": {
           if (this.props.remoteKeyValuePair) {
-            const keyValuePairId = this.props.remoteKeyValuePair as Branded<
-              string,
-              NonEmptyStringBrand
-            >
-            const keyValuePairGlobalConfig = loadById(keyValuePairId)
+            const keyValuePairGlobalConfig = loadById(this.props.remoteKeyValuePair)
             if (keyValuePairGlobalConfig) {
               const keyValuePairConfig = tryCatch(
                 () =>
