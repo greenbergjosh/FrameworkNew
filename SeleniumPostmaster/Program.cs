@@ -20,6 +20,9 @@ namespace SeleniumPostmaster
 
         public static FrameworkWrapper Fw;
         public const string ConnectionName = "Postmaster";
+        // these are constant until they're not, in which case we'll source from config
+        public const string GmailPostmasterUrl = "https://postmaster.google.com";
+        public const string HotmailPostmasterUrl = "https://sendersupport.olc.protection.outlook.com/snds/data.aspx?";
 
         public static async Task Main(string[] args)
         {
@@ -27,49 +30,66 @@ namespace SeleniumPostmaster
             Fw = new FrameworkWrapper();
 
             await Fw.Log(nameof(Main), $"Starting");
-            IWebDriver driver = new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"));
 
-            IGenericEntity postmasterAccts = await Data.CallFn(ConnectionName, "SelectPostmasterAccounts", Jw.Empty, "");
+            IGenericEntity postmasterAccts = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "PostmasterAccount" }), "");
 
             foreach (var ps in postmasterAccts.GetL(""))
             {
+                if (ps.GetS("Config/Enabled").IsNullOrWhitespace() || ps.GetS("Config/Enabled").ToLower() == "false")
+                {
+                    continue;
+                }
+                if (ps.GetS("Config/ProxyAddress").IsNullOrWhitespace() ^ ps.GetS("Config/ProxyPort").IsNullOrWhitespace())
+                {
+                    await Fw.Error(nameof(Main),$"Proxy configuration missing either host or port values for account: {ps.GetS("Config/Username")}, skipping");
+                    continue;
+                }
+
+                string proxyHostAndPort = (ps.GetS("Config/ProxyAddress").IsNullOrWhitespace() && ps.GetS("Config/ProxyPort").IsNullOrWhitespace()) ? "" : $"{ps.GetS("Config/ProxyAddress")}:{ps.GetS("Config/ProxyPort")}";
                 string pmAcctId = ps.GetS("Id");
-                string username = ps.GetS("Credentials/Username");
-                string password = ps.GetS("Credentials/Password");
-                string url = ps.GetS("Credentials/Url");
-                string type = ps.GetS("Credentials/Type");
+                string username = ps.GetS("Config/Username");
+                string password = ps.GetS("Config/Password");
+                string type = ps.GetS("Config/Type");
 
                 if (type == "Hotmail")
                 {
-                    string apiKey = ps.GetS("Credentials/ApiKey");
-                    await DoHotmail(pmAcctId, username, password, url, apiKey);
+                    await DoHotmail(pmAcctId, username, password, HotmailPostmasterUrl, ps.GetS("Config/ApiKey"), proxyHostAndPort);
                 }
                 else if (type == "Gmail")
                 {
-                    await DoGmail(driver, pmAcctId, username, password, url);
+                    var chromeOptions = new ChromeOptions();
+                    if (! proxyHostAndPort.IsNullOrWhitespace())
+                    {
+                        chromeOptions.AddArgument($"--proxy-server={proxyHostAndPort}");
+                    }
+
+                    IWebDriver driver =  new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"),chromeOptions);
+                    await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
+                    driver.Close();
                 }
             }
         }
 
         public static async Task DoHotmail(string pmAcctId, string username, string password,
-            string url, string apiKey)
+            string url, string apiKey, string proxyHostAndPort)
         {
             // Get standard data - go back to prior days and update
-            string dataUrl = "https://sendersupport.olc.protection.outlook.com/snds/data.aspx?";
-            string finalDataUrl = dataUrl + "&key=" + apiKey;
+            string finalDataUrl = url + "&key=" + apiKey;
             DateTime now = DateTime.Now.AddDays(-1);
             string dataLayerFn = "";
             IGenericEntity result = null;
+            bool dateRangeContainsData = false;
             for (int i = 0; i < 14; i++)
             {
                 try
                 {
                     string rqstDate = now.AddDays(-1 * i).ToString("MMddyy");
 
-                    string ret1 = (string)await Utility.ProtocolClient.DownloadPage(finalDataUrl + "&date=" + rqstDate, null, null, null);
+                    string ret1 = (string)await Utility.ProtocolClient.DownloadPage(finalDataUrl + "&date=" + rqstDate, null, null, null, proxyHostAndPort);
 
                     if (!string.IsNullOrEmpty(ret1))
                     {
+                        dateRangeContainsData = true;
                         string retj1 = Utility.JsonWrapper.ConvertCsvToJson(ret1,
                         new List<string> { "ip", "sap", "eap", "rcpt", "data", "mrc", "fr", "cr",
                                         "tmps", "tmpe", "thc", "helo", "from", "cmnt"});
@@ -86,90 +106,111 @@ namespace SeleniumPostmaster
                 }
                 catch (Exception ex)
                 {
-                    var a = ex;
+                    await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail standard data for account id {pmAcctId}, with user {username}, password {password}, at {finalDataUrl}: {ex.UnwrapForLog()}");
+                    return;
                 }
-            }
-
-            // Get active ips
-            IGenericEntity ipge = await Data.CallFn(ConnectionName, "SelectHotmailIps", Jw.Json(new { ActiveWithinDays = 14 }), "");
-
-            // Get blacklist emails
-            foreach (var ip in ipge.GetL(""))
-            {
-                for (int i = 0; i < 14; i++)
+                if (!dateRangeContainsData)
                 {
-                    string rqstDate = now.AddDays(-1 * i).ToString("MMddyy");
-
-                    string baseStr = "https://sendersupport.olc.protection.outlook.com/snds/data.aspx?" + "&key=" + apiKey;
-                    string trapStr = baseStr + "&ip=" + ip.GetS("Ip") + "&sampletype=trap&date=" + rqstDate;
-                    string compStr = baseStr + "&ip=" + ip.GetS("Ip") + "&sampletype=complaint&date=" + rqstDate;
-                    string ret3 = (string)await Utility.ProtocolClient.DownloadPage(trapStr, null, null, null);
-                    string ret4 = (string)await Utility.ProtocolClient.DownloadPage(compStr, null, null, null);
-
-                    dataLayerFn = "InsertHotmailBlacklist";
-                    if (!string.IsNullOrEmpty(ret3))
-                    {
-                        var trapEmail = ParseEmail(ret3);
-
-                        result = await Data.CallFn(ConnectionName, dataLayerFn,
-                            Jw.Json(new
-                            {
-                                PostmasterAccountId = pmAcctId,
-                                IpAddress = ip.GetS("Ip"),
-                                ComplaintType = "trap",
-                                ComplaintDate = now.AddDays(-1 * i),
-                                Content = Utility.Hashing.EncodeTo64(ret3),
-                                ParsedOriginalRecipient = trapEmail.Item2,
-                                ParsedTo = trapEmail.Item1
-                            }),
-                            "");
-                        if (result.GetS("Result") != "Success")
-                        {
-                            await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
-                        }
-                    }
-
-                    if (!string.IsNullOrEmpty(ret4))
-                    {
-                        var compEmail = ParseEmail(ret4);
-
-                        result = await Data.CallFn(ConnectionName, dataLayerFn,
-                            Jw.Json(new
-                            {
-                                PostmasterAccountId = pmAcctId,
-                                IpAddress = ip.GetS("Ip"),
-                                ComplaintType = "complaint",
-                                ComplaintDate = now.AddDays(-1 * i),
-                                Content = Utility.Hashing.EncodeTo64(ret4),
-                                ParsedOriginalRecipient = compEmail.Item2,
-                                ParsedTo = compEmail.Item1
-                            }),
-                            "");
-                        if (result.GetS("Result") != "Success")
-                        {
-                            await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
-                        }
-                    }
+                    await Fw.Log(nameof(DoHotmail), $"No IP data for specified date range on account id {pmAcctId}, with user {username}, password {password}, at {finalDataUrl}");
+                    return;
                 }
             }
 
-            // IP Status - PK includes date called
-            string ipStatusUrl = "https://sendersupport.olc.protection.outlook.com/snds/ipStatus.aspx?";
-            string finalIpStatusUrl = ipStatusUrl + "key=" + apiKey;
-
-            string ret2 = (string)await Utility.ProtocolClient.DownloadPage(finalIpStatusUrl, null, null, null);
-
-            string retj2 = Utility.JsonWrapper.ConvertCsvToJson(ret2,
-                new List<string> { "fip", "lip", "blk", "det" });
-
-
-            dataLayerFn = "InsertHotmailIpStatus";
-            result = await Data.CallFn(ConnectionName, dataLayerFn,
-                    Jw.Json(new { PostmasterAccountId = pmAcctId }),
-                    retj2);
-            if (result.GetS("Result") != "Success")
+            try
             {
-                await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
+                // Get active ips
+                IGenericEntity ipge = await Data.CallFn(ConnectionName, "SelectHotmailIps", Jw.Json(new { ActiveWithinDays = 14 }), "");
+
+                // Get blacklist emails
+                foreach (var ip in ipge.GetL(""))
+                {
+                    for (int i = 0; i < 14; i++)
+                    {
+                        string rqstDate = now.AddDays(-1 * i).ToString("MMddyy");
+
+                        string baseStr = "https://sendersupport.olc.protection.outlook.com/snds/data.aspx?" + "&key=" + apiKey;
+                        string trapStr = baseStr + "&ip=" + ip.GetS("Ip") + "&sampletype=trap&date=" + rqstDate;
+                        string compStr = baseStr + "&ip=" + ip.GetS("Ip") + "&sampletype=complaint&date=" + rqstDate;
+                        string ret3 = (string)await Utility.ProtocolClient.DownloadPage(trapStr, null, null, null, proxyHostAndPort);
+                        string ret4 = (string)await Utility.ProtocolClient.DownloadPage(compStr, null, null, null, proxyHostAndPort);
+
+                        dataLayerFn = "InsertHotmailBlacklist";
+                        if (!string.IsNullOrEmpty(ret3))
+                        {
+                            var trapEmail = ParseEmail(ret3);
+
+                            result = await Data.CallFn(ConnectionName, dataLayerFn,
+                                Jw.Json(new
+                                {
+                                    PostmasterAccountId = pmAcctId,
+                                    IpAddress = ip.GetS("Ip"),
+                                    ComplaintType = "trap",
+                                    ComplaintDate = now.AddDays(-1 * i),
+                                    Content = Utility.Hashing.EncodeTo64(ret3),
+                                    ParsedOriginalRecipient = trapEmail.Item2,
+                                    ParsedTo = trapEmail.Item1
+                                }),
+                                "");
+                            if (result.GetS("Result") != "Success")
+                            {
+                                await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(ret4))
+                        {
+                            var compEmail = ParseEmail(ret4);
+
+                            result = await Data.CallFn(ConnectionName, dataLayerFn,
+                                Jw.Json(new
+                                {
+                                    PostmasterAccountId = pmAcctId,
+                                    IpAddress = ip.GetS("Ip"),
+                                    ComplaintType = "complaint",
+                                    ComplaintDate = now.AddDays(-1 * i),
+                                    Content = Utility.Hashing.EncodeTo64(ret4),
+                                    ParsedOriginalRecipient = compEmail.Item2,
+                                    ParsedTo = compEmail.Item1
+                                }),
+                                "");
+                            if (result.GetS("Result") != "Success")
+                            {
+                                await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP blacklist for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
+            }
+
+            try
+            {
+                // IP Status - PK includes date called
+                string ipStatusUrl = "https://sendersupport.olc.protection.outlook.com/snds/ipStatus.aspx?";
+                string finalIpStatusUrl = ipStatusUrl + "key=" + apiKey;
+
+                string ret2 = (string)await Utility.ProtocolClient.DownloadPage(finalIpStatusUrl, null, null, null, proxyHostAndPort);
+
+                string retj2 = Utility.JsonWrapper.ConvertCsvToJson(ret2,
+                    new List<string> { "fip", "lip", "blk", "det" });
+
+
+                dataLayerFn = "InsertHotmailIpStatus";
+                result = await Data.CallFn(ConnectionName, dataLayerFn,
+                        Jw.Json(new { PostmasterAccountId = pmAcctId }),
+                        retj2);
+                if (result.GetS("Result") != "Success")
+                {
+                    await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP status for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
             }
 
         }
@@ -204,7 +245,7 @@ namespace SeleniumPostmaster
             return new Tuple<string, string>(toemail, oremail);
         }
 
-        public static async Task DoGmail(IWebDriver driver, string pmAcctId, string username, string pswd, string url)
+        public static async Task DoGmail(IWebDriver driver, string pmAcctId, string username, string pswd, string phone, string url)
         {
             try
             {
@@ -219,6 +260,15 @@ namespace SeleniumPostmaster
                 var element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(password));
                 password.SendKeys(pswd);
                 driver.FindElement(By.Id("passwordNext")).Click();
+                if (driver.FindElements(By.CssSelector("h1#headingText")).Count > 0 &&
+                    driver.FindElements(By.CssSelector("form div[data-challengetype=\"13\"]")).Count > 0)
+                {
+                    driver.FindElement(By.CssSelector("form div[data-challengetype=\"13\"]")).Click();
+                    IWebElement phoneNumber = driver.FindElement(By.CssSelector("input#phoneNumberId"));
+                    var phElement = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(phoneNumber));
+                    phoneNumber.SendKeys(phone);
+                    driver.FindElement(By.CssSelector("div[data-primary-action-label=\"Next\"] div[role=\"button\"]")).Click();
+                }
 
                 // Read list of domains - wait until table stops getting new rows
                 IList<IWebElement> tableRows = null;
@@ -424,6 +474,7 @@ namespace SeleniumPostmaster
 
                                 try
                                 {
+                                    // TODO: this is failing, throwing an exception
                                     IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
                                     string[] hdrParts = ipHdr.Text.Split(' ');
                                     DateTime fbDate = ParseDateFromHeader(hdrParts);
@@ -624,14 +675,12 @@ namespace SeleniumPostmaster
                     }
                 }
 
-                driver.Quit();
             }
             catch (Exception ex)
             {
                 await Fw.Error(nameof(DoGmail), $"Caught unhandled (for now) exception: {ex.UnwrapForLog()}");
                 int i = 0;
             }
-
         }
 
         public static DateTime ParseDateFromHeader(string[] hdrParts)
