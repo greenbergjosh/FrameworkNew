@@ -1,15 +1,5 @@
-import { array } from "fp-ts/lib/Array"
-import { identity, tuple } from "fp-ts/lib/function"
-import * as record from "fp-ts/lib/Record"
-import { JSONFromString } from "io-ts-types"
-import { Left, Right } from "../data/Either"
-import { PersistedConfig } from "../data/GlobalConfig.Config"
-import { JSONArray, JSONRecord } from "../data/JSON"
-import { None, Some } from "../data/Option"
-import { QueryConfig, QueryConfigCodec, ReportConfigCodec } from "../data/Report"
+import { JSONRecord } from "../data/JSON"
 import * as Store from "./store.types"
-import { none } from "fp-ts/lib/Option"
-import { languages } from "monaco-editor"
 
 declare module "./store.types" {
   interface AppModels {
@@ -22,45 +12,53 @@ declare module "./store.types" {
   }
 }
 
-export interface Partner {
-  id: number,
-  partner: string,
-  record_type: string,
-  rows_processed: number,
+export interface IngestionStatus {
+  last_id_processed: number
+  rows_processed: number
+  runtime: number
+  succeeded: boolean
+  table_name: string
+}
+
+export interface PartnerStatus {
+  id: string
+  has_exports: boolean
+  name: string
+  Tables: { [key: string]: { type?: string } }
 }
 
 export interface State {
-  selectedPartner: JSONRecord
+  selectedPartner: PartnerStatus | null
 }
 
 export interface Reducers {
-  updateSelectedPartner(payload: Partial<State["selectedPartner"]>): State
+  updateSelectedPartner(payload: PartnerStatus | null): State
 }
 
 export interface Effects {
-  setSelectedPartner(selectedPartner: JSONRecord): void
+  // setSelectedPartner(selectedPartner: PartnerStatus | null): void
 }
 
 export interface Selectors {}
 
 export const importIngestionReport: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
-    selectedPartner: {},
+    selectedPartner: null,
   },
 
   reducers: {
     updateSelectedPartner: (s, p) => ({
       ...s,
-      selectedPartner: { ...s.selectedPartner, ...p },
+      selectedPartner: p,
     }),
   },
 
   effects: (dispatch) => ({
-    setSelectedPartner(selectedPartner) {
-      dispatch.importIngestionReport.updateSelectedPartner(selectedPartner)
-      //TODO: update raw, import, export data
-      console.log("importIngestionReport", this)
-    },
+    // setSelectedPartner(selectedPartner) {
+    //   dispatch.importIngestionReport.updateSelectedPartner(selectedPartner)
+    //   //TODO: update raw, import, export data
+    //   console.log("importIngestionReport", this)
+    // },
   }),
 
   selectors: (slice, createSelector) => ({}),

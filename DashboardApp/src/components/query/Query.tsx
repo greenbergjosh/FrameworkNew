@@ -13,52 +13,54 @@ import { JSONRecord } from "../../data/JSON"
 import { QueryConfig, QueryConfigCodec } from "../../data/Report"
 import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../lib/json"
+import { shallowPropCheck } from "../interface-builder/dnd"
 import { UserInterfaceContext } from "../interface-builder/UserInterfaceContextManager"
 import { QueryForm } from "../report/QueryForm"
 
-export interface QueryChildProps {
-  [key: string]: any[]
+export interface QueryChildProps<T = any> {
+  [key: string]: T[]
 }
 
-interface IQueryProps {
-  children: (childProps: QueryChildProps) => JSX.Element | JSX.Element[]
-  dataKey: string
-  inputData: JSONObject
+interface IQueryProps<T> {
+  children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
+  dataKey?: string
+  inputData?: JSONObject
   queryType: "remote-query" | "remote-config"
 }
 
-interface QueryRemoteQueryProps extends IQueryProps {
+interface QueryRemoteQueryProps<T> extends IQueryProps<T> {
   queryType: "remote-query"
   remoteQuery?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
   // remoteQueryMapping?: [{ label: "label"; value: string }, { label: "value"; value: string }]
 }
-interface QueryRemoteConfigProps extends IQueryProps {
+interface QueryRemoteConfigProps<T> extends IQueryProps<T> {
   queryType: "remote-config"
   remoteConfigType?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
 }
 
-export type QueryProps = QueryRemoteQueryProps | QueryRemoteConfigProps
+export type QueryProps<T = any> = QueryRemoteQueryProps<T> | QueryRemoteConfigProps<T>
 
-interface QueryState {
-  data: any[]
+interface QueryState<T> {
+  data: T[]
   loadError: string | null
   loadStatus: "none" | "loading" | "loaded" | "error"
   parameterValues: { [key: string]: any }
   promptLayout: QueryConfig["layout"]
   promptParameters: QueryConfig["parameters"]
+  renderedChildren?: ReturnType<IQueryProps<T>["children"]>
 }
 
-export class Query extends React.Component<QueryProps, QueryState> {
+export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>> {
   static defaultProps = {
-    valueKey: "data",
+    dataKey: "data",
   }
 
   static contextType = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
 
-  constructor(props: QueryProps) {
+  constructor(props: QueryProps<T>) {
     super(props)
 
     this.state = {
@@ -78,7 +80,7 @@ export class Query extends React.Component<QueryProps, QueryState> {
     }
   }
 
-  componentDidUpdate(prevProps: QueryProps, prevState: QueryState) {
+  componentDidUpdate(prevProps: QueryProps<T>, prevState: QueryState<T>) {
     console.log("Query.componentDidUpdate", {
       was: prevState.loadStatus,
       is: this.state.loadStatus,
@@ -113,12 +115,31 @@ export class Query extends React.Component<QueryProps, QueryState> {
       prevState.loadStatus === "loading"
     ) {
       this.loadRemoteData()
+    } else {
+      // Memoize rendered children
+      if (
+        (this.state.loadStatus === "loaded" && prevState.loadStatus !== "loaded") ||
+        !shallowPropCheck(["children", "dataKey", "data"])(prevProps, this.props)
+      ) {
+        const { children, dataKey } = this.props as (QueryProps<T> & typeof Query["defaultProps"])
+        const { data } = this.state
+        this.setState((state) => ({
+          ...state,
+          renderedChildren: children && children({ [dataKey]: data }),
+        }))
+      }
     }
   }
 
   loadRemoteData() {
     const { remoteDataFilter, inputData } = this.props
     const { parameterValues } = this.state
+
+    console.log("Query.loadRemoteData", "Loading Remote Data", {
+      props: this.props,
+      state: this.state,
+      context: this.context,
+    })
     if (this.context) {
       const { executeQuery, loadById, loadByFilter, reportDataByQuery } = this.context
 
@@ -150,7 +171,11 @@ export class Query extends React.Component<QueryProps, QueryState> {
                 config.type === remoteConfigType || config.type === remoteConfigTypeParentName
             : (config: PersistedConfig) => true
 
-          this.setState({ data: loadByFilter(predicate), loadStatus: "loaded", loadError: null })
+          this.setState({
+            data: (loadByFilter(predicate) as unknown) as T[],
+            loadStatus: "loaded",
+            loadError: null,
+          })
         }
       } else if (this.props.queryType === "remote-query") {
         if (this.props.remoteQuery) {
@@ -163,7 +188,7 @@ export class Query extends React.Component<QueryProps, QueryState> {
               )
               queryConfig.fold(
                 (errors) => {
-                  console.error("Query.render", "Invalid Query", reporter(queryConfig))
+                  console.error("Query.loadRemoteData", "Invalid Query", reporter(queryConfig))
                   this.setState((state) => ({
                     ...state,
                     loadStatus: "error",
@@ -171,13 +196,13 @@ export class Query extends React.Component<QueryProps, QueryState> {
                   }))
                 },
                 Right((queryConfig) => {
-                  console.log("Query.render", "Checking for loaded values", queryConfig)
+                  console.log("Query.loadRemoteData", "Checking for loaded values", queryConfig)
 
                   // These are the parameters the form will prompt for
                   // -----
                   const {
                     unsatisfiedByParentParams: promptParameters,
-                  } = determineSatisfiedParameters(queryConfig.parameters, inputData, true)
+                  } = determineSatisfiedParameters(queryConfig.parameters, inputData || {}, true)
 
                   this.setState((state) => ({
                     ...state,
@@ -212,29 +237,29 @@ export class Query extends React.Component<QueryProps, QueryState> {
 
                     queryResult.foldL(
                       () => {
-                        console.log("Query.render", "Loading")
+                        console.log("Query.loadRemoteData", "Loading")
                         this.setState((state) => ({ ...state, loadStatus: "loading" }))
                         executeQuery({
                           resultURI: queryResultURI,
                           query: queryConfig.query,
                           params: satisfiedParams,
                         }).then(() => {
-                          console.log("Query.render", "Clear loading state")
+                          console.log("Query.loadRemoteData", "Clear loading state")
                           this.setState((state) => ({ ...state, loadStatus: "none" }))
                         })
                       },
                       (resultValues) => {
-                        console.log("Query.render", "Loaded, no remote")
+                        console.log("Query.loadRemoteData", "Loaded, no remote")
                         this.setState((state) => ({
                           ...state,
-                          data: resultValues,
+                          data: (resultValues as unknown) as T[],
                           loadStatus: "loaded",
                         }))
                       }
                     )
                   } else {
                     console.log(
-                      "Query.render",
+                      "Query.loadRemoteData",
                       "Cannot start loading due to unsatisfied parameters",
                       unsatisfiedByParentParams
                     )
@@ -246,11 +271,17 @@ export class Query extends React.Component<QueryProps, QueryState> {
           return
         }
       }
+    } else {
+      console.warn(
+        "Query.loadRemoteData",
+        "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
+      )
     }
   }
 
   render(): JSX.Element {
-    const { children, dataKey, queryType } = this.props
+    const { children, dataKey, queryType } = this.props as (QueryProps<T> &
+      typeof Query["defaultProps"])
     const {
       data,
       loadError,
@@ -258,6 +289,7 @@ export class Query extends React.Component<QueryProps, QueryState> {
       parameterValues,
       promptLayout,
       promptParameters,
+      renderedChildren,
     } = this.state
 
     return loadStatus === "error" ? (
@@ -274,9 +306,9 @@ export class Query extends React.Component<QueryProps, QueryState> {
             }}
           />
         )}
-        {children && children({ [dataKey]: data })}
+        {renderedChildren}
 
-        <Alert type="warning" message={<pre>{JSON.stringify({ [dataKey]: data }, null, 2)}</pre>} />
+        {/* <Alert type="warning" message={<pre>{JSON.stringify({ [dataKey]: data }, null, 2)}</pre>} /> */}
       </Spin>
     )
   }
