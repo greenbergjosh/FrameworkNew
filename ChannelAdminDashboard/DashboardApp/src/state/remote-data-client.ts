@@ -21,8 +21,9 @@ declare module "./store.types" {
   }
 }
 
+const apiUrl = "http://data.techopg.com"
+
 export interface State {
-  apiUrl: string
   token: null | string
 }
 
@@ -79,7 +80,6 @@ export interface Selectors {}
 
 export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
-    apiUrl: "http://admin.techopg.com/api",
     token: null,
   },
 
@@ -113,7 +113,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
               }
             : data
         },
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -146,7 +146,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
               }
             : data
         },
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -181,7 +181,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
               }
             : data
         },
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -244,7 +244,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map((payload) => {
@@ -265,7 +265,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -288,7 +288,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -314,7 +314,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -337,7 +337,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map((payload) => {
@@ -358,7 +358,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
