@@ -20,11 +20,17 @@ export interface QueryChildProps<T = any> {
   [key: string]: T[]
 }
 
+export interface QueryRefreshOptions {
+  interval?: number
+  stopOnFailure?: boolean
+}
+
 interface IQueryProps<T> {
   children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
   dataKey?: string
   inputData?: JSONObject
   queryType: "remote-query" | "remote-config"
+  refresh?: QueryRefreshOptions
 }
 
 interface QueryRemoteQueryProps<T> extends IQueryProps<T> {
@@ -245,6 +251,10 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
                         }).then(() => {
                           console.log("Query.loadRemoteData", "Clear loading state")
                           this.setState((state) => ({ ...state, loadStatus: "none" }))
+                          if (this.props.refresh && this.props.refresh.interval) {
+                            console.log("Quey.loardRemoteData", "Set Timeout for refresh")
+                            // this.setState((state) => ({ ...state, loadStatus: "none" }))
+                          }
                         })
                       },
                       (resultValues) => {
