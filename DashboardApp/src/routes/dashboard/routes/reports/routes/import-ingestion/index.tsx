@@ -1,4 +1,5 @@
 import {
+  AutoComplete,
   Col,
   Menu,
   PageHeader,
@@ -7,28 +8,21 @@ import {
   Typography
   } from "antd"
 import * as record from "fp-ts/lib/Record"
+import { sortBy } from "lodash/fp"
 import React from "react"
 import { Helmet } from "react-helmet"
+import { FilteredMenu } from "../../../../../../components/filtered-menu/FilteredMenu"
 import { Query, QueryProps } from "../../../../../../components/query/Query"
 import { useRematch } from "../../../../../../hooks"
 import { IngestionStatus, PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
+import { importExportDataColumns, rawDataColumns, tableSettings } from "./config"
+import "./import-ingestion.scss"
+import { exportData, rawData } from "./mock-data"
 import {
-  importExportDataColumns,
-  partnerColumns,
-  rawDataColumns,
-  tableSettings
-  } from "./config"
-import {
-  exportData,
-  importData,
-  partners,
-  rawData
-  } from "./mock-data"
-import {
-  UserInterfaceContext,
   createUIContext,
+  UserInterfaceContext,
 } from "../../../../../../components/interface-builder/UserInterfaceContextManager"
 
 interface Props {
@@ -85,22 +79,38 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
 
   const partnerMenu = React.useCallback<QueryProps<PartnerStatus>["children"]>(
     ({ data }) => (
-      <Menu
-        style={{ minHeight: 200 }}
-        onClick={(selected) => {
-          const selectedPartner = data.find(({ id }) => id === selected.key)
-          console.log("index", selected, selectedPartner)
-          if (selectedPartner) {
-            dispatch.importIngestionReport.updateSelectedPartner(selectedPartner)
-          } else {
-            dispatch.importIngestionReport.updateSelectedPartner(null)
+      <>
+        <FilteredMenu data={data} labelAccessor="name" valueAccessor="id" />
+        {/* <AutoComplete
+          style={{ width: 200 }}
+          dataSource={data.map(({ name }) => name)}
+          placeholder="Type to Search for Providers"
+          filterOption={(inputValue, option) =>
+            !!option &&
+            !!option.props &&
+            String(option.props.children)
+              .toUpperCase()
+              .indexOf(inputValue.toUpperCase()) !== -1
           }
-        }}
-        selectedKeys={fromStore.selectedPartner ? [fromStore.selectedPartner.id] : []}>
-        {data && data.map((item) => <Menu.Item key={item.id}>{item.name}</Menu.Item>)}
-      </Menu>
+        />
+        <Menu
+          style={{ minHeight: 200 }}
+          onClick={(selected) => {
+            const selectedPartner = data.find(({ id }) => id === selected.key)
+            console.log("index", selected, selectedPartner)
+            if (selectedPartner) {
+              dispatch.importIngestionReport.updateSelectedPartner(selectedPartner)
+            } else {
+              dispatch.importIngestionReport.updateSelectedPartner(null)
+            }
+          }}
+          selectedKeys={fromStore.selectedPartner ? [fromStore.selectedPartner.id] : []}>
+          <div>Test</div>
+          {data && data.map((item) => <Menu.Item key={item.id}>{item.name}</Menu.Item>)}
+        </Menu> */}
+      </>
     ),
-    []
+    [fromStore.selectedPartner && fromStore.selectedPartner.id]
   )
 
   return (
@@ -138,15 +148,25 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                     {...tableSettings}
                     onRow={(record) => {
                       return {
-                        className: selectedPartnerTables.includes(record.table_name)
+                        className: !record.succeeded
+                          ? "error-row"
+                          : selectedPartnerTables.includes(record.table_name)
                           ? "highlight-row"
                           : "",
                       }
                     }}
-                    dataSource={data}
+                    dataSource={
+                      fromStore.selectedPartner
+                        ? sortBy(
+                            ({ table_name }) =>
+                              selectedPartnerTables.includes(table_name) ? -1 : 0,
+                            data
+                          )
+                        : data
+                    }
                     columns={importExportDataColumns}
                     size={"middle"}
-                    pagination={false}
+                    scroll={{ y: 800 }}
                   />
                 )}
               </Query>

@@ -1,0 +1,90 @@
+import { Input, Menu } from "antd"
+import FlexSearch, { Index, SearchResults } from "flexsearch"
+import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import { get } from "lodash/fp"
+import * as React from "react"
+
+export interface FilteredMenuProps<T> {
+  data: T[]
+  inputStyle?: JSONObject
+  labelAccessor: string | ((dataItem: T) => string)
+  menuStyle?: JSONObject
+  onSelect?: (dataItem?: T) => unknown
+  placeholder?: string
+  resultLimit?: number
+  selectedValue?: string
+  valueAccessor: string | ((dataItem: T) => string)
+}
+
+export const FilteredMenu = <T extends {} = any>({
+  data,
+  inputStyle,
+  labelAccessor,
+  menuStyle,
+  onSelect,
+  placeholder = "Search...",
+  resultLimit = 15,
+  selectedValue,
+  valueAccessor,
+}: FilteredMenuProps<T>) => {
+  const { valueToDataItemMap, searchDB } = React.useMemo(() => {
+    const valueToDataItemMap = new Map<string, T>()
+    const searchDB: Index<T> = FlexSearch.create({ profile: "speed", tokenize: "full" })
+
+    data.forEach((dataItem) => {
+      const value = access(valueAccessor, dataItem)
+      const label = access(labelAccessor, dataItem)
+      valueToDataItemMap.set(value, dataItem)
+      searchDB.add(value, label)
+    })
+
+    return { valueToDataItemMap, searchDB }
+  }, [data, labelAccessor, valueAccessor])
+
+  const [filterInput, setFilterInput] = React.useState("")
+  const [results, setSearchResults] = React.useState<T[]>([])
+
+  React.useEffect(() => {
+    const resultsPromise = filterInput
+      ? Promise.resolve(searchDB.search(filterInput, resultLimit)).then((ids) =>
+          ids
+            ? (((ids as unknown) as string[])
+                .map((id) => id && valueToDataItemMap.get(id))
+                .filter((i) => i) as T[])
+            : ([] as T[])
+        )
+      : Promise.resolve(data.slice(0, resultLimit))
+
+    console.log("FilteredMenu.useEffect", { resultsPromise })
+    resultsPromise.then((results) => setSearchResults(results))
+  }, [data, filterInput, resultLimit])
+
+  console.log("FilteredMenu.render", { results })
+
+  return (
+    <>
+      <Input
+        style={inputStyle}
+        placeholder={placeholder}
+        onChange={(e) => setFilterInput(e.target.value)}
+      />
+      <Menu
+        style={menuStyle}
+        onClick={({ key }) => onSelect && onSelect(valueToDataItemMap.get(key))}
+        selectedKeys={selectedValue ? [selectedValue] : []}>
+        <div>Test</div>
+        {results &&
+          results.map((item, index) => (
+            <Menu.Item key={index}>{access(labelAccessor, item)}</Menu.Item>
+          ))}
+      </Menu>
+    </>
+  )
+}
+
+const access = <T extends {}>(accessor: FilteredMenuProps<T>["valueAccessor"], item: T) =>
+  typeof accessor === "string"
+    ? get(accessor, item)
+    : typeof accessor === "function"
+    ? accessor(item)
+    : null
