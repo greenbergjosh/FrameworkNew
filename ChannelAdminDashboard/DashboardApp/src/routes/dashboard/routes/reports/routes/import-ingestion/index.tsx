@@ -80,7 +80,16 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
   const partnerMenu = React.useCallback<QueryProps<PartnerStatus>["children"]>(
     ({ data }) => (
       <>
-        <FilteredMenu data={data} labelAccessor="name" valueAccessor="id" />
+        <FilteredMenu
+          data={data}
+          labelAccessor="name"
+          valueAccessor="id"
+          onSelect={(selected) => {
+            console.log("index", selected)
+            dispatch.importIngestionReport.updateSelectedPartner(selected ? selected : null)
+          }}
+          selected={fromStore.selectedPartner}
+        />
         {/* <AutoComplete
           style={{ width: 200 }}
           dataSource={data.map(({ name }) => name)}
@@ -122,13 +131,16 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
 
         <PageHeader style={{ padding: "15px" }} subTitle="" title="Import Ingestion">
           <Row gutter={16}>
-            <Col span={6}>
+            <Col span={4}>
               <Typography.Text strong={true}>Partners</Typography.Text>
-              <Query<PartnerStatus> queryType="remote-query" remoteQuery={partnerQueryId}>
+              <Query<PartnerStatus>
+                queryType="remote-query"
+                remoteQuery={partnerQueryId}
+                refresh={{ interval: 120, stopOnFailure: true }}>
                 {partnerMenu}
               </Query>
             </Col>
-            <Col span={6}>
+            <Col span={7}>
               <Typography.Text strong={true}>Import</Typography.Text>
               <Table
                 {...tableSettings}
@@ -138,10 +150,11 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 pagination={false}
               />
             </Col>
-            <Col span={6}>
+            <Col span={7}>
               <Typography.Text strong={true}>Ingestion</Typography.Text>
               <Query<IngestionStatus>
                 queryType="remote-query"
+                refresh={{ interval: 30, stopOnFailure: true }}
                 remoteQuery={ingestionStatusQueryConfigId}>
                 {({ data }) => (
                   <Table<IngestionStatus>
@@ -159,7 +172,9 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                       fromStore.selectedPartner
                         ? sortBy(
                             ({ table_name }) =>
-                              selectedPartnerTables.includes(table_name) ? -1 : 0,
+                              selectedPartnerTables.includes(table_name)
+                                ? "aaaaaaaaaaaaaaaaaaaa"
+                                : "zzzzzzzzzzzzzzzzzzzz",
                             data
                           )
                         : data

@@ -9,10 +9,10 @@ export interface FilteredMenuProps<T> {
   inputStyle?: JSONObject
   labelAccessor: string | ((dataItem: T) => string)
   menuStyle?: JSONObject
-  onSelect?: (dataItem?: T) => unknown
+  onSelect?: (dataItem: T | null) => unknown
   placeholder?: string
   resultLimit?: number
-  selectedValue?: string
+  selected?: T | null
   valueAccessor: string | ((dataItem: T) => string)
 }
 
@@ -24,7 +24,7 @@ export const FilteredMenu = <T extends {} = any>({
   onSelect,
   placeholder = "Search...",
   resultLimit = 15,
-  selectedValue,
+  selected,
   valueAccessor,
 }: FilteredMenuProps<T>) => {
   const { valueToDataItemMap, searchDB } = React.useMemo(() => {
@@ -60,6 +60,7 @@ export const FilteredMenu = <T extends {} = any>({
   }, [data, filterInput, resultLimit])
 
   console.log("FilteredMenu.render", { results })
+  const selectedValue = selected && access(valueAccessor, selected)
 
   return (
     <>
@@ -70,12 +71,15 @@ export const FilteredMenu = <T extends {} = any>({
       />
       <Menu
         style={menuStyle}
-        onClick={({ key }) => onSelect && onSelect(valueToDataItemMap.get(key))}
+        onClick={({ key }) => {
+          const dataItem = valueToDataItemMap.get(key)
+          console.log("FilteredMenu.onClick", key, dataItem)
+          onSelect && onSelect(typeof dataItem !== "undefined" ? dataItem : null)
+        }}
         selectedKeys={selectedValue ? [selectedValue] : []}>
-        <div>Test</div>
         {results &&
-          results.map((item, index) => (
-            <Menu.Item key={index}>{access(labelAccessor, item)}</Menu.Item>
+          results.map((item) => (
+            <Menu.Item key={access(valueAccessor, item)}>{access(labelAccessor, item)}</Menu.Item>
           ))}
       </Menu>
     </>
