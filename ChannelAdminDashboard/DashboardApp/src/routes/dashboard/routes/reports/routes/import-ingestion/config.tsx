@@ -11,6 +11,7 @@ export const tableSettings = {
   showHeader: true,
   scroll: undefined,
   hasData: true,
+  pagination: { pageSize: 50 },
 }
 
 export const partnerColumns = [
@@ -46,7 +47,7 @@ export const importExportDataColumns = [
     dataIndex: "succeeded",
     key: "succeeded",
     render: (succeeded: boolean) => (
-      <Icon type={succeeded ? "check-circle" : "eclamation-circle"} />
+      <Icon type={succeeded ? "check-circle" : "exclamation-circle"} />
     ),
   },
   {
@@ -54,16 +55,10 @@ export const importExportDataColumns = [
     dataIndex: "table_name",
     key: "table_name",
   },
-  // {
-  //   title: 'Time',
-  //   dataIndex: 'ts',
-  //   render: (ts:string) => moment(ts).format('MM/DD/YY h:mm:ss A'),
-  //   key: 'ts',
-  // },
   {
     title: "Time",
     dataIndex: "runtime",
-    render: (runtime: string) => `${runtime}s`,
+    render: (runtime: string) => (typeof runtime === "number" ? `${runtime}s` : "-"),
     key: "runtime",
     align: "right",
   },
