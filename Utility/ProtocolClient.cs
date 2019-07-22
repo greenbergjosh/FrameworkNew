@@ -3,14 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
 using Utility.GenericEntity;
 using Fs = Utility.FileSystem;
 
@@ -156,8 +154,11 @@ namespace Utility
             finally
             {
                 Fs.TryDeleteFile(workingDirectory + "\\" + ufn + ".tmp");
-                DirectoryInfo dir = new DirectoryInfo(workingDirectory + "\\" + ufn);
-                if (dir.Exists) dir.Delete(true);
+                var dir = new DirectoryInfo(workingDirectory + "\\" + ufn);
+                if (dir.Exists)
+                {
+                    dir.Delete(true);
+                }
             }
 
             return rs;
@@ -200,13 +201,13 @@ namespace Utility
             return rs;
         }
 
-        public static async Task UploadStream(string fileName, Stream stream, string host,
-            string userName, string password)
+        public static async Task UploadStream(string fileName, Stream stream, string host, string userName, string password, bool enableSsl = false)
         {
             var ftpReq = (FtpWebRequest)WebRequest.Create("ftp://" + host + "/" + fileName);
             ftpReq.UseBinary = true;
             ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
             ftpReq.Credentials = new NetworkCredential(userName, password);
+            ftpReq.EnableSsl = enableSsl;
 
             using (var s = ftpReq.GetRequestStream())
             {
@@ -216,23 +217,29 @@ namespace Utility
                     var buf = new byte[1000000];
                     var numRead = await stream.ReadAsync(buf);
 
-                    if (numRead > 0) await s.WriteAsync(buf, 0, numRead);
-                    else break;
+                    if (numRead > 0)
+                    {
+                        await s.WriteAsync(buf, 0, numRead);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
             await ftpReq.GetResponseAsync();
         }
 
-        public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password)
+        public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password, bool enableSsl = false)
         {
             using (var f = File.OpenRead(sourceFile))
             {
-                await UploadStream(targetFile, f, host, userName, password);
+                await UploadStream(targetFile, f, host, userName, password, enableSsl);
             }
         }
 
-        public static async Task DeleteFileFromFtpServer(string remoteFile, string host, int port, string userName, string password)
+        public static async Task DeleteFileFromFtpServer(string remoteFile, string host, int port, string userName, string password, bool enableSsl = false)
         {
             FtpWebResponse response = null;
 
@@ -241,12 +248,16 @@ namespace Utility
                 var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + remoteFile));
                 request.Method = WebRequestMethods.Ftp.DeleteFile;
                 request.Credentials = new NetworkCredential(userName, password);
+                request.EnableSsl = enableSsl;
                 response = (FtpWebResponse)(await request.GetResponseAsync());
                 response.Close();
             }
             finally
             {
-                if (response != null) response.Close();
+                if (response != null)
+                {
+                    response.Close();
+                }
             }
         }
 
@@ -290,13 +301,14 @@ namespace Utility
             }
         }
 
-        public static async Task<long> FtpGetFileSize(string fileName, string host, string userName, string password)
+        public static async Task<long> FtpGetFileSize(string fileName, string host, string userName, string password, bool enableSsl = false)
         {
             long fileSize = 0;
 
             var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/" + fileName));
             request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
             request.Credentials = new NetworkCredential(userName, password);
+            request.EnableSsl = enableSsl;
             var response = (FtpWebResponse)(await request.GetResponseAsync());
             var responseStream = response.GetResponseStream();
             var reader = new StreamReader(responseStream);
@@ -333,8 +345,8 @@ namespace Utility
         }
 
         public static async Task<List<string>> DownloadFilesFtp(
-            string localPath, string pattern, Func<string, string, Task<bool>> ShouldDownload,
-            string host, int port, string userName, string password)
+            string localPath, string pattern, Func<string, string, Task<bool>> shouldDownloadFunc,
+            string host, int port, string userName, string password, bool enableSsl = false)
         {
             FtpWebResponse response = null;
             StreamReader reader = null;
@@ -345,6 +357,7 @@ namespace Utility
                 var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/"));
                 request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;  // WebRequestMethods.Ftp.ListDirectory would be more efficient here
                 request.Credentials = new NetworkCredential(userName, password);
+                request.EnableSsl = enableSsl;
                 response = (FtpWebResponse)(await request.GetResponseAsync());
                 var responseStream = response.GetResponseStream();
                 reader = new StreamReader(responseStream);
@@ -388,7 +401,7 @@ namespace Utility
 
                 foreach (var file in files)
                 {
-                    var shouldDownload = await ShouldDownload(file, pattern);
+                    var shouldDownload = await shouldDownloadFunc(file, pattern);
                     if (shouldDownload)
                     {
                         tasks.Add(DownloadFileFtp(localPath, file, file, host, userName, password));
@@ -403,18 +416,25 @@ namespace Utility
             }
             finally
             {
-                if (reader != null) reader.Close();
-                if (response != null) response.Close();
+                if (reader != null)
+                {
+                    reader.Close();
+                }
+
+                if (response != null)
+                {
+                    response.Close();
+                }
             }
 
             return fileNames;
         }
 
-        public static async Task DownloadFileFtp(string baseDir, string sourceFile, string destinationFile, string host, string userName, string password)
+        public static async Task DownloadFileFtp(string baseDir, string sourceFile, string destinationFile, string host, string userName, string password, bool enableSsl = false)
         {
             using (var f = File.OpenWrite(baseDir + @"\" + destinationFile))
             {
-                await DownloadFileFtp(f, sourceFile, host, userName, password);
+                await DownloadFileFtp(f, sourceFile, host, userName, password, enableSsl);
             }
         }
 
@@ -439,7 +459,7 @@ namespace Utility
             }
         }
 
-        public static async Task<Stream> GetFtpFileStream(string sourceFile, string host, string userName, string password)
+        public static async Task<Stream> GetFtpFileStream(string sourceFile, string host, string userName, string password, bool enableSsl = false)
         {
             var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/" + sourceFile));
 
@@ -447,22 +467,23 @@ namespace Utility
             request.Method = WebRequestMethods.Ftp.DownloadFile;
             request.Credentials = new NetworkCredential(userName, password);
             request.UseBinary = true;
+            request.EnableSsl = enableSsl;
 
             var response = (FtpWebResponse)(await request.GetResponseAsync());
 
             return response.GetResponseStream();
         }
 
-        public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password)
+        public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password, bool enableSsl = false)
         {
-            using (var stream = await GetFtpFileStream(sourceFile, host, userName, password))
+            using (var stream = await GetFtpFileStream(sourceFile, host, userName, password, enableSsl))
             {
                 await stream.CopyToAsync(writeStream);
             }
         }
 
         public static async Task DeleteDirectoriesFromFtpServer(string connectionString, string host, int port, string userName,
-            string password, List<string> dirs)
+            string password, List<string> dirs, bool enableSsl = false)
         {
             FtpWebResponse response = null;
             foreach (var dir in dirs)
@@ -472,6 +493,7 @@ namespace Utility
                     var request = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dir}"));
                     request.Method = WebRequestMethods.Ftp.RemoveDirectory;
                     request.Credentials = new NetworkCredential(userName, password);
+                    request.EnableSsl = enableSsl;
                     response = (FtpWebResponse)(await request.GetResponseAsync());
                     response.Close();
                 }
@@ -499,7 +521,7 @@ namespace Utility
         }
 
         public static async Task<Dictionary<string, List<string>>> GetListFiles(
-            string host, string userName, string password)
+            string host, string userName, string password, bool enableSsl = false)
         {
             //Dictionary<DirName, List<FileName>>
             var listFiles = new Dictionary<string, List<string>>();
@@ -510,6 +532,7 @@ namespace Utility
                 var request = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/"));
                 request.Method = WebRequestMethods.Ftp.ListDirectory;
                 request.Credentials = new NetworkCredential(userName, password);
+                request.EnableSsl = enableSsl;
                 using (var response = (FtpWebResponse)(await request.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false)))
                 {
                     using (var responseStream = response.GetResponseStream())
@@ -519,7 +542,11 @@ namespace Utility
                             var line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                             while (!string.IsNullOrEmpty(line))
                             {
-                                if (line != "." && line != "..") dirs.Add(line);
+                                if (line != "." && line != "..")
+                                {
+                                    dirs.Add(line);
+                                }
+
                                 line = await reader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                             }
 
@@ -529,6 +556,7 @@ namespace Utility
                                 var fileRequest = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dir}/"));
                                 fileRequest.Method = WebRequestMethods.Ftp.ListDirectory;
                                 fileRequest.Credentials = new NetworkCredential(userName, password);
+                                fileRequest.EnableSsl = enableSsl;
                                 using (var fileResponse = (FtpWebResponse)(await fileRequest.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false)))
                                 {
                                     using (var fileResponseStream = fileResponse.GetResponseStream())
@@ -538,7 +566,11 @@ namespace Utility
                                             var fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                                             while (!string.IsNullOrEmpty(fileLine))
                                             {
-                                                if (fileLine != "." && fileLine != "..") listFiles[dir].Add(fileLine);
+                                                if (fileLine != "." && fileLine != "..")
+                                                {
+                                                    listFiles[dir].Add(fileLine);
+                                                }
+
                                                 fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                                             }
                                         }
@@ -557,7 +589,7 @@ namespace Utility
         }
 
         public static async Task<List<string>> FtpGetFiles(
-            string dirName, string host, string userName, string password)
+            string dirName, string host, string userName, string password, bool enableSsl = false)
         {
             var files = new List<string>();
 
@@ -573,6 +605,7 @@ namespace Utility
 
             fileRequest.Method = WebRequestMethods.Ftp.ListDirectory;
             fileRequest.Credentials = new NetworkCredential(userName, password);
+            fileRequest.EnableSsl = enableSsl;
             using (var fileResponse = (FtpWebResponse)(await fileRequest.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false)))
             {
                 using (var fileResponseStream = fileResponse.GetResponseStream())
@@ -582,7 +615,11 @@ namespace Utility
                         var fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                         while (!string.IsNullOrEmpty(fileLine))
                         {
-                            if (fileLine != "." && fileLine != "..") files.Add(fileLine);
+                            if (fileLine != "." && fileLine != "..")
+                            {
+                                files.Add(fileLine);
+                            }
+
                             fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
                         }
                     }
@@ -686,7 +723,7 @@ namespace Utility
                 smtp.Send(msg);
             }
         }
-		
+
         public static IEnumerable<(T reference, Exception ex)> SendMail<T>(string smtpRelay, int smtpPort, IEnumerable<(T reference, MailMessage msg)> messages, bool useSsl = false)
         {
             using (var smtp = new SmtpClient(smtpRelay, smtpPort))

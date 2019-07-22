@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -80,7 +81,7 @@ namespace QueueProcessorLib
             }
             catch (Exception ex)
             {
-                await _fw.Error(LogMethod, $"Exception occurred, producer halting.${Environment.NewLine}${ex}");
+                await _fw.Error(LogMethod, $"Exception occurred, producer halting.{Environment.NewLine}Last Batch:{(batch != null ? JsonConvert.SerializeObject(batch.Select(qi => (qi.Id, qi.Discriminator))) : "None")}{Environment.NewLine}Exception: {ex}");
                 _started = false;
             }
 
