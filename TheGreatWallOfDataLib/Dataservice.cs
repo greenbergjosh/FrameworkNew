@@ -34,13 +34,20 @@ namespace TheGreatWallOfDataLib
 
         public async Task Run(HttpContext context)
         {
-            string bodyForError = null;
             var requestId = Guid.NewGuid().ToString();
             var fResults = new Dictionary<string, string>();
+            string requestBody = null;
 
             try
-            {
-                var requestBody = await context.GetRawBodyStringAsync();
+            {                
+                requestBody = await context.GetRawBodyStringAsync();
+
+                if (requestBody.IsNullOrWhitespace())
+                {
+                    await context.WriteSuccessRespAsync("");
+                    await Fw.Log(nameof(Run), $"Empty request from {context.Ip()} Path: {context.Request.Path} UserAgent: {context.UserAgent()}");
+                    return;
+                }
 
                 await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
                 var req = Jw.JsonToGenericEntity(requestBody);
@@ -66,7 +73,7 @@ namespace TheGreatWallOfDataLib
 
                     try
                     {
-                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity);
+                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity, context.Ip());
                     }
                     catch (Exception e)
                     {
@@ -115,7 +122,7 @@ namespace TheGreatWallOfDataLib
             }
             catch (Exception e)
             {
-                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
+                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
             }
 
             var body = new PL();

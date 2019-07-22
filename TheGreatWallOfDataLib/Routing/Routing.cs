@@ -19,18 +19,18 @@ namespace TheGreatWallOfDataLib.Routing
     public static class Routing
     {
         private const string DefaultFuncIdent = "*";
-        public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string requestArgs, string identity);
+        public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string requestArgs, string identity, string ip);
 
         // ToDo: Refactor to use LBMs and config
         private static readonly (string scope, (string funcName, ApiFunc func)[] funcs)[] __ = new[]
         {
             ("config", new [] {
-                ("merge", new ApiFunc((s, f, a, i) => Config.Merge(s, a, i)))
+                ("merge", new ApiFunc((s, f, a, i,ip) => Config.Merge(s, a, i)))
             }),
             ("auth", new []
             {
-                ("login", new ApiFunc(async (s, f, a, i) => await Authentication.Login(a))),
-                ("userDetails", new ApiFunc(async (s, f, a, i) => await Authentication.GetUserDetails(i)))
+                ("login", new ApiFunc(async (s, f, a, i,ip) => await Authentication.Login(a))),
+                ("userDetails", new ApiFunc(async (s, f, a, i,ip) => await Authentication.GetUserDetails(i)))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
@@ -57,9 +57,9 @@ namespace TheGreatWallOfDataLib.Routing
 
         private static ApiFunc DbFunc()
         {
-            return async (scope, funcName, requestArgs, identity) =>
+            return async (scope, funcName, requestArgs, identity, ip) =>
             {
-                if (!await Authentication.HasPermissions(scope, funcName, identity)) throw new FunctionException(106, $"Permission denied: Identity: {identity} Scope: {scope} Func: {funcName}");
+                if (!await Authentication.HasPermissions(scope, funcName, identity, ip)) throw new FunctionException(106, $"Permission denied: Identity: {identity} Scope: {scope} Func: {funcName}");
 
                 var res = await Data.CallFn(scope, funcName, requestArgs);
                 var resStr = res?.GetS("");
