@@ -25,6 +25,8 @@ export interface QueryRefreshOptions {
   stopOnFailure?: boolean
 }
 
+export interface QueryConfig { query: string }
+
 interface IQueryProps<T> {
   children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
   dataKey?: string
@@ -157,24 +159,24 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
 
           const predicate = remoteDataFilter
             ? (config: PersistedConfig) => {
-                const parsedConfig = {
-                  ...config,
-                  config: config.config
-                    .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
-                    .toNullable(),
-                }
-
-                const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
-                return remoteConfigType
-                  ? (config.type === remoteConfigType ||
-                      config.type === remoteConfigTypeParentName) &&
-                      dataFilterResult
-                  : dataFilterResult
+              const parsedConfig = {
+                ...config,
+                config: config.config
+                  .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
+                  .toNullable(),
               }
+
+              const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
+              return remoteConfigType
+                ? (config.type === remoteConfigType ||
+                config.type === remoteConfigTypeParentName) &&
+                dataFilterResult
+                : dataFilterResult
+            }
             : remoteConfigType
-            ? (config: PersistedConfig) =>
+              ? (config: PersistedConfig) =>
                 config.type === remoteConfigType || config.type === remoteConfigTypeParentName
-            : (config: PersistedConfig) => true
+              : (config: PersistedConfig) => true
 
           this.setState({
             data: (loadByFilter(predicate) as unknown) as T[],
@@ -242,20 +244,18 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
 
                     queryResult.foldL(
                       () => {
-                        console.log("Query.loadRemoteData", "Loading")
-                        this.setState((state) => ({ ...state, loadStatus: "loading" }))
-                        executeQuery({
-                          resultURI: queryResultURI,
-                          query: queryConfig.query,
-                          params: satisfiedParams,
-                        }).then(() => {
-                          console.log("Query.loadRemoteData", "Clear loading state")
-                          this.setState((state) => ({ ...state, loadStatus: "none" }))
-                          if (this.props.refresh && this.props.refresh.interval) {
-                            console.log("Quey.loardRemoteData", "Set Timeout for refresh")
-                            // this.setState((state) => ({ ...state, loadStatus: "none" }))
-                          }
-                        })
+                        this.loadData(executeQuery, queryResultURI, queryConfig, satisfiedParams)
+                        if (this.props.refresh && this.props.refresh.interval) {
+                          console.log("Query.loadRemoteData", "Set interval for refresh")
+                          const interval = this.props.refresh.interval
+                          setInterval(
+                            () => {
+                              console.log("Query.loadRemoteData", `Refreshing, ${interval}s interval reached`)
+                              this.loadData(executeQuery, queryResultURI, queryConfig, satisfiedParams)
+                            },
+                            this.props.refresh.interval * 1000,
+                          )
+                        }
                       },
                       (resultValues) => {
                         console.log("Query.loadRemoteData", "Loaded, no remote")
@@ -286,6 +286,19 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
         "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
       )
     }
+  }
+
+  private loadData(executeQuery: Function, queryResultURI: string, queryConfig: QueryConfig, satisfiedParams: JSONRecord) {
+    console.log("Query.loadData", "Loading")
+    this.setState((state) => ({ ...state, loadStatus: "loading" }))
+    executeQuery({
+      resultURI: queryResultURI,
+      query: queryConfig.query,
+      params: satisfiedParams,
+    }).then(() => {
+      console.log("Query.loadData", "Clear loading state")
+      this.setState((state) => ({ ...state, loadStatus: "none" }))
+    })
   }
 
   render(): JSX.Element {

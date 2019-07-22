@@ -17,7 +17,13 @@ import { useRematch } from "../../../../../../hooks"
 import { IngestionStatus, PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
-import { importExportDataColumns, rawDataColumns, tableSettings } from "./config"
+import {
+  importIngestionColumns,
+  rawDataColumns,
+  tableSettings,
+  PARTNER_QUERY_CONFIG_ID,
+  INGESTION_STATUS_QUERY_CONFIG_ID
+} from "./config"
 import "./import-ingestion.scss"
 import { exportData, rawData } from "./mock-data"
 import {
@@ -44,12 +50,12 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
   // increment counter (React.useState) | or lastRequestedTS
 
   const partnerQueryConfig = record
-    .lookup("a3987b6c-3121-4a25-a781-60ff4c4eef25", fromStore.configsById)
+    .lookup(PARTNER_QUERY_CONFIG_ID, fromStore.configsById)
     .toUndefined()
   const partnerQueryId = partnerQueryConfig && partnerQueryConfig.id
 
   const ingestionStatusQueryConfig = record
-    .lookup("2327834e-9c0f-4d58-85f8-a774c1520984", fromStore.configsById)
+    .lookup(INGESTION_STATUS_QUERY_CONFIG_ID, fromStore.configsById)
     .toUndefined()
   const ingestionStatusQueryConfigId = ingestionStatusQueryConfig && ingestionStatusQueryConfig.id
 
@@ -139,16 +145,18 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                     }}
                     dataSource={
                       fromStore.selectedPartner
+                        // We're using sortBy to move the items of the selected table to the front
+                        // without re-arranging anything else
                         ? sortBy(
-                            ({ table_name }) =>
+                            ({ table_name }) => //eslint-disable-line @typescript-eslint/camelcase
                               selectedPartnerTables.includes(table_name)
-                                ? "aaaaaaaaaaaaaaaaaaaa"
-                                : "zzzzzzzzzzzzzzzzzzzz",
+                                ? 1
+                                : 2,
                             data
                           )
                         : data
                     }
-                    columns={importExportDataColumns}
+                    columns={importIngestionColumns}
                     size={"middle"}
                     scroll={{ y: 800 }}
                   />
@@ -160,7 +168,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
               <Table
                 {...tableSettings}
                 dataSource={exportData as any}
-                columns={importExportDataColumns}
+                columns={importIngestionColumns}
                 size={"middle"}
                 pagination={false}
               />
