@@ -35,9 +35,7 @@ export interface Reducers {
   updateSelectedPartner(payload: PartnerStatus | null): State
 }
 
-export interface Effects {
-  // setSelectedPartner(selectedPartner: PartnerStatus | null): void
-}
+export interface Effects {}
 
 export interface Selectors {}
 
@@ -53,13 +51,7 @@ export const importIngestionReport: Store.AppModel<State, Reducers, Effects, Sel
     }),
   },
 
-  effects: (dispatch) => ({
-    // setSelectedPartner(selectedPartner) {
-    //   dispatch.importIngestionReport.updateSelectedPartner(selectedPartner)
-    //   //TODO: update raw, import, export data
-    //   console.log("importIngestionReport", this)
-    // },
-  }),
+  effects: (dispatch) => ({}),
 
   selectors: (slice, createSelector) => ({}),
 }

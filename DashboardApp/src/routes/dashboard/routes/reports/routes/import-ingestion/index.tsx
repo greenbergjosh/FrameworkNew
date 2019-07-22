@@ -37,10 +37,6 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     configs: state.globalConfig.configs,
     selectedPartner: state.importIngestionReport.selectedPartner,
     reportDataByQuery: state.reports.reportDataByQuery,
-    // selectPartners
-    // selectRawData
-    // selectImport
-    // selectExport
   }))
 
   // React.useEffect invoke 4 data calls
@@ -90,33 +86,6 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
           }}
           selected={fromStore.selectedPartner}
         />
-        {/* <AutoComplete
-          style={{ width: 200 }}
-          dataSource={data.map(({ name }) => name)}
-          placeholder="Type to Search for Providers"
-          filterOption={(inputValue, option) =>
-            !!option &&
-            !!option.props &&
-            String(option.props.children)
-              .toUpperCase()
-              .indexOf(inputValue.toUpperCase()) !== -1
-          }
-        />
-        <Menu
-          style={{ minHeight: 200 }}
-          onClick={(selected) => {
-            const selectedPartner = data.find(({ id }) => id === selected.key)
-            console.log("index", selected, selectedPartner)
-            if (selectedPartner) {
-              dispatch.importIngestionReport.updateSelectedPartner(selectedPartner)
-            } else {
-              dispatch.importIngestionReport.updateSelectedPartner(null)
-            }
-          }}
-          selectedKeys={fromStore.selectedPartner ? [fromStore.selectedPartner.id] : []}>
-          <div>Test</div>
-          {data && data.map((item) => <Menu.Item key={item.id}>{item.name}</Menu.Item>)}
-        </Menu> */}
       </>
     ),
     [fromStore.selectedPartner && fromStore.selectedPartner.id]
@@ -185,14 +154,6 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                   />
                 )}
               </Query>
-
-              {/* <Table
-                {...tableSettings}
-                dataSource={importData}
-                columns={importExportDataColumns}
-                size={"middle"}
-                pagination={false}
-              /> */}
             </Col>
             <Col span={6}>
               <Typography.Text strong={true}>Export</Typography.Text>
