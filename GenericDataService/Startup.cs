@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Utility;
 using Utility.DataLayer;
 
@@ -16,6 +17,7 @@ namespace GenericDataService
     public class Startup
     {
         public dynamic DataService;
+        private bool _dataServiceHasReInit = false;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -71,6 +73,8 @@ namespace GenericDataService
                 throw;
             }
 
+            _dataServiceHasReInit = ((object)DataService).GetType().GetMethods().Where(m => m.IsPublic).Any(m => m.Name == "ReInitialize");
+
             var wwwrootPath = fw.StartupConfiguration.GetS("Config/PhysicalFileProviderPath");
 
             if (!wwwrootPath.IsNullOrWhitespace())
@@ -84,7 +88,12 @@ namespace GenericDataService
 
             app.UseCors("CorsPolicy");
 
-            TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(UnobservedTaskExceptionEventHandler);
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
+            TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
 
             app.Run(async (context) =>
             {
@@ -101,6 +110,33 @@ namespace GenericDataService
                         var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ?? $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
 
                         await context.WriteSuccessRespAsync(traceLog, Encoding.UTF8);
+                        return;
+                    }
+
+                    if (context.Request.Query["m"] == "reinit")
+                    {
+                        var success = await fw.ReInitialize();
+
+                        if (success)
+                        {
+                            try
+                            {
+                                if(_dataServiceHasReInit) DataService.ReInitialize();
+                                await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { resul = "success" }), Encoding.UTF8);
+                            }
+                            catch (Exception e)
+                            {
+                                await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { resul = "failed", error = $"Dataservice reinit failed: {e.UnwrapForLog()}" }), Encoding.UTF8);
+                            }
+                        }
+                        else
+                        {
+                            var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ??
+                                           $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
+
+                            await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { resul = "failed", traceLog }), Encoding.UTF8);
+                        }
+
                         return;
                     }
 
