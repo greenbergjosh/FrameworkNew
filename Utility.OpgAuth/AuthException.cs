@@ -8,6 +8,11 @@ namespace Utility.OpgAuth
         {
 
         }
+
+        public AuthException(string msg, Exception e) : base(msg, e)
+        {
+
+        }
     }
 
     public class AuthFrameworkNotFoundException : Exception
