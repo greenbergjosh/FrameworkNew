@@ -20,6 +20,7 @@ namespace Utility.DataLayer
         private static readonly ConcurrentDictionary<string, Connection> Connections = new ConcurrentDictionary<string, Connection>();
         private static Connection _configConn;
         private static string _configFunction;
+        private static string[] _commandLineArgs;
         private static List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
 
         private static void TraceLog(string location, string log) => _traceLog.Add((DateTime.Now, location, log));
@@ -37,6 +38,7 @@ namespace Utility.DataLayer
             try
             {
                 _configConn = new Connection(GlobalConfigConnName, DataLayerClientFactory.DataStoreInstance(dataLayerType), connStr);
+                _commandLineArgs = commandLineArgs;
 
                 _configConn.Functions.AddOrUpdate(ConfigFunctionName, configFunction, (key, current) => throw new Exception($"Failed to add {nameof(configFunction)}. {nameof(Data)}.{nameof(Initialize)} may have been called after it's already been initialized"));
                 Connections.AddOrUpdate(GlobalConfigConnName, _configConn, (key, current) => current);
@@ -47,7 +49,7 @@ namespace Utility.DataLayer
 
                 TraceLog(nameof(Initialize), $"{nameof(configStr)}\r\n{configStr}");
 
-                var gc = Jw.JsonToGenericEntity(Jw.Json(new { Config = configStr }, new bool[] { false }));
+                var gc = Jw.JsonToGenericEntity(Jw.Serialize(new { Config = Jw.TryParseObject(configStr) }));
 
                 if (!gc.GetS("Config/ConnectionStrings").IsNullOrWhitespace()) await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"));
 
@@ -59,33 +61,57 @@ namespace Utility.DataLayer
             }
         }
 
-        public static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings)
+        public static async Task<IGenericEntity> ReInitialize(string[] configKeys)
+        {
+            string configStr = null;
+
+            TraceLog(nameof(Initialize), "Reinitializing");
+
+            try
+            {
+                configStr = await GetConfigs(configKeys, _commandLineArgs);
+                var gc = Jw.JsonToGenericEntity(Jw.Serialize(new { Config = Jw.TryParseObject(configStr) }));
+
+                if (!gc.GetS("Config/ConnectionStrings").IsNullOrWhitespace()) await AddConnectionStrings(gc.GetD("Config/ConnectionStrings"), true);
+
+                return gc;
+            }
+            catch (Exception e)
+            {
+                TraceLog(nameof(Initialize), $"Reinitialize failed: {e.UnwrapForLog()}");
+                return null;
+            }
+        }
+
+        public static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings) => await AddConnectionStrings(connectionStrings, false);
+
+        private static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings, bool merge)
         {
             foreach (var o in connectionStrings)
             {
-                if (Connections.ContainsKey(o.Item1) && Connections[o.Item1].Id == o.Item2)
+                if (Connections.ContainsKey(o.Item1) && Connections[o.Item1].Id == o.Item2 && !merge)
                 {
                     continue;
                 }
 
-                if (Connections.ContainsKey(o.Item1))
+                if (Connections.ContainsKey(o.Item1) && !merge)
                 {
                     throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Item1}");
                 }
 
                 var conf = Jw.JsonToGenericEntity(await _configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = o.Item2 }), "{}", _configFunction, _configConn.ConnStr));
-                var conn = Connections.AddOrUpdate(o.Item1, new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString")), (key, current) => current);
+                var conn = Connections.GetOrAdd(o.Item1,s => new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString"))); 
 
                 foreach (var sp in conf.GetD("DataLayer"))
                 {
                     conn.Functions.AddOrUpdate(sp.Item1, sp.Item2, (key, current) =>
                     {
-                        if (current != sp.Item2)
+                        if (current != sp.Item2 && !merge)
                         {
                             throw new Exception($"Caught attempt to replace existing data layer config with different value for key: {sp.Item1}, with existing value: {current}, new value: {sp.Item2}");
                         }
 
-                        return current;
+                        return sp.Item2;
                     });
                 }
             }

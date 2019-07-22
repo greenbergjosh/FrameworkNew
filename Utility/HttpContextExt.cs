@@ -68,9 +68,7 @@ namespace Utility
 
         public static string Ip(this HttpContext ctx)
         {
-            return (ctx.Connection.RemoteIpAddress != null) ?
-                ctx.Connection.RemoteIpAddress.ToString() :
-                "";
+            return ctx.Connection.RemoteIpAddress?.ToString() ?? "";
         }
 
         public static string UserAgent(this HttpContext ctx)
