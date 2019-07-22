@@ -27,7 +27,7 @@ export const rawDataColumns = [
   {
     title: "Time",
     dataIndex: "ts",
-    render: (ts: string) => moment(ts).format("MM/DD/YY h:mm:ss A"),
+    render: (runtime: string) => (typeof runtime === "number" ? `${runtime}s` : "-"),
     key: "ts",
   },
   {
