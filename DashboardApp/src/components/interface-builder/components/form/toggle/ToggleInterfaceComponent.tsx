@@ -12,6 +12,7 @@ import {
 export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "toggle"
   defaultValue?: boolean
+  inverted?: boolean
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
@@ -22,7 +23,6 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
 > {
   static defaultProps = {
     valueKey: "value",
-    defaultValue: true,
   }
 
   static getLayoutDefinition() {
@@ -42,14 +42,15 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = toggleManageForm
 
   handleChange = (checked: boolean) => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData(set(valueKey, checked, userInterfaceData))
+    const { inverted, onChangeData, userInterfaceData, valueKey } = this.props
+    onChangeData && onChangeData(set(valueKey, inverted ? !checked : checked, userInterfaceData))
   }
 
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey } = this.props
+    const { defaultValue, inverted, userInterfaceData, valueKey } = this.props
     const rawValue = get(valueKey, userInterfaceData)
-    const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
-    return <Switch onChange={this.handleChange} checked={value} />
+    const realValue = (typeof rawValue !== "undefined" ? rawValue : defaultValue) || false
+    const finalValue = inverted ? !realValue : realValue
+    return <Switch onChange={this.handleChange} checked={finalValue} />
   }
 }

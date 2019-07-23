@@ -6,6 +6,8 @@ import { DataPathContext } from "../../../../DataPathContext"
 import { StandardGrid } from "../../../../grid/StandardGrid"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
+import { tableAdvancedForm } from "./table-column-form-section-advanced"
+import { tableSortForm } from "./table-column-form-section-sort"
 import { tableDataTypes } from "./table-data-types-form"
 import { tableManageForm } from "./table-manage-form"
 import {
@@ -305,47 +307,7 @@ const editComponents: ComponentDefinition[] = [
             key: "details",
             valueKey: "",
             component: "collapse",
-            sections: [
-              {
-                title: "Sort",
-                components: [
-                  {
-                    key: "allowSorting",
-                    valueKey: "allowSorting",
-                    label: "Allow Sorting",
-                    component: "toggle",
-                    defaultValue: true,
-                  },
-                  {
-                    key: "sortDirection",
-                    valueKey: "sortDirection",
-                    label: "Direction",
-                    component: "select",
-                    dataHandlerType: "local",
-                    data: {
-                      values: [
-                        {
-                          label: "Ascending",
-                          value: "Ascending",
-                        },
-                        {
-                          label: "Descending",
-                          value: "Descending",
-                        },
-                      ],
-                    },
-                  },
-                  {
-                    key: "sortOrder",
-                    valueKey: "sortOrder",
-                    label: "Order",
-                    help:
-                      "The lowest Order is the first column sorted, followed by the next lowest, and so on",
-                    component: "number-input",
-                  },
-                ],
-              },
-            ],
+            sections: [tableSortForm, tableAdvancedForm],
           },
         ],
       },

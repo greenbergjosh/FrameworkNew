@@ -1,11 +1,13 @@
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
-import { Spin } from "antd"
-import { cloneDeep } from "lodash/fp"
+import { Button, Spin } from "antd"
+import { cloneDeep, sortBy } from "lodash/fp"
 import moment from "moment"
 import React from "react"
+import { tryCatch } from "../../data/Either"
 import { JSONRecord } from "../../data/JSON"
 import { deepDiff } from "../../lib/deep-diff"
+import { evalExpression } from "../../lib/eval-expression"
 import { shallowPropCheck } from "../interface-builder/dnd/util/shallow-prop-check"
 import {
   Aggregate,
@@ -31,8 +33,9 @@ import {
 } from "@syncfusion/ej2-react-grids"
 
 interface EnrichedColumnDefinition extends ColumnModel {
-  skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
+  allowHTMLText?: boolean
   customFormat?: string
+  skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
   precision?: number
 }
 
@@ -45,7 +48,7 @@ const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
     deepDiff(prevProps, nextProps, (k) =>
       ["children", "detailTemplate", "valueAccessor"].includes(k)
     )
-  console.log("PureGridComponent.memo", simplePropEquality, runDeepDiff(), { prevProps, nextProps })
+  // console.log("PureGridComponent.memo", simplePropEquality, runDeepDiff(), { prevProps, nextProps })
 
   return simplePropEquality && !runDeepDiff()
 })
@@ -133,44 +136,85 @@ export const StandardGrid = React.forwardRef(
     }: StandardGridComponentProps,
     ref?: React.Ref<GridComponent>
   ) => {
-    console.log("StandardGrid.render", { data, detailTemplate })
+    // console.log("StandardGrid.render", { data, detailTemplate })
 
     const handleToolbarClick = React.useMemo(
       () => (ref && typeof ref === "object" && handleToolbarItemClicked(ref)) || undefined,
       [ref]
     )
 
-    const usableColumns = React.useMemo(
-      () =>
-        cloneDeep(columns).map((column) => {
-          const col = column as EnrichedColumnDefinition
-          // Intentionally mutating a clone
+    const usableColumns = React.useMemo(() => {
+      // const fields = columns.reduce(
+      //   (acc, { field }) => {
+      //     if (field && !field.startsWith("=")) {
+      //       acc.push(field)
+      //     }
+      //     return acc
+      //   },
+      //   [] as string[]
+      // )
 
-          if (["date", "dateTime"].includes(col.type || "")) {
-            col.format =
-              col.skeletonFormat === "custom"
-                ? { type: col.type, format: col.customFormat }
-                : { type: col.type, skeleton: col.skeletonFormat || "short" }
-            delete col.type
-          } else if (["number"].includes(col.type || "")) {
-            col.format = {
-              format:
-                col.format === "standard"
-                  ? `N${col.precision || 2}`
-                  : col.format === "percentage"
-                  ? `P${col.precision || 2}`
-                  : col.format === "currency"
-                  ? `C${col.precision || 2}`
-                  : undefined,
-            }
-            delete col.type
+      // const destructureFunction = (content: string) => `({${fields.join(", ")}}) => ${content}`
+      return cloneDeep(columns).map((column) => {
+        const col = column as EnrichedColumnDefinition
+        // Intentionally mutating a clone
+
+        // Default should be to NOT allow HTML rendering. That's a terrible practice.
+        if (typeof col.disableHtmlEncode === "undefined" || col.disableHtmlEncode === null) {
+          col.disableHtmlEncode = !col.allowHTMLText
+        }
+
+        // If the column field starts with =, it's a calculated field
+        if (col.field && col.field[0] === "=") {
+          const calculationString = col.field.substring(1)
+
+          col.valueAccessor = (field, data, column) => {
+            const evald = tryCatch(() => {
+              const interpolatedCalculationString = sortBy(
+                ([key, value]) => value && value.length,
+                Object.entries(data)
+              ).reduce((acc: string, [key, value]) => acc.replace(key, value), calculationString)
+              // return interpolatedCalculationString
+              return evalExpression(interpolatedCalculationString)
+            })
+            // console.log("StandardGrid.render", "usableColumns/valueAccessor", field, data, evald)
+
+            return evald.fold(
+              (error) => null,
+              (value) => (isNaN(value) || !isFinite(value) ? null : value)
+            )
           }
+          delete col.field
+        }
 
-          return col
-        }),
-      []
-    )
+        // Managing custom formatting options for Dates
+        if (["date", "dateTime"].includes(col.type || "")) {
+          col.format =
+            col.skeletonFormat === "custom"
+              ? { type: col.type, format: col.customFormat }
+              : { type: col.type, skeleton: col.skeletonFormat || "short" }
+          delete col.type
+        }
+        // Managing custom formatting options for number types
+        else if (["number"].includes(col.type || "")) {
+          col.format = {
+            format:
+              col.format === "standard"
+                ? `N${typeof col.precision === "number" ? col.precision : 2}`
+                : col.format === "percentage"
+                ? `P${typeof col.precision === "number" ? col.precision : 2}`
+                : col.format === "currency"
+                ? `C${typeof col.precision === "number" ? col.precision : 2}`
+                : undefined,
+          }
+          delete col.type
+        }
 
+        return col
+      })
+    }, [])
+
+    // Some data may have to be pre-processed in order not to cause the table to fail to render
     const usableData = React.useMemo(
       () =>
         cloneDeep(data).map((dataRow) => {
@@ -181,6 +225,7 @@ export const StandardGrid = React.forwardRef(
                 (typeof value === "string" || typeof value === "number") &&
                 ["date", "dateTime"].includes(type || "")
               ) {
+                // Date type columns must appear as JS Date objects, not strings
                 dataRow[field] = moment(value).toDate() as any
               }
             }
@@ -196,6 +241,10 @@ export const StandardGrid = React.forwardRef(
     //   return typeof detailTemplate === "function" ? detailTemplate() : detailTemplate
     // }, [detailTemplate])
 
+    const dataBound = React.useCallback(() => {
+      ref && typeof ref === "object" && ref.current && ref.current.autoFitColumns()
+    }, [ref, data])
+
     const editSettings = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" as EditMode }
     const editingToolbarItems = ([] as string[]).concat(
       allowAdding ? "Add" : [],
@@ -205,12 +254,14 @@ export const StandardGrid = React.forwardRef(
 
     return (
       <Spin spinning={loading}>
+        <Button onClick={dataBound}>autoFitColumns</Button>
         <PureGridComponent
           ref={ref}
           {...commonGridOptions}
           toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
           actionComplete={actionComplete}
           columns={usableColumns}
+          // dataBound={dataBound}
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}

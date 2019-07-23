@@ -61,7 +61,7 @@ export const ReportBody = React.memo(
     const grid = React.useRef<GridComponent>(null)
 
     const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
-      () => determineSatisfiedParameters(queryConfig.parameters, parentData || {}),
+      () => determineSatisfiedParameters(queryConfig.parameters, parentData || {}, true),
       [parentData, queryConfig.parameters]
     )
 
