@@ -770,24 +770,26 @@ namespace VisitorIdLib
 
             if (!Md5ExcludeList.Contains(Guid.Parse(md5)))
             {
-                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdSignal", DateTime.Now,
-                    PL.O(new
-                    {
-                        ts = DateTime.Now,
-                        visitorIdSessionId = sid,
-                        md5 = Guid.Parse(md5),
-                        email = email.IfNullOrWhitespace(null),
-                        ipAddress = clientIp,
-                        md5ProviderId = md5pid,
-                        emailProviderId = string.IsNullOrWhiteSpace(email) ? null : emailpid,
-                        affiliateId = afid,
-                        thirdPartyId = tpid.IfNullOrWhitespace(null),
-                        userAgent,
-                        domain = host,
-                        page = path,
-                        consoleDomainId = _consoleDomainId,
-                    }).ToString())
-                );
+                var payload = PL.O(new
+                {
+                    ts = DateTime.Now,
+                    visitorIdSessionId = sid,
+                    md5slot = slot,
+                    md5page = page,
+                    md5 = Guid.Parse(md5),
+                    email = email.IfNullOrWhitespace(null),
+                    ipAddress = clientIp,
+                    md5ProviderId = md5pid,
+                    emailProviderId = string.IsNullOrWhiteSpace(email) ? null : emailpid,
+                    affiliateId = afid,
+                    thirdPartyId = tpid.IfNullOrWhitespace(null),
+                    userAgent,
+                    domain = host,
+                    page = path,
+                    consoleDomainId = _consoleDomainId,
+                });
+                payload.Add( PL.O(new { rsids = JsonConvert.SerializeObject(rsids) }, new bool[] { false }));
+                await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdSignal", DateTime.Now, payload.ToString()));
             }
 
             await WriteCodePathEvent(PL.O(new { branch = nameof(SaveSession), loc = "end" }), rsids);
