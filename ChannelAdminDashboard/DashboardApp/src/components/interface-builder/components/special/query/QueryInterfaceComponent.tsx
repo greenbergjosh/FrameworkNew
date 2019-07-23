@@ -12,6 +12,7 @@ import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { QueryConfig, QueryConfigCodec } from "../../../../../data/Report"
 import { determineSatisfiedParameters } from "../../../../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../../../../lib/json"
+import { DataPathContext } from "../../../../DataPathContext"
 import { Query, QueryChildProps, QueryProps } from "../../../../query/Query"
 import { QueryForm } from "../../../../report/QueryForm"
 import { ComponentRenderer } from "../../../ComponentRenderer"
@@ -21,14 +22,26 @@ import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
+  ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
+  components: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   queryType: QueryProps["queryType"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+}
+
+interface QueryInterfaceComponentDisplayModeProps extends IQueryInterfaceComponentProps {
+  mode: "display"
+}
+
+interface QueryInterfaceComponentEditModeProps extends IQueryInterfaceComponentProps {
+  mode: "edit"
+  onChangeSchema?: (newSchema: ComponentDefinition) => void
+  userInterfaceSchema?: ComponentDefinition
 }
 
 interface QueryRemoteQueryInterfaceComponentProps extends IQueryInterfaceComponentProps {
@@ -43,9 +56,10 @@ interface QueryRemoteConfigInterfaceComponentProps extends IQueryInterfaceCompon
   remoteDataFilter?: JSONObject
 }
 
-type QueryInterfaceComponentProps =
+type QueryInterfaceComponentProps = (
   | QueryRemoteQueryInterfaceComponentProps
-  | QueryRemoteConfigInterfaceComponentProps
+  | QueryRemoteConfigInterfaceComponentProps) &
+  (QueryInterfaceComponentDisplayModeProps | QueryInterfaceComponentEditModeProps)
 
 interface QueryInterfaceComponentState {
   data: any[]
@@ -74,6 +88,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       componentDefinition: {
         component: "query",
         label: "Query",
+        components: [],
       },
     }
   }
@@ -83,9 +98,36 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
   context!: React.ContextType<typeof UserInterfaceContext>
 
   render(): JSX.Element {
-    const { queryType, remoteDataFilter, userInterfaceData, valueKey } = this.props
+    const {
+      components,
+      onChangeData,
+      queryType,
+      remoteDataFilter,
+      userInterfaceData,
+      valueKey,
+    } = this.props
 
-    const children = (result: QueryChildProps) => <Alert type="warning" message="Test" />
+    const children = (result: QueryChildProps) => (
+      <DataPathContext path="components">
+        <ComponentRenderer
+          components={components}
+          data={{ ...userInterfaceData, ...result[valueKey] }}
+          onChangeData={onChangeData}
+          // onChangeSchema={(newSchema) => {
+          //   if (this.props.mode === "edit") {
+          //     this.props.onChangeSchema && this.props.onChangeSchema(newSchema)
+          //   }
+          // }}
+          onChangeSchema={(newSchema) => {
+            console.warn(
+              "ListInterfaceComponent.render",
+              "TODO: Cannot alter schema inside ComponentRenderer in List",
+              { newSchema }
+            )
+          }}
+        />
+      </DataPathContext>
+    )
 
     return this.props.queryType === "remote-config" ? (
       <Query

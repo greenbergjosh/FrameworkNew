@@ -127,8 +127,9 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
     const { endDateKey, startDateKey, onChangeData, userInterfaceData } = this.props
 
-    const startDate = Array.isArray(dates) && dates[0] ? dates[0].toISOString() : null
-    const endDate = Array.isArray(dates) && dates[1] ? dates[1].toISOString() : null
+    const startDate =
+      Array.isArray(dates) && dates[0] ? dates[0].startOf("day").toISOString() : null
+    const endDate = Array.isArray(dates) && dates[1] ? dates[1].endOf("day").toISOString() : null
 
     onChangeData &&
       onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))

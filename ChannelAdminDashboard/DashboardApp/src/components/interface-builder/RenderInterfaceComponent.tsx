@@ -6,6 +6,7 @@ import {
   } from "antd"
 import jsonLogic from "json-logic-js"
 import React from "react"
+import { tryCatch } from "../../data/Option"
 import { Draggable } from "./dnd"
 import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
 import {
@@ -57,7 +58,17 @@ export class RenderInterfaceComponent extends React.Component<
     const shouldBeHidden =
       componentDefinition.hidden ||
       (componentDefinition.visibilityConditions &&
-        !jsonLogic.apply(componentDefinition.visibilityConditions, data))
+        !tryCatch(() => jsonLogic.apply(componentDefinition.visibilityConditions, data)).foldL(
+          () => {
+            console.warn(
+              "Error occurred while processing the visibility conditions in component definition. Component will render as visible.",
+              componentDefinition,
+              componentDefinition.visibilityConditions
+            )
+            return true
+          },
+          (logicResult) => logicResult
+        ))
 
     if (shouldBeHidden) {
       return null

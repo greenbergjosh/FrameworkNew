@@ -31,6 +31,7 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "gutter",
                 valueKey: "gutter",
+                component: "number-input",
                 label: "Gap between columns",
                 defaultValue: 8,
                 help: "Spacing (in pixels) between columns",
