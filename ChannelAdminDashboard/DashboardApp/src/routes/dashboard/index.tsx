@@ -19,6 +19,7 @@ import {
   Menu,
   Row,
   Typography,
+  Spin,
 } from "antd"
 
 interface Props {
@@ -46,6 +47,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
 
   const [fromStore, dispatch] = useRematch((s) => ({
     profile: s.iam.profile,
+    loadingGlobalConfigs: s.loading.effects.globalConfig.loadRemoteConfigs,
   }))
 
   React.useEffect(() => {
@@ -145,6 +147,8 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                           onClick={(evt) => {
                             if (evt.key === "logout") {
                               dispatch.iam.logout()
+                            } else if (evt.key === "refreshGlobalConfigs") {
+                              dispatch.globalConfig.loadRemoteConfigs()
                             }
                           }}>
                           <Menu.Item key="username">
@@ -157,6 +161,10 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                             </span>
                           </Menu.Item>
                           <Menu.Divider />
+                          <Menu.Item key="refreshGlobalConfigs">
+                            <Icon type="sync" />
+                            <span>Refresh Global Configs</span>
+                          </Menu.Item>
                           <Menu.Item key="logout">
                             <Icon type="logout" />
                             <span>Logout</span>
@@ -189,7 +197,9 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
 
-        <Layout.Content className={`${styles.layoutContainer}`}>{props.children}</Layout.Content>
+        <Layout.Content className={`${styles.layoutContainer}`}>
+          <Spin spinning={fromStore.loadingGlobalConfigs}>{props.children}</Spin>
+        </Layout.Content>
 
         <Layout.Footer className={`${styles.layoutContainer}`} style={{ textAlign: "center" }}>
           {`OnPoint Global © ${new Date().getFullYear()}`}
