@@ -1398,16 +1398,26 @@ namespace UnsubLib
 
         public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
         {
-            var c = await Data.CallFn(Conn, "SelectNetworkCampaign", Jw.Json(new { CId = campaignId }), "");
-            var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
+            var args = Jw.Json(new {CId = campaignId});
 
-            if (fileId == null)
+            try
             {
-                await _fw.Trace(nameof(GetFileFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
-                return null;
-            }
+                var c = await Data.CallFn(Conn, "SelectNetworkCampaign", args);
+                var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
 
-            return await GetFileFromFileId(fileId, ext, destDir, cacheSize);
+                if (fileId == null)
+                {
+                    await _fw.Trace(nameof(GetFileFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
+                    return null;
+                }
+
+                return await GetFileFromFileId(fileId, ext, destDir, cacheSize);
+            }
+            catch (Exception e)
+            {
+                await _fw.Error(nameof(GetFileFromCampaignId),$"Failed to retrieve file id: {args} {e.UnwrapForLog()}");
+                throw;
+            }
         }
 
         public async Task<string> ServerIsUnsub(string proxyRequest)
@@ -1477,6 +1487,7 @@ namespace UnsubLib
             var requestemails = new Dictionary<string, string>();
             var campaignId = dtve.GetS("CampaignId");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
+            (List<string> found, List<string> notFound) binarySearchResults;
 
             try
             {
@@ -1512,12 +1523,20 @@ namespace UnsubLib
                     return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
                 }
 
-                var r = await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), md5s);
+                binarySearchResults = await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), md5s);
+            }
+            catch (Exception ex)
+            {
+                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex.UnwrapForLog()}");
+                throw new Exception("Search failed.");
+            }
 
-                var emailsNotFound = requestemails.Where(kvp => r.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToArray();
-                var md5sNotFound = r.notFound.Where(m => !requestemails.ContainsKey(m)).ToArray();
+            var emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToArray();
+            var md5sNotFound = binarySearchResults.notFound.Where(m => !requestemails.ContainsKey(m)).ToArray();
 
-                if (globalSupp)
+            if (globalSupp)
+            {
+                try
                 {
                     var args = Jw.Serialize(new { md5s = md5sNotFound, emails = emailsNotFound });
 
@@ -1527,14 +1546,14 @@ namespace UnsubLib
                     emailsNotFound = res.GetL("notFound/emails").Select(g => g.GetS("")).ToArray();
                     md5sNotFound = res.GetL("notFound/md5s").Select(g => g.GetS("")).ToArray();
                 }
+                catch (Exception e)
+                {
+                    await _fw.Error(nameof(IsUnsubList), $"Global suppression check failed: {campaignId}::{e.UnwrapForLog()}");
+                    throw new Exception("Search failed.");
+                }
+            }
 
-                return Jw.Serialize(new { NotUnsub = emailsNotFound.Union(md5sNotFound) });
-            }
-            catch (Exception ex)
-            {
-                await _fw.Error(nameof(IsUnsubList), $"Search failed: {campaignId}::{ex.UnwrapForLog()}");
-                throw new Exception("Search failed.");
-            }
+            return Jw.Serialize(new { NotUnsub = emailsNotFound.Union(md5sNotFound) });
         }
 
         public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)
