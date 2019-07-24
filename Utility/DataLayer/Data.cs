@@ -20,7 +20,6 @@ namespace Utility.DataLayer
         private static readonly ConcurrentDictionary<string, Connection> Connections = new ConcurrentDictionary<string, Connection>();
         private static Connection _configConn;
         private static string _configFunction;
-        private static bool? _configFunctionReturnsFullRecord = null;
         private static string[] _commandLineArgs;
         private static List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
 
@@ -86,6 +85,19 @@ namespace Utility.DataLayer
 
         public static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings) => await AddConnectionStrings(connectionStrings, false);
 
+        private static async Task<JObject> GetConfigRecordValue(string id, Connection configConn, string configFunc)
+        {
+            var confStr = await configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = id }), "{}", configFunc, configConn.ConnStr);
+            var c = JObject.Parse(confStr);
+
+            if (c.ContainsKey("Config") && c.ContainsKey("Id") && c.ContainsKey("Name") && c.ContainsKey("Type"))
+            {
+                c = Jw.TryParseObject(c["Config"].ToString());
+            }
+
+            return c;
+        }
+
         private static async Task AddConnectionStrings(IEnumerable<Tuple<string, string>> connectionStrings, bool merge)
         {
             foreach (var o in connectionStrings)
@@ -100,7 +112,8 @@ namespace Utility.DataLayer
                     throw new Exception($"Caught attempt to replace existing connection config with different value for {o.Item1}");
                 }
 
-                var conf = Jw.JsonToGenericEntity(await _configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = o.Item2 }), "{}", _configFunction, _configConn.ConnStr));
+                var conf = Jw.ToGenericEntity(await GetConfigRecordValue(o.Item2, _configConn, _configFunction));
+
                 var conn = Connections.GetOrAdd(o.Item1,s => new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString"))); 
 
                 foreach (var sp in conf.GetD("DataLayer"))
@@ -148,15 +161,7 @@ namespace Utility.DataLayer
 
                 try
                 {
-                    var confStr = await configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = key }), "{}", configFunc, configConn.ConnStr);
-                    var c = JObject.Parse(confStr);
-
-                    if (!_configFunctionReturnsFullRecord.HasValue)
-                    {
-                        _configFunctionReturnsFullRecord = c.ContainsKey("Config") && c.ContainsKey("Id") && c.ContainsKey("Name") && c.ContainsKey("Type");
-                    }
-
-                    if (_configFunctionReturnsFullRecord == true) c = c["Config"] as JObject;
+                    var c = await GetConfigRecordValue(key, configConn, configFunc);
 
                     JObject mergeConfig = null;
 
