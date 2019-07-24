@@ -10,26 +10,52 @@ namespace Utility
     public class ConfigEntityRepo
     {
         public string ConName;
-        public ConcurrentDictionary<Guid, Task<string>> _entities = new ConcurrentDictionary<Guid, Task<string>>();
+        private readonly ConcurrentDictionary<Guid, IGenericEntity> _entities = new ConcurrentDictionary<Guid, IGenericEntity>();
+        private readonly ConcurrentDictionary<string, Guid> _entityIds = new ConcurrentDictionary<string, Guid>();
 
         public ConfigEntityRepo(string conName) => ConName = conName;
 
-        public Task<string> GetEntity(Guid id) => _entities.GetOrAdd(id, async _ => await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonWrapper.Json(new { InstanceId = id }), ""));
-
-        public async Task<IGenericEntity> GetEntityGe(Guid id)
+        public async Task<IGenericEntity> GetEntity(Guid id)
         {
-            IGenericEntity gp = new GenericEntityJson();
-            var conf = await GetEntity(id);
+            if (!_entities.TryGetValue(id, out var result))
+            {
+                result = await AddEntity(id, null, null);
+            }
 
-            if (conf.IsNullOrWhitespace()) return null;
-
-            var jo = JsonWrapper.TryParseObject(conf);
-
-            if (jo == null) throw new Exception($"Invalid Json for Config {id}");
-
-            gp.InitializeEntity(null, null, jo);
-
-            return gp;
+            return result;
         }
+
+        public async Task<IGenericEntity> GetEntity(string type, string name)
+        {
+            if (type.IsNullOrWhitespace() || name.IsNullOrWhitespace()) return null;
+
+            if (!_entityIds.TryGetValue($"{type}:{name}", out var id) || _entities.TryGetValue(id, out var result))
+            {
+                result = await AddEntity(id, null, null);
+            }
+
+            return result;
+        }
+
+        private async Task<IGenericEntity> AddEntity(Guid? id, string type, string name)
+        {
+            var result = await Data.CallFnString(ConName, Data.ConfigFunctionName, JsonWrapper.Json(new { InstanceId = id, ConfigType = type, ConfigName = name }), null);
+
+            if (result.IsNullOrWhitespace()) return null;
+
+            var entity = JsonWrapper.JsonToGenericEntity(result);
+
+            id = entity.GetS("Id").ParseGuid();
+            type = entity.GetS("Type");
+            name = entity.GetS("Name");
+
+            if (!id.HasValue || type.IsNullOrWhitespace() || name.IsNullOrWhitespace()) return null;
+
+            _entities.AddOrUpdate(id.Value, entity, (_, __) => entity);
+            _entityIds.AddOrUpdate($"{type}:{name}", id.Value, (_, __) => id.Value);
+
+            return entity;
+        }
+
     }
 }

@@ -20,6 +20,7 @@ namespace Utility.DataLayer
         private static readonly ConcurrentDictionary<string, Connection> Connections = new ConcurrentDictionary<string, Connection>();
         private static Connection _configConn;
         private static string _configFunction;
+        private static bool? _configFunctionReturnsFullRecord = null;
         private static string[] _commandLineArgs;
         private static List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
 
@@ -149,6 +150,14 @@ namespace Utility.DataLayer
                 {
                     var confStr = await configConn.Client.CallStoredFunction(Jw.Json(new { InstanceId = key }), "{}", configFunc, configConn.ConnStr);
                     var c = JObject.Parse(confStr);
+
+                    if (!_configFunctionReturnsFullRecord.HasValue)
+                    {
+                        _configFunctionReturnsFullRecord = c.ContainsKey("Config") && c.ContainsKey("Id") && c.ContainsKey("Name") && c.ContainsKey("Type");
+                    }
+
+                    if (_configFunctionReturnsFullRecord == true) c = c["Config"] as JObject;
+
                     JObject mergeConfig = null;
 
                     if (c["using"] is JArray usng)

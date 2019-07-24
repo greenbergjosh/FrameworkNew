@@ -31,9 +31,13 @@ namespace Utility.OpgAuth.Sso
 
                 return new UserDetails(validation.JwtId, validation.Name, validation.Email, null, validation.Picture, authData.GetS(""));
             }
+            catch (InvalidJwtException e)
+            {
+                throw new AuthException($"Invalid token for Google SSO user details.\nPayload: {authData.GetS("")}", e);
+            }
             catch (Exception e)
             {
-                throw new AuthException($"Unhandled exception getting SSO user details.\nPayload: {authData.GetS("")}", e);
+                throw new AuthException($"Unhandled exception validating Google SSO user details.\nPayload: {authData.GetS("")}", e);
             }
         }
     }

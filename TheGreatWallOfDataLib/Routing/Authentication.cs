@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Utility;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
@@ -30,7 +31,7 @@ namespace TheGreatWallOfDataLib.Routing
 #endif
         }
 
-        public static async Task<IGenericEntity> Login(string payload)
+        public static async Task<IGenericEntity> Login(string payload, HttpContext ctx)
         {
             await _fw.Trace(nameof(Login), payload);
             var pl = Jw.JsonToGenericEntity(payload);
@@ -48,21 +49,30 @@ namespace TheGreatWallOfDataLib.Routing
 
             return Jw.ToGenericEntity(new { token = _mockToken, name = pl.GetS("google/name"), email = pl.GetS("google/email"), profileImage = pl.GetS("google/imageUrl") });
 #else
+            await CheckPermissions("auth", "login", _mockToken, ctx);
+
             if (pl.GetS("google").IsNullOrWhitespace()) throw new FunctionException(106, "Auth not implemented and only Google OAuth is faked");
 
             return Jw.ToGenericEntity(new { token = _mockToken, name = pl.GetS("google/name"), email = pl.GetS("google/email"), profileImage = pl.GetS("google/imageUrl") });
 #endif
         }
 
-        public static async Task<IGenericEntity> GetUserDetails(string identity)
+        public static async Task<IGenericEntity> GetUserDetails(string identity, HttpContext ctx)
         {
+            await CheckPermissions("auth", "userDetails", _mockToken, ctx);
+
             return Jw.ToGenericEntity(new { name = "Test User", email = "abc@onpointglobal.com", profileImage = "https://picsum.photos/150" });
         }
 
-        public static async Task<bool> HasPermissions(string scope, string funcName, string identity, string ip)
+        public static async Task CheckPermissions(string scope, string funcName, string identity, HttpContext ctx)
         {
-            await _fw.Trace($"{nameof(Authentication)}.{nameof(HasPermissions)}", $"{scope} {funcName} {identity} RemoteIpAddress: {ip}");
-            return identity == _consoleToken || (identity == _mockToken && _validIps.Contains(ip));
+            var ip = ctx.Ip();
+            var logMsg = Jw.Serialize(new {identity, ip, action = $"{scope}.{funcName}"});
+
+            await _fw.Trace($"{nameof(Authentication)}.{nameof(CheckPermissions)}", logMsg);
+
+            // If permitted continue, else throw
+            if (identity != _consoleToken && !(identity == _mockToken && _validIps.Contains(ip))) throw new FunctionException(106, logMsg);
         }
 
     }
