@@ -22,7 +22,6 @@ export function ReportView(props: WithRouteProps<ViewProps>): JSX.Element {
           type: "GlobalConfigReference",
           id: props.reportId,
         }}
-        title={props.title}
       />
     </>
   )

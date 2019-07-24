@@ -14,8 +14,8 @@ import { ReportOrErrors } from "./ReportOrErrors"
 
 export interface ReportProps {
   data?: JSONRecord
+  isChildReport?: boolean
   report: GlobalConfigReference | LocalReportConfig
-  title?: string
   withoutHeader?: boolean
 }
 
@@ -69,6 +69,7 @@ export const Report = (props: ReportProps): JSX.Element => {
       <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
         {(reportConfig, queryConfig) => (
           <ReportBody
+            isChildReport={props.isChildReport}
             parentData={props.data}
             queryConfig={queryConfig}
             reportConfig={reportConfig}

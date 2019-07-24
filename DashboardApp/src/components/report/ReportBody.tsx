@@ -6,6 +6,7 @@ import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import React from "react"
+import { Helmet } from "react-helmet"
 import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
 import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
@@ -42,6 +43,7 @@ import {
 } from "@syncfusion/ej2-react-grids"
 
 export interface ReportBodyProps {
+  isChildReport?: boolean
   parentData?: JSONRecord
   queryConfig: QueryConfig
   reportConfig: LocalReportConfig
@@ -51,7 +53,15 @@ export interface ReportBodyProps {
 }
 
 export const ReportBody = React.memo(
-  ({ parentData, queryConfig, reportConfig, reportId, title, withoutHeader }: ReportBodyProps) => {
+  ({
+    isChildReport,
+    parentData,
+    queryConfig,
+    reportConfig,
+    reportId,
+    title,
+    withoutHeader,
+  }: ReportBodyProps) => {
     const [fromStore, dispatch] = useRematch((state) => ({
       reportDataByQuery: state.reports.reportDataByQuery,
       globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
@@ -151,6 +161,11 @@ export const ReportBody = React.memo(
 
     return (
       <>
+        {!isChildReport && (
+          <Helmet>
+            <title>{title || "Unknown Report"} | Reports | Channel Admin | OPG</title>
+          </Helmet>
+        )}
         {withoutHeader !== true &&
           (reportId.isSome() ||
             typeof title !== "undefined" ||
@@ -270,6 +285,7 @@ const reportDetailsToComponent = (
     if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
       return (parentData: JSONRecord) => (
         <Report
+          isChildReport
           report={resolved}
           data={{
             ...flattenObject(parameterValues || record.empty),
