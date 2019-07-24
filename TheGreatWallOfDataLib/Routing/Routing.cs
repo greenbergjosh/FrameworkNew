@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
@@ -19,18 +20,21 @@ namespace TheGreatWallOfDataLib.Routing
     public static class Routing
     {
         private const string DefaultFuncIdent = "*";
-        public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string requestArgs, string identity, string ip);
+        public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string requestArgs, string identity, HttpContext ctx);
 
         // ToDo: Refactor to use LBMs and config
         private static readonly (string scope, (string funcName, ApiFunc func)[] funcs)[] __ = new[]
         {
             ("config", new [] {
-                ("merge", new ApiFunc((s, f, a, i,ip) => Config.Merge(s, a, i)))
+                ("merge", new ApiFunc((s, f, a, i, ctx) => Config.Merge(s, a, i, ctx)))
             }),
             ("auth", new []
             {
-                ("login", new ApiFunc(async (s, f, a, i,ip) => await Authentication.Login(a))),
-                ("userDetails", new ApiFunc(async (s, f, a, i,ip) => await Authentication.GetUserDetails(i)))
+                ("login", new ApiFunc(async (s, f, a, i, ctx) => await Authentication.Login(a, ctx))),
+                ("userDetails", new ApiFunc(async (s, f, a, i, ctx) => await Authentication.GetUserDetails(i, ctx)))
+            }),
+            ("lbm",new [] {
+                ("*", new ApiFunc((s, f, a, i, ctx) => Lbm.Run(f, a, i, ctx)))
             })
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
@@ -59,8 +63,8 @@ namespace TheGreatWallOfDataLib.Routing
         {
             return async (scope, funcName, requestArgs, identity, ip) =>
             {
-                if (!await Authentication.HasPermissions(scope, funcName, identity, ip)) throw new FunctionException(106, $"Permission denied: Identity: {identity} Scope: {scope} Func: {funcName}");
-
+                await Authentication.CheckPermissions(scope, funcName, identity, ip);
+                
                 var res = await Data.CallFn(scope, funcName, requestArgs);
                 var resStr = res?.GetS("");
 

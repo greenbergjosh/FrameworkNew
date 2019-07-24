@@ -122,11 +122,11 @@ namespace GenericDataService
                             try
                             {
                                 if(_dataServiceHasReInit) DataService.ReInitialize();
-                                await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { resul = "success" }), Encoding.UTF8);
+                                await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { result = "success" }), Encoding.UTF8);
                             }
                             catch (Exception e)
                             {
-                                await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { resul = "failed", error = $"Dataservice reinit failed: {e.UnwrapForLog()}" }), Encoding.UTF8);
+                                await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { result = "failed", error = $"Dataservice reinit failed: {e.UnwrapForLog()}" }), Encoding.UTF8);
                             }
                         }
                         else
@@ -134,7 +134,7 @@ namespace GenericDataService
                             var traceLog = Data.GetTrace()?.Select(t => $"{t.logTime:yy-MM-dd HH:mm:ss.f}\t{t.location} - {t.log}").Join("\r\n") ??
                                            $"{DateTime.Now:yy-MM-dd HH:mm:ss.f}\tNoTrace Log";
 
-                            await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { resul = "failed", traceLog }), Encoding.UTF8);
+                            await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { result = "failed", traceLog }), Encoding.UTF8);
                         }
 
                         return;
