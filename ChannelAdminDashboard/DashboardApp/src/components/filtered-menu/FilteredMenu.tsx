@@ -1,4 +1,4 @@
-import { Input, Menu } from "antd"
+import { Input, Menu, Button, Icon } from "antd"
 import FlexSearch, { Index, SearchResults } from "flexsearch"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { get } from "lodash/fp"
@@ -71,6 +71,7 @@ export const FilteredMenu = <T extends {} = any>({
         className={inputClassName}
         placeholder={placeholder}
         onChange={(e) => setFilterInput(e.target.value)}
+        allowClear={true}
       />
       <Menu
         style={menuStyle}
