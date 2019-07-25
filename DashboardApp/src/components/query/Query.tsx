@@ -25,6 +25,13 @@ export interface QueryRefreshOptions {
   stopOnFailure?: boolean
 }
 
+export interface LoadDataParams {
+  executeQuery: Function,
+  queryResultURI: string,
+  queryConfig: QueryConfig,
+  satisfiedParams: JSONRecord
+}
+
 export interface QueryConfig { query: string }
 
 interface IQueryProps<T> {
@@ -244,18 +251,18 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
 
                     queryResult.foldL(
                       () => {
-                        this.loadData(executeQuery, queryResultURI, queryConfig, satisfiedParams)
-                        if (this.props.refresh && this.props.refresh.interval) {
-                          console.log("Query.loadRemoteData", "Set interval for refresh")
-                          const interval = this.props.refresh.interval
-                          setInterval(
-                            () => {
-                              console.log("Query.loadRemoteData", `Refreshing, ${interval}s interval reached`)
-                              this.loadData(executeQuery, queryResultURI, queryConfig, satisfiedParams)
-                            },
-                            this.props.refresh.interval * 1000,
-                          )
+                        const loadDataParams: LoadDataParams = {
+                          executeQuery,
+                          queryResultURI,
+                          queryConfig,
+                          satisfiedParams,
                         }
+                        this.loadData(loadDataParams).then((response) => {
+                          console.log(`Query.loadRemoteData "${loadDataParams.queryConfig.query}"`, response)
+                          if (this.props.refresh && this.props.refresh.interval) {
+                            this.queNextRemoteDataLoad(this.props.refresh.interval, loadDataParams)
+                          }
+                        }).catch((e: Error) => console.error(`Query.loadRemoteData "${loadDataParams.queryConfig.query}"`, e))
                       },
                       (resultValues) => {
                         console.log("Query.loadRemoteData", "Loaded, no remote")
@@ -288,16 +295,55 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     }
   }
 
-  private loadData(executeQuery: Function, queryResultURI: string, queryConfig: QueryConfig, satisfiedParams: JSONRecord) {
-    console.log("Query.loadData", "Loading")
-    this.setState((state) => ({ ...state, loadStatus: "loading" }))
-    executeQuery({
-      resultURI: queryResultURI,
-      query: queryConfig.query,
-      params: satisfiedParams,
-    }).then(() => {
-      console.log("Query.loadData", "Clear loading state")
-      this.setState((state) => ({ ...state, loadStatus: "none" }))
+  private queNextRemoteDataLoad(interval: number, loadDataParams: LoadDataParams) {
+    this.setRemoteDataLoadInterval(interval, loadDataParams).then(() => {
+      // Only que next if previous was successful
+      this.queNextRemoteDataLoad(interval, loadDataParams)
+    })
+  }
+
+  private setRemoteDataLoadInterval(interval: number, loadDataParams: LoadDataParams) {
+    const self = this;
+    return new Promise(function(resolve, reject) {
+      console.log(
+        "Query.setRemoteDataLoadInterval",
+        `Setting ${interval}s interval to refresh "${loadDataParams.queryConfig.query}"`
+      )
+      setInterval(
+        () => {
+          console.log(
+            "Query.setRemoteDataLoadInterval",
+            `${interval}s refresh interval reached for "${loadDataParams.queryConfig.query}"`
+          )
+          self.loadData(loadDataParams).then((response) => {
+            resolve(response)
+          }).catch((e: Error) => {
+            reject(e)
+          })
+        },
+        interval * 1000,
+      )
+    })
+  }
+
+  private loadData({ executeQuery, queryResultURI, queryConfig, satisfiedParams }: LoadDataParams) {
+    const self = this
+    return new Promise(function(resolve, reject) {
+      console.log("Query.loadData", `Loading "${queryConfig.query}"`)
+      self.setState((state) => ({ ...state, loadStatus: "loading" }))
+      return executeQuery({
+        resultURI: queryResultURI,
+        query: queryConfig.query,
+        params: satisfiedParams,
+      }).then(() => {
+        console.log("Query.loadData", "Clear loading state")
+        self.setState((state) => ({ ...state, loadStatus: "none" }))
+        resolve()
+      }).catch((e: Error) => {
+        console.error(`Query.loadData "${queryConfig.query}"`, e)
+        self.setState({ loadStatus: "error", loadError: e.message })
+        reject(e)
+      })
     })
   }
 
