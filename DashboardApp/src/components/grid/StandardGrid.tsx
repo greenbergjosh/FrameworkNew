@@ -79,6 +79,8 @@ const commonGridOptions = {
   allowSorting: true,
   allowFiltering: true,
   filterSettings: { type: "Menu" } as FilterSettingsModel,
+  width: "100%",
+  height: "100%",
 }
 
 const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
@@ -254,7 +256,7 @@ export const StandardGrid = React.forwardRef(
 
     return (
       <Spin spinning={loading}>
-        <Button onClick={dataBound}>autoFitColumns</Button>
+        {/* <Button onClick={dataBound}>autoFitColumns</Button> */}
         <PureGridComponent
           ref={ref}
           {...commonGridOptions}
