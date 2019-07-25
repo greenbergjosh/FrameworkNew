@@ -240,6 +240,9 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
                         }).then(() => {
                           console.log("QueryInterfaceComponent.render", "Clear loading state")
                           this.setState((state) => ({ ...state, loadStatus: "none" }))
+                        }).catch((e: Error) => {
+                          console.log("QueryInterfaceComponent.render", "Set error loading state")
+                          this.setState({ loadStatus: "error", loadError: e.message })
                         })
                       },
                       (resultValues) => {

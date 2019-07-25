@@ -7,6 +7,7 @@ import * as React from "react"
 export interface FilteredMenuProps<T> {
   data: T[]
   inputStyle?: JSONObject
+  inputClassName?: string
   labelAccessor: string | ((dataItem: T) => string)
   menuStyle?: JSONObject
   onSelect?: (dataItem: T | null) => unknown
@@ -19,6 +20,7 @@ export interface FilteredMenuProps<T> {
 export const FilteredMenu = <T extends {} = any>({
   data,
   inputStyle,
+  inputClassName,
   labelAccessor,
   menuStyle,
   onSelect,
@@ -66,6 +68,7 @@ export const FilteredMenu = <T extends {} = any>({
     <>
       <Input
         style={inputStyle}
+        className={inputClassName}
         placeholder={placeholder}
         onChange={(e) => setFilterInput(e.target.value)}
       />
