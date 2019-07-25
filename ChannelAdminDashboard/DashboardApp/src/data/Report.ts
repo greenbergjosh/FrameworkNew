@@ -177,8 +177,16 @@ export const QueryConfigCodec = iots.taggedUnion("format", [
   StoredProcQueryConfigCodec,
 ])
 
+// TODO: io-ts codecs for the below?
+
+export interface DataMappingItem {
+  originalKey: string
+  mappedKey: string
+}
+
 export interface IReportDetails {
-  type: "report" | "layout"
+  type: "report" | "layout" | "none"
+  dataMapping?: DataMappingItem[]
 }
 
 export interface IReportDetailsAsReport extends IReportDetails {
@@ -205,8 +213,12 @@ export interface ReportDetailsAsLayout extends IReportDetails {
   layout: ComponentDefinition[]
 }
 
+export interface ReportDetailsAsNone extends IReportDetails {
+  type: "none"
+}
+
 export type ReportDetailsAsReport = ReportDetailsAsInlineReport | ReportDetailsAsConfigReport
-export type ReportDetails = ReportDetailsAsReport | ReportDetailsAsLayout
+export type ReportDetails = ReportDetailsAsReport | ReportDetailsAsLayout | ReportDetailsAsNone
 
 export interface SimpleLayoutConfig {
   type: "SimpleLayoutConfig"

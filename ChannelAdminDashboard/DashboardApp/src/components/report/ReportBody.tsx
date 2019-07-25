@@ -22,6 +22,7 @@ import {
   QueryConfig,
   ReportDetails,
   SimpleLayoutConfig,
+  DataMappingItem,
 } from "../../data/Report"
 import {
   Aggregate,
@@ -108,7 +109,7 @@ export const ReportBody = React.memo(
         dispatch.reports.executeQuery({
           resultURI: queryResultURI,
           query: queryConfig.query,
-          params: { ...satisfiedByParentParams, ...flattenObject(parameterValues) },
+          params: { ...satisfiedByParentParams, ...parameterValues },
         })
       },
       [dispatch.reports, queryConfig.query, satisfiedByParentParams]
@@ -118,7 +119,7 @@ export const ReportBody = React.memo(
       if (
         !fromStore.isExecutingQuery &&
         queryResultData.isNone() &&
-        !unsatisfiedByParentParams.length
+        (!unsatisfiedByParentParams.length || withoutHeader)
       ) {
         dispatch.reports.executeQuery({
           resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
@@ -227,53 +228,35 @@ const gridComponentServices = [
   Aggregate,
 ]
 
-const flattenObject = (obj: any) => {
-  const flattened: any = {}
+// const flattenObject = (obj: any) => {
+//   const flattened: any = {}
 
-  Object.keys(obj).forEach((key) => {
-    if (typeof obj[key] === "object" && obj[key] !== null && obj[key]["_unrollValue"] === true) {
-      Object.assign(flattened, obj[key].data)
-    } else {
-      flattened[key] = obj[key]
-    }
-  })
+//   Object.keys(obj).forEach((key) => {
+//     if (typeof obj[key] === "object" && obj[key] !== null && obj[key]["_unrollValue"] === true) {
+//       Object.assign(flattened, obj[key].data)
+//     } else {
+//       flattened[key] = obj[key]
+//     }
+//   })
 
-  return flattened
-}
+//   return flattened
+// }
 
-const detailMapper = (childData: any[]) => ({
-  // @ts-ignore
-  childGrid,
-  data: parentDataRecord,
-}: DetailDataBoundEventArgs): void => {
-  childGrid.dataSource = childData.map((childRecord) =>
-    parentDataRecord && childGrid.queryString
-      ? {
-          // @ts-ignore
-          [childGrid.queryString]: parentDataRecord[childGrid.queryString],
-          ...childRecord,
-        }
-      : childRecord
-  )
-}
-
-const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => ({
-  item,
-}: ClickEventArgs) => {
-  if (item.id && item.id.endsWith("_excelexport")) {
-    if (grid.current) {
-      grid.current.excelExport()
-    }
-  } else if (item.id && item.id.endsWith("_csvexport")) {
-    if (grid.current) {
-      grid.current.csvExport()
-    }
-  } else if (item.id && item.id.endsWith("_pdfexport")) {
-    if (grid.current) {
-      grid.current.pdfExport()
-    }
-  }
-}
+// const detailMapper = (childData: any[]) => ({
+//   // @ts-ignore
+//   childGrid,
+//   data: parentDataRecord,
+// }: DetailDataBoundEventArgs): void => {
+//   childGrid.dataSource = childData.map((childRecord) =>
+//     parentDataRecord && childGrid.queryString
+//       ? {
+//           // @ts-ignore
+//           [childGrid.queryString]: parentDataRecord[childGrid.queryString],
+//           ...childRecord,
+//         }
+//       : childRecord
+//   )
+// }
 
 const reportDetailsToComponent = (
   details: string | ReportDetails | LocalReportConfig,
@@ -282,15 +265,22 @@ const reportDetailsToComponent = (
   const resolved = resolveDetails(details)
   console.log("ReportBody.reportDetailsToComponent", { details, resolved })
   if (resolved) {
+    const dataResolver =
+      typeof details === "object" &&
+      (details.type === "report" || details.type === "layout") &&
+      !!details.dataMapping
+        ? performDataMapping.bind(null, details.dataMapping)
+        : (parentData: JSONRecord) => parentData
+
     if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
       return (parentData: JSONRecord) => (
         <Report
           isChildReport
           report={resolved}
-          data={{
-            ...flattenObject(parameterValues || record.empty),
-            ...flattenObject(parentData),
-          }}
+          data={dataResolver({
+            ...(parameterValues || record.empty),
+            ...parentData,
+          })}
           withoutHeader
         />
       )
@@ -299,10 +289,10 @@ const reportDetailsToComponent = (
         <UserInterface
           mode="display"
           components={resolved.layout}
-          data={{
-            ...flattenObject(parameterValues || record.empty),
-            ...flattenObject(parentData),
-          }}
+          data={dataResolver({
+            ...(parameterValues || record.empty),
+            ...parentData,
+          })}
         />
       )
     }
@@ -336,4 +326,16 @@ const resolveDetails = (
   }
 
   return null
+}
+
+const performDataMapping = (dataMapping: DataMappingItem[], data: JSONRecord) => {
+  console.log("ReportBody.performDataMapping", dataMapping, data)
+  if (dataMapping) {
+    return dataMapping.reduce(
+      (acc, { originalKey, mappedKey }) => ({ ...acc, [mappedKey]: acc[originalKey] }),
+      data
+    )
+  } else {
+    return data
+  }
 }
