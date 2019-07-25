@@ -30,6 +30,7 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
   preconfigured?: boolean
+  unwrapped?: boolean
 }
 
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
@@ -37,6 +38,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     addItemLabel: "Add Item",
     orientation: "vertical",
     interleave: "none",
+    unwrapped: false,
     userInterfaceData: {},
     valueKey: "data",
   }
@@ -57,7 +59,14 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
   static manageForm = listManageForm
 
   handleAddClick = () => {
-    const { components, interleave, onChangeData, userInterfaceData, valueKey } = this.props
+    const {
+      components,
+      interleave,
+      onChangeData,
+      unwrapped,
+      userInterfaceData,
+      valueKey,
+    } = this.props
     const entriesToAdd =
       interleave === "set"
         ? components.map((component, index) => getDefaultsFromComponentDefinitions([component]))
@@ -74,7 +83,10 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       onChangeData(
         set(
           valueKey,
-          [...(get(valueKey, userInterfaceData) || []), ...entriesToAdd],
+          [
+            ...(get(valueKey, userInterfaceData) || []),
+            ...(unwrapped ? entriesToAdd.map((entry) => Object.values(entry)[0]) : entriesToAdd),
+          ],
           userInterfaceData
         )
       )
@@ -89,6 +101,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       onChangeData,
       orientation,
       preconfigured,
+      unwrapped,
       userInterfaceData,
       valueKey,
     } = this.props
@@ -116,7 +129,16 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                           key={index}
                           components={[iteratedComponent]}
                           componentLimit={interleave === "none" ? 1 : 0}
-                          data={data[index] || {}}
+                          data={
+                            data[index]
+                              ? unwrapped
+                                ? {
+                                    // @ts-ignore
+                                    [iteratedComponent.valueKey]: data[index],
+                                  }
+                                : data[index]
+                              : {}
+                          }
                           onChangeData={(newData) =>
                             (console.log("ListInterfaceComponent.render", "onChangeData", {
                               data,
@@ -124,7 +146,13 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                             }),
                             0) ||
                             (onChangeData &&
-                              onChangeData(set(`${valueKey}.${index}`, newData, userInterfaceData)))
+                              onChangeData(
+                                set(
+                                  `${valueKey}.${index}`,
+                                  unwrapped ? Object.values(newData)[0] : newData,
+                                  userInterfaceData
+                                )
+                              ))
                           }
                           onChangeSchema={(newSchema) => {
                             console.warn(

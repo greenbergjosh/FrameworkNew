@@ -28,6 +28,15 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "components",
               },
               {
+                key: "unwrapped",
+                valueKey: "unwrapped",
+                label: "Unwrapped?",
+                help:
+                  "Normally, a list contains JSON objects, but unwrapping allows the list to contain scalar values",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
                 key: "interleave",
                 valueKey: "interleave",
                 label: "Interleave",
@@ -35,6 +44,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "None - Single component repeated; Round Robin - Each component used in turn; Whole Set - Each component used every time.",
                 component: "select",
                 dataHandlerType: "local",
+                defaultValue: "none",
                 data: {
                   values: [
                     {
