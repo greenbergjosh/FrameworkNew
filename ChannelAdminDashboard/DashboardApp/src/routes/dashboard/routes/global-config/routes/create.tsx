@@ -114,6 +114,19 @@ export function CreateGlobalConfig({
     },
   }
 
+  const initialFormState = React.useMemo(
+    () =>
+      Object.assign(
+        {
+          config: '{"lang":"json"}',
+          name: "",
+          type: "",
+        },
+        queryString.parse(window.location.search)
+      ),
+    [window.location.search]
+  )
+
   const [previewData, setPreviewData] = React.useState({})
 
   /* afterCreate */
@@ -413,20 +426,6 @@ export function CreateGlobalConfig({
     </Skeleton>
   )
 }
-
-const initialFormState = Object.assign(
-  {
-    config: '{"lang":"json"}',
-    name: "",
-    type: "",
-  },
-  queryString.parse(window.location.search)
-)
-
-console.log("create.tsx", "initialFormState", {
-  initialFormState,
-  parsed: queryString.parse(window.location.search),
-})
 
 // ────────────────────────────────────────────────────────────────────────────────
 
