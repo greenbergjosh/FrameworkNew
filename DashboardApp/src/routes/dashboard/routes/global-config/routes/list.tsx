@@ -8,7 +8,7 @@ import {
   sort,
   uniq
   } from "fp-ts/lib/Array"
-import { none } from "fp-ts/lib/Option"
+import { none, tryCatch } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
@@ -17,6 +17,7 @@ import { Branded } from "io-ts"
 import * as iots from "io-ts"
 import { reporter } from "io-ts-reporters"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import JSON5 from "json5"
 import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
@@ -219,12 +220,21 @@ function ConfigTable({ configs }: ConfigTableProps) {
         width: `${100 / 3}%`,
         render: (text, config) => (
           <Button.Group size="small">
-            <Button ghost={true} title="edit" type="primary">
+            <Button ghost={true} title="Edit" type="primary">
               <Reach.Link to={`${config.id}/edit`}>
                 <Icon type="edit" />
               </Reach.Link>
             </Button>
-
+            <Button ghost={true} title="Duplicate" type="primary">
+              <Reach.Link
+                to={`create?type=${encodeURIComponent(config.type)}&name=${encodeURIComponent(
+                  config.name
+                )}&config=${tryCatch(() =>
+                  encodeURIComponent(config.config.getOrElse("{}"))
+                ).getOrElse("")}`}>
+                <Icon type="copy" />
+              </Reach.Link>
+            </Button>
             <ConfirmableDeleteButton
               confirmationMessage={`Are you sure want to delete?`}
               confirmationTitle={`Confirm Delete`}
