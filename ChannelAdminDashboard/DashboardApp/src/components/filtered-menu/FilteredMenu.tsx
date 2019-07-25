@@ -1,4 +1,4 @@
-import { Input, Menu, Button, Icon } from "antd"
+import { Button, Input, Layout, Menu, Typography } from "antd"
 import FlexSearch, { Index, SearchResults } from "flexsearch"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { get } from "lodash/fp"
@@ -73,6 +73,21 @@ export const FilteredMenu = <T extends {} = any>({
         onChange={(e) => setFilterInput(e.target.value)}
         allowClear={true}
       />
+      <Typography.Text type="secondary" ellipsis={true}>
+        Selected:&nbsp;
+        {get(labelAccessor as string, selected)}
+        {selected &&
+          <Button
+            type="link"
+            shape="circle"
+            size="small"
+            icon="close-circle"
+            onClick={() => {
+              onSelect && onSelect(null)
+            }}
+          />
+        }
+      </Typography.Text>
       <Menu
         style={menuStyle}
         onClick={({ key }) => {
