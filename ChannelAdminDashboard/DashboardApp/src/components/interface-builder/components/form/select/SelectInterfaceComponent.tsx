@@ -292,6 +292,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
                       }).then(() => {
                         console.log("SelectInterfaceComponent.render", "Clear loading state")
                         this.setState({ loadStatus: "none" })
+                      }).catch((e: Error) => {
+                        console.log("SelectInterfaceComponent.render", "Set error loading state")
+                        this.setState({ loadStatus: "error", loadError: e.message })
                       })
                     },
                     (resultValues) => {

@@ -1,3 +1,63 @@
-.error-row {
-  background-color: rgba(230, 0, 0, 0.1);
+.import-ingestion-report {
+  .partner-filter {
+    height: 35px;
+    margin-bottom: 10px;
+  }
+
+  .table-title {
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .error-row {
+    background-color: rgba(230, 0, 0, 0.06);
+  }
+
+  .highlight-row {
+    background-color: rgba(230, 247, 255, 0.5);
+  }
+
+  .import-ingestion-table {
+    .e-content:not(:hover) {
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
+
+  .e-pager {
+
+    .e-numericitem {
+      border: none;
+      display: inline-block;
+    }
+
+    .e-pagercontainer {
+      border: none;
+      margin: 0;
+      display: block;
+
+      .e-firstpage,
+      .e-firstpagedisabled,
+      .e-prevpage,
+      .e-prevpagedisabled,
+      .e-nextpage,
+      .e-nextpagedisabled,
+      .e-lastpage,
+      .e-lastpagedisabled {
+        border: none;
+      }
+    }
+
+    /*.e-pagerdropdown {
+      margin-top: 0;
+    }*/
+
+    .e-parentmsgbar {
+      font-weight: inherit;
+      float: inherit;
+      padding: 0;
+    }
+
+  }
+
 }
