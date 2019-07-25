@@ -1,15 +1,23 @@
 import * as Reach from "@reach/router"
 import { ClickParam } from "antd/lib/menu"
 import { ColumnProps } from "antd/lib/table"
-import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
-import { none } from "fp-ts/lib/Option"
+import {
+  isEmpty,
+  mapOption,
+  range,
+  sort,
+  uniq
+  } from "fp-ts/lib/Array"
+import { none, tryCatch } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
 import { delay, Task, task } from "fp-ts/lib/Task"
 import { Branded } from "io-ts"
 import * as iots from "io-ts"
+import { reporter } from "io-ts-reporters"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
+import JSON5 from "json5"
 import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
@@ -92,13 +100,24 @@ function ConfigTable({ configs }: ConfigTableProps) {
     )
   }, [potentiallyStaleSelectedRowKeys, fromStore.configsById])
 
-  const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>(() =>
-    iots
-      .type({ configTypeFilters: iots.array(iots.string) })
+  const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>(() => {
+    const decoded = iots
+      .type({ configTypeFilters: iots.union([iots.string, iots.array(iots.string)]) })
       .decode(queryString.parse(window.location.search, { arrayFormat: "comma" }))
-      .map(({ configTypeFilters }) => configTypeFilters)
-      .getOrElse([])
-  )
+
+    return decoded.fold(
+      (error) => {
+        console.log("list.tsx", "Error parsing url params", {
+          reporter: reporter(decoded),
+          search: window.location.search,
+          parsed: queryString.parse(window.location.search, { arrayFormat: "comma" }),
+        })
+        return []
+      },
+      ({ configTypeFilters }) =>
+        Array.isArray(configTypeFilters) ? configTypeFilters : [configTypeFilters]
+    )
+  })
 
   const [configNameFilterVal, setConfigNameFilterVal] = React.useState(() =>
     iots
@@ -201,12 +220,21 @@ function ConfigTable({ configs }: ConfigTableProps) {
         width: `${100 / 3}%`,
         render: (text, config) => (
           <Button.Group size="small">
-            <Button ghost={true} title="edit" type="primary">
+            <Button ghost={true} title="Edit" type="primary">
               <Reach.Link to={`${config.id}/edit`}>
                 <Icon type="edit" />
               </Reach.Link>
             </Button>
-
+            <Button ghost={true} title="Duplicate" type="primary">
+              <Reach.Link
+                to={`create?type=${encodeURIComponent(config.type)}&name=${encodeURIComponent(
+                  config.name
+                )}&config=${tryCatch(() =>
+                  encodeURIComponent(config.config.getOrElse("{}"))
+                ).getOrElse("")}`}>
+                <Icon type="copy" />
+              </Reach.Link>
+            </Button>
             <ConfirmableDeleteButton
               confirmationMessage={`Are you sure want to delete?`}
               confirmationTitle={`Confirm Delete`}
@@ -304,7 +332,12 @@ function ConfigTable({ configs }: ConfigTableProps) {
 
           <Col span={12}>
             <Row align="middle" justify="end" type="flex">
-              <Reach.Link to="create">
+              <Reach.Link
+                to={
+                  configTypeFilters && configTypeFilters.length
+                    ? `create?type=${configTypeFilters[0]}`
+                    : "create"
+                }>
                 <Button size="small" type="primary">
                   <Icon type="plus" />
                   New Config
