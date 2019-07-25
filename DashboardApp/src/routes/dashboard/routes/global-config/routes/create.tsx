@@ -6,6 +6,7 @@ import { Identity } from "fp-ts/lib/Identity"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import JSON5 from "json5"
+import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
@@ -112,6 +113,19 @@ export function CreateGlobalConfig({
       return [] // axios
     },
   }
+
+  const initialFormState = React.useMemo(
+    () =>
+      Object.assign(
+        {
+          config: '{"lang":"json"}',
+          name: "",
+          type: "",
+        },
+        queryString.parse(window.location.search)
+      ),
+    [window.location.search]
+  )
 
   const [previewData, setPreviewData] = React.useState({})
 
@@ -411,12 +425,6 @@ export function CreateGlobalConfig({
       </Formik.Formik>
     </Skeleton>
   )
-}
-
-const initialFormState = {
-  config: '{"lang":"json"}',
-  name: "",
-  type: "",
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

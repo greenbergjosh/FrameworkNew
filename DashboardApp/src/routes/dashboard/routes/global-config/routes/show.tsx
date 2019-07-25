@@ -191,11 +191,20 @@ export function ShowGlobalConfig({
             <Card
               bordered={false}
               extra={
-                <Button type="primary" size="small">
-                  <Reach.Link to={`./edit`}>
-                    <Icon type="edit" /> Edit
-                  </Reach.Link>
-                </Button>
+                <Button.Group>
+                  {record.lookup(config.name, fromStore.entityTypes).fold(null, () => (
+                    <Button size="small">
+                      <Reach.Link to={`../create?type=${config.name}`}>
+                        <Icon type="plus" /> New {config.name}
+                      </Reach.Link>
+                    </Button>
+                  ))}
+                  <Button type="primary" size="small">
+                    <Reach.Link to="./edit">
+                      <Icon type="edit" /> Edit
+                    </Reach.Link>
+                  </Button>
+                </Button.Group>
               }
               title={`Config Details`}>
               <Form

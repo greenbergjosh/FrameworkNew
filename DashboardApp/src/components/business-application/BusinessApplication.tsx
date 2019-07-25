@@ -12,19 +12,27 @@ import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import React from "react"
+import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { useRematch } from "../../hooks"
 import { store } from "../../state/store"
 
+interface LabeledType {
+  configType: PersistedConfig["id"]
+  label: string
+}
+
 export interface BusinessApplicationConfig {
-  application_config: string[]
+  administered_types: LabeledType[]
+  application_config: PersistedConfig["id"][]
   description: string
-  export_config: string[]
-  ingest_config: string[]
-  owner: string[]
-  report: string[]
+  export_config: PersistedConfig["id"][]
+  ingest_config: PersistedConfig["id"][]
+  owner: PersistedConfig["id"][]
+  report: PersistedConfig["id"][]
 }
 
 const DEFAULT_BUSINESS_APPLICATION_CONFIG: BusinessApplicationConfig = {
+  administered_types: [],
   application_config: [],
   description: "",
   export_config: [],
@@ -125,7 +133,36 @@ export const BusinessApplication = ({
                 <Empty description="No Configured Contacts" />
               )}
             </Card>
-
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <Card title="Administration" bordered={false}>
+              {businessApplicationConfig.administered_types.length ? (
+                businessApplicationConfig.administered_types.map(({ label, configType }) => {
+                  const administeredTypeRecord = record.lookup(
+                    configType.toLowerCase(),
+                    fromStore.configsById
+                  )
+                  return administeredTypeRecord
+                    .map((administeredType) => (
+                      <div key={administeredType.id}>
+                        <Reach.Link
+                          to={`${fromStore.globalConfigPath}?configTypeFilters=${encodeURI(
+                            administeredType.name
+                          )}&configNameFilterVal=`}>
+                          {label}
+                        </Reach.Link>
+                      </div>
+                    ))
+                    .toNullable()
+                })
+              ) : (
+                <Empty description="No Types to Administrate" />
+              )}
+            </Card>
+          </Col>
+          <Col span={12}>
             <Card title="Application Configs" bordered={false}>
               {businessApplicationConfig.application_config.length ? (
                 businessApplicationConfig.application_config.map((applicationConfigId) => {
