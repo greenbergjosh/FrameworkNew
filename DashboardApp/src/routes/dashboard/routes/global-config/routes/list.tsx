@@ -1,7 +1,13 @@
 import * as Reach from "@reach/router"
 import { ClickParam } from "antd/lib/menu"
 import { ColumnProps } from "antd/lib/table"
-import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
+import {
+  isEmpty,
+  mapOption,
+  range,
+  sort,
+  uniq
+  } from "fp-ts/lib/Array"
 import { none } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
@@ -9,6 +15,7 @@ import { setoidString } from "fp-ts/lib/Setoid"
 import { delay, Task, task } from "fp-ts/lib/Task"
 import { Branded } from "io-ts"
 import * as iots from "io-ts"
+import { reporter } from "io-ts-reporters"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import queryString from "query-string"
 import React from "react"
@@ -92,13 +99,24 @@ function ConfigTable({ configs }: ConfigTableProps) {
     )
   }, [potentiallyStaleSelectedRowKeys, fromStore.configsById])
 
-  const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>(() =>
-    iots
-      .type({ configTypeFilters: iots.array(iots.string) })
+  const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>(() => {
+    const decoded = iots
+      .type({ configTypeFilters: iots.union([iots.string, iots.array(iots.string)]) })
       .decode(queryString.parse(window.location.search, { arrayFormat: "comma" }))
-      .map(({ configTypeFilters }) => configTypeFilters)
-      .getOrElse([])
-  )
+
+    return decoded.fold(
+      (error) => {
+        console.log("list.tsx", "Error parsing url params", {
+          reporter: reporter(decoded),
+          search: window.location.search,
+          parsed: queryString.parse(window.location.search, { arrayFormat: "comma" }),
+        })
+        return []
+      },
+      ({ configTypeFilters }) =>
+        Array.isArray(configTypeFilters) ? configTypeFilters : [configTypeFilters]
+    )
+  })
 
   const [configNameFilterVal, setConfigNameFilterVal] = React.useState(() =>
     iots
@@ -304,7 +322,12 @@ function ConfigTable({ configs }: ConfigTableProps) {
 
           <Col span={12}>
             <Row align="middle" justify="end" type="flex">
-              <Reach.Link to="create">
+              <Reach.Link
+                to={
+                  configTypeFilters && configTypeFilters.length
+                    ? `create?type=${configTypeFilters[0]}`
+                    : "create"
+                }>
                 <Button size="small" type="primary">
                   <Icon type="plus" />
                   New Config

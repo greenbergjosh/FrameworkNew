@@ -6,6 +6,7 @@ import { Identity } from "fp-ts/lib/Identity"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import JSON5 from "json5"
+import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
@@ -413,11 +414,19 @@ export function CreateGlobalConfig({
   )
 }
 
-const initialFormState = {
-  config: '{"lang":"json"}',
-  name: "",
-  type: "",
-}
+const initialFormState = Object.assign(
+  {
+    config: '{"lang":"json"}',
+    name: "",
+    type: "",
+  },
+  queryString.parse(window.location.search)
+)
+
+console.log("create.tsx", "initialFormState", {
+  initialFormState,
+  parsed: queryString.parse(window.location.search),
+})
 
 // ────────────────────────────────────────────────────────────────────────────────
 
