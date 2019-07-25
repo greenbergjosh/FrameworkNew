@@ -96,8 +96,9 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
           labelAccessor="name"
           valueAccessor="id"
           onSelect={(selected) => {
-            console.log("index", selected)
-            dispatch.importIngestionReport.updateSelectedPartner(selected ? selected : null)
+            console.log("selected:", selected, "selectedPartner:", fromStore.selectedPartner)
+            const toggledSelection = selected === fromStore.selectedPartner ? null : selected
+            dispatch.importIngestionReport.updateSelectedPartner(selected ? toggledSelection : null)
           }}
           selected={fromStore.selectedPartner}
           inputClassName={"partner-filter"}
