@@ -7,6 +7,7 @@ import {
   Inject,
   Page,
   PageSettingsModel,
+  RowDataBoundEventArgs,
 } from "@syncfusion/ej2-react-grids"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
@@ -18,7 +19,7 @@ import "./import-ingestion.scss"
 interface ExportTableProps<T> {
   data: T[],
   title?: string,
-  rowDataBound?: Function,
+  onRowDataBind?: (event: RowDataBoundEventArgs) => void,
 }
 
 interface SucceededColProps {
@@ -63,7 +64,7 @@ function RowsProcessedCol(props: RowsProcessedColProps): JSX.Element {
   )
 }
 
-export function ImportIngestionTable<T extends {} = any>({ data, title, rowDataBound }: ExportTableProps<T>): JSX.Element {
+export function ImportIngestionTable<T extends {} = any>({ data, title, onRowDataBind }: ExportTableProps<T>): JSX.Element {
 
   const pageSettings: PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
@@ -75,7 +76,7 @@ export function ImportIngestionTable<T extends {} = any>({ data, title, rowDataB
       <Typography.Text strong={true} className={"table-title"}>{title}</Typography.Text>
       <GridComponent
         dataSource={data}
-        rowDataBound={rowDataBound}
+        rowDataBound={onRowDataBind}
         allowPaging={data.length > DEFAULT_PAGE_SIZE}
         allowSelection={false}
         pageSettings={pageSettings}

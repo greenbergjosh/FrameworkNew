@@ -1,12 +1,15 @@
 import React from "react"
 import { Col, PageHeader, Row, Typography } from "antd"
+import { RowDataBoundEventArgs } from "@syncfusion/ej2-react-grids"
+import * as iots from "io-ts"
+import { reporter } from "io-ts-reporters"
 import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import { Helmet } from "react-helmet"
 import { FilteredMenu } from "../../../../../../components/filtered-menu/FilteredMenu"
 import { Query, QueryProps } from "../../../../../../components/query/Query"
 import { useRematch } from "../../../../../../hooks"
-import { IngestionStatus, PartnerStatus } from "../../../../../../state/import-ingestion-report"
+import { PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
 import {
@@ -18,9 +21,28 @@ import { exportData } from "./mock-data"
 import ImportIngestionTable from "./ImportIngestionTable"
 import "./import-ingestion.scss"
 
+/* *************************
+ * INTERFACES
+ */
+
 interface Props {
   selectedPartner: string
 }
+
+export type IngestionStatus = iots.TypeOf<typeof IngestionStatusCodec>
+export const IngestionStatusCodec = iots.type({
+  /* eslint-disable @typescript-eslint/camelcase */
+  last_id_processed: iots.number,
+  rows_processed: iots.number,
+  runtime: iots.number,
+  succeeded: iots.boolean,
+  table_name: iots.string,
+  /* eslint-enable @typescript-eslint/camelcase */
+})
+
+/* *************************
+ * COMPONENTS
+ */
 
 export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Element {
   console.log("ImportIngestionReportView.render")
@@ -99,11 +121,32 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
       : data
   }
 
-  function rowDataBound(args?: any): void {
-    if (!args.data.succeeded)
-      args.row.classList.add("error-row")
-    else if (selectedPartnerTables.includes(args.data.table_name))
-      args.row.classList.add("highlight-row")
+  function rowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
+    if (!rowDataBoundEventArgs) {
+      return
+    }
+    // This is an Either<Errors, IngestionStatus>
+    const ingestionStatusDecoded = IngestionStatusCodec.decode(rowDataBoundEventArgs.data)
+    ingestionStatusDecoded.fold(
+      () => {
+        console.warn(
+          "IngestionStatusReport.rowDataBound",
+          "Failed to parse row data",
+          { data: rowDataBoundEventArgs.data, message: reporter(ingestionStatusDecoded) },
+        )
+        return null
+      },
+      (ingestionStatus) => {
+        const data = rowDataBoundEventArgs.data as IngestionStatus
+        if (!rowDataBoundEventArgs.row) {
+          return
+        }
+        if (!data.succeeded)
+          rowDataBoundEventArgs.row.classList.add("error-row")
+        else if (selectedPartnerTables.includes(data.table_name))
+          rowDataBoundEventArgs.row.classList.add("highlight-row")
+      },
+    )
   }
 
   return (
@@ -113,7 +156,12 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
           <title>Import Ingestion Live Report</title>
         </Helmet>
 
-        <PageHeader style={{ padding: "15px" }} subTitle="" title="Import Ingestion" className="import-ingestion-report">
+        <PageHeader
+          style={{ padding: "15px" }}
+          subTitle=""
+          title="Import Ingestion"
+          className="import-ingestion-report"
+        >
           <Row gutter={32}>
             <Col span={4}>
               <Typography.Text strong={true} className={"table-title"}>Partners</Typography.Text>
@@ -130,13 +178,20 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 refresh={{ interval: 30, stopOnFailure: true }}
                 remoteQuery={ingestionStatusQueryConfigId}>
                 {({ data }) => (
-                  <ImportIngestionTable<IngestionStatus> title="Ingestion" data={sortByPartner(data)}
-                                                         rowDataBound={rowDataBound}/>
+                  <ImportIngestionTable<IngestionStatus>
+                    title="Ingestion"
+                    data={sortByPartner(data)}
+                    onRowDataBind={rowDataBound}
+                  />
                 )}
               </Query>
             </Col>
             <Col span={8}>
-              <ImportIngestionTable<typeof exportData[0]> title="Export" data={exportData} rowDataBound={rowDataBound}/>
+              <ImportIngestionTable<typeof exportData[0]>
+                title="Export"
+                data={exportData}
+                onRowDataBind={rowDataBound}
+              />
             </Col>
           </Row>
         </PageHeader>
