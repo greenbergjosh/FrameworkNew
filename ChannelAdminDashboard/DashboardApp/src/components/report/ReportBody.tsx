@@ -137,7 +137,8 @@ export const ReportBody = React.memo(
     ])
 
     const createDetailTemplate = React.useMemo(
-      () => reportDetailsToComponent(reportConfig.details, parameterValues.toUndefined()),
+      () =>
+        reportDetailsToComponent(reportConfig.details, parameterValues.toUndefined(), parentData),
       [parameterValues, reportConfig.details]
     )
 
@@ -260,38 +261,43 @@ const gridComponentServices = [
 
 const reportDetailsToComponent = (
   details: string | ReportDetails | LocalReportConfig,
-  parameterValues?: JSONRecord
+  parameterValues?: JSONRecord,
+  parentData?: JSONRecord
 ) => {
   const resolved = resolveDetails(details)
   console.log("ReportBody.reportDetailsToComponent", { details, resolved })
   if (resolved) {
     const dataResolver =
       typeof details === "object" &&
-      (details.type === "report" || details.type === "layout") &&
-      !!details.dataMapping
+      ((details.type === "report" ||
+        details.type === "layout" ||
+        details.type === "ReportConfig") &&
+        !!details.dataMapping)
         ? performDataMapping.bind(null, details.dataMapping)
-        : (parentData: JSONRecord) => parentData
+        : (rowData: JSONRecord) => ({ ...(parentData || record.empty), ...rowData })
 
     if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
-      return (parentData: JSONRecord) => (
+      return (rowData: JSONRecord) => (
         <Report
           isChildReport
           report={resolved}
           data={dataResolver({
+            ...(parentData || record.empty),
             ...(parameterValues || record.empty),
-            ...parentData,
+            ...rowData,
           })}
           withoutHeader
         />
       )
     } else if (resolved.type === "SimpleLayoutConfig") {
-      return (parentData: JSONRecord) => (
+      return (rowData: JSONRecord) => (
         <UserInterface
           mode="display"
           components={resolved.layout}
           data={dataResolver({
+            ...(parentData || record.empty),
             ...(parameterValues || record.empty),
-            ...parentData,
+            ...rowData,
           })}
         />
       )
@@ -316,6 +322,7 @@ const resolveDetails = (
         type: "ReportConfig",
         columns: details.data.columns,
         details: resolveDetails(details.data.details),
+        dataMapping: details.dataMapping,
         query: details.data.query,
       } as LocalReportConfig
     }

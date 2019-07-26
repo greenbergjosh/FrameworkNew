@@ -32,6 +32,7 @@ export type LocalReportConfig = {
   query: string
   columns: [iots.UnknownRecordC]
   details: string | ReportDetails | LocalReportConfig
+  dataMapping?: DataMappingItem[]
 }
 export const ReportConfigCodec = iots.recursion<
   LocalReportConfig,
