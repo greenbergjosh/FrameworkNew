@@ -199,16 +199,15 @@ export const StandardGrid = React.forwardRef(
         }
         // Managing custom formatting options for number types
         else if (["number"].includes(col.type || "")) {
-          col.format = {
-            format:
-              col.format === "standard"
-                ? `N${typeof col.precision === "number" ? col.precision : 2}`
-                : col.format === "percentage"
-                ? `P${typeof col.precision === "number" ? col.precision : 2}`
-                : col.format === "currency"
-                ? `C${typeof col.precision === "number" ? col.precision : 2}`
-                : undefined,
-          }
+          col.format =
+            col.format === "standard"
+              ? `N${typeof col.precision === "number" ? col.precision : 2}`
+              : col.format === "percentage"
+              ? `P${typeof col.precision === "number" ? col.precision : 2}`
+              : col.format === "currency"
+              ? `C${typeof col.precision === "number" ? col.precision : 2}`
+              : undefined
+
           delete col.type
         }
 

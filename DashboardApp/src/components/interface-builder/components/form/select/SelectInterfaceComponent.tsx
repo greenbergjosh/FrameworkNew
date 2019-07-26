@@ -15,8 +15,12 @@ import { QueryConfigCodec } from "../../../../../data/Report"
 import { cheapHash } from "../../../../../lib/json"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { UserInterfaceContext } from "../../../UserInterfaceContextManager"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps, ComponentRenderMetaProps } from "../../base/BaseInterfaceComponent"
 import { selectManageForm } from "./select-manage-form"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinitionNamedProps,
+  ComponentRenderMetaProps,
+} from "../../base/BaseInterfaceComponent"
 
 interface SelectOption {
   label: string
@@ -190,9 +194,21 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         }
       ).value || "value"
 
+    const valueSet = new Set<string>()
     this.setState({
       options: values
-        .filter((value) => !remoteDataFilter || jsonLogic.apply(remoteDataFilter, value))
+        .filter((value) => {
+          if (remoteDataFilter && !jsonLogic.apply(remoteDataFilter, value)) {
+            return false
+          }
+          const stringValue = String(get(valueKey, value))
+          if (!valueSet.has(stringValue)) {
+            valueSet.add(stringValue)
+            return true
+          }
+
+          return false
+        })
         .map((value, index) => ({
           label: (get(labelKey, value) as string) || `Option ${index + 1}`,
           value: String(get(valueKey, value)),
@@ -289,13 +305,15 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
                         resultURI: queryResultURI,
                         query: queryConfig.query,
                         params: parameterValues,
-                      }).then(() => {
-                        console.log("SelectInterfaceComponent.render", "Clear loading state")
-                        this.setState({ loadStatus: "none" })
-                      }).catch((e: Error) => {
-                        console.log("SelectInterfaceComponent.render", "Set error loading state")
-                        this.setState({ loadStatus: "error", loadError: e.message })
                       })
+                        .then(() => {
+                          console.log("SelectInterfaceComponent.render", "Clear loading state")
+                          this.setState({ loadStatus: "none" })
+                        })
+                        .catch((e: Error) => {
+                          console.log("SelectInterfaceComponent.render", "Set error loading state")
+                          this.setState({ loadStatus: "error", loadError: e.message })
+                        })
                     },
                     (resultValues) => {
                       console.log("SelectInterfaceComponent.render", "Loaded, no remote")
