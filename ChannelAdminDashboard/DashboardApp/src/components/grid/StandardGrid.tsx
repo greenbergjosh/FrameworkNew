@@ -1,6 +1,8 @@
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
 import { Button, Spin } from "antd"
+import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import jsonLogic from "json-logic-js"
 import { cloneDeep, sortBy } from "lodash/fp"
 import moment from "moment"
 import React from "react"
@@ -9,6 +11,7 @@ import { JSONRecord } from "../../data/JSON"
 import { deepDiff } from "../../lib/deep-diff"
 import { evalExpression } from "../../lib/eval-expression"
 import { shallowPropCheck } from "../interface-builder/dnd/util/shallow-prop-check"
+
 import {
   Aggregate,
   ColumnChooser,
@@ -37,6 +40,7 @@ interface EnrichedColumnDefinition extends ColumnModel {
   customFormat?: string
   skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
   precision?: number
+  visibilityConditions?: JSONObject
 }
 
 const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
@@ -113,6 +117,7 @@ export interface StandardGridComponentProps {
   allowEditing?: boolean
   columns: ColumnModel[]
   data: JSONRecord[]
+  contextData?: JSONRecord
   detailTemplate?: string | Function | any
   loading?: boolean
   sortSettings?: SortSettingsModel
@@ -131,6 +136,7 @@ export const StandardGrid = React.forwardRef(
       allowDeleting,
       allowEditing,
       columns,
+      contextData,
       data,
       detailTemplate,
       loading,
@@ -145,17 +151,9 @@ export const StandardGrid = React.forwardRef(
       [ref]
     )
 
+    // Despite this being a bit odd in React, we only get one chance at creating the columns array with the SyncFusion Grid
+    // We memoize it the first time, and then we can never regenerate columns or else we'll get tons of exceptions in the grid.
     const usableColumns = React.useMemo(() => {
-      // const fields = columns.reduce(
-      //   (acc, { field }) => {
-      //     if (field && !field.startsWith("=")) {
-      //       acc.push(field)
-      //     }
-      //     return acc
-      //   },
-      //   [] as string[]
-      // )
-
       // const destructureFunction = (content: string) => `({${fields.join(", ")}}) => ${content}`
       return cloneDeep(columns).map((column) => {
         const col = column as EnrichedColumnDefinition
@@ -207,13 +205,27 @@ export const StandardGrid = React.forwardRef(
               : col.format === "currency"
               ? `C${typeof col.precision === "number" ? col.precision : 2}`
               : undefined
-
-          delete col.type
         }
 
         return col
       })
     }, [])
+
+    // Since we can only create the columns once, we unfortunately are left to manage (via mutations)
+    // any changeable aspects of the columns
+    React.useEffect(() => {
+      usableColumns.forEach((col) => {
+        if (col.visibilityConditions && contextData) {
+          col.visible = tryCatch(() =>
+            jsonLogic.apply(col.visibilityConditions, contextData)
+          ).getOrElse(true)
+        }
+      })
+
+      if (typeof ref === "object" && ref && ref.current && ref.current.headerModule) {
+        ref.current.refresh()
+      }
+    }, [contextData])
 
     // Some data may have to be pre-processed in order not to cause the table to fail to render
     const usableData = React.useMemo(
