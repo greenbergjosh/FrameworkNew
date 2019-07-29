@@ -141,12 +141,12 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     props: SelectInterfaceComponentProps,
     state: SelectInterfaceComponentState
   ) {
-    console.log(
-      "SelectInterfaceComponent.getDerivedStateFromProps",
-      state.loadStatus,
-      props.dataHandlerType,
-      props.data
-    )
+    // console.log(
+    //   "SelectInterfaceComponent.getDerivedStateFromProps",
+    //   state.loadStatus,
+    //   props.dataHandlerType,
+    //   props.data
+    // )
     if (state.loadStatus === "none" && props.dataHandlerType === "local") {
       return { options: (props.data && props.data.values) || [], loadStatus: "loaded" }
     }
@@ -227,7 +227,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
       const { loadById, loadByFilter, executeQuery, reportDataByQuery } = this.context
       const { hidden, remoteDataFilter } = this.props
 
-      console.log("SelectInterfaceComponent.render", { reportDataByQuery })
+      // console.log("SelectInterfaceComponent.render", { reportDataByQuery })
 
       switch (this.props.dataHandlerType) {
         case "remote-config": {
@@ -281,11 +281,11 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
                   )
                 },
                 Right((queryConfig) => {
-                  console.log(
-                    "SelectInterfaceComponent.render",
-                    "Checking for loaded values",
-                    queryConfig
-                  )
+                  // console.log(
+                  //   "SelectInterfaceComponent.render",
+                  //   "Checking for loaded values",
+                  //   queryConfig
+                  // )
 
                   const parameterValues = queryConfig.parameters.reduce(
                     (acc, { name, defaultValue }) => (
@@ -299,7 +299,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
 
                   queryResult.foldL(
                     () => {
-                      console.log("SelectInterfaceComponent.render", "Loading")
+                      // console.log("SelectInterfaceComponent.render", "Loading")
                       this.setState({ loadStatus: "loading" })
                       executeQuery({
                         resultURI: queryResultURI,
@@ -307,16 +307,20 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
                         params: parameterValues,
                       })
                         .then(() => {
-                          console.log("SelectInterfaceComponent.render", "Clear loading state")
+                          // console.log("SelectInterfaceComponent.render", "Clear loading state")
                           this.setState({ loadStatus: "none" })
                         })
                         .catch((e: Error) => {
-                          console.log("SelectInterfaceComponent.render", "Set error loading state")
+                          console.error(
+                            "SelectInterfaceComponent.render",
+                            "Set error loading state",
+                            e
+                          )
                           this.setState({ loadStatus: "error", loadError: e.message })
                         })
                     },
                     (resultValues) => {
-                      console.log("SelectInterfaceComponent.render", "Loaded, no remote")
+                      // console.log("SelectInterfaceComponent.render", "Loaded, no remote")
                       this.updateOptionsFromValues(resultValues)
                     }
                   )
@@ -347,7 +351,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         }
       }
 
-      console.log("Failed to load remote data for", this.props)
+      console.warn("Failed to load remote data for", this.props)
       this.setState({ options: [] })
     }
   }
@@ -363,10 +367,10 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     prevProps: SelectInterfaceComponentProps,
     prevState: SelectInterfaceComponentState
   ) {
-    console.log("SelectInterfaceComponent.componentDidUpdate", {
-      was: prevState.loadStatus,
-      is: this.state.loadStatus,
-    })
+    // console.log("SelectInterfaceComponent.componentDidUpdate", {
+    //   was: prevState.loadStatus,
+    //   is: this.state.loadStatus,
+    // })
     // If the data handler type has changed, and the new type is remote
     // or if the remote config type has changed
     // or if the remote query has changed
