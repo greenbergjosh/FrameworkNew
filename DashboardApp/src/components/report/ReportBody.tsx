@@ -6,6 +6,7 @@ import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import React from "react"
+import { context } from "react-dnd/lib/cjs/DragDropContext"
 import { Helmet } from "react-helmet"
 import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
@@ -154,6 +155,11 @@ export const ReportBody = React.memo(
       ),
     }
 
+    const contextData = React.useMemo(
+      () => ({ ...parentData, ...parameterValues.getOrElse(record.empty) }),
+      [parentData, parameterValues.getOrElse(record.empty)]
+    )
+
     // React.useEffect(() => {
     //   console.log("ReportBody.construct", { reportConfig, queryConfig })
     //   return () => {
@@ -202,9 +208,10 @@ export const ReportBody = React.memo(
           </PureGridComponent> */}
           <StandardGrid
             ref={grid}
+            columns={reportConfig.columns as ColumnModel[]}
+            contextData={contextData}
             data={queryResultData.getOrElse(emptyArray)}
             detailTemplate={createDetailTemplate}
-            columns={reportConfig.columns as ColumnModel[]}
             loading={fromStore.isExecutingQuery}
             sortSettings={sortSettings}
           />

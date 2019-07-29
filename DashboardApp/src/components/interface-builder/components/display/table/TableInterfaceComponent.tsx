@@ -199,6 +199,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     allowDeleting={allowAdding}
                     allowEditing={allowEditing}
                     columns={columns}
+                    contextData={userInterfaceData}
                     data={dataArray}
                     sortSettings={sortSettings}
                     detailTemplate={
