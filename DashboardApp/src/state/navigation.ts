@@ -1,6 +1,12 @@
 import * as Reach from "@reach/router"
-import { Option } from "fp-ts/lib/Option"
+import { Option, some, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
+import * as iots from "io-ts"
+import { reporter } from "io-ts-reporters"
+import * as iotst from "io-ts-types"
+import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
+import JSON5 from "json5"
+import { groupBy, sortBy } from "lodash/fp"
 import { Lens } from "monocle-ts"
 import React from "react"
 import { PersistedConfig } from "../data/GlobalConfig.Config"
@@ -12,8 +18,8 @@ import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/route
 import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
 import { Reports } from "../routes/dashboard/routes/reports"
-import ReportView from "../routes/dashboard/routes/reports/routes/report"
 import ImportIngestionReportView from "../routes/dashboard/routes/reports/routes/import-ingestion"
+import ReportView from "../routes/dashboard/routes/reports/routes/report"
 import { Summary } from "../routes/dashboard/routes/summary"
 import { UserInterfaceTest } from "../routes/dashboard/routes/user-interface-test"
 import { Landing } from "../routes/landing"
@@ -24,6 +30,51 @@ import {
   BusinessApplications,
   BusinessApplicationView,
 } from "../routes/dashboard/routes/business-application"
+
+export type NavigationGroupAutomaticChildType = iots.TypeOf<
+  typeof NavigationGroupAutomaticChildTypeCodec
+>
+const NavigationGroupAutomaticChildTypeCodec = iots.type({
+  icon: iots.union([iots.undefined, iots.string]),
+  ordinal: iots.union([iots.undefined, iots.number]),
+  path: iots.union([iots.undefined, iots.string]),
+  type: NonEmptyString,
+})
+
+export type NavigationGroup = iots.TypeOf<typeof NavigationGroupCodec>
+export const NavigationGroupCodec = iots.type({
+  id: NonEmptyString,
+  name: NonEmptyString,
+  type: iots.literal("Navigation.Group"),
+
+  active: iots.boolean,
+  automaticChildTypes: iots.union([
+    iots.undefined,
+    iots.array(NavigationGroupAutomaticChildTypeCodec),
+  ]),
+  description: iots.union([iots.undefined, iots.string]),
+  group: iots.union([iots.undefined, iots.array(NonEmptyString)]),
+  icon: iots.union([iots.undefined, iots.string]),
+  ordinal: iots.union([iots.undefined, iots.number]),
+})
+
+export type NavigationGroupWithChildren = NavigationGroup & {
+  children: (NavigationItem | NavigationGroupWithChildren)[]
+}
+
+export type NavigationItem = iots.TypeOf<typeof NavigationItemCodec>
+export const NavigationItemCodec = iots.type({
+  id: NonEmptyString,
+  name: NonEmptyString,
+  type: iots.literal("Navigation.Item"),
+
+  active: iots.boolean,
+  description: iots.union([iots.undefined, iots.string]),
+  group: iots.union([iots.undefined, iots.array(NonEmptyString)]),
+  icon: iots.union([iots.undefined, iots.string]),
+  ordinal: iots.union([iots.undefined, iots.number]),
+  url: iots.union([iots.undefined, iots.string]),
+})
 
 declare module "./store.types" {
   interface AppModels {
@@ -41,6 +92,7 @@ export interface State<RouteMap extends object> {
 }
 
 export interface Selectors {
+  primaryNavigation(app: Store.AppState): (NavigationItem | NavigationGroupWithChildren)[]
   routes(app: Store.AppState): RoutesMap
 }
 
@@ -508,6 +560,125 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
   }),
 
   selectors: (slice, createSelector) => ({
+    // navigationGroups
+    primaryNavigation(select) {
+      return createSelector(
+        (state) => select.globalConfig.configsByType(state),
+        (state) => select.globalConfig.configsById(state),
+        (configsByType, configsById) => {
+          const groupedItems = groupBy(
+            "group",
+            findAndMergeValidConfigs("Navigation.Item", configsByType, NavigationItemCodec)
+          )
+          const groupedGroups = groupBy(
+            "group",
+            findAndMergeValidConfigs("Navigation.Group", configsByType, NavigationGroupCodec)
+          )
+
+          const topLevelNavigation = sortBy(
+            ["ordinal", "name"],
+            [...(groupedItems["undefined"] || []), ...(groupedGroups["undefined"] || [])]
+          )
+
+          const automaticChildTypeToNavigationItem = (
+            automaticChildType: NavigationGroupAutomaticChildType
+          ): NavigationItem[] => {
+            const childTypeRecords = record.lookup(automaticChildType.type, configsByType).foldL(
+              () =>
+                record
+                  .lookup(automaticChildType.type, configsById)
+                  .chain((entityTypeConfig) => record.lookup(entityTypeConfig.name, configsByType))
+                  .getOrElse([]),
+              (result) => result
+            )
+
+            console.log(
+              "navigation.automaticChildTypeToNavigationItem",
+              automaticChildType,
+              childTypeRecords
+            )
+
+            return childTypeRecords.map((record) => ({
+              active: true,
+              description: "",
+              group: undefined,
+              icon: automaticChildType.icon,
+              id: record.id,
+              name: record.name,
+              ordinal: automaticChildType.ordinal,
+              type: "Navigation.Item",
+              url: automaticChildType.path
+                ? automaticChildType.path.includes("{id}")
+                  ? automaticChildType.path.replace("{id}", record.id)
+                  : automaticChildType.path.endsWith("/")
+                  ? `${automaticChildType.path}${record.id}`
+                  : `${automaticChildType.path}/${record.id}`
+                : record.id,
+            }))
+          }
+
+          const resolveNavigationGroupChildren = (
+            navigationGroup: NavigationGroup
+          ): NavigationGroupWithChildren => {
+            return {
+              ...navigationGroup,
+              children: sortBy(
+                ["ordinal", "name"],
+                [
+                  ...(groupedItems[navigationGroup.id] || []),
+                  ...(groupedGroups[navigationGroup.id] || []).map(resolveNavigationGroupChildren),
+                  ...(navigationGroup.automaticChildTypes || []).flatMap(
+                    automaticChildTypeToNavigationItem
+                  ),
+                ]
+              ),
+            }
+          }
+
+          const returnMap = topLevelNavigation.map((navEntry) =>
+            navEntry.type === "Navigation.Item"
+              ? navEntry
+              : resolveNavigationGroupChildren(navEntry)
+          )
+
+          return returnMap
+          //   return record
+          //     .lookup("Navigation.Item", configsByType)
+          //     .map((records) =>
+          //       records.map((navigationItem) => ({
+          //         [navigationItem.id]: {
+          //           abs: navigationItem.,
+          //           component: BusinessApplicationView,
+          //           description: "",
+          //           title: businessApplication.name as string,
+          //           iconType: "appstore",
+          //           path: businessApplication.id as string,
+          //           context: { id: businessApplication.id as string },
+          //           redirectFrom: [],
+          //           shouldAppearInSideNav: true,
+          //           subroutes: {},
+          //         },
+          //       }))
+          //     )
+          //     .map((routes) =>
+          //       routes.reduce(
+          //         (acc, route) => ({
+          //           ...acc,
+          //           ...route,
+          //         }),
+          //         {}
+          //       )
+          //     )
+          //     .map((routesDict) =>
+          //       appsSubroutes.set({
+          //         ...appsSubroutes.get(staticRoutesMap),
+          //         ...routesDict,
+          //       })(staticRoutesMap)
+          //     )
+          //     .getOrElse(staticRoutesMap)
+        }
+      )
+    },
     routes(select) {
       return createSelector(
         (state) => select.globalConfig.configsByType(state),
@@ -563,3 +734,42 @@ const reportsSubroutes = Lens.fromPath<RoutesMap>()([
   "subroutes",
 ])
 const appsSubroutes = Lens.fromPath<RoutesMap>()(["dashboard", "subroutes", "apps", "subroutes"])
+
+const findAndMergeValidConfigs = <T>(
+  type: string,
+  configsByType: ReturnType<Store.AppSelectors["globalConfig"]["configsByType"]>,
+  Codec: iots.Type<T, any, unknown>
+) =>
+  record
+    .lookup(type, configsByType)
+    .fold([], (foundRecords) =>
+      foundRecords.map((foundRecord) => {
+        const decodedRecord = Codec.decode({
+          ...foundRecord,
+          ...tryCatch(() => JSON5.parse(foundRecord.config.getOrElse("{}"))).getOrElse({}),
+        })
+        return decodedRecord.fold(
+          () => {
+            console.warn(
+              "navigation.findAndMergeValidConfigs",
+              `Failed to parse ${type}`,
+              foundRecord,
+              reporter(decodedRecord)
+            )
+            return null
+          },
+          (dr) => dr
+        )
+      })
+    )
+    .reduce(
+      (acc, navEntry) => {
+        if (navEntry) {
+          //@ts-ignore
+          delete navEntry.config
+          acc.push(navEntry)
+        }
+        return acc
+      },
+      [] as T[]
+    )
