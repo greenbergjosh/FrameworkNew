@@ -6,8 +6,15 @@ import React from "react"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks"
 import { Profile } from "../../state/iam"
-import { RouteMeta, WithRouteProps } from "../../state/navigation"
+import { store } from "../../state/store"
 import styles from "./dashboard.module.css"
+import {
+  RouteMeta,
+  WithRouteProps,
+  NavigationItem,
+  NavigationGroup,
+  NavigationGroupWithChildren,
+} from "../../state/navigation"
 import {
   Avatar,
   Breadcrumb,
@@ -48,7 +55,10 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
   const [fromStore, dispatch] = useRematch((s) => ({
     profile: s.iam.profile,
     loadingGlobalConfigs: s.loading.effects.globalConfig.loadRemoteConfigs,
+    navigation: store.select.navigation.primaryNavigation(s),
   }))
+
+  console.log("Navigation", fromStore.navigation)
 
   React.useEffect(() => {
     dispatch.globalConfig.loadRemoteConfigs()
@@ -79,7 +89,8 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           mode="vertical"
           defaultOpenKeys={activeMenuKeys}
           selectedKeys={activeMenuKeys}>
-          {(function renderRoutesAsMenuItems(
+          {renderNavEntriesAsMenu(fromStore.navigation || [])}
+          {/* {(function renderRoutesAsMenuItems(
             appRoutes: Record<string, RouteMeta>,
             nested?: boolean
           ) {
@@ -109,7 +120,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 )
               })
               .reverse()
-          })(props.subroutes)}
+          })(props.subroutes)} */}
         </Menu>
       </Layout.Sider>
 
@@ -210,3 +221,32 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
 }
 
 export default Dashboard
+
+const renderNavEntriesAsMenu = (navEntries: (NavigationItem | NavigationGroupWithChildren)[]) =>
+  navEntries.map((navEntry) =>
+    navEntry.type === "Navigation.Group" ? (
+      <Menu.SubMenu
+        key={navEntry.id}
+        title={
+          <span>
+            <Icon type={navEntry.icon} />
+            <span>{navEntry.name}</span>
+          </span>
+        }>
+        {renderNavEntriesAsMenu(navEntry.children)}
+      </Menu.SubMenu>
+    ) : (
+      <Menu.Item key={navEntry.id}>
+        <Icon type={navEntry.icon} />
+        <span>{navEntry.name}</span>
+        {navEntry.url &&
+          (navEntry.url.match(/https?:\/\//) ? (
+            <a href={navEntry.url} target="new">
+              {navEntry.url}
+            </a>
+          ) : (
+            <Reach.Link to={navEntry.url} />
+          ))}
+      </Menu.Item>
+    )
+  )
