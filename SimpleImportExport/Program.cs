@@ -49,7 +49,7 @@ namespace SimpleImportExport
 
                 var sqlTimeoutSec = _fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
                 ServicePointManager.DefaultConnectionLimit = _fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
-                var jobCfg = await _fw.Entities.GetEntityGe(jobId);
+                var jobCfg = (await _fw.Entities.GetEntity(jobId)).GetE("Config");
 
                 var src = await GetEnpointConfig(jobCfg, "Source");
                 var dest = await GetEnpointConfig(jobCfg, "Destination");
