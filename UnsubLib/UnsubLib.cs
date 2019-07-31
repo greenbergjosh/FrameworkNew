@@ -112,7 +112,7 @@ namespace UnsubLib
             return network;
         }
 
-        public async Task ManualDirectory(IGenericEntity network)
+        public async Task ManualDirectory(IGenericEntity network, bool isManual)
         {
             var networkName = network.GetS("Name");
             var path = Path.Combine(ClientWorkingDirectory, "Manual", networkName);
@@ -244,7 +244,7 @@ namespace UnsubLib
                         }
                         else
                         {
-                            var res = await Data.CallFn(Conn, "SelectNetworkCampaign", Jw.Serialize(new { nCId = networkCampaignId, nId = networkId }));
+                            var res = await Data.CallFn(Conn, "SelectNetworkCampaign", Jw.Serialize(new { ncid = networkCampaignId, nid = networkId }));
 
                             if (res?.GetS("Id").ParseGuid().HasValue != true)
                             {
@@ -292,7 +292,7 @@ namespace UnsubLib
 
             await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Calling ProcessUnsubFiles");
 
-            await ProcessUnsubFiles(unsubFiles.ToDictionary(u => u.unsub.FullName, u => u.campaigns.ToList()), network, unsubFiles.SelectMany(u => u.campaigns).ToArray());
+            await ProcessUnsubFiles(unsubFiles.ToDictionary(u => u.unsub.FullName, u => u.campaigns.ToList()), network, unsubFiles.SelectMany(u => u.campaigns).ToArray(), true);
 
             await _fw.Log($"{nameof(ManualJob)}-{networkName}", $"Completed ProcessUnsubFiles");
 
@@ -383,17 +383,17 @@ namespace UnsubLib
 
             var bad = uris.Where(u => u.Value?.Any() != true).ToArray();
 
-            await ProcessUnsubFiles(uris, network, cse.GetL(""));
+            await ProcessUnsubFiles(uris, network, cse.GetL(""), false);
 
             await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Completed ProcessUnsubFiles");
         }
 
-        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IEnumerable<IGenericEntity> cse)
+        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IEnumerable<IGenericEntity> cse, bool isManual)
         {
             var networkName = network.GetS("Name");
 
             // Download unsub files
-            var unsubFiles = await DownloadUnsubFiles(uris, network);
+            var unsubFiles = await DownloadUnsubFiles(uris, network, isManual);
 
             // Generate diff list
             var campaignsWithNegativeDelta = new List<string>();
@@ -570,10 +570,9 @@ namespace UnsubLib
             return uris;
         }
 
-        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network)
+        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, bool isManual)
         {
             var networkName = network.GetS("Name");
-            var isSchedWithManual = network.GetS("Credentials/ManualFile").ParseBool() == true;
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
             var parallelism = Int32.Parse(network.GetS("Credentials/Parallelism"));
 
@@ -593,7 +592,7 @@ namespace UnsubLib
                     await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Iteration({networkName}):: for url {uri.Key} for {logCtx}");
 
                     IDictionary<string, object> cf = new Dictionary<string, object>();
-                    if (networkUnsubMethod == "ScheduledUnsubJob" && !isSchedWithManual)
+                    if (!isManual)
                     {
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
 
@@ -601,12 +600,12 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed DownloadSuppressionFiles({networkName}):: for url {uri.Key}");
                     }
-                    else if (networkUnsubMethod == "ManualDirectory" || isSchedWithManual)
+                    else if (isManual)
                     {
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Calling UnzipUnbuffered({networkName}):: for url {uri.Key}");
 
                         var fis = new FileInfo(uri.Key);
-                        cf = await ProtocolClient.UnzipUnbuffered(uri.Key,
+                        cf = await ProtocolClient.UnzipUnbuffered(fis.Name,
                                 ZipTester,
                                 new Dictionary<string, Func<FileInfo, Task<object>>>()
                                 {
@@ -884,18 +883,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+                }
 #if DEBUG
             }
 #endif
@@ -1398,7 +1397,7 @@ namespace UnsubLib
 
         public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
         {
-            var args = Jw.Json(new {CId = campaignId});
+            var args = Jw.Json(new { CId = campaignId });
 
             try
             {
@@ -1415,7 +1414,7 @@ namespace UnsubLib
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(GetFileFromCampaignId),$"Failed to retrieve file id: {args} {e.UnwrapForLog()}");
+                await _fw.Error(nameof(GetFileFromCampaignId), $"Failed to retrieve file id: {args} {e.UnwrapForLog()}");
                 throw;
             }
         }

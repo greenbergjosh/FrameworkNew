@@ -77,8 +77,8 @@ namespace Utility
             string UnzippedDirectory, int timeout = 1000 * 60 * 5)
         {
             var inf = $"{ZipFileDirectory}{_sep}{zipFileName}";
-            var outf = $"{ZipFileDirectory}{_sep}{UnzippedDirectory}";
-            var cmd = $"{exeUnzip} {inf} -d {outf}";
+            var outf = $"{UnzippedDirectory}";
+            var cmd = $"{exeUnzip} \"{inf}\" -d \"{outf}\"";
 
             var err = await cmd.Shell(platform);
         }

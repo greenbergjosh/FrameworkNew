@@ -12,7 +12,7 @@ namespace SignalApiLib.SourceHandlers
         private readonly FrameworkWrapper _fw;
         private const string Conn = "Signal";
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
-        private readonly string _defaultFailureResponse = Jw.Serialize(new {Result = "Failure"});
+        private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
 
         public ConsoleFeed(FrameworkWrapper fw)
         {
@@ -22,6 +22,8 @@ namespace SignalApiLib.SourceHandlers
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {
             var result = Jw.Json(new { Error = "SeeLogs" });
+
+            requestFromPost = requestFromPost.Replace("\u0000", "");
 
             if (Jw.TryParseObject(requestFromPost) == null)
             {

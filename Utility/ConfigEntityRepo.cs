@@ -31,7 +31,7 @@ namespace Utility
 
             if (!_entityIds.TryGetValue($"{type}:{name}", out var id) || _entities.TryGetValue(id, out var result))
             {
-                result = await AddEntity(id, null, null);
+                result = await AddEntity(null, type, name);
             }
 
             return result;

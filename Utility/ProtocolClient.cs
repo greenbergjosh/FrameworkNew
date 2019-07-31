@@ -169,7 +169,6 @@ namespace Utility
             Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors,
             string fileSourceDirectory,
             string fileDestinationDirectory)
-
         {
             var ufn = Guid.NewGuid().ToString();
             var rs = new Dictionary<string, object>();
@@ -184,9 +183,6 @@ namespace Utility
                     var pr = await zipEntryProcessors[tr](f);
                     rs[tr] = pr;
                 }
-            }
-            catch (Exception)
-            {
             }
             finally
             {

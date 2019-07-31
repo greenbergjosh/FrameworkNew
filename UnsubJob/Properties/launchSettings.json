@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "n:Madrivo"
+      "commandLineArgs": "n:Amobee mo"
     }
   }
 }

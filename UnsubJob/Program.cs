@@ -4,6 +4,7 @@ using System.Linq;
 using Utility;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using UnsubLib.NetworkProviders;
 using Utility.GenericEntity;
 
 namespace UnsubJob
@@ -45,7 +46,7 @@ namespace UnsubJob
                 nw.MaxParallelism = 1;
             }
 
-
+            var manualOnly = args.Any(a => string.Equals(a, "mo", StringComparison.CurrentCultureIgnoreCase));
             var singleNetworkName = args.Where(a => a.StartsWith("n:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
             string networkCampaignId = null;
 
@@ -85,29 +86,32 @@ namespace UnsubJob
 
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
-                    try
+                    if (!manualOnly)
                     {
-                        await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
-                        await nw.ScheduledUnsubJob(n, networkCampaignId);
-                        await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
-                    }
-                    catch (UnsubLib.NetworkProviders.HaltingException e)
-                    {
-                        await Fw.Error(nameof(UnsubJob), $"Network fatal error for {name}: {e.UnwrapForLog()}");
-                        await Fw.Alert(nameof(UnsubJob), "Unsub Fatal Error", $"Network fatal error for {name}: {e.UnwrapForLog()}");
-                        continue;
-                    }
-                    catch (Exception exScheduledUnsub)
-                    {
-                        await Fw.Error(nameof(Main), $"ScheduledUnsubJob failed({name}): {exScheduledUnsub}");
+                        try
+                        {
+                            await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
+                            await nw.ScheduledUnsubJob(n, networkCampaignId);
+                            await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
+                        }
+                        catch (HaltingException e)
+                        {
+                            await Fw.Error(nameof(UnsubJob), $"Network fatal error for {name}: {e.UnwrapForLog()}");
+                            await Fw.Alert(nameof(UnsubJob), "Unsub Fatal Error", $"Network fatal error for {name}: {e.UnwrapForLog()}");
+                            continue;
+                        }
+                        catch (Exception exScheduledUnsub)
+                        {
+                            await Fw.Error(nameof(Main), $"ScheduledUnsubJob failed({name}): {exScheduledUnsub}");
+                        }
                     }
 
-                    if (n.GetS("Credentials/AlsoDoManualDirectory") == "True")
+                    if (n.GetS("Credentials/IgnoreManualDirectory").ParseBool() != false)
                     {
                         try
                         {
                             await Fw.Log(nameof(Main), $"Starting AlsoDoManualDirectory({name})...");
-                            await nw.ManualDirectory(n);
+                            await nw.ManualDirectory(n, true);
                             await Fw.Log(nameof(Main), $"Completed AlsoDoManualDirectory({name})...");
                         }
                         catch (Exception exScheduledUnsub)
@@ -121,7 +125,7 @@ namespace UnsubJob
                     try
                     {
                         await Fw.Log(nameof(Main), $"Starting ManualDirectory({name})...");
-                        await nw.ManualDirectory(n);
+                        await nw.ManualDirectory(n, true);
                         await Fw.Log(nameof(Main), $"Completed ManualDirectory({name})...");
                     }
                     catch (Exception exScheduledUnsub)
