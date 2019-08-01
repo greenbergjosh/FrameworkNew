@@ -11,7 +11,7 @@ import {
 } from "@syncfusion/ej2-react-grids"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
-import { IngestionStatus } from "./index"
+import { ExportStatus } from "./index"
 
 /* *************************
  * INTERFACES
@@ -23,49 +23,23 @@ interface ExportTableProps<T> {
   onRowDataBind?: (event: RowDataBoundEventArgs) => void,
 }
 
-interface SucceededColProps {
-  succeeded: boolean
-}
-
-interface RuntimeColProps {
-  runtime: unknown
-}
-
-interface RowsProcessedColProps {
-  rows_processed: unknown
+interface RowCountColProps {
+  rowcount: unknown
 }
 
 /* *************************
  * COMPONENTS
  */
 
-function SucceededCol(props: SucceededColProps): JSX.Element {
-  return (
-    <Icon
-      type={props.succeeded ? "check-circle" : "exclamation-circle"}
-      theme="twoTone"
-      twoToneColor={props.succeeded ? "#52c41a" : "red"}
-    />
-  )
-}
-
-function RuntimeCol(props: RuntimeColProps): JSX.Element {
+function RowCountCol(props: RowCountColProps): JSX.Element {
   return (
     <span>
-      {typeof props.runtime === "number" ? `${props.runtime}s` : "-"}
+      {typeof props.rowcount === "number" ? `${props.rowcount.toLocaleString()}` : "-"}
     </span>
   )
 }
 
-function RowsProcessedCol(props: RowsProcessedColProps): JSX.Element {
-  return (
-    <span>
-      {typeof props.rows_processed === "number" ? `${props.rows_processed.toLocaleString()}` : "-"}
-    </span>
-  )
-}
-
-export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTableProps<IngestionStatus>): JSX.Element {
+export function ExportTable({ data, title, onRowDataBind }: ExportTableProps<ExportStatus>): JSX.Element {
 
   const pageSettings: PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
@@ -85,26 +59,21 @@ export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTable
       >
         <ColumnsDirective>
           <ColumnDirective
-            field="succeeded"
-            headerText=""
-            template={SucceededCol}
-            width={30}
+            field="partner"
+            headerText="Partner"
           />
           <ColumnDirective
-            field="table_name"
-            headerText="Table"
+            field="export_name"
+            headerText="Export Name"
           />
           <ColumnDirective
-            field="runtime"
-            headerText="Time"
-            template={RuntimeCol}
-            textAlign={"Right"}
-            width={70}
+            field="export_date"
+            headerText="Date"
           />
           <ColumnDirective
-            field="rows_processed"
+            field="rowcount"
             headerText="Rows"
-            template={RowsProcessedCol}
+            template={RowCountCol}
             textAlign={"Right"}
             width={70}
           />
@@ -115,4 +84,4 @@ export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTable
   )
 }
 
-export default ImportIngestionTable
+export default ExportTable

@@ -16,9 +16,13 @@ import {
   createUIContext,
   UserInterfaceContext,
 } from "../../../../../../components/interface-builder/UserInterfaceContextManager"
-import { INGESTION_STATUS_QUERY_CONFIG_ID, PARTNER_QUERY_CONFIG_ID } from "./constants"
-import { exportData } from "./mock-data"
+import {
+  INGESTION_STATUS_QUERY_CONFIG_ID,
+  EXPORT_STATUS_QUERY_CONFIG_ID,
+  PARTNER_QUERY_CONFIG_ID
+} from "./constants"
 import ImportIngestionTable from "./ImportIngestionTable"
+import ExportTable from "./ExportTable"
 import "./import-ingestion.scss"
 
 /* *************************
@@ -37,6 +41,16 @@ export const IngestionStatusCodec = iots.type({
   runtime: iots.number,
   succeeded: iots.boolean,
   table_name: iots.string,
+  /* eslint-enable @typescript-eslint/camelcase */
+})
+
+export type ExportStatus = iots.TypeOf<typeof ExportStatusCodec>
+export const ExportStatusCodec = iots.type({
+  /* eslint-disable @typescript-eslint/camelcase */
+  partner: iots.string,
+  rowcount: iots.number,
+  export_date: iots.string,
+  export_name: iots.string,
   /* eslint-enable @typescript-eslint/camelcase */
 })
 
@@ -67,6 +81,11 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     .lookup(INGESTION_STATUS_QUERY_CONFIG_ID, fromStore.configsById)
     .toUndefined()
   const ingestionStatusQueryConfigId = ingestionStatusQueryConfig && ingestionStatusQueryConfig.id
+
+  const exportStatusQueryConfig = record
+    .lookup(EXPORT_STATUS_QUERY_CONFIG_ID, fromStore.configsById)
+    .toUndefined()
+  const exportStatusQueryConfigId = exportStatusQueryConfig && exportStatusQueryConfig.id
 
   const contextManager = React.useMemo(
     () =>
@@ -108,21 +127,31 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     [fromStore.selectedPartner && fromStore.selectedPartner.id],
   )
 
-  function sortByPartner(data: IngestionStatus[]) {
-    return fromStore.selectedPartner
-      // We're using sortBy to move the items of the selected table to the front
-      // without re-arranging anything else
-      ? sortBy(
-        ({ table_name }) => //eslint-disable-line @typescript-eslint/camelcase
-          selectedPartnerTables.includes(table_name)
-            ? 1
-            : 2,
-        data,
-      )
-      : data
+  function sortByPartner<T>(data: T[], comparator: (item: T) => boolean): T[] {
+    if (!fromStore.selectedPartner) {
+      return data
+    }
+    // We're using sortBy to move the items of the selected table to the front
+    // without re-arranging anything else
+    const sorted = sortBy(
+      (item) => //eslint-disable-line @typescript-eslint/camelcase
+        comparator(item)
+          ? 1
+          : 2,
+      data,
+    )
+    return sorted as T[]
   }
 
-  function rowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
+  const isSelectedPartnerImportIngestion = (selectedPartnerTables: string[]) =>
+    (item: IngestionStatus) =>
+      selectedPartnerTables.includes(item.table_name)
+
+  const isSelectedPartnerExport = (selectedPartner: PartnerStatus | null) =>
+    (item: ExportStatus) =>
+      !!selectedPartner && (selectedPartner.name.toLowerCase() === item.partner.toLowerCase())
+
+  function importIngestionRowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
     if (!rowDataBoundEventArgs) {
       return
     }
@@ -144,7 +173,33 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         }
         if (!data.succeeded)
           rowDataBoundEventArgs.row.classList.add("error-row")
-        else if (selectedPartnerTables.includes(data.table_name))
+        else if (isSelectedPartnerImportIngestion(selectedPartnerTables)(data))
+          rowDataBoundEventArgs.row.classList.add("highlight-row")
+      },
+    )
+  }
+
+  function exportRowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
+    if (!rowDataBoundEventArgs) {
+      return
+    }
+    // This is an Either<Errors, IngestionStatus>
+    const exportStatusDecoded = ExportStatusCodec.decode(rowDataBoundEventArgs.data)
+    exportStatusDecoded.fold(
+      () => {
+        console.warn(
+          "IngestionStatusReport.rowDataBound",
+          "Failed to parse row data",
+          { data: rowDataBoundEventArgs.data, message: reporter(exportStatusDecoded) },
+        )
+        return null
+      },
+      (exportStatus) => {
+        const data = rowDataBoundEventArgs.data as ExportStatus
+        if (!rowDataBoundEventArgs.row) {
+          return
+        }
+        if (isSelectedPartnerExport(fromStore.selectedPartner)(data))
           rowDataBoundEventArgs.row.classList.add("highlight-row")
       },
     )
@@ -179,20 +234,27 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 refresh={{ interval: 30, stopOnFailure: true }}
                 remoteQuery={ingestionStatusQueryConfigId}>
                 {({ data }) => (
-                  <ImportIngestionTable<IngestionStatus>
+                  <ImportIngestionTable
                     title="Ingestion"
-                    data={sortByPartner(data)}
-                    onRowDataBind={rowDataBound}
+                    data={sortByPartner(data, isSelectedPartnerImportIngestion(selectedPartnerTables))}
+                    onRowDataBind={importIngestionRowDataBound}
                   />
                 )}
               </Query>
             </Col>
             <Col span={8}>
-              <ImportIngestionTable<typeof exportData[0]>
-                title="Export"
-                data={exportData}
-                onRowDataBind={rowDataBound}
-              />
+              <Query<ExportStatus>
+                queryType="remote-query"
+                refresh={{ interval: 30, stopOnFailure: true }}
+                remoteQuery={exportStatusQueryConfigId}>
+                {({ data }) => (
+                  <ExportTable
+                    title="Export"
+                    data={sortByPartner(data, isSelectedPartnerExport(fromStore.selectedPartner))}
+                    onRowDataBind={exportRowDataBound}
+                  />
+                )}
+              </Query>
             </Col>
           </Row>
         </PageHeader>

@@ -65,6 +65,7 @@ export const StringParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("string"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -74,6 +75,7 @@ export const IntegerParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("integer"),
     defaultValue: iotst.createOptionFromNullable(iots.number),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -83,6 +85,7 @@ export const FloatParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("float"),
     defaultValue: iotst.createOptionFromNullable(iots.number),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -92,6 +95,7 @@ export const DateParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("date"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -101,6 +105,7 @@ export const DateRangeParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("date-range"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -110,6 +115,7 @@ export const BooleanParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("boolean"),
     defaultValue: iotst.createOptionFromNullable(iots.boolean),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -141,6 +147,7 @@ export const SelectParameterItemCodec = iots.intersection([
     options: SelectParameterItemOptionsCodec,
     type: iots.literal("select"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
