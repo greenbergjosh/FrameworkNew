@@ -44,6 +44,9 @@ namespace Utility
             if (result.IsNullOrWhitespace()) return null;
 
             var entity = JsonWrapper.JsonToGenericEntity(result);
+            var configJs = JsonWrapper.TryParse(entity.GetS("Config"));
+
+            if (configJs != null) entity.Set("Config", configJs);
 
             id = entity.GetS("Id").ParseGuid();
             type = entity.GetS("Type");
