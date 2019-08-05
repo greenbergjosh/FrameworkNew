@@ -17,11 +17,6 @@ namespace UnsubLib.NetworkProviders
         Task<Uri> GetSuppresionLocationUrl(IGenericEntity network, string unsubRelationshipId);
     }
 
-    public class HaltingException : Exception
-    {
-        public HaltingException(string message, Exception e) : base(message, e) { }
-    }
-
     public static class Factory
     {
         public static INetworkProvider GetInstance(FrameworkWrapper fw, IGenericEntity network)
