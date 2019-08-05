@@ -15,6 +15,22 @@ namespace SimpleImportExport
         Local, Ftp
     }
 
+    public class SourceFileInfo
+    {
+        public SourceFileInfo(string sourceDirectory, string fileName, Pattern pattern, DateTime? fileDate)
+        {
+            SourceDirectory = sourceDirectory;
+            FileName = fileName;
+            Pattern = pattern;
+            FileDate = fileDate;
+        }
+
+        public string SourceDirectory { get; }
+        public string FileName { get; }
+        public Pattern Pattern { get; }
+        public DateTime? FileDate { get; }
+    }
+
     public abstract class Endpoint
     {
         protected Endpoint(IGenericEntity ge)
@@ -23,19 +39,19 @@ namespace SimpleImportExport
         }
 
         public abstract EndpointType Type { get; }
-        public abstract Task<Stream> GetStream(string fileRelativePath);
-        public abstract Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate) file, Endpoint source);
-        public abstract Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>> GetFiles();
-        public abstract Task Delete(string fileRelativePath);
-        public Task Move(string fileRelativePath, string relativeBasePath) => Move(fileRelativePath, relativeBasePath, false);
-        public abstract Task Move(string fileRelativePath, string relativeBasePath, bool overwrite);
-        public Task Rename(string fileRelativePath, Regex pattern, string patternReplace) => Rename(fileRelativePath, pattern, patternReplace, false);
-        public abstract Task Rename(string fileRelativePath, Regex pattern, string patternReplace, bool overwrite);
+        public abstract Task<Stream> GetStream(SourceFileInfo file);
+        public abstract Task<(long size, long? records, string destinationDirectoryPath) > SendStream(SourceFileInfo file, Endpoint source);
+        public abstract Task<IEnumerable<SourceFileInfo>> GetFiles();
+        public abstract Task Delete(string directoryPath, string fileName);
+        public Task Move(string directoryPath, string fileName, string relativeBasePath) => Move(directoryPath, fileName, relativeBasePath, false);
+        public abstract Task Move(string directoryPath, string fileName, string relativeBasePath, bool overwrite);
+        public Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace) => Rename(directoryPath, fileName, pattern, patternReplace, false);
+        public abstract Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace, bool overwrite);
         protected IEnumerable<Pattern> Patterns { get; }
 
-        protected (bool isMatch, DateTime? fileDate, string fileName) ApplyPattern(Pattern pattern, string fileName)
+        protected (bool isMatch, DateTime? fileDate, string filePath) ApplyPattern(Pattern pattern, string filePath)
         {
-            var match = pattern.Rx.Match(fileName);
+            var match = pattern.Rx.Match(filePath);
             var isMatch = match.Success;
             DateTime? fileDate = null;
 
@@ -51,13 +67,13 @@ namespace SimpleImportExport
                     }
                     catch (Exception e)
                     {
-                        Program._fw.Error($"{this.GetType().Name}.{nameof(GetFiles)}.{nameof(ApplyPattern)}", $"Failed to parse date: Endpoint: {this} File: {fileName} Pattern: {JsonWrapper.Serialize(pattern, true)}\r\n{e.UnwrapForLog()}").GetAwaiter().GetResult();
+                        Program._fw.Error($"{this.GetType().Name}.{nameof(GetFiles)}.{nameof(ApplyPattern)}", $"Failed to parse date: Endpoint: {this} File: {filePath} Pattern: {JsonWrapper.Serialize(pattern, true)}\r\n{e.UnwrapForLog()}").GetAwaiter().GetResult();
                         isMatch = false;
                     }
                 }
             }
 
-            return (isMatch, fileDate, fileName );
+            return (isMatch, fileDate, filePath );
         }
 
         protected string CombineUrl(params string[] list) => list.Select(i => i?.Trim('/')).Where(i => !i.IsNullOrWhitespace()).Join("/");

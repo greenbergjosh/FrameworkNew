@@ -16,7 +16,7 @@ namespace SimpleImportExport
     {
         public static FrameworkWrapper _fw;
 
-        private delegate Task PostProcess(string fileRelativePath, Endpoint endpoint, Pattern pattern, Guid refId, DateTime? fileDate);
+        private delegate Task PostProcess(SourceFileInfo file, string directoryPath, Endpoint endpoint, Guid refId);
 
         public static async Task Main(string[] args)
         {
@@ -47,6 +47,8 @@ namespace SimpleImportExport
                     return;
                 }
 
+                await _fw.Log($"{nameof(Program)}", $"Getting job config: {jobName}:{jobIdStr}");
+
                 var sqlTimeoutSec = _fw.StartupConfiguration.GetS("Config/SqlTimeoutSec").ParseInt() ?? 5;
                 ServicePointManager.DefaultConnectionLimit = _fw.StartupConfiguration.GetS("Config/MaxConnections").ParseInt() ?? 5;
                 var jobCfg = (await _fw.Entities.GetEntity(jobId)).GetE("Config");
@@ -65,16 +67,16 @@ namespace SimpleImportExport
                 {
                     try
                     {
-                        var shouldDownload = await Data.CallFn("SimpleImportExport", "shouldTransfer", Jw.Serialize(new { JobId = jobId, FileName = f.name }));
+                        var shouldDownload = await Data.CallFn("SimpleImportExport", "shouldTransfer", Jw.Serialize(new { JobId = jobId, f.FileName }));
 
                         if (shouldDownload.GetS("") == "1" || shouldDownload?.GetS("result")?.ParseBool() == true)
                         {
-                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopying {f.name}:\n\tFrom: {src}\n\tTo: {dest}\n\t{f.srcPath} -> {f.destPath}");
+                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopying {f.FileName}:\n\tFrom: {src}\n\tTo: {dest}");
 
                             var refId = Guid.NewGuid();
-                            var fileSize = await dest.SendStream(f, src);
-                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopy complete {f.name}:\n\tFrom: {src}\n\tTo: {dest}\n\t{f.srcPath} -> {f.destPath}");
-                            var sargs = Jw.Json(new { JobId = jobId, FileName = f.name, FileSize = fileSize, Ref = refId, FileDate = f.fileDate });
+                            var (size, records, destinationDirectoryPath) = await dest.SendStream(f, src);
+                            await _fw.Log($"{nameof(Program)}", $"{jobName}\tCopy complete {f.FileName}:\n\tFrom: {src}\n\tTo: {dest}");
+                            var sargs = Jw.Serialize(new { JobId = jobId, f.FileName, FileSize = size, Records = records, Ref = refId, f.FileDate });
                             async Task Commit()
                             {
                                 var res = await Data.CallFn("SimpleImportExport", "logTransfer", sargs, "", timeout: sqlTimeoutSec);
@@ -84,8 +86,8 @@ namespace SimpleImportExport
 
                             if (!commitAfterPost) await Commit();
 
-                            await srcPost(f.srcPath, src, f.pattern, refId, f.fileDate);
-                            await destPost(f.destPath, dest, f.pattern, refId, f.fileDate);
+                            await srcPost(f, f.SourceDirectory, src, refId);
+                            await destPost(f, destinationDirectoryPath, dest, refId);
 
                             if (commitAfterPost) await Commit();
                         }
@@ -93,7 +95,7 @@ namespace SimpleImportExport
                     }
                     catch (Exception e)
                     {
-                        await _fw.Error($"{nameof(SimpleImportExport)}", $"{jobName}\tError processing {f.name}: {e.UnwrapForLog()}");
+                        await _fw.Error($"{nameof(SimpleImportExport)}", $"{jobName}\tError processing {f.FileName}: {e.UnwrapForLog()}");
                     }
                 }
 
@@ -134,10 +136,10 @@ namespace SimpleImportExport
             {
                 if (postProcessCmd == "Delete")
                 {
-                    return async (fileRelativePath, endpoint, pattern, refId, fileDate) =>
+                    return async (file, directoryPath, endpoint, refId) =>
                     {
-                        await _fw.Log($"{nameof(FilePostProcess)}:Delete", $"{jobName}\t{fileRelativePath}");
-                        await endpoint.Delete(fileRelativePath);
+                        await _fw.Log($"{nameof(FilePostProcess)}:Delete", $"{jobName}\t{directoryPath}/{file.FileName}");
+                        await endpoint.Delete(directoryPath, file.FileName);
                     };
                 }
 
@@ -145,10 +147,10 @@ namespace SimpleImportExport
                 {
                     var toRelativePath = postProcessCmd.Substring(5);
 
-                    return async (fileRelativePath, endpoint, pattern, refId, fileDate) =>
+                    return async (file, directoryPath, endpoint, refId) =>
                     {
-                        await _fw.Log($"{nameof(FilePostProcess)}:Move", $"{jobName}\t{fileRelativePath} -> {toRelativePath}");
-                        await endpoint.Move(fileRelativePath, toRelativePath);
+                        await _fw.Log($"{nameof(FilePostProcess)}:Move", $"{jobName}\t{directoryPath}/{file.FileName} -> {toRelativePath}");
+                        await endpoint.Move(directoryPath, file.FileName, toRelativePath);
                     };
                 }
 
@@ -168,10 +170,10 @@ namespace SimpleImportExport
                         {
                             var rx = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-                            return async (fileRelativePath, endpoint, filePattern, refId, fileDate) =>
+                            return async (file, directoryPath, endpoint, refId) =>
                             {
-                                await _fw.Log($"{nameof(FilePostProcess)}:Rename", $"{jobName}\t{fileRelativePath} rename with regex {pattern} replace {replace}");
-                                await endpoint.Rename(fileRelativePath, rx, replace, overwrite);
+                                await _fw.Log($"{nameof(FilePostProcess)}:Rename", $"{jobName}\t{directoryPath}/{file.FileName} rename with regex {pattern} replace {replace}");
+                                await endpoint.Rename(directoryPath, file.FileName, rx, replace, overwrite);
                             };
                         }
                         var msg = $"Invalid config for Rename: {postProcessCmd}";
@@ -189,13 +191,27 @@ namespace SimpleImportExport
                         var function = ppge.GetS("function");
                         var errorJsonPath = ppge.GetS("errorJsonPath");
 
-                        return async (fileRelativePath, endpoint, pattern, refId, fileDate) =>
+                        return async (file, directoryPath, endpoint, refId) =>
                         {
-                            var args = Jw.TryParseObject(ReplacePatternTokens(argsTemplate, pattern)?.Replace("{fileRelativePath}", fileRelativePath).Replace("{ref}", refId.ToString()));
+                            if(endpoint is FtpEndPoint) throw new NotImplementedException();
 
-                            if (fileDate.HasValue) args["file_date"] = fileDate;
+                            var args = Jw.TryParseObject(ReplacePatternTokens(argsTemplate, file.Pattern)?
+                                .Replace("{fileName}", file.FileName)
+                                .Replace("{fileSourceDirectory}", file.SourceDirectory)
+                                .Replace("{fileDate}", (file.FileDate?.ToString()).IfNullOrWhitespace(""))
+                                .Replace("{directoryPath}", directoryPath)
+                                .Replace("{ref}", 
+                                    refId.ToString()));
 
-                            var payload = ReplacePatternTokens(payloadTemplate, pattern)?.Replace("{fileRelativePath}", fileRelativePath).Replace("{ref}", refId.ToString());
+                            if (file.FileDate.HasValue) args["file_date"] = file.FileDate;
+
+                            var payload = ReplacePatternTokens(payloadTemplate, file.Pattern)?
+                                .Replace("{fileName}", file.FileName)
+                                .Replace("{fileSourceDirectory}", file.SourceDirectory)
+                                .Replace("{fileDate}", (file.FileDate?.ToString()).IfNullOrWhitespace(""))
+                                .Replace("{directoryPath}", directoryPath)
+                                .Replace("{ref}",
+                                    refId.ToString());
                             await _fw.Log($"{nameof(Program)}", $"{jobName}\tRunning post process. Ref: {refId} {endpoint}:\r\nConfig: {ppge.GetS("")}\r\nArgs: {args}\r\nPayload: {payload}");
                             var res = await Data.CallFn(connection, function, args.ToString(), payload);
 
@@ -227,7 +243,7 @@ namespace SimpleImportExport
                 }
             }
 
-            return (s, endpoint, pattern, refId, fileDate) => Task.CompletedTask;
+            return (file, directoryPath, endpoint, refId) => Task.CompletedTask;
         }
 
         private static string ReplacePatternTokens(string str, Pattern pattern)
