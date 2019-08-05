@@ -569,10 +569,10 @@ namespace VisitorIdLib
 
                         if (!md5.IsNullOrWhitespace())
                         {
-                            var s = await fw.Entities.GetEntityGe(new Guid(CookieMd5Pid));
+                            var s = await fw.Entities.GetEntity(new Guid(CookieMd5Pid));
                             return new VisitorIdResponse(Jw.Json(new
                             {
-                                config = s.GetS(""),
+                                config = s.GetS("Config"),
                                 sid,
                                 md5pid = CookieMd5Pid,
                                 slot,
