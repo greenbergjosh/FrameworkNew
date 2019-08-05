@@ -2,7 +2,7 @@
   "profiles": {
     "SimpleImportExport": {
       "commandName": "Project",
-      "commandLineArgs": "NewLighthouseImport"
+      "commandLineArgs": "TowerImport"
     }
   }
 }

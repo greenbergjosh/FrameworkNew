@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -19,14 +18,6 @@ namespace SimpleImportExport
             _fw = fw;
             var baseDir = ge.GetS("Path");
 
-            //#if DEBUG
-            //            if (Debugger.IsAttached)
-            //            {
-            //                baseDir = baseDir.Replace(
-            //                    "\\\\ftpback-bhs6-85.ip-66-70-176.net\\ns557038.ip-66-70-182.net",
-            //                    "\\\\localhost\\c$\\Users\\OnPoint Global\\Documents\\dev\\Workspace\\NetworkMocks\\OVH-NAS");
-            //            }
-            //#endif
             BaseDir = new DirectoryInfo(baseDir);
         }
 
@@ -34,61 +25,61 @@ namespace SimpleImportExport
 
         public DirectoryInfo BaseDir { get; }
 
-        public override async Task<Stream> GetStream(string fileRelativePath)
+        public override async Task<Stream> GetStream(SourceFileInfo file)
         {
-            return await Task.FromResult(File.OpenRead(Path.Combine(BaseDir.FullName, fileRelativePath)));
+            return File.OpenRead(Path.Combine(BaseDir.FullName, file.SourceDirectory, file.FileName));
         }
 
-        public override async Task<long> SendStream((string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate) file, Endpoint source)
+        public override async Task<(long size, long? records, string destinationDirectoryPath)> SendStream(SourceFileInfo file, Endpoint source)
         {
-            var destFile = new FileInfo(Path.Combine(BaseDir.FullName, file.destPath.Replace("/", "\\")));
-
+            var destFile = new FileInfo(Path.Combine(BaseDir.FullName, (file.Pattern?.DestinationRelativePath).IfNullOrWhitespace(""), file.FileName));
+            
             if (!destFile.Directory.Exists) destFile.Directory.Create();
+            var destinationDirectoryPath = destFile.Directory.FullName;
 
+            using (var srcStream = await source.GetStream(file))
             using (var f = File.OpenWrite(destFile.FullName))
-            using (var srcStream = await source.GetStream(file.srcPath))
             {
                 await srcStream.CopyToAsync(f);
 
-                return f.Length;
+                return (size: f.Length, records: null, destinationDirectoryPath);
             }
         }
 
-        public override async Task<IEnumerable<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>> GetFiles()
+        public override async Task<IEnumerable<SourceFileInfo>> GetFiles()
         {
-            if (Patterns?.Any() != true) return await Task.FromResult(BaseDir.GetFiles().Select(f => (srcPath: f.Name, destPath: f.Name, name: f.Name, (Pattern)null, (DateTime?)null)));
+            var files = new List<SourceFileInfo>();
+            var dir = BaseDir;
+            var dirFiles = dir.GetFiles();
 
-            var files = new List<(string srcPath, string destPath, string name, Pattern pattern, DateTime? fileDate)>();
-
-            foreach (var p in Patterns)
+            if (Patterns?.Any() == true)
             {
-                var dir = BaseDir;
-
-                if (!p.SourceRelativePath.IsNullOrWhitespace()) dir = new DirectoryInfo(Path.Combine(BaseDir.FullName, p.SourceRelativePath));
-
-                var dirFiles = dir.GetFiles().Select(f => ApplyPattern(p, f.Name)).Where(f => f.isMatch).ToArray();
-
-                if (dirFiles.Any()) files.AddRange(dirFiles.Select(f => (srcPath: CombineUrl(p.SourceRelativePath, f.fileName), destPath: CombineUrl(p.SourceRelativePath, f.fileName), name: f.fileName, pattern: p, f.fileDate)));
+                foreach (var p in Patterns)
+                {
+                    files.AddRange(dirFiles.Select(fileInfo => new { match = ApplyPattern(p, fileInfo.Name), fileInfo }).Where(f => f.match.isMatch)
+                        .Select(f => new SourceFileInfo(f.fileInfo.Directory?.FullName, f.fileInfo.Name, p, f.match.fileDate)));
+                }
             }
+            else files.AddRange(dirFiles.Select(f => new SourceFileInfo(f.Directory?.FullName, f.Name, null, null)));
 
             return files;
         }
 
-        public override async Task Delete(string fileRelativePath)
+        public override async Task Delete(string directoryPath, string fileName)
         {
-            await Task.Run(() => File.Delete(Path.Combine(BaseDir.FullName, fileRelativePath)));
+            File.Delete(Path.Combine(directoryPath, fileName));
         }
 
-        public override async Task Move(string fileRelativePath, string relativeBasePath, bool overwrite)
+        public override async Task Move(string directoryPath, string fileName, string relativeBasePath, bool overwrite)
         {
-            var src = new FileInfo(Path.Combine(BaseDir.FullName, fileRelativePath));
-            var dest = new FileInfo(Path.Combine(BaseDir.FullName, relativeBasePath, fileRelativePath));
+            var src = new FileInfo(Path.Combine(directoryPath, fileName));
+            var dest = new FileInfo(Path.Combine(BaseDir.FullName, relativeBasePath, fileName));
 
             if (!dest.Directory.Exists) dest.Directory.Create();
             else if (dest.Exists && overwrite) dest.Delete();
             else if (dest.Exists)
             {
-                await _fw.Error($"{nameof(LocalEndPoint)}.{nameof(Move)}", $"Could not perform move because destination file already exists: {nameof(fileRelativePath)}: {fileRelativePath}, {nameof(relativeBasePath)}: {relativeBasePath}");
+                await _fw.Error($"{nameof(LocalEndPoint)}.{nameof(Move)}", $"Could not perform move because destination file already exists. Source: {dest.FullName}, Destination: {dest.FullName}");
                 return;
             }
 
@@ -98,19 +89,19 @@ namespace SimpleImportExport
             }
             catch (Exception e)
             {
-                await _fw.Error($"{nameof(LocalEndPoint)}.{nameof(Rename)}", $"Move failed: {nameof(fileRelativePath)}: {fileRelativePath}, {nameof(relativeBasePath)}: {relativeBasePath} {e.UnwrapForLog()}");
+                await _fw.Error($"{nameof(LocalEndPoint)}.{nameof(Move)}", $"Move failed: Source. {dest.FullName}, Destination: {dest.FullName} {e.UnwrapForLog()}");
             }
         }
 
-        public override async Task Rename(string fileRelativePath, Regex pattern, string patternReplace, bool overwrite)
+        public override async Task Rename(string directoryPath, string fileName, Regex pattern, string patternReplace, bool overwrite)
         {
             var logContext = $"{nameof(LocalEndPoint)}.{nameof(Rename)}";
-            var src = new FileInfo(Path.Combine(BaseDir.FullName, fileRelativePath));
+            var src = new FileInfo(Path.Combine(directoryPath, fileName));
             var newFileName = pattern.Replace(src.Name, patternReplace);
 
             if (newFileName.IsNullOrWhitespace() || newFileName == src.Name)
             {
-                await _fw.Error(logContext, $"Could not perform rename because of a problem with the pattern: {nameof(fileRelativePath)}: {fileRelativePath}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace}, {nameof(newFileName)}: {newFileName}");
+                await _fw.Error(logContext, $"Could not perform rename because of a problem with the pattern: {nameof(directoryPath)}: {directoryPath}, {nameof(fileName)}: {fileName}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace}, {nameof(newFileName)}: {newFileName}");
                 return;
             }
 
@@ -121,7 +112,7 @@ namespace SimpleImportExport
             if (dest.Exists && overwrite) dest.Delete();
             else if (dest.Exists)
             {
-                await _fw.Error(logContext, $"Could not perform rename because destination file already exists: {nameof(fileRelativePath)}: {fileRelativePath}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace}");
+                await _fw.Error(logContext, $"Could not perform rename because destination file already exists: {nameof(directoryPath)}: {directoryPath}, {nameof(fileName)}: {fileName}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace}");
                 return;
             }
 
@@ -131,7 +122,7 @@ namespace SimpleImportExport
             }
             catch (Exception e)
             {
-                await _fw.Error(logContext, $"Rename failed: {nameof(fileRelativePath)}: {fileRelativePath}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace} {e.UnwrapForLog()}");
+                await _fw.Error(logContext, $"Rename failed: {nameof(directoryPath)}: {directoryPath}, {nameof(fileName)}: {fileName}, {nameof(pattern)}: {pattern}, {nameof(patternReplace)}: {patternReplace} {e.UnwrapForLog()}");
             }
         }
 
