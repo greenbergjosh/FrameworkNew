@@ -241,9 +241,7 @@ const renderNavEntriesAsMenu = (navEntries: (NavigationItem | NavigationGroupWit
         <span>{navEntry.name}</span>
         {navEntry.url &&
           (navEntry.url.match(/https?:\/\//) ? (
-            <a href={navEntry.url} target="new">
-              {navEntry.url}
-            </a>
+            <a href={navEntry.url} target="new" />
           ) : (
             <Reach.Link to={navEntry.url} />
           ))}
