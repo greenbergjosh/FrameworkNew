@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using CsvHelper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,31 +12,27 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Runtime.CompilerServices;
-using Utility;
-using static Utility.EDW.Reporting.EdwBulkEvent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using CsvHelper;
-using Microsoft.AspNetCore.Http;
-using Jw = Utility.JsonWrapper;
-using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json.Linq;
+using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
-using Random = Utility.Crypto.Random;
+using static Utility.EDW.Reporting.EdwBulkEvent;
+using Jw = Utility.JsonWrapper;
 using Ps = Utility.ProcessWrapper;
+using Random = Utility.Crypto.Random;
 
 namespace QuickTester
 {
-    class Program
+    internal class Program
     {
-        static void Test1()
+        private static void Test1()
         {
             //IGenericEntity gc = new GenericEntityJson();
             //string result = PL.C()
@@ -40,7 +40,7 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
-        static async Task UnixWrapperTests(string[] args)
+        private static async Task UnixWrapperTests(string[] args)
         {
             var cwd = Directory.GetCurrentDirectory();
             try
@@ -93,36 +93,57 @@ namespace QuickTester
 
         }
 
-        static async Task Main(string[] _args)
+        private static async Task Main(string[] _args)
         {
             HttpContext ctx = null;
-            var payload = Jw.ToGenericEntity(new {email = "qbanbpc@gmail.com", provider = new[] {"XVerify"}, group = new[] {"Tier1"}});
+            var payload = Jw.ToGenericEntity(new
+            {
+                email = "qbanbpc@gmail.com",
+                providers = new object[] {
+                    new { provider = "OPG", config = new { groups = new[] { "Tier1"}}},
+                    //new { provider = "XVerify" },
+                    //new { provider = "EmailOversight", config = new { listId = 5 } }
+                }
+            });
+
             var _fw = new FrameworkWrapper();
             var idOrName = "EmailValidation";
 
             var id = idOrName.ParseGuid();
             IGenericEntity lbm = null;
 
-            if (id.HasValue) lbm = await _fw.Entities.GetEntity(id.Value);
+            if (id.HasValue)
+            {
+                lbm = await _fw.Entities.GetEntity(id.Value);
+            }
             else
             {
                 lbm = await _fw.Entities.GetEntity("LBM", idOrName);
                 id = lbm.GetS("Id").ParseGuid();
             }
 
-            if (!id.HasValue) throw new Exception($"LBM not found {idOrName}");
+            if (!id.HasValue)
+            {
+                throw new Exception($"LBM not found {idOrName}");
+            }
 
             var codeId = lbm.GetS("Config/LbmId").ParseGuid();
 
-            if (!codeId.HasValue) throw new Exception($"LBM code not found {idOrName}\nLBM:\n{lbm.GetS("")}");
+            if (!codeId.HasValue)
+            {
+                throw new Exception($"LBM code not found {idOrName}\nLBM:\n{lbm.GetS("")}");
+            }
 
             var code = await _fw.Entities.GetEntity(codeId.Value);
 
-            if (code.GetS("type") != "LBM.CS") throw new Exception($"{code.GetS("type")} LBM not supported. {idOrName}\nLBM:\n{lbm.GetS("")}");
+            if (code.GetS("Type") != "LBM.CS")
+            {
+                throw new Exception($"{code.GetS("type")} LBM not supported. {idOrName}\nLBM:\n{lbm.GetS("")}");
+            }
 
             try
             {
-                var ret = (IGenericEntity)(await _fw.RoslynWrapper.Evaluate(id.Value, code.GetS("Config"), new { _httpContext = ctx, _payload = payload, _fw }, new StateWrapper()));
+                var ret = (IGenericEntity)(await _fw.RoslynWrapper.Evaluate(id.Value, code.GetS("Config"), new { _httpContext = ctx, _payload = payload, _fw, _lbmConfig = lbm }, new StateWrapper()));
             }
             catch (Exception e)
             {
@@ -195,7 +216,7 @@ namespace QuickTester
 
             var lines = new List<string>();
 
-            for (int k = 0; k < 50000; k++)
+            for (var k = 0; k < 50000; k++)
             {
                 lines.Add(new int[1000].Select(_ => k.ToString()).Join(""));
             }
@@ -627,15 +648,9 @@ namespace QuickTester
 
         }
 
-        public static int Sum(params int?[] xs)
-        {
-            return xs.Aggregate((x, y) => (x ?? 0) + (y ?? 0)) ?? 0;
-        }
+        public static int Sum(params int?[] xs) => xs.Aggregate((x, y) => (x ?? 0) + (y ?? 0)) ?? 0;
 
-        public static int Sum(IEnumerable<int?> xs)
-        {
-            return Sum(xs.ToArray());
-        }
+        public static int Sum(IEnumerable<int?> xs) => Sum(xs.ToArray());
 
 
 
