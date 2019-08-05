@@ -42,7 +42,6 @@ export type UserInterfaceProps = DisplayUserInterfaceProps | EditUserInterfacePr
 
 export interface UserInterfaceState extends DropHelperResult {
   clipboardComponent: null | DraggedItemProps
-  confirmDeleteComponent: null | DraggedItemProps
   error: null | string
 }
 
@@ -50,7 +49,6 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
   state = {
     clipboardComponent: null,
     components: [],
-    confirmDeleteComponent: null,
     error: null,
     itemToAdd: null,
     itemToEdit: null,
@@ -119,9 +117,40 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
         console.log("UserInterface.draggableContextHandlers", "onCopy", draggedItem)
         this.setState({ clipboardComponent: draggedItem })
       },
-      onDelete: (draggedItem) => {
-        console.log("UserInterface.draggableContextHandlers", "onDelete", draggedItem)
-        this.setState({ itemToAdd: null, itemToEdit: null, confirmDeleteComponent: draggedItem })
+      onDelete: (deleteItem) => {
+        console.log("UserInterface.draggableContextHandlers", "onDelete", deleteItem)
+
+        // Must be in edit mode in order to delete things
+        if (this.props.mode === "edit") {
+          // Can't invoke delete on things that aren't in a list container
+          if (deleteItem.parentDroppableId) {
+            // List containing this item
+            const originalList =
+              deleteItem.parentDroppableId === UI_ROOT
+                ? components
+                : (get(deleteItem.parentDroppableId, components) as ComponentDefinition[])
+
+            // Remove item from list
+            const updatedList = [
+              ...originalList.slice(0, deleteItem.index),
+              ...originalList.slice(deleteItem.index + 1),
+            ]
+
+            const updatedComponents =
+              deleteItem.parentDroppableId === UI_ROOT
+                ? updatedList
+                : (set(
+                    deleteItem.parentDroppableId,
+                    updatedList,
+                    components
+                  ) as ComponentDefinition[])
+
+            // Clean out anything in the add/edit state
+            this.setState({ itemToAdd: null, itemToEdit: null })
+            // Fire the schema change event
+            this.props.onChangeSchema(updatedComponents)
+          }
+        }
       },
       onEdit: (draggedItem) => {
         console.log(
@@ -139,7 +168,6 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
             path: draggedItem.parentDroppableId || UI_ROOT,
             index: draggedItem.index,
           },
-          confirmDeleteComponent: null,
         })
       },
       onPaste: (draggedItem) => {
