@@ -3,12 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Renci.SshNet.Async;
 using Utility.GenericEntity;
 using Fs = Utility.FileSystem;
 
@@ -255,6 +258,95 @@ namespace Utility
                     response.Close();
                 }
             }
+        }
+
+        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName, string keyFilePath)
+        {
+            var pk = new PrivateKeyFile(keyFilePath);
+
+            if (!sourceFile.StartsWith("/")) sourceFile = $"/{sourceFile}";
+
+            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, pk) : new SftpClient(host, userName, pk))
+            {
+                try
+                {
+                    client.Connect();
+                    var ms = new MemoryStream();
+
+                    await Task.Factory.FromAsync(client.BeginDownloadFile(sourceFile, ms), client.EndDownloadFile);
+
+                    ms.Position = 0;
+
+                    return ms;
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            }
+        }
+
+        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port, string userName, string keyFilePath)
+        {
+            var pk = new PrivateKeyFile(keyFilePath);
+
+            if (!destinationPath.StartsWith("/")) destinationPath = $"/{destinationPath}";
+
+            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, pk) : new SftpClient(host, userName, pk))
+            {
+                try
+                {
+                    client.Connect();
+
+                    await Task.Factory.FromAsync(client.BeginUploadFile(stream, destinationPath), client.EndUploadFile);
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            }
+        }
+
+        public delegate bool EnumerateDirectoryFunc(int depth, string parent, string name);
+
+        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host, int? port, string userName, string keyFilePath, EnumerateDirectoryFunc enumerateDirectory = null)
+        {
+            var pk = new PrivateKeyFile(keyFilePath);
+            var result = new List<(string directory, string file)>();
+
+            if (dirName.IsNullOrWhitespace()) dirName = "";
+            else if (!dirName.StartsWith("/")) dirName = $"/{dirName}";
+
+            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, pk) : new SftpClient(host, userName, pk))
+            {
+                try
+                {
+                    client.Connect();
+                    int depth = -1;
+
+                    async Task getFiles(string basePath)
+                    {
+                        depth++;
+                        foreach (var item in await client.ListDirectoryAsync(basePath))
+                        {
+                            if (item.IsDirectory)
+                            {
+                                if (enumerateDirectory?.Invoke(0, basePath, item.Name) == true) await getFiles(item.FullName);
+                            }
+                            else result.Add((directory: item.FullName.Replace(item.Name, ""), file: item.Name));
+                        }
+                        depth--;
+                    }
+
+                    await getFiles(dirName.IfNullOrWhitespace(""));
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            }
+
+            return result;
         }
 
         public static async Task<List<string>> DownloadFilesSFtp(
@@ -640,7 +732,7 @@ namespace Utility
         }
 
         public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms,
-            double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5)
+            double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5, IEnumerable<(string key, string value)> headers = null)
         {
             string responseBody = null;
 
@@ -657,6 +749,7 @@ namespace Utility
             var handler = new HttpClientHandler() { MaxConnectionsPerServer = maxConnections };
             using (var client = new HttpClient(handler))
             {
+                headers?.ForEach(h => client.DefaultRequestHeaders.Add(h.key, h.value));
                 client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
                 var response = await client.PostAsync(uri, httpContent);
                 if (response.IsSuccessStatusCode)
