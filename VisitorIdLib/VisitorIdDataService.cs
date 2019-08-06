@@ -178,8 +178,8 @@ namespace VisitorIdLib
                             await WriteCodePathEvent(PL.O(new { branch = "VisitorId", loc = "end", cookieData = resDV.CookieData.ToJson() },
                                                    new bool[] { true, true, false }), codePathRsidDict);
                             break;
-                        case "emailSubmitted":
-                            await EmailSubmitted(Fw, context, codePathRsidDict);
+                        case "dataSubmitted":
+                            await DataSubmitted(Fw, context, codePathRsidDict);
 
                             break;
                         case "SaveSession":
@@ -275,13 +275,13 @@ namespace VisitorIdLib
             return new VisitorIdResponse(result: Jw.Json(new { Initialized = true }), md5: "", email: "", cookieData: new CookieData());
         }
 
-        public async Task EmailSubmitted(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
+        public async Task DataSubmitted(FrameworkWrapper fw, HttpContext c, Dictionary<string, object> codePathRsidDict)
         {
             string opaque64, opaque = null, qstr, host, path, lst;
             IGenericEntity opge;
             EdwBulkEvent be = null;
             var opqRsids = new Dictionary<string, object>();
-            await WriteCodePathEvent(PL.O(new { branch = nameof(EmailSubmitted), loc = "start" }), codePathRsidDict);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(DataSubmitted), loc = "start" }), codePathRsidDict);
 
             try
             {
@@ -321,12 +321,13 @@ namespace VisitorIdLib
             be = new EdwBulkEvent();
             var eventPayload = PL.O(new
             {
-                et = "EmailSubmitted",
-                email = Hashing.Base64DecodeFromUrl(c.Request.Query["email"]),
+                et = Hashing.Base64DecodeFromUrl(c.Request.Query["type"])
             });
+
+            eventPayload.Add(PL.O(new { data = Hashing.Base64DecodeFromUrl(c.Request.Query["data"]) }, new bool[] { false }));
             be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict, null, eventPayload);
             await fw.EdwWriter.Write(be);
-            await WriteCodePathEvent(PL.O(new { branch = nameof(EmailSubmitted), loc = "body", eventPayload = eventPayload.ToString()}), codePathRsidDict);
+            await WriteCodePathEvent(PL.O(new { branch = nameof(DataSubmitted), loc = "body", eventPayload = eventPayload.ToString()}), codePathRsidDict);
         }
 
         public async Task<VisitorIdResponse> DoVisitorId(FrameworkWrapper fw, HttpContext c, bool bootstrap, Dictionary<string, object> codePathRsidDict)
