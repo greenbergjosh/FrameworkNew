@@ -790,6 +790,10 @@ namespace VisitorIdLib
                     consoleDomainId = _consoleDomainId,
                 });
                 payload.Add( PL.O(new { rsids = JsonConvert.SerializeObject(rsids) }, new bool[] { false }));
+
+                var be = new EdwBulkEvent();
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, null, PL.O(new { et = "VisitorIdSignal" }).Add(payload));
+                await fw.EdwWriter.Write(be);
                 await fw.PostingQueueWriter.Write(new PostingQueueEntry("VisitorIdSignal", DateTime.Now, payload.ToString()));
             }
 
