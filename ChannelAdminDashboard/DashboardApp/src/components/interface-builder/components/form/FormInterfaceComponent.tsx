@@ -1,4 +1,6 @@
 import { Form } from "antd"
+import { ColProps } from "antd/lib/grid"
+import { merge } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../DataPathContext"
 import { ComponentRenderer } from "../../ComponentRenderer"
@@ -10,24 +12,30 @@ import {
   ComponentDefinitionNamedProps,
 } from "../base/BaseInterfaceComponent"
 
-const defaultFormLayout = {
+interface FormColumnLayout {
+  labelCol?: ColProps
+  wrapperCol?: ColProps
+}
+
+const defaultFormLayout: FormColumnLayout = {
   labelCol: {
     sm: { span: 24 },
-    md: { span: 7 },
-    lg: { span: 5 },
-    xl: { span: 4 },
+    md: { span: 8 },
+    lg: { span: 6 },
+    xl: { span: 5 },
   },
   wrapperCol: {
     sm: { span: 24 },
-    md: { span: 17 },
-    lg: { span: 19 },
-    xl: { span: 20 },
+    md: { span: 16 },
+    lg: { span: 18 },
+    xl: { span: 19 },
   },
 }
 
 export interface FormInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "form"
   components?: ComponentDefinition[]
+  formColumnLayout?: FormColumnLayout
   onChangeData: UserInterfaceProps["onChangeData"]
   orientation: "inline" | "horizontal" | "vertical"
   userInterfaceData?: UserInterfaceProps["data"]
@@ -51,10 +59,20 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
   static manageForm = formManageForm
 
   render() {
-    const { components, onChangeData, orientation, userInterfaceData } = this.props
-    // console.log("FormInterfaceComponent.render", { userInterfaceData, onChangeData })
+    const {
+      components,
+      formColumnLayout,
+      onChangeData,
+      orientation,
+      userInterfaceData,
+    } = this.props
+
+    const formLayout = formColumnLayout
+      ? merge(defaultFormLayout, formColumnLayout)
+      : defaultFormLayout
+
     return (
-      <Form style={{ padding: "5px" }} layout={orientation} {...defaultFormLayout}>
+      <Form style={{ padding: "5px" }} layout={orientation} {...formLayout}>
         <DataPathContext path="components">
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
