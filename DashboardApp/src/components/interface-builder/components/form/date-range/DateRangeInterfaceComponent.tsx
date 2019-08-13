@@ -10,9 +10,19 @@ import {
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
+interface TimeSettings {
+  includeTime: boolean
+  includeHour: boolean
+  includeMinute: boolean
+  includeSecond: boolean
+  use24Clock: boolean
+}
+
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-range"
   defaultRangeValue: string
+  timeSettings?: TimeSettings
+
   onChangeData: UserInterfaceProps["onChangeData"]
   startDateKey: string
   endDateKey: string
@@ -125,11 +135,25 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
-    const { endDateKey, startDateKey, onChangeData, userInterfaceData } = this.props
+    const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
+
+    const { includeTime } = timeSettings || { includeTime: false }
+
+    const alignmentTimePeriod =
+      timeSettings && includeTime
+        ? timeSettings.includeSecond
+          ? "second"
+          : timeSettings.includeMinute
+          ? "minute"
+          : timeSettings.includeHour
+          ? "hour"
+          : "day"
+        : "day"
 
     const startDate =
-      Array.isArray(dates) && dates[0] ? dates[0].startOf("day").toISOString() : null
-    const endDate = Array.isArray(dates) && dates[1] ? dates[1].endOf("day").toISOString() : null
+      Array.isArray(dates) && dates[0] ? dates[0].startOf(alignmentTimePeriod).toISOString() : null
+    const endDate =
+      Array.isArray(dates) && dates[1] ? dates[1].endOf(alignmentTimePeriod).toISOString() : null
 
     onChangeData &&
       onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
@@ -145,13 +169,42 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     return [get(startDateKey, userInterfaceData), get(endDateKey, userInterfaceData)]
   }
 
+  getTimeFormat = () => {
+    const { timeSettings } = this.props
+    if (timeSettings && timeSettings.includeTime) {
+      const { includeHour, includeMinute, includeSecond, use24Clock } = timeSettings
+      let formatString = ""
+      if (includeHour) {
+        formatString += (formatString.length ? ":" : "") + (use24Clock ? "HH" : "h")
+      }
+      if (includeMinute) {
+        formatString += (formatString.length ? ":" : "") + "mm"
+      }
+      if (includeSecond) {
+        formatString += (formatString.length ? ":" : "") + "ss"
+      }
+      if (!use24Clock) {
+        formatString += (formatString.length ? " " : "") + "A"
+      }
+
+      if (formatString) {
+        return { format: formatString, use12Hours: !use24Clock }
+      }
+    }
+
+    return false
+  }
+
   render(): JSX.Element {
     const [startDateValue, endDateValue] = this.getValues()
+    const timeFormat = this.getTimeFormat()
     return (
       <DatePicker.RangePicker
-        style={{ display: "block" }}
-        ranges={DateRangeInterfaceComponent.standardRanges()}
+        format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
         onChange={this.handleChange}
+        ranges={DateRangeInterfaceComponent.standardRanges()}
+        showTime={timeFormat}
+        style={{ display: "block" }}
         value={[moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]}
       />
     )

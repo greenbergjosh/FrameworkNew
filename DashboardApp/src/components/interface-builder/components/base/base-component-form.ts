@@ -55,7 +55,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 key: "hideLabel",
                 valueKey: "hideLabel",
                 ordinal: 0,
-                component: "checkbox",
+                component: "toggle",
                 defaultValue: false,
                 label: "Hide Label",
                 help: "Whether or not to hide the label of this field.",
