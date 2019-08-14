@@ -25,7 +25,7 @@ namespace SpamhausMonitor
             //IGenericEntity Sp await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "PostmasterAccount" }), "");
             string NameServer = Fw.StartupConfiguration.GetS("Config/Nameserver");
             string BlacklistNameServer = Fw.StartupConfiguration.GetS("Config/BlacklistNameserver");
-            bool WriteToNotify = Fw.StartupConfiguration.GetB("Config/NotifyWhenListed");
+            bool NotifyWhenListed = Fw.StartupConfiguration.GetB("Config/NotifyWhenListed");
 
             Resolver PublicResolver = new Resolver(NameServer);
 
@@ -113,7 +113,7 @@ namespace SpamhausMonitor
                         }
 
                     }
-                    if (Listed.Count > 0 && WriteToNotify)
+                    if (Listed.Count > 0 && NotifyWhenListed)
                     {
 
                         string ListedJson = JsonConvert.SerializeObject(Listed);
