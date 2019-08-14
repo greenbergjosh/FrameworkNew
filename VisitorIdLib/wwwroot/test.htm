@@ -22,11 +22,19 @@
                 });
         })(window, document, 'DOMContentLoaded', 'script', '//localhost:21339', '/track.js', 'visid', { afid: '00000000-0000-0000-0000-000000000017', tpid: '', rsid: {} });
 
-/**/</script>
+    </script>
+    <script>
+        let someJson = {
+            "foo": "bar",
+            "baz": "boo",
+            "array": [1, 2, 3, 4],
+            "obj": { "foo": "bar" }
+        };
+    </script>
 </head>
 <body>
 <div id="aid"></div>
 <input type="text" id="email" value=""/>
-<button value="Send" onclick="window[window.visitorIdObject].emailSubmitted($('#email').val())"></button>
+<button value="Send"  onclick="window[window.visitorIdObject].emailSubmitted($('#email').val(), someJson)"></button>
 </body>
 </html>
