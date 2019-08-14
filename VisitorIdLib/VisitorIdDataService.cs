@@ -556,7 +556,7 @@ namespace VisitorIdLib
                                 et = "Md5PoisonIncident",
                                 incidentid = poisonIncident?.IncidentId,
                                 md5pid = poisonIncident?.Md5Pid,
-                                md5 = poisonIncident?.Md5,
+                                md5 = cookieData.md5,
                                 md5date = poisonIncident?.Md5Date
                             }));
                             await fw.EdwWriter.Write(be);
