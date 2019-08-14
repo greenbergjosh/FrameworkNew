@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Fs = Utility.FileSystem;
+
 
 namespace Utility
 {
@@ -159,40 +159,6 @@ namespace Utility
             }
 
             return taskCompletionSource.Task;
-        }
-
-        static (string sh, string pre, string cmd) ShellPrep(string cmd, string platform)
-        {
-            switch (platform ?? Environment.OSVersion.Platform.ToString())
-            {
-                case "Win32NT":
-                    return (@"C:\\Windows\\System32\\cmd.exe", @"/c", cmd.Replace("\"", "\\\""));
-                case "Unix":
-                    return ("/bin/bash", "-c", cmd);
-                default:
-                    throw new ArgumentException("Cannot exec in shell for an unknown platform");
-            }
-        }
-
-        public static async Task<string> Shell(this string cmd, string platform = null)
-        {
-            var x = ShellPrep(cmd, platform);
-
-            var process = new Process()
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = x.sh,
-                    Arguments = $"{x.pre} \"{x.cmd}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true
-                }
-            };
-            process.Start();
-            await process.WaitForExitAsync();
-            var error = process.StandardError.ReadToEnd();
-            return error;
         }
     }
 }

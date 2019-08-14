@@ -24,6 +24,7 @@ namespace TheGreatWallOfDataLib
                 Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
                 _traceLogResponse = fw.StartupConfiguration.GetS("Config/TraceResponse").ParseBool() ?? false;
                 Authentication.Initialize(fw).Wait();
+                Lbm.Initialize(Fw).Wait();
             }
             catch (Exception ex)
             {
@@ -34,13 +35,22 @@ namespace TheGreatWallOfDataLib
 
         public async Task Run(HttpContext context)
         {
-            string bodyForError = null;
             var requestId = Guid.NewGuid().ToString();
             var fResults = new Dictionary<string, string>();
+            string requestBody = null;
 
             try
-            {
-                var requestBody = await context.GetRawBodyStringAsync();
+            {                
+                requestBody = await context.GetRawBodyStringAsync();
+
+                if (requestBody.IsNullOrWhitespace())
+                {
+                    //  Probably a bot or other form of sniffer, return nothing
+                    // ToDo: Drop response as if there were no HTTP listener. Possible?
+                    await context.WriteSuccessRespAsync("");
+                    await Fw.Log(nameof(Run), $"Empty request from {context.Ip()} Path: {context.Request.Path} UserAgent: {context.UserAgent()}");
+                    return;
+                }
 
                 await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
                 var req = Jw.JsonToGenericEntity(requestBody);
@@ -66,7 +76,7 @@ namespace TheGreatWallOfDataLib
 
                     try
                     {
-                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity);
+                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity, context);
                     }
                     catch (Exception e)
                     {
@@ -83,9 +93,13 @@ namespace TheGreatWallOfDataLib
                         }
                         else
                         {
-                            var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
+                            if (fe.ResultCode == 106) await Fw.Error($"Auth", fe.Message);
+                            else
+                            {
+                                var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
 
-                            await Fw.Error($"DB:{scopeFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                                await Fw.Error($"DB:{scopeFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                            }
 
                             fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
                         }
@@ -115,7 +129,7 @@ namespace TheGreatWallOfDataLib
             }
             catch (Exception e)
             {
-                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
+                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
             }
 
             var body = new PL();

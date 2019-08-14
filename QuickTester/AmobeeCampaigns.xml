@@ -1,0 +1,3866 @@
+﻿<?xml version='1.0' encoding='UTF-8'?>
+<dataset apiFunc='getcampaigns' apifunc='getcampaigns'>
+  <data>
+    <campaignid>
+      <![CDATA[7]]>
+    </campaignid>
+    <name>
+      <![CDATA[1Ink ]]>
+    </name>
+    <description>
+      <![CDATA[Ink Cartridge offer for Individuals]]>
+    </description>
+    <payout>
+      <![CDATA[$24.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[6]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[B2B]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1582]]>
+    </campaignid>
+    <name>
+      <![CDATA[2nd Chance Checking SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for 2nd Chance Checking]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[9]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Checking Account ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1583]]>
+    </campaignid>
+    <name>
+      <![CDATA[2nd Chance Checking SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for 2nd Chance Checking]]>
+    </description>
+    <payout>
+      <![CDATA[$0.50]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[9]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Checking Account ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1478]]>
+    </campaignid>
+    <name>
+      <![CDATA[ABCmouse CPA]]>
+    </name>
+    <description>
+      <![CDATA[Online subscription to educational games 
+#1 rated app in the app store and android for children education 
+The online learning program is applicable for children ages 2-8 (recently added second grade curriculum)
+]]>
+    </description>
+    <payout>
+      <![CDATA[$32.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[14]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Learning]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[25]]>
+    </campaignid>
+    <name>
+      <![CDATA[Accredited Debt Relief]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$40.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[40]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2128]]>
+    </campaignid>
+    <name>
+      <![CDATA[Accredited Debt Relief CPM M-F ONLY]]>
+    </name>
+    <description>
+      <![CDATA[$10K Debt minimum]]>
+    </description>
+    <payout>
+      <![CDATA[$0.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPM]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount/>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2401]]>
+    </campaignid>
+    <name>
+      <![CDATA[Accredited Degrees Online SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Online Accredited Degrees
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1874]]>
+    </campaignid>
+    <name>
+      <![CDATA[ACE Auto Loans CPL]]>
+    </name>
+    <description>
+      <![CDATA[ACE Auto Finance - Bad Credit Okay
+]]>
+    </description>
+    <payout>
+      <![CDATA[$9.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[9]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Loans]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2347]]>
+    </campaignid>
+    <name>
+      <![CDATA[ADT Summer -- Mon-Sat Only, No Sunday drops]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$70.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[13]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Security]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2316]]>
+    </campaignid>
+    <name>
+      <![CDATA[Advanced Crepe Erase CPS]]>
+    </name>
+    <description>
+      <![CDATA[FREQUENCY CAP: STRICT 1 email send per user, per day]]>
+    </description>
+    <payout>
+      <![CDATA[$105.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[8]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1594]]>
+    </campaignid>
+    <name>
+      <![CDATA[Alaska Cruise SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Alaska Cruise]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[9]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Vacation/Travel]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1598]]>
+    </campaignid>
+    <name>
+      <![CDATA[Alcohol Rehab SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Alcohol Rehab]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Medical]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1599]]>
+    </campaignid>
+    <name>
+      <![CDATA[Alcohol Rehab SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Alcohol Rehab]]>
+    </description>
+    <payout>
+      <![CDATA[$0.25]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[40]]>
+    </campaignid>
+    <name>
+      <![CDATA[American Home Shield Warranty]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$35.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[8]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Warranty]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2084]]>
+    </campaignid>
+    <name>
+      <![CDATA[Americor Funding CPL (M-F)]]>
+    </name>
+    <description>
+      <![CDATA[* Only drop Mon-Fri
+
+
+Pixel only fires in states below:
+Alabama, Alaska, Arizona, Arkansas, California, Florida, Hawaii, Idaho, Iowa, Indiana, Kentucky, Louisiana, Massachusetts, Michigan, Missouri, Nebraska, New Mexico, New York, North Carolina, Oklahoma, Pennsylvania, South Dakota, Virginia, Washington DC, Wisconsin, Colorado, Maryland, Nevada, Tennessee, Texas, Utah, Washington]]>
+    </description>
+    <payout>
+      <![CDATA[$42.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[6]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday,Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2134]]>
+    </campaignid>
+    <name>
+      <![CDATA[Annuities.com CPL]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$55.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[7]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Finance - Retirement ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1602]]>
+    </campaignid>
+    <name>
+      <![CDATA[Apartment Searches SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Apartment Searches]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Housing ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2291]]>
+    </campaignid>
+    <name>
+      <![CDATA[Augusta Precious Metals CPL (M-F Only)]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$45.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[9]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Finance - Retirement ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[All traffic accepted]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1608]]>
+    </campaignid>
+    <name>
+      <![CDATA[Auto Insurance SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Auto Insurance]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1887]]>
+    </campaignid>
+    <name>
+      <![CDATA[Auto Loans SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for FHA Car Loans]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1888]]>
+    </campaignid>
+    <name>
+      <![CDATA[Auto Loans SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for FHA Car Loans]]>
+    </description>
+    <payout>
+      <![CDATA[$0.60]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Quotes]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1613]]>
+    </campaignid>
+    <name>
+      <![CDATA[Bank Account SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Bank Account]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[23]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Checking Account ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1624]]>
+    </campaignid>
+    <name>
+      <![CDATA[Cable Providers SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Cable Providers]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[26]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Telecom]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2322]]>
+    </campaignid>
+    <name>
+      <![CDATA[CarShield CPL (M-F only)]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$22.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Warranty]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1630]]>
+    </campaignid>
+    <name>
+      <![CDATA[Cell Phones SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Cell Phones]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[7]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Telecom]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1631]]>
+    </campaignid>
+    <name>
+      <![CDATA[Cell Phones SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Cell Phones]]>
+    </description>
+    <payout>
+      <![CDATA[$0.30]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[7]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Telecom]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2397]]>
+    </campaignid>
+    <name>
+      <![CDATA[Concrete Repairs SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Concrete Repairs
+
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1642]]>
+    </campaignid>
+    <name>
+      <![CDATA[Credit Cards SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Credit Cards]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[33]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Cards]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[213]]>
+    </campaignid>
+    <name>
+      <![CDATA[Credit One Bank**]]>
+    </name>
+    <description>
+      <![CDATA[Pre-Qualify for a Platinum Visa credit card with Credit One Bank.]]>
+    </description>
+    <payout>
+      <![CDATA[$30.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[45]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Cards]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1646]]>
+    </campaignid>
+    <name>
+      <![CDATA[Credit Score SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Credit Score]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Report]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1647]]>
+    </campaignid>
+    <name>
+      <![CDATA[Credit Score SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Credit Score]]>
+    </description>
+    <payout>
+      <![CDATA[$0.60]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Report]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[223]]>
+    </campaignid>
+    <name>
+      <![CDATA[Crepe Erase CPS - PAUSED]]>
+    </name>
+    <description>
+      <![CDATA[FREQUENCY CAP: STRICT 1 email send per user, per day]]>
+    </description>
+    <payout>
+      <![CDATA[$110.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1649]]>
+    </campaignid>
+    <name>
+      <![CDATA[Cruise Deals SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Cruise Deals]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[29]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Vacation/Travel]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1653]]>
+    </campaignid>
+    <name>
+      <![CDATA[Cuba Cruise SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Cuba Cruises]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Vacation/Travel]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1658]]>
+    </campaignid>
+    <name>
+      <![CDATA[Debt Relief SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Debt Relief]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1863]]>
+    </campaignid>
+    <name>
+      <![CDATA[Debt Relief SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Debt Relief]]>
+    </description>
+    <payout>
+      <![CDATA[$0.15]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1662]]>
+    </campaignid>
+    <name>
+      <![CDATA[Dental Insurance SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Dental Insurance]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[24]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1663]]>
+    </campaignid>
+    <name>
+      <![CDATA[Dental Insurance SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Dental Insurance]]>
+    </description>
+    <payout>
+      <![CDATA[$0.70]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[24]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Medical]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2207]]>
+    </campaignid>
+    <name>
+      <![CDATA[Disability Benefits SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Disability Benefits]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Medical]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2139]]>
+    </campaignid>
+    <name>
+      <![CDATA[DISH Zip Submit - $480 Savings]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$4.35]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2398]]>
+    </campaignid>
+    <name>
+      <![CDATA[Driveway Installations SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Driveway Installations
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1669]]>
+    </campaignid>
+    <name>
+      <![CDATA[Drug Rehab SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Drug Rehab]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Medical]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1670]]>
+    </campaignid>
+    <name>
+      <![CDATA[Drug Rehab SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Drug Rehab]]>
+    </description>
+    <payout>
+      <![CDATA[$0.55]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2394]]>
+    </campaignid>
+    <name>
+      <![CDATA[Ductless Air Conditioning SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Ductless Air Conditioning
+
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[313]]>
+    </campaignid>
+    <name>
+      <![CDATA[eharmony** - NO GMAIL ]]>
+    </name>
+    <description>
+      <![CDATA[Bet on eharmony!]]>
+    </description>
+    <payout>
+      <![CDATA[$9.35]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[31]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Dating/Relationships]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1953]]>
+    </campaignid>
+    <name>
+      <![CDATA[EVEN Financial Personal Loan CPC - M-F only]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$1.40]]>
+    </payout>
+    <unit>
+      <![CDATA[CPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[10]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1883]]>
+    </campaignid>
+    <name>
+      <![CDATA[FHA Home Loans SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for FHA Home Loans]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1884]]>
+    </campaignid>
+    <name>
+      <![CDATA[FHA Home Loans SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for FHA Home Loans]]>
+    </description>
+    <payout>
+      <![CDATA[$0.55]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1100]]>
+    </campaignid>
+    <name>
+      <![CDATA[FHA Rate Guide CPL]]>
+    </name>
+    <description>
+      <![CDATA[Find the best mortgage rates and loans on FHA Rate Guide.]]>
+    </description>
+    <payout>
+      <![CDATA[$45.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[21]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1944]]>
+    </campaignid>
+    <name>
+      <![CDATA[Fidelity Life CPC | Mon-Fri]]>
+    </name>
+    <description>
+      <![CDATA[Fidelity Life Insurance | NEW]]>
+    </description>
+    <payout>
+      <![CDATA[$2.25]]>
+    </payout>
+    <unit>
+      <![CDATA[CPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[40]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Life Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1999]]>
+    </campaignid>
+    <name>
+      <![CDATA[Food Delivery Coupons SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Food Delivery Coupons]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount/>
+    <textcount/>
+    <category>
+      <![CDATA[Coupons/Samples]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[365]]>
+    </campaignid>
+    <name>
+      <![CDATA[FreeScore 360 CPA]]>
+    </name>
+    <description>
+      <![CDATA[All new mailers are REQUIRED to complete a new traffic form and apply for approval. Please request from your account manager. 
+
+Personalization is not permitted in subject lines.]]>
+    </description>
+    <payout>
+      <![CDATA[$52.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[14]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Report]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1680]]>
+    </campaignid>
+    <name>
+      <![CDATA[Galapagos Cruise SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Galapagos Cruise]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Vacation/Travel]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1686]]>
+    </campaignid>
+    <name>
+      <![CDATA[Gas Credit Cards SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Gas Credit Cards]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Cards]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2368]]>
+    </campaignid>
+    <name>
+      <![CDATA[Get Auto Quote Zip Submit M-TH ONLY]]>
+    </name>
+    <description>
+      <![CDATA[Auto Insurance Zip
+MON - THURS ONLY!!]]>
+    </description>
+    <payout>
+      <![CDATA[$7.25]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1016]]>
+    </campaignid>
+    <name>
+      <![CDATA[Globe Life **]]>
+    </name>
+    <description>
+      <![CDATA[Protect your life with Globe Life insurance ]]>
+    </description>
+    <payout>
+      <![CDATA[$12.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[23]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Life Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1702]]>
+    </campaignid>
+    <name>
+      <![CDATA[Globe Life ** - New Form]]>
+    </name>
+    <description>
+      <![CDATA[Protect your life with Globe Life insurance ]]>
+    </description>
+    <payout>
+      <![CDATA[$17.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[23]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Life Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2333]]>
+    </campaignid>
+    <name>
+      <![CDATA[Greenwise Financial CPL (M-F)]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$40.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2090]]>
+    </campaignid>
+    <name>
+      <![CDATA[HARP Rate Guide - PAUSED]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$45.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[13]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2022]]>
+    </campaignid>
+    <name>
+      <![CDATA[Harry's - NEW Trial CPA **]]>
+    </name>
+    <description>
+      <![CDATA[The shaving company that's fixing shaving. Trial + Subscription - New Customers Only
+]]>
+    </description>
+    <payout>
+      <![CDATA[$35.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[19]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Subscription Services ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1695]]>
+    </campaignid>
+    <name>
+      <![CDATA[Health Insurance SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Health Insurance]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[475]]>
+    </campaignid>
+    <name>
+      <![CDATA[Healthinsurance.net CPL]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$22.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[14]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[All traffic accepted]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[858]]>
+    </campaignid>
+    <name>
+      <![CDATA[Home Solar Rebates]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$10.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2200]]>
+    </campaignid>
+    <name>
+      <![CDATA[HomeLight CPC ]]>
+    </name>
+    <description>
+      <![CDATA[FREQUENCY CAP: STRICT 1 email send per user, per week
+Please pull suppression daily, before any big sends]]>
+    </description>
+    <payout>
+      <![CDATA[$1.10]]>
+    </payout>
+    <unit>
+      <![CDATA[CPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2336]]>
+    </campaignid>
+    <name>
+      <![CDATA[HomeLight CPC SimpleSale ]]>
+    </name>
+    <description>
+      <![CDATA[FREQUENCY CAP: 1 email send per user, per week
+Please pull suppression daily, before any big sends]]>
+    </description>
+    <payout>
+      <![CDATA[$1.10]]>
+    </payout>
+    <unit>
+      <![CDATA[CPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Real Estate]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1049]]>
+    </campaignid>
+    <name>
+      <![CDATA[Indigo Platinum Mastercard**]]>
+    </name>
+    <description>
+      <![CDATA[Full form submit credit card offer]]>
+    </description>
+    <payout>
+      <![CDATA[$30.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[6]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Cards]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2035]]>
+    </campaignid>
+    <name>
+      <![CDATA[Job Search SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Job Search]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Job/Employment/Biz Opp]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2036]]>
+    </campaignid>
+    <name>
+      <![CDATA[Job Search SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Job Search]]>
+    </description>
+    <payout>
+      <![CDATA[$0.25]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Job/Employment/Biz Opp]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[549]]>
+    </campaignid>
+    <name>
+      <![CDATA[Lasik]]>
+    </name>
+    <description>
+      <![CDATA[Regain your vision with Lasik!]]>
+    </description>
+    <payout>
+      <![CDATA[$55.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[19]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Medical]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[556]]>
+    </campaignid>
+    <name>
+      <![CDATA[Liberty Mutual Auto Insurance**]]>
+    </name>
+    <description>
+      <![CDATA[quality and affordable auto insurance. Get a free quote today.]]>
+    </description>
+    <payout>
+      <![CDATA[$17.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[41]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2376]]>
+    </campaignid>
+    <name>
+      <![CDATA[Liberty University CPL]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$42.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1710]]>
+    </campaignid>
+    <name>
+      <![CDATA[Life Insurance SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Life Insurance]]>
+    </description>
+    <payout>
+      <![CDATA[$0.50]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Life Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1802]]>
+    </campaignid>
+    <name>
+      <![CDATA[LoanDepot Refi CPL M-F ONLY - PAUSED]]>
+    </name>
+    <description>
+      <![CDATA[Refi CPL offer]]>
+    </description>
+    <payout>
+      <![CDATA[$58.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[13]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1891]]>
+    </campaignid>
+    <name>
+      <![CDATA[Lyft - Passenger CPI** PAUSED]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$0.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Ride Share]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2238]]>
+    </campaignid>
+    <name>
+      <![CDATA[Meaningful Beauty CPS - 20% off Deluxe]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$130.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1307]]>
+    </campaignid>
+    <name>
+      <![CDATA[Meaningful Beauty CPS**]]>
+    </name>
+    <description>
+      <![CDATA[CPS cosmetics offer]]>
+    </description>
+    <payout>
+      <![CDATA[$128.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1715]]>
+    </campaignid>
+    <name>
+      <![CDATA[Medical Billing Degrees SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Medical Billing Redirect]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1858]]>
+    </campaignid>
+    <name>
+      <![CDATA[Medical Billing Degrees SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Medical Billing]]>
+    </description>
+    <payout>
+      <![CDATA[$0.40]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1575]]>
+    </campaignid>
+    <name>
+      <![CDATA[Medicare Providers | Mon-Thu]]>
+    </name>
+    <description>
+      <![CDATA[Health Insurance Portal]]>
+    </description>
+    <payout>
+      <![CDATA[$22.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[12]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1716]]>
+    </campaignid>
+    <name>
+      <![CDATA[Medicare SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Medicare]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[22]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1717]]>
+    </campaignid>
+    <name>
+      <![CDATA[Medicare SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Medicare]]>
+    </description>
+    <payout>
+      <![CDATA[$0.35]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[24]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2237]]>
+    </campaignid>
+    <name>
+      <![CDATA[MedicarePlan.com CPL | M-F ONLY]]>
+    </name>
+    <description>
+      <![CDATA[No NY or MA traffic accepted.
+
+Footer must be in text format.
+
+If using a list unsubscribe, additional footer text is required. Please see your account manager for details. ]]>
+    </description>
+    <payout>
+      <![CDATA[$11.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[11]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[All traffic accepted]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2402]]>
+    </campaignid>
+    <name>
+      <![CDATA[Monevo CPL]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$45.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[6]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2392]]>
+    </campaignid>
+    <name>
+      <![CDATA[Moving Companies SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Moving Companies
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2384]]>
+    </campaignid>
+    <name>
+      <![CDATA[Myrtle Beach Vacations SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Myrtle Beach Vacations
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Vacation/Travel]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2320]]>
+    </campaignid>
+    <name>
+      <![CDATA[National Debt Relief CPL - NEW]]>
+    </name>
+    <description>
+      <![CDATA[Up to your eyeballs in debt...?!]]>
+    </description>
+    <payout>
+      <![CDATA[$32.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[15]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2386]]>
+    </campaignid>
+    <name>
+      <![CDATA[New Orleans Vacations SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Myrtle Beach Vacations
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Vacation/Travel]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1726]]>
+    </campaignid>
+    <name>
+      <![CDATA[New SUVs SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for New SUVs]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[17]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1730]]>
+    </campaignid>
+    <name>
+      <![CDATA[Nursing Degree SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Nursing Degree]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[7]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1731]]>
+    </campaignid>
+    <name>
+      <![CDATA[Nursing Degree SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Nursing Degree]]>
+    </description>
+    <payout>
+      <![CDATA[$1.00]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[7]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1158]]>
+    </campaignid>
+    <name>
+      <![CDATA[Ohio Christian University CPL ]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$35.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[8]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1734]]>
+    </campaignid>
+    <name>
+      <![CDATA[Oil Change Deals SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Oil Change Deals]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2183]]>
+    </campaignid>
+    <name>
+      <![CDATA[Online Associate Degrees SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Online Associates Degrees]]>
+    </description>
+    <payout>
+      <![CDATA[$0.75]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1054]]>
+    </campaignid>
+    <name>
+      <![CDATA[Optima Tax CPA**]]>
+    </name>
+    <description>
+      <![CDATA[Third page submit tax evaluation offer]]>
+    </description>
+    <payout>
+      <![CDATA[$90.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[12]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2023]]>
+    </campaignid>
+    <name>
+      <![CDATA[Paralegal Degree SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Paralegal Degrees]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1228]]>
+    </campaignid>
+    <name>
+      <![CDATA[PAUSED - Lyft - Become a Driver **]]>
+    </name>
+    <description>
+      <![CDATA[Lyft | Drivers Wanted! ]]>
+    </description>
+    <payout>
+      <![CDATA[$22.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[26]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Ride Share]]>
+    </category>
+    <geotargeting>
+      <![CDATA[All traffic accepted]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1741]]>
+    </campaignid>
+    <name>
+      <![CDATA[Payday Loans SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Payday Loans]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1742]]>
+    </campaignid>
+    <name>
+      <![CDATA[Payday Loans SF00v CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Payday Loanx]]>
+    </description>
+    <payout>
+      <![CDATA[$0.40]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2012]]>
+    </campaignid>
+    <name>
+      <![CDATA[Personal Loans SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Personal Loans]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount/>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2391]]>
+    </campaignid>
+    <name>
+      <![CDATA[Pet Health Insurance SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Pet Health Insurance
+]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1803]]>
+    </campaignid>
+    <name>
+      <![CDATA[Proactiv MD CPS - PAUSED]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$110.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2314]]>
+    </campaignid>
+    <name>
+      <![CDATA[Provide Auto Insurance - First Page Submit]]>
+    </name>
+    <description>
+      <![CDATA[Fast, free, and easy way to shop for insurance.]]>
+    </description>
+    <payout>
+      <![CDATA[$6.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Auto Insurance]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1751]]>
+    </campaignid>
+    <name>
+      <![CDATA[Psychology Degree SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Psychology Degree]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1752]]>
+    </campaignid>
+    <name>
+      <![CDATA[Psychology Degree SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Psychology Degree]]>
+    </description>
+    <payout>
+      <![CDATA[$0.85]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2321]]>
+    </campaignid>
+    <name>
+      <![CDATA[QuickenLoans]]>
+    </name>
+    <description>
+      <![CDATA[Providing Affordable Mortgages and Award -Winning Client Service for More than 30 Years]]>
+    </description>
+    <payout>
+      <![CDATA[$0.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2287]]>
+    </campaignid>
+    <name>
+      <![CDATA[Refi Rate Guide CPL]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$43.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[5]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2413]]>
+    </campaignid>
+    <name>
+      <![CDATA[Reflex Mastercard CPA]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$28.00]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2242]]>
+    </campaignid>
+    <name>
+      <![CDATA[Renewal by Andersen CPL** - BOGO 40% Off]]>
+    </name>
+    <description>
+      <![CDATA[Buy One Get the Second Window 40% OFF!* - Request a FREE Consultation
+]]>
+    </description>
+    <payout>
+      <![CDATA[$61.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[11]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1947]]>
+    </campaignid>
+    <name>
+      <![CDATA[Rent to Own SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Rent to Own Homes]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2191]]>
+    </campaignid>
+    <name>
+      <![CDATA[Rent to Own SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Rent to Own Homes]]>
+    </description>
+    <payout>
+      <![CDATA[$0.20]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Housing ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1756]]>
+    </campaignid>
+    <name>
+      <![CDATA[Reverse Mortgages SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Reverse Mortgages]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Mortgage]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[820]]>
+    </campaignid>
+    <name>
+      <![CDATA[Rosetta Stone]]>
+    </name>
+    <description>
+      <![CDATA[Discover the Rosetta Stone difference. Language learning that really works.]]>
+    </description>
+    <payout>
+      <![CDATA[$5.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[20]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[eCommerce/Shopping,Learning]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1758]]>
+    </campaignid>
+    <name>
+      <![CDATA[Savings Account SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Savings Account]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Savings Account]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2033]]>
+    </campaignid>
+    <name>
+      <![CDATA[Self Storage SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Self Storage]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Improvement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1995]]>
+    </campaignid>
+    <name>
+      <![CDATA[Senior Cell Phones SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Senior Cell Phones]]>
+    </description>
+    <payout>
+      <![CDATA[$0.20]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount/>
+    <textcount/>
+    <category>
+      <![CDATA[Telecom]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1761]]>
+    </campaignid>
+    <name>
+      <![CDATA[Senior Living SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Senior Living]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[4]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Senior]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1762]]>
+    </campaignid>
+    <name>
+      <![CDATA[Senior Living SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Senior Living]]>
+    </description>
+    <payout>
+      <![CDATA[$0.45]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Housing ]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1764]]>
+    </campaignid>
+    <name>
+      <![CDATA[Small Business Loan SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Small Business Loan]]>
+    </description>
+    <payout>
+      <![CDATA[$0.45]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1964]]>
+    </campaignid>
+    <name>
+      <![CDATA[Southern New Hampshire University CPL - Budgeted]]>
+    </name>
+    <description>
+      <![CDATA[Pre-approved publishers only! ]]>
+    </description>
+    <payout>
+      <![CDATA[$45.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[12]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Education]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1098]]>
+    </campaignid>
+    <name>
+      <![CDATA[StopIRSDebt ]]>
+    </name>
+    <description>
+      <![CDATA[Owe the IRS or State? See what you qualify for!]]>
+    </description>
+    <payout>
+      <![CDATA[$38.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[15]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Debt Settlement]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2389]]>
+    </campaignid>
+    <name>
+      <![CDATA[Swimsuits SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Alcohol Rehab]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[None Assigned]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[eCommerce/Shopping]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2379]]>
+    </campaignid>
+    <name>
+      <![CDATA[Thrive Causemetics CPS]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$30.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPS]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1877]]>
+    </campaignid>
+    <name>
+      <![CDATA[TimeshareIncome.com]]>
+    </name>
+    <description>
+      <![CDATA[Sell your Timeshare Today!]]>
+    </description>
+    <payout>
+      <![CDATA[$19.50]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[10]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Real Estate]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1774]]>
+    </campaignid>
+    <name>
+      <![CDATA[Tire Coupons SF00v CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Tire Coupons]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[20]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Misc]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1992]]>
+    </campaignid>
+    <name>
+      <![CDATA[Total Home Protection [NEW] - PAUSED]]>
+    </name>
+    <description>
+      <![CDATA[PROTECT YOUR BUDGET & GET A HOME WARRANTY!
+]]>
+    </description>
+    <payout>
+      <![CDATA[$36.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[12]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Warranty]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1992]]>
+    </campaignid>
+    <name>
+      <![CDATA[Total Home Protection [NEW] - PAUSED]]>
+    </name>
+    <description>
+      <![CDATA[PROTECT YOUR BUDGET & GET A HOME WARRANTY!
+]]>
+    </description>
+    <payout>
+      <![CDATA[$36.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[12]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Warranty]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2048]]>
+    </campaignid>
+    <name>
+      <![CDATA[Truck Driving Jobs SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Truck Driving Jobs]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Job/Employment/Biz Opp]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2054]]>
+    </campaignid>
+    <name>
+      <![CDATA[Truck Driving Jobs SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Truck Driving Jobs]]>
+    </description>
+    <payout>
+      <![CDATA[$0.75]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[1]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Job/Employment/Biz Opp]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1975]]>
+    </campaignid>
+    <name>
+      <![CDATA[USAA 1.5% Cash Rewards Credit Card** NEW]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$200.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Credit Cards]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1783]]>
+    </campaignid>
+    <name>
+      <![CDATA[Veterans Loans SF00 CPC FIXED]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Veterans Loans]]>
+    </description>
+    <payout>
+      <![CDATA[$0.75]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Cash Advance/Loans/Payday]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2179]]>
+    </campaignid>
+    <name>
+      <![CDATA[Vivint Home Security- M-F ONLY- NEW CPA]]>
+    </name>
+    <description/>
+    <payout>
+      <![CDATA[$70.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[23]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Home Security]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1793]]>
+    </campaignid>
+    <name>
+      <![CDATA[VPN Services SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for VPN Services]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[2]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Identity Protection/Background Check]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[2094]]>
+    </campaignid>
+    <name>
+      <![CDATA[Walk-in Tubs by American Standard CPL]]>
+    </name>
+    <description>
+      <![CDATA[Pre-approved teams only. ]]>
+    </description>
+    <payout>
+      <![CDATA[$58.00]]>
+    </payout>
+    <unit>
+      <![CDATA[CPL]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[11]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Health/Beauty/Fitness,Home Improvement,Senior]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+  <data>
+    <campaignid>
+      <![CDATA[1797]]>
+    </campaignid>
+    <name>
+      <![CDATA[Wireless Home Security SF00 CPC]]>
+    </name>
+    <description>
+      <![CDATA[Juicy CPCs for Wireless Home Security]]>
+    </description>
+    <payout>
+      <![CDATA[variable commission]]>
+    </payout>
+    <unit>
+      <![CDATA[VCPC]]>
+    </unit>
+    <daysleft/>
+    <bannercount/>
+    <emailcount>
+      <![CDATA[3]]>
+    </emailcount>
+    <textcount/>
+    <category>
+      <![CDATA[Computers & Technology]]>
+    </category>
+    <geotargeting>
+      <![CDATA[Traffic allowed from: United States]]>
+    </geotargeting>
+  </data>
+</dataset>
