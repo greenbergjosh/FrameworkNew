@@ -16,6 +16,8 @@ namespace VisitorIdLib
         public string em;
         public Guid sid;
         public string version;
+        public string md5pid;
+        public string md5date;
         public Dictionary<string, DomainVisit> Domains = new Dictionary<string, DomainVisit>();
         public Dictionary<string, DateTime> ProviderLastSelectTime = new Dictionary<string, DateTime>();
 
@@ -125,6 +127,8 @@ namespace VisitorIdLib
             this.PageVisit.VisitNum = this.DomainVisit.VisitNum;
             this.sid = deserialized.sid;
             this.md5 = deserialized.md5;
+            this.md5pid = deserialized.md5pid;
+            this.md5date = deserialized.md5date;
             this.em = deserialized.em;
             this.version = deserialized.version;
             this.RsIdDict = new Dictionary<string, object> {
@@ -133,6 +137,30 @@ namespace VisitorIdLib
                     { typeof(PageVisit).Name, PageVisit.ReportingSequenceId }
             };
 
+        }
+
+        public (Guid IncidentId, Guid Md5Pid, Guid Md5, DateTime Md5Date)? CheckForPoisonedMd5 (List<(Guid IncidentId, Guid Md5Pid, DateTime StartDate, DateTime EndDate)> poisonList)
+        {
+            if (DateTime.TryParse(this.md5date, out var Md5DateAsDate) == false ||
+                Guid.TryParse(this.md5pid, out var Md5PidAsGuid) == false )
+            {
+                return null;
+            }
+            foreach (var poisonIncident in poisonList)
+            {
+                if (poisonIncident.Md5Pid == Md5PidAsGuid &&
+                    Md5DateAsDate >= poisonIncident.StartDate &&
+                    Md5DateAsDate <= poisonIncident.EndDate )
+                {
+                    return (poisonIncident.IncidentId, poisonIncident.Md5Pid, Md5: Md5PidAsGuid, Md5Date : Md5DateAsDate);
+                }
+            }
+            return null;
+        }
+
+        public void ClearPoisonedData()
+        {
+            md5 = md5date = md5pid = em = "";
         }
 
         public static (string md5, string em, string sid) Md5EmailSessionIdFromCookie(string cookieString)
