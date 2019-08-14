@@ -18,6 +18,7 @@
         public string Email { get; }
         public string Phone { get; }
         public string ImageUrl { get; }
-        public string Raw { get; }
+        internal string Raw { get; }
+        public string LoginToken { get; internal set; }
     }
 }

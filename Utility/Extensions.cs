@@ -63,14 +63,18 @@ namespace Utility
 
         public static bool? ParseBool(this string str)
         {
+            if (str.IsNullOrWhitespace()) return null;
+
             if (!bool.TryParse(str, out var i))
             {
-                if (str == "1")
+                str = str.ToLower();
+
+                if (str == "1" || str == "true" || str == "t" || str == "y" || str == "yes")
                 {
                     return true;
                 }
 
-                if (str == "0")
+                if (str == "0" || str == "false" || str == "f" || str == "n" || str == "no")
                 {
                     return false;
                 }

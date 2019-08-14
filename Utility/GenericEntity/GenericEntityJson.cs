@@ -50,7 +50,8 @@ namespace Utility.GenericEntity
             {
                 JToken tok = null;
 
-                if (value is string vStr && !vStr.IsNullOrWhitespace())
+                if (value is JToken jt) tok = jt;
+                else if (value is string vStr && !vStr.IsNullOrWhitespace())
                 {
                     try { tok = JToken.Parse(vStr); }
                     catch (Exception) { tok = vStr; }

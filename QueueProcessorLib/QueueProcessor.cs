@@ -165,7 +165,7 @@ namespace QueueProcessorLib
             try
             {
                 // The lbm should handle the QueueItem and return true or false to represent success
-                var lbm = await _fw.Entities.GetEntity(_queueItemProcessorLbmId);
+                var lbm = (await _fw.Entities.GetEntity(_queueItemProcessorLbmId))?.GetS("Config");
 
                 var scope = new { fw = _fw, queueName, queueItem, WriteOutput = GetQueueItemOutputWriter(queueItem) };
 

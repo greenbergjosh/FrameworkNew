@@ -68,7 +68,7 @@ namespace AwsKinesisConsumerDataLib
                     try
                     {
                         // The lbm should return a function that handles the record and returns true or false to represent success
-                        var lbm = _fw.Entities.GetEntity(Setting.ConsumerLbmId).GetAwaiter().GetResult();
+                        var lbm = _fw.Entities.GetEntity(Setting.ConsumerLbmId).GetAwaiter().GetResult()?.GetS("Config");
 
                         processedSuccessfully = (bool)_fw.RoslynWrapper.Evaluate(Setting.ConsumerLbmId, lbm, new { fw = _fw, record }, new StateWrapper()).GetAwaiter().GetResult();
 
