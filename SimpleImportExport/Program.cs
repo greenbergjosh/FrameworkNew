@@ -1,12 +1,11 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Utility;
 using Utility.DataLayer;
-using Utility.EDW.Logging;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
@@ -193,17 +192,39 @@ namespace SimpleImportExport
 
                         return async (file, directoryPath, endpoint, refId) =>
                         {
-                            if(endpoint is FtpEndPoint) throw new NotImplementedException();
+                            if (endpoint is FtpEndPoint) throw new NotImplementedException();
 
                             var args = Jw.TryParseObject(ReplacePatternTokens(argsTemplate, file.Pattern)?
                                 .Replace("{fileName}", file.FileName)
                                 .Replace("{fileSourceDirectory}", file.SourceDirectory)
                                 .Replace("{fileDate}", (file.FileDate?.ToString()).IfNullOrWhitespace(""))
                                 .Replace("{directoryPath}", directoryPath)
-                                .Replace("{ref}", 
+                                .Replace("{ref}",
                                     refId.ToString()));
 
                             if (file.FileDate.HasValue) args["file_date"] = file.FileDate;
+
+                            bool SearchForAdditionalFields(JObject jo)
+                            {
+                                if (jo.ContainsKey("__additionalFields__"))
+                                {
+                                    jo.Remove("__additionalFields__");
+                                    foreach (var f in file.AdditionalFields)
+                                    {
+                                        jo.Add(f.Key, f.Value);
+                                    }
+                                    return true;
+                                }
+
+                                foreach (var p in jo.Properties())
+                                {
+                                    if (p.Value.Type == JTokenType.Object && SearchForAdditionalFields(p.Value as JObject)) return true;
+                                }
+
+                                return false;
+                            }
+
+                            SearchForAdditionalFields(args);
 
                             var payload = ReplacePatternTokens(payloadTemplate, file.Pattern)?
                                 .Replace("{fileName}", file.FileName)
