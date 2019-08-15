@@ -64,9 +64,20 @@ export function UserInterfaceTest({ children, ...props }: WithRouteProps<Props>)
           ],
         },
         {
-          key: "date1",
-          label: "Date 1",
+          key: "daterange1",
+          label: "Date Range",
           component: "date-range",
+        },
+        {
+          key: "date1",
+          component: "date",
+          label: "Date 1",
+          valueKey: "date",
+          timeSettings: {
+            includeTime: true,
+            includeHour: true,
+            includeMinute: true,
+          },
         },
       ],
     } as FormInterfaceComponentProps,
