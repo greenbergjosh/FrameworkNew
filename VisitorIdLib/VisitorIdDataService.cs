@@ -671,7 +671,7 @@ namespace VisitorIdLib
 
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
-                        var s = await fw.Entities.GetEntityGe(new Guid(md5pid));
+                        var s = await fw.Entities.GetEntity(new Guid(md5pid));
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
                             null, PL.O(new

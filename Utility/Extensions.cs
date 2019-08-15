@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -349,5 +350,11 @@ namespace Utility
 
         public static Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func) => source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
 
+        public static Stopwatch Restart(this Stopwatch sw, Action first)
+        {
+            first?.Invoke();
+            sw.Restart();
+            return sw;
+        }
     }
 }

@@ -103,6 +103,8 @@ namespace Utility
             {
                 StartupConfiguration = newConfig;
 
+                // ToDo: poke Roslyn cache
+
                 return true;
             }
 
