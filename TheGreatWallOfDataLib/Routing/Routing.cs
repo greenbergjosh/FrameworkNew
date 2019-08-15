@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,7 @@ namespace TheGreatWallOfDataLib.Routing
 {
     public static class Routing
     {
+        private static FrameworkWrapper _fw;
         private const string DefaultFuncIdent = "*";
         public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string requestArgs, string identity, HttpContext ctx);
 
@@ -35,10 +37,13 @@ namespace TheGreatWallOfDataLib.Routing
             }),
             ("lbm",new [] {
                 ("*", new ApiFunc((s, f, a, i, ctx) => Lbm.Run(f, a, i, ctx)))
-            })
+            }),
+            ("test", new [] {("*",  (ApiFunc) RunTests )})
         };
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
             new ScopeDic(__.Select(s => new ScopeKvp(s.scope, new FuncDic(s.funcs.Select(f => new FuncKvp(f.funcName, f.func))))));
+
+        public static async Task Initialize(FrameworkWrapper fw) => _fw = fw;
 
         public static ApiFunc GetFunc(string scopeName, string funcName)
         {
@@ -64,7 +69,7 @@ namespace TheGreatWallOfDataLib.Routing
             return async (scope, funcName, requestArgs, identity, ip) =>
             {
                 await Authentication.CheckPermissions(scope, funcName, identity, ip);
-                
+
                 var res = await Data.CallFn(scope, funcName, requestArgs);
                 var resStr = res?.GetS("");
 
@@ -77,5 +82,44 @@ namespace TheGreatWallOfDataLib.Routing
                 return res;
             };
         }
+
+        private static async Task<IGenericEntity> RunTests(string scope, string func, string requestArgs, string identity, HttpContext ctx)
+        {
+            var errors = new List<string>();
+            var stats = new Dictionary<string, double>();
+            var sw = Stopwatch.StartNew();
+
+            await _fw.Log(scope, "Starting tests");
+
+            try
+            {
+                const string conn = "signal";
+                const string inSignalGroups = "inSignalGroups";
+                const string suppressIp = "suppressIp";
+
+                var res = await Data.CallFn(conn, inSignalGroups, _fw.StartupConfiguration.GetS("Config/Tests/signal:inSignalGroups"));
+
+                sw.Restart(() => stats.Add(inSignalGroups, sw.Elapsed.TotalSeconds));
+                var resArr = res?.GetL("in");
+
+                if (resArr?.Any() != true) errors.Add($"{inSignalGroups} failed. Result: {res?.GetS("")}");
+                res = await Data.CallFn(conn, suppressIp, _fw.StartupConfiguration.GetS("Config/Tests/signal:suppressIp"));
+                sw.Restart(() => stats.Add(suppressIp, sw.Elapsed.TotalSeconds));
+                
+                if (res?.GetS("suppress").ParseBool() != true) errors.Add($"{suppressIp} failed. Result: {res?.GetS("")}");
+            }
+            catch (Exception e)
+            {
+                errors.Add($"Tests failed. {e.UnwrapForLog()}");
+            }
+
+            if (errors.Any()) throw new FunctionException(3, Jw.Serialize(new { stats, errors }), true);
+
+            await _fw.Log(scope, Jw.Serialize(new { stats }));
+            await _fw.Log(scope, "Tests complete");
+
+            return Jw.ToGenericEntity(new { result = "All Ok" });
+        }
+
     }
 }
