@@ -33,7 +33,7 @@ namespace SimpleImportExport
         public override async Task<(long size, long? records, string destinationDirectoryPath)> SendStream(SourceFileInfo file, Endpoint source)
         {
             var destFile = new FileInfo(Path.Combine(BaseDir.FullName, (file.Pattern?.DestinationRelativePath).IfNullOrWhitespace(""), file.FileName));
-            
+
             if (!destFile.Directory.Exists) destFile.Directory.Create();
             var destinationDirectoryPath = destFile.Directory.FullName;
 
@@ -46,24 +46,7 @@ namespace SimpleImportExport
             }
         }
 
-        public override async Task<IEnumerable<SourceFileInfo>> GetFiles()
-        {
-            var files = new List<SourceFileInfo>();
-            var dir = BaseDir;
-            var dirFiles = dir.GetFiles();
-
-            if (Patterns?.Any() == true)
-            {
-                foreach (var p in Patterns)
-                {
-                    files.AddRange(dirFiles.Select(fileInfo => new { match = ApplyPattern(p, fileInfo.Name), fileInfo }).Where(f => f.match.isMatch)
-                        .Select(f => new SourceFileInfo(f.fileInfo.Directory?.FullName, f.fileInfo.Name, p, f.match.fileDate)));
-                }
-            }
-            else files.AddRange(dirFiles.Select(f => new SourceFileInfo(f.Directory?.FullName, f.Name, null, null)));
-
-            return files;
-        }
+        public override async Task<IEnumerable<SourceFileInfo>> GetFiles() => Filter(BaseDir.GetFiles().Select(f => (new SourceFileInfo(f.Directory?.FullName, f.Name), f.FullName)).ToArray());
 
         public override async Task Delete(string directoryPath, string fileName)
         {
