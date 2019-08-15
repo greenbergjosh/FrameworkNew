@@ -12,6 +12,7 @@ import { WizardInterfaceComponent } from "./components/display/wizard/WizardInte
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
+import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
@@ -40,6 +41,7 @@ export const registry: ComponentRegistry = {
     collapse: CollapseInterfaceComponent,
     column: ColumnInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
+    date: DateInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,

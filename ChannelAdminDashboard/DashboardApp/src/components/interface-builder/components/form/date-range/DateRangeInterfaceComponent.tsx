@@ -3,6 +3,7 @@ import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { get, set } from "lodash/fp"
 import moment from "moment"
 import React from "react"
+import { getTimeFormat } from "../_shared/common-include-time-form"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { dateRangeManageForm } from "./date-range-manage-form"
 import {
@@ -169,35 +170,10 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     return [get(startDateKey, userInterfaceData), get(endDateKey, userInterfaceData)]
   }
 
-  getTimeFormat = () => {
-    const { timeSettings } = this.props
-    if (timeSettings && timeSettings.includeTime) {
-      const { includeHour, includeMinute, includeSecond, use24Clock } = timeSettings
-      let formatString = ""
-      if (includeHour) {
-        formatString += (formatString.length ? ":" : "") + (use24Clock ? "HH" : "h")
-      }
-      if (includeMinute) {
-        formatString += (formatString.length ? ":" : "") + "mm"
-      }
-      if (includeSecond) {
-        formatString += (formatString.length ? ":" : "") + "ss"
-      }
-      if (!use24Clock) {
-        formatString += (formatString.length ? " " : "") + "A"
-      }
-
-      if (formatString) {
-        return { format: formatString, use12Hours: !use24Clock }
-      }
-    }
-
-    return false
-  }
-
   render(): JSX.Element {
+    const { timeSettings } = this.props
     const [startDateValue, endDateValue] = this.getValues()
-    const timeFormat = this.getTimeFormat()
+    const timeFormat = getTimeFormat(timeSettings)
     return (
       <DatePicker.RangePicker
         format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
