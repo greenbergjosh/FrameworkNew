@@ -883,18 +883,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+            }
 #if DEBUG
             }
 #endif
@@ -1431,6 +1431,7 @@ namespace UnsubLib
             var md5 = dtve.GetS("EmailMd5");
             var email = dtve.GetS("Email");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
+            var globalSuppGroup = dtve.GetS("Groups").IfNullOrWhitespace(_fw.StartupConfiguration.GetS("Config/DefaultSignalGroup"));
 
             try
             {
@@ -1453,9 +1454,9 @@ namespace UnsubLib
 
                 if (!isUnsub && globalSupp)
                 {
-                    var res = await Data.CallFn(Conn, "IsSuppressed", Jw.Serialize(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
+                    var res = await Data.CallFn("Signal", "inSignalGroups", Jw.Serialize(new { group = globalSuppGroup, emailMd5 = email.IfNullOrWhitespace(md5) }));
 
-                    isUnsub = res.GetS("Result").ParseBool() ?? true;
+                    isUnsub = res?.GetL("in").Any() ?? true;
                 }
 
                 return Jw.Json(new { Result = isUnsub });
@@ -1486,6 +1487,8 @@ namespace UnsubLib
             var requestemails = new Dictionary<string, string>();
             var campaignId = dtve.GetS("CampaignId");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
+            var globalSuppGroup = dtve.GetS("Groups").IfNullOrWhitespace(_fw.StartupConfiguration.GetS("Config/DefaultSignalGroup"));
+
             (List<string> found, List<string> notFound) binarySearchResults;
 
             try
@@ -1531,19 +1534,18 @@ namespace UnsubLib
             }
 
             var emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToArray();
-            var md5sNotFound = binarySearchResults.notFound.Where(m => !requestemails.ContainsKey(m)).ToArray();
 
             if (globalSupp)
             {
                 try
                 {
-                    var args = Jw.Serialize(new { md5s = md5sNotFound, emails = emailsNotFound });
+                    var args = Jw.Serialize(new { group = globalSuppGroup, emailMd5 = emailsNotFound });
 
                     await _fw.Trace(nameof(IsUnsubList), $"Checking global suppression\n{args}");
-                    var res = await Data.CallFn(Conn, "AreSuppressed", args);
+                    
+                    var res = await Data.CallFn("Signal", "inSignalGroups", args);
 
-                    emailsNotFound = res.GetL("notFound/emails").Select(g => g.GetS("")).ToArray();
-                    md5sNotFound = res.GetL("notFound/md5s").Select(g => g.GetS("")).ToArray();
+                    emailsNotFound = res?.GetL("out").Select(g => g.GetS("")).ToArray();
                 }
                 catch (Exception e)
                 {
@@ -1552,7 +1554,7 @@ namespace UnsubLib
                 }
             }
 
-            return Jw.Serialize(new { NotUnsub = emailsNotFound.Union(md5sNotFound) });
+            return Jw.Serialize(new { NotUnsub = emailsNotFound });
         }
 
         public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)
