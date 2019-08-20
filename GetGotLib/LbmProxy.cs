@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Utility;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
-namespace TheGreatWallOfDataLib.Routing
+namespace GetGotLib
 {
-    public static class Lbm
+    public static class LbmProxy
     {
         private static FrameworkWrapper _fw;
         private static Dictionary<string, LbmMap> _lbmMaps = new Dictionary<string, LbmMap>();
@@ -30,7 +30,7 @@ namespace TheGreatWallOfDataLib.Routing
 
                 if (lbm == null)
                 {
-                    await _fw.Error($"{nameof(Lbm)}.{nameof(Initialize)}", $"LBM not found {map.Item1} ({id})");
+                    await _fw.Error($"{nameof(LbmProxy)}.{nameof(Initialize)}", $"LBM not found {map.Item1} ({id})");
                     continue;
                 }
 
@@ -38,7 +38,7 @@ namespace TheGreatWallOfDataLib.Routing
 
                 if (!codeId.HasValue)
                 {
-                    await _fw.Error($"{nameof(Lbm)}.{nameof(Initialize)}", $"LBM code not found {map.Item1} ({id})\nLBM:\n{lbm?.GetS("")}");
+                    await _fw.Error($"{nameof(LbmProxy)}.{nameof(Initialize)}", $"LBM code not found {map.Item1} ({id})\nLBM:\n{lbm?.GetS("")}");
                     continue;
                 }
 
@@ -46,7 +46,7 @@ namespace TheGreatWallOfDataLib.Routing
 
                 if (code?.GetS("Type") != "LBM.CS")
                 {
-                    await _fw.Error($"{nameof(Lbm)}.{nameof(Initialize)}", $"{code?.GetS("Type")} LBM not supported. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}");
+                    await _fw.Error($"{nameof(LbmProxy)}.{nameof(Initialize)}", $"{code?.GetS("Type")} LBM not supported. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}");
                     continue;
                 }
                 var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
@@ -57,7 +57,7 @@ namespace TheGreatWallOfDataLib.Routing
                 }
                 catch (Exception e)
                 {
-                    await _fw.Error($"{nameof(Lbm)}.{nameof(Initialize)}", $"Failed to compile. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}\nCode:\n{code.GetS("")}\n\n{e.UnwrapForLog()}");
+                    await _fw.Error($"{nameof(LbmProxy)}.{nameof(Initialize)}", $"Failed to compile. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}\nCode:\n{code.GetS("")}\n\n{e.UnwrapForLog()}");
                     continue;
                 }
 
@@ -69,14 +69,11 @@ namespace TheGreatWallOfDataLib.Routing
 
         public static bool HasFunction(string funcName) => _lbmMaps.ContainsKey(funcName);
 
-        public static async Task<IGenericEntity> Run(string idOrName, string payload, string identity, HttpContext ctx)
+        public static async Task<IGenericEntity> Run(string lbmName, string payload, string identity, HttpContext ctx)
         {
-            var id = idOrName.ParseGuid();
-            var map = id.HasValue ? _lbmMaps.Select(m => m.Value).FirstOrDefault(m => m.Id == id.Value) : _lbmMaps.GetValueOrDefault(idOrName);
+            var map = _lbmMaps.GetValueOrDefault(lbmName);
 
-            if (map == null) throw new FunctionException(100, $"LBM not configured {idOrName} {payload}");
-
-            await Authentication.CheckPermissions("lbm", id.ToString(), identity, ctx);
+            if (map == null) throw new FunctionException(100, $"LBM not configured {lbmName}");
 
             try
             {
@@ -84,7 +81,7 @@ namespace TheGreatWallOfDataLib.Routing
             }
             catch (Exception e)
             {
-                throw new FunctionException(100, $"LBM execution failed: {idOrName} ({map.Id}) {map.Config.GetS("")}\n\n{e.UnwrapForLog()}");
+                throw new FunctionException(100, $"LBM execution failed: {lbmName} ({map.Id}) {map.Config.GetS("")}\n\n{e.UnwrapForLog()}");
             }
         }
 

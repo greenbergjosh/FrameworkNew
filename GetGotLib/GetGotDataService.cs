@@ -44,12 +44,19 @@ namespace GetGotLib
 
                 _smtpPort = port.Value;
                 _fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
+
+                LbmProxy.Initialize(_fw).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
                 _fw?.Error(nameof(Config), ex.UnwrapForLog());
                 throw;
             }
+        }
+
+        public void ReInitialize()
+        {
+            LbmProxy.Initialize(_fw).GetAwaiter().GetResult();
         }
 
         public async Task Run(HttpContext context)
@@ -116,7 +123,10 @@ namespace GetGotLib
                                     fResult = Jw.JsonToGenericEntity(Jw.Serialize(res));
                                     break;
                                 default:
-                                    fResult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
+
+                                    if (LbmProxy.HasFunction(p.Item1)) fResult = await LbmProxy.Run(p.Item1, p.Item2, identity, context);
+                                    else fResult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
+
                                     break;
                             }
                             fResultCode = fResult?.GetS("r").ParseInt() ?? 100;
@@ -229,7 +239,7 @@ namespace GetGotLib
                         var (code, accountName, res) = await GetAvailableConfirmationCode(contact.Cleaned);
 
 #if DEBUG
-                        if(System.Diagnostics.Debugger.IsAttached) break;
+                        if (System.Diagnostics.Debugger.IsAttached) break;
 #endif
                         if (!code.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "GetGot Confirmation Code", code.PadLeft(6, '0'));
                         else if (!accountName.IsNullOrWhitespace()) ProtocolClient.SendMail(_smtpRelay, _smtpPort, _emailFromAddress, contact.Cleaned, "You already have an account", accountName);
@@ -565,27 +575,6 @@ namespace GetGotLib
             if (r.Value != 0) throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
 
             return res;
-        }
-
-        private class FunctionException : Exception
-        {
-            public FunctionException(int resultCode, string message, bool logAndReturnSuccess = false) : base(message)
-            {
-                ResultCode = resultCode;
-                LogAndReturnSuccess = logAndReturnSuccess;
-            }
-
-            public FunctionException(int resultCode, string message, Exception innerException, bool logAndReturnSuccess = false) : base(message, innerException)
-            {
-                ResultCode = resultCode;
-                LogAndReturnSuccess = logAndReturnSuccess;
-            }
-
-            public int ResultCode { get; }
-
-            public bool HaltExecution { get; }
-
-            public bool LogAndReturnSuccess { get; set; }
         }
 
         private static class RC
