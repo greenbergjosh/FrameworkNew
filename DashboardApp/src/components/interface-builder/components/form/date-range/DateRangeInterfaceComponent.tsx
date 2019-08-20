@@ -3,21 +3,13 @@ import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { get, set } from "lodash/fp"
 import moment from "moment"
 import React from "react"
-import { getTimeFormat } from "../_shared/common-include-time-form"
+import { getTimeFormat, TimeSettings } from "../_shared/common-include-time-form"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { dateRangeManageForm } from "./date-range-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
-
-interface TimeSettings {
-  includeTime: boolean
-  includeHour: boolean
-  includeMinute: boolean
-  includeSecond: boolean
-  use24Clock: boolean
-}
 
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-range"
