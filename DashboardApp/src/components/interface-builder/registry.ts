@@ -16,6 +16,7 @@ import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComp
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
+import { NumberRangeInterfaceComponent } from "./components/form/number-range/NumberRangeInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
@@ -47,6 +48,7 @@ export const registry: ComponentRegistry = {
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
     "number-input": NumberInputInterfaceComponent,
+    "number-range": NumberRangeInterfaceComponent,
     query: QueryInterfaceComponent,
     "remote-component": RemoteComponentInterfaceComponent,
     "sectioned-navigation": SectionedNavigationInterfaceComponent,
