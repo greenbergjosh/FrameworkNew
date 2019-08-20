@@ -26,6 +26,7 @@ namespace SpamhausMonitor
             string NameServer = Fw.StartupConfiguration.GetS("Config/Nameserver");
             string BlacklistNameServer = Fw.StartupConfiguration.GetS("Config/BlacklistNameserver");
             bool NotifyWhenListed = Fw.StartupConfiguration.GetB("Config/NotifyWhenListed");
+            int HoursBetweenNotifications = Convert.ToInt32(Fw.StartupConfiguration.GetS("Config/HoursBetweenNotifications") ?? "24");
 
             Resolver PublicResolver = new Resolver(NameServer);
 
@@ -44,6 +45,15 @@ namespace SpamhausMonitor
                     var PartnerId = DomainGe.GetS("partner_id");
                     var Domain = DomainGe.GetS("domain");
                     var Listed = new Dictionary<string, string>();
+                    var LastNotified = DomainGe.GetS("last_notified");
+                    bool NotificationTimeoutExpired = true;
+
+                    if (!LastNotified.IsNullOrWhitespace())
+                    {
+                        TimeSpan TimeSinceLastNotification = DateTime.UtcNow - Convert.ToDateTime(LastNotified);
+                        NotificationTimeoutExpired = TimeSinceLastNotification.TotalHours >= HoursBetweenNotifications;
+                    }
+
                     foreach(var phone in DomainGe.GetL("phone_numbers"))
                     {
                         var foo = phone;
@@ -113,9 +123,8 @@ namespace SpamhausMonitor
                         }
 
                     }
-                    if (Listed.Count > 0 && NotifyWhenListed)
+                    if (Listed.Count > 0 && NotifyWhenListed && NotificationTimeoutExpired)
                     {
-
                         string ListedJson = JsonConvert.SerializeObject(Listed);
                         string ContactPhones = DomainGe.GetS("phone_numbers"); 
                         string ContactEmails = DomainGe.GetS("email_addresses"); 
@@ -123,7 +132,11 @@ namespace SpamhausMonitor
                         {
                              domain = Domain
                         });
-                        payload.Add( PL.O(new { listed = ListedJson, phone_numbers = ContactPhones, email_addresses = ContactEmails }, new bool[] { false, false, false }));
+                        payload.Add( PL.O(new { listed = ListedJson }, new bool[] { false }));
+                        if (! ContactPhones.IsNullOrWhitespace() ) payload.Add( PL.O(new { phone_numbers = ContactPhones }, new bool[] { false }));
+                        if (! ContactEmails.IsNullOrWhitespace() )payload.Add( PL.O(new { email_addresses = ContactEmails }, new bool[] { false }));
+
+                        await Data.CallFn(ConnectionName, "AddDomainNotification", Jw.Json(new { domain = Domain, notification_profile = ProfileId }));
 
                         await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SpamhausBlacklistEntry", DateTime.Now, payload.ToString()));
                     }
