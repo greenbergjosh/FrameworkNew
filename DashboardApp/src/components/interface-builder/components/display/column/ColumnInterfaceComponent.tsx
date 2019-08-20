@@ -1,4 +1,5 @@
 import { Col, Row } from "antd"
+import { merge } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../../DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
@@ -8,6 +9,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
+  getDefaultsFromComponentDefinitions,
 } from "../../base/BaseInterfaceComponent"
 
 interface ColumnModelColumnInterfaceComponent {
@@ -50,6 +52,17 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = columnManageForm
+
+  static getDefintionDefaultValue({ columns }: ColumnInterfaceComponentProps) {
+    return (columns || []).reduce(
+      (acc, column) => merge(acc, getDefaultsFromComponentDefinitions(column.components)),
+      {}
+    )
+  }
+
+  getDefaultValue = () => {
+    return ColumnInterfaceComponent.getDefintionDefaultValue(this.props)
+  }
 
   render() {
     const { columns, gutter, onChangeData, userInterfaceData } = this.props
