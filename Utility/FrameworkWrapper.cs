@@ -105,6 +105,8 @@ namespace Utility
 
                 // ToDo: poke Roslyn cache
 
+                Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
+
                 return true;
             }
 

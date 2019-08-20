@@ -24,7 +24,7 @@ namespace TheGreatWallOfDataLib
                 Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
                 _traceLogResponse = fw.StartupConfiguration.GetS("Config/TraceResponse").ParseBool() ?? false;
                 Authentication.Initialize(fw).Wait();
-                Lbm.Initialize(Fw).Wait();
+                Lbm.Initialize(Fw).GetAwaiter().GetResult();
                 Routing.Routing.Initialize(fw).Wait();
             }
             catch (Exception ex)
@@ -32,6 +32,11 @@ namespace TheGreatWallOfDataLib
                 Fw?.Error(nameof(Config), ex.UnwrapForLog());
                 throw;
             }
+        }
+
+        public void ReInitialize()
+        {
+            Lbm.Initialize(Fw).GetAwaiter().GetResult();
         }
 
         public async Task Run(HttpContext context)
