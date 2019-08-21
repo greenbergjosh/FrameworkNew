@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using CsvHelper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,30 +12,27 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Runtime.CompilerServices;
-using Utility;
-using static Utility.EDW.Reporting.EdwBulkEvent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using CsvHelper;
-using Jw = Utility.JsonWrapper;
-using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json.Linq;
+using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Reporting;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
-using Random = Utility.Crypto.Random;
+using static Utility.EDW.Reporting.EdwBulkEvent;
+using Jw = Utility.JsonWrapper;
 using Ps = Utility.ProcessWrapper;
+using Random = Utility.Crypto.Random;
 
 namespace QuickTester
 {
-    class Program
+    internal class Program
     {
-        static void Test1()
+        private static void Test1()
         {
             //IGenericEntity gc = new GenericEntityJson();
             //string result = PL.C()
@@ -39,7 +40,7 @@ namespace QuickTester
             //gc.InitializeEntity(null, null, gcstate);
         }
 
-        static async Task UnixWrapperTests(string[] args)
+        private static async Task UnixWrapperTests(string[] args)
         {
             var cwd = Directory.GetCurrentDirectory();
             try
@@ -92,9 +93,66 @@ namespace QuickTester
 
         }
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] _args)
         {
-            await UnixWrapperTests(args);
+            HttpContext ctx = null;
+            var payload = Jw.ToGenericEntity(new
+            {
+                email = "qbanbpc@gmail.com",
+                providers = new object[] {
+                    new { provider = "OPG", config = new { groups = new[] { "Tier1"}}},
+                    //new { provider = "XVerify" },
+                    //new { provider = "EmailOversight", config = new { listId = 5 } }
+                }
+            });
+
+            var _fw = new FrameworkWrapper();
+            var idOrName = "EmailValidation";
+
+            var id = idOrName.ParseGuid();
+            IGenericEntity lbm = null;
+
+            if (id.HasValue)
+            {
+                lbm = await _fw.Entities.GetEntity(id.Value);
+            }
+            else
+            {
+                lbm = await _fw.Entities.GetEntity("LBM", idOrName);
+                id = lbm.GetS("Id").ParseGuid();
+            }
+
+            if (!id.HasValue)
+            {
+                throw new Exception($"LBM not found {idOrName}");
+            }
+
+            var codeId = lbm.GetS("Config/LbmId").ParseGuid();
+
+            if (!codeId.HasValue)
+            {
+                throw new Exception($"LBM code not found {idOrName}\nLBM:\n{lbm.GetS("")}");
+            }
+
+            var code = await _fw.Entities.GetEntity(codeId.Value);
+
+            if (code.GetS("Type") != "LBM.CS")
+            {
+                throw new Exception($"{code.GetS("type")} LBM not supported. {idOrName}\nLBM:\n{lbm.GetS("")}");
+            }
+
+            try
+            {
+                var ret = (IGenericEntity)(await _fw.RoslynWrapper.Evaluate(id.Value, code.GetS("Config"), new { _httpContext = ctx, _payload = payload, _fw, _lbmConfig = lbm }, new StateWrapper()));
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"LBM execution failed: {idOrName}\nLBM:\n{lbm.GetS("")}\n\n{e.UnwrapForLog()}");
+            }
+
+            return;
+
+            await UnixWrapperTests(_args);
             return;
 
             var rx = new Regex(@"^(?<drive>[^\s]+)\s+(?<mbBlocks>\d+)MB\s+(?<used>\d+)MB\s+(?<available>\d+)MB\s+(?<usePerc>\d+)%\s+(?<mountedOn>.+)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Multiline);
@@ -158,7 +216,7 @@ namespace QuickTester
 
             var lines = new List<string>();
 
-            for (int k = 0; k < 50000; k++)
+            for (var k = 0; k < 50000; k++)
             {
                 lines.Add(new int[1000].Select(_ => k.ToString()).Join(""));
             }
@@ -199,319 +257,354 @@ namespace QuickTester
 
             return;
 
-            var js = Jw.JsonToGenericEntity("{\"a\":[1,2,3]}");
-            var vals = js.GetL("a").Select(g => g.GetS(""));
+            //var js = Jw.JsonToGenericEntity("{\"a\":[1,2,3]}");
+            //var vals = js.GetL("a").Select(g => g.GetS(""));
 
-            string h = null;
-            var plObj = new { a = 1, b = "1", c = "abc", e = DateTime.UtcNow, f = true, g = 1.01, i = new { a = 2 }, d = new[] { 1, 2, 3 } };
+            //string h = null;
+            //var plObj = new { a = 1, b = "1", c = "abc", e = DateTime.UtcNow, f = true, g = 1.01, i = new { a = 2 }, d = new[] { 1, 2, 3 } };
 
-            var uid = Guid.NewGuid();
-            var tms = DateTime.UtcNow;
-            PL payload = PL.O(plObj, new[] { false, true, true });
-            var configId = Guid.NewGuid();
+            //var uid = Guid.NewGuid();
+            //var tms = DateTime.UtcNow;
+            //PL payload = PL.O(plObj, new[] { false, true, true });
+            //var configId = Guid.NewGuid();
 
-            var ljw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                .Add(PL.N("payload", PL.C(payload)))
-                .Add(PL.C("rsid", configId.ToString())).ToString();
+            //var ljw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+            //    .Add(PL.N("payload", PL.C(payload)))
+            //    .Add(PL.C("rsid", configId.ToString())).ToString();
 
-            var j = JsonConvert.SerializeObject(plObj);
-            payload = PL.FromJsonString(j);
+            //var j = JsonConvert.SerializeObject(plObj);
+            //payload = PL.FromJsonString(j);
 
-            //var jw = PL.C("whatev", j, false);
-            var jw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
-                .Add(PL.N("payload", PL.C(payload)))
-                .Add(PL.C("rsid", configId.ToString())).ToString();
+            ////var jw = PL.C("whatev", j, false);
+            //var jw = PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+            //    .Add(PL.N("payload", PL.C(payload)))
+            //    .Add(PL.C("rsid", configId.ToString())).ToString();
 
-            return;
-            var nl = Environment.NewLine;
-            //var unsubFile = new FileInfo(Path.GetFullPath(args[0]));
-            //var opFile = new FileInfo(Path.Combine(unsubFile.DirectoryName, $"{unsubFile.Name.Replace(unsubFile.Extension, "")}_md5s{unsubFile.Extension}"));
-            //var totalMd5s = unsubFile.Length / 34;
-            //var rand = new Random();
-            //var randomlines = new SortedDictionary<int, object>();
-            //var randMin = 0;
-            //var randMax = 0;
+            //return;
+            //var nl = Environment.NewLine;
+            ////var unsubFile = new FileInfo(Path.GetFullPath(args[0]));
+            ////var opFile = new FileInfo(Path.Combine(unsubFile.DirectoryName, $"{unsubFile.Name.Replace(unsubFile.Extension, "")}_md5s{unsubFile.Extension}"));
+            ////var totalMd5s = unsubFile.Length / 34;
+            ////var rand = new Random();
+            ////var randomlines = new SortedDictionary<int, object>();
+            ////var randMin = 0;
+            ////var randMax = 0;
 
-            //for (int j = 0; j < 10; j++)
+            ////for (int j = 0; j < 10; j++)
+            ////{
+            ////    randMin = (int)Math.Round(totalMd5s * j * 0.1, MidpointRounding.AwayFromZero);
+            ////    randMax = (int)Math.Round(totalMd5s * (j + 1) * 0.1, MidpointRounding.AwayFromZero);
+
+            ////    if ((randMax - randMin) < 1000) throw new Exception("Range too small");
+
+            ////    while (randomlines.Count < (j + 1) * 5000)
+            ////    {
+            ////        var r = rand.Next(randMin, randMax);
+
+            ////        if (!randomlines.ContainsKey(r)) randomlines.Add(r, null);
+            ////    }
+            ////}
+
+            ////if (opFile.Exists) opFile.Delete();
+            ////var md5s = new List<string>();
+
+            ////using (var rle = randomlines.GetEnumerator())
+            ////using (var fs = unsubFile.OpenText())
+            ////{
+            ////    rle.MoveNext();
+            ////    string line;
+            ////    var fileIndex = 0;
+
+            ////    while ((line = await fs.ReadLineAsync()) != null)
+            ////    {
+            ////        if (fileIndex == rle.Current.Key)
+            ////        {
+            ////            md5s.Add(line);
+            ////            rle.MoveNext();
+            ////        }
+            ////        fileIndex++;
+            ////    }
+            ////}
+
+            ////for (int j = 0; j < 2000; j++)
+            ////{
+            ////    md5s.Add(Utility.Crypto.Random.GenerateRandomString(32, 32, Utility.Crypto.Random.hex));
+            ////}
+
+            ////md5s.Sort();
+
+            ////using (var fw = opFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            ////{
+            ////    await fw.WriteAsync(Encoding.ASCII.GetBytes(md5s.Join(nl)));
+            ////}
+
+            ////return;
+
+            //var checkFile = new FileInfo(Path.GetFullPath(args[1]));
+            //var searchFile = new FileInfo(Path.GetFullPath(args[0]));
+            //var outputFile = new FileInfo(Path.Combine(checkFile.DirectoryName, $"{checkFile.Name.Replace(checkFile.Extension, "")}_results{checkFile.Extension}"));
+            //string md5Str;
+
+            //Console.WriteLine($"Getting MD5 list from {checkFile.FullName}");
+            //using (var fs = checkFile.OpenText())
             //{
-            //    randMin = (int)Math.Round(totalMd5s * j * 0.1, MidpointRounding.AwayFromZero);
-            //    randMax = (int)Math.Round(totalMd5s * (j + 1) * 0.1, MidpointRounding.AwayFromZero);
-
-            //    if ((randMax - randMin) < 1000) throw new Exception("Range too small");
-
-            //    while (randomlines.Count < (j + 1) * 5000)
-            //    {
-            //        var r = rand.Next(randMin, randMax);
-
-            //        if (!randomlines.ContainsKey(r)) randomlines.Add(r, null);
-            //    }
+            //    md5Str = await fs.ReadToEndAsync();
             //}
 
-            //if (opFile.Exists) opFile.Delete();
-            //var md5s = new List<string>();
+            //var md5s = md5Str.Split(new[] { ',', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(m => m.Trim()).ToList();
+            //var res = (found: new List<string>(), notFound: new List<string>());
 
-            //using (var rle = randomlines.GetEnumerator())
-            //using (var fs = unsubFile.OpenText())
+            //var sw = Stopwatch.StartNew();
+
+            //await md5s.ForEachAsync(10, async md5 =>
             //{
-            //    rle.MoveNext();
-            //    string line;
-            //    var fileIndex = 0;
+            //    var f = await UnixWrapper.BinarySearchSortedMd5File(searchFile.DirectoryName, searchFile.Name, md5);
 
-            //    while ((line = await fs.ReadLineAsync()) != null)
-            //    {
-            //        if (fileIndex == rle.Current.Key)
-            //        {
-            //            md5s.Add(line);
-            //            rle.MoveNext();
-            //        }
-            //        fileIndex++;
-            //    }
-            //}
+            //    if (f) res.found.Add(md5);
+            //    else res.notFound.Add(md5);
+            //});
 
-            //for (int j = 0; j < 2000; j++)
+            //sw.Stop();
+
+            //Console.WriteLine($"Processed in {sw.Elapsed.TotalSeconds}s ~{(int)(md5s.Count / sw.Elapsed.TotalSeconds)} records/s");
+
+            //if (outputFile.Exists) outputFile.Delete();
+
+            //using (var fs = outputFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
             //{
-            //    md5s.Add(Utility.Crypto.Random.GenerateRandomString(32, 32, Utility.Crypto.Random.hex));
-            //}
-
-            //md5s.Sort();
-
-            //using (var fw = opFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            //{
-            //    await fw.WriteAsync(Encoding.ASCII.GetBytes(md5s.Join(nl)));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes($"Found:{nl}"));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes($"{nl}Not Found:{nl}"));
+            //    await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
             //}
 
             //return;
 
-            var checkFile = new FileInfo(Path.GetFullPath(args[1]));
-            var searchFile = new FileInfo(Path.GetFullPath(args[0]));
-            var outputFile = new FileInfo(Path.Combine(checkFile.DirectoryName, $"{checkFile.Name.Replace(checkFile.Extension, "")}_results{checkFile.Extension}"));
-            string md5Str;
-
-            Console.WriteLine($"Getting MD5 list from {checkFile.FullName}");
-            using (var fs = checkFile.OpenText())
-            {
-                md5Str = await fs.ReadToEndAsync();
-            }
-
-            var md5s = md5Str.Split(new[] { ',', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(m => m.Trim()).ToList();
-            var res = (found: new List<string>(), notFound: new List<string>());
-
-            var sw = Stopwatch.StartNew();
-
-            await md5s.ForEachAsync(10, async md5 =>
-            {
-                var f = await UnixWrapper.BinarySearchSortedMd5File(searchFile.DirectoryName, searchFile.Name, md5);
-
-                if (f) res.found.Add(md5);
-                else res.notFound.Add(md5);
-            });
-
-            sw.Stop();
-
-            Console.WriteLine($"Processed in {sw.Elapsed.TotalSeconds}s ~{(int)(md5s.Count / sw.Elapsed.TotalSeconds)} records/s");
-
-            if (outputFile.Exists) outputFile.Delete();
-
-            using (var fs = outputFile.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            {
-                await fs.WriteAsync(Encoding.ASCII.GetBytes($"Found:{nl}"));
-                await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
-                await fs.WriteAsync(Encoding.ASCII.GetBytes($"{nl}Not Found:{nl}"));
-                await fs.WriteAsync(Encoding.ASCII.GetBytes(res.found.Join(nl)));
-            }
-
-            return;
-
-            Test1();
-            var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
-            var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
-            var query = QueryHelpers.ParseQuery(uri.Query);
-            string opaque = query.ContainsKey("label") ? query["label"][0] : "";
-            string emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : "";
+            //Test1();
+            //var uri = new Uri("http://a/b/c?md5_email=bob@hotmail.com&label=blah");
+            //var baseUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
+            //var query = QueryHelpers.ParseQuery(uri.Query);
+            //string opaque = query.ContainsKey("label") ? query["label"][0] : "";
+            //string emailMd5 = query.ContainsKey("md5_email") ? query["md5_email"][0] : "";
 
 
-            List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
-            string scriptsPath = @"e:\workspace\scripts";
-            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
-            string scriptFlatFileColumnGenerator =
-                @"int i = 0;
-                  foreach (var x in p.ge.GetL(""""))
-                  {
-                    XmlNode cln = p.cn.Clone();
-                    ((XmlElement)cln).RemoveAttribute(""TokenizerReplace"" + [=i=]);
-                    await f.TokenReplaceXmlR(new {pn = cln, ge = x}, s);
-                    p.cn.ParentNode.AppendChild(cln);
-                    i++;
-                  }
-                  p.cn.ParentNode.RemoveChild(p.cn);""""";
-            //for (int ij = 0; ij < 100; ij++)
-            //    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
-            //        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
+            //List<ScriptDescriptor> scripts = new List<ScriptDescriptor>();
+            //string scriptsPath = @"e:\workspace\scripts";
+            //var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            //string scriptFlatFileColumnGenerator =
+            //    @"int i = 0;
+            //      foreach (var x in p.ge.GetL(""""))
+            //      {
+            //        XmlNode cln = p.cn.Clone();
+            //        ((XmlElement)cln).RemoveAttribute(""TokenizerReplace"" + [=i=]);
+            //        await f.TokenReplaceXmlR(new {pn = cln, ge = x}, s);
+            //        p.cn.ParentNode.AppendChild(cln);
+            //        i++;
+            //      }
+            //      p.cn.ParentNode.RemoveChild(p.cn);""""";
+            ////for (int ij = 0; ij < 100; ij++)
+            ////    rw.CompileAndCache(new ScriptDescriptor("FlatFileColumnGenerator", 
+            ////        scriptFlatFileColumnGenerator.Replace("[=i=]",ij.ToString()), false, null));
 
 
-            string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
-            string result = SqlWrapper.SqlServerProviderEntry(constr, "SelectConfig", JsonWrapper.Json(new { InstanceId = "3B93EB28-79B6-489E-95D1-6EAA392536B5" }), "").GetAwaiter().GetResult();
+            //string constr = "Data Source=66.70.182.182;Initial Catalog=GlobalConfig;Persist Security Info=True;User ID=GlobalConfigUser;Password=Global!User1";
+            //string result = SqlWrapper.SqlServerProviderEntry(constr, "SelectConfig", JsonWrapper.Json(new { InstanceId = "3B93EB28-79B6-489E-95D1-6EAA392536B5" }), "").GetAwaiter().GetResult();
 
-            string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
-            IGenericEntity gp = new GenericEntityJson();
-            var gpstate = JsonConvert.DeserializeObject(json);
-            gp.InitializeEntity(null, null, gpstate);
+            //string json = "{\"x\": {\"a\": \"1\",\"b\": \"2\",\"c\": \"3\"}}";
+            //IGenericEntity gp = new GenericEntityJson();
+            //var gpstate = JsonConvert.DeserializeObject(json);
+            //gp.InitializeEntity(null, null, gpstate);
 
-            foreach (var t in gp.GetD("x"))
-            {
-                string nm = t.Item1;
-                string vl = t.Item2;
-            }
-
-
-
-
-            //var result = (JObject)JsonConvert.DeserializeObject(json);
-            //foreach (var je in result.AsJEnumerable())
+            //foreach (var t in gp.GetD("x"))
             //{
-            //    string nm = ((JProperty)je).Name;
-            //    string vl = ((JProperty)je).Value.ToString();
+            //    string nm = t.Item1;
+            //    string vl = t.Item2;
             //}
-            //object x;
-            //MethodInfo mi = x.GetType().GetMethod("");
-            //using (var dynamicContext = new Utility.AssemblyResolver(Directory.GetCurrentDirectory() + "\\" + "Utility.dll"))
-            //{
-            //    //dynamic o = dynamicContext.Assembly.CreateInstance("Utility.FileSystem");
-            //    dynamic t = dynamicContext.Assembly.GetType("Utility.FileSystem");
-            //    MethodInfo mi = t.GetMethod("QuotePathParts");
-            //    object[] parms = new object[]
+
+
+
+
+            ////var result = (JObject)JsonConvert.DeserializeObject(json);
+            ////foreach (var je in result.AsJEnumerable())
+            ////{
+            ////    string nm = ((JProperty)je).Name;
+            ////    string vl = ((JProperty)je).Value.ToString();
+            ////}
+            ////object x;
+            ////MethodInfo mi = x.GetType().GetMethod("");
+            ////using (var dynamicContext = new Utility.AssemblyResolver(Directory.GetCurrentDirectory() + "\\" + "Utility.dll"))
+            ////{
+            ////    //dynamic o = dynamicContext.Assembly.CreateInstance("Utility.FileSystem");
+            ////    dynamic t = dynamicContext.Assembly.GetType("Utility.FileSystem");
+            ////    MethodInfo mi = t.GetMethod("QuotePathParts");
+            ////    object[] parms = new object[]
+            ////    {
+            ////        @"c:\program files\long line\abc\efg.txt"
+            ////    };
+            ////    string s = (string)mi.Invoke(null, parms);
+            ////}
+
+            //MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
+            //    "Utility.FileSystem", "QuotePathParts", null);
+            //object[] parms = new object[]
             //    {
             //        @"c:\program files\long line\abc\efg.txt"
             //    };
-            //    string s = (string)mi.Invoke(null, parms);
-            //}
+            //string s = (string)mi.Invoke(null, parms);
+            //mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
+            //    "Utility.FileSystem", "QuotePathParts", null);
+            //s = (string)mi.Invoke(null, parms);
 
-            MethodInfo mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
-                "Utility.FileSystem", "QuotePathParts", null);
-            object[] parms = new object[]
-                {
-                    @"c:\program files\long line\abc\efg.txt"
-                };
-            string s = (string)mi.Invoke(null, parms);
-            mi = Utility.AssemblyResolver.GetMethod(Directory.GetCurrentDirectory() + "\\" + "Utility.dll",
-                "Utility.FileSystem", "QuotePathParts", null);
-            s = (string)mi.Invoke(null, parms);
+            //int zz = 0;
 
-            int zz = 0;
+            ////var result = SqlWrapper.SqlServerProviderEntry("Data Source =.;Initial Catalog = dataMail;Integrated Security = SSPI;",
+            ////                "SelectProvider",
+            ////                "{}",
+            ////                "").GetAwaiter().GetResult();
+            ////IGenericEntity gp = new GenericEntityJson();
+            ////var gpstate = JsonConvert.DeserializeObject(result);
+            ////gp.InitializeEntity(null, null, gpstate);
 
-            //var result = SqlWrapper.SqlServerProviderEntry("Data Source =.;Initial Catalog = dataMail;Integrated Security = SSPI;",
-            //                "SelectProvider",
-            //                "{}",
-            //                "").GetAwaiter().GetResult();
-            //IGenericEntity gp = new GenericEntityJson();
-            //var gpstate = JsonConvert.DeserializeObject(result);
-            //gp.InitializeEntity(null, null, gpstate);
-
-            //foreach (var ig in gp.GetL(""))
-            //{
-            //    var s = ig.GetS("Config/FetchParms");
-            //    var t = ig.GetS("Config/Transform");
-            //    var i = ig.GetS("Id");
-            //    var all = ig.GetS("");
-            //}
+            ////foreach (var ig in gp.GetL(""))
+            ////{
+            ////    var s = ig.GetS("Config/FetchParms");
+            ////    var t = ig.GetS("Config/Transform");
+            ////    var i = ig.GetS("Id");
+            ////    var all = ig.GetS("");
+            ////}
 
 
 
-            //Console.WriteLine("0: " + args[0]);
-            //Console.WriteLine("1: " + args[1]);
-            //Console.WriteLine("2: " + args[2]);
-            //Console.WriteLine(Utility.UnixWrapper.BinarySearchSortedMd5File(args[0], args[1], args[2]).GetAwaiter().GetResult());
+            ////Console.WriteLine("0: " + args[0]);
+            ////Console.WriteLine("1: " + args[1]);
+            ////Console.WriteLine("2: " + args[2]);
+            ////Console.WriteLine(Utility.UnixWrapper.BinarySearchSortedMd5File(args[0], args[1], args[2]).GetAwaiter().GetResult());
 
-            //int xt1 = 1;
-            //int xt2 = 2;
-            //int xt3 = 3;
-            //List<int?> xts1 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
-            //IEnumerable<int?> xts2 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
-            //int?[] xa1 = new int?[] { xt1, xt2, xt3, 4 };
+            ////int xt1 = 1;
+            ////int xt2 = 2;
+            ////int xt3 = 3;
+            ////List<int?> xts1 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
+            ////IEnumerable<int?> xts2 = new List<int?> { xt1, null, xt2, null, xt3, 4 };
+            ////int?[] xa1 = new int?[] { xt1, xt2, xt3, 4 };
 
-            //int xr0 = Sum(xt1);
-            //int xr1 = Sum(xt1, xt2, xt3);
-            //int xr2 = Sum(xts1);
-            //int xr3 = Sum(xts2);
-            //int xr4 = Sum(xa1);
-
-
-
-            //Tuple<string, string, string> x1 = new Tuple<string, string, string>("Bob", "Jones", "Dog");
-            //Tuple<string, string, string> x2 = new Tuple<string, string, string>("Tom", "Arnold", "Cat");
-
-            //Tester t1 = new Tester("bob", "jones");
-            //Tester2 t2 = new Tester2("tom", "arnold");
-            //Tester t3 = new Tester("billy", "thorn");
-
-            //List<string> ls = new List<string>() { "Bob", "John", "Joe" };
-
-            //Dictionary<string, string> d = new Dictionary<string, string>()
-            //{
-            //    { "Bob", "Jones" },
-            //    { "Tom", "Arnold" }
-            //};
-
-            //Dictionary<string, string> d2 = new Dictionary<string, string>()
-            //{
-            //    { "Name1", "Value1" },
-            //    { "Name2", "Value2" }
-            //};
-
-            //Dictionary<string, object> d3 = new Dictionary<string, object>()
-            //{
-            //    { "Name1", 5 },
-            //    { "Name2", "Value2" }
-            //};
-
-            //Tuple<string, string, bool> tp1 = new Tuple<string, string, bool>("name1", "value1", true);
-            //Tuple<string, string, bool> tp2 = new Tuple<string, string, bool>("name2", "value2", true);
-            //List<Tuple<string, string, bool>> tpl1 = new List<Tuple<string, string, bool>>() { tp1, tp2 };
-
-            //List<object> as2 = new List<object>() { 5, "hello" };
-
-            //List<object> as3 = new List<object>() { t1, t3 };
-
-            //List<Tuple<string, string, string>> lts = new List<Tuple<string, string, string>>() { x1, x2 };
-
-            //var named = (first: "one", second: "two");
-
-            //string st1 = PL.O(new { x = 1, y = "Bob" }).ToString();
-            //string st1b = PL.O(new { x = 1, y = "Bob", z = "{}" }, null, new bool[] { true, true, false }).ToString(); ;
-            //string st2 = PL.O(t1).ToString(); 
-            //string st3 = PL.C(tpl1).ToString(); 
-            //string st4 = PL.D(d3).ToString(); 
-            //string st5 = PL.C("name", "bob").ToString(); 
-            //string st6 = PL.O(x1, new List<string>() { "FN", "LN", "PT" }).ToString();
-
-            //string st12 = PL.O(named).ToString();
-            //string st13 = PL.O(x1).ToString();
-            //var slc = lts.Select(lt => PL.O(lt));
-            //string st14 = A.C(slc).ToString();
+            ////int xr0 = Sum(xt1);
+            ////int xr1 = Sum(xt1, xt2, xt3);
+            ////int xr2 = Sum(xts1);
+            ////int xr3 = Sum(xts2);
+            ////int xr4 = Sum(xa1);
 
 
-            //string st8 = PL.C(
-            //    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-            //    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-            //    PL.N("zz", A.C(slc))
-            //    ).ToString();
 
-            //string st9 = A.C(
-            //    PL.C(
-            //        PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-            //        PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-            //        PL.N("zz", A.C(slc))
-            //    ),
-            //    PL.C(
-            //        PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-            //        PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
-            //        PL.N("zz", A.C(slc))
-            //    ),
-            //    SL.AO(lts, new List<string>() { "FN", "LN", "PT" }, new bool[] { true, true, true}),
-            //    A.C(SL.AO(lts, new List<string>() { "AFN", "ALN", "APT" }, new bool[] { true, true, true }),
-            //        SL.AO(lts, new List<string>() { "BFN", "BLN", "BPT" }, new bool[] { true, true, true })),
-            //    SL.C(new List<object> { "hello", 5 })
-            //    ).ToString();
+            ////Tuple<string, string, string> x1 = new Tuple<string, string, string>("Bob", "Jones", "Dog");
+            ////Tuple<string, string, string> x2 = new Tuple<string, string, string>("Tom", "Arnold", "Cat");
+
+            ////Tester t1 = new Tester("bob", "jones");
+            ////Tester2 t2 = new Tester2("tom", "arnold");
+            ////Tester t3 = new Tester("billy", "thorn");
+
+            ////List<string> ls = new List<string>() { "Bob", "John", "Joe" };
+
+            ////Dictionary<string, string> d = new Dictionary<string, string>()
+            ////{
+            ////    { "Bob", "Jones" },
+            ////    { "Tom", "Arnold" }
+            ////};
+
+            ////Dictionary<string, string> d2 = new Dictionary<string, string>()
+            ////{
+            ////    { "Name1", "Value1" },
+            ////    { "Name2", "Value2" }
+            ////};
+
+            ////Dictionary<string, object> d3 = new Dictionary<string, object>()
+            ////{
+            ////    { "Name1", 5 },
+            ////    { "Name2", "Value2" }
+            ////};
+
+            ////Tuple<string, string, bool> tp1 = new Tuple<string, string, bool>("name1", "value1", true);
+            ////Tuple<string, string, bool> tp2 = new Tuple<string, string, bool>("name2", "value2", true);
+            ////List<Tuple<string, string, bool>> tpl1 = new List<Tuple<string, string, bool>>() { tp1, tp2 };
+
+            ////List<object> as2 = new List<object>() { 5, "hello" };
+
+            ////List<object> as3 = new List<object>() { t1, t3 };
+
+            ////List<Tuple<string, string, string>> lts = new List<Tuple<string, string, string>>() { x1, x2 };
+
+            ////var named = (first: "one", second: "two");
+
+            ////string st1 = PL.O(new { x = 1, y = "Bob" }).ToString();
+            ////string st1b = PL.O(new { x = 1, y = "Bob", z = "{}" }, null, new bool[] { true, true, false }).ToString(); ;
+            ////string st2 = PL.O(t1).ToString(); 
+            ////string st3 = PL.C(tpl1).ToString(); 
+            ////string st4 = PL.D(d3).ToString(); 
+            ////string st5 = PL.C("name", "bob").ToString(); 
+            ////string st6 = PL.O(x1, new List<string>() { "FN", "LN", "PT" }).ToString();
+
+            ////string st12 = PL.O(named).ToString();
+            ////string st13 = PL.O(x1).ToString();
+            ////var slc = lts.Select(lt => PL.O(lt));
+            ////string st14 = A.C(slc).ToString();
+
+
+            ////string st8 = PL.C(
+            ////    PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            ////    PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            ////    PL.N("zz", A.C(slc))
+            ////    ).ToString();
+
+            ////string st9 = A.C(
+            ////    PL.C(
+            ////        PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            ////        PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            ////        PL.N("zz", A.C(slc))
+            ////    ),
+            ////    PL.C(
+            ////        PL.N("ss", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            ////        PL.N("tt", PL.C(PL.O(t1).Add(PL.C(tpl1)), PL.O(x1, new List<string>() { "FN", "LN", "PT" }))),
+            ////        PL.N("zz", A.C(slc))
+            ////    ),
+            ////    SL.AO(lts, new List<string>() { "FN", "LN", "PT" }, new bool[] { true, true, true}),
+            ////    A.C(SL.AO(lts, new List<string>() { "AFN", "ALN", "APT" }, new bool[] { true, true, true }),
+            ////        SL.AO(lts, new List<string>() { "BFN", "BLN", "BPT" }, new bool[] { true, true, true })),
+            ////    SL.C(new List<object> { "hello", 5 })
+            ////    ).ToString();
+
+            ////Guid id1 = Guid.NewGuid();
+            ////string ts1 = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
+            ////Dictionary<string, object> rsids = new Dictionary<string, object>()
+            ////    { {"anrsid", "b0419e46-6620-4ed7-b849-d714f10b1d41" } };
+            ////List<string> weps = new List<string>()
+            ////    { "4231FE39-D704-4E8B-B982-9D69A9A29C26", "C8404A79-5403-4726-94C9-B663261FD78F" };
+
+
+            ////string st10 = PL.C(
+            ////    PL.N("E", A.C(
+            ////        PL.O(new { id = id1, ts = ts1 }).Add(
+            ////        PL.N("payload", PL.C("a_key", "a_value").Add(
+            ////            PL.N("rsid", PL.D(rsids)).Add(
+            ////            PL.N("whep", SL.C(weps)))))),
+
+            ////        PL.O(new { id = id1, ts = ts1 }).Add(
+            ////        PL.N("payload", PL.C("a_key", "a_value").Add(
+            ////            PL.N("rsid", PL.D(rsids)).Add(
+            ////            PL.N("whep", SL.C(weps))))))
+            ////        )
+            ////    ),
+            ////    PL.N("IM", A.C(
+            ////        PL.O(new { id = id1, ts = ts1 }).Add(
+            ////        PL.N("payload", PL.C("a_key", "a_value")).Add(
+            ////        PL.C("config_id", id1.ToString()))),
+
+            ////        PL.O(new { id = id1, ts = ts1 }).Add(
+            ////        PL.N("payload", PL.C("a_key", "a_value")).Add(
+            ////        PL.C("config_id", id1.ToString()))))
+
+            ////    )//,
+            ////    //PL.N("CK", ),
+            ////    //PL.N("CD", ),
+            ////    ).ToString();
 
             //Guid id1 = Guid.NewGuid();
             //string ts1 = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
@@ -520,85 +613,44 @@ namespace QuickTester
             //List<string> weps = new List<string>()
             //    { "4231FE39-D704-4E8B-B982-9D69A9A29C26", "C8404A79-5403-4726-94C9-B663261FD78F" };
 
+            //EdwBulkEvent bulk = new EdwBulkEvent();
+            //bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+            //bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
+            //bulk.AddRS(EdwType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            //bulk.AddRS(EdwType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
+            //string st11 = bulk.ToString();
+            //int i = 0;
 
-            //string st10 = PL.C(
-            //    PL.N("E", A.C(
-            //        PL.O(new { id = id1, ts = ts1 }).Add(
-            //        PL.N("payload", PL.C("a_key", "a_value").Add(
-            //            PL.N("rsid", PL.D(rsids)).Add(
-            //            PL.N("whep", SL.C(weps)))))),
+            //// ["a", 5]
+            //// A PL is a list of things that can be put into an object
+            //// An SL is a list of things that can be put into an array
+            //// I can put an object, a PL into an array
+            //// I can put an array, an SL, into an object, but only if I name it first, thereby making it a PL
+            //// I can put an object into an object, but only if I name it first
+            //// I can put an array into an array
 
-            //        PL.O(new { id = id1, ts = ts1 }).Add(
-            //        PL.N("payload", PL.C("a_key", "a_value").Add(
-            //            PL.N("rsid", PL.D(rsids)).Add(
-            //            PL.N("whep", SL.C(weps))))))
-            //        )
-            //    ),
-            //    PL.N("IM", A.C(
-            //        PL.O(new { id = id1, ts = ts1 }).Add(
-            //        PL.N("payload", PL.C("a_key", "a_value")).Add(
-            //        PL.C("config_id", id1.ToString()))),
+            //// I construct from the bottom up
+            //// I start by creating PLs (which will become objects) and SLs which will become arrays
+            //// I can add them together (I could add positional insertion as well)
+            //// I then want to compose those PLs and SLs
+            //// I can add things to an O, only if they are named
+            ////   An O has List<PL>
+            //// I can add things to an A
+            ////   An A has List<PL|SL|tuple<string,bool>>
 
-            //        PL.O(new { id = id1, ts = ts1 }).Add(
-            //        PL.N("payload", PL.C("a_key", "a_value")).Add(
-            //        PL.C("config_id", id1.ToString()))))
+            //// I build a PL from base parts, adding, inserting where needed
+            //// I build an SL from base parts, adding, inserting where needed
 
-            //    )//,
-            //    //PL.N("CK", ),
-            //    //PL.N("CD", ),
-            //    ).ToString();
-
-            Guid id1 = Guid.NewGuid();
-            string ts1 = DateTime.Now.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff");
-            Dictionary<string, object> rsids = new Dictionary<string, object>()
-                { {"anrsid", "b0419e46-6620-4ed7-b849-d714f10b1d41" } };
-            List<string> weps = new List<string>()
-                { "4231FE39-D704-4E8B-B982-9D69A9A29C26", "C8404A79-5403-4726-94C9-B663261FD78F" };
-
-            EdwBulkEvent bulk = new EdwBulkEvent();
-            bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
-            bulk.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, weps, PL.C("a_key", "a_value"));
-            bulk.AddRS(EdwType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
-            bulk.AddRS(EdwType.Immediate, Guid.NewGuid(), DateTime.UtcNow, PL.C("a_key", "a_value"), Guid.NewGuid());
-            string st11 = bulk.ToString();
-            int i = 0;
-
-            // ["a", 5]
-            // A PL is a list of things that can be put into an object
-            // An SL is a list of things that can be put into an array
-            // I can put an object, a PL into an array
-            // I can put an array, an SL, into an object, but only if I name it first, thereby making it a PL
-            // I can put an object into an object, but only if I name it first
-            // I can put an array into an array
-
-            // I construct from the bottom up
-            // I start by creating PLs (which will become objects) and SLs which will become arrays
-            // I can add them together (I could add positional insertion as well)
-            // I then want to compose those PLs and SLs
-            // I can add things to an O, only if they are named
-            //   An O has List<PL>
-            // I can add things to an A
-            //   An A has List<PL|SL|tuple<string,bool>>
-
-            // I build a PL from base parts, adding, inserting where needed
-            // I build an SL from base parts, adding, inserting where needed
-
-            // I then want to compose those base parts upward to create the larger structure
-            // PL(name, PL) --> PL
-            // PL(name, SL) --> PL  ==  PL(name, A) --> PL
-            // A(PL, A, SL) --> A
+            //// I then want to compose those base parts upward to create the larger structure
+            //// PL(name, PL) --> PL
+            //// PL(name, SL) --> PL  ==  PL(name, A) --> PL
+            //// A(PL, A, SL) --> A
 
         }
 
-        public static int Sum(params int?[] xs)
-        {
-            return xs.Aggregate((x, y) => (x ?? 0) + (y ?? 0)) ?? 0;
-        }
+        public static int Sum(params int?[] xs) => xs.Aggregate((x, y) => (x ?? 0) + (y ?? 0)) ?? 0;
 
-        public static int Sum(IEnumerable<int?> xs)
-        {
-            return Sum(xs.ToArray());
-        }
+        public static int Sum(IEnumerable<int?> xs) => Sum(xs.ToArray());
 
 
 

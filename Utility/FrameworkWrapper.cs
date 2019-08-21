@@ -57,7 +57,8 @@ namespace Utility
                 var scripts = new List<ScriptDescriptor>();
                 var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
 
-                TraceLogging = StartupConfiguration.GetB("Config/EnableTraceLogging");
+                // Yes, GetB can be used to pull a boolean, but that defaults to false
+                TraceLogging = StartupConfiguration.GetS("Config/EnableTraceLogging").ParseBool() ?? true;
                 TraceToConsole = StartupConfiguration.GetB("Config/TraceToConsole");
 
                 if (!scriptsPath.IsNullOrWhitespace())
@@ -92,6 +93,24 @@ namespace Utility
                 File.AppendAllText($"FrameworkStartupError-{DateTime.Now:yyyyMMddHHmmss}", $@"{DateTime.Now}::{ex.UnwrapForLog()}" + Environment.NewLine);
                 throw;
             }
+        }
+
+        public async Task<bool> ReInitialize()
+        {
+            var newConfig = await Data.ReInitialize(ConfigurationKeys);
+
+            if (newConfig != null)
+            {
+                StartupConfiguration = newConfig;
+
+                // ToDo: poke Roslyn cache
+
+                Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
+
+                return true;
+            }
+
+            return false;
         }
 
         public string LogMethodPrefix { get; set; } = "";

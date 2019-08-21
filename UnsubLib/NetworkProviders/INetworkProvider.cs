@@ -17,11 +17,6 @@ namespace UnsubLib.NetworkProviders
         Task<Uri> GetSuppresionLocationUrl(IGenericEntity network, string unsubRelationshipId);
     }
 
-    public class HaltingException : Exception
-    {
-        public HaltingException(string message, Exception e) : base(message, e) { }
-    }
-
     public static class Factory
     {
         public static INetworkProvider GetInstance(FrameworkWrapper fw, IGenericEntity network)
@@ -257,7 +252,7 @@ namespace UnsubLib.NetworkProviders
                 }
                 catch (Exception findUnsubException)
                 {
-                    await _fw.Error(_logMethod, $"Exception finding unsub file source fro {networkName} {unsubRelationshipId}: {suppDetails ?? "null"}::{findUnsubException}");
+                    await _fw.Error(_logMethod, $"Exception finding unsub file source from {networkName} {unsubRelationshipId}: {suppDetails ?? "null"}::{findUnsubException}");
                     return null;
                 }
             }

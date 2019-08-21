@@ -149,10 +149,9 @@ namespace Utility.GenericEntity
         {
             object s = Get(path);
             if (s == null) return false;
-            if (s.GetType() == typeof(bool)) return (bool)s;
-            string sb = s.ToString().ToLower();
-            if (sb == "true" || sb == "t" || sb == "y" || sb == "yes" || sb == "1") return true;
-            else return false;
+            if (s is bool b) return b;
+
+            return s.ToString().ParseBool() == true;
         }
 
         public virtual bool RunB(string fname)

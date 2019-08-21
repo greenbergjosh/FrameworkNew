@@ -570,10 +570,10 @@ namespace VisitorIdLib
 
                         if (!md5.IsNullOrWhitespace())
                         {
-                            var s = await fw.Entities.GetEntityGe(new Guid(CookieMd5Pid));
+                            var s = await fw.Entities.GetEntity(new Guid(CookieMd5Pid));
                             return new VisitorIdResponse(Jw.Json(new
                             {
-                                config = s.GetS(""),
+                                config = s.GetS("Config"),
                                 sid,
                                 md5pid = CookieMd5Pid,
                                 slot,
@@ -1085,9 +1085,9 @@ namespace VisitorIdLib
                     try
                     {
                         errorContext = $"GetEntity {emailpid}";
-                        var emlProvider = await fw.Entities.GetEntityGe(new Guid(emailpid));
+                        var emlProvider = await fw.Entities.GetEntity(new Guid(emailpid));
                         lbmId = new Guid(emlProvider.GetS("LbmId"));
-                        var lbm = await fw.Entities.GetEntity(lbmId);
+                        var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("");
 
                         await fw.Trace(nameof(DoEmailProviders), $"Prior to evaluating LBM lbmId : {lbmId.ToString()}, lbm body: {lbm}, context is not null {context != null}, md5 : {md5 ?? ""}, emlProvider is not null: {emlProvider != null}");
 
