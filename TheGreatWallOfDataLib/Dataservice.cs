@@ -24,6 +24,8 @@ namespace TheGreatWallOfDataLib
                 Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
                 _traceLogResponse = fw.StartupConfiguration.GetS("Config/TraceResponse").ParseBool() ?? false;
                 Authentication.Initialize(fw).Wait();
+                Lbm.Initialize(Fw).GetAwaiter().GetResult();
+                Routing.Routing.Initialize(fw).Wait();
             }
             catch (Exception ex)
             {
@@ -32,15 +34,30 @@ namespace TheGreatWallOfDataLib
             }
         }
 
+        public void ReInitialize()
+        {
+            Lbm.Initialize(Fw).GetAwaiter().GetResult();
+        }
+
         public async Task Run(HttpContext context)
         {
-            string bodyForError = null;
             var requestId = Guid.NewGuid().ToString();
             var fResults = new Dictionary<string, string>();
+            string requestBody = null;
+            var returnHttpFail = false;
 
             try
             {
-                var requestBody = await context.GetRawBodyStringAsync();
+                requestBody = await context.GetRawBodyStringAsync();
+
+                if (requestBody.IsNullOrWhitespace())
+                {
+                    //  Probably a bot or other form of sniffer, return nothing
+                    // ToDo: Drop response as if there were no HTTP listener. Possible?
+                    await context.WriteSuccessRespAsync("");
+                    await Fw.Log(nameof(Run), $"Empty request from {context.Ip()} Path: {context.Request.Path} UserAgent: {context.UserAgent()}");
+                    return;
+                }
 
                 await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
                 var req = Jw.JsonToGenericEntity(requestBody);
@@ -48,7 +65,7 @@ namespace TheGreatWallOfDataLib
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
                 var funcs = req.GetD("").Where(p => p.Item1 != "i");
                 var cancellation = new CancellationTokenSource();
-
+                
                 async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                 {
                     var scopeFunc = p.Item1;
@@ -66,7 +83,7 @@ namespace TheGreatWallOfDataLib
 
                     try
                     {
-                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity);
+                        fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity, context);
                     }
                     catch (Exception e)
                     {
@@ -83,12 +100,18 @@ namespace TheGreatWallOfDataLib
                         }
                         else
                         {
-                            var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
+                            if (fe.ResultCode == 106) await Fw.Error($"Auth", fe.Message);
+                            else
+                            {
+                                var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
 
-                            await Fw.Error($"DB:{scopeFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                                await Fw.Error($"DB:{scopeFunc}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                            }
 
                             fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
                         }
+
+                        if (fe?.HttpFail == true) returnHttpFail = true;
 
                         if (fe?.HaltExecution == true)
                         {
@@ -115,7 +138,8 @@ namespace TheGreatWallOfDataLib
             }
             catch (Exception e)
             {
-                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{bodyForError ?? "null"}");
+                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
+                returnHttpFail = true;
             }
 
             var body = new PL();
@@ -124,9 +148,10 @@ namespace TheGreatWallOfDataLib
 
             var resp = body.ToString();
 
-            if(_traceLogResponse) await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            if (_traceLogResponse) await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
-            await context.WriteSuccessRespAsync(resp);
+            if(returnHttpFail) await context.WriteFailureRespAsync(resp);
+            else await context.WriteSuccessRespAsync(resp);
         }
 
         private static class RC

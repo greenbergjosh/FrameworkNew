@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Utility;
 using Utility.GenericEntity;
 
@@ -9,16 +11,16 @@ namespace SimpleImportExport
         public Pattern(IGenericEntity ge)
         {
             Rx = new Regex(ge.GetS("Pattern"), RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            SourceRelativePath = ge.GetS("SourcePath");
             DestinationRelativePath = ge.GetS("DestinationPath");
             TokenFields = ge.GetE("TokenFields");
             FileDateFormat = ge.GetS("FileDateFormat");
+            AdditionalFields = Rx.GetGroupNames().Where(g => !g.IsNullOrWhitespace() && !g.ParseInt().HasValue && g != "fileDate").ToArray();
         }
 
         public Regex Rx { get; }
-        public string SourceRelativePath { get; }
         public string DestinationRelativePath { get; }
         public IGenericEntity TokenFields { get; }
         public string FileDateFormat { get; }
+        public IEnumerable<string> AdditionalFields { get; }
     }
 }

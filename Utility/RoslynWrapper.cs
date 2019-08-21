@@ -44,9 +44,9 @@ namespace Utility
 
         // Need a way to force a recompile even if the Key is already there
         // Probably just a bool argument called forceRecompile
-        public ScriptDescriptor CompileAndCache(ScriptDescriptor sd)
+        public ScriptDescriptor CompileAndCache(ScriptDescriptor sd, bool update = false)
         {
-            return functions.GetOrAdd(sd.Key, _ =>
+            Lazy<ScriptDescriptor> valueFactory(string __)
             {
                 return new Lazy<ScriptDescriptor>(() =>
                 {
@@ -54,15 +54,15 @@ namespace Utility
 
                     sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
                     var scriptOptions = ScriptOptions.Default
-                            .AddReferences(
-                                Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
-                                Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
-                                Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
-                                Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
-                                Assembly.GetAssembly(typeof(JsonWrapper))
-                                )
-                            .AddReferences(dynamicAssemblies)
-                            .AddImports("System.Dynamic", "System.Xml");
+                        .AddReferences(
+                            Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
+                            Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
+                            Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
+                            Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
+                            Assembly.GetAssembly(typeof(JsonWrapper))
+                        )
+                        .AddReferences(dynamicAssemblies)
+                        .AddImports("System.Dynamic", "System.Xml");
 
                     if (sd.Debug)
                     {
@@ -78,7 +78,9 @@ namespace Utility
 
                     return sd;
                 });
-            }).Value;
+            }
+
+            return functions.AddOrUpdate(sd.Key, valueFactory, (__, lazy) => update ? valueFactory(__) : lazy).Value;
         }
 
         public string GenerateDebugSourceFile(ScriptDescriptor sd)
@@ -113,7 +115,7 @@ namespace Utility
             return Evaluate(name.ToString().ToLower(), code, parms, state, debug, debugDir);
         }
 
-        private (bool debug, string debugDir) GetDefaultDebugValues()
+        public (bool debug, string debugDir) GetDefaultDebugValues()
         {
             var debug = false;
 
