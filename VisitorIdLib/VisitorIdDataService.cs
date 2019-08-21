@@ -867,36 +867,43 @@ namespace VisitorIdLib
             string ua
         ) ValsFromOpaque(IGenericEntity opge)
         {
-            var sid = opge.GetS("sd");
-            var slot = int.Parse(opge.GetS("slot") ?? "0");
-            var page = int.Parse(opge.GetS("page") ?? "0");
-            var md5pid = opge.GetS("md5pid");
-            var isAsync = (opge.GetS("async") ?? "").ToLower() == "true";
-            var vieps = opge.GetS("vieps");
-            var md5 = opge.GetS("md5");
-            var eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
-            var qstr = opge.GetS("qs");
-            var uri = new Uri(HttpUtility.UrlDecode(qstr.IfNullOrWhitespace("about:blank")));
-            var host = uri.Host ?? "";
-            var lv = opge.GetS("lv");
-            var afid = opge.GetS("afid");
-            var tpid = opge.GetS("tpid");
-            var lst = opge.GetS("lst");
-            var vft = (opge.GetS("vft") ?? "").ToLower() == "true";
-            var pfail = ((opge.GetS("pfail") ?? "").ToLower() == "true");
-            var pfailslot = int.Parse(opge.GetS("pfailSlot") ?? "0");
-            var pfailpage = int.Parse(opge.GetS("pfailPage") ?? "0");
-            var tjsv = opge.GetS("tjsv");
-            var ip = opge.GetS("ip");
-            var ua = opge.GetS("ua");
-
-            Dictionary<string, object> rsids = null;
-            if (!string.IsNullOrWhiteSpace(opge.GetS("rsid")))
+            try
             {
-                rsids = JsonConvert.DeserializeObject<Dictionary<string, object>>(opge.GetS("rsid"));
-            }
+                var sid = opge.GetS("sd");
+                var slot = int.Parse(opge.GetS("slot") ?? "0");
+                var page = int.Parse(opge.GetS("page") ?? "0");
+                var md5pid = opge.GetS("md5pid");
+                var isAsync = (opge.GetS("async") ?? "").ToLower() == "true";
+                var vieps = opge.GetS("vieps");
+                var md5 = opge.GetS("md5");
+                var eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
+                var qstr = opge.GetS("qs");
+                var uri = new Uri(HttpUtility.UrlDecode(qstr.IfNullOrWhitespace("about:blank")));
+                var host = uri.Host ?? "";
+                var lv = opge.GetS("lv");
+                var afid = opge.GetS("afid");
+                var tpid = opge.GetS("tpid");
+                var lst = opge.GetS("lst");
+                var vft = (opge.GetS("vft") ?? "").ToLower() == "true";
+                var pfail = ((opge.GetS("pfail") ?? "").ToLower() == "true");
+                var pfailslot = int.Parse(opge.GetS("pfailSlot") ?? "0");
+                var pfailpage = int.Parse(opge.GetS("pfailPage") ?? "0");
+                var tjsv = opge.GetS("tjsv");
+                var ip = opge.GetS("ip");
+                var ua = opge.GetS("ua");
 
-            return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, ip, ua);
+                Dictionary<string, object> rsids = null;
+                if (!string.IsNullOrWhiteSpace(opge.GetS("rsid")))
+                {
+                    rsids = JsonConvert.DeserializeObject<Dictionary<string, object>>(opge.GetS("rsid"));
+                }
+
+                return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, ip, ua);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(string.Format("{0}: Caught error extracting values from opaque: {1}, Exception: {2}", nameof(ValsFromOpaque), opge == null ? "opaque value is null" : opge.GetS(""), e.UnwrapForLog()));
+            }
         }
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool hasClientContext, bool canHaveCookie = true, CookieData cookieData = null, IGenericEntity op = null, string md5 = null)
