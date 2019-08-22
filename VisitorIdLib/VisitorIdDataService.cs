@@ -462,7 +462,7 @@ namespace VisitorIdLib
             }
 
             var isAsync = true;
-            List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = null;
+            List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = new List<(string Md5provider, string EmailProviderSeq)>();
             foreach (var kvp in VisitorIdMd5ProviderSequences[afid])
             {
                 if (host != "" && ((host == kvp.Domain) || host.EndsWith("." + kvp.Domain)))
