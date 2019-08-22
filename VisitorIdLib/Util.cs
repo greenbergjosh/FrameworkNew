@@ -23,6 +23,7 @@ namespace VisitorIdLib
             catch (Exception e)
             {
                 errLogger(nameof(OpaqueFromBase64), $"Caught exception attempting to Base-64 decode string '{base64Opaque ?? ""}' to opaque value: {e.UnwrapForLog()}");
+                return null;
             }
             IGenericEntity op = new GenericEntityJson();
             op.InitializeEntity(null, null, opstate);
