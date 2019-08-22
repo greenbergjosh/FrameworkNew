@@ -687,7 +687,7 @@ namespace VisitorIdLib
 
                         return new VisitorIdResponse(Jw.Json(new
                         {
-                            config = ReplaceToken(s.GetS(""), opaque64),
+                            config = ReplaceToken(s.GetS("Config"), opaque64),
                             sid,
                             md5pid,
                             slot,
