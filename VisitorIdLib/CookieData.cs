@@ -174,16 +174,19 @@ namespace VisitorIdLib
 
         public void AddOrUpdateProviderSelect(string providerId, DateTime responseTime)
         {
-            if (ProviderLastSelectTime.ContainsKey(providerId))
-                ProviderLastSelectTime[providerId] = responseTime;
+            var lcProviderId = providerId.ToLower();
+
+            if (ProviderLastSelectTime.ContainsKey(lcProviderId))
+                ProviderLastSelectTime[lcProviderId] = responseTime;
             else
-                ProviderLastSelectTime.Add(providerId, responseTime);
+                ProviderLastSelectTime.Add(lcProviderId, responseTime);
         }
 
         public DateTime? LastSelectTime(string providerId)
         {
-            return ProviderLastSelectTime.ContainsKey(providerId) ?
-                (DateTime?) ProviderLastSelectTime[providerId] :
+            var lcProviderId = providerId.ToLower();
+            return ProviderLastSelectTime.ContainsKey(lcProviderId) ?
+                (DateTime?) ProviderLastSelectTime[lcProviderId] :
                 null;
         }
 
