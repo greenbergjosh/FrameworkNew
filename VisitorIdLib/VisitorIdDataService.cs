@@ -539,10 +539,28 @@ namespace VisitorIdLib
                                "LookupProviderMd5EmailBySessionId",
                                Jw.Json(new { Sid = cookieData.sid }),
                                "", null, null, SqlTimeoutSec);
+
+                            if (!lookupGe.GetS("Md5").IsNullOrWhitespace() ||
+                                !lookupGe.GetS("Em").IsNullOrWhitespace())
+                            {
+                                be = new EdwBulkEvent();
+                                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
+                                null, PL.O(new
+                                {
+                                    et = "Md5EmailBySessionId",
+                                    md5 = lookupGe.GetS("Md5"),
+                                    em = lookupGe.GetS("Em"),
+                                    md5pid = lookupGe.GetS("Md5Pid"),
+                                    md5date = lookupGe.GetS("Ts")
+                                }));
+                                await fw.EdwWriter.Write(be);
+                            }
+
                             cookieData.md5 = lookupGe.GetS("Md5");
                             cookieData.em = lookupGe.GetS("Em");
                             cookieData.md5pid = lookupGe.GetS("Md5Pid");
                             cookieData.md5date = lookupGe.GetS("Ts");
+
                         }
 
                         // Check for md5s over a date range from a provider which were reported as incorrect
@@ -556,7 +574,7 @@ namespace VisitorIdLib
                                 et = "Md5PoisonIncident",
                                 incidentid = poisonIncident?.IncidentId,
                                 md5pid = poisonIncident?.Md5Pid,
-                                md5 = cookieData.md5,
+                                cookieData.md5,
                                 md5date = poisonIncident?.Md5Date
                             }));
                             await fw.EdwWriter.Write(be);
@@ -719,7 +737,7 @@ namespace VisitorIdLib
             }
             catch (Exception ex)
             {
-                await fw.Err(1000, "DoVisitorId", "Exception", ex.ToString());
+                await fw.Err(1000, "DoVisitorId", "Exception", ex.UnwrapForLog());
             }
 
             await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "end" }), codePathRsidDict);
@@ -772,7 +790,7 @@ namespace VisitorIdLib
                     null, PL.O(new
                     {
                         et = "Md5ProviderResponse",
-                        md5 = md5 ?? "",
+                        md5,
                         md5pid,
                         md5slot = slot,
                         md5page = page,
