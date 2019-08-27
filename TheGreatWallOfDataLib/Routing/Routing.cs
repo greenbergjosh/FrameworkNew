@@ -24,7 +24,7 @@ namespace TheGreatWallOfDataLib.Routing
         private const string DefaultFuncIdent = "*";
         public delegate Task<IGenericEntity> ApiFunc(string scope, string func, string requestArgs, string identity, HttpContext ctx);
 
-        // ToDo: Refactor to use LBMs and config
+        // ToDo: Refactor to use config?
         private static readonly (string scope, (string funcName, ApiFunc func)[] funcs)[] __ = new[]
         {
             ("config", new [] {
