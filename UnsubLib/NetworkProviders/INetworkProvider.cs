@@ -104,9 +104,13 @@ namespace UnsubLib.NetworkProviders
                 {
                     var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
 
-                    if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
-
                     respBody = resp.body;
+                    var rb = Jw.JsonToGenericEntity(respBody);
+
+                    if (rb?.GetS("message") == "Suppresion List Not Found") return null;
+
+                    if (resp.success == false) throw new Exception($"Http request for suppression url failed for {networkName}: {url} {resp.body}", null);
+                    
                     var dlUrl = Jw.JsonToGenericEntity(respBody).GetS(downloadUrlPath);
 
                     return dlUrl.IsNullOrWhitespace() ? null : new Uri(dlUrl);

@@ -36,6 +36,7 @@ namespace TheGreatWallOfDataLib
 
         public void ReInitialize()
         {
+            Fw.RoslynWrapper.functions.Clear();
             Lbm.Initialize(Fw).GetAwaiter().GetResult();
         }
 
