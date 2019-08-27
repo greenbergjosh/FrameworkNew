@@ -17,11 +17,12 @@ namespace Utility
             return hash;
         }
 
+        private static readonly MD5CryptoServiceProvider Md5Provider = new MD5CryptoServiceProvider();
+
         public static string Utf8MD5HashAsHexString(string input)
         {
-            StringBuilder hash = new StringBuilder();
-            MD5CryptoServiceProvider md5provider = new MD5CryptoServiceProvider();
-            byte[] bytes = md5provider.ComputeHash(new UTF8Encoding().GetBytes(input));
+            var hash = new StringBuilder();
+            var bytes = Md5Provider.ComputeHash(new UTF8Encoding().GetBytes(input));
 
             for (int i = 0; i < bytes.Length; i++)
             {
