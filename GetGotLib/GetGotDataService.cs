@@ -70,108 +70,111 @@ namespace GetGotLib
             {
                 var requestBody = await context.GetRawBodyStringAsync();
 
-                bodyForError = $"\r\nBody:\r\n{requestBody}";
-
-                _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
-                var req = Jw.JsonToGenericEntity(requestBody);
-                var (result, sid) = await HandleEdwEvents(req, requestBody);
-
-                rc = result;
-
-                if (rc == RC.Success)
+                if(!requestBody.IsNullOrWhitespace())
                 {
-                    var identity = req.GetS("i/t");
-                    var funcs = req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid").ToArray();
-                    var cancellation = new CancellationTokenSource();
+                    bodyForError = $"\r\nBody:\r\n{requestBody}";
 
-                    // ToDo: make allOk thread safe with cancellationtoken
-                    async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
+                    _fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                    var req = Jw.JsonToGenericEntity(requestBody);
+                    var (result, sid) = await HandleEdwEvents(req, requestBody);
+
+                    rc = result;
+
+                    if (rc == RC.Success)
                     {
-                        if (cancellation.Token.IsCancellationRequested) return (p.Item1, null);
+                        var identity = req.GetS("i/t");
+                        var funcs = req.GetD("p").Where(p => p.Item1 != "s" && p.Item1 != "e" && p.Item1 != "sid").ToArray();
+                        var cancellation = new CancellationTokenSource();
 
-                        IGenericEntity fResult = null;
-                        var fResultCode = 100;
-
-                        try
+                        // ToDo: make allOk thread safe with cancellationtoken
+                        async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                         {
-                            switch (p.Item1)
+                            if (cancellation.Token.IsCancellationRequested) return (p.Item1, null);
+
+                            IGenericEntity fResult = null;
+                            var fResultCode = 100;
+
+                            try
                             {
-                                case "sendcode":
-                                    await SendCode(p.Item2, requestId);
-                                    fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
-                                    break;
-                                case "createpass":
-                                    fResult = await CommitUserRegistration(p.Item2, sid, requestBody);
-                                    break;
-                                case "rstpswd":
-                                    await SendResetPasswordCode(p.Item2, requestId);
-
-                                    fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
-                                    break;
-                                case "newpswd":
-                                    fResult = await SetNewPassword(p.Item2);
-                                    break;
-                                case "login":
-                                    fResult = await Login(p.Item2);
-                                    break;
-                                case "genhandles":
-                                    var ge = Jw.JsonToGenericEntity(p.Item2);
-                                    var handle = ge.GetS("handle");
-                                    var cfg = ge.GetL("cfg").Select(c => (digits: c.GetS("digits").ParseInt().Value, count: c.GetS("count").ParseInt().Value));
-                                    var res = GenerateAltHandles(handle, cfg);
-
-                                    fResult = Jw.JsonToGenericEntity(Jw.Serialize(res));
-                                    break;
-                                default:
-
-                                    if (LbmProxy.HasFunction(p.Item1)) fResult = await LbmProxy.Run(p.Item1, p.Item2, identity, context);
-                                    else fResult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
-
-                                    break;
-                            }
-                            fResultCode = fResult?.GetS("r").ParseInt() ?? 100;
-
-                            if (fResultCode != 0) throw new FunctionException(fResultCode, $"Error in function call {p.Item1}: {fResult?.GetS("") ?? "null"}");
-                        }
-                        catch (Exception e)
-                        {
-                            var identityStr = identity == null ? "null" : $"\r\n{identity}\r\n";
-                            var payloadStr = p.Item2 == null ? "null" : $"\r\n{p.Item2}\r\n";
-                            var funcContext = $"\r\nName: {p.Item1}\r\nIdentity: {identityStr}\r\nArgs: {payloadStr}\r\nRequestId: {requestId}";
-
-                            if (e is FunctionException fe)
-                            {
-                                var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
-
-                                await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
-
-                                if (fe?.HaltExecution == true)
+                                switch (p.Item1)
                                 {
-                                    fResult = Jw.JsonToGenericEntity("{ \"r\": " + RC.FunctionHalting + "}");
-                                    cancellation.Cancel();
+                                    case "sendcode":
+                                        await SendCode(p.Item2, requestId);
+                                        fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
+                                        break;
+                                    case "createpass":
+                                        fResult = await CommitUserRegistration(p.Item2, sid, requestBody);
+                                        break;
+                                    case "rstpswd":
+                                        await SendResetPasswordCode(p.Item2, requestId);
+
+                                        fResult = Jw.JsonToGenericEntity("{\"r\": 0}");
+                                        break;
+                                    case "newpswd":
+                                        fResult = await SetNewPassword(p.Item2);
+                                        break;
+                                    case "login":
+                                        fResult = await Login(p.Item2);
+                                        break;
+                                    case "genhandles":
+                                        var ge = Jw.JsonToGenericEntity(p.Item2);
+                                        var handle = ge.GetS("handle");
+                                        var cfg = ge.GetL("cfg").Select(c => (digits: c.GetS("digits").ParseInt().Value, count: c.GetS("count").ParseInt().Value));
+                                        var res = GenerateAltHandles(handle, cfg);
+
+                                        fResult = Jw.JsonToGenericEntity(Jw.Serialize(res));
+                                        break;
+                                    default:
+
+                                        if (LbmProxy.HasFunction(p.Item1)) fResult = await LbmProxy.Run(p.Item1, p.Item2, identity, context);
+                                        else fResult = await ExecuteDbFunc(p.Item1, p.Item2, identity);
+
+                                        break;
                                 }
-                                else if (fe.LogAndReturnSuccess) fResult = Jw.JsonToGenericEntity("{ \"r\": 0}");
-                                else fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
+                                fResultCode = fResult?.GetS("r").ParseInt() ?? 100;
+
+                                if (fResultCode != 0) throw new FunctionException(fResultCode, $"Error in function call {p.Item1}: {fResult?.GetS("") ?? "null"}");
                             }
-                            else
+                            catch (Exception e)
                             {
-                                await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
-                                fResult = Jw.JsonToGenericEntity("{ \"r\": 1 }");
+                                var identityStr = identity == null ? "null" : $"\r\n{identity}\r\n";
+                                var payloadStr = p.Item2 == null ? "null" : $"\r\n{p.Item2}\r\n";
+                                var funcContext = $"\r\nName: {p.Item1}\r\nIdentity: {identityStr}\r\nArgs: {payloadStr}\r\nRequestId: {requestId}";
+
+                                if (e is FunctionException fe)
+                                {
+                                    var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
+
+                                    await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+
+                                    if (fe?.HaltExecution == true)
+                                    {
+                                        fResult = Jw.JsonToGenericEntity("{ \"r\": " + RC.FunctionHalting + "}");
+                                        cancellation.Cancel();
+                                    }
+                                    else if (fe.LogAndReturnSuccess) fResult = Jw.JsonToGenericEntity("{ \"r\": 0}");
+                                    else fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
+                                }
+                                else
+                                {
+                                    await _fw.Error(nameof(Run), $"Unhandled function exception:{funcContext}\r\n{e.UnwrapForLog()}");
+                                    fResult = Jw.JsonToGenericEntity("{ \"r\": 1 }");
+                                }
                             }
+
+                            return (p.Item1, fResult.GetS(""));
                         }
 
-                        return (p.Item1, fResult.GetS(""));
-                    }
-
-                    var tasks = funcs.Select(HandleFunc).ToArray();
+                        var tasks = funcs.Select(HandleFunc).ToArray();
 
 #if DEBUG
-                    foreach (var t in tasks) await t;
+                        foreach (var t in tasks) await t;
 #else
                     await Task.WhenAll(tasks);
 #endif
 
-                    fResults.AddRange(tasks.Select(t => t.Result).Where(r => r.result != null));
+                        fResults.AddRange(tasks.Select(t => t.Result).Where(r => r.result != null));
+                    }
                 }
             }
             catch (Exception e)
