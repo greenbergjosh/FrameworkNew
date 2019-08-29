@@ -1792,6 +1792,10 @@
 }
 
 /*!componenticons*/
+.e-toolbar-items .e-group::before {
+  content: "\e926";
+}
+
 .e-pager .e-icon-last::before,
 .e-grid-menu .e-icon-last::before {
   content: "\e7bb";
