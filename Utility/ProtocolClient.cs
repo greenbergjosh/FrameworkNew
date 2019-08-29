@@ -36,6 +36,7 @@ namespace Utility
             string basicAuthString,
             Func<string, Task<string>> zipEntryTester,
             Dictionary<string, Func<string, Task<object>>> zipEntryProcessors,
+            string proxyHostAndPort = null,
             double timeoutSeconds = 180.0, bool decompress = false,
             int maxConnectionsPerServer = 5)
 
@@ -49,7 +50,8 @@ namespace Utility
                 var handler = new HttpClientHandler()
                 {
                     MaxConnectionsPerServer = maxConnectionsPerServer,
-                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    Proxy = new WebProxy(proxyHostAndPort)
                 };
                 client = new HttpClient(handler);
             }
