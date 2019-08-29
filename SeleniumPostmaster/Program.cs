@@ -33,6 +33,30 @@ namespace SeleniumPostmaster
 
             IGenericEntity postmasterAccts = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "PostmasterAccount" }), "");
 
+            string ArgsUserName = "";
+            string ArgsProvider = "";
+            if (args.Length > 0)
+            {
+                if (args.Length >= 1) // either hotmail or gmail
+                {
+                    if (args[0] == "h")
+                    {
+                        ArgsProvider = "Hotmail";
+                    }
+                    if (args[0] == "g")
+                    {
+                        ArgsProvider = "Gmail";
+                    }
+                }
+                if (args.Length == 2) // specific username to run
+                {
+                    ArgsUserName = args[1];
+                }
+
+                Console.WriteLine($"Commandline provider: '{ArgsProvider}'");
+                Console.WriteLine($"Specific username: '{ArgsUserName}'");
+            }
+
             foreach (var ps in postmasterAccts.GetL(""))
             {
                 if (ps.GetS("Config/Enabled").IsNullOrWhitespace() || ps.GetS("Config/Enabled").ToLower() == "false")
@@ -51,11 +75,20 @@ namespace SeleniumPostmaster
                 string password = ps.GetS("Config/Password");
                 string type = ps.GetS("Config/Type");
 
-                if (type == "Hotmail")
+                if (!ArgsUserName.IsNullOrWhitespace() &&
+                    username != ArgsUserName)
+                {
+                    Console.WriteLine($"Skipping {username}");
+                    continue;
+                }
+
+                Console.WriteLine($"Processing username {username} with proxy: {proxyHostAndPort}");
+
+                if (type == "Hotmail" && (ArgsProvider.IsNullOrWhitespace() || ArgsProvider == "Hotmail"))
                 {
                     await DoHotmail(pmAcctId, username, password, HotmailPostmasterUrl, ps.GetS("Config/ApiKey"), proxyHostAndPort);
                 }
-                else if (type == "Gmail")
+                else if (type == "Gmail" && (ArgsProvider.IsNullOrWhitespace() || ArgsProvider == "Gmail"))
                 {
                     var chromeOptions = new ChromeOptions();
                     if (! proxyHostAndPort.IsNullOrWhitespace())
@@ -107,7 +140,7 @@ namespace SeleniumPostmaster
                 catch (Exception ex)
                 {
                     await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail standard data for account id {pmAcctId}, with user {username}, password {password}, at {finalDataUrl}: {ex.UnwrapForLog()}");
-                    return;
+                    continue;
                 }
                 if (!dateRangeContainsData)
                 {
@@ -131,8 +164,18 @@ namespace SeleniumPostmaster
                         string baseStr = "https://sendersupport.olc.protection.outlook.com/snds/data.aspx?" + "&key=" + apiKey;
                         string trapStr = baseStr + "&ip=" + ip.GetS("Ip") + "&sampletype=trap&date=" + rqstDate;
                         string compStr = baseStr + "&ip=" + ip.GetS("Ip") + "&sampletype=complaint&date=" + rqstDate;
-                        string ret3 = (string)await Utility.ProtocolClient.DownloadPage(trapStr, null, null, null, proxyHostAndPort);
-                        string ret4 = (string)await Utility.ProtocolClient.DownloadPage(compStr, null, null, null, proxyHostAndPort);
+                        string ret3;
+                        string ret4;
+                        try
+                        {
+                            ret3 = (string)await Utility.ProtocolClient.DownloadPage(trapStr, null, null, null, proxyHostAndPort);
+                            ret4 = (string)await Utility.ProtocolClient.DownloadPage(compStr, null, null, null, proxyHostAndPort);
+                        }
+                        catch (Exception ex)
+                        {
+                            await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP blacklist for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
+                            continue;
+                        }
 
                         dataLayerFn = "InsertHotmailBlacklist";
                         if (!string.IsNullOrEmpty(ret3))
