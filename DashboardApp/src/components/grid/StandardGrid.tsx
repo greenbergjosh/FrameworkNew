@@ -33,6 +33,8 @@ import {
   SortSettingsModel,
   EditSettingsModel,
   EditMode,
+  Group,
+  Page,
 } from "@syncfusion/ej2-react-grids"
 
 interface EnrichedColumnDefinition extends ColumnModel {
@@ -66,6 +68,8 @@ const gridComponentServices = [
   PdfExport,
   Sort,
   Filter,
+  Group,
+  Page,
   Freeze,
   Aggregate,
   Edit,
@@ -73,15 +77,24 @@ const gridComponentServices = [
 
 const commonGridOptions = {
   columnMenuItems: ["SortAscending", "SortDescending"] as ColumnMenuItem[],
-  toolbar: ["CsvExport", "ExcelExport", "PdfExport", "Print", "ColumnChooser"],
+  toolbar: [
+    "CsvExport",
+    "ExcelExport",
+    "PdfExport",
+    "Print",
+    { text: "Group", tooltipText: "Group", prefixIcon: "e-group", id: "group" },
+    "ColumnChooser",
+  ],
   showColumnChooser: true,
   allowExcelExport: true,
   allowMultiSorting: true,
+  allowPaging: true,
   allowPdfExport: true,
   allowResizing: true,
   allowReordering: true,
   allowSorting: true,
   allowFiltering: true,
+  allowGrouping: true,
   filterSettings: { type: "Menu" } as FilterSettingsModel,
   width: "100%",
   height: "100%",
@@ -98,6 +111,8 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
       grid.current.csvExport()
     } else if (id.endsWith("_pdfexport")) {
       grid.current.pdfExport()
+    } else if (id === "group") {
+      grid.current.allowGrouping = !grid.current.allowGrouping
     }
   }
 }
@@ -271,6 +286,7 @@ export const StandardGrid = React.forwardRef(
         <PureGridComponent
           ref={ref}
           {...commonGridOptions}
+          allowGrouping={false}
           toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
           actionComplete={actionComplete}
           columns={usableColumns}
