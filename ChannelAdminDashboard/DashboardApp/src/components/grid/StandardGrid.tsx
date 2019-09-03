@@ -35,6 +35,8 @@ import {
   EditMode,
   Group,
   Page,
+  GroupSettingsModel,
+  PageSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 
 interface EnrichedColumnDefinition extends ColumnModel {
@@ -75,6 +77,7 @@ const gridComponentServices = [
   Edit,
 ]
 
+// TODO: These should mostly be configurable
 const commonGridOptions = {
   columnMenuItems: ["SortAscending", "SortDescending"] as ColumnMenuItem[],
   toolbar: [
@@ -96,6 +99,11 @@ const commonGridOptions = {
   allowFiltering: true,
   allowGrouping: true,
   filterSettings: { type: "Menu" } as FilterSettingsModel,
+  groupSettings: { disablePageWiseAggregates: true } as GroupSettingsModel,
+  pageSettings: {
+    pageSize: 50,
+    pageSizes: ["All", 25, 50, 100, 150, 200, 500],
+  } as PageSettingsModel,
   width: "100%",
   height: "100%",
 }
