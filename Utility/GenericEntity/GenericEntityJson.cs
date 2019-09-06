@@ -56,7 +56,7 @@ namespace Utility.GenericEntity
                     try { tok = JToken.Parse(vStr); }
                     catch (Exception) { tok = vStr; }
                 }
-                else tok = JToken.FromObject(value);
+                else if(value != null) tok = JToken.FromObject(value);
 
                 var prop = parent.Property(cpath.Value.propName);
 

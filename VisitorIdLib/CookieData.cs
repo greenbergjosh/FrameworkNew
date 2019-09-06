@@ -139,7 +139,7 @@ namespace VisitorIdLib
 
         }
 
-        public (Guid IncidentId, Guid Md5Pid, Guid Md5, DateTime Md5Date)? CheckForPoisonedMd5 (List<(Guid IncidentId, Guid Md5Pid, DateTime StartDate, DateTime EndDate)> poisonList)
+        public (Guid IncidentId, Guid Md5Pid, DateTime Md5Date)? CheckForPoisonedMd5 (List<(Guid IncidentId, Guid Md5Pid, DateTime StartDate, DateTime EndDate)> poisonList)
         {
             if (DateTime.TryParse(this.md5date, out var Md5DateAsDate) == false ||
                 Guid.TryParse(this.md5pid, out var Md5PidAsGuid) == false )
@@ -152,7 +152,7 @@ namespace VisitorIdLib
                     Md5DateAsDate >= poisonIncident.StartDate &&
                     Md5DateAsDate <= poisonIncident.EndDate )
                 {
-                    return (poisonIncident.IncidentId, poisonIncident.Md5Pid, Md5: Md5PidAsGuid, Md5Date : Md5DateAsDate);
+                    return (poisonIncident.IncidentId, poisonIncident.Md5Pid, Md5Date : Md5DateAsDate);
                 }
             }
             return null;
@@ -174,16 +174,19 @@ namespace VisitorIdLib
 
         public void AddOrUpdateProviderSelect(string providerId, DateTime responseTime)
         {
-            if (ProviderLastSelectTime.ContainsKey(providerId))
-                ProviderLastSelectTime[providerId] = responseTime;
+            var lcProviderId = providerId.ToLower();
+
+            if (ProviderLastSelectTime.ContainsKey(lcProviderId))
+                ProviderLastSelectTime[lcProviderId] = responseTime;
             else
-                ProviderLastSelectTime.Add(providerId, responseTime);
+                ProviderLastSelectTime.Add(lcProviderId, responseTime);
         }
 
         public DateTime? LastSelectTime(string providerId)
         {
-            return ProviderLastSelectTime.ContainsKey(providerId) ?
-                (DateTime?) ProviderLastSelectTime[providerId] :
+            var lcProviderId = providerId.ToLower();
+            return ProviderLastSelectTime.ContainsKey(lcProviderId) ?
+                (DateTime?) ProviderLastSelectTime[lcProviderId] :
                 null;
         }
 

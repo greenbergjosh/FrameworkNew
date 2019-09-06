@@ -24,7 +24,8 @@ namespace TheGreatWallOfDataLib
                 Fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
                 _traceLogResponse = fw.StartupConfiguration.GetS("Config/TraceResponse").ParseBool() ?? false;
                 Authentication.Initialize(fw).Wait();
-                Lbm.Initialize(Fw).Wait();
+                Lbm.Initialize(Fw).GetAwaiter().GetResult();
+                Routing.Routing.Initialize(fw).Wait();
             }
             catch (Exception ex)
             {
@@ -33,14 +34,21 @@ namespace TheGreatWallOfDataLib
             }
         }
 
+        public void ReInitialize()
+        {
+            Fw.RoslynWrapper.functions.Clear();
+            Lbm.Initialize(Fw).GetAwaiter().GetResult();
+        }
+
         public async Task Run(HttpContext context)
         {
             var requestId = Guid.NewGuid().ToString();
             var fResults = new Dictionary<string, string>();
             string requestBody = null;
+            var returnHttpFail = false;
 
             try
-            {                
+            {
                 requestBody = await context.GetRawBodyStringAsync();
 
                 if (requestBody.IsNullOrWhitespace())
@@ -58,7 +66,7 @@ namespace TheGreatWallOfDataLib
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
                 var funcs = req.GetD("").Where(p => p.Item1 != "i");
                 var cancellation = new CancellationTokenSource();
-
+                
                 async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                 {
                     var scopeFunc = p.Item1;
@@ -104,6 +112,8 @@ namespace TheGreatWallOfDataLib
                             fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
                         }
 
+                        if (fe?.HttpFail == true) returnHttpFail = true;
+
                         if (fe?.HaltExecution == true)
                         {
                             fResult = Jw.JsonToGenericEntity("{ \"r\": " + RC.FunctionHalting + "}");
@@ -130,6 +140,7 @@ namespace TheGreatWallOfDataLib
             catch (Exception e)
             {
                 await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
+                returnHttpFail = true;
             }
 
             var body = new PL();
@@ -138,9 +149,10 @@ namespace TheGreatWallOfDataLib
 
             var resp = body.ToString();
 
-            if(_traceLogResponse) await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
+            if (_traceLogResponse) await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
-            await context.WriteSuccessRespAsync(resp);
+            if(returnHttpFail) await context.WriteFailureRespAsync(resp);
+            else await context.WriteSuccessRespAsync(resp);
         }
 
         private static class RC
