@@ -620,21 +620,60 @@ namespace UnsubLib
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UnzipUnbuffered({networkName}):: for url {uri.Key}");
                     }
 
-                    if (cf.ContainsKey(MD5HANDLER))
+                    if (cf.ContainsKey(MD5HANDLER) || cf.ContainsKey(PLAINTEXTHANDLER))
                     {
-                        var fmd5 = cf[MD5HANDLER].ToString().ToLower();
-                        var fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt").Length;
+                        string fmd5;
+                        long fileSize;
 
-                        await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonAsciiFromFile({networkName}):: for file {fmd5}({fileSize})");
+                        if (cf.ContainsKey(MD5HANDLER))
+                        {
+                            fmd5 = cf[MD5HANDLER].ToString().ToLower();
 
-                        await UnixWrapper.RemoveNonAsciiFromFile(ClientWorkingDirectory,
-                            fmd5 + ".txt", fmd5 + ".txt.cln");
+                            fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt").Length;
 
-                        fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.cln").Length;
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonAsciiFromFile({networkName}):: for file {fmd5}({fileSize})");
 
-                        await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonMD5LinesFromFile({networkName}):: for file {fmd5}({fileSize})");
+                            await UnixWrapper.RemoveNonAsciiFromFile(ClientWorkingDirectory, fmd5 + ".txt", fmd5 + ".txt.cln");
 
-                        await UnixWrapper.RemoveNonMD5LinesFromFile(ClientWorkingDirectory, fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
+                            fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.cln").Length;
+
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonMD5LinesFromFile({networkName}):: for file {fmd5}({fileSize})");
+
+                            await UnixWrapper.RemoveNonMD5LinesFromFile(ClientWorkingDirectory, fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
+
+                        }
+                        else
+                        {
+                            var plainTextFile = new FileInfo(Path.Combine(ClientWorkingDirectory, cf[PLAINTEXTHANDLER].ToString().ToLower() + ".txt"));
+                            var fmd5G = Guid.NewGuid();
+                            fmd5 = fmd5G.ToString();
+
+                            fileSize = plainTextFile.Length;
+
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"MD5 plain text file {plainTextFile.Name}({fileSize})");
+
+                            using (var fs = plainTextFile.OpenText())
+                            using (var ws = File.CreateText(Path.Combine(ClientWorkingDirectory, $"{fmd5}.txt.cl2")))
+                            {
+                                string line;
+
+                                while ((line = await fs.ReadLineAsync()) != null)
+                                {
+                                    if (!line.IsNullOrWhitespace()) await ws.WriteLineAsync(Hashing.Utf8MD5HashAsHexString(line.Trim()));
+                                }
+                            }
+
+                            cf[MD5HANDLER] = fmd5G;
+
+                            try
+                            {
+                                plainTextFile.Delete();
+                            }
+                            catch (Exception e)
+                            {
+                                
+                            }
+                        }
 
                         fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.cl2").Length;
 
@@ -1431,6 +1470,7 @@ namespace UnsubLib
             var md5 = dtve.GetS("EmailMd5");
             var email = dtve.GetS("Email");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
+            var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
 
             try
             {
@@ -1453,9 +1493,9 @@ namespace UnsubLib
 
                 if (!isUnsub && globalSupp)
                 {
-                    var res = await Data.CallFn(Conn, "IsSuppressed", Jw.Serialize(email.IsNullOrWhitespace() ? (object)new { md5 } : new { email }), "");
+                    var res = await Data.CallFn("Signal", "inSignalGroups", Jw.Serialize(new { group = globalSuppGroup, emailMd5 = email.IfNullOrWhitespace(md5) }));
 
-                    isUnsub = res.GetS("Result").ParseBool() ?? true;
+                    isUnsub = res?.GetL("in").Any() ?? true;
                 }
 
                 return Jw.Json(new { Result = isUnsub });
@@ -1479,6 +1519,17 @@ namespace UnsubLib
                 new Dictionary<string, string>() { { "", proxyRequest } }, 10 * 60, "application/json");
         }
 
+        private JArray FlexStringArray(IGenericEntity ge, string path)
+        {
+            var tok = Jw.TryParse(ge.GetS(path));
+
+            if (tok is JArray ja) return ja;
+
+            var str = ge.GetS(path);
+
+            return str.IsNullOrWhitespace() ? null : JArray.FromObject(new[] { str });
+        }
+
         public async Task<string> IsUnsubList(IGenericEntity dtve)
         {
             var md5s = new List<string>();
@@ -1486,6 +1537,8 @@ namespace UnsubLib
             var requestemails = new Dictionary<string, string>();
             var campaignId = dtve.GetS("CampaignId");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
+            var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+
             (List<string> found, List<string> notFound) binarySearchResults;
 
             try
@@ -1531,19 +1584,18 @@ namespace UnsubLib
             }
 
             var emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToArray();
-            var md5sNotFound = binarySearchResults.notFound.Where(m => !requestemails.ContainsKey(m)).ToArray();
 
             if (globalSupp)
             {
                 try
                 {
-                    var args = Jw.Serialize(new { md5s = md5sNotFound, emails = emailsNotFound });
+                    var args = Jw.Serialize(new { group = globalSuppGroup, emailMd5 = emailsNotFound });
 
                     await _fw.Trace(nameof(IsUnsubList), $"Checking global suppression\n{args}");
-                    var res = await Data.CallFn(Conn, "AreSuppressed", args);
 
-                    emailsNotFound = res.GetL("notFound/emails").Select(g => g.GetS("")).ToArray();
-                    md5sNotFound = res.GetL("notFound/md5s").Select(g => g.GetS("")).ToArray();
+                    var res = await Data.CallFn("Signal", "inSignalGroups", args);
+
+                    emailsNotFound = res?.GetL("out").Select(g => g.GetS("")).ToArray();
                 }
                 catch (Exception e)
                 {
@@ -1552,7 +1604,7 @@ namespace UnsubLib
                 }
             }
 
-            return Jw.Serialize(new { NotUnsub = emailsNotFound.Union(md5sNotFound) });
+            return Jw.Serialize(new { NotUnsub = emailsNotFound });
         }
 
         public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)

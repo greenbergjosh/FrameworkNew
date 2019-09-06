@@ -81,29 +81,15 @@ namespace SimpleImportExport
             {
                 dirFiles = (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password)).Select(r =>
                 {
+                    var basePath = new List<string> { BasePath };
                     var spl = r.Split("/", StringSplitOptions.RemoveEmptyEntries);
 
-                    return (directory: spl.Take(spl.Length - 1).Join("/"), spl.Last());
+                    basePath.AddRange(spl.Take(spl.Length - 1));
+                    return (directory: CombineUrl(basePath.ToArray()), spl.Last());
                 }).ToList();
             }
 
-            if (dirFiles?.Any() == true)
-            {
-                if (Patterns?.Any() == true)
-                {
-                    foreach (var p in Patterns)
-                    {
-                        files.AddRange(dirFiles.Select(f => new { match = ApplyPattern(p, CombineUrl(f.directory, f.file)), f.directory, f.file }).Where(f => f.match.isMatch)
-                            .Select(f => new SourceFileInfo(f.directory, f.file, p, f.match.fileDate)));
-                    }
-                }
-                else
-                {
-                    files.AddRange(dirFiles.Select(f => new SourceFileInfo(f.directory, f.file, null, null)));
-                }
-            }
-
-            return files;
+            return Filter(dirFiles.Select(f => (new SourceFileInfo(f.directory, f.file), CombineUrl(f.directory, f.file))).ToArray());
         }
 
         public override Task Delete(string directoryPath, string fileName)

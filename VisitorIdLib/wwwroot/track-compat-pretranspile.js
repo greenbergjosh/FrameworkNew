@@ -43,7 +43,7 @@ async function visitorId(url, opaque, future) {
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "3", pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
+            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "4", pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
         };
 
         lastOpaqueUsed = opaque;
@@ -66,8 +66,12 @@ async function visitorId(url, opaque, future) {
 window[window.visitorIdObject].visitorId = visitorId;
 window[window.visitorIdObject].emailSubmitted = emailSubmitted;
 
-async function emailSubmitted(email) {
-    res = await window.genericFetch(lastUrlUsed + '?m=emailSubmitted&email=' + base64UrlSafe(email) + '&op=' + base64UrlSafe(JSON.stringify(lastOpaqueUsed)),
+async function emailSubmitted(email, data) {
+    dataSubmitted('EmailSubmitted', { ...{ email: email }, ...data });
+}
+
+async function dataSubmitted(type, data) {
+    res = await window.genericFetch(lastUrlUsed + '?m=dataSubmitted&type=' + base64UrlSafe(type) + '&data=' + base64UrlSafe(JSON.stringify(data)) + '&op=' + base64UrlSafe(JSON.stringify(lastOpaqueUsed)),
         { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
         'json', '');
 }

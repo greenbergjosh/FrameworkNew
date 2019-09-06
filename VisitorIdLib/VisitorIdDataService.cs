@@ -462,7 +462,7 @@ namespace VisitorIdLib
             }
 
             var isAsync = true;
-            List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = null;
+            List<(string Md5provider, string EmailProviderSeq)> visitorIdMd5ProviderSequence = new List<(string Md5provider, string EmailProviderSeq)>();
             foreach (var kvp in VisitorIdMd5ProviderSequences[afid])
             {
                 if (host != "" && ((host == kvp.Domain) || host.EndsWith("." + kvp.Domain)))
@@ -539,10 +539,28 @@ namespace VisitorIdLib
                                "LookupProviderMd5EmailBySessionId",
                                Jw.Json(new { Sid = cookieData.sid }),
                                "", null, null, SqlTimeoutSec);
+
+                            if (!lookupGe.GetS("Md5").IsNullOrWhitespace() ||
+                                !lookupGe.GetS("Em").IsNullOrWhitespace())
+                            {
+                                be = new EdwBulkEvent();
+                                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
+                                null, PL.O(new
+                                {
+                                    et = "Md5EmailBySessionId",
+                                    md5 = lookupGe.GetS("Md5"),
+                                    em = lookupGe.GetS("Em"),
+                                    md5pid = lookupGe.GetS("Md5Pid"),
+                                    md5date = lookupGe.GetS("Ts")
+                                }));
+                                await fw.EdwWriter.Write(be);
+                            }
+
                             cookieData.md5 = lookupGe.GetS("Md5");
                             cookieData.em = lookupGe.GetS("Em");
                             cookieData.md5pid = lookupGe.GetS("Md5Pid");
                             cookieData.md5date = lookupGe.GetS("Ts");
+
                         }
 
                         // Check for md5s over a date range from a provider which were reported as incorrect
@@ -556,7 +574,7 @@ namespace VisitorIdLib
                                 et = "Md5PoisonIncident",
                                 incidentid = poisonIncident?.IncidentId,
                                 md5pid = poisonIncident?.Md5Pid,
-                                md5 = poisonIncident?.Md5,
+                                cookieData.md5,
                                 md5date = poisonIncident?.Md5Date
                             }));
                             await fw.EdwWriter.Write(be);
@@ -672,7 +690,7 @@ namespace VisitorIdLib
 
                         opaque64 = Utility.Hashing.Base64EncodeForUrl(opq.ToString(Formatting.None));
 
-                        var s = await fw.Entities.GetEntityGe(new Guid(md5pid));
+                        var s = await fw.Entities.GetEntity(new Guid(md5pid));
                         be = new EdwBulkEvent();
                         be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, cookieData.RsIdDict,
                             null, PL.O(new
@@ -687,7 +705,7 @@ namespace VisitorIdLib
 
                         return new VisitorIdResponse(Jw.Json(new
                         {
-                            config = ReplaceToken(s.GetS(""), opaque64),
+                            config = ReplaceToken(s.GetS("Config"), opaque64),
                             sid,
                             md5pid,
                             slot,
@@ -719,7 +737,7 @@ namespace VisitorIdLib
             }
             catch (Exception ex)
             {
-                await fw.Err(1000, "DoVisitorId", "Exception", ex.ToString());
+                await fw.Err(1000, "DoVisitorId", "Exception", ex.UnwrapForLog());
             }
 
             await WriteCodePathEvent(PL.O(new { branch = nameof(DoVisitorId), loc = "end" }), codePathRsidDict);
@@ -772,7 +790,7 @@ namespace VisitorIdLib
                     null, PL.O(new
                     {
                         et = "Md5ProviderResponse",
-                        md5 = md5 ?? "",
+                        md5,
                         md5pid,
                         md5slot = slot,
                         md5page = page,
@@ -867,36 +885,43 @@ namespace VisitorIdLib
             string ua
         ) ValsFromOpaque(IGenericEntity opge)
         {
-            var sid = opge.GetS("sd");
-            var slot = int.Parse(opge.GetS("slot") ?? "0");
-            var page = int.Parse(opge.GetS("page") ?? "0");
-            var md5pid = opge.GetS("md5pid");
-            var isAsync = (opge.GetS("async") ?? "").ToLower() == "true";
-            var vieps = opge.GetS("vieps");
-            var md5 = opge.GetS("md5");
-            var eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
-            var qstr = opge.GetS("qs");
-            var uri = new Uri(HttpUtility.UrlDecode(qstr.IfNullOrWhitespace("about:blank")));
-            var host = uri.Host ?? "";
-            var lv = opge.GetS("lv");
-            var afid = opge.GetS("afid");
-            var tpid = opge.GetS("tpid");
-            var lst = opge.GetS("lst");
-            var vft = (opge.GetS("vft") ?? "").ToLower() == "true";
-            var pfail = ((opge.GetS("pfail") ?? "").ToLower() == "true");
-            var pfailslot = int.Parse(opge.GetS("pfailSlot") ?? "0");
-            var pfailpage = int.Parse(opge.GetS("pfailPage") ?? "0");
-            var tjsv = opge.GetS("tjsv");
-            var ip = opge.GetS("ip");
-            var ua = opge.GetS("ua");
-
-            Dictionary<string, object> rsids = null;
-            if (!string.IsNullOrWhiteSpace(opge.GetS("rsid")))
+            try
             {
-                rsids = JsonConvert.DeserializeObject<Dictionary<string, object>>(opge.GetS("rsid"));
-            }
+                var sid = opge.GetS("sd");
+                var slot = int.Parse(opge.GetS("slot") ?? "0");
+                var page = int.Parse(opge.GetS("page") ?? "0");
+                var md5pid = opge.GetS("md5pid");
+                var isAsync = (opge.GetS("async") ?? "").ToLower() == "true";
+                var vieps = opge.GetS("vieps");
+                var md5 = opge.GetS("md5");
+                var eml = Utility.Hashing.Base64DecodeFromUrl(opge.GetS("e"));
+                var qstr = opge.GetS("qs");
+                var uri = new Uri(HttpUtility.UrlDecode(qstr.IfNullOrWhitespace("about:blank")));
+                var host = uri.Host ?? "";
+                var lv = opge.GetS("lv");
+                var afid = opge.GetS("afid");
+                var tpid = opge.GetS("tpid");
+                var lst = opge.GetS("lst");
+                var vft = (opge.GetS("vft") ?? "").ToLower() == "true";
+                var pfail = ((opge.GetS("pfail") ?? "").ToLower() == "true");
+                var pfailslot = int.Parse(opge.GetS("pfailSlot") ?? "0");
+                var pfailpage = int.Parse(opge.GetS("pfailPage") ?? "0");
+                var tjsv = opge.GetS("tjsv");
+                var ip = opge.GetS("ip");
+                var ua = opge.GetS("ua");
 
-            return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, ip, ua);
+                Dictionary<string, object> rsids = null;
+                if (!string.IsNullOrWhiteSpace(opge.GetS("rsid")))
+                {
+                    rsids = JsonConvert.DeserializeObject<Dictionary<string, object>>(opge.GetS("rsid"));
+                }
+
+                return (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, ip, ua);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(string.Format("{0}: Caught error extracting values from opaque: {1}, Exception: {2}", nameof(ValsFromOpaque), opge == null ? "opaque value is null" : opge.GetS(""), e.UnwrapForLog()));
+            }
         }
 
         public async Task<VisitorIdResponse> SaveSession(FrameworkWrapper fw, HttpContext c, bool hasClientContext, bool canHaveCookie = true, CookieData cookieData = null, IGenericEntity op = null, string md5 = null)
