@@ -33,7 +33,7 @@ export class TextAreaInterfaceComponent extends BaseInterfaceComponent<TextAreaI
     return {
       category: "Form",
       name: "textarea",
-      title: "Text Area v2.1",
+      title: "Text Area",
       icon: "edit",
       formControl: true,
       componentDefinition: {
