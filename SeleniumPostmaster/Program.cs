@@ -303,6 +303,8 @@ namespace SeleniumPostmaster
                 var element = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(password));
                 password.SendKeys(pswd);
                 driver.FindElement(By.Id("passwordNext")).Click();
+                /*
+                driver.Manage().Timeouts().ImplicitWait = new TimeSpan(0, 0, 4);
                 if (driver.FindElements(By.CssSelector("h1#headingText")).Count > 0 &&
                     driver.FindElements(By.CssSelector("form div[data-challengetype=\"13\"]")).Count > 0)
                 {
@@ -312,6 +314,7 @@ namespace SeleniumPostmaster
                     phoneNumber.SendKeys(phone);
                     driver.FindElement(By.CssSelector("div[data-primary-action-label=\"Next\"] div[role=\"button\"]")).Click();
                 }
+                */
 
                 // Read list of domains - wait until table stops getting new rows
                 IList<IWebElement> tableRows = null;
@@ -319,7 +322,6 @@ namespace SeleniumPostmaster
                 while (true)
                 {
                     tableRows = driver.FindElements(By.XPath("//div[@role='row']"));
-
                     if (tableRows.Count > 1 && tableRows.Count == lastCount) break;
                     else
                     {
@@ -722,7 +724,6 @@ namespace SeleniumPostmaster
             catch (Exception ex)
             {
                 await Fw.Error(nameof(DoGmail), $"Caught unhandled (for now) exception: {ex.UnwrapForLog()}");
-                int i = 0;
             }
         }
 
