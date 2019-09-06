@@ -94,7 +94,6 @@ namespace QuickTester
                     {
                         return rxspl.Split(str).ToArray();
                     };
-                    var rxspl = new Regex("(?<!^)(?=[A-Z])", RegexOptions.Compiled);
                     var spl = name.Split(new[] { ',', ' ', '_', '.', '-' }, StringSplitOptions.RemoveEmptyEntries);
                     var rxSpl = spl.Select(caseSplit).SelectMany(s => s).ToArray();
                     var wordQry = rxSpl
