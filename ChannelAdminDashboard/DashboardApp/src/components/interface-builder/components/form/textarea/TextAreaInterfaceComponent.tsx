@@ -18,6 +18,7 @@ export interface TextAreaInterfaceComponentProps extends ComponentDefinitionName
   autosize?: boolean
   minRows?: number
   maxRows?: number
+  maxLength?: number
 }
 
 interface TextAreaInterfaceComponentState {}
@@ -54,11 +55,16 @@ export class TextAreaInterfaceComponent extends BaseInterfaceComponent<TextAreaI
     onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
   }
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey, autosize, minRows, maxRows } = this.props
+    const { defaultValue, userInterfaceData, valueKey, autosize, minRows, maxRows, maxLength } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     const minMaxRows = minRows || maxRows ? { minRows, maxRows } : undefined
     const autosizeValue = typeof autosize !== "undefined" && autosize ? autosize : minMaxRows
-    return <Input.TextArea onChange={this.handleChange} value={value} autosize={autosizeValue} />
+    return <Input.TextArea
+      onChange={this.handleChange}
+      value={value}
+      autosize={autosizeValue}
+      maxLength={maxLength}
+    />
   }
 }
