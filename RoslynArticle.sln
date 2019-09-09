@@ -96,6 +96,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrameworkTests", "Framework
 		{FAB3FBA3-AB13-4953-B3C4-A7D9519E149E} = {FAB3FBA3-AB13-4953-B3C4-A7D9519E149E}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CachingServiceLib", "CachingServiceLib\CachingServiceLib.csproj", "{8A5651C6-AFD3-4598-A60B-00FAFEC96040}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -331,6 +333,12 @@ Global
 		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC4B015F-F942-4D62-BE05-16F8C0B52E93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -367,9 +375,10 @@ Global
 		{13F832DD-ED98-4A2B-BF7E-A1A4D7D2A0C9} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{59F7A7F6-E1E6-4B1A-9C0C-6BFC971664C2} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
 		{BC4B015F-F942-4D62-BE05-16F8C0B52E93} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
+		{8A5651C6-AFD3-4598-A60B-00FAFEC96040} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal

@@ -19,7 +19,7 @@ namespace Utility.Mta
 
             var conf = _fw.StartupConfiguration.GetE(_configRootPath);
 
-            if (ip.IsNullOrWhitespace()) throw new Exception($"MTA configuration not found. ConfigRootPath: {_configRootPath}");
+            if (conf == null) throw new Exception($"MTA configuration not found. ConfigRootPath: {_configRootPath}");
 
             var ip = conf.GetS($"DomainIps/{msg.FromDomain.ToLower()}") ?? conf.GetS("DomainIps/*") ?? conf.GetS("Ip");
 
