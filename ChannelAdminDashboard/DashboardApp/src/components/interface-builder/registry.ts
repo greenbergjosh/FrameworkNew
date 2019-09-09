@@ -15,6 +15,7 @@ import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRa
 import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
+import { PasswordInterfaceComponent } from "./components/form/password/PasswordInterfaceComponent"
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "./components/form/number-range/NumberRangeInterfaceComponent"
@@ -50,6 +51,7 @@ export const registry: ComponentRegistry = {
     list: ListInterfaceComponent,
     "number-input": NumberInputInterfaceComponent,
     "number-range": NumberRangeInterfaceComponent,
+    password: PasswordInterfaceComponent,
     query: QueryInterfaceComponent,
     "remote-component": RemoteComponentInterfaceComponent,
     "sectioned-navigation": SectionedNavigationInterfaceComponent,
