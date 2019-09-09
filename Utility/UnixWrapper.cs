@@ -142,7 +142,7 @@ namespace Utility
             }
         }
 
-        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5FileV2(string filePath, List<string> keys)
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
         {
             var notFound = new List<string>();
             var found = new List<string>();
@@ -202,7 +202,7 @@ namespace Utility
             return (found, notFound);
         }
 
-        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5FileV2(string filePath, List<string> keys)
         {
             var notFound = new List<string>();
             var found = new List<string>();
