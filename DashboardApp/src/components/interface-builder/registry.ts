@@ -15,6 +15,7 @@ import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRa
 import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
+import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "./components/form/number-range/NumberRangeInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
@@ -55,6 +56,7 @@ export const registry: ComponentRegistry = {
     select: SelectInterfaceComponent,
     tabs: TabsInterfaceComponent,
     table: TableInterfaceComponent,
+    textarea: TextAreaInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
     wizard: WizardInterfaceComponent,
