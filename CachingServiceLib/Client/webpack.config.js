@@ -7,11 +7,13 @@ require("babel-register");
 const config = {
   
   // Entry
-  entry: ['babel-polyfill', 'whatwg-fetch', './src/index.js'],
+  entry: ['whatwg-fetch', 'url-polyfill', './src/index.js'],
   // Output
   output: {
     path: path.resolve(__dirname, './dist'),
     filename: 'bundle.js',
+    libraryTarget: 'var',
+    library: 'CacheClient'
   },
   // Loaders
   module: {

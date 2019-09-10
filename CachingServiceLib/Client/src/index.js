@@ -1,32 +1,32 @@
 const serverAddress = 'http://localhost:21339';
 
-export const getRs = async (name, sessionId) => {
+export const getRs = async (name, sessionId = null) => {
   return await get(url('rs', sessionId, { name }));
 };
 
-export const addRs = async (name, data, sessionId) => {
+export const addRs = async (name, data, sessionId = null) => {
   return await post(url('rs'), json(sessionId, {
     name,
     data
   }));
 };
 
-export const getEvent = async (reportingSession, sessionId) => {
+export const getEvent = async (reportingSession, sessionId = null) => {
   return await get(url('event', sessionId, { reportingSession }));
 };
 
-export const addEvent = async (reportingSessions, data, sessionId) => {
+export const addEvent = async (reportingSessions, data, sessionId = null) => {
   return await post(url('event'), json(sessionId, {
     reportingSessions,
     data
   }));
 };
 
-export const getCache = async (name, sessionId) => {
+export const getCache = async (name, sessionId = null) => {
   return await get(url('cache', sessionId, { name }));
 };
 
-export const addCache = async (name, data, sessionId) => {
+export const addCache = async (name, data, sessionId = null) => {
   return await post(url('cache'), json(sessionId, {
     name,
     data
@@ -69,8 +69,3 @@ const post = async (url, json) => {
   });
   return await response.json();
 };
-
-addRs('test', {test: 'test'})
-  .then(t => getRs('test'))
-  .then(t => console.log('Response: ' + t))
-  .catch(reason => console.log('Error! Reason: ' + reason));

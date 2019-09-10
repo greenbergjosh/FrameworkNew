@@ -2,10 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>webpack 4 quickstart</title>
+    <title>Cache Client Test Page</title>
 </head>
 <body>
     <div id="app">
     </div>
 </body>
+<script type="text/javascript">
+window.onload = function() {
+  CacheClient.addRs('test', {test: 'test'})
+    .then(t => CacheClient.getRs('test'))
+    .then(t => console.log('Response: ' + JSON.stringify(t)))
+    .catch(reason => console.log('Error! Reason: ' + reason));
+}
+</script>
 </html>
