@@ -11,9 +11,9 @@ const config = {
   // Output
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'cache-client-1.0.0.min.js',
+    filename: 'edw-client-1.0.0.min.js',
     libraryTarget: 'var',
-    library: 'CacheClient'
+    library: 'EdwClient'
   },
   // Loaders
   module: {

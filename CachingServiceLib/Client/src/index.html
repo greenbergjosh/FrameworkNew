@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Cache Client Test Page</title>
+    <title>EDW Client Test Page</title>
 </head>
 <body>
     <div id="app">
@@ -10,17 +10,17 @@
 </body>
 <script type="text/javascript">
 window.onload = function() {
-    CacheClient.addRs('test', {
+    EdwClient.addRs('test', {
       page: window.location.pathname,
       pageNumber: '0+',
       pageOrder: 'page+'
     })
-    .then(t => CacheClient.addRs('test', {
+    .then(t => EdwClient.addRs('test', {
       page: window.location.pathname,
       pageNumber: '0+',
       pageOrder: 'page+'
     }))
-    .then(t => CacheClient.getRs('test'))
+    .then(t => EdwClient.getRs('test'))
     .then(t => console.log('Response: ' + JSON.stringify(t)))
     .catch(reason => console.log('Error! Reason: ' + reason));
 }
