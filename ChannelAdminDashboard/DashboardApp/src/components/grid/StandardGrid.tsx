@@ -1,7 +1,6 @@
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
-import { Button, Spin } from "antd"
-import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
+import { Spin } from "antd"
 import jsonLogic from "json-logic-js"
 import { cloneDeep, sortBy } from "lodash/fp"
 import moment from "moment"
@@ -10,7 +9,10 @@ import { tryCatch } from "../../data/Either"
 import { JSONRecord } from "../../data/JSON"
 import { deepDiff } from "../../lib/deep-diff"
 import { evalExpression } from "../../lib/eval-expression"
+import { sanitizeText } from "../../lib/sanitize-text"
 import { shallowPropCheck } from "../interface-builder/dnd/util/shallow-prop-check"
+import { average, count, flattenDataItems } from "./grid-aggregate"
+import { EnrichedColumnDefinition } from "./grid-types"
 
 import {
   Aggregate,
@@ -31,21 +33,15 @@ import {
   Toolbar,
   DialogEditEventArgs,
   SortSettingsModel,
-  EditSettingsModel,
   EditMode,
   Group,
   Page,
   GroupSettingsModel,
   PageSettingsModel,
+  AggregateRowModel,
+  AggregateColumnModel,
+  CustomSummaryType,
 } from "@syncfusion/ej2-react-grids"
-
-interface EnrichedColumnDefinition extends ColumnModel {
-  allowHTMLText?: boolean
-  customFormat?: string
-  skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
-  precision?: number
-  visibilityConditions?: JSONObject
-}
 
 const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
   // @ts-ignore
@@ -56,7 +52,6 @@ const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
     deepDiff(prevProps, nextProps, (k) =>
       ["children", "detailTemplate", "valueAccessor"].includes(k)
     )
-  // console.log("PureGridComponent.memo", simplePropEquality, runDeepDiff(), { prevProps, nextProps })
 
   return simplePropEquality && !runDeepDiff()
 })
@@ -86,6 +81,12 @@ const commonGridOptions = {
     "PdfExport",
     "Print",
     { text: "Group", tooltipText: "Group", prefixIcon: "e-group", id: "group" },
+    {
+      text: "Collapse All",
+      tooltipText: "Collapse All Rows",
+      prefixIcon: "e-collapse",
+      id: "collapse",
+    },
     "ColumnChooser",
   ],
   showColumnChooser: true,
@@ -121,6 +122,11 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
       grid.current.pdfExport()
     } else if (id === "group") {
       grid.current.allowGrouping = !grid.current.allowGrouping
+    } else if (id === "collapse") {
+      if (grid.current.allowGrouping) {
+        grid.current.groupModule.collapseAll()
+      }
+      grid.current.detailRowModule.collapseAll()
     }
   }
 }
@@ -167,8 +173,6 @@ export const StandardGrid = React.forwardRef(
     }: StandardGridComponentProps,
     ref?: React.Ref<GridComponent>
   ) => {
-    // console.log("StandardGrid.render", { data, detailTemplate })
-
     const handleToolbarClick = React.useMemo(
       () => (ref && typeof ref === "object" && handleToolbarItemClicked(ref)) || undefined,
       [ref]
@@ -187,29 +191,6 @@ export const StandardGrid = React.forwardRef(
           col.disableHtmlEncode = !col.allowHTMLText
         }
 
-        // If the column field starts with =, it's a calculated field
-        if (col.field && col.field[0] === "=") {
-          const calculationString = col.field.substring(1)
-
-          col.valueAccessor = (field, data, column) => {
-            const evald = tryCatch(() => {
-              const interpolatedCalculationString = sortBy(
-                ([key, value]) => value && value.length,
-                Object.entries(data)
-              ).reduce((acc: string, [key, value]) => acc.replace(key, value), calculationString)
-              // return interpolatedCalculationString
-              return evalExpression(interpolatedCalculationString)
-            })
-            // console.log("StandardGrid.render", "usableColumns/valueAccessor", field, data, evald)
-
-            return evald.fold(
-              (error) => null,
-              (value) => (isNaN(value) || !isFinite(value) ? null : value)
-            )
-          }
-          delete col.field
-        }
-
         // Managing custom formatting options for Dates
         if (["date", "dateTime"].includes(col.type || "")) {
           col.format =
@@ -220,6 +201,8 @@ export const StandardGrid = React.forwardRef(
         }
         // Managing custom formatting options for number types
         else if (["number"].includes(col.type || "")) {
+          col.textAlign = "Right"
+          col.headerTextAlign = "Left"
           col.format =
             col.format === "standard"
               ? `N${typeof col.precision === "number" ? col.precision : 2}`
@@ -263,6 +246,26 @@ export const StandardGrid = React.forwardRef(
               ) {
                 // Date type columns must appear as JS Date objects, not strings
                 dataRow[field] = moment(value).toDate() as any
+              } else if (field[0] === "=") {
+                const calculationString = field.substring(1)
+
+                const evald = tryCatch(() => {
+                  const interpolatedCalculationString = sortBy(
+                    ([key, value]) => key && key.length,
+                    Object.entries(dataRow)
+                  ).reduce(
+                    (acc: string, [key, value]) => acc.replace(key, String(value)),
+                    calculationString
+                  )
+
+                  return evalExpression(interpolatedCalculationString)
+                }).fold(
+                  (error) =>
+                    (console.warn("StandardGrid.render", "usableData", field, error), 0) || null,
+                  (value) => (isNaN(value) || !isFinite(value) ? null : value)
+                )
+
+                dataRow[field] = evald
               }
             }
           })
@@ -272,14 +275,111 @@ export const StandardGrid = React.forwardRef(
       [data]
     )
 
-    // const createDetailTemplate = React.useMemo(() => {
-    //   console.log("StandardGrid.render", "detailTemplate 2", detailTemplate)
-    //   return typeof detailTemplate === "function" ? detailTemplate() : detailTemplate
-    // }, [detailTemplate])
+    const [columnAverages, columnCounts] = React.useMemo(() => {
+      const counts = count(usableColumns, usableData)
+      const averages = average(usableColumns, usableData, counts)
+
+      return [averages, counts]
+    }, [usableColumns, usableData])
+
+    const customAverageAggregate: CustomSummaryType = React.useCallback(
+      (data: any, column) =>
+        (!data.requestType && (data.items || Array.isArray(data))
+          ? average(
+              usableColumns.filter(({ field }) => field === column.field),
+              flattenDataItems(data)
+            )
+          : columnAverages)[column.field || column.columnName || ""],
+      [columnAverages]
+    )
+    const customValueCountAggregate: CustomSummaryType = React.useCallback(
+      (data: any, column) =>
+        (!data.requestType && data.items
+          ? count(
+              usableColumns.filter(({ field }) => field === column.field),
+              flattenDataItems(data)
+            )
+          : columnCounts)[column.field || column.columnName || ""],
+      [columnCounts]
+    )
+    const customNullCountAggregate: CustomSummaryType = React.useCallback(
+      (data: any, column) =>
+        data.count -
+        (!data.requestType && data.items
+          ? count(
+              usableColumns.filter(({ field }) => field === column.field),
+              flattenDataItems(data)
+            )
+          : columnCounts)[column.field || column.columnName || ""],
+      [columnCounts]
+    )
+
+    const customAggregateFunctions: { [key: string]: CustomSummaryType } = React.useMemo(
+      () => ({
+        CustomIgnoreBlankAverage: customAverageAggregate,
+        CustomValueCount: customValueCountAggregate,
+        CustomNullCount: customNullCountAggregate,
+      }),
+      [columnAverages, columnCounts]
+    )
+
+    React.useEffect(() => {
+      if (ref && typeof ref === "object" && ref.current) {
+        ref.current.aggregates.forEach(({ columns }) => {
+          console.log("StandardGrid", "Update Custom Aggregate", columns)
+          columns &&
+            columns.forEach((column) => {
+              const usableColumn = usableColumns.find(({ field }) => field === column.field)
+              if (usableColumn && usableColumn.aggregationFunction) {
+                column.customAggregate = customAggregateFunctions[usableColumn.aggregationFunction]
+              }
+            })
+        })
+      }
+    }, [columnAverages, usableColumns])
+
+    const aggregates = React.useMemo(() => {
+      return [
+        {
+          columns: usableColumns.reduce(
+            (acc, col) => {
+              const column = col as EnrichedColumnDefinition
+              const { aggregationFunction } = column
+              if (aggregationFunction) {
+                const isCustom = aggregationFunction.startsWith("Custom")
+                const format = [
+                  "Count",
+                  "TrueCount",
+                  "FalseCount",
+                  "CustomValueCount",
+                  "CustomNullCount",
+                ].includes(aggregationFunction)
+                  ? "N0"
+                  : column.format
+
+                const template = `<span title='${sanitizeText(aggregationFunction)}'>\${${
+                  isCustom ? "Custom" : aggregationFunction
+                }}</span>`
+                acc.push({
+                  field: column.field,
+                  type: [isCustom ? "Custom" : aggregationFunction],
+                  format,
+                  customAggregate: customAggregateFunctions[aggregationFunction],
+                  footerTemplate: template,
+                  groupCaptionTemplate: template,
+                })
+              }
+              return acc
+            },
+            [] as AggregateColumnModel[]
+          ),
+        },
+      ] as AggregateRowModel[]
+    }, [usableColumns])
 
     const dataBound = React.useCallback(() => {
       ref && typeof ref === "object" && ref.current && ref.current.autoFitColumns()
-    }, [ref, data])
+    }, [ref, usableData])
 
     const editSettings = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" as EditMode }
     const editingToolbarItems = ([] as string[]).concat(
@@ -297,6 +397,7 @@ export const StandardGrid = React.forwardRef(
           allowGrouping={false}
           toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
           actionComplete={actionComplete}
+          aggregates={aggregates}
           columns={usableColumns}
           // dataBound={dataBound}
           dataSource={usableData}

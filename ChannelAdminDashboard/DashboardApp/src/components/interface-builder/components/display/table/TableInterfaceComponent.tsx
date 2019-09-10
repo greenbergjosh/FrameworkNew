@@ -7,6 +7,7 @@ import { StandardGrid } from "../../../../grid/StandardGrid"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { tableAdvancedForm } from "./table-column-form-section-advanced"
+import { tableAggregateForm } from "./table-column-form-section-aggregate"
 import { tableSortForm } from "./table-column-form-section-sort"
 import { tableDataTypes } from "./table-data-types-form"
 import { tableManageForm } from "./table-manage-form"
@@ -121,14 +122,14 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                       data={userInterfaceSchema}
                       mode="display"
                       onChangeData={(newData) => {
-                        console.log("TableInterfaceComponent.render", "onChangeData", {
-                          abstract,
-                          mode,
-                          data,
-                          newData,
-                          onChangeSchema,
-                          userInterfaceSchema,
-                        })
+                        // console.log("TableInterfaceComponent.render", "onChangeData", {
+                        //   abstract,
+                        //   mode,
+                        //   data,
+                        //   newData,
+                        //   onChangeSchema,
+                        //   userInterfaceSchema,
+                        // })
                         onChangeSchema &&
                           userInterfaceSchema &&
                           onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
@@ -157,14 +158,14 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                             onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
                           }
                           onChangeSchema={(newSchema) => {
-                            console.log("TableInterfaceComponent.render", "onChangeSchema X2", {
-                              abstract,
-                              mode,
-                              data,
-                              newSchema,
-                              onChangeSchema,
-                              userInterfaceSchema,
-                            })
+                            // console.log("TableInterfaceComponent.render", "onChangeSchema X2", {
+                            //   abstract,
+                            //   mode,
+                            //   data,
+                            //   newSchema,
+                            //   onChangeSchema,
+                            //   userInterfaceSchema,
+                            // })
                             onChangeSchema &&
                               userInterfaceSchema &&
                               onChangeSchema(set("rowDetails", newSchema, userInterfaceSchema))
@@ -189,10 +190,10 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                   ),
                 }
 
-                console.log("TableInterfaceComponent.render", "Display", this.props, {
-                  dataArray,
-                  rowDetails,
-                })
+                // console.log("TableInterfaceComponent.render", "Display", this.props, {
+                //   dataArray,
+                //   rowDetails,
+                // })
                 return (
                   <StandardGrid
                     allowAdding={allowAdding}
@@ -205,10 +206,10 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     detailTemplate={
                       rowDetails && rowDetails.length
                         ? (parentData: any) => {
-                            console.log("TableInterfaceComponent.render", "Display Child", {
-                              rowDetails,
-                              parentData,
-                            })
+                            // console.log("TableInterfaceComponent.render", "Display Child", {
+                            //   rowDetails,
+                            //   parentData,
+                            // })
                             return (
                               <ComponentRenderer
                                 components={rowDetails}
@@ -308,7 +309,7 @@ const editComponents: ComponentDefinition[] = [
             key: "details",
             valueKey: "",
             component: "collapse",
-            sections: [tableSortForm, tableAdvancedForm],
+            sections: [tableSortForm, tableAggregateForm, tableAdvancedForm],
           },
         ],
       },
