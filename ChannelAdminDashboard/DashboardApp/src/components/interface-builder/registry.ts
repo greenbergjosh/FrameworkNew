@@ -19,6 +19,7 @@ import { PasswordInterfaceComponent } from "./components/form/password/PasswordI
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "./components/form/number-range/NumberRangeInterfaceComponent"
+import { ProgressInterfaceComponent } from "./components/display/progress/ProgressInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
@@ -52,6 +53,7 @@ export const registry: ComponentRegistry = {
     "number-input": NumberInputInterfaceComponent,
     "number-range": NumberRangeInterfaceComponent,
     password: PasswordInterfaceComponent,
+    progress: ProgressInterfaceComponent,
     query: QueryInterfaceComponent,
     "remote-component": RemoteComponentInterfaceComponent,
     "sectioned-navigation": SectionedNavigationInterfaceComponent,
