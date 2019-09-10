@@ -1792,9 +1792,15 @@
 }
 
 /*!componenticons*/
+.e-toolbar-items .e-collapse::before {
+  content: "\e70c";
+}
+
 .e-toolbar-items .e-group::before {
   content: "\e926";
 }
+
+// --- \\
 
 .e-pager .e-icon-last::before,
 .e-grid-menu .e-icon-last::before {

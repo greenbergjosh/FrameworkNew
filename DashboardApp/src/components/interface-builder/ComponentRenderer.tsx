@@ -50,24 +50,24 @@ export const _ComponentRenderer = ({
           index={index}
           mode={mode}
           onChangeData={(newData) => {
-            console.log("ComponentRenderer.render", "onChangeData", {
-              componentDefinition,
-              newData,
-              onChangeData,
-              data,
-            })
+            // console.log("ComponentRenderer.render", "onChangeData", {
+            //   componentDefinition,
+            //   newData,
+            //   onChangeData,
+            //   data,
+            // })
             onChangeData && onChangeData(newData)
           }}
           onChangeSchema={(newComponentDefinition) => {
             if (mode === "edit") {
-              console.log("ComponentRenderer.render", "onChangeSchema", {
-                componentDefinition,
-                newComponentDefinition,
-                onChangeSchema,
-                path,
-                index,
-                components,
-              })
+              // console.log("ComponentRenderer.render", "onChangeSchema", {
+              //   componentDefinition,
+              //   newComponentDefinition,
+              //   onChangeSchema,
+              //   path,
+              //   index,
+              //   components,
+              // })
               // onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
               onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
             }
@@ -78,7 +78,7 @@ export const _ComponentRenderer = ({
     </DataPathContext>
   ))
 
-  console.log("ComponentRenderer.render", { components, data })
+  // console.log("ComponentRenderer.render", { components, data })
 
   return (
     <div>
