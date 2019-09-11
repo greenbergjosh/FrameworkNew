@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Utility.GenericEntity;
 using HPair = System.Collections.Generic.KeyValuePair<string, string>;
 
 namespace Utility.Mta
@@ -45,9 +44,7 @@ namespace Utility.Mta
                     Subject = ReplaceTokens(msg.Subject, r.Tokens),
                     Body = ReplaceTokens(msg.Body, r.Tokens),
                     Headers = msg.Headers?.Select(h => new HPair(ReplaceTokens(h.Key, r.Tokens), ReplaceTokens(h.Value, r.Tokens))) ?? Enumerable.Empty<HPair>(),
-                    From = ReplaceTokens(msg.FriendlyFrom, r.Tokens),
-                    FromLocalPart = ReplaceTokens(msg.FromLocalPart, r.Tokens),
-                    FromDomain = ReplaceTokens(msg.FromDomain, r.Tokens)
+                    From = new Sender(ReplaceTokens(msg.FriendlyFrom, r.Tokens), ReplaceTokens(msg.FromLocalPart, r.Tokens), ReplaceTokens(msg.FromDomain, r.Tokens))
                 };
 
                 var errors = new List<string>();
@@ -59,17 +56,17 @@ namespace Utility.Mta
 
                 if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Body)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.From).ToArray();
+                unreplaced = HasTokens(result.From.Name).ToArray();
 
                 if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.From)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.FromLocalPart).ToArray();
+                unreplaced = HasTokens(result.From.LocalPart).ToArray();
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.FromLocalPart)}: {unreplaced.Join(", ")}");
+                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.From.LocalPart)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.FromDomain).ToArray();
+                unreplaced = HasTokens(result.From.Domain).ToArray();
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.FromDomain)}: {unreplaced.Join(", ")}");
+                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.From.Domain)}: {unreplaced.Join(", ")}");
 
                 unreplaced = result.Headers.Select(h =>
                 {
@@ -98,9 +95,7 @@ namespace Utility.Mta
             public string Subject { get; set; }
             public string Body { get; set; }
             public IEnumerable<HPair> Headers { get; set; }
-            public string From { get; set; }
-            public string FromLocalPart { get; set; }
-            public string FromDomain { get; set; }
+            public Sender From { get; set; }
             public ICollection<string> Errors { get; internal set; }
             public bool Success => Errors?.Any() != true;
         }

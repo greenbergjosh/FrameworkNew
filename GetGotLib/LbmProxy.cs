@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Utility;
@@ -49,6 +48,7 @@ namespace GetGotLib
                     await _fw.Error($"{nameof(LbmProxy)}.{nameof(Initialize)}", $"{code?.GetS("Type")} LBM not supported. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}");
                     continue;
                 }
+
                 var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
 
                 try
@@ -64,6 +64,7 @@ namespace GetGotLib
                 maps.Add(map.Item1, new LbmMap(id.Value, lbm));
             }
 
+
             _lbmMaps = maps;
         }
 
@@ -77,7 +78,8 @@ namespace GetGotLib
 
             try
             {
-                return (IGenericEntity)await _fw.RoslynWrapper.RunFunction(map.Id.ToString(), new { _httpContext = ctx, _payload = Jw.JsonToGenericEntity(payload), _fw, _lbmConfig = map.Config, _identity = identity }, new StateWrapper());
+                return (IGenericEntity) await _fw.RoslynWrapper.RunFunction(map.Id.ToString(),
+                    new {_httpContext = ctx, _payload = Jw.JsonToGenericEntity(payload), _fw, _lbmConfig = map.Config, _identity = identity}, new StateWrapper());
             }
             catch (Exception e)
             {
@@ -95,8 +97,6 @@ namespace GetGotLib
 
             public Guid Id { get; }
             public IGenericEntity Config { get; }
-
         }
-
     }
 }

@@ -73,64 +73,6 @@ namespace QuickTester
 
             #region lbmCode
 
-            const string AppName = "EmailValidationLbm.OPG";
-            IGenericEntity config = (IGenericEntity)p.config;
-            var args = "";
-            var res = (IGenericEntity)null;
-            var rxspl = new Regex("(?<!^)(?=[A-Z])", RegexOptions.Compiled);
-
-            string email = (string)p.email;
-
-            var profiles = Jw.TryParseArray(p.config.GetS("badWordProfiles"));
-
-            if (profiles != null)
-            {
-                var name = (string)p._payload.GetS("name");
-                JArray words = null;
-
-                if (name != null)
-                {
-                    string[] caseSplit(string str)
-                    {
-                        return rxspl.Split(str).ToArray();
-                    };
-                    var spl = name.Split(new[] { ',', ' ', '_', '.', '-' }, StringSplitOptions.RemoveEmptyEntries);
-                    var rxSpl = spl.Select(caseSplit).SelectMany(s => s).ToArray();
-                    var wordQry = rxSpl
-                        .Where(s => !s.IsNullOrWhitespace())
-                        .Select(s => s.ToLower())
-                        .Distinct().ToArray();
-                    words = JArray.FromObject(wordQry);
-                }
-
-                args = JsonWrapper.Serialize(new { email, profiles, words });
-                res = await Data.CallFn("signal", "hasBadWords", args);
-                var badWords = res?.GetS("response");
-
-                sw.Stop();
-                await p._fw.Trace($"{AppName}.hasBadWords", Jw.Serialize(new { p._payload, config, sw.Elapsed.TotalMilliseconds }));
-
-                if (badWords.IsNullOrWhitespace())
-                {
-                    await p._fw.Error("OPG Email Validation", $"Bad word Suppression failed.\nArgs: {args}\nResponse: {res?.GetS("")}");
-                    return new
-                    {
-                        success = false,
-                        reason = "Invalid Response"
-                    };
-                }
-
-                if (badWords != "ok")
-                {
-                    return new
-                    {
-                        success = true,
-                        isEmailValid = false,
-                        reason = "BadWord"
-                    };
-                }
-            }
-
             #endregion
 
             return null;
