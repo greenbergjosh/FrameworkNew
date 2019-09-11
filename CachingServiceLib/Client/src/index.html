@@ -7,22 +7,27 @@
 <body>
     <div id="app">
     </div>
-</body>
 <script type="text/javascript">
-window.onload = function() {
-    EdwClient.addRs('test', {
-      page: window.location.pathname,
-      pageNumber: '0+',
-      pageOrder: 'page+'
-    })
-    .then(t => EdwClient.addRs('test', {
-      page: window.location.pathname,
-      pageNumber: '0+',
-      pageOrder: 'page+'
-    }))
-    .then(t => EdwClient.getRs('test'))
-    .then(t => console.log('Response: ' + JSON.stringify(t)))
-    .catch(reason => console.log('Error! Reason: ' + reason));
-}
+    window.onload = function() {
+        EdwClient.getOrCreateConfig({
+            'test': 'EDA8BF65-C8CF-4B86-8BB1-81EE66F80ED2',
+            'slot1': '2229C87C-E640-4909-85A6-BFABA3DD99BE',
+            'slot2': '7C68F21C-AEBA-4895-BF44-248876C21103'
+        })
+        .then(t => EdwClient.addRs('test', {
+            page: document.title,
+            pageNumber: '0+',
+            pageOrder: 'page+'
+        }))
+        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
+            event: 'buy',
+            eventNumber: '0+',
+            eventOrder: 'event+'
+        }))
+        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .catch(reason => console.log('Error! Reason: ' + reason));
+    }
 </script>
+</body>
 </html>
