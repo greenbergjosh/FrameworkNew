@@ -25,6 +25,7 @@ import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfa
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
 import { QueryInterfaceComponent } from "./components/special/query/QueryInterfaceComponent"
 import { RemoteComponentInterfaceComponent } from "./components/special/remote-component/RemoteComponentInterfaceComponent"
+import { UploadInterfaceComponent } from "./components/form/upload/UploadInterfaceComponent"
 import { UserInterfaceInterfaceComponent } from "./components/special/user-interface/UserInterfaceInterfaceComponent"
 
 export interface ComponentRegistry {
@@ -63,6 +64,7 @@ export const registry: ComponentRegistry = {
     textarea: TextAreaInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
+    upload: UploadInterfaceComponent,
     wizard: WizardInterfaceComponent,
 
     // Custom items really should be added as a third party registration
