@@ -1,14 +1,23 @@
 const serverAddress = 'http://localhost:21339';
 
+export const RsTypes = {
+  Immediate: "Immediate",
+  Checked: "Checked",
+  CheckedDetail: "CheckedDetail"
+};
+
 export const getRs = async (name, sessionId = null) => {
   return await get(url('rs', sessionId, { name }));
 };
 
-export const addRs = async (name, data, sessionId = null) => {
-  return await post(url('rs'), json(sessionId, {
+export const getOrCreateRs = async (rsType, name, data, sessionId = null) => {
+  console.log("yoyo " + rsType);
+  var j = json(sessionId, {
     name,
     data
-  }));
+  });
+  j['rsType'] = rsType;
+  return await post(url('rs'), j);
 };
 
 export const getEvent = async (reportingSession, sessionId = null) => {
