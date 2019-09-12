@@ -1,4 +1,4 @@
-import { Form, Input } from "antd"
+import { Form, Input, Row, Col } from "antd"
 import { get, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -7,6 +7,8 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
+import CharCounter from "../_shared/CharCounter"
+import styles from "./inputInterfaceComponent.module.css"
 
 export interface InputInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "input"
@@ -15,9 +17,11 @@ export interface InputInterfaceComponentProps extends ComponentDefinitionNamedPr
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
+  maxLength: number
 }
 
-interface InputInterfaceComponentState {}
+interface InputInterfaceComponentState {
+}
 
 export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfaceComponentProps> {
   static defaultProps = {
@@ -50,10 +54,16 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
     const { onChangeData, userInterfaceData, valueKey } = this.props
     onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
   }
+
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey } = this.props
+    const { defaultValue, userInterfaceData, valueKey, maxLength } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
-    return <Input onChange={this.handleChange} value={value} />
+    return (
+      <div className={styles.wrapper}>
+        <Input onChange={this.handleChange} value={value} maxLength={maxLength} className={styles.input}/>
+        <CharCounter text={value} maxLength={maxLength} className={styles.counter}/>
+      </div>
+    )
   }
 }
