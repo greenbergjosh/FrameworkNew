@@ -19,11 +19,13 @@ import { PasswordInterfaceComponent } from "./components/form/password/PasswordI
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "./components/form/number-range/NumberRangeInterfaceComponent"
+import { ProgressInterfaceComponent } from "./components/display/progress/ProgressInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
 import { QueryInterfaceComponent } from "./components/special/query/QueryInterfaceComponent"
 import { RemoteComponentInterfaceComponent } from "./components/special/remote-component/RemoteComponentInterfaceComponent"
+import { UploadInterfaceComponent } from "./components/form/upload/UploadInterfaceComponent"
 import { UserInterfaceInterfaceComponent } from "./components/special/user-interface/UserInterfaceInterfaceComponent"
 
 export interface ComponentRegistry {
@@ -52,6 +54,7 @@ export const registry: ComponentRegistry = {
     "number-input": NumberInputInterfaceComponent,
     "number-range": NumberRangeInterfaceComponent,
     password: PasswordInterfaceComponent,
+    progress: ProgressInterfaceComponent,
     query: QueryInterfaceComponent,
     "remote-component": RemoteComponentInterfaceComponent,
     "sectioned-navigation": SectionedNavigationInterfaceComponent,
@@ -61,6 +64,7 @@ export const registry: ComponentRegistry = {
     textarea: TextAreaInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
+    upload: UploadInterfaceComponent,
     wizard: WizardInterfaceComponent,
 
     // Custom items really should be added as a third party registration
