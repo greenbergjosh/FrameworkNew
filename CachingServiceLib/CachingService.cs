@@ -31,6 +31,7 @@ namespace CachingServiceLib
         const string Cache = "cache";
         const string Cfg = "config";
         const string RsType = "rsType";
+        const string Scope = "scope";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -40,6 +41,7 @@ namespace CachingServiceLib
             _routes.Add($"/{Event}", (GetEvent, AddEvent));
             _routes.Add($"/{Cache}", (GetCache, AddCache));
             _routes.Add($"/{Cfg}", (null, GetOrCreateConfigIds));
+            _routes.Add($"/{Scope}", (GetScope, SetScope));
         }
 
         public async Task Run(HttpContext context)
@@ -47,7 +49,6 @@ namespace CachingServiceLib
             try
             {
                 var result = await ExecuteRequest(context);
-                //var json = JsonWrapper.Json(result);
                 context.Response.ContentType = MediaTypeNames.Application.Json;
                 await context.Response.WriteAsync(result == null ? "null" : result.ToString());
             }
@@ -185,7 +186,7 @@ namespace CachingServiceLib
                 json.TryGetValue(Data, out var data))
             {
                 TransformData(data, sessionId);
-                var whep = _cache.Get<string>($"{sessionId}:scope").Split(";").ToList();
+                var whep = _cache.Get<string>($"{sessionId}:{Scope}").Split(";").ToList();
 
                 var rsids = new Dictionary<string, object>();
                 foreach (var reportingSession in reportingSessions.ToObject<string[]>())
@@ -262,11 +263,48 @@ namespace CachingServiceLib
             return null;
         }
 
+        private Task<object> GetScope(HttpContext context)
+        {
+            var sessionId = GetOrCreateSessionId(context);
+
+            if (_cache.TryGetValue<string>($"{sessionId}:{Scope}", out var data))
+            {
+                var whep = data.Split(";").ToList();
+                var result = JsonWrapper.Serialize(new JObject
+                {
+                    [Scope] = new JArray(whep)
+                });
+                return Task.FromResult<object>(result);
+            }
+
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.FromResult<object>(null);
+        }
+
+        private async Task<object> SetScope(HttpContext context)
+        {
+            var body = await context.GetRawBodyStringAsync();
+            var json = (JObject)JsonWrapper.TryParse(body);
+
+            var sessionId = GetOrCreateSessionId(context, json);
+            if (json.ContainsKey(Scope))
+            {
+                TransformData(json, sessionId);
+                var whep = _cache.Get<string>($"{sessionId}:{Scope}").Split(";").ToList();
+                json[Scope] = new JArray(whep);
+                var result = JsonWrapper.Serialize(json);
+                return result;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return null;
+        }
+
         private void TransformData(JToken data, Guid sessionId)
         {
             if (data.Type == JTokenType.Object)
             {
-                var scope = _cache.GetOrCreate($"{sessionId}:scope", t => string.Empty)
+                var scope = _cache.GetOrCreate($"{sessionId}:{Scope}", t => string.Empty)
                     .Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
 
                 var obj = (JObject)data;
@@ -329,7 +367,7 @@ namespace CachingServiceLib
                         scope[scope.IndexOf(variable)] = $"{parts[0]}={value}";
                 }
 
-                _cache.Set($"{sessionId}:scope", string.Join(';', scope));
+                _cache.Set($"{sessionId}:{Scope}", string.Join(';', scope));
             }
         }
     }

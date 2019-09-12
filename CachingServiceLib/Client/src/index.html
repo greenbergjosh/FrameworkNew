@@ -14,6 +14,10 @@
             'slot1': '2229C87C-E640-4909-85A6-BFABA3DD99BE',
             'slot2': '7C68F21C-AEBA-4895-BF44-248876C21103',
         })
+        .then(t => EdwClient.setScope('page+'))
+        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => EdwClient.getScope())
+        .then(t => console.log('Response: ' + JSON.stringify(t)))
         .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
             page: document.title,
             pageNumber: '0+',
