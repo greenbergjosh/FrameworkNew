@@ -1,2 +1,3 @@
 # GetGotWeb
-Retailer and App Templating
+
+Retailer Portal and App Templating

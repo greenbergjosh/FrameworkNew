@@ -1,0 +1,25 @@
+div#productdescription {
+    text-align: center;
+}
+
+div.maincol {
+    padding:15px;
+    background-color: #ffdcf6;
+    text-align: center;
+}
+
+img#productimage {
+    width: 100%;
+}
+#influencertext {
+    width:100%;
+}
+
+div#picuploaddiv {
+    margin: 40px 0 30px 0;
+}
+
+div#youtubeurluploaddiv {
+    margin: 40px 0 30px 0;
+    display: none;
+}
