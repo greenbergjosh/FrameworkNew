@@ -31,7 +31,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "uploadUrl",
                 valueKey: "uploadUrl",
                 component: "input",
-                defaultValue: "https://www.mocky.io/v2/5cc8019d300000980a055e76",
+                defaultValue: "https://",
                 label: "Upload URL",
                 help: "URL for the service that receives the uploaded file.",
               },
