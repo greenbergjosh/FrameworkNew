@@ -3,7 +3,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Utility;
@@ -32,6 +31,7 @@ namespace EdwServiceLib
         const string Cfg = "config";
         const string RsType = "rsType";
         const string Scope = "scope";
+        const string Whep = "whep";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -145,7 +145,7 @@ namespace EdwServiceLib
                     return oldData;
 
                 TransformData(data, sessionId);
-
+                
                 var edwType = Enum.Parse<EdwBulkEvent.EdwType>(rsType.ToString());
                 var be = new EdwBulkEvent();
                 be.AddRS(edwType, sessionId, DateTime.UtcNow, 
@@ -186,22 +186,28 @@ namespace EdwServiceLib
                 json.TryGetValue(Data, out var data))
             {
                 TransformData(data, sessionId);
-                var whep = _cache.Get<string>($"{sessionId}:{Scope}").Split(";").ToList();
+
+                var serializedScopes = _cache.GetOrCreate($"{sessionId}:{Scope}", t => string.Empty);
+                var scopeStack = new ScopeStack(serializedScopes);
+                data[Scope] = scopeStack.Json();
+
+                var whep = _cache.GetOrCreate($"{sessionId}:{Whep}", t => new List<string>());
 
                 var rsids = new Dictionary<string, object>();
                 foreach (var reportingSession in reportingSessions.ToObject<string[]>())
                     rsids.Add(reportingSession, GetConfigId(sessionId, reportingSession));
 
                 var be = new EdwBulkEvent();
+                var eventId = Guid.NewGuid();
                 var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
-                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, whep, pl);
+                be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
                 await _fw.EdwWriter.Write(be);
+                whep.Add(eventId.ToString());
 
                 var result = JsonWrapper.Serialize(data);
                 foreach (var kv in rsids)
                     _cache.Set($"{sessionId}:{Event}:{kv.Key}", result);
 
-                data["scope"] = new JArray(whep);
                 result = JsonWrapper.Serialize(data);
                 return result;
             }
@@ -267,18 +273,9 @@ namespace EdwServiceLib
         {
             var sessionId = GetOrCreateSessionId(context);
 
-            if (_cache.TryGetValue<string>($"{sessionId}:{Scope}", out var data))
-            {
-                var whep = data.Split(";").ToList();
-                var result = JsonWrapper.Serialize(new JObject
-                {
-                    [Scope] = new JArray(whep)
-                });
-                return Task.FromResult<object>(result);
-            }
+            var serializedScope = _cache.GetOrCreate($"{sessionId}:{Scope}", t => JsonWrapper.Serialize(new JArray()));
 
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.FromResult<object>(null);
+            return Task.FromResult<object>(serializedScope);
         }
 
         private async Task<object> SetScope(HttpContext context)
@@ -289,11 +286,13 @@ namespace EdwServiceLib
             var sessionId = GetOrCreateSessionId(context, json);
             if (json.ContainsKey(Scope))
             {
-                TransformData(json, sessionId);
-                var whep = _cache.Get<string>($"{sessionId}:{Scope}").Split(";").ToList();
-                json[Scope] = new JArray(whep);
-                var result = JsonWrapper.Serialize(json);
-                return result;
+                var serializedScope = _cache.GetOrCreate($"{sessionId}:{Scope}", t => JsonWrapper.Serialize(new JArray()));
+                var scopeStack = new ScopeStack(serializedScope);
+                scopeStack.Execute(json[Scope].ToString());
+                var jsonStack = scopeStack.Json();
+                serializedScope = JsonWrapper.Serialize(jsonStack);
+                _cache.Set($"{sessionId}:{Scope}", serializedScope);
+                return serializedScope;
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -304,70 +303,35 @@ namespace EdwServiceLib
         {
             if (data.Type == JTokenType.Object)
             {
-                var scope = _cache.GetOrCreate($"{sessionId}:{Scope}", t => string.Empty)
-                    .Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
-
                 var obj = (JObject)data;
                 foreach (var kv in obj)
                 {
-                    if (kv.Value.Type == JTokenType.String)
+                    if (kv.Value.Type != JTokenType.String)
+                        continue;
+
+                    var str = (string)kv.Value;
+                    var key = $"{sessionId}:{kv.Key}";
+
+                    if (str == "0+")
                     {
-                        var str = (string)kv.Value;
-                        var key = $"{sessionId}:{kv.Key}";
-
-                        if (kv.Key == "scope")
+                        var value = _cache.GetOrCreate(key, t => 0);
+                        value++;
+                        _cache.Set(key, value);
+                        obj[kv.Key] = value;
+                    }
+                    else if (str.EndsWith('+') && str.Length > 1)
+                    {
+                        var varName = str.Substring(0, str.Length - 1);
+                        if (obj.TryGetValue(varName, out var variable))
                         {
-                            var push = str.EndsWith('+');
-                            var pop = str.EndsWith('-');
-                            var template = str
-                                .Replace("+", string.Empty)
-                                .Replace("-", string.Empty)
-                                .Replace(" ", string.Empty);
-
-                            if (pop && scope.Any())
-                            {
-                                scope.RemoveAt(scope.Count - 1);
-                            }
-                            else
-                            {
-                                if (!push)
-                                    scope.Clear();
-
-                                var found = scope.Any(t => t.StartsWith($"{template}="));
-                                if (!found)
-                                    scope.Add($"{template}=");
-                            }
-                        }
-                        else if (str == "0+")
-                        {
-                            var value = _cache.GetOrCreate(key, t => 0);
-                            value++;
+                            var value = _cache.GetOrCreate(key, t => string.Empty);
+                            var separator = value == string.Empty ? string.Empty : ";";
+                            value = $"{value}{separator}{variable}";
                             _cache.Set(key, value);
-                            obj[kv.Key] = value;
-                        }
-                        else if (str.EndsWith('+') && str.Length > 1)
-                        {
-                            var varName = str.Substring(0, str.Length - 1);
-                            if (obj.TryGetValue(varName, out var variable))
-                            {
-                                var value = _cache.GetOrCreate(key, t => string.Empty);
-                                var separator = value == string.Empty ? string.Empty : ";";
-                                value = $"{value}{separator}{variable}";
-                                _cache.Set(key, value);
-                                obj[kv.Key] = JArray.FromObject(value.Split(";", StringSplitOptions.RemoveEmptyEntries));
-                            }
+                            obj[kv.Key] = JArray.FromObject(value.Split(";", StringSplitOptions.RemoveEmptyEntries));
                         }
                     }
                 }
-
-                foreach (var variable in scope.ToList())
-                {
-                    var parts = variable.Split('=');
-                    if (obj.TryGetValue(parts[0], out var value))
-                        scope[scope.IndexOf(variable)] = $"{parts[0]}={value}";
-                }
-
-                _cache.Set($"{sessionId}:{Scope}", string.Join(';', scope));
             }
         }
     }
