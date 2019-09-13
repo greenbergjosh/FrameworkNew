@@ -1,3 +1,109 @@
+body {
+  font-family: "SF Text", sans-serif;
+}
+
+h1 {
+  font-family: "SF Display", sans-serif;
+  font-weight: 200;
+}
+
 .template-app {
   max-width: 100%;
+  margin-top: 10px;
 }
+
+.photo-square {
+  background-color: #e4e4e4;
+  clear: both;
+  border-radius: 20px;
+  box-shadow: 0 0 6px var(--subtle);
+  &.-clip img {
+    // clip-path: polygon(0% 25%, 100% 25%, 100% 75%, 0% 75%);
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    object-fit: cover;
+  }
+  &.-border {
+    border: 1px solid #d6d4cd;
+  }
+  &.-left {
+    float: left;
+    margin-left: 10%;
+  }
+  &.-right {
+    float: right;
+  }
+}
+
+.add-photo {
+  background-color: #ffffff;
+  border: 2px dotted #c4c4c4;
+  width: 225px;
+  height: 225px;
+  margin: auto;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.-filled {
+    border-color: transparent;
+  }
+
+  .photo-square {
+    &.-left {
+      position: absolute;
+      top: 0;
+      left: 0;
+      float: none;
+      margin: 0;
+      &.-outside {
+        left: -10%;
+        top: -10%;
+      }
+    }
+    &.-right {
+      position: absolute;
+      top: 0;
+      right: 0;
+      float: none;
+      margin: 0;
+      &.-outside {
+        right: -10%;
+        top: -10%;
+      }
+    }
+  }
+}
+
+.add-photo-icon {
+  text-align: center;
+  font-size: 18pt;
+  color: #007aff;
+  span {
+    font-size: 10pt;
+  }
+}
+
+.add-text {
+  text-align: center;
+  font-size: 17pt;
+  color: #007aff;
+}
+
+.loaded-image {
+  max-width: 225px;
+  max-height: 225px;
+  border-radius: 5px;
+}
+
+.disclaimer {
+  text-align: center;
+  width: 75%;
+  margin: auto;
+}
+
+@import "styles/ribbon.scss";

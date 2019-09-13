@@ -4,6 +4,6 @@ import { TemplateManager } from "./components/TemplateManager"
 
 export const App = () => (
   <div className="template-app">
-    <TemplateManager />
+    <TemplateManager getgotInterface={window.GetGotInterface} />
   </div>
 )
