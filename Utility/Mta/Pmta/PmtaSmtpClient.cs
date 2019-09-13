@@ -8,7 +8,7 @@ using HPair = System.Collections.Generic.KeyValuePair<string, string>;
 
 namespace Utility.Mta.Pmta
 {
-    public class SmtpClient : IDisposable
+    public class PmtaSmtpClient : IDisposable
     {
         private static readonly string[] RemoveChars = {"\\", "&", "="};
         private TcpClient _tcp;
@@ -29,7 +29,7 @@ namespace Utility.Mta.Pmta
 
         private Task WriteSmtpTrace(string log) => SmtpTrace?.Invoke(log) ?? Task.CompletedTask;
 
-        public SmtpClient(string pmtaAddress, int port = DefaultPort, Func<string, Task> smtpTrace = null)
+        public PmtaSmtpClient(string pmtaAddress, int port = DefaultPort, Func<string, Task> smtpTrace = null)
         {
             if (Port < DefaultPort) throw new ArgumentException($"Invalid {nameof(Port)} value {Port}");
             if (PmtaAddress.IsNullOrWhitespace()) throw new ArgumentException($"Invalid {nameof(PmtaAddress)} value {PmtaAddress ?? "[null]"}");
@@ -41,7 +41,7 @@ namespace Utility.Mta.Pmta
 
         public async Task Open()
         {
-            if(Buffer!= null) throw new Exception($"Tried opening an active {typeof(SmtpClient).FullName}");
+            if(Buffer!= null) throw new Exception($"Tried opening an active {typeof(PmtaSmtpClient).FullName}");
             
             try
             {
