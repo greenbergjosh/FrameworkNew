@@ -11,7 +11,6 @@ export const getRs = async (name, sessionId = null) => {
 };
 
 export const getOrCreateRs = async (rsType, name, data, sessionId = null) => {
-  console.log("yoyo " + rsType);
   var j = json(sessionId, {
     name,
     data
