@@ -37,7 +37,7 @@ namespace Utility.OpgAuth.Sso
             }
             else e = _emails[Random.Number(0, _emails.Length - 1)];
 
-            return new UserDetails(e, "Mock name", e, null, null, null);
+            return new UserDetails(null, e, "Mock name", e, null, null, null);
         }
     }
 }
