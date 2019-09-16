@@ -5,11 +5,11 @@ using Utility;
 
 namespace EdwServiceLib
 {
-    public class ScopeStack
+    public class StackFrameParser
     {
-        private readonly Stack<Dictionary<string, string>> _scopes = new Stack<Dictionary<string, string>>();
+        private readonly Stack<IDictionary<string, string>> _scopes = new Stack<IDictionary<string, string>>();
 
-        public ScopeStack(string serializedScopes)
+        public StackFrameParser(string serializedScopes)
         {
             var token = JsonWrapper.TryParse(serializedScopes);
             if (token.Type == JTokenType.Array)
@@ -29,6 +29,17 @@ namespace EdwServiceLib
             }
         }
 
+        public IDictionary<string, string> ToDictionary()
+        {
+            var result = new Dictionary<string, string>();
+            foreach(var scope in _scopes)
+            {
+                foreach (var kv in scope)
+                    result[kv.Key] = kv.Value;
+            }
+            return result;
+        }
+
         public JToken Json()
         {
             var array = new JArray();
@@ -44,35 +55,37 @@ namespace EdwServiceLib
             return array;
         }
 
-        public void Execute(string instruction)
+        public void Apply(IDictionary<string, string> data)
         {
-            var push = instruction.EndsWith('+');
-            var pop = instruction.EndsWith('-');
-            var template = instruction
-                .Replace("+", string.Empty)
-                .Replace("-", string.Empty)
-                .Replace(" ", string.Empty);
-
-            if (pop && _scopes.Any())
+            // Q: For multivalue scopes, should they all be null to pop?
+            var nullValue = data.FirstOrDefault(t => string.IsNullOrEmpty(t.Value));
+            if (!string.IsNullOrEmpty(nullValue.Key))
             {
-                _scopes.Pop();
+                var toPop = 0;
+                var found = false;
+                foreach (var scope in _scopes)
+                {
+                    toPop++;
+                    if (scope.Any(t => t.Key == nullValue.Key))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found)
+                    while (toPop-- > 0) _scopes.Pop();
             }
             else
             {
-                var newScope = template.Split(",")
-                    .Select(t => t.Split("="))
-                    .ToDictionary(t => t[0], t => t[1]);
-
-                // Q: For multivalue scopes, should they all be null to pop?
-                var nullValue = newScope.FirstOrDefault(t => string.IsNullOrEmpty(t.Value));
-                if (!string.IsNullOrEmpty(nullValue.Key))
+                if (_scopes.Any())
                 {
                     var toPop = 0;
                     var found = false;
                     foreach (var scope in _scopes)
                     {
                         toPop++;
-                        if (scope.Any(t => t.Key == nullValue.Key))
+                        if (scope.Any(t => data.ContainsKey(t.Key)))
                         {
                             found = true;
                             break;
@@ -80,29 +93,26 @@ namespace EdwServiceLib
                     }
 
                     if (found)
+                    {
+                        toPop--;
                         while (toPop-- > 0) _scopes.Pop();
+
+                        var oldScope = _scopes.Peek();
+                        foreach (var kv in data)
+                            oldScope[kv.Key] = kv.Value;
+                    }
+                            
+                    else
+                    {
+                        _scopes.Push(data);
+                    }
                 }
                 else
                 {
-                    if (_scopes.Any())
-                    {
-                        var latest = _scopes.Peek();
-                        if (latest.Keys.Any(t => newScope.ContainsKey(t)))
-                        {
-                            foreach (var kv in newScope)
-                                latest[kv.Key] = kv.Value;
-                        }
-                        else
-                        {
-                            _scopes.Push(newScope);
-                        }
-                    }
-                    else
-                    {
-                        _scopes.Push(newScope);
-                    }
+                    _scopes.Push(data);
                 }
             }
+            
         }
     }
 }

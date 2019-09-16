@@ -16,32 +16,33 @@ namespace EdwServiceLib
         private FrameworkWrapper _fw;
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
-        private readonly Dictionary<string, (Func<HttpContext, Task<object>> get, Func<HttpContext, Task<object>> post)> _routes =
-            new Dictionary<string, (Func<HttpContext, Task<object>>, Func<HttpContext, Task<object>>)>();
+        private readonly Dictionary<string, Func<HttpContext, Task<object>>> _routes =
+            new Dictionary<string, Func<HttpContext, Task<object>>>();
 
         const string SessionId = "sessionId";
         const string Rsid = "rsid";
         const string Name = "name";
         const string Data = "data";
-        const string ReportingSession = "reportingSession";
         const string ReportingSessions = "reportingSessions";
         const string Rs = "rs";
         const string Event = "event";
-        const string Cache = "cache";
         const string Cfg = "config";
         const string RsType = "rsType";
         const string Scope = "scope";
         const string Whep = "whep";
+        const string Ss = "ss";
+        const string Sf = "sf";
+        const string Stack = "stack";
 
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
 
-            _routes.Add($"/{Rs}", (GetRs, GetOrCreateRs));
-            _routes.Add($"/{Event}", (GetEvent, AddEvent));
-            _routes.Add($"/{Cache}", (GetCache, AddCache));
-            _routes.Add($"/{Cfg}", (null, GetOrCreateConfigIds));
-            _routes.Add($"/{Scope}", (GetScope, SetScope));
+            _routes.Add($"/{Rs}", GetOrCreateRs);
+            _routes.Add($"/{Event}", AddEvent);
+            _routes.Add($"/{Cfg}", GetOrCreateConfigIds);
+            _routes.Add($"/{Ss}", SetStackFrame);
+            _routes.Add($"/{Sf}", GetOrCreateStackFrame);
         }
 
         public async Task Run(HttpContext context)
@@ -67,37 +68,18 @@ namespace EdwServiceLib
                 path = path.Remove(path.Length - 1);
 
             var verb = context.Request.Method;
-            object result = null;
-
-            if (_routes.TryGetValue(path, out var actions))
+            
+            if (context.Request.Method != Http.Post)
             {
-                if (verb == Http.Get && actions.get != null)
-                    result = await actions.get(context);
-                else if (verb == Http.Post && actions.post != null)
-                    result = await actions.post(context);
-                else
-                {
-                    context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
-                    result = "Method not allowed";
-                }
-
-                return result;
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                return "Method not allowed";
             }
+
+            if (_routes.TryGetValue(path, out var action))
+                return await action(context);
+
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             return "Path not found";
-        }
-
-        private Guid GetOrCreateSessionId(HttpContext context)
-        {
-            if (context.Request.Cookies.TryGetValue(SessionId, out var cookieSessionId))
-                return Guid.Parse(cookieSessionId);
-
-            if (context.Request.Query.TryGetValue(SessionId, out var sessionId))
-                return Guid.Parse(sessionId);
-
-            var newSessionId = Guid.NewGuid();
-            context.Response.Cookies.Append(SessionId, newSessionId.ToString());
-            return newSessionId;
         }
 
         private Guid GetOrCreateSessionId(HttpContext context, JObject json)
@@ -119,33 +101,24 @@ namespace EdwServiceLib
             return _cache.Get<Guid>($"{sessionId}:{Rsid}:{name}");
         }
 
-        private Task<object> GetRs(HttpContext context)
-        {
-            var sessionId = GetOrCreateSessionId(context);
-            var name = context.Request.Query[Name];
-
-            if (_cache.TryGetValue($"{sessionId}:{Rs}:{name}", out var data))
-                return Task.FromResult(data);
-
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.FromResult<object>(null);
-        }
-
         private async Task<object> GetOrCreateRs(HttpContext context)
         {
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue(Name, out var name) &&
+            if (json.TryGetValue(Stack, out var stack) && stack.Type == JTokenType.Array && 
+                json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(RsType, out var rsType) &&
                 json.TryGetValue(Data, out var data))
             {
                 if (_cache.TryGetValue($"{sessionId}:{Rs}:{name}", out var oldData))
                     return oldData;
 
-                TransformData(data, sessionId);
-                
+                data[Scope] = JObject.FromObject(BuildStack(sessionId, stack.ToObject<string[]>()));
+                //TransformData(data, sessionId);
+
+                //TODO: Pass config id from client.
                 var edwType = Enum.Parse<EdwBulkEvent.EdwType>(rsType.ToString());
                 var be = new EdwBulkEvent();
                 be.AddRS(edwType, sessionId, DateTime.UtcNow, 
@@ -164,16 +137,20 @@ namespace EdwServiceLib
             return null;
         }
 
-        private Task<object> GetEvent(HttpContext context)
+        private IDictionary<string, string> BuildStack(Guid sessionId, string[] stackParts)
         {
-            var sessionId = GetOrCreateSessionId(context);
-            var reportingSession = context.Request.Query[ReportingSession];
-
-            if (_cache.TryGetValue($"{sessionId}:{Event}:{reportingSession}", out var data))
-                return Task.FromResult(data);
-
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.FromResult<object>(null);
+            var mergedScopes = new Dictionary<string, string>();
+            foreach (var stackFrame in stackParts)
+            {
+                if (_cache.TryGetValue<string>($"{sessionId}:{Sf}:{stackFrame}", out var serializedScope))
+                {
+                    var ss = new StackFrameParser(serializedScope);
+                    var d = ss.ToDictionary();
+                    foreach (var kv in d)
+                        mergedScopes[kv.Key] = kv.Value;
+                }
+            }
+            return mergedScopes;
         }
 
         private async Task<object> AddEvent(HttpContext context)
@@ -182,17 +159,17 @@ namespace EdwServiceLib
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue(ReportingSessions, out var reportingSessions) &&
+            if (json.TryGetValue(Stack, out var stack) && stack.Type == JTokenType.Array &&
+                json.TryGetValue(ReportingSessions, out var reportingSessions) &&
                 json.TryGetValue(Data, out var data))
             {
                 TransformData(data, sessionId);
 
-                var serializedScopes = _cache.GetOrCreate($"{sessionId}:{Scope}", t => string.Empty);
-                var scopeStack = new ScopeStack(serializedScopes);
-                data[Scope] = scopeStack.Json();
+                data[Scope] = JObject.FromObject(BuildStack(sessionId, stack.ToObject<string[]>()));
 
                 var whep = _cache.GetOrCreate($"{sessionId}:{Whep}", t => new List<string>());
 
+                //TODO: Do this client side
                 var rsids = new Dictionary<string, object>();
                 foreach (var reportingSession in reportingSessions.ToObject<string[]>())
                     rsids.Add(reportingSession, GetConfigId(sessionId, reportingSession));
@@ -204,43 +181,7 @@ namespace EdwServiceLib
                 await _fw.EdwWriter.Write(be);
                 whep.Add(eventId.ToString());
 
-                var result = JsonWrapper.Serialize(data);
-                foreach (var kv in rsids)
-                    _cache.Set($"{sessionId}:{Event}:{kv.Key}", result);
-
-                result = JsonWrapper.Serialize(data);
-                return result;
-            }
-
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return null;
-        }
-
-        private Task<object> GetCache(HttpContext context)
-        {
-            var sessionId = GetOrCreateSessionId(context);
-            var name = context.Request.Query[Name];
-
-            if (_cache.TryGetValue($"{sessionId}:{name}", out var data))
-                return Task.FromResult(data);
-
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.FromResult<object>(null);
-        }
-
-        private async Task<object> AddCache(HttpContext context)
-        {
-            var body = await context.GetRawBodyStringAsync();
-            var json = (JObject)JsonWrapper.TryParse(body);
-
-            var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue(Name, out var name) &&
-                json.TryGetValue(Data, out var data))
-            {
-                TransformData(data, sessionId);
-                var result = JsonWrapper.Serialize(data);
-                _cache.Set($"{sessionId}:{name}", result);
-                return result;
+                return JsonWrapper.Serialize(data);
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -269,30 +210,45 @@ namespace EdwServiceLib
             return null;
         }
 
-        private Task<object> GetScope(HttpContext context)
-        {
-            var sessionId = GetOrCreateSessionId(context);
-
-            var serializedScope = _cache.GetOrCreate($"{sessionId}:{Scope}", t => JsonWrapper.Serialize(new JArray()));
-
-            return Task.FromResult<object>(serializedScope);
-        }
-
-        private async Task<object> SetScope(HttpContext context)
+        private async Task<object> SetStackFrame(HttpContext context)
         {
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.ContainsKey(Scope))
+            if (json.TryGetValue(Name, out var name) &&
+                json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
             {
-                var serializedScope = _cache.GetOrCreate($"{sessionId}:{Scope}", t => JsonWrapper.Serialize(new JArray()));
-                var scopeStack = new ScopeStack(serializedScope);
-                scopeStack.Execute(json[Scope].ToString());
+                var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JArray()));
+                var scopeStack = new StackFrameParser(serializedScope);
+                scopeStack.Apply(data.ToObject<Dictionary<string,string>>());
                 var jsonStack = scopeStack.Json();
                 serializedScope = JsonWrapper.Serialize(jsonStack);
-                _cache.Set($"{sessionId}:{Scope}", serializedScope);
+                _cache.Set($"{sessionId}:{Sf}:{name}", serializedScope);
                 return serializedScope;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return null;
+        }
+
+        private async Task<object> GetOrCreateStackFrame(HttpContext context)
+        {
+            var body = await context.GetRawBodyStringAsync();
+            var json = (JObject)JsonWrapper.TryParse(body);
+
+            var sessionId = GetOrCreateSessionId(context, json);
+            if (json.TryGetValue(Name, out var name) &&
+                json.TryGetValue(Data, out var data))
+            {
+                var stackFrame = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t =>
+                {
+                    return JsonWrapper.Serialize(new JArray
+                    {
+                        data
+                    });
+                });
+                return stackFrame;
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
