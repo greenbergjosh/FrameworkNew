@@ -13,19 +13,19 @@ namespace Utility.Mta.Pmta
             
         }
 
-        public override async Task<IEnumerable<MailResult>> Send(MailMessage msg)
+        public override async Task<IEnumerable<MailResult>> Send(MailPackage pkg)
         {
-            if (msg?.To?.Any() != true) return null;
+            if (pkg?.To?.Any() != true) return null;
 
             var conf = _fw.StartupConfiguration.GetE(_configRootPath);
 
-            var ip = conf.GetS($"DomainIps/{msg.FromDomain.ToLower()}") ?? conf.GetS("DomainIps/*") ?? conf.GetS("Ip");
+            var ip = conf.GetS($"DomainIps/{pkg.From.Domain.ToLower()}") ?? conf.GetS("DomainIps/*") ?? conf.GetS("Ip");
 
             if (ip.IsNullOrWhitespace()) throw new Exception($"MTA configuration not found. ConfigRootPath: {_configRootPath}");
 
-            if (ip.IsNullOrWhitespace()) throw new Exception($"Failed to retrieve VMTA IP. FromDomain: {msg.FromDomain} Config: {conf.GetS("")}");
+            if (ip.IsNullOrWhitespace()) throw new Exception($"Failed to retrieve VMTA IP. FromDomain: {pkg.From.Domain} Config: {conf.GetS("")}");
 
-            return await GetRecipientMessages(msg).SelectAsync(async rm => rm.Success ? await SendToPmta(ip, rm) : new MailResult(rm.Recipient, rm.Errors));
+            return await GetRecipientMessages(pkg).SelectAsync(async rm => rm.Success ? await SendToPmta(ip, rm) : new MailResult(rm.To, rm.Errors));
         }
 
         private async Task<MailResult> SendToPmta(string ip, RecipientMessage msg)
@@ -38,11 +38,11 @@ namespace Utility.Mta.Pmta
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(PmtaPipeMailService), $"Unhandled exception mailing {msg.Recipient.Address} on {ip}: PMTA: {ToString()}\n\nException: {e.UnwrapForLog()}");
+                await _fw.Error(nameof(PmtaPipeMailService), $"Unhandled exception mailing {msg.To.Address} on {ip}: PMTA: {ToString()}\n\nException: {e.UnwrapForLog()}");
                 errors.Add($"Unhandled exception: {e.Message}");
             }
 
-            return new MailResult(msg.Recipient, errors);
+            return new MailResult(msg.To, errors);
         }
 
         public override async Task<string> GetStatus(string jobId)
