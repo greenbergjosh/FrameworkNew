@@ -3,11 +3,14 @@ import * as Reach from "@reach/router"
 import { identity } from "fp-ts/lib/function"
 import { some, toArray } from "fp-ts/lib/Record"
 import React from "react"
+import CopyToClipboard from "react-copy-to-clipboard"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks"
+import { guidRegex } from "../../lib/regexp"
 import { Profile } from "../../state/iam"
 import { store } from "../../state/store"
 import styles from "./dashboard.module.css"
+
 import {
   RouteMeta,
   WithRouteProps,
@@ -27,6 +30,7 @@ import {
   Row,
   Typography,
   Spin,
+  message,
 } from "antd"
 
 interface Props {
@@ -201,9 +205,20 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         <Row className={`${styles.layoutContainer} ${styles.breadCrumbsRow}`}>
           <Breadcrumb>
             {props.location.pathname.split("/").map((_, idx, parts) => (
-              <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
-                <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
-              </Breadcrumb.Item>
+              <>
+                <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
+                  <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
+                  {guidRegex().exec(parts[idx]) && (
+                    <CopyToClipboard
+                      text={parts[idx].toUpperCase()}
+                      onCopy={() => message.success("Copied!")}>
+                      <Button size="small" style={{ margin: "0 5px", opacity: 0.75 }}>
+                        <Icon type="copy" />
+                      </Button>
+                    </CopyToClipboard>
+                  )}
+                </Breadcrumb.Item>
+              </>
             ))}
           </Breadcrumb>
         </Row>
