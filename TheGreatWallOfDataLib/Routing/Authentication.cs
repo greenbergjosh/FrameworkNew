@@ -6,30 +6,18 @@ using Microsoft.AspNetCore.Http;
 using Utility;
 using Utility.GenericEntity;
 using Utility.OpgAuth;
-using Utility.OpgAuth.Sso;
 using Jw = Utility.JsonWrapper;
 
 namespace TheGreatWallOfDataLib.Routing
 {
     public static class Authentication
     {
-        private static string _mockToken = new Guid().ToString();
-        private static string _consoleToken = "4a5571bf-4c18-400b-a314-5c63f7699c28";
-        private static string[] _validIps = null;
         private static FrameworkWrapper _fw;
 
         public static async Task Initialize(FrameworkWrapper fw)
         {
             _fw = fw;
-            _validIps = _fw.StartupConfiguration.GetL("Config/IpWhitelist").Select(w => w.GetS("ip") ?? w.GetS("")).Where(w =>
-            {
-                IPAddress.TryParse(w, out var ip);
-
-                return ip != null;
-            }).ToArray();
-#if DEBUG
             await Auth.Initialize(fw);
-#endif
         }
 
         public static async Task<IGenericEntity> Login(string payload, HttpContext ctx)
@@ -48,7 +36,7 @@ namespace TheGreatWallOfDataLib.Routing
             var userDetails = await Auth.Login(sso.ssoKey, sso.payload, RegistrationValidation.EmailIsAtOnpointglobal);
 
             await CheckPermissions("auth", "login", userDetails.LoginToken, ctx);
-            return Jw.ToGenericEntity(new { token = userDetails.LoginToken, name = userDetails.Name, email = userDetails.Email, profileImage = userDetails.ImageUrl});
+            return Jw.ToGenericEntity(userDetails);
         }
 
         public static async Task<IGenericEntity> GetUserDetails(string identity, HttpContext ctx)
