@@ -1,13 +1,14 @@
 import { Divider, Icon } from "antd"
 import React, { SyntheticEvent } from "react"
 import ReactDOM from "react-dom"
+import { GetGotService } from "../services/getgot-service"
 const DEFAULT_TEMPLATE = require("../mock-data/default.template.html")
 
 interface TemplateManagerProps {
-  getgotInterface: typeof window.GetGotInterface
+  getgotService: typeof GetGotService
 }
 
-export const TemplateManager = ({ getgotInterface }: TemplateManagerProps) => {
+export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
   const [template, setTemplate] = React.useState(DEFAULT_TEMPLATE)
   const [dataState, setDataState] = React.useState({} as { [key: string]: string })
   const wrapperRef = React.useRef() as React.RefObject<HTMLDivElement>
@@ -28,8 +29,10 @@ export const TemplateManager = ({ getgotInterface }: TemplateManagerProps) => {
       element = element.parentElement
     }
 
-    console.log("Click Photo Spot", element.getAttribute("data-value-key"), element)
-    window.GetGotInterface && window.GetGotInterface.selectPhoto()
+    const dataValueKey = element.getAttribute("data-value-key")
+
+    console.log("Click Photo Spot", dataValueKey, element)
+    getgotService && getgotService.selectPhoto(dataValueKey)
   }, [])
 
   const onClickHTMLPhotoElement = React.useCallback((e: Event) => {
@@ -38,9 +41,10 @@ export const TemplateManager = ({ getgotInterface }: TemplateManagerProps) => {
     while (element.parentElement && !element.getAttribute("data-value-key")) {
       element = element.parentElement
     }
+    const dataValueKey = element.getAttribute("data-value-key")
 
-    console.log("Click Photo Spot", element.getAttribute("data-value-key"), element)
-    window.GetGotInterface && window.GetGotInterface.selectPhoto()
+    console.log("Click Photo Spot", dataValueKey, element)
+    getgotService && getgotService.selectPhoto(dataValueKey)
   }, [])
 
   const onClickHTMLTextElement = React.useCallback((e: Event) => {
@@ -49,18 +53,25 @@ export const TemplateManager = ({ getgotInterface }: TemplateManagerProps) => {
     while (element.parentElement && !element.getAttribute("data-value-key")) {
       element = element.parentElement
     }
+    const dataValueKey = element.getAttribute("data-value-key")
 
-    console.log("Click Text Spot", element.getAttribute("data-value-key"), element)
-    window.GetGotInterface && window.GetGotInterface.test()
+    console.log("Click Text Spot", dataValueKey, element)
+    getgotService && getgotService.editText(dataValueKey)
   }, [])
 
-  const loadedPhoto = React.useCallback((photoBase64: string) => {
-    alert(photoBase64)
-    setDataState({ ...dataState, photo: photoBase64 })
+  const loadedPhoto = React.useCallback((photoBase64: string, key: string = "photo") => {
+    console.debug("Callback: loadedPhoto", { photoBase64, key })
+    setDataState({ ...dataState, [key]: photoBase64 })
+  }, [])
+
+  const editedText = React.useCallback((text: string, key: string = "message") => {
+    console.debug("Callback: editedText", { text, key })
+    setDataState({ ...dataState, [key]: text })
   }, [])
 
   React.useEffect(() => {
     window.loadedPhoto = loadedPhoto
+    window.editedText = editedText
   }, [loadedPhoto])
 
   React.useEffect(() => {
