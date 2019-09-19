@@ -33,7 +33,7 @@ namespace TheGreatWallOfDataLib.Routing
 
             if (sso == null) throw new FunctionException(106, $"Invalid sso payload {pl?.GetS("")}");
 
-            var userDetails = await Auth.Login(sso.ssoKey, sso.payload, RegistrationValidation.EmailIsAtOnpointglobal);
+            var userDetails = await Auth.Login(sso.ssoKey, sso.payload, RegistrationValidation.DefaultAutoRegister);
 
             await CheckPermissions("auth", "login", userDetails.LoginToken, ctx);
             return Jw.ToGenericEntity(userDetails);
@@ -49,9 +49,10 @@ namespace TheGreatWallOfDataLib.Routing
         public static async Task CheckPermissions(string scope, string funcName, string identity, HttpContext ctx)
         {
             var ip = ctx.Ip();
-            var logMsg = Jw.Serialize(new {identity, ip, action = $"{scope}.{funcName}"});
+            var securable = $"{scope}.{funcName}";
+            var logMsg = Jw.Serialize(new {identity, ip, action = securable});
 
-            if (!await Auth.HasPermission(identity, scope)) throw new FunctionException(106, logMsg);
+            if (!await Auth.HasPermission(identity, securable)) throw new FunctionException(106, logMsg);
         }
 
     }
