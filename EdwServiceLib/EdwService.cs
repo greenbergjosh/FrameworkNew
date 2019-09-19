@@ -31,9 +31,13 @@ namespace EdwServiceLib
         const string Ev = "ev";
         const string Cf = "cf";
         const string ConfigId = "configId";
-        const string EventId = "eventId";
         const string KeyPrefix = "keyPrefix";
         const string SfName = "__sfName";
+        const string Key = "key";
+        const string Whep = "whep";
+        const string AddToWhep = "addToWhep";
+        const string IncludeWhep = "includeWhep";
+        const string Duplicate = "duplicate";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -135,8 +139,27 @@ namespace EdwServiceLib
 
                     foreach (var ev in (JArray)evList)
                     {
-                        var evResult = await PublishEvent(sessionId, stackFrames.ToArray(), ev);
-                        evResults.Add(evResult);
+                        var evObj = (JObject)ev;
+                        var evData = (JObject)evObj[Data];
+                        var evKey = (JArray)evObj[Key];
+
+                        var addToWhep = false;
+                        var includeWhep = false;
+                        JObject duplicate = null;
+
+                        if (json.TryGetValue(AddToWhep, out var rawAddToWhep) && rawAddToWhep.Type == JTokenType.Boolean)
+                            addToWhep = rawAddToWhep.ToObject<bool>();
+
+                        if (json.TryGetValue(IncludeWhep, out var rawIncludeWhep) && rawIncludeWhep.Type == JTokenType.Boolean)
+                            includeWhep = rawIncludeWhep.ToObject<bool>();
+
+                        if (json.TryGetValue(Duplicate, out var rawDuplicate) && rawDuplicate.Type == JTokenType.Object)
+                            duplicate = (JObject)rawDuplicate;
+
+                        var evResult = await PublishEvent(sessionId, stackFrames.ToArray(), evKey.ToObject<string[]>(), 
+                                                          evData, addToWhep, includeWhep, duplicate);
+                        if (evResult != null)
+                            evResults.Add(evResult);
                     }
                 }
 
@@ -163,7 +186,6 @@ namespace EdwServiceLib
 
         private async Task<object> GetOrCreateRs(HttpContext context)
         {
-            // TODO: Check for duplicate, by rs name, at session level. Handle Immediate and Checked, based on values.
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
@@ -189,26 +211,44 @@ namespace EdwServiceLib
             return null;
         }
 
-        private async Task<(string Json, JToken Data)> GetOrCreateRs(Guid sessionId, string name,string type, Guid configId, JToken data)
+        private async Task<(string Json, JToken Data)> GetOrCreateRs(Guid sessionId, string name, string type, Guid configId, JToken data)
         {
             var rsListKey = $"{sessionId}:{Rs}";
             var rsKey = $"{sessionId}:{Rs}:{name}";
 
             if (_cache.TryGetValue<string>(rsKey, out var oldData))
-                return (oldData, JsonWrapper.TryParse(oldData));
+            {
+                var oldObj = (JObject)JsonWrapper.TryParse(oldData);
+                var oldType = Enum.Parse<EdwBulkEvent.EdwType>(oldObj[Type].ToString());
+                if (oldType == EdwBulkEvent.EdwType.Immediate)
+                    return (oldData, oldObj);
+                
+                var dataObj = (JObject)oldObj[Data];
+                var oldProps = dataObj.Properties().Select(p => p.Name).ToList();
+                var newProps = ((JObject)data).Properties().Select(p => p.Name).ToList();
 
+                if (newProps.Count > oldProps.Count && oldProps.All(op => newProps.Contains(op)))
+                    type = EdwBulkEvent.EdwType.CheckedDetail.ToString();
+                else
+                    return (oldData, oldObj);
+            }
+            
             TransformData(data, sessionId);
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
             be.AddRS(edwType, sessionId, DateTime.UtcNow, PL.FromJsonString(JsonWrapper.Serialize(data)), configId);
 
-            await _fw.EdwWriter.Write(be);
+            //await _fw.EdwWriter.Write(be);
 
             var rsList = _cache.GetOrCreate(rsListKey, t => new List<(string, Guid)>());
             rsList.Add((name, configId));
 
-            var result = JsonWrapper.Serialize(data);
+            var result = JsonWrapper.Serialize(new JObject
+            {
+                [Data] = data,
+                [Type] = type
+            });
             _cache.Set(rsKey, result);
 
             return (result, data);
@@ -230,11 +270,10 @@ namespace EdwServiceLib
 
         private List<string> ExtractWhepFromStack(IEnumerable<IDictionary<string, JToken>> stackFrames)
         {
-            // TODO: collect from __ev collection
             return stackFrames
                 .SkipLast(1)
-                .Where(sf => sf.ContainsKey(EventId))
-                .Select(sf => sf[EventId].ToString())
+                .Where(sf => sf.ContainsKey(Whep))
+                .SelectMany(sf => sf[Whep].ToObject<string[]>())
                 .ToList();
         }
 
@@ -248,16 +287,31 @@ namespace EdwServiceLib
 
         private async Task<object> PublishEvent(HttpContext context)
         {
-            // TODO: Unique Key, duplicateSpec, insertInWhep, includeWhep, stack to data syntax
+            // TODO: stack to data syntax
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
             if (json.TryGetValue(Stack, out var stack) && stack.Type == JTokenType.Array &&
-                json.TryGetValue(Data, out var data))
+                json.TryGetValue(Key, out var key) && key.Type == JTokenType.Array &&
+                json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
             {
+                var addToWhep = false;
+                var includeWhep = false;
+                JObject duplicate = null;
+
+                if (json.TryGetValue(AddToWhep, out var rawAddToWhep) && rawAddToWhep.Type == JTokenType.Boolean)
+                    addToWhep = rawAddToWhep.ToObject<bool>();
+
+                if (json.TryGetValue(IncludeWhep, out var rawIncludeWhep) && rawIncludeWhep.Type == JTokenType.Boolean)
+                    includeWhep = rawIncludeWhep.ToObject<bool>();
+
+                if (json.TryGetValue(Duplicate, out var rawDuplicate) && rawDuplicate.Type == JTokenType.Object)
+                    duplicate = (JObject)rawDuplicate;
+
                 var stackFrames = stack.ToObject<string[]>();
-                var result = await PublishEvent(sessionId, stackFrames, data);
+                var result = await PublishEvent(sessionId, stackFrames, key.ToObject<string[]>(), 
+                                                (JObject)data, addToWhep, includeWhep, duplicate);
                 return JsonWrapper.Serialize(result);
             }
 
@@ -265,23 +319,84 @@ namespace EdwServiceLib
             return null;
         }
 
-        private async Task<object> PublishEvent(Guid sessionId, string[] stackFrames, JToken data)
+        private async Task<object> PublishEvent(Guid sessionId, string[] stackFrames, string[] keyParts, JObject data, 
+                                                bool addToWhep, bool includeWhep, JObject duplicate)
         {
-            data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
+            // Compute event key
+            var keyValues = new List<string>();
+            foreach (var keyPart in keyParts)
+            {
+                if (data.TryGetValue(keyPart, out var keyValue))
+                    keyValues.Add($"{keyPart}:{keyValue}");
+                else
+                    throw new InvalidOperationException($"Data does not contain keypart \"keyPart\".");
+            }
+
+            var stack = BuildStack(sessionId, stackFrames);
+
+            // Get last stack frame and get/create event dictionary.
+            var stackFrame = stack.Last();
+            JArray evArray;
+            if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
+                evArray = (JArray)rawEvArray;
+            else
+                evArray = new JArray();
+
+            var key = string.Join(",", keyValues);
+            // look for event key in event dictionary.
+            var eventPresent = evArray.ToObject<string[]>().Contains(key);
+
+            // If event key was already published and no duplicate info is passed, do not publish.
+            if (eventPresent && duplicate == null)
+                return null; //TODO: return last event?
+
+            // Add duplicate data if available
+            if (eventPresent && duplicate != null)
+            {
+                foreach (var kv in duplicate)
+                    data[kv.Key] = kv.Value;
+            }
 
             TransformData(data, sessionId);
-            var stack = BuildStack(sessionId, stackFrames);
             data[Sf] = JArray.FromObject(stack);
+            data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
 
-            var whep = ExtractWhepFromStack(stack);
             var rsids = GetRsIds(sessionId);
-
             var be = new EdwBulkEvent();
             var eventId = Guid.NewGuid();
             var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
+            List<string> whep = null;
+            var sfData = new Dictionary<string, object>
+            {
+                { Ev, evArray }
+            };
+
+            // include whep data in new event.
+            if (includeWhep)
+                whep = ExtractWhepFromStack(stack);
+
+            // store new event key in ev array.
+            if (!eventPresent)
+                evArray.Add(key);
+
+            // add new event id to whep data
+            if (addToWhep)
+            {
+                JArray whepArray;
+                if (stackFrame.TryGetValue(Ev, out var rawWhepArray) && rawWhepArray.Type == JTokenType.Array)
+                    whepArray = (JArray)rawWhepArray;
+                else
+                    whepArray = new JArray();
+
+                whepArray.Add(eventId);
+
+                sfData.Add(Whep, whepArray);
+            }
+
             be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
-            await _fw.EdwWriter.Write(be);
-            await SetStackFrame(sessionId, stackFrames.Last(), JObject.FromObject(new Dictionary<string, object>() { [EventId] = eventId }));
+            //await _fw.EdwWriter.Write(be);
+
+            await SetStackFrame(sessionId, stackFrames.Last(), JObject.FromObject(sfData));
 
             return data;
         }

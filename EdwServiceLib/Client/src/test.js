@@ -1,33 +1,4 @@
-var createConfig = function(ss, rs, ev = []) {
-  return {
-    enableLogging: enableLogging,
-    rs: rs,
-    ss: ss,
-    ev: ev
-  };
-};
-
-var reportToEdw = function(config, customizeConfig = function(){}, postConfig = function(){}) {
-  customizeConfig(config);
-  edw.cf(config)
-    .then(r => postConfig(r))
-    .catch(reason => console.log('Error! Reason: ' + reason));
-};
-
-var getUrlParameter = function(name) {
-  name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-  var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-  var results = regex.exec(location.search);
-  return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-};
-
-var stackBasedOn = function(base, values) {
-  return Object.assign({}, JSON.parse(JSON.stringify(base)), values);
-};
-
-var enableLogging = true;
-
-var rsconfig = {
+var rsConfig = {
   r1: {
     configId: 'EDA8BF65-C8CF-4B86-8BB1-81EE66F80ED2',
     type: 'Immediate',
@@ -45,46 +16,52 @@ var surveyStack = {
 
 var splashAndImpressionEvents = [
   {
-    event: 'splash'
+    key: ['event'],
+    data: {
+      event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803'
+    }
   }/*,
   {
-    event: 'impression'
+    key: ['event'],
+    data: {
+      event: 'impression'
+    }
   }*/
 ];
 
 var reportSurvey = function(page, id) {
-  surveyStack[id] = {};
-  var surveyConfig = createConfig(surveyStack, rsconfig, splashAndImpressionEvents);
+  var surveyConfig = edw.createConfig(surveyStack, rsConfig, splashAndImpressionEvents);
 
-  reportToEdw(surveyConfig, function(cf) {
+  edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.grp1.page = page;
-    cf.ss[id].surveyId = id;
+    cf.ss[id] = {};
   });
 };
 
 var answerConfig = null;
 
 var reportQuestion = function(page, id) {
-  var survey = getUrlParameter('survey');
+  var survey = edw.getUrlParameter('survey');
   surveyStack[survey] = {};
   
-  var questionStack = stackBasedOn(surveyStack, {
+  var questionStack = edw.stackBasedOn(surveyStack, {
     question: {
       keyPrefix: survey
     }
   });
   
-  var answerStack = stackBasedOn(questionStack, {
+  var answerStack = edw.stackBasedOn(questionStack, {
     answer: {
       keyPrefix: 'question'
     }
   });
   
-  var questionConfig = createConfig(questionStack, rsconfig, splashAndImpressionEvents);
-  answerConfig = createConfig(answerStack, rsconfig, [{event: 'click'}]);
+  var questionConfig = edw.createConfig(questionStack, rsConfig, splashAndImpressionEvents);
+  answerConfig = edw.createConfig(answerStack, rsConfig, [{event: '4F28AF59-CAEE-4A50-827B-2125DBE163AF'}]);
 
-  reportToEdw(questionConfig, function(cf) {
+  edw.reportToEdw(questionConfig, function(cf) {
     cf.ss.grp1.page = page;
+    cf.ss[survey] = {};
     cf.ss.question.questionId = id;
   });
 };
