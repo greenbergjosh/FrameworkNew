@@ -62,9 +62,9 @@ export interface Effects {
 export interface Selectors {}
 
 export interface Profile {
-  name: string
-  email: string
-  profileImage: string
+  Name: string
+  Email: string
+  ImageUrl: string
 }
 
 export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
@@ -87,7 +87,7 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
               Right((ApiResponse) => {
                 return ApiResponse({
-                  OK({ token, ...profile }) {
+                  OK({ LoginToken: token, ...profile }) {
                     dispatch.remoteDataClient.update({ token })
                     dispatch.iam.update({ profile: some(profile) })
                   },
@@ -126,7 +126,7 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
           Right((ApiResponse) => {
             return ApiResponse({
-              OK({ token, ...profile }) {
+              OK({ LoginToken: token, ...profile }) {
                 dispatch.remoteDataClient.update({ token })
                 dispatch.iam.update({ profile: some(profile) })
               },
@@ -230,7 +230,7 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
           Right((ApiResponse) => {
             return ApiResponse({
-              OK({ token, ...profile }) {
+              OK({ LoginToken: token, ...profile }) {
                 dispatch.remoteDataClient.update({ token })
                 dispatch.iam.update({ profile: some(profile) })
               },
