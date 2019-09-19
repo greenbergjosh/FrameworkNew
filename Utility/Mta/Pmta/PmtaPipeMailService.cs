@@ -13,19 +13,13 @@ namespace Utility.Mta.Pmta
             
         }
 
-        public override async Task<IEnumerable<MailResult>> Send(MailPackage pkg)
+        public override async Task<IEnumerable<MailResult>> Send(MailPackage pkg, string vmta = null)
         {
             if (pkg?.To?.Any() != true) return null;
 
-            var conf = _fw.StartupConfiguration.GetE(_configRootPath);
+            vmta = GetVmtaIp(pkg, vmta);
 
-            var ip = conf.GetS($"DomainIps/{pkg.From.Domain.ToLower()}") ?? conf.GetS("DomainIps/*") ?? conf.GetS("Ip");
-
-            if (ip.IsNullOrWhitespace()) throw new Exception($"MTA configuration not found. ConfigRootPath: {_configRootPath}");
-
-            if (ip.IsNullOrWhitespace()) throw new Exception($"Failed to retrieve VMTA IP. FromDomain: {pkg.From.Domain} Config: {conf.GetS("")}");
-
-            return await GetRecipientMessages(pkg).SelectAsync(async rm => rm.Success ? await SendToPmta(ip, rm) : new MailResult(rm.To, rm.Errors));
+            return await GetRecipientMessages(pkg).SelectAsync(async rm => rm.Success ? await SendToPmta(vmta, rm) : new MailResult(rm.To, rm.Errors));
         }
 
         private async Task<MailResult> SendToPmta(string ip, RecipientMessage msg)
@@ -38,7 +32,7 @@ namespace Utility.Mta.Pmta
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(PmtaPipeMailService), $"Unhandled exception mailing {msg.To.Address} on {ip}: PMTA: {ToString()}\n\nException: {e.UnwrapForLog()}");
+                await Fw.Error(nameof(PmtaPipeMailService), $"Unhandled exception mailing {msg.To.Address} on {ip}: PMTA: {ToString()}\n\nException: {e.UnwrapForLog()}");
                 errors.Add($"Unhandled exception: {e.Message}");
             }
 
@@ -52,7 +46,7 @@ namespace Utility.Mta.Pmta
 
         public override string ToString()
         {
-            return _fw.StartupConfiguration.GetS(_configRootPath);
+            return Fw.StartupConfiguration.GetS(ConfigRootPath);
         }
     }
 }
