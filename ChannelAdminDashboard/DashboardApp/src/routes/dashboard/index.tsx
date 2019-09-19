@@ -156,7 +156,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 {fromStore.profile
                   .map((profile) => (
                     <Dropdown
-                      key={profile.email}
+                      key={profile.Email}
                       overlay={
                         <Menu
                           onClick={(evt) => {
@@ -167,12 +167,12 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                             }
                           }}>
                           <Menu.Item key="username">
-                            <span>{profile.name}</span>
+                            <span>{profile.Name}</span>
                           </Menu.Item>
                           <Menu.Item key="email">
                             <Icon type="mail" />
                             <span>
-                              <i>{profile.email}</i>
+                              <i>{profile.Email}</i>
                             </span>
                           </Menu.Item>
                           <Menu.Divider />
@@ -188,9 +188,9 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                       }
                       placement="bottomCenter"
                       trigger={["click"]}>
-                      {profile.profileImage ? (
+                      {profile.ImageUrl ? (
                         <Button shape="circle" htmlType="button">
-                          <Avatar src={profile.profileImage} alt={profile.name} />
+                          <Avatar src={profile.ImageUrl} alt={profile.Name} />
                         </Button>
                       ) : (
                         <Button icon="user" shape="circle" htmlType="button" />
