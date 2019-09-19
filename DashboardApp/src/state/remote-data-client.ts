@@ -21,7 +21,7 @@ declare module "./store.types" {
   }
 }
 
-const apiUrl = "http://data.techopg.com"
+const apiUrl = "http://data.techopg.com/pr"
 
 export interface State {
   token: null | string
@@ -106,7 +106,11 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
                 "auth:login": {
                   r: 0,
                   result: {
-                    token: remoteDataClient.token,
+                    // The API doesn't send back the same shape as auth:login like one would expect
+                    LoginToken: jsonThingHopefullyIsData["auth:userDetails"]["t"],
+                    Email: jsonThingHopefullyIsData["auth:userDetails"]["primaryemail"],
+                    ImageUrl: jsonThingHopefullyIsData["auth:userDetails"]["image"],
+                    Name: jsonThingHopefullyIsData["auth:userDetails"]["name"],
                     ...jsonThingHopefullyIsData["auth:userDetails"],
                   },
                 },
