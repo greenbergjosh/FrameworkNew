@@ -82,6 +82,12 @@ const commonGridOptions = {
     "Print",
     { text: "Group", tooltipText: "Group", prefixIcon: "e-group", id: "group" },
     {
+      text: "Expand All",
+      tooltipText: "Expand All Rows",
+      prefixIcon: "e-expand",
+      id: "expand",
+    },
+    {
       text: "Collapse All",
       tooltipText: "Collapse All Rows",
       prefixIcon: "e-collapse",
@@ -122,6 +128,11 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
       grid.current.pdfExport()
     } else if (id === "group") {
       grid.current.allowGrouping = !grid.current.allowGrouping
+    } else if (id === "expand") {
+      if (grid.current.allowGrouping) {
+        grid.current.groupModule.expandAll()
+      }
+      grid.current.detailRowModule.expandAll()
     } else if (id === "collapse") {
       if (grid.current.allowGrouping) {
         grid.current.groupModule.collapseAll()
