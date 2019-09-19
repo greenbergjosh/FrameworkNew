@@ -1796,6 +1796,10 @@
   content: "\e70c";
 }
 
+.e-toolbar-items .e-expand::before {
+  content: "\e777";
+}
+
 .e-toolbar-items .e-group::before {
   content: "\e926";
 }
