@@ -18,7 +18,8 @@ var splashAndImpressionEvents = [
   {
     key: ['event'],
     data: {
-      event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803'
+      event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+      page: '{page}'
     }
   }/*,
   {
