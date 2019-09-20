@@ -33,7 +33,8 @@ namespace TheGreatWallOfDataLib.Routing
             ("auth", new []
             {
                 ("login", new ApiFunc(async (s, f, a, i, ctx) => await Authentication.Login(a, ctx))),
-                ("userDetails", new ApiFunc(async (s, f, a, i, ctx) => await Authentication.GetUserDetails(i, ctx)))
+                ("userDetails", new ApiFunc(async (s, f, a, i, ctx) => await Authentication.GetUserDetails(i, ctx))),
+                ("hasPermissions", new ApiFunc(async (s, f, a, i, ctx) => Jw.ToGenericEntity( new { hasPermission = await Auth.HasPermission(i, a) })))
             }),
             ("lbm",new [] {
                 ("*", new ApiFunc((s, f, a, i, ctx) => Lbm.Run(f, a, i, ctx)))
