@@ -23,6 +23,7 @@ import { SelectInterfaceComponent } from "./components/form/select/SelectInterfa
 import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
 import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
+import { TagsInterfaceComponent } from "./components/form/tags/TagsInterfaceComponent"
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { UploadInterfaceComponent } from "./components/form/upload/UploadInterfaceComponent"
@@ -63,6 +64,7 @@ export const registry: ComponentRegistry = {
     select: SelectInterfaceComponent,
     table: TableInterfaceComponent,
     tabs: TabsInterfaceComponent,
+    tags: TagsInterfaceComponent,
     textarea: TextAreaInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     upload: UploadInterfaceComponent,
