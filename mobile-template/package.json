@@ -21,9 +21,11 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-helmet": "^5.2.1",
+    "react-player": "^1.13.0",
     "react-scripts": "3.0.0",
     "react-transition-group": "^4.0.0",
-    "typescript": "3.4.5"
+    "typescript": "3.4.5",
+    "valid-url": "^1.0.9"
   },
   "scripts": {
     "dev": "concurrently \"npm:start\"  \"npm:watch-*\"",
@@ -56,6 +58,7 @@
     "@types/react-dom": "16.8.4",
     "@types/react-helmet": "^5.0.8",
     "@types/react-transition-group": "^2.9.1",
+    "@types/valid-url": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^1.7.0",
     "@typescript-eslint/parser": "^1.7.0",
     "babel-eslint": "^10.0.1",
