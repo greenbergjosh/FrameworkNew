@@ -836,12 +836,12 @@ namespace VisitorIdLib
                     md5slot = slot,
                     md5page = page,
                     md5 = Guid.Parse(md5),
-                    email = email.IfNullOrWhitespace((string)null),
+                    email = email.IfNullOrWhitespace((string) null),
                     ipAddress = clientIp,
                     md5ProviderId = md5pid,
                     emailProviderId = string.IsNullOrWhiteSpace(email) ? null : emailpid,
                     affiliateId = afid,
-                    thirdPartyId = tpid.IfNullOrWhitespace((string)null),
+                    thirdPartyId = tpid.IfNullOrWhitespace((string) null),
                     userAgent,
                     domain = host,
                     page = path,
@@ -1104,8 +1104,8 @@ namespace VisitorIdLib
                     {
                         errorContext = $"GetEntity {emailpid}";
                         var emlProvider = await fw.Entities.GetEntity(new Guid(emailpid));
-                        lbmId = new Guid(emlProvider.GetS("LbmId"));
-                        var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("");
+                        lbmId = new Guid(emlProvider.GetS("Config/LbmId"));
+                        var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
 
                         await fw.Trace(nameof(DoEmailProviders), $"Prior to evaluating LBM lbmId : {lbmId.ToString()}, lbm body: {lbm}, context is not null {context != null}, md5 : {md5 ?? ""}, emlProvider is not null: {emlProvider != null}");
 
@@ -1219,7 +1219,7 @@ namespace VisitorIdLib
             {
                 return false; // callers just go about their business
             }
-            var result = await Data.CallFnString(DataLayerName, "ProviderSessionMd5Check", Jw.Json(new { pid = md5pid, vid = sid, md5 }), "");
+            var result = await Data.CallFnString(DataLayerName, "ProviderSessionMd5Check", Jw.Json(new { provider_id = md5pid, session_id = sid, md5 }), "");
             IGenericEntity geResult;
             try
             {

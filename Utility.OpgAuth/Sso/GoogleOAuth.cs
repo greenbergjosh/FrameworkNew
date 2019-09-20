@@ -29,7 +29,7 @@ namespace Utility.OpgAuth.Sso
 
                 if (validation?.EmailVerified != true) throw new AuthException($"Account is unverified.\nPayload: {authData.GetS("")}\n\nResponse: {JsonWrapper.Serialize(validation)}");
 
-                return new UserDetails(validation.JwtId, validation.Name, validation.Email, null, validation.Picture, authData.GetS(""));
+                return new UserDetails(id: validation.Subject, validation.Name, validation.Email, null, validation.Picture, loginToken: null, authData.GetS(""));
             }
             catch (InvalidJwtException e)
             {

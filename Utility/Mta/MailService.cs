@@ -1,56 +1,89 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Utility.GenericEntity;
 using HPair = System.Collections.Generic.KeyValuePair<string, string>;
 
 namespace Utility.Mta
 {
     public abstract class MailService
     {
-        protected FrameworkWrapper _fw;
-        protected readonly string _configRootPath;
+        protected FrameworkWrapper Fw;
+        protected readonly string ConfigRootPath;
         private static readonly Regex HasTokenRx = new Regex(@"\$\{(?<token>[^}]*?)\}");
 
         protected MailService(FrameworkWrapper fw, string configRootPath)
         {
-            _fw = fw;
-            _configRootPath = configRootPath;
+            Fw = fw;
+            ConfigRootPath = configRootPath;
         }
 
-        public abstract Task<IEnumerable<MailResult>> Send(MailMessage msg);
+        public abstract Task<IEnumerable<MailResult>> Send(MailPackage pkg, string vmta = null);
 
         public abstract Task<string> GetStatus(string jobId);
 
         protected string ReplaceTokens(string str, Dictionary<string, string> tokens) =>
             str.IsNullOrWhitespace() || tokens?.Any() != true ? str : tokens.Aggregate(str, (s, t) => Regex.Replace(s, $@"$\{{\s*?{t.Key}\s*?\}}", t.Value));
 
-        protected IEnumerable<string> HasTokens(string str) => HasTokenRx.Matches(str).Select(m => m.Groups["token"].Value).Distinct();
+        public static IEnumerable<string> HasTokens(string str) => HasTokenRx.Matches(str).Select(m => m.Groups["token"].Value).Distinct();
 
-        protected string GenerateMissingEnvelopeId(MailMessage msg, Recipient recipient)
+        protected string GetVmtaIp(MailPackage pkg, string vmta)
+        {
+            var conf = Fw.StartupConfiguration.GetE(ConfigRootPath);
+
+            if (conf == null) throw new Exception($"MTA configuration not found. ConfigRootPath: {ConfigRootPath}");
+
+            if (vmta.IsNullOrWhitespace()) vmta = conf.GetS($"DomainIps/{pkg.From.Domain.ToLower()}") ?? conf.GetS("DefaultIp");
+
+            vmta = vmta.Trim();
+
+            if (vmta == "." && conf.GetB("AllowRootVmta")) return null;
+
+            if (vmta.IsNullOrWhitespace()) throw new Exception($"Failed to retrieve VMTA IP. FromDomain: {pkg.From.Domain} Config: {conf.GetS("")}");
+
+            return vmta.Trim();
+        }
+
+        protected string GenerateMissingEnvelopeId(MailPackage msg, Recipient recipient)
         {
             return Hashing.CalculateMD5Hash($"{msg.JobId}:{recipient.Address.Address}");
         }
 
-        protected ICollection<RecipientMessage> GetRecipientMessages(MailMessage msg)
+        protected void CleanAndValidatePackage(MailPackage pkg)
         {
-            return msg?.To?.Where(r => r.Address != null).Select(r =>
+            if (pkg == null) throw new ArgumentException($"{nameof(MailPackage)} is invalid: [null]");
+
+            var msgErrors = new List<string>();
+
+            if (pkg.Subject.IsNullOrWhitespace()) msgErrors.Add($"{nameof(pkg.Subject)}: {pkg.Subject}");
+            if (pkg.Body.IsNullOrWhitespace()) msgErrors.Add($"{nameof(pkg.Body)}: {pkg.Body}");
+            if (pkg.From == null) msgErrors.Add($"{nameof(pkg.From)}: {pkg.From}");
+
+            if (msgErrors.Any()) throw new ArgumentException($"{nameof(MailPackage)} is invalid:\n\t{msgErrors.Join("\n\t")}");
+
+            if (pkg.JobId.IsNullOrWhitespace()) pkg.JobId = Guid.NewGuid().ToString();
+        }
+
+        protected ICollection<RecipientMessage> GetRecipientMessages(MailPackage pkg)
+        {
+            return pkg?.To?.Where(r => r?.Address != null).Select(r =>
             {
-                if (r.SendId.IsNullOrWhitespace()) r.SendId = GenerateMissingEnvelopeId(msg, r);
-
-                var result = new RecipientMessage
-                {
-                    Recipient = r,
-                    Subject = ReplaceTokens(msg.Subject, r.Tokens),
-                    Body = ReplaceTokens(msg.Body, r.Tokens),
-                    Headers = msg.Headers?.Select(h => new HPair(ReplaceTokens(h.Key, r.Tokens), ReplaceTokens(h.Value, r.Tokens))) ?? Enumerable.Empty<HPair>(),
-                    From = ReplaceTokens(msg.FriendlyFrom, r.Tokens),
-                    FromLocalPart = ReplaceTokens(msg.FromLocalPart, r.Tokens),
-                    FromDomain = ReplaceTokens(msg.FromDomain, r.Tokens)
-                };
-
+                var result = new RecipientMessage();
                 var errors = new List<string>();
+
+                if (r.SendId.IsNullOrWhitespace()) r.SendId = GenerateMissingEnvelopeId(pkg, r);
+
+                result.To = r;
+                result.Subject = ReplaceTokens(pkg.Subject, r.Tokens);
+                result.Body = ReplaceTokens(pkg.Body, r.Tokens);
+                result.Headers = pkg.Headers?.Select(h => new HPair(ReplaceTokens(h.Key, r.Tokens), ReplaceTokens(h.Value, r.Tokens))) ?? Enumerable.Empty<HPair>();
+                result.From = pkg.FromHasTokens
+                    ? new Sender(ReplaceTokens(pkg.From.Name, r.Tokens), ReplaceTokens(pkg.From.LocalPart, r.Tokens), ReplaceTokens(pkg.From.Domain, r.Tokens))
+                    : pkg.From;
+
                 var unreplaced = HasTokens(result.Subject).ToArray();
 
                 if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Subject)}: {unreplaced.Join(", ")}");
@@ -59,17 +92,39 @@ namespace Utility.Mta
 
                 if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.Body)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.From).ToArray();
+                unreplaced = HasTokens(result.From.Name).ToArray();
 
                 if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.From)}: {unreplaced.Join(", ")}");
 
-                unreplaced = HasTokens(result.FromLocalPart).ToArray();
+                var badFrom = false;
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.FromLocalPart)}: {unreplaced.Join(", ")}");
+                unreplaced = HasTokens(result.From.LocalPart).ToArray();
 
-                unreplaced = HasTokens(result.FromDomain).ToArray();
+                if (unreplaced.Any())
+                {
+                    badFrom = true;
+                    errors.Add($"Missing tokens for {nameof(result.From.LocalPart)}: {unreplaced.Join(", ")}");
+                }
 
-                if (unreplaced.Any()) errors.Add($"Missing tokens for {nameof(result.FromDomain)}: {unreplaced.Join(", ")}");
+                unreplaced = HasTokens(result.From.Domain).ToArray();
+
+                if (unreplaced.Any())
+                {
+                    badFrom = true;
+                    errors.Add($"Missing tokens for {nameof(result.From.Domain)}: {unreplaced.Join(", ")}");
+                }
+
+                if (!badFrom)
+                {
+                    try
+                    {
+                        new MailAddress(result.From.Address);
+                    }
+                    catch (Exception)
+                    {
+                        errors.Add($"Invalid from address {result.From.Address}");
+                    }
+                }
 
                 unreplaced = result.Headers.Select(h =>
                 {
@@ -94,13 +149,11 @@ namespace Utility.Mta
 
         protected class RecipientMessage
         {
-            public Recipient Recipient { get; set; }
+            public Recipient To { get; set; }
             public string Subject { get; set; }
             public string Body { get; set; }
             public IEnumerable<HPair> Headers { get; set; }
-            public string From { get; set; }
-            public string FromLocalPart { get; set; }
-            public string FromDomain { get; set; }
+            public Sender From { get; set; }
             public ICollection<string> Errors { get; internal set; }
             public bool Success => Errors?.Any() != true;
         }

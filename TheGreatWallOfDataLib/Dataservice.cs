@@ -151,8 +151,16 @@ namespace TheGreatWallOfDataLib
 
             if (_traceLogResponse) await Fw.Trace(nameof(Run), $"Result ({requestId}): {resp}");
 
-            if(returnHttpFail) await context.WriteFailureRespAsync(resp);
-            else await context.WriteSuccessRespAsync(resp);
+            try
+            {
+                if(returnHttpFail) await context.WriteFailureRespAsync(resp);
+                else await context.WriteSuccessRespAsync(resp);
+            }
+            catch (Exception e)
+            {
+                await Fw.Error(nameof(Run), $"Unhandled exception writing to response {e.UnwrapForLog()}");
+                await context.WriteFailureRespAsync("");
+            }
         }
 
         private static class RC

@@ -16,6 +16,7 @@ namespace Utility.OpgAuth
     public static class Auth
     {
         public const string ConnName = "FW_AuthServer";
+        public const string GOD_USER = "sauron";
         private static string _initError = "Auth not configured";
         private static bool _initialized = false;
         private static FrameworkWrapper _fw = null;
@@ -126,21 +127,25 @@ namespace Utility.OpgAuth
 
             var userDetails = await platform.GetUserDetails(payload);
 
-            if (userDetails.Email?.IsNullOrWhitespace() != false) throw new AuthException("Failed to retrieve email from SSO");
+            var res = await Data.CallFn(ConnName, "SsoLogin", Jw.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            var res = await Data.CallFn(ConnName, "SsoLogin", Jw.Serialize(new { e = userDetails.Email, p = platform.PlatformType }));
+            if (res == null || res.GetS("") == null ||  !res.GetS("err").IsNullOrWhitespace() ) throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
 
-            if (res?.GetS("result") != "success") throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
 
-            userDetails.LoginToken = res.GetS("t");
-
-            if (!userDetails.LoginToken.IsNullOrWhitespace()) return userDetails;
+            if (!res.GetS("t").IsNullOrWhitespace())
+            {
+                return new UserDetails(loginToken: res.GetS("t"), name: res.GetS("name"), email: res.GetS("primaryemail"), phone: "", imageUrl: res.GetS("image"), id: null, raw: res.GetS(""));
+            }
+            else if (!res.GetS("uid").IsNullOrWhitespace())
+            {
+                throw new AuthException($"SSO login failed: Unexpected error condition: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
+            }
 
             if (userDetails.Name.IsNullOrWhitespace()) throw new AuthException("Failed to retrieve name from SSO");
 
             if (userDetails.Email.IsNullOrWhitespace()) throw new AuthException("Failed to retrieve email from SSO");
 
-            if (registrationValidation != null && !registrationValidation(userDetails)) throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
+            if (registrationValidation == null || !registrationValidation(userDetails)) throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
 
             return await RegisterSsoUser(platform, userDetails, payload);
         }
@@ -158,14 +163,9 @@ namespace Utility.OpgAuth
             try
             {
                 var res = await Data.CallFn(ConnName, "RegisterSsoUser", Jw.Serialize(userDetails), Jw.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = JToken.Parse(loginPayload.GetS("")) }));
+                if (res.GetS("t").IsNullOrWhitespace()) throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res?.GetS("") ?? "[null]"}");
 
-                if (res?.GetS("result") != "success") throw new AuthException($"SSO registration failed:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res?.GetS("") ?? "[null]"}");;
-
-                userDetails.LoginToken = res.GetS("t");
-
-                if (userDetails.LoginToken.IsNullOrWhitespace()) throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res?.GetS("") ?? "[null]"}");
-
-                return userDetails;
+                return new UserDetails(loginToken: res.GetS("t"), name: res.GetS("name"), email: res.GetS("primaryemail"), phone: "", imageUrl: res.GetS("image"), id: null, raw: res.GetS(""));
             }
             catch (Exception e)
             {
@@ -223,6 +223,8 @@ namespace Utility.OpgAuth
             var err = res.GetS("err");
 
             if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user permission details: Token: {token} Securable: {securable} Error: {err}");
+
+            if (res.GetB(GOD_USER)) return true;
 
             var steps = securable.Split('.');
 
@@ -290,7 +292,7 @@ namespace Utility.OpgAuth
             });
         }
 
-        private static IGenericEntity GetConfig(bool throwOnNull = true)
+        internal static IGenericEntity GetConfig(bool throwOnNull = true)
         {
             var conf = _fw?.StartupConfiguration.GetE("Config/OpgAuth");
 

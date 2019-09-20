@@ -25,6 +25,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Mta\Pmta\libs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="port25.pmta.api.submitter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>Mta\Pmta\libs\port25.pmta.api.submitter.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions">
       <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.extensions.caching.abstractions\2.2.0\lib\netstandard2.0\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
     </Reference>
