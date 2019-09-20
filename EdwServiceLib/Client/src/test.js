@@ -59,8 +59,13 @@ var reportQuestion = function(page, id) {
   var questionConfig = edw.createConfig(questionStack, rsConfig, splashAndImpressionEvents);
   answerConfig = edw.createConfig(answerStack, rsConfig, [{
     key: ['event'],
+    addToWhep: true,
+    includeWhep: true,
+    duplicate: {
+      duplicate: true
+    },
     data: {
-      event: '4F28AF59-CAEE-4A50-827B-2125DBE163AF'
+      event: '4F28AF59-CAEE-4A50-827B-2125DBE163AF',
     }
   }]);
 

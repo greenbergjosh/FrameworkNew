@@ -148,13 +148,13 @@ namespace EdwServiceLib
                         var includeWhep = false;
                         JObject duplicate = null;
 
-                        if (json.TryGetValue(AddToWhep, out var rawAddToWhep) && rawAddToWhep.Type == JTokenType.Boolean)
+                        if (evObj.TryGetValue(AddToWhep, out var rawAddToWhep) && rawAddToWhep.Type == JTokenType.Boolean)
                             addToWhep = rawAddToWhep.ToObject<bool>();
 
-                        if (json.TryGetValue(IncludeWhep, out var rawIncludeWhep) && rawIncludeWhep.Type == JTokenType.Boolean)
+                        if (evObj.TryGetValue(IncludeWhep, out var rawIncludeWhep) && rawIncludeWhep.Type == JTokenType.Boolean)
                             includeWhep = rawIncludeWhep.ToObject<bool>();
 
-                        if (json.TryGetValue(Duplicate, out var rawDuplicate) && rawDuplicate.Type == JTokenType.Object)
+                        if (evObj.TryGetValue(Duplicate, out var rawDuplicate) && rawDuplicate.Type == JTokenType.Object)
                             duplicate = (JObject)rawDuplicate;
 
                         var evResult = await PublishEvent(sessionId, stackFrames.ToArray(), evKey.ToObject<string[]>(), 
@@ -381,7 +381,7 @@ namespace EdwServiceLib
             if (addToWhep)
             {
                 JArray whepArray;
-                if (stackFrame.TryGetValue(Ev, out var rawWhepArray) && rawWhepArray.Type == JTokenType.Array)
+                if (stackFrame.TryGetValue(Whep, out var rawWhepArray) && rawWhepArray.Type == JTokenType.Array)
                     whepArray = (JArray)rawWhepArray;
                 else
                     whepArray = new JArray();
@@ -534,11 +534,17 @@ namespace EdwServiceLib
                             var values = (JArray)JsonWrapper.TryParse(_cache.GetOrCreate(key, t => "[]"));
                             
                             if (count > 0 && !last && values.Count >= count)
+                            {
+                                obj[kv.Key] = values;
                                 continue;
+                            }
 
                             var strVal = variable.ToString();
                             if (distinct && values.Any(t => t.Value<string>() == strVal))
+                            {
+                                obj[kv.Key] = values;
                                 continue;
+                            }
 
                             if (last && count > 0 && values.Count >= count)
                                 values.RemoveAt(0);
