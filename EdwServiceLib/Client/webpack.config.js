@@ -6,7 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 require("babel-register");
 
 // Our function that generates our html plugins
-function generateHtmlPlugins (templateDir) {
+function generateHtmlPlugins (templateDir, dstDir = '') {
   // Read files in template directory
   const templateFiles = fs.readdirSync(path.resolve(__dirname, templateDir))
   return templateFiles.filter(item => item.endsWith('.html')).map(item => {
@@ -16,7 +16,7 @@ function generateHtmlPlugins (templateDir) {
     const extension = parts[1]
     // Create new HTMLWebpackPlugin with options
     return new HtmlWebpackPlugin({
-      filename: `${name}.html`,
+      filename: `${dstDir}${name}.html`,
       template: path.resolve(__dirname, `${templateDir}/${name}.${extension}`),
       hash: true
     })
@@ -25,6 +25,7 @@ function generateHtmlPlugins (templateDir) {
 
 // Call our function on our views directory.
 const htmlPlugins = generateHtmlPlugins('./src')
+const htmlPlugins2 = generateHtmlPlugins('./src/examples', 'examples/')
 
 // Webpack Configuration
 const config = {
@@ -67,7 +68,7 @@ const config = {
       filename: './index.html',
       hash: true
     })*/
-  ].concat(htmlPlugins),
+  ].concat(htmlPlugins).concat(htmlPlugins2),
 
   // Development Tools (Map Errors To Source File)
   devtool: 'source-map',
