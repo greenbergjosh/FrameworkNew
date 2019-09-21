@@ -157,4 +157,15 @@ h1 {
   margin-left: 15px;
 }
 
+.popup-player-wrapper {
+  position: relative;
+  padding-top: 56.25%; /* Player ratio: 100 / (1280 / 720) */
+}
+
+.popup-react-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 @import "styles/ribbon.scss";

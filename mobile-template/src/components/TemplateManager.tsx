@@ -295,7 +295,16 @@ const SelectVideoPopover = ({
           </Form.Item>
 
           <Divider />
-          <ReactPlayer url={videoURL} light controls />
+          <div className="popup-player-wrapper">
+            <ReactPlayer
+              className="popup-react-player"
+              url={videoURL}
+              light
+              controls
+              width="100%"
+              height="100%"
+            />
+          </div>
           <Divider />
           <div className="footer-options">
             <h4>Use this video?</h4>
