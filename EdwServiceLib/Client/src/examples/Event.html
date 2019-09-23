@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    var config = {
+      rs: {
+        r1: {
+          configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
+          type: 'Immediate',
+          data: {}
+        }
+      },
+      ss: {
+        root: {
+          myData: 'custom data here'
+        }
+      },
+      ev: [ // The ev array member of the config object can be used to publish one or more events. 
+        {
+          key: ['event'],   // Every event must specify a list of data members that are used to generate a unique event key.
+          data: {
+            event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+            reason: 'pageView'
+          }
+        }
+      ]
+    };
+
+    // When the event is published, it will be published using the current stack specified in the config object.
+    // It will be published under all reporting sequences that were created on the session.
+    // For this example, the published event data would look like this:
+    //{
+    //  event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+    //  reason: 'pageView',
+    //  sf: [{myData: 'custom data here'}]
+    //}
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>
