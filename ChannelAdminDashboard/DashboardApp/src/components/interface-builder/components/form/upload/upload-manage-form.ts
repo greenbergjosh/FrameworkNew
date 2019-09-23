@@ -97,34 +97,9 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
               },
               {
-                key: "appearanceGroup",
-                valueKey: "appearanceGroup",
-                label: "Appearance Options",
-                component: "card",
-                components: [
-                  {
-                    key: "hideButtonLabel",
-                    valueKey: "hideButtonLabel",
-                    component: "toggle",
-                    defaultValue: false,
-                    label: "Hide Button Label",
-                  },
-                  {
-                    key: "buttonLabel",
-                    valueKey: "buttonLabel",
-                    component: "input",
-                    defaultValue: "Upload",
-                    label: "Hide Button Label",
-                    visibilityConditions: {
-                      "===": [false, { var: "hideButtonLabel" }],
-                    },
-                  },
-                ],
-              },
-              {
                 key: "headersGroup",
                 valueKey: "headersGroup",
-                label: "Edit HTTP Request Headers",
+                label: "HTTP Request Headers",
                 component: "card",
                 components: [
                   {
@@ -147,6 +122,28 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 ]
               },
             ],
+          },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "hideButtonLabel",
+                valueKey: "hideButtonLabel",
+                component: "toggle",
+                defaultValue: false,
+                label: "Hide Button Label",
+              },
+              {
+                key: "buttonLabel",
+                valueKey: "buttonLabel",
+                component: "input",
+                defaultValue: "Upload",
+                label: "Button Label",
+                visibilityConditions: {
+                  "===": [false, { var: "hideButtonLabel" }],
+                },
+              },
+            ]
           },
         ],
       },

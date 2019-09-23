@@ -41,6 +41,11 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Detail Text",
                 defaultValue: "",
               },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
               {
                 key: "hoverable",
                 valueKey: "hoverable",
@@ -82,8 +87,8 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Show Inset",
                 defaultValue: false,
               },
-            ],
-          },
+            ]
+          }
         ],
       },
     ],

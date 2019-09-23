@@ -86,6 +86,13 @@ const baseManageFormDefinition: ComponentDefinition[] = [
             ],
           },
           {
+            key: "appearance",
+            component: "tab",
+            hideLabel: true,
+            label: "Appearance",
+            components: [],
+          },
+          {
             key: "visibility",
             component: "tab",
             hideLabel: true,
