@@ -29,14 +29,6 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: true,
               },
               {
-                key: "gutter",
-                valueKey: "gutter",
-                component: "number-input",
-                label: "Gap between columns",
-                defaultValue: 8,
-                help: "Spacing (in pixels) between columns",
-              },
-              {
                 key: "columns",
                 valueKey: "columns",
                 component: "list",
@@ -80,6 +72,19 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
             ],
           },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "gutter",
+                valueKey: "gutter",
+                component: "number-input",
+                label: "Gap between columns",
+                defaultValue: 8,
+                help: "Spacing (in pixels) between columns",
+              },
+            ]
+          }
         ],
       },
     ],

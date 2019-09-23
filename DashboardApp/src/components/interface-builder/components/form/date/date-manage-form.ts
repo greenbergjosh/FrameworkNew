@@ -24,9 +24,14 @@ const dateManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 defaultValue: "date",
               },
-              ...commonIncludeTimeForm,
             ],
           },
+          {
+            key: "appearance",
+            components: [
+              ...commonIncludeTimeForm,
+            ]
+          }
         ],
       },
     ],
