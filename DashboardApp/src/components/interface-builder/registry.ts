@@ -5,6 +5,7 @@ import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxI
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
 import { CollapseInterfaceComponent } from "./components/display/collapse/CollapseInterfaceComponent"
 import { ColumnInterfaceComponent } from "./components/display/column/ColumnInterfaceComponent"
+import { DataInputInterfaceComponent } from "./components/form/data-input/DataInputInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
@@ -47,6 +48,7 @@ export const registry: ComponentRegistry = {
     "code-editor": CodeEditorInterfaceComponent,
     collapse: CollapseInterfaceComponent,
     column: ColumnInterfaceComponent,
+    "data-input": DataInputInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
     date: DateInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
