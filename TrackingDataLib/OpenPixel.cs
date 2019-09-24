@@ -4,25 +4,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Utility;
-using Utility.EDW.Reporting;
+using Utility.GenericEntity;
 
 namespace TrackingDataLib
 {
     internal class OpenPixel
     {
-        internal static async Task Process(HttpContext context, FrameworkWrapper fw)
+        internal static async Task Process(IGenericEntity parameters, HttpContext context, FrameworkWrapper fw)
         {
-            // 1. Get rsIds from request
-            var rsIds = await Common.GetRsIds(context);
-
-            // 2. Write to cache using RS Id's as key
             var timestamp = DateTime.UtcNow;
-            await Cache.Set(string.Join(',', rsIds), new
+
+            var rsIds = await Common.GetRsIds(parameters);
+
+            _ = Task.Run(async () => await BackgroundProcess(timestamp, rsIds, fw));
+
+            await Common.WritePixel(context, fw);
+        }
+
+        private static async Task BackgroundProcess(DateTime timestamp, Dictionary<string, object> rsIds, FrameworkWrapper fw)
+        {
+            var key = string.Join(',', rsIds.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+            await Cache.Set(key, new
             {
                 timestamp
             });
 
-            // 3. Drop OpenPixel event
             var payload = PL.O(new
             {
                 et = "OpenPixel"
