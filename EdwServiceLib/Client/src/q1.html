@@ -20,6 +20,7 @@
 
   var reportAnswer = function(saladDressingId) {
     edw.reportToEdw(answerConfig, function(cf) {
+      cf.rs.surveyRs.data.saladDressingId = saladDressingId;
       cf.ss.answer.saladDressingId = saladDressingId;
     }, function() {
       var survey = edw.getUrlParameter('survey');

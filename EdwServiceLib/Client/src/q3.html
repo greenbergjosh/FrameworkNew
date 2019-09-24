@@ -47,6 +47,7 @@
   var reportAnswer = function(nbChildren) {
     var hasCar = document.querySelector('input[name="hasCar"]:checked').value == "true";
     edw.reportToEdw(answerConfig, function(cf) {
+      cf.rs.surveyRs.data.hasCar = hasCar;
       cf.ss.answer.hasCar = hasCar;
       if (hasCar) {
         cf.ev.push({

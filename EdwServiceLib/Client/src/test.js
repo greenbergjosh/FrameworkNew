@@ -1,7 +1,7 @@
 var rsConfig = {
-  r1: {
+  surveyRs: {
     configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
-    type: 'Immediate',
+    type: 'Checked',
     data: {
 
     }
@@ -13,7 +13,7 @@ var surveyStack = {
     pageOrder: 'page+'
   },
   grp1: {
-    pageCount: "0+"
+    
   }
 };
 
@@ -32,8 +32,9 @@ var reportSurvey = function(page, id) {
 
   edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.session.page = page;
+    cf.ss.session.pageCount = '0+';
     cf.ss[id] = {
-      pageCount: "0+"
+      pageCount: '0+'
     };
   });
 };
@@ -46,8 +47,7 @@ var reportQuestion = function(page, id) {
 
   var qObj = {};
   qObj['question' + id] = {
-    keyPrefix: survey,
-    pageCount: "0+"
+    keyPrefix: survey
   };
   
   var questionStack = edw.stackBasedOn(surveyStack, qObj);
@@ -73,7 +73,9 @@ var reportQuestion = function(page, id) {
 
   edw.reportToEdw(questionConfig, function(cf) {
     cf.ss.session.page = page;
+    cf.ss.session.pageCount = '0+';
     cf.ss[survey] = {};
+    cf.ss['question' + id].pageCount = '0+'
     cf.ss['question' + id].id = id;
   });
 };

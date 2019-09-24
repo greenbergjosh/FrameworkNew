@@ -18,6 +18,7 @@
 
   var reportAnswer = function(nbChildren) {
     edw.reportToEdw(answerConfig, function(cf) {
+      cf.rs.surveyRs.data.nbChildren = nbChildren;
       cf.ss.answer.nbChildren = nbChildren;
     }, function() {
       var survey = edw.getUrlParameter('survey');
