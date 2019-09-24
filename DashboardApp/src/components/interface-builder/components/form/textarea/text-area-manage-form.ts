@@ -31,45 +31,42 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
                 label: "Max length",
               },
-              {
-                key: "appearanceGroup",
-                valueKey: "appearanceGroup",
-                label: "Appearance Options",
-                component: "card",
-                components: [
-                  {
-                    key: "autosize",
-                    valueKey: "autosize",
-                    ordinal: 11,
-                    component: "toggle",
-                    defaultValue: true,
-                    label: "Autosize height"
-                  },
-                  {
-                    key: "minRows",
-                    valueKey: "minRows",
-                    ordinal: 12,
-                    component: "number-input",
-                    defaultValue: null,
-                    label: "Min rows",
-                    visibilityConditions: {
-                      "===": [false, { var: "autosize" }],
-                    },
-                  },
-                  {
-                    key: "maxRows",
-                    valueKey: "maxRows",
-                    ordinal: 13,
-                    component: "number-input",
-                    defaultValue: null,
-                    label: "Max rows",
-                    visibilityConditions: {
-                      "===": [false, { var: "autosize" }],
-                    },
-                  },
-                ]
-              },
             ],
+          },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "autosize",
+                valueKey: "autosize",
+                ordinal: 11,
+                component: "toggle",
+                defaultValue: true,
+                label: "Autosize height"
+              },
+              {
+                key: "minRows",
+                valueKey: "minRows",
+                ordinal: 12,
+                component: "number-input",
+                defaultValue: null,
+                label: "Min rows",
+                visibilityConditions: {
+                  "===": [false, { var: "autosize" }],
+                },
+              },
+              {
+                key: "maxRows",
+                valueKey: "maxRows",
+                ordinal: 13,
+                component: "number-input",
+                defaultValue: null,
+                label: "Max rows",
+                visibilityConditions: {
+                  "===": [false, { var: "autosize" }],
+                },
+              },
+            ]
           },
         ],
       },

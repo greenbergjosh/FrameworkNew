@@ -23,6 +23,11 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 defaultValue: "value",
               },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
               {
                 key: "hasShowPasswordToggle",
                 valueKey: "hasShowPasswordToggle",
@@ -31,8 +36,8 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Show Password Toggle",
               },
-            ],
-          },
+            ]
+          }
         ],
       },
     ],

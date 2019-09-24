@@ -37,6 +37,11 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 dataHandlerType: "remote-config",
                 remoteDataFilter: { "!!": { var: ["config.layout"] } },
               },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
               {
                 key: "indented",
                 valueKey: "indented",
@@ -59,8 +64,8 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
               },
-            ],
-          },
+            ]
+          }
         ],
       },
     ],
