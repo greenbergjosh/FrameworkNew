@@ -2,11 +2,12 @@
 using System;
 using System.Threading.Tasks;
 using Utility;
+using Utility.GenericEntity;
 
 namespace TrackingDataLib
 {
     internal class Click
     {
-        internal static Task Process(HttpContext context, FrameworkWrapper fw) => throw new NotImplementedException();
+        internal static Task Process(IGenericEntity parameters, HttpContext context, FrameworkWrapper fw) => throw new NotImplementedException();
     }
 }

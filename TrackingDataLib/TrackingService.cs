@@ -10,31 +10,43 @@ namespace TrackingDataLib
 
         public void Config(FrameworkWrapper framework) => _framework = framework;
 
-        public Task Run(HttpContext context)
+        public async Task Run(HttpContext context)
         {
-            var method = context.Request.Query["m"];
-
             try
             {
+                var parameters = Common.GetParameters(context, _framework);
+
+                var method = parameters.GetS("method");
+
                 switch (method)
                 {
                     case "openPixel":
-                        return OpenPixel.Process(context, _framework);
+                        await OpenPixel.Process(parameters, context, _framework);
+                        break;
                     case "readPixel":
-                        return ReadPixel.Process(context, _framework);
+                        await ReadPixel.Process(parameters, context, _framework);
+                        break;
                     case "click":
-                        return Click.Process(context, _framework);
+                        await Click.Process(parameters, context, _framework);
+                        break;
                     case "action":
-                        return ActionPixel.Process(context, _framework);
+                        await ActionPixel.Process(parameters, context, _framework);
+                        break;
                     default:
                         context.Response.StatusCode = 404;
-                        return LogError($"Unknown method: [{method}] queryString: [{context.Request.QueryString}]");
+                        await LogError($"Unknown method: [{method}] queryString: [{context.Request.QueryString}]");
+                        break;
                 }
             }
             catch (HttpException ex)
             {
                 context.Response.StatusCode = ex.StatusCode;
-                return Task.WhenAll(context.Response.WriteAsync(ex.Message), LogError(ex.Message));
+#if DEBUG
+                await Task.WhenAll(context.Response.WriteAsync(ex.Message), LogError(ex.Message));
+#else
+                await LogError(ex.Message);
+                await Common.DropPixel();
+#endif
             }
         }
 
