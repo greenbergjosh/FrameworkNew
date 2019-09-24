@@ -9,6 +9,7 @@ import { DataInputInterfaceComponent } from "./components/form/data-input/DataIn
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
+import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
 import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
@@ -53,6 +54,7 @@ export const registry: ComponentRegistry = {
     "data-map": DataMapInterfaceComponent,
     date: DateInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
+    "filtered-menu": FilteredMenuInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
