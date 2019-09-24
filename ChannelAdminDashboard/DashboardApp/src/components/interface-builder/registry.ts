@@ -26,6 +26,7 @@ import { TableInterfaceComponent } from "./components/display/table/TableInterfa
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/form/tags/TagsInterfaceComponent"
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
+import { TimeRangeInterfaceComponent } from "./components/form/time-range/TimeRangeInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { UploadInterfaceComponent } from "./components/form/upload/UploadInterfaceComponent"
 import { UserInterfaceInterfaceComponent } from "./components/special/user-interface/UserInterfaceInterfaceComponent"
@@ -68,6 +69,7 @@ export const registry: ComponentRegistry = {
     tabs: TabsInterfaceComponent,
     tags: TagsInterfaceComponent,
     textarea: TextAreaInterfaceComponent,
+    "time-range": TimeRangeInterfaceComponent,
     toggle: ToggleInterfaceComponent,
     upload: UploadInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
