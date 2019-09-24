@@ -43,15 +43,13 @@ export class FilteredMenuInterfaceComponent extends BaseInterfaceComponent<Filte
   selectHandler = (currentSelection: JSONRecord | null | undefined) => {
     const { onChangeData, userInterfaceData, menuItemKey } = this.props
     const selected = get("selected", userInterfaceData)
-    // Deselect if user clicked on selected again
     let newSelectedItem: JSONRecord | null | undefined
     const currentId = currentSelection && currentSelection[menuItemKey]
     const previousId = selected && selected[menuItemKey]
-    console.log("currentId, previousId", currentId, previousId)
+    // Deselect if user clicked on selected again
     if (currentId !== previousId) {
       newSelectedItem = currentSelection
     }
-    console.log("this.selected", selected)
     onChangeData && onChangeData(set("selected", newSelectedItem, userInterfaceData))
   }
 
@@ -60,28 +58,10 @@ export class FilteredMenuInterfaceComponent extends BaseInterfaceComponent<Filte
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     const selected = get("selected", userInterfaceData)
-    const mockData = [
-      {
-        id: "one",
-        label: "Oneders",
-      },
-      {
-        id: "two",
-        label: "Two",
-      },
-      {
-        id: "twofus",
-        label: "Twofus",
-      },
-      {
-        id: "three",
-        label: "Three",
-      },
-    ]
 
     return (
       <FilteredMenu
-        data={mockData}
+        data={value}
         valueAccessor={menuItemKey}
         labelAccessor={menuItemLabelKey}
         onSelect={this.selectHandler}
