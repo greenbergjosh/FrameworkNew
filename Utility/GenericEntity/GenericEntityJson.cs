@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace Utility.GenericEntity
 {
@@ -11,16 +11,32 @@ namespace Utility.GenericEntity
 
         public GenericEntityJson() { }
 
+        public static IGenericEntity CreateFromObject(object data, RoslynWrapper rw = null)
+        {
+            var entity = new GenericEntityJson();
+            entity.InitializeEntity(rw, null, data);
+            return entity;
+        }
+
         public override void InitializeEntity(RoslynWrapper rw, object configuration, object data)
         {
             this.rw = rw;
-            if (data is JObject || data is JToken || data is JArray) _root = (data as JToken);
-            else _root = JToken.FromObject(data);
+            if (data is JObject || data is JToken || data is JArray)
+            {
+                _root = (data as JToken);
+            }
+            else
+            {
+                _root = JToken.FromObject(data);
+            }
         }
 
         private string ConvertPath(string path)
         {
-            if (path == "") path = "$";
+            if (path == "")
+            {
+                path = "$";
+            }
             else
             {
                 path = "$." + path;
@@ -31,7 +47,10 @@ namespace Utility.GenericEntity
 
         private (string path, string propName)? SplitPropertyPath(string fullPath)
         {
-            if (fullPath.IsNullOrWhitespace()) return null;
+            if (fullPath.IsNullOrWhitespace())
+            {
+                return null;
+            }
 
             fullPath = $"$/{fullPath}";
 
@@ -50,39 +69,54 @@ namespace Utility.GenericEntity
             {
                 JToken tok = null;
 
-                if (value is JToken jt) tok = jt;
+                if (value is JToken jt)
+                {
+                    tok = jt;
+                }
                 else if (value is string vStr && !vStr.IsNullOrWhitespace())
                 {
                     try { tok = JToken.Parse(vStr); }
                     catch (Exception) { tok = vStr; }
                 }
-                else if(value != null) tok = JToken.FromObject(value);
+                else if (value != null)
+                {
+                    tok = JToken.FromObject(value);
+                }
 
                 var prop = parent.Property(cpath.Value.propName);
 
-                if (prop == null) parent.Add(cpath.Value.propName, tok);
-                else prop.Value = tok;
+                if (prop == null)
+                {
+                    parent.Add(cpath.Value.propName, tok);
+                }
+                else
+                {
+                    prop.Value = tok;
+                }
             }
         }
 
         public override IEnumerable<IGenericEntity> GetL(string path)
         {
-            foreach (JToken item in _root.SelectTokens(ConvertPath(path)).Children())
+            foreach (var item in _root.SelectTokens(ConvertPath(path)).Children())
             {
-                GenericEntityJson entity = new GenericEntityJson();
-                entity.InitializeEntity(this.rw, null, item);
+                var entity = new GenericEntityJson();
+                entity.InitializeEntity(rw, null, item);
                 yield return entity;
             }
         }
 
         public override IGenericEntity GetE(string path)
         {
-            GenericEntityJson entity = new GenericEntityJson();
+            var entity = new GenericEntityJson();
             var data = _root.SelectToken(ConvertPath(path));
 
-            if (data == null) return null;
+            if (data == null)
+            {
+                return null;
+            }
 
-            entity.InitializeEntity(this.rw, null, data);
+            entity.InitializeEntity(rw, null, data);
             return entity;
         }
 
