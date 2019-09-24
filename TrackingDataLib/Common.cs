@@ -12,6 +12,8 @@ namespace TrackingDataLib
 {
     internal static class Common
     {
+        internal static readonly string LinkoutTokenCookie = "lot";
+
         internal static Task DropEvent(PL payload, Dictionary<string, object> rsIds, DateTime timestamp, FrameworkWrapper fw)
         {
             var edwEvent = new EdwBulkEvent();
@@ -41,7 +43,7 @@ namespace TrackingDataLib
 
         internal static Task<Dictionary<string, object>> GetRsIds(IGenericEntity parameters)
         {
-            var rsIds = parameters.GetD("/rsids").ToDictionary(t => t.Item1, t => (object)t.Item2);
+            var rsIds = parameters.GetD("/rsIds").ToDictionary(t => t.Item1, t => (object)t.Item2);
             if (rsIds.Count() == 0)
             {
                 throw new HttpException(400, "No reporting session ID's specified.");
