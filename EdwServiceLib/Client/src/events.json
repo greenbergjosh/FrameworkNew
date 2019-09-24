@@ -1,0 +1,130 @@
+// Page Impression
+{
+  "event": "294C1DE8-03A7-4DC9-B7C2-74DB8480D803",
+  "page": "AmericanSurvey",
+  "sf": {
+    "session": {},
+    "grp1": {
+      "page": "AmericanSurvey",
+      "pageOrder": [
+        "AmericanSurvey"
+      ]
+    },
+    "American": {}
+  }
+}
+
+// Page Impression
+{
+  "event": "294C1DE8-03A7-4DC9-B7C2-74DB8480D803",
+  "page": "SaladDressing",
+  "sf": {
+    "session": {
+      "ev": [
+        "event:1cceeb9e-046a-43ab-9319-ff9204cbffb1"
+      ]
+    },
+    "grp1": {
+      "page": "SaladDressing",
+      "pageOrder": [
+        "AmericanSurvey",
+        "SaladDressing"
+      ]
+    },
+    "American": {
+      "ev": [
+        "event:294C1DE8-03A7-4DC9-B7C2-74DB8480D803"
+      ]
+    },
+    "American/question1": {
+      "keyPrefix": "American",
+      "__sfName": "question1",
+      "id": 1
+    }
+  }
+}
+
+// Answer
+{
+  "event": "4F28AF59-CAEE-4A50-827B-2125DBE163AF",
+  "sf": {
+    "session": {
+      "ev": [
+        "event:1cceeb9e-046a-43ab-9319-ff9204cbffb1"
+      ]
+    },
+    "grp1": {
+      "page": "SaladDressing",
+      "pageOrder": [
+        "AmericanSurvey",
+        "SaladDressing"
+      ]
+    },
+    "American": {
+      "ev": [
+        "event:294C1DE8-03A7-4DC9-B7C2-74DB8480D803"
+      ]
+    },
+    "American/question1": {
+      "keyPrefix": "American",
+      "__sfName": "question1",
+      "id": 1,
+      "ev": [
+        "event:294C1DE8-03A7-4DC9-B7C2-74DB8480D803"
+      ]
+    },
+    "American/question1/answer": {
+      "keyPrefix": "question1",
+      "__sfName": "answer",
+      "saladDressingId": 4
+    }
+  }
+}
+
+// HasCar
+{
+  "event": "9AD3647F-17E2-403B-A7B5-8C2D49CE09BE",
+  "brand": "Honda",
+  "model": "Accord",
+  "year": "1886",
+  "sf": {
+    "session": {
+      "ev": [
+        "event:1cceeb9e-046a-43ab-9319-ff9204cbffb1"
+      ]
+    },
+    "grp1": {
+      "page": "HasCar",
+      "pageOrder": [
+        "AmericanSurvey",
+        "SaladDressing",
+        "NbChildren",
+        "HasCar"
+      ]
+    },
+    "American": {
+      "ev": [
+        "event:294C1DE8-03A7-4DC9-B7C2-74DB8480D803"
+      ]
+    },
+    "American/question3": {
+      "keyPrefix": "American",
+      "__sfName": "question3",
+      "id": 3,
+      "ev": [
+        "event:294C1DE8-03A7-4DC9-B7C2-74DB8480D803"
+      ]
+    },
+    "American/question3/answer": {
+      "keyPrefix": "question3",
+      "__sfName": "answer",
+      "hasCar": true,
+      "ev": [
+        "event:4F28AF59-CAEE-4A50-827B-2125DBE163AF"
+      ],
+      "whep": [
+        "b08c4ae5-b58b-44e5-9498-5b617ebc2dde"
+      ]
+    }
+  }
+}
