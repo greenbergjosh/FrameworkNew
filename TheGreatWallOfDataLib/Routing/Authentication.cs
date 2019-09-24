@@ -35,7 +35,6 @@ namespace TheGreatWallOfDataLib.Routing
 
             var userDetails = await Auth.Login(sso.ssoKey, sso.payload, RegistrationValidation.DefaultAutoRegister);
 
-            await CheckPermissions("auth", "login", userDetails.LoginToken, ctx);
             return Jw.ToGenericEntity(userDetails);
         }
 
@@ -46,13 +45,13 @@ namespace TheGreatWallOfDataLib.Routing
             return await Auth.GetTokenUserDetails(identity);
         }
 
+        private static string GetSecurable(string scope, string funcName) => $"{scope}.{funcName}";
+
+        public static Task<bool> HasPermissions(string scope, string funcName, string identity, HttpContext ctx) => Auth.HasPermission(identity,GetSecurable(scope, funcName));
+
         public static async Task CheckPermissions(string scope, string funcName, string identity, HttpContext ctx)
         {
-            var ip = ctx.Ip();
-            var securable = $"{scope}.{funcName}";
-            var logMsg = Jw.Serialize(new {identity, ip, action = securable});
-
-            if (!await Auth.HasPermission(identity, securable)) throw new FunctionException(106, logMsg);
+            if (!await HasPermissions(scope, funcName, identity, ctx)) throw new FunctionException(106, Jw.Serialize(new {identity, ip = ctx.Ip(), action = GetSecurable(scope, funcName)}));
         }
 
     }
