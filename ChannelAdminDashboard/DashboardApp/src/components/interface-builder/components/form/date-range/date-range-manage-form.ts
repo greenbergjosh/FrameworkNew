@@ -64,7 +64,6 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "End Date API Name",
                 help: "The name of the end date field in the API endpoint.",
               },
-              ...commonIncludeTimeForm,
               {
                 key: "useWrapperObject",
                 valueKey: "useWrapperObject",
@@ -93,6 +92,12 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
             ],
+          },
+          {
+            key: "appearance",
+            components: [
+              ...commonIncludeTimeForm,
+            ]
           },
         ],
       },

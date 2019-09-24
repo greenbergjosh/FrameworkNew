@@ -33,7 +33,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 label: "Calculate Percent",
-                help: "Calculate the percent from the current count and maximum value.",
+                help: "Calculate the percent from the current count and a maximum value. When not selected, the data is assumed to be a percentage.",
               },
               {
                 key: "maxValueKey",
@@ -46,116 +46,113 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "===": [true, { var: "calculatePercent" }],
                 },
               },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
               {
-                key: "appearanceGroup",
-                valueKey: "appearanceGroup",
-                label: "Appearance Options",
+                key: "indicateStatus",
+                valueKey: "indicateStatus",
+                component: "toggle",
+                defaultValue: false,
+                label: "Indicate Status",
+              },
+              {
+                key: "statusGroup",
+                valueKey: "statusGroup",
+                label: "Status Options",
                 component: "card",
                 components: [
                   {
-                    key: "indicateStatus",
-                    valueKey: "indicateStatus",
-                    component: "toggle",
-                    defaultValue: false,
-                    label: "Indicate Status",
+                    key: "statusKey",
+                    valueKey: "statusKey",
+                    component: "input",
+                    defaultValue: "status",
+                    label: "API Key for Status",
+                    help: "The API property name to use for the Progress component status.",
                   },
                   {
-                    key: "statusGroup",
-                    valueKey: "statusGroup",
-                    label: "Status Options",
-                    component: "card",
-                    components: [
-                      {
-                        key: "statusKey",
-                        valueKey: "statusKey",
-                        component: "input",
-                        defaultValue: "status",
-                        label: "API Key for Status",
-                        help: "The API property name to use for the Progress component status.",
-                      },
-                      {
-                        key: "statusActive",
-                        valueKey: "statusActive",
-                        component: "input",
-                        defaultValue: "active",
-                        label: "Active Value",
-                      },
-                      {
-                        key: "statusSuccess",
-                        valueKey: "statusSuccess",
-                        component: "input",
-                        defaultValue: "success",
-                        label: "Success Value",
-                      },
-                      {
-                        key: "statusException",
-                        valueKey: "statusException",
-                        component: "input",
-                        defaultValue: "exception",
-                        label: "Exception Value",
-                        visibilityConditions: {
-                          "===": [true, { var: "indicateStatus" }],
-                        },
-                      },
-                    ],
+                    key: "statusActive",
+                    valueKey: "statusActive",
+                    component: "input",
+                    defaultValue: "active",
+                    label: "Active Value",
+                  },
+                  {
+                    key: "statusSuccess",
+                    valueKey: "statusSuccess",
+                    component: "input",
+                    defaultValue: "success",
+                    label: "Success Value",
+                  },
+                  {
+                    key: "statusException",
+                    valueKey: "statusException",
+                    component: "input",
+                    defaultValue: "exception",
+                    label: "Exception Value",
                     visibilityConditions: {
                       "===": [true, { var: "indicateStatus" }],
                     },
                   },
-                  {
-                    key: "type",
-                    valueKey: "type",
-                    component: "select",
-                    label: "Progress Type",
-                    defaultValue: "line",
-                    dataHandlerType: "local",
-                    data: {
-                      values: [
-                        {
-                          label: "Line",
-                          value: "line",
-                        },
-                        {
-                          label: "Circle",
-                          value: "circle",
-                        },
-                        {
-                          label: "Dashboard",
-                          value: "dashboard",
-                        },
-                      ],
+                ],
+                visibilityConditions: {
+                  "===": [true, { var: "indicateStatus" }],
+                },
+              },
+              {
+                key: "type",
+                valueKey: "type",
+                component: "select",
+                label: "Progress Type",
+                defaultValue: "line",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "Line",
+                      value: "line",
                     },
-                  },
-                  {
-                    key: "smallLine",
-                    valueKey: "smallLine",
-                    component: "toggle",
-                    label: "Small Line",
-                    defaultValue: false,
-                    dataHandlerType: "local",
-                    visibilityConditions: {
-                      "===": ["line", { var: "type" }],
+                    {
+                      label: "Circle",
+                      value: "circle",
                     },
-                  },
-                  {
-                    key: "width",
-                    valueKey: "width",
-                    component: "number-input",
-                    label: "Width",
-                    dataHandlerType: "local",
-                    visibilityConditions: {
-                      "!==": ["line", { var: "type" }],
+                    {
+                      label: "Dashboard",
+                      value: "dashboard",
                     },
-                  },
-                  {
-                    key: "hideInfo",
-                    valueKey: "hideInfo",
-                    component: "toggle",
-                    label: "Hide Info",
-                    defaultValue: false,
-                    help: "Hide progress summary information"
-                  },
-                ]
+                  ],
+                },
+              },
+              {
+                key: "smallLine",
+                valueKey: "smallLine",
+                component: "toggle",
+                label: "Small Line",
+                defaultValue: false,
+                dataHandlerType: "local",
+                visibilityConditions: {
+                  "===": ["line", { var: "type" }],
+                },
+              },
+              {
+                key: "width",
+                valueKey: "width",
+                component: "number-input",
+                label: "Width",
+                dataHandlerType: "local",
+                visibilityConditions: {
+                  "!==": ["line", { var: "type" }],
+                },
+              },
+              {
+                key: "hideInfo",
+                valueKey: "hideInfo",
+                component: "toggle",
+                label: "Hide Info",
+                defaultValue: false,
+                help: "Hide progress summary information",
               },
             ],
           },
