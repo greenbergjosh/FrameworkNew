@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29001.49
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.852
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlRegularExpressions", "SqlRegularExpressions\SqlRegularExpressions.csproj", "{3B4842DC-B8F0-4508-8837-6DC4BE76256C}"
 EndProject
@@ -96,9 +96,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrameworkTests", "Framework
 		{FAB3FBA3-AB13-4953-B3C4-A7D9519E149E} = {FAB3FBA3-AB13-4953-B3C4-A7D9519E149E}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwsCommandGatewayLib", "AwsCommandGateway\AwsCommandGatewayLib.csproj", "{67623F03-3655-449B-B818-F4A827CA1753}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwsCommandGatewayLib", "AwsCommandGateway\AwsCommandGatewayLib.csproj", "{67623F03-3655-449B-B818-F4A827CA1753}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpamhausMonitor", "SpamhausMonitor\SpamhausMonitor.csproj", "{4B200124-7DA8-44BD-9F40-5A6456204F41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpamhausMonitor", "SpamhausMonitor\SpamhausMonitor.csproj", "{4B200124-7DA8-44BD-9F40-5A6456204F41}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackingDataLib", "TrackingDataLib\TrackingDataLib.csproj", "{356F1007-6156-42AA-97F7-8DF71D69552B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -347,6 +349,12 @@ Global
 		{4B200124-7DA8-44BD-9F40-5A6456204F41}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{4B200124-7DA8-44BD-9F40-5A6456204F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B200124-7DA8-44BD-9F40-5A6456204F41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{356F1007-6156-42AA-97F7-8DF71D69552B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{356F1007-6156-42AA-97F7-8DF71D69552B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{356F1007-6156-42AA-97F7-8DF71D69552B}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{356F1007-6156-42AA-97F7-8DF71D69552B}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{356F1007-6156-42AA-97F7-8DF71D69552B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{356F1007-6156-42AA-97F7-8DF71D69552B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -385,9 +393,10 @@ Global
 		{BC4B015F-F942-4D62-BE05-16F8C0B52E93} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 		{67623F03-3655-449B-B818-F4A827CA1753} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{4B200124-7DA8-44BD-9F40-5A6456204F41} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
+		{356F1007-6156-42AA-97F7-8DF71D69552B} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal
