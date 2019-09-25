@@ -1,12 +1,9 @@
-import { Form, Input, Typography } from "antd"
-import { get, set, throttle } from "lodash/fp"
+import { Form, Input } from "antd"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { dataInputManageForm } from "./data-input-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
 import { Codec, getCodec, separator } from "./codec"
 
@@ -22,6 +19,8 @@ export interface CsvInputInterfaceComponentProps extends ComponentDefinitionName
   maxRows?: number
   maxLength?: number
   itemSeparator: separator
+  newlinePlaceholder: string
+  commaPlaceholder: string
 }
 
 interface CsvInputInterfaceComponentState {
@@ -86,10 +85,13 @@ export class DataInputInterfaceComponent extends BaseInterfaceComponent<CsvInput
       maxRows,
       maxLength,
       itemSeparator,
+      newlinePlaceholder,
+      commaPlaceholder
     } = this.props
     const codec: Codec = getCodec(itemSeparator)
     const value = getValue(valueKey, userInterfaceData, defaultValue, codec)
     const autosizeValue = getAutosize(minRows, maxRows, autosize)
+    const placeholder = itemSeparator === separator.comma ? commaPlaceholder : newlinePlaceholder
     return (
       <>
         <Input.TextArea
@@ -97,6 +99,7 @@ export class DataInputInterfaceComponent extends BaseInterfaceComponent<CsvInput
           value={value}
           autosize={autosizeValue}
           maxLength={maxLength}
+          placeholder={placeholder}
         />
         <CharCounter text={value} maxLength={maxLength}/>
       </>

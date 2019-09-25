@@ -39,7 +39,7 @@ const csvInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 label: "Item Separator",
                 dataHandlerType: "local",
-                defaultValue: "newLine",
+                defaultValue: separator.newline,
                 data: {
                   values: [
                     {
@@ -65,6 +65,28 @@ const csvInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 label: "Autosize height"
+              },
+              {
+                key: "newlinePlaceholder",
+                valueKey: "newlinePlaceholder",
+                ordinal: 11,
+                component: "input",
+                defaultValue: "Enter each item on a line by itself",
+                label: "Placeholder",
+                visibilityConditions: {
+                  "===": [separator.newline, { var: "itemSeparator" }],
+                },
+              },
+              {
+                key: "commaPlaceholder",
+                valueKey: "commaPlaceholder",
+                ordinal: 11,
+                component: "input",
+                defaultValue: "Enter items separated by commas",
+                label: "Placeholder",
+                visibilityConditions: {
+                  "===": [separator.comma, { var: "itemSeparator" }],
+                },
               },
               {
                 key: "minRows",
