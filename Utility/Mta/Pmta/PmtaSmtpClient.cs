@@ -223,6 +223,7 @@ namespace Utility.Mta.Pmta
                 Raw = Encoding.ASCII.GetString(buffer).Replace("\0", string.Empty);
             }
         }
-
     }
+
+
 }

@@ -15,6 +15,9 @@ namespace Utility.Mta.Pmta
         private readonly string _pmtaAddress;
         private readonly int _port;
 
+        private readonly string _defaultVmta;
+//        private const string MailFrom = "FROM";
+
         public PmtaLibMailService(FrameworkWrapper fw, string configRootPath) : base(fw, configRootPath)
         {
             var config = fw.StartupConfiguration.GetE(ConfigRootPath);
@@ -24,13 +27,15 @@ namespace Utility.Mta.Pmta
             _enableStatistics = config.GetB("CollectStats");
             _pmtaAddress = config.GetS("Host");
             _port = config.GetS("Port").ParseInt() ?? 25;
+            _defaultVmta = config.GetS("DefaultVmta").IfNullOrWhitespace((string) null);
         }
 
         public override async Task<IEnumerable<MailResult>> Send(MailPackage pkg, string vmta = null)
         {
             CleanAndValidatePackage(pkg);
 
-            vmta = GetVmtaIp(pkg, vmta);
+            // don't know if this works, do know that a VMTA must be defined
+            vmta = GetVmtaIp(pkg, vmta.IfNullOrWhitespace(".")) ?? _defaultVmta;
 
             var recipients = GetRecipientMessages(pkg);
             var results = new List<MailResult>();
@@ -58,7 +63,11 @@ namespace Utility.Mta.Pmta
 
                     msg.AddRecipient(new Port25Recipient(r.To.Address.Address));
 
-                    var headerStr = r.Headers?.Select(h => $"{h.Key}: {h.Value}").Join("\n");
+                    var headers = r.Headers?.ToList() ?? new List<KeyValuePair<string, string>>();
+
+//                    if (headers.Any(h => h.Key == MailFrom)) headers.Add(new KeyValuePair<string, string>(MailFrom, r.From.FromHeader));
+
+                    var headerStr = headers.Select(h => $"{h.Key}: {h.Value}").Join("\n");
 
                     if (!headerStr.IsNullOrWhitespace()) msg.AddData(headerStr);
 
