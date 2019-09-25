@@ -8,7 +8,11 @@ namespace TrackingDataLib
     {
         private FrameworkWrapper _framework;
 
-        public void Config(FrameworkWrapper framework) => _framework = framework;
+        public void Config(FrameworkWrapper framework)
+        {
+            _framework = framework;
+            Cache.Config(framework);
+        }
 
         public async Task Run(HttpContext context)
         {
@@ -34,7 +38,7 @@ namespace TrackingDataLib
                         break;
                     default:
                         context.Response.StatusCode = 404;
-                        await LogError($"Unknown method: [{method}] queryString: [{context.Request.QueryString}]");
+                        await LogError($"Unknown method: [{method}] parameters: {parameters}");
                         break;
                 }
             }

@@ -12,7 +12,6 @@ namespace TrackingDataLib
         {
             var timestamp = DateTime.UtcNow;
 
-
             if (!Guid.TryParse(parameters.GetS("linkoutToken"), out var linkoutToken) && !Guid.TryParse(context.Request.Cookies[Common.LinkoutTokenCookie], out linkoutToken))
             {
                 throw new HttpException(401, "Missing linkout token");

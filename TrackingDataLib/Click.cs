@@ -14,6 +14,7 @@ namespace TrackingDataLib
         {
             var timestamp = DateTime.UtcNow;
 
+            // We do this in the HTTP thread because it could throw if input is not correct
             var rsIds = await Common.GetRsIds(parameters);
 
             var linkoutToken = Guid.NewGuid();
