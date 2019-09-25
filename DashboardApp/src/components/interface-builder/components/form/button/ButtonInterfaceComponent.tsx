@@ -1,4 +1,4 @@
-import { Form, Button, Icon } from "antd"
+import { Form, Button, Icon, Tooltip } from "antd"
 import { get, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -70,23 +70,25 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<ButtonInter
       size,
       displayType,
       block,
-      ghost
+      ghost,
     } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
     return (
-      <Button
-        onClick={this.handleClick}
-        value={value}
-        icon={icon}
-        shape={buttonShape}
-        size={size}
-        type={displayType}
-        block={block}
-        ghost={ghost}
-      >{!hideButtonLabel && !isCircle ? buttonLabel : null}</Button>
+      <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null}>
+        <Button
+          onClick={this.handleClick}
+          value={value}
+          icon={icon}
+          shape={buttonShape}
+          size={size}
+          type={displayType}
+          block={block}
+          ghost={ghost}
+        >{!hideButtonLabel && !isCircle ? buttonLabel : null}</Button>
+      </Tooltip>
     )
   }
 }
