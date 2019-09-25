@@ -126,14 +126,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 ordinal: 15,
                 component: "input",
                 defaultValue: "Button",
-                label: "Button Label",
-                visibilityConditions: {
-                  "and": [
-                    { "===": [false, { var: ["hideButtonLabel"] }] },
-                    { "!==": ["circle", { var: ["shape"] }] },
-                    { "!==": ["circle-outline", { var: ["shape"] }] },
-                  ],
-                },
+                label: "Button Title",
               },
               {
                 key: "size",
