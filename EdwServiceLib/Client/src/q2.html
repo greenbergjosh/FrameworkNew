@@ -11,21 +11,7 @@
     <input type="number" name="nbChildren" min="1" max="5">
     <button type="button" onclick="reportAnswer(document.getElementsByName('nbChildren')[0].value)">Next</button>
   </form>
-<script type="text/javascript">
-  window.onload = function() {
-    reportQuestion('NbChildren', 2);
-  };
-
-  var reportAnswer = function(nbChildren) {
-    edw.reportToEdw(answerConfig, function(cf) {
-      cf.rs.surveyRs.data.nbChildren = nbChildren;
-      cf.ss.answer.nbChildren = nbChildren;
-    }, function() {
-      var survey = edw.getUrlParameter('survey');
-      window.location = 'q3.html?survey=' + survey;
-    });
-  };
-</script>
 <script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+<script type="text/javascript">setupQuestion('NbChildren', 2, 'q3');</script>
 </body>
 </html>

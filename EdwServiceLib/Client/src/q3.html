@@ -30,13 +30,9 @@
       <input type="number" name="year" min="1886" max="2019" disabled></input>
     </div>
     <br/>
-    <button type="button" onclick="reportAnswer()">Next</button>
+    <button type="button" onclick="report()">Next</button>
   </form>
 <script type="text/javascript">
-  window.onload = function() {
-    reportQuestion('HasCar', 3);
-  };
-
   var radioChanged = function() {
     var disabled = !(document.querySelector('input[name="hasCar"]:checked').value == "true");
     document.getElementsByName("brand")[0].disabled = disabled;
@@ -44,28 +40,12 @@
     document.getElementsByName("year")[0].disabled = disabled;
   };
 
-  var reportAnswer = function(nbChildren) {
+  var report = function() {
     var hasCar = document.querySelector('input[name="hasCar"]:checked').value == "true";
-    edw.reportToEdw(answerConfig, function(cf) {
-      cf.rs.surveyRs.data.hasCar = hasCar;
-      cf.ss.answer.hasCar = hasCar;
-      if (hasCar) {
-        cf.ev.push({
-          key: ['event'],
-          data: {
-            event: '9AD3647F-17E2-403B-A7B5-8C2D49CE09BE',
-            brand: document.getElementsByName("brand")[0].value,
-            model: document.getElementsByName("model")[0].value,
-            year: document.getElementsByName("year")[0].value
-          }
-        });
-      }
-    }, function() {
-      var survey = edw.getUrlParameter('survey');
-      window.location = 'q4.html?survey=' + survey;
-    });
+    reportAnswer(hasCar);
   };
 </script>
 <script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+<script type="text/javascript">setupQuestion('HasCar', 3);</script>
 </body>
 </html>

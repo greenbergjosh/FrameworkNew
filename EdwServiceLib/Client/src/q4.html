@@ -11,20 +11,7 @@
     <input type="date" id="start" name="dateOfBirth" >
     <button type="button" onclick="reportAnswer(document.getElementsByName('dateOfBirth')[0].value)">Done</button>
   </form>
-<script type="text/javascript">
-  window.onload = function() {
-    reportQuestion('DateOfBirth', 4);
-  };
-
-  var reportAnswer = function(dateOfBirth) {
-    edw.reportToEdw(answerConfig, function(cf) {
-      cf.rs.surveyRs.data.dateOfBirth = dateOfBirth;
-      cf.ss.answer.dateOfBirth = dateOfBirth;
-    }, function() {
-      window.location = 'smartpath.html';
-    });
-  };
-</script>
 <script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+<script type="text/javascript">setupQuestion('DateOfBirth', 4);</script>
 </body>
 </html>
