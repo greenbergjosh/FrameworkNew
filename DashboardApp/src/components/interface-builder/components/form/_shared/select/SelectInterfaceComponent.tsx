@@ -1,4 +1,4 @@
-import { Select } from "antd"
+import { Select, Icon } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { reporter } from "io-ts-reporters"
@@ -383,7 +383,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
 
     const value = this.getCleanValue()
 
-    let mode = this.mode;
+    let mode = this.mode
     if (mode !== modes.tags) {
       mode = multiple ? modes.multiple : modes.default
     }
@@ -405,6 +405,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
         showSearch>
         {options.map((option) => (
           <Select.Option key={`${option.value}`} value={option.value}>
+            {typeof option.icon !== "undefined" ?
+              <Icon type={option.icon} style={{ marginRight: "8px" }}/>
+              : null}
             {option.label}
           </Select.Option>
         ))}

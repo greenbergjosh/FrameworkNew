@@ -11,6 +11,7 @@ import {
 export interface SelectOption {
   label: string
   value: string
+  icon?: string
 }
 
 export interface ISelectInterfaceComponentProps extends ComponentDefinitionNamedProps {

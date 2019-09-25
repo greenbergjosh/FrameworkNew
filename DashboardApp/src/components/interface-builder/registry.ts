@@ -1,5 +1,6 @@
 import React from "react"
 import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
+import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
 import { CardInterfaceComponent } from "./components/display/card/CardInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
@@ -45,6 +46,7 @@ export interface ComponentRegistryCache {
 
 export const registry: ComponentRegistry = {
   cache: {
+    button: ButtonInterfaceComponent,
     card: CardInterfaceComponent,
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
