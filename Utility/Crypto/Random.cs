@@ -18,6 +18,7 @@ namespace Utility.Crypto
             'ü', 'ý', 'þ', 'ÿ'
         };
 
+        public const string AsciiChars = "0123456789abcdefghijklmnopqrestuvwxyzABCDEFGHIJKLMNOPQRESTUVWXYZ";
         public const string Digits = "0123456789";
         public const string hex = "0123456789abcdef";
         public const string HEX = "0123456789ABCDEF";

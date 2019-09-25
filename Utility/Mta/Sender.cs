@@ -15,5 +15,6 @@ namespace Utility.Mta {
         public string Domain { get; set; }
 
         public string Address => $"{LocalPart}@{Domain}";
+        public string FromHeader => $"{Name} <{LocalPart}@{Domain}>";
     }
 }
