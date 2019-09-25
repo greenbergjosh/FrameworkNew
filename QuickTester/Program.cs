@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
 using Utility.Mta;
@@ -19,14 +20,15 @@ namespace QuickTester
             try
             {
                 const string body =
-@"<html>
+                    @"<html>
     <div>Do not be alarmed, this is only a test</div>
 </html>";
                 var fw = new FrameworkWrapper();
                 var mta = new PmtaLibMailService(fw, "Config/QA");
-                var pkg = new MailPackage(new Sender("OPG Alerts", "alerts", "onpointglobal.com"), "abec@onpointglobal.com", $"j-001-{Random.GenerateRandomString(3, 6)}", "PMTA Test", body, null);
+                var pkg = new MailPackage(new Sender("OPG Alerts", "marco", "onpoint-delivery.com"), "abec@onpointglobal.com", $"j-001-{Random.GenerateRandomString(3, 6, Random.AsciiChars)}",
+                    "PMTA Test", body, null);
 
-                await mta.Send(pkg, ".");
+                await mta.Send(pkg,"sandboxmta");
             }
             catch (Exception e)
             {
