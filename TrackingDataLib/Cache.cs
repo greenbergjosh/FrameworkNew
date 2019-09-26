@@ -1,20 +1,50 @@
-﻿using System;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Redis;
+using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Utility;
 using Utility.GenericEntity;
 
 namespace TrackingDataLib
 {
     internal static class Cache
     {
-        // TODO: Replace this with database cache
-        private static Dictionary<string, IGenericEntity> _cache = new Dictionary<string, IGenericEntity>();
+        private static IDistributedCache _cache;
 
-        internal static Task<(bool found, IGenericEntity value)> TryGet(string key)
+        internal static void Config(FrameworkWrapper fw)
         {
-            var found = _cache.TryGetValue(key, out var value);
-            return Task.FromResult((found, value));
+            var cacheType = fw.StartupConfiguration.GetS("/cache/type").IfNullOrWhitespace("in-memory");
+
+            switch (cacheType)
+            {
+                case "in-memory":
+                    _cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+                    break;
+                case "redis":
+                    _cache = new RedisCache(Options.Create(new RedisCacheOptions()
+                    {
+                        Configuration = fw.StartupConfiguration.GetS("/cache/configuration"),
+                        InstanceName = fw.StartupConfiguration.GetS("/cache/instanceName")
+                    }));
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown cache type: [{cacheType}]", "cache/type");
+            }
+        }
+
+        internal static async Task<(bool found, IGenericEntity value)> TryGet(string key)
+        {
+            var value = await _cache.GetStringAsync(key);
+            if (value == null)
+            {
+                return (false, new GenericEntityJson());
+            }
+
+            return (true, JsonWrapper.JsonToGenericEntity(value));
         }
 
         internal static Task<(bool found, IGenericEntity value)> TryGet(Dictionary<string, object> rsIds)
@@ -29,11 +59,7 @@ namespace TrackingDataLib
             return TryGet(key);
         }
 
-        internal static Task Set(string key, IGenericEntity value)
-        {
-            _cache[key] = value;
-            return Task.CompletedTask;
-        }
+        internal static Task Set(string key, IGenericEntity value) => _cache.SetStringAsync(key, value.GetS(""));
 
         internal static Task Set(Dictionary<string, object> rsIds, IGenericEntity value)
         {
