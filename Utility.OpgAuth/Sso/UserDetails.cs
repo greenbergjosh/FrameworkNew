@@ -2,7 +2,7 @@
 {
     public class UserDetails
     {
-        public UserDetails(string id, string name, string email, string phone, string imageUrl, string raw)
+        public UserDetails(string id, string name, string email, string phone, string imageUrl, string loginToken, string raw)
         {
             Name = name;
             Email = email;
@@ -10,6 +10,8 @@
             ImageUrl = imageUrl;
             Raw = raw;
             Id = id;
+            LoginToken = loginToken;
+
         }
 
 
@@ -18,6 +20,7 @@
         public string Email { get; }
         public string Phone { get; }
         public string ImageUrl { get; }
-        public string Raw { get; }
+        internal string Raw { get; }
+        public string LoginToken { get; internal set; }
     }
 }

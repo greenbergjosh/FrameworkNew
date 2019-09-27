@@ -142,7 +142,7 @@ namespace Utility
             }
         }
 
-        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5FileV2(string filePath, List<string> keys)
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
         {
             var notFound = new List<string>();
             var found = new List<string>();
@@ -194,7 +194,7 @@ namespace Utility
                         }
                     }
 
-                    if(f) found.Add(md5);
+                    if (f) found.Add(md5);
                     else notFound.Add(md5);
                 }
             }
@@ -202,7 +202,7 @@ namespace Utility
             return (found, notFound);
         }
 
-        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5File(string filePath, List<string> keys)
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedMd5FileV2(string filePath, List<string> keys)
         {
             var notFound = new List<string>();
             var found = new List<string>();
@@ -355,7 +355,7 @@ namespace Utility
             var fPath = sourcePath + "\\" + file;
 
             var fLength = new System.IO.FileInfo(fPath).Length;
-			
+
             if (fLength < 33) return false;
 
             using (var fsSource = new FileStream(fPath, FileMode.Open, FileAccess.Read))
@@ -363,7 +363,7 @@ namespace Utility
                 var lLength = 0;
                 var bytes = new byte[34];
                 var n = await fsSource.ReadAsync(bytes, 0, 34);
-				
+
                 if (bytes[32] == 10) lLength = 33;
                 else if (bytes[32] == 13 && bytes[33] == 10) lLength = 34;
                 else throw new System.Exception("Unexpected line termination character");

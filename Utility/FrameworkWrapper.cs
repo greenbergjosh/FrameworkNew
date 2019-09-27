@@ -27,6 +27,7 @@ namespace Utility
         public ErrorDelegate Err;
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
         public bool TraceLogging = true;
+        public bool TraceToConsole = false;
 
         public FrameworkWrapper(string[] commandLineArgs = null)
         {
@@ -56,7 +57,9 @@ namespace Utility
                 var scripts = new List<ScriptDescriptor>();
                 var scriptsPath = StartupConfiguration.GetS("Config/RoslynScriptsPath");
 
-                TraceLogging = StartupConfiguration.GetB("Config/EnableTraceLogging");
+                // Yes, GetB can be used to pull a boolean, but that defaults to false
+                TraceLogging = StartupConfiguration.GetS("Config/EnableTraceLogging").ParseBool() ?? true;
+                TraceToConsole = StartupConfiguration.GetB("Config/TraceToConsole");
 
                 if (!scriptsPath.IsNullOrWhitespace())
                 {
@@ -74,6 +77,9 @@ namespace Utility
 #if DEBUG
                         Debug.WriteLine($"{DateTime.Now}: {method} {descriptor} {message}");
 #endif
+
+                        if (TraceToConsole) Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{severity}\t{descriptor}\t{method}\t{message}");
+
                         if (!TraceLogging && descriptor == ErrorDescriptor.Trace)
                         {
                             return;
@@ -87,6 +93,24 @@ namespace Utility
                 File.AppendAllText($"FrameworkStartupError-{DateTime.Now:yyyyMMddHHmmss}", $@"{DateTime.Now}::{ex.UnwrapForLog()}" + Environment.NewLine);
                 throw;
             }
+        }
+
+        public async Task<bool> ReInitialize()
+        {
+            var newConfig = await Data.ReInitialize(ConfigurationKeys);
+
+            if (newConfig != null)
+            {
+                StartupConfiguration = newConfig;
+
+                // ToDo: poke Roslyn cache
+
+                Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
+
+                return true;
+            }
+
+            return false;
         }
 
         public string LogMethodPrefix { get; set; } = "";

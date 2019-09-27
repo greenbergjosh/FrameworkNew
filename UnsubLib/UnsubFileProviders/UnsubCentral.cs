@@ -72,7 +72,14 @@ namespace UnsubLib.UnsubFileProviders
                 using (var client = new HttpClient())
                 {
                     var resp = await client.GetAsync(uri);
-                    var redirectUrl = resp.Headers.Location;
+                    var redirectUrl = resp?.Headers?.Location;
+
+                    if (redirectUrl == null)
+                    {
+                        await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
+                        return null;
+                    }
+
                     var qs = HttpUtility.ParseQueryString(redirectUrl.Query);
                     var key = qs["key"];
                     var secure = qs["s"];

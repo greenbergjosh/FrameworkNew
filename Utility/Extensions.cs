@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Utility
@@ -45,6 +47,8 @@ namespace Utility
         public static bool IsNullOrWhitespace(this string str) => string.IsNullOrEmpty(str?.Trim());
 
         public static string IfNullOrWhitespace(this string source, string ifEmpty) => source.IsNullOrWhitespace() ? ifEmpty : source;
+        
+        public static string IfNullOrWhitespace(this string source, Func<string> ifEmpty) => source.IsNullOrWhitespace() ? ifEmpty?.Invoke() : source;
 
         public static bool Contains(this string source, string value, StringComparison comparisonType) => source.IndexOf(value, comparisonType) > -1;
 
@@ -63,14 +67,18 @@ namespace Utility
 
         public static bool? ParseBool(this string str)
         {
+            if (str.IsNullOrWhitespace()) return null;
+
             if (!bool.TryParse(str, out var i))
             {
-                if (str == "1")
+                str = str.ToLower();
+
+                if (str == "1" || str == "true" || str == "t" || str == "y" || str == "yes")
                 {
                     return true;
                 }
 
-                if (str == "0")
+                if (str == "0" || str == "false" || str == "f" || str == "n" || str == "no")
                 {
                     return false;
                 }
@@ -124,6 +132,8 @@ namespace Utility
 
             return m.Success ? m.Groups[groupName]?.Value : null;
         }
+
+        public static string Replace(this string str, Regex rx, string with) => rx.Replace(str, with);
 
         public static IEnumerable<string> Matches(this string str, Regex rx) => rx.Matches(str).Cast<Match>().Select(m => m.Value);
 
@@ -343,7 +353,38 @@ namespace Utility
 
         #endregion
 
+        // Asynchronous streams is slated for C# 8.0, allegedly in Sept 2019, replace this then
+        #region LinqAsync
+
         public static Task<TAccumulate> AggregateAsync<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, Task<TAccumulate>> func) => source.Aggregate(Task.FromResult(seed), async (a, s) => await func(a.Result, s));
 
+        /// <summary>
+        /// DO NOT USE THIS IF YOU'RE EXPECTING ASYNCHRONOUS YIELDING, that's not possible yet
+        /// </summary>
+        public static Task<TResult[]> SelectAsync<TSource, TResult>(
+            this IEnumerable<TSource> source,
+            Func<TSource, Task<TResult>> selector)
+        {
+            return Task.WhenAll(source.Select(selector));
+        }
+
+        /// <summary>
+        /// DO NOT USE THIS IF YOU'RE EXPECTING ASYNCHRONOUS YIELDING, that's not possible yet
+        /// </summary>
+        public static Task<TResult[]> SelectAsync<TSource, TResult>(
+            this IEnumerable<TSource> source,
+            Func<TSource, int, Task<TResult>> selector)
+        {
+            return Task.WhenAll(source.Select(selector));
+        }
+
+        #endregion
+
+        public static Stopwatch Restart(this Stopwatch sw, Action first)
+        {
+            first?.Invoke();
+            sw.Restart();
+            return sw;
+        }
     }
 }

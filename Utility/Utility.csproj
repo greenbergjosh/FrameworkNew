@@ -24,4 +24,14 @@
     <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Mta\Pmta\libs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="port25.pmta.api.submitter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>Mta\Pmta\libs\port25.pmta.api.submitter.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Google.Apis.Auth;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Oauth2.v2;
 using Google.Apis.Services;
@@ -21,20 +23,21 @@ namespace Utility.OpgAuth.Sso
 
         public override async Task<UserDetails> GetUserDetails(IGenericEntity authData)
         {
-            using (var service = new Oauth2Service(new BaseClientService.Initializer
+            try
             {
-                ApplicationName = _appName,
-                ApiKey = _appCredentials
-            }))
+                var validation = await GoogleJsonWebSignature.ValidateAsync(authData.GetS("idToken"));
+
+                if (validation?.EmailVerified != true) throw new AuthException($"Account is unverified.\nPayload: {authData.GetS("")}\n\nResponse: {JsonWrapper.Serialize(validation)}");
+
+                return new UserDetails(id: validation.Subject, validation.Name, validation.Email, null, validation.Picture, loginToken: null, authData.GetS(""));
+            }
+            catch (InvalidJwtException e)
             {
-                var req = service.Userinfo.Get();
-
-                
-                req.OauthToken = authData.GetS("t");
-
-                var userInfo = await req.ExecuteAsync();
-
-                return new UserDetails(userInfo.Id, userInfo.Name, userInfo.Email, null, userInfo.Picture, JsonWrapper.Serialize(new { platform = PlatformType, userInfo }));
+                throw new AuthException($"Invalid token for Google SSO user details.\nPayload: {authData.GetS("")}", e);
+            }
+            catch (Exception e)
+            {
+                throw new AuthException($"Unhandled exception validating Google SSO user details.\nPayload: {authData.GetS("")}", e);
             }
         }
     }

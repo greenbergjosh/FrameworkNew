@@ -13,6 +13,8 @@
     "106": "Invalid login",
     "107": "Account exists",
     "108": "Exhausted unique handle attempts",
-    "109": "Contact not found"
+    "109": "Contact not found",
+    "110": "Name already used in context",
+    "111":  "Invalid promotion payload" 
   }
 }
