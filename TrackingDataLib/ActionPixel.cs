@@ -49,8 +49,8 @@ namespace TrackingDataLib
 
                 context.Set("actionTimestamp", timestamp);
 
-                await Cache.Set(linkoutToken, context);
-                await Cache.Set(rsIds, context);
+                await Cache.Set(linkoutToken, context, TimeSpan.FromDays(1));
+                await Cache.Set(rsIds, context, TimeSpan.FromDays(1));
 
                 var payload = PL.O(new
                 {
