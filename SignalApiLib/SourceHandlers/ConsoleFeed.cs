@@ -10,9 +10,9 @@ namespace SignalApiLib.SourceHandlers
     public class ConsoleFeed : ISourceHandler
     {
         private readonly FrameworkWrapper _fw;
-        private const string MsConn = "OnPointConsole";
-        private const string PgConn = "Signal";
+        private const string Conn = "Signal";
         private readonly string _logCtx = $"{nameof(ConsoleFeed)}.{nameof(HandleRequest)}";
+        private readonly string _defaultFailureResponse = Jw.Serialize(new { Result = "Failure" });
 
         public ConsoleFeed(FrameworkWrapper fw)
         {
@@ -22,6 +22,8 @@ namespace SignalApiLib.SourceHandlers
         public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {
             var result = Jw.Json(new { Error = "SeeLogs" });
+
+            requestFromPost = requestFromPost.Replace("\u0000", "");
 
             if (Jw.TryParseObject(requestFromPost) == null)
             {
@@ -56,94 +58,40 @@ namespace SignalApiLib.SourceHandlers
 
         public async Task<string> SaveLiveFeed(string request)
         {
-            var result = Jw.ToGenericEntity(new { Result = "Failure" });
+            var result = _defaultFailureResponse;
 
             try
             {
-                var tasks = new Task[]
-                {
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            result = await Data.CallFn(MsConn, "SaveLiveFeed", payload: request);
+                var res = await Data.CallFn(Conn, "consoleLiveFeed", payload: request);
 
-                            if (result?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"MSSql write failed. Response: {result?.GetS("") ?? "null"}\r\nBody: {request}");
-                        }
-                        catch (Exception e)
-                        {
-                            await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"MSSql write failed. {e.UnwrapForLog()}\r\nBody: {request}");
-                        }
-                    }),
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var res = await Data.CallFn(PgConn, "consoleLiveFeed", payload: request);
-
-                            if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"PG write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
-                        }
-                        catch (Exception e)
-                        {
-                            await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"PG write failed {e.UnwrapForLog()}\r\nBody: {request}");
-                        }
-                    })
-                };
-
-                await Task.WhenAll(tasks);
+                if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+                else result = Jw.Serialize(new { Result = "Success" });
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"Tasks failed. {ex.UnwrapForLog()}\r\nBody: {request}");
+                await _fw.Error($"{_logCtx}.{nameof(SaveLiveFeed)}", $@"DB write failed {e.UnwrapForLog()}\r\nBody: {request}");
             }
 
-            return result.GetS("");
+            return result;
         }
 
         public async Task<string> SaveEmailEvent(string request)
         {
-            var result = Jw.ToGenericEntity(new { Result = "Failure" });
+            var result = _defaultFailureResponse;
 
             try
             {
-                var tasks = new []
-                {
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            result = await Data.CallFn(MsConn, "SaveEmailEvent", payload: request);
+                var res = await Data.CallFn(Conn, "consoleEvent", payload: request);
 
-                            if (result?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"MSSql write failed. Response: {result?.GetS("") ?? "null"}\r\nBody: {request}");
-                        }
-                        catch (Exception e)
-                        {
-                            await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"MSSql write failed. {e.UnwrapForLog()}\r\nBody: {request}");
-                        }
-                    }),
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var res = await Data.CallFn(PgConn, "consoleEvent", payload: request);
-
-                            if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"PG write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
-                        }
-                        catch (Exception e)
-                        {
-                            await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"PG write failed {e.UnwrapForLog()}\r\nBody: {request}");
-                        }
-                    })
-                };
-
-                await Task.WhenAll(tasks);
+                if (res?.GetS("Result") != "Success") await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $"DB write failed. Response: {res?.GetS("") ?? "null"}\r\nBody: {request}");
+                else result = Jw.Serialize(new { Result = "Success" });
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"Tasks failed. {ex.UnwrapForLog()}\r\nBody: {request}");
+                await _fw.Error($"{_logCtx}.{nameof(SaveEmailEvent)}", $@"DB write failed {e.UnwrapForLog()}\r\nBody: {request}");
             }
 
-            return result.GetS("");
+            return result;
         }
     }
 }

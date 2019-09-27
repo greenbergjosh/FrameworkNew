@@ -71,7 +71,7 @@ namespace Utility
                     //await input.CopyToAsync(process.StandardInput.BaseStream);
                     input.CopyTo(process.StandardInput.BaseStream);
                     process.StandardInput.BaseStream.Close();
-                }                
+                }
 
                 await Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext: false);
                 return process.ExitCode;

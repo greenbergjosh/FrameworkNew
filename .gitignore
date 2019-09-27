@@ -262,3 +262,5 @@ __pycache__/
 
 #MacOS File System
 .DS_Store
+
+*/FrameworkStartupError-*

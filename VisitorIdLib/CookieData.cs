@@ -6,6 +6,7 @@ using Jw = Utility.JsonWrapper;
 using System.Threading.Tasks;
 using Utility.EDW;
 using Utility.EDW.Reporting;
+using System.Linq;
 
 namespace VisitorIdLib
 {
@@ -14,19 +15,9 @@ namespace VisitorIdLib
         public string md5;
         public string em;
         public Guid sid;
-
-        [JsonProperty("lv")]
-        public string LastVisit
-        {
-            get
-            {
-                if (this.DomainVisit == null) return "";
-                if (this.DomainVisit.VisitDateTime == DateTime.MinValue) return "";
-                return this.DomainVisit.VisitDateTime.ToString();
-            }
-        }
-
         public string version;
+        public string md5pid;
+        public string md5date;
         public Dictionary<string, DomainVisit> Domains = new Dictionary<string, DomainVisit>();
         public Dictionary<string, DateTime> ProviderLastSelectTime = new Dictionary<string, DateTime>();
 
@@ -47,6 +38,9 @@ namespace VisitorIdLib
             }
 
         }
+
+        [JsonIgnore]
+        public DateTime LastDomainVisitDate;
 
         public CookieData() { }
 
@@ -82,13 +76,12 @@ namespace VisitorIdLib
 
             // Cookie exists in some form
             CookieData deserialized = JsonConvert.DeserializeObject<CookieData>(cookieAsString);
+            LastDomainVisitDate = deserialized.Domains.Values.Max(v => v.VisitDateTime);
 
             // Existing domain, increment stats, or expire
             if (deserialized.Domains.ContainsKey(host))
             {
                 var existingDomainVisit = deserialized.Domains[host];
-                var lastVisitDateTime = existingDomainVisit.PageVisitDateTime;
-                var lastVisitcount = existingDomainVisit.VisitNum;
 
                 // Expire only if we're in the beginning of a run. Wait until
                 // the next visit to do so otherwise, so we don't split our
@@ -134,6 +127,8 @@ namespace VisitorIdLib
             this.PageVisit.VisitNum = this.DomainVisit.VisitNum;
             this.sid = deserialized.sid;
             this.md5 = deserialized.md5;
+            this.md5pid = deserialized.md5pid;
+            this.md5date = deserialized.md5date;
             this.em = deserialized.em;
             this.version = deserialized.version;
             this.RsIdDict = new Dictionary<string, object> {
@@ -142,6 +137,30 @@ namespace VisitorIdLib
                     { typeof(PageVisit).Name, PageVisit.ReportingSequenceId }
             };
 
+        }
+
+        public (Guid IncidentId, Guid Md5Pid, DateTime Md5Date)? CheckForPoisonedMd5 (List<(Guid IncidentId, Guid Md5Pid, DateTime StartDate, DateTime EndDate)> poisonList)
+        {
+            if (DateTime.TryParse(this.md5date, out var Md5DateAsDate) == false ||
+                Guid.TryParse(this.md5pid, out var Md5PidAsGuid) == false )
+            {
+                return null;
+            }
+            foreach (var poisonIncident in poisonList)
+            {
+                if (poisonIncident.Md5Pid == Md5PidAsGuid &&
+                    Md5DateAsDate >= poisonIncident.StartDate &&
+                    Md5DateAsDate <= poisonIncident.EndDate )
+                {
+                    return (poisonIncident.IncidentId, poisonIncident.Md5Pid, Md5Date : Md5DateAsDate);
+                }
+            }
+            return null;
+        }
+
+        public void ClearPoisonedData()
+        {
+            md5 = md5date = md5pid = em = "";
         }
 
         public static (string md5, string em, string sid) Md5EmailSessionIdFromCookie(string cookieString)
@@ -155,16 +174,19 @@ namespace VisitorIdLib
 
         public void AddOrUpdateProviderSelect(string providerId, DateTime responseTime)
         {
-            if (ProviderLastSelectTime.ContainsKey(providerId))
-                ProviderLastSelectTime[providerId] = responseTime;
+            var lcProviderId = providerId.ToLower();
+
+            if (ProviderLastSelectTime.ContainsKey(lcProviderId))
+                ProviderLastSelectTime[lcProviderId] = responseTime;
             else
-                ProviderLastSelectTime.Add(providerId, responseTime);
+                ProviderLastSelectTime.Add(lcProviderId, responseTime);
         }
 
         public DateTime? LastSelectTime(string providerId)
         {
-            return ProviderLastSelectTime.ContainsKey(providerId) ?
-                (DateTime?) ProviderLastSelectTime[providerId] :
+            var lcProviderId = providerId.ToLower();
+            return ProviderLastSelectTime.ContainsKey(lcProviderId) ?
+                (DateTime?) ProviderLastSelectTime[lcProviderId] :
                 null;
         }
 
@@ -186,7 +208,8 @@ namespace VisitorIdLib
             eventList.Add(this.PageVisit.VisitEvent(payload, this.RsIdDict));
             if (DomainVisit.VisitNum == 1) // Every new domain visit has a DomainVisit
             {
-                rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: payload));
+                var domainPL = PL.O(new { LastDomainVisitDate = LastDomainVisitDate == DateTime.MinValue ? null : LastDomainVisitDate.ToString() }).Add(payload); // Date of the last domain visit across all domains
+                rsList.Add(DomainVisit.ReportingSequenceEvent(addlPayLoad: domainPL));
                 eventList.Add(this.DomainVisit.VisitEvent(payload,this.RsIdDict));
             }
             if (VidVisit != null ) // Visitor is new to VID pixel

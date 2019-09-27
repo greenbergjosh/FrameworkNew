@@ -21,8 +21,7 @@ namespace Utility.EDW.Logging
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
             : base(endpointPollingInterval, writeTimeoutMs, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
-                selector, novalid, invalid, unhandled)
-        { }
+                selector, novalid, invalid, unhandled) { }
 
         public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
@@ -57,8 +56,10 @@ namespace Utility.EDW.Logging
             {
                 e = es[i];
                 if (!alreadyChosen.Contains(e) && endpoints[e].Item1) break;
+
                 i = (i + 1) % es.Count;
             }
+
             return e;
         }
 
@@ -66,12 +67,14 @@ namespace Utility.EDW.Logging
 
         public static async Task Failure(object w, string errorFilePath) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Failure::{w}");
 
-        public static async Task Unhandled(object w, string errorFilePath, Exception ex) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.UnwrapForLog() ?? "None provided"}");
+        public static async Task Unhandled(object w, string errorFilePath, Exception ex) =>
+            FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.UnwrapForLog() ?? "None provided"}");
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
         {
             var writeTimeoutSeconds = config.GetS("Config/ErrorWriteTimeout").ParseInt() ?? 0;
-            var errorFilePath = Path.GetFullPath(config.GetS("Config/ErrorFilePath"));
+            var path = config.GetS("Config/ErrorFilePath");
+            var errorFilePath = path.IsNullOrWhitespace() ? null : Path.GetFullPath(path);
 
             return new ErrorSiloLoadBalancedWriter(60,
                 writeTimeoutSeconds,

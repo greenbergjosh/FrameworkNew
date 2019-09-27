@@ -1,5 +1,12 @@
-﻿async function visitorId(url, opaque, future) {
+﻿let lastUrlUsed = null;
+let lastOpaqueUsed = null;
+
+async function visitorId(url, opaque, future) {
+    lastUrlUsed = url;
+    
     opaque = { ...(opaque || {}), qs: encodeURIComponent(window.location.href), slot: '0', page: '0', sd: '', succ: '0' };
+    lastOpaqueUsed = opaque;
+
     await window.genericFetch(url + '?m=Initialize&op=' + base64UrlSafe(JSON.stringify(opaque)),
         { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
         'json', '');
@@ -30,14 +37,16 @@
             } else {
                 sres = res;
             }
-        } catch {
+        } catch(e) {
             providerFailed = true;
         }
 
         opaque = {
             ...opaque, slot: res.slot, page: res.page, sd: res.sid, eml: sres.email,
-            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "3", lv: res.lv, pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
+            md5: sres.md5, e: base64UrlSafe(sres.email || ''), isAsync: res.isAsync, vieps: res.vieps, md5pid: res.md5pid, tjsv: "4", pfail: providerFailed, pfailSlot: res.slot, pfailPage: res.page
         };
+
+        lastOpaqueUsed = opaque;
 
         if (res.config.SaveSession === 'true') {
             res = await window.genericFetch(url + '?m=SaveSession&op=' + base64UrlSafe(JSON.stringify(opaque)),
@@ -49,9 +58,23 @@
 
         opaque.slot++;
         opaque.page++;
+
+        lastOpaqueUsed = opaque;
     }
 }
+
 window[window.visitorIdObject].visitorId = visitorId;
+window[window.visitorIdObject].emailSubmitted = emailSubmitted;
+
+async function emailSubmitted(email, data) {
+    dataSubmitted('EmailSubmitted', { ...{ email: email }, ...data });
+}
+
+async function dataSubmitted(type, data) {
+    res = await window.genericFetch(lastUrlUsed + '?m=dataSubmitted&type=' + base64UrlSafe(type) + '&data=' + base64UrlSafe(JSON.stringify(data)) + '&op=' + base64UrlSafe(JSON.stringify(lastOpaqueUsed)),
+        { method: 'GET', mode: 'cors', credentials: 'include', cache: 'no-cache', redirect: 'follow', referrer: 'no-referrer' },
+        'json', '');
+}
 
 async function handleService(res) {
     let response = await window.genericFetch(res.config.Url, res.config.FetchParms, res.config.FetchType, res.config.ImgFlag);

@@ -17,11 +17,6 @@ namespace UnsubLib.NetworkProviders
         Task<Uri> GetSuppresionLocationUrl(IGenericEntity network, string unsubRelationshipId);
     }
 
-    public class HaltingException : Exception
-    {
-        public HaltingException(string message, Exception e) : base(message, e) { }
-    }
-
     public static class Factory
     {
         public static INetworkProvider GetInstance(FrameworkWrapper fw, IGenericEntity network)
@@ -43,6 +38,7 @@ namespace UnsubLib.NetworkProviders
             {
                 var networkName = network.GetS("Name");
                 var networkId = network.GetS("Id");
+                var dataPath = network.GetS("Credentials/CampaignDataPath");
                 var relationshipPath = network.GetS("Credentials/UnsubRelationshipPath");
                 var campaignIdPath = network.GetS("Credentials/CampaignIdPath");
                 var campaignNamePath = network.GetS("Credentials/CampaignNamePath");
@@ -58,22 +54,28 @@ namespace UnsubLib.NetworkProviders
                     if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
                     var jbody = Jw.TryParseObject(resp.body);
 
-                    if(jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
+                    if (jbody == null) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url} {resp.body}", null);
 
                     await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
                     respBody = resp.body;
-                    
+
                     var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
                         {
                             NetworkId = networkId,
                             PayloadType = "json",
-                            DataPath = "$.data",
+                            DataPath = dataPath,
                             CampaignIdPath = campaignIdPath,
                             NamePath = campaignNamePath,
                             RelationshipPath = relationshipPath
                         }), respBody);
+
+                    if (res == null || res.GetS("result") == "failed")
+                    {
+                        await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{url}::\r\nDB Response:\r\n{res.GetS("")??"[null]"}\r\nApi Response:\r\n{respBody ?? "[null]"}");
+                        return null;
+                    }
 
                     return res;
                 }
@@ -102,9 +104,13 @@ namespace UnsubLib.NetworkProviders
                 {
                     var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
 
-                    if (resp.success == false) throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
-
                     respBody = resp.body;
+                    var rb = Jw.JsonToGenericEntity(respBody);
+
+                    if (rb?.GetS("message") == "Suppresion List Not Found") return null;
+
+                    if (resp.success == false) throw new Exception($"Http request for suppression url failed for {networkName}: {url} {resp.body}", null);
+                    
                     var dlUrl = Jw.JsonToGenericEntity(respBody).GetS(downloadUrlPath);
 
                     return dlUrl.IsNullOrWhitespace() ? null : new Uri(dlUrl);
@@ -171,7 +177,21 @@ namespace UnsubLib.NetworkProviders
 
                     await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
                     campaignXml = await ProtocolClient.HttpPostAsync(apiUrl, parms);
-                    await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
+
+                    // PLEASE WAIT A FEW MINUTES BEFORE NEXT API CALL
+
+                    var xml = new XmlDocument();
+
+                    try
+                    {
+                        xml.LoadXml(campaignXml);
+                        await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
+                    }
+                    catch
+                    {
+                        await _fw.Error(_logMethod, $"Campaign response from {networkName} was invalid xml.\r\nResponse:\r\n{campaignXml}");
+                        return null;
+                    }
 
                     var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         Jw.Json(new
@@ -184,6 +204,12 @@ namespace UnsubLib.NetworkProviders
                             RelationshipPath = "campaignid"
                         }),
                         campaignXml);
+
+                    if (res == null || res.GetS("result") == "failed")
+                    {
+                        await _fw.Error(_logMethod, $"Failed to get {networkName} campaigns {networkId}::{apiKey}::{apiUrl}\r\nDB Response:\r\n{res.GetS("") ?? "[null]"}\r\nApi Response:\r\n{campaignXml ?? "null"}");
+                        return null;
+                    }
 
                     return res;
                 }
@@ -230,7 +256,7 @@ namespace UnsubLib.NetworkProviders
                 }
                 catch (Exception findUnsubException)
                 {
-                    await _fw.Error(_logMethod, $"Exception finding unsub file source fro {networkName} {unsubRelationshipId}: {suppDetails ?? "null"}::{findUnsubException}");
+                    await _fw.Error(_logMethod, $"Exception finding unsub file source from {networkName} {unsubRelationshipId}: {suppDetails ?? "null"}::{findUnsubException}");
                     return null;
                 }
             }

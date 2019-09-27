@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -20,6 +21,8 @@ namespace UnsubJobServer
             _fw.Log(nameof(OnStart), "Service started").Wait();
         }
 
+        public async Task Run(HttpContext context) => await HandleHttpRequest(context);
+
         public async Task HandleHttpRequest(HttpContext context)
         {
             var requestFromPost = "";
@@ -36,7 +39,15 @@ namespace UnsubJobServer
                 switch (dtv.GetS("m"))
                 {
                     case "LoadUnsubFiles":
+#if DEBUG
+                        if (Debugger.IsAttached)
+                        {
+                            await nw.LoadUnsubFiles(dtv);
+                        }
+#else
                         Task.Run(() => nw.LoadUnsubFiles(dtv));
+#endif
+
                         result = JsonWrapper.Json(new { Result = "Success" });
                         break;
                     case "alive":

@@ -16,6 +16,7 @@ namespace Utility.OpgAuth
     public static class Auth
     {
         public const string ConnName = "FW_AuthServer";
+        public const string GOD_USER = "sauron";
         private static string _initError = "Auth not configured";
         private static bool _initialized = false;
         private static FrameworkWrapper _fw = null;
@@ -109,21 +110,14 @@ namespace Utility.OpgAuth
             throw new NotImplementedException();
         }
 
-        public static async Task<string> RegisterUser(string handle, string email, string password, string verificationCode)
+        public static async Task<UserDetails> Login(string username, string password)
         {
             if (!_initialized) throw new Exception(_initError);
 
             throw new NotImplementedException();
         }
 
-        public static async Task<string> Login(string username, string password)
-        {
-            if (!_initialized) throw new Exception(_initError);
-
-            throw new NotImplementedException();
-        }
-
-        public static async Task<string> Login(string ssoKey, IGenericEntity payload)
+        public static async Task<UserDetails> Login(string ssoKey, IGenericEntity payload, Func<UserDetails, bool> registrationValidation = null)
         {
             if (!_initialized) throw new Exception(_initError);
 
@@ -133,54 +127,57 @@ namespace Utility.OpgAuth
 
             var userDetails = await platform.GetUserDetails(payload);
 
-            if (userDetails.Email?.IsNullOrWhitespace() != false) throw new AuthException("Failed to retrieve email from SSO");
+            var res = await Data.CallFn(ConnName, "SsoLogin", Jw.Serialize(new { ssoId = userDetails.Id, p = platform.PlatformType, token_duration_h = "24" }));
 
-            var res = await Data.CallFn(ConnName, "SsoLogin", Jw.Serialize(new { e = userDetails.Email, p = platform.PlatformType }));
-            var err = res.GetS("err");
+            if (res == null || res.GetS("") == null ||  !res.GetS("err").IsNullOrWhitespace() ) throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
 
-            if (!err.IsNullOrWhitespace()) throw new AuthException($"SSO login failed: Platform: {platform.PlatformType} Payload: {payload} Error: {err}");
 
-            var token = res.GetS("t");
+            if (!res.GetS("t").IsNullOrWhitespace())
+            {
+                return new UserDetails(loginToken: res.GetS("t"), name: res.GetS("name"), email: res.GetS("primaryemail"), phone: "", imageUrl: res.GetS("image"), id: null, raw: res.GetS(""));
+            }
+            else if (!res.GetS("uid").IsNullOrWhitespace())
+            {
+                throw new AuthException($"SSO login failed: Unexpected error condition: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
+            }
 
-            if (!token.IsNullOrWhitespace()) return token;
+            if (userDetails.Name.IsNullOrWhitespace()) throw new AuthException("Failed to retrieve name from SSO");
 
-            if (userDetails.Name?.IsNullOrWhitespace() != false) throw new AuthException("Failed to retrieve name from SSO");
+            if (userDetails.Email.IsNullOrWhitespace()) throw new AuthException("Failed to retrieve email from SSO");
 
+            if (registrationValidation == null || !registrationValidation(userDetails)) throw new AuthException($"SSO login failed {nameof(registrationValidation)}: Platform: {platform.PlatformType} Payload: {payload} Result: {res?.GetS("") ?? "[null]"}");
+
+            return await RegisterSsoUser(platform, userDetails, payload);
+        }
+
+        private static async Task<UserDetails> RegisterSsoUser(Platform platform, UserDetails userDetails, IGenericEntity loginPayload)
+        {
             var handle = ToCamelCase(userDetails.Name).IfNullOrWhitespace(userDetails.Email.Split('@').First());
             var altHandles = GenerateAltHandles(handle, new (int digits, int count)[] { (1, -1), (2, -1), (3, 100), (4, 100), (5, 100) });
             var sourceId = Guid.NewGuid().ToString();
             var saltHash = Random.GenerateRandomString(32, 32, Random.hex);
-            var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(Jw.Serialize(new { payload, ssoKey, userDetails })));
+            var initHash = Hashing.ByteArrayToString(Hashing.CalculateSHA1Hash(Jw.Serialize(new { loginPayload, platform.PlatformType, userDetails })));
 
-            payload.Set("platform", platform.PlatformType);
+            loginPayload.Set("platform", platform.PlatformType);
 
-            res = await Data.CallFn(ConnName, "RegisterSsoUser", Jw.Serialize(userDetails), Jw.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = JToken.Parse(payload.GetS("")) }));
-            err = res.GetS("err");
+            try
+            {
+                var res = await Data.CallFn(ConnName, "RegisterSsoUser", Jw.Serialize(userDetails), Jw.Serialize(new { handle, altHandles, sourceId, saltHash, initHash, sso = JToken.Parse(loginPayload.GetS("")) }));
+                if (res.GetS("t").IsNullOrWhitespace()) throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}\n\nResult: {res?.GetS("") ?? "[null]"}");
 
-            if (!err.IsNullOrWhitespace()) throw new AuthException($"SSO registration failed: Platform: {platform.PlatformType} Payload: {payload} Error: {err}");
-
-            token = res.GetS("t");
-
-            if (token.IsNullOrWhitespace()) throw new AuthException($"Unhandled exception in SSO login: {platform.PlatformType} Payload: {payload}");
-
-            return token;
+                return new UserDetails(loginToken: res.GetS("t"), name: res.GetS("name"), email: res.GetS("primaryemail"), phone: "", imageUrl: res.GetS("image"), id: null, raw: res.GetS(""));
+            }
+            catch (Exception e)
+            {
+                throw new AuthException($"Unhandled exception in SSO registration:\n\n{platform.PlatformType}\n\nPayload: {loginPayload}", e);
+            }
         }
 
-        public static async Task<string> Login(IGenericEntity payload)
+        public static async Task<string> RegisterUser(string handle, string email, string password, string verificationCode)
         {
-            var sso = payload.GetS("sso");
+            if (!_initialized) throw new Exception(_initError);
 
-            if (sso.IsNullOrWhitespace())
-            {
-                var user = payload.GetS("u");
-                var password = payload.GetS("p");
-
-                if (user.IsNullOrWhitespace() || password.IsNullOrWhitespace()) throw new AuthFrameworkNotFoundException($"Login method not found: {payload.GetS("")}");
-
-                return await Login(user, password);
-            }
-
-            return await Login(sso, payload);
+            throw new NotImplementedException();
         }
 
         public static async Task<IGenericEntity> GetTokenUserDetails(string token)
@@ -226,6 +223,8 @@ namespace Utility.OpgAuth
             var err = res.GetS("err");
 
             if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user permission details: Token: {token} Securable: {securable} Error: {err}");
+
+            if (res.GetB(GOD_USER)) return true;
 
             var steps = securable.Split('.');
 
@@ -293,7 +292,7 @@ namespace Utility.OpgAuth
             });
         }
 
-        private static IGenericEntity GetConfig(bool throwOnNull = true)
+        internal static IGenericEntity GetConfig(bool throwOnNull = true)
         {
             var conf = _fw?.StartupConfiguration.GetE("Config/OpgAuth");
 
