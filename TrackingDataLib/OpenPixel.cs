@@ -29,7 +29,7 @@ namespace TrackingDataLib
                 await Cache.Set(rsIds, GenericEntityJson.CreateFromObject(new
                 {
                     openTimestamp = timestamp
-                }));
+                }), TimeSpan.FromMinutes(10));
 
                 var payload = PL.O(new
                 {

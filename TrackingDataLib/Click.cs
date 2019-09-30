@@ -56,8 +56,8 @@ namespace TrackingDataLib
                     });
                 }
 
-                await Cache.Set(linkoutToken, context);
-                await Cache.Set(rsIds, context);
+                await Cache.Set(linkoutToken, context, TimeSpan.FromDays(2));
+                await Cache.Set(rsIds, context, TimeSpan.FromDays(2));
 
                 var payload = PL.O(new
                 {
