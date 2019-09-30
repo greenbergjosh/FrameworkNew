@@ -59,18 +59,18 @@ namespace TrackingDataLib
             return TryGet(key);
         }
 
-        internal static Task Set(string key, IGenericEntity value) => _cache.SetStringAsync(key, value.GetS(""));
+        internal static Task Set(string key, IGenericEntity value, TimeSpan? slidingExpiration) => _cache.SetStringAsync(key, value.GetS(""), new DistributedCacheEntryOptions() { SlidingExpiration = slidingExpiration });
 
-        internal static Task Set(Dictionary<string, object> rsIds, IGenericEntity value)
+        internal static Task Set(Dictionary<string, object> rsIds, IGenericEntity value, TimeSpan? slidingExpiration)
         {
             var key = string.Join(',', rsIds.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
-            return Set(key, value);
+            return Set(key, value, slidingExpiration);
         }
 
-        internal static Task Set(Guid guid, IGenericEntity value)
+        internal static Task Set(Guid guid, IGenericEntity value, TimeSpan? slidingExpiration)
         {
             var key = guid.ToString();
-            return Set(key, value);
+            return Set(key, value, slidingExpiration);
         }
     }
 }

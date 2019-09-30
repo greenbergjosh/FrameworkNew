@@ -49,7 +49,7 @@ namespace TrackingDataLib
                 await Task.WhenAll(context.Response.WriteAsync(ex.Message), LogError(ex.Message));
 #else
                 await LogError(ex.Message);
-                await Common.DropPixel();
+                await Common.WritePixel(context, _framework);
 #endif
             }
         }
