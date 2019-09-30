@@ -9,6 +9,27 @@ using Port25Recipient = port25.pmta.api.submitter.Recipient;
 
 namespace Utility.Mta.Pmta
 {
+
+    /*
+     * try
+            {
+                const string body =
+                    @"<html>
+    <div>Do not be alarmed, this is only a test</div>
+</html>";
+                var fw = new FrameworkWrapper();
+                var mta = new PmtaLibMailService(fw, "Config/QA");
+                var pkg = new MailPackage(new Sender("OPG Alerts", "marco", "onpoint-delivery.com"), "abec@onpointglobal.com", $"j-001-{Random.GenerateRandomString(3, 6, Random.AsciiChars)}",
+                    "PMTA Test", body, null);
+
+                await mta.Send(pkg,"sandboxmta");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+     */
+
     public class PmtaLibMailService : MailService
     {
         private readonly bool _enableStatistics;

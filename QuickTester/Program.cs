@@ -17,7 +17,8 @@ namespace QuickTester
         // If you're looking for something that was in here before, I moved everything into individual static classes in the project. Sorry for the convenience. - Alberto
         private static async Task Main(string[] _args)
         {
-            try
+
+           try
             {
                 const string body =
                     @"<html>
