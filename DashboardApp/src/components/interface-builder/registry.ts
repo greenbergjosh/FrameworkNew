@@ -1,38 +1,39 @@
 import React from "react"
 import { BaseInterfaceComponent } from "./components/base/BaseInterfaceComponent"
-import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
+import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
 import { CardInterfaceComponent } from "./components/display/card/CardInterfaceComponent"
-import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
-import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
 import { CollapseInterfaceComponent } from "./components/display/collapse/CollapseInterfaceComponent"
 import { ColumnInterfaceComponent } from "./components/display/column/ColumnInterfaceComponent"
+import { DividerInterfaceComponent } from "./components/display/divider/DividerInterfaceComponent"
+import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
+import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
+import { ProgressInterfaceComponent } from "./components/display/progress/ProgressInterfaceComponent"
+import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
+import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
+import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
+import { WizardInterfaceComponent } from "./components/display/wizard/WizardInterfaceComponent"
+import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
+import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { DataInputInterfaceComponent } from "./components/form/data-input/DataInputInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
-import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
-import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
+import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
 import { FormInterfaceComponent } from "./components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "./components/form/input/InputInterfaceComponent"
-import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
 import { NumberInputInterfaceComponent } from "./components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "./components/form/number-range/NumberRangeInterfaceComponent"
 import { PasswordInterfaceComponent } from "./components/form/password/PasswordInterfaceComponent"
-import { ProgressInterfaceComponent } from "./components/display/progress/ProgressInterfaceComponent"
-import { QueryInterfaceComponent } from "./components/special/query/QueryInterfaceComponent"
-import { RemoteComponentInterfaceComponent } from "./components/special/remote-component/RemoteComponentInterfaceComponent"
 import { RichTextEditorInterfaceComponent } from "./components/form/rich-text-editor/RichTextEditorInterfaceComponent"
-import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { SelectInterfaceComponent } from "./components/form/select/SelectInterfaceComponent"
-import { SlotConfigInterfaceComponent } from "./components/custom/slot-config/SlotConfigInterfaceComponent"
-import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
-import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/form/tags/TagsInterfaceComponent"
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { TimeRangeInterfaceComponent } from "./components/form/time-range/TimeRangeInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
 import { UploadInterfaceComponent } from "./components/form/upload/UploadInterfaceComponent"
+import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
+import { QueryInterfaceComponent } from "./components/special/query/QueryInterfaceComponent"
+import { RemoteComponentInterfaceComponent } from "./components/special/remote-component/RemoteComponentInterfaceComponent"
 import { UserInterfaceInterfaceComponent } from "./components/special/user-interface/UserInterfaceInterfaceComponent"
-import { WizardInterfaceComponent } from "./components/display/wizard/WizardInterfaceComponent"
 
 export interface ComponentRegistry {
   cache: ComponentRegistryCache
@@ -56,6 +57,7 @@ export const registry: ComponentRegistry = {
     "data-map": DataMapInterfaceComponent,
     date: DateInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
+    divider: DividerInterfaceComponent,
     "filtered-menu": FilteredMenuInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,

@@ -1,18 +1,26 @@
 import { Progress } from "antd"
+import { ProgressProps, ProgressSize } from "antd/lib/progress/progress"
+import { get } from "lodash/fp"
 import React from "react"
-import { DataPathContext } from "../../../../DataPathContext"
-import { ComponentRenderer } from "../../../ComponentRenderer"
+import { TSEnum } from "../../../../../@types/ts-enum"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { progressManageForm } from "./progress-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
-  ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
-import { get } from "lodash/fp"
 
-enum STATUS { success = "success", exception = "exception", normal = "normal", active = "active" }
-enum SIZE { default = "default", small = "small" }
+const STATUS: TSEnum<ProgressProps["status"]> = {
+  success: "success",
+  exception: "exception",
+  normal: "normal",
+  active: "active",
+}
+
+const SIZE: TSEnum<ProgressSize> = {
+  default: "default",
+  small: "small",
+}
 
 export interface ProgressInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "progress"
@@ -32,7 +40,9 @@ export interface ProgressInterfaceComponentProps extends ComponentDefinitionName
   width?: number
 }
 
-export class ProgressInterfaceComponent extends BaseInterfaceComponent<ProgressInterfaceComponentProps> {
+export class ProgressInterfaceComponent extends BaseInterfaceComponent<
+  ProgressInterfaceComponentProps
+> {
   static defaultProps = {
     defaultValue: 0,
   }
@@ -40,7 +50,7 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<ProgressI
   static getLayoutDefinition() {
     return {
       category: "Display",
-      name: "input",
+      name: "progress",
       title: "Progress",
       icon: "loading-3-quarters",
       componentDefinition: {
@@ -80,14 +90,14 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<ProgressI
     if (indicateStatus) {
       switch (statusValue) {
         case statusSuccess:
-          status = STATUS.success;
-          break;
+          status = STATUS.success
+          break
         case statusException:
-          status = STATUS.exception;
-          break;
+          status = STATUS.exception
+          break
         case statusActive:
-          status = STATUS.active;
-          break;
+          status = STATUS.active
+          break
         default:
           status = STATUS.normal
       }
@@ -101,18 +111,16 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<ProgressI
     }
 
     return (
-      <DataPathContext path="tabs">
-        <Progress
-          format={format}
-          percent={percent}
-          showInfo={!hideInfo}
-          size={smallLine ? SIZE.small : SIZE.default}
-          status={status}
-          successPercent={successPercent}
-          type={type}
-          width={width}
-        />
-      </DataPathContext>
+      <Progress
+        format={format}
+        percent={percent}
+        showInfo={!hideInfo}
+        size={smallLine ? SIZE.small : SIZE.default}
+        status={status}
+        successPercent={successPercent}
+        type={type}
+        width={width}
+      />
     )
   }
 }

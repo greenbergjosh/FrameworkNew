@@ -1,4 +1,4 @@
-import { Select, Icon } from "antd"
+import { Icon, Select } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { reporter } from "io-ts-reporters"
@@ -14,14 +14,20 @@ import { JSONRecord } from "../../../../../../data/JSON"
 import { QueryConfigCodec } from "../../../../../../data/Report"
 import { cheapHash } from "../../../../../../lib/json"
 import { UserInterfaceContext } from "../../../../UserInterfaceContextManager"
-// import { selectManageForm } from "../../select/select-manage-form"
 import { BaseInterfaceComponent } from "../../../base/BaseInterfaceComponent"
 import { SelectInterfaceComponentState } from "./interfaces"
-import { modes, modeType, RemoteDataHandlerType, SelectInterfaceComponentProps } from "./types"
+import {
+  modes,
+  modeType,
+  RemoteDataHandlerType,
+  SelectInterfaceComponentProps
+  } from "./types"
+// import { selectManageForm } from "../../select/select-manage-form"
 
-
-export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInterfaceComponentProps,
-  SelectInterfaceComponentState> {
+export class SelectInterfaceComponent extends BaseInterfaceComponent<
+  SelectInterfaceComponentProps,
+  SelectInterfaceComponentState
+> {
   static defaultProps = {
     allowClear: true,
     createNewLabel: "Create New...",
@@ -65,7 +71,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
 
   static getDerivedStateFromProps(
     props: SelectInterfaceComponentProps,
-    state: SelectInterfaceComponentState,
+    state: SelectInterfaceComponentState
   ) {
     // console.log(
     //   "SelectInterfaceComponent.getDerivedStateFromProps",
@@ -85,8 +91,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
     const newValue =
       valuePrefix || valueSuffix
         ? Array.isArray(value)
-        ? value.map((v) => `${valuePrefix}${v}${valueSuffix}`)
-        : `${valuePrefix}${value}${valueSuffix}`
+          ? value.map((v) => `${valuePrefix}${v}${valueSuffix}`)
+          : `${valuePrefix}${value}${valueSuffix}`
         : value
 
     onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
@@ -163,24 +169,24 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
 
           const predicate = remoteDataFilter
             ? (config: PersistedConfig) => {
-              const parsedConfig = {
-                ...config,
-                config: config.config
-                  .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
-                  .toNullable(),
-              }
+                const parsedConfig = {
+                  ...config,
+                  config: config.config
+                    .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
+                    .toNullable(),
+                }
 
-              const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
-              return remoteConfigType
-                ? (config.type === remoteConfigType ||
-                config.type === remoteConfigTypeParentName) &&
-                dataFilterResult
-                : dataFilterResult
-            }
+                const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
+                return remoteConfigType
+                  ? (config.type === remoteConfigType ||
+                      config.type === remoteConfigTypeParentName) &&
+                      dataFilterResult
+                  : dataFilterResult
+              }
             : remoteConfigType
-              ? (config: PersistedConfig) =>
+            ? (config: PersistedConfig) =>
                 config.type === remoteConfigType || config.type === remoteConfigTypeParentName
-              : (config: PersistedConfig) => true
+            : (config: PersistedConfig) => true
 
           const options = loadByFilter(predicate).map(({ id, name }) => ({
             label: name,
@@ -196,14 +202,14 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
             const queryGlobalConfig = loadById(remoteQuery)
             if (queryGlobalConfig) {
               const queryConfig = QueryConfigCodec.decode(
-                JSON5.parse(queryGlobalConfig.config.getOrElse("")),
+                JSON5.parse(queryGlobalConfig.config.getOrElse(""))
               )
               queryConfig.fold(
                 (errors) => {
                   console.error(
                     "SelectInterfaceComponent.render",
                     "Invalid Query",
-                    reporter(queryConfig),
+                    reporter(queryConfig)
                   )
                 },
                 Right((queryConfig) => {
@@ -217,7 +223,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
                     (acc, { name, defaultValue }) => (
                       (acc[name] = defaultValue && defaultValue.toNullable()), acc
                     ),
-                    {} as JSONObject,
+                    {} as JSONObject
                   )
                   const queryResultURI = cheapHash(queryConfig.query, parameterValues)
 
@@ -240,7 +246,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
                           console.error(
                             "SelectInterfaceComponent.render",
                             "Set error loading state",
-                            e,
+                            e
                           )
                           this.setState({ loadStatus: "error", loadError: e.message })
                         })
@@ -248,9 +254,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
                     (resultValues) => {
                       // console.log("SelectInterfaceComponent.render", "Loaded, no remote")
                       this.updateOptionsFromValues(resultValues)
-                    },
+                    }
                   )
-                }),
+                })
               )
             }
           }
@@ -262,7 +268,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
             if (keyValuePairGlobalConfig) {
               const keyValuePairConfig = tryCatch(
                 () =>
-                  JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig,
+                  JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig
               ).toNullable()
 
               if (keyValuePairConfig) {
@@ -291,7 +297,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
 
   componentDidUpdate(
     prevProps: SelectInterfaceComponentProps,
-    prevState: SelectInterfaceComponentState,
+    prevState: SelectInterfaceComponentState
   ) {
     // console.log("SelectInterfaceComponent.componentDidUpdate", {
     //   was: prevState.loadStatus,
@@ -336,8 +342,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
       rawValue &&
       (Array.isArray(rawValue)
         ? rawValue.map(
-          (value) => cleanText(value, valuePrefix, valueSuffix), //.toLowerCase()
-        )
+            (value) => cleanText(value, valuePrefix, valueSuffix) //.toLowerCase()
+          )
         : cleanText(rawValue, valuePrefix, valueSuffix)) //.toLowerCase()
 
     // console.log("SelectInterfaceComponent.getCleanValue", { anyCaseResult, options })
@@ -349,25 +355,24 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
             ({ value }) =>
               value === anyCaseResult ||
               (typeof value === "string" && value.toLowerCase()) ===
-              (anyCaseResult && anyCaseResult.toLowerCase()),
+                (anyCaseResult && anyCaseResult.toLowerCase())
           ) || { value: anyCaseResult }
         ).value
       )
     }
     return options
       ? anyCaseResult.map(
-        (resultItem) =>
-          (
-            options.find(
-              ({ value }) =>
-                value === resultItem ||
-                (typeof value === "string" && value.toLowerCase()) ===
-                (resultItem && resultItem.toLowerCase()),
-            ) || { value: resultItem }
-          ).value,
-      )
+          (resultItem) =>
+            (
+              options.find(
+                ({ value }) =>
+                  value === resultItem ||
+                  (typeof value === "string" && value.toLowerCase()) ===
+                    (resultItem && resultItem.toLowerCase())
+              ) || { value: resultItem }
+            ).value
+        )
       : anyCaseResult
-
   }
 
   render(): JSX.Element {
@@ -395,6 +400,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
         defaultValue={value}
         disabled={disabled}
         filterOption={(input: any, option: any) =>
+          // When switching about the internals of component during configuration time, the type of children can change
+          typeof option.props.children.toLowerCase === "function" &&
           option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
         }
         loading={loadStatus === "loading"}
@@ -405,14 +412,14 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectInter
         showSearch>
         {options.map((option) => (
           <Select.Option key={`${option.value}`} value={option.value}>
-            {typeof option.icon !== "undefined" ?
-              <Icon type={option.icon} style={{ marginRight: "8px" }}/>
-              : null}
+            {typeof option.icon !== "undefined" ? (
+              <Icon type={option.icon} style={{ marginRight: "8px" }} />
+            ) : null}
             {option.label}
           </Select.Option>
         ))}
         {allowCreateNew && (
-          <Select.Option key={`create_new_entry`} value={"create_new"}>
+          <Select.Option key="create_new_entry" value="create_new">
             {createNewLabel}
           </Select.Option>
         )}
