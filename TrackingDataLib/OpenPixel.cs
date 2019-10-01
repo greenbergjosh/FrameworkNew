@@ -14,6 +14,7 @@ namespace TrackingDataLib
         {
             var timestamp = DateTime.UtcNow;
 
+            // We do this in the HTTP thread because it could throw if input is not correct
             var rsIds = await Common.GetRsIds(parameters);
 
             _ = Task.Run(async () => await BackgroundProcess(timestamp, rsIds, fw));
@@ -23,18 +24,24 @@ namespace TrackingDataLib
 
         private static async Task BackgroundProcess(DateTime timestamp, Dictionary<string, object> rsIds, FrameworkWrapper fw)
         {
-            var key = string.Join(',', rsIds.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
-            await Cache.Set(key, new
+            try
             {
-                timestamp
-            });
+                await Cache.Set(rsIds, GenericEntityJson.CreateFromObject(new
+                {
+                    openTimestamp = timestamp
+                }), TimeSpan.FromMinutes(10));
 
-            var payload = PL.O(new
+                var payload = PL.O(new
+                {
+                    et = "OpenPixel"
+                });
+
+                await Common.DropEvent(payload, rsIds, timestamp, fw);
+            }
+            catch (Exception ex)
             {
-                et = "OpenPixel"
-            });
-
-            await Common.DropEvent(payload, rsIds, timestamp, fw);
+                await fw.Error("OpenPixel.Process", $"Exception: {ex}");
+            }
         }
     }
 }
