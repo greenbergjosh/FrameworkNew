@@ -14,7 +14,14 @@ var impressionEvent = {
   },
   data: {
     event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
-    page: '{page}'
+    page: '{page}',
+    pageOrder: '{pageOrder}',
+    pageCount: '{pageCount}',
+    groupPageCount: '{groupPageCount}',
+    surveyPageCount: '{surveyPageCount}',
+    questionPageCount: '{questionPageCount}',
+    survey: '{survey}',
+    question: '{question}'
   }
 };
 
@@ -24,9 +31,10 @@ var reportSurvey = function(page, id) {
   edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.session.page = page;
     cf.ss.session.pageCount = '0+';
-    cf.ss.grp1.pageCount = '0+';
+    cf.ss.grp1.groupPageCount = '0+';
     cf.ss[id] = {
-      pageCount: '0+'
+      surveyPageCount: '0+',
+      survey: id
     };
   });
 };
@@ -70,16 +78,25 @@ var reportQuestion = function(page, id) {
     },
     data: {
       event: '4F28AF59-CAEE-4A50-827B-2125DBE163AF',
+      page: '{page}',
+      pageOrder: '{pageOrder}',
+      pageCount: '{pageCount}',
+      groupPageCount: '{groupPageCount}',
+      surveyPageCount: '{surveyPageCount}',
+      questionPageCount: '{questionPageCount}',
+      survey: '{survey}',
+      question: '{question}',
+      answer: '{answer}'
     }
   }]);
 
   edw.reportToEdw(questionConfig, function(cf) {
     cf.ss.session.page = page;
     cf.ss.session.pageCount = '0+';
-    cf.ss.grp1.pageCount = '0+';
+    cf.ss.grp1.groupPageCount = '0+';
     cf.ss[survey] = {};
-    cf.ss['question' + id].pageCount = '0+'
-    cf.ss['question' + id].id = id;
+    cf.ss['question' + id].questionPageCount = '0+'
+    cf.ss['question' + id].question = id;
   });
 };
 

@@ -30,7 +30,6 @@ namespace EdwServiceLib
 
         private const string SessionId = "sessionId";
         private const string Session = "session";
-        private const string EndSession = "endSession";
         private const string Event = "event";
         private const string Name = "name";
         private const string Data = "data";
@@ -101,7 +100,7 @@ namespace EdwServiceLib
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
-            var (sessionId, token) = GetOrCreateSessionId(context, json);
+            var session = GetOrCreateSession(context, json);
 
             if (json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
             {
@@ -120,14 +119,14 @@ namespace EdwServiceLib
                         JObject prefixConfig = null;
                         if (ssConfig.TryGetValue(KeyPrefix, out var keyPrefix))
                             prefixConfig = JObject.FromObject(new Dictionary<string, object>() { [KeyPrefix] = keyPrefix });
-                        var (name, _) = await GetOrCreateStackFrame(sessionId, token, key, prefixConfig, stackFrames);
-                        var ssResult = await SetStackFrame(sessionId, token, name, ssConfig);
+                        var (name, _) = await GetOrCreateStackFrame(session, key, prefixConfig, stackFrames);
+                        var ssResult = await SetStackFrame(session, name, ssConfig);
                         stackFrames.Add(name);
                         ssResults[name] = ssResult.Data;
                     }
                 }
 
-                var stack = BuildStack(sessionId, stackFrames);
+                var stack = BuildStack(session, stackFrames);
 
                 if (obj.TryGetValue(Rs, out var rsList) && rsList.Type == JTokenType.Object)
                 {
@@ -139,7 +138,7 @@ namespace EdwServiceLib
                         var rsConfig = (JObject)value;
                         var type = rsConfig[Type].ToString();
                         var configId = Guid.Parse(rsConfig[ConfigId].ToString());
-                        var rsResult = await GetOrCreateRs(sessionId, token, stack, stackFrames, key, type, configId, rsConfig[Data]);
+                        var rsResult = await GetOrCreateRs(session, stack, key, type, configId, rsConfig[Data]);
                         rsResults[key] = rsResult.Data;
                     }
                 }
@@ -169,7 +168,7 @@ namespace EdwServiceLib
                     if (evObj.TryGetValue(Duplicate, out var rawDuplicate) && rawDuplicate.Type == JTokenType.Object)
                         duplicate = (JObject)rawDuplicate;
 
-                    var evResult = await PublishEvent(sessionId, token, stack, stackFrames, evKey.ToObject<string[]>(), 
+                    var evResult = await PublishEvent(session, stack, evKey.ToObject<string[]>(), 
                         evData, addToWhep, includeWhep, duplicate);
                     if (evResult != null)
                         evResults.Add(evResult);
@@ -182,23 +181,23 @@ namespace EdwServiceLib
             return null;
         }
 
-        private (Guid sessionid, CancellationToken cancellationToken) GetOrCreateSessionId(HttpContext context, JObject json)
+        private Session GetOrCreateSession(HttpContext context, JObject json)
         {
             if (context.Request.Cookies.TryGetValue(SessionId, out var cookieSessionId))
             {
                 var sid = Guid.Parse(cookieSessionId);
-                return (sid, ExtendSession(sid));
+                return new Session(_cache, sid, ExtendSession(sid));
             }
             if (json.TryGetValue(SessionId, out var raw) &&
                 Guid.TryParse(raw?.ToString(), out var sessionId))
             {
                 context.Response.Cookies.Append(SessionId, sessionId.ToString());
-                return (sessionId, ExtendSession(sessionId));
+                return new Session(_cache, sessionId, ExtendSession(sessionId));
             }
 
             var newSessionId = Guid.NewGuid();
             context.Response.Cookies.Append(SessionId, newSessionId.ToString());
-            return (newSessionId, ExtendSession(newSessionId));
+            return new Session(_cache, newSessionId, ExtendSession(newSessionId));
         }
 
         private CancellationToken ExtendSession(Guid sessionId)
@@ -213,17 +212,15 @@ namespace EdwServiceLib
                          return;
 
                      Debug.WriteLine(key);
-                     var data = new Dictionary<string, object> { [Event] = SessionTerminateEventId };
 
+                     var session = new Session(_cache, sessionId, ctsKey.Token);
                      var stackFrames = new[] { Session };
-                     var stack = BuildStack(sessionId, stackFrames);
+                     var stack = BuildStack(session, stackFrames);
+
                      if (stack != null && stack.Any())
                      {
-                         /*await GetOrCreateRs(sessionId, ctsKey.Token, stack, stackFrames, EndSession, 
-                             EdwBulkEvent.EdwType.Immediate.ToString(), SessionTerminateEventId, new JObject());*/
-
-                         await PublishEvent(Guid.Parse(key.ToString()), cts.Token, stack,
-                             stackFrames, new[] { Event }, JObject.FromObject(data), false, false, null);
+                         var data = new Dictionary<string, object> { [Event] = SessionTerminateEventId };
+                         await PublishEvent(session, stack, new[] { Event }, JObject.FromObject(data), false, false, null);
                      }
 
                      cts.Dispose();
@@ -241,7 +238,7 @@ namespace EdwServiceLib
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
-            var (sessionId, token) = GetOrCreateSessionId(context, json);
+            var session = GetOrCreateSession(context, json);
             if (json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(ConfigId, out var rawConfigId) &&
                 json.TryGetValue(Type, out var type) &&
@@ -250,13 +247,11 @@ namespace EdwServiceLib
             {
                 var configId = Guid.Parse(rawConfigId.ToString());
                 var stackFrames = rawStackFrames.ToObject<string[]>();
-                var stack = BuildStack(sessionId, stackFrames);
+                var stack = BuildStack(session, stackFrames);
 
                 var result = await GetOrCreateRs(
-                    sessionId,
-                    token,
+                    session,
                     stack,
-                    stackFrames,
                     name.ToString(), 
                     type.ToString(), 
                     configId, 
@@ -270,12 +265,11 @@ namespace EdwServiceLib
         }
 
         private async Task<(string Json, JToken Data)> GetOrCreateRs(
-            Guid sessionId, CancellationToken token,
-            IReadOnlyCollection<IDictionary<string, JToken>> stack, IEnumerable<string> stackFrames,
+            Session session, Stack stack,
             string name, string type, Guid configId, JToken data)
         {
-            var rsListKey = $"{sessionId}:{Rs}";
-            var rsKey = $"{sessionId}:{Rs}:{name}";
+            var rsListKey = $"{session.Id}:{Rs}";
+            var rsKey = $"{session.Id}:{Rs}:{name}";
 
             if (_cache.TryGetValue<string>(rsKey, out var oldData))
             {
@@ -301,7 +295,7 @@ namespace EdwServiceLib
                     return (oldData, oldObj);
             }
 
-            TransformData(sessionId, token, data, stack, stackFrames.LastOrDefault());
+            TransformData(session, data, stack, stack.Select(pair => pair.Key).LastOrDefault());
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
@@ -311,14 +305,7 @@ namespace EdwServiceLib
 
             //await _fw.EdwWriter.Write(be);
 
-            var rsList = _cache.GetOrCreate(rsListKey, e => {
-                e.AddExpirationToken(new CancellationChangeToken(token));
-                e.RegisterPostEvictionCallback((key, value, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(key);
-                });
-                return new List<(string, Guid)>();
-            });
+            var rsList = session.GetOrCreate(rsListKey, () => new List<(string, Guid)>());
             if (rsList.All(tuple => tuple.Item1 != name))
                 rsList.Add((name, rsid));
 
@@ -327,36 +314,31 @@ namespace EdwServiceLib
                 [Data] = data,
                 [Type] = type
             });
-            _cache.Set(rsKey, result, new MemoryCacheEntryOptions()
-                .AddExpirationToken(new CancellationChangeToken(token))
-                .RegisterPostEvictionCallback((k, v, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(k);
-                }));
+            session.Set(rsKey, result);
 
             return (result, data);
         }
 
-        private List<IDictionary<string, JToken>> BuildStack(Guid sessionId, IEnumerable<string> stackFrames)
+        private Stack BuildStack(Session session, IEnumerable<string> stackFrames)
         {
-            var stack = new List<IDictionary<string, JToken>>();
+            var stack = new Stack();
             foreach (var stackFrame in stackFrames)
             {
-                if (!_cache.TryGetValue<string>($"{sessionId}:{Sf}:{stackFrame}", out var serializedScope))
+                if (!_cache.TryGetValue<string>($"{session.Id}:{Sf}:{stackFrame}", out var serializedScope))
                     continue;
 
                 var sf = new StackFrameParser(serializedScope);
-                stack.Add(sf.ToDictionary());
+                stack.AddStackFrame(stackFrame, sf.ToDictionary());
             }
             return stack;
         }
 
-        private static List<string> ExtractWhepFromStack(IEnumerable<IDictionary<string, JToken>> stackFrames)
+        private static List<string> ExtractWhepFromStack(Stack stack)
         {
-            return stackFrames
+            return stack
                 .SkipLast(1)
-                .Where(sf => sf.ContainsKey(Whep))
-                .SelectMany(sf => sf[Whep].ToObject<string[]>())
+                .Where(sf => sf.Value.ContainsKey(Whep))
+                .SelectMany(sf => sf.Value[Whep].ToObject<string[]>())
                 .ToList();
         }
 
@@ -374,7 +356,7 @@ namespace EdwServiceLib
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
-            var (sessionId, token) = GetOrCreateSessionId(context, json);
+            var session = GetOrCreateSession(context, json);
             if (json.TryGetValue(Stack, out var rawStackFrames) && rawStackFrames.Type == JTokenType.Array &&
                 json.TryGetValue(Key, out var key) && key.Type == JTokenType.Array &&
                 json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
@@ -393,9 +375,9 @@ namespace EdwServiceLib
                     duplicate = (JObject)rawDuplicate;
 
                 var stackFrames = rawStackFrames.ToObject<string[]>();
-                var stack = BuildStack(sessionId, stackFrames);
+                var stack = BuildStack(session, stackFrames);
 
-                var result = await PublishEvent(sessionId, token, stack, stackFrames, key.ToObject<string[]>(), 
+                var result = await PublishEvent(session, stack, key.ToObject<string[]>(), 
                                                 (JObject)data, addToWhep, includeWhep, duplicate);
                 return JsonWrapper.Serialize(result);
             }
@@ -405,8 +387,8 @@ namespace EdwServiceLib
         }
 
         private async Task<object> PublishEvent(
-            Guid sessionId, CancellationToken token,
-            IReadOnlyList<IDictionary<string, JToken>> stack, IReadOnlyList<string> stackFrames,
+            Session session,
+            Stack stack,
             IEnumerable<string> keyParts, JObject data, 
             bool addToWhep, bool includeWhep, JObject duplicate)
         {
@@ -421,7 +403,7 @@ namespace EdwServiceLib
             }
 
             // Get last stack frame and get/create event dictionary.
-            var stackFrame = stack.Last();
+            var stackFrame = stack.Last().Value;
             JArray evArray;
             if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
                 evArray = (JArray)rawEvArray;
@@ -443,14 +425,10 @@ namespace EdwServiceLib
                     data[s] = value;
             }
 
-            TransformData(sessionId, token, data, stack, stackFrames.Last());
-            var jStack = new JObject();
-            for (var i = 0; i < stackFrames.Count; i++)
-                jStack[stackFrames[i]] = JObject.FromObject(stack[i]);
-            data[Sf] = jStack;
+            TransformData(session, data, stack, stack.Last().Key);
             //data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
 
-            var rsids = GetRsIds(sessionId);
+            var rsids = GetRsIds(session.Id);
             var be = new EdwBulkEvent();
             var eventId = Guid.NewGuid();
             var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
@@ -485,7 +463,7 @@ namespace EdwServiceLib
             be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
             //await _fw.EdwWriter.Write(be);
 
-            await SetStackFrame(sessionId, token, stackFrames.Last(), JObject.FromObject(sfData));
+            await SetStackFrame(session, stack.Last().Key, JObject.FromObject(sfData));
 
             return data;
         }
@@ -495,11 +473,11 @@ namespace EdwServiceLib
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
-            var (sessionId, token) = GetOrCreateSessionId(context, json);
+            var session = GetOrCreateSession(context, json);
             if (json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
             {
-                var result = await SetStackFrame(sessionId, token, name.ToString(), data);
+                var result = await SetStackFrame(session, name.ToString(), data);
                 return result.Json;
             }
 
@@ -507,28 +485,15 @@ namespace EdwServiceLib
             return null;
         }
 
-        private Task<(string Json, JToken Data)> SetStackFrame(Guid sessionId, CancellationToken token, string name, JToken data)
+        private Task<(string Json, JToken Data)> SetStackFrame(Session session, string name, JToken data)
         {
-            TransformData(sessionId, token, data, null, name);
-            var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", e =>
-            {
-                e.AddExpirationToken(new CancellationChangeToken(token));
-                e.RegisterPostEvictionCallback((key, value, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(key);
-                });
-                return JsonWrapper.Serialize(new JObject());
-            });
+            TransformData(session, data, null, name);
+            var serializedScope = session.GetOrCreate($"{session.Id}:{Sf}:{name}", () => JsonWrapper.Serialize(new JObject()));
             var scopeStack = new StackFrameParser(serializedScope);
             scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
             var jsonStack = scopeStack.Json();
             serializedScope = JsonWrapper.Serialize(jsonStack);
-            _cache.Set($"{sessionId}:{Sf}:{name}", serializedScope, new MemoryCacheEntryOptions()
-                .AddExpirationToken(new CancellationChangeToken(token))
-                .RegisterPostEvictionCallback((k, v, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(k);
-                }));
+            session.Set($"{session.Id}:{Sf}:{name}", serializedScope);
             return Task.FromResult((serializedScope, jsonStack));
         }
 
@@ -537,12 +502,12 @@ namespace EdwServiceLib
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
-            var (sessionId, token) = GetOrCreateSessionId(context, json);
+            var session = GetOrCreateSession(context, json);
             if (json.TryGetValue(Stack, out var stack) &&
                 json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(Data, out var data))
             {
-                var result = await GetOrCreateStackFrame(sessionId, token, name.ToString(), data, stack.ToObject<string[]>());
+                var result = await GetOrCreateStackFrame(session, name.ToString(), data, stack.ToObject<string[]>());
                 return result.Json;
             }
 
@@ -551,7 +516,7 @@ namespace EdwServiceLib
         }
 
         private Task<(string Name, string Json)> GetOrCreateStackFrame(
-            Guid sessionId, CancellationToken token, 
+            Session session, 
             string name, JToken data, IEnumerable<string> stackFrames)
         {
             if (data != null && 
@@ -565,8 +530,8 @@ namespace EdwServiceLib
                 {
                     foreach (var sf in invertedStackFrames)
                     {
-                        var stack = BuildStack(sessionId, new[] { sf }).First();
-                        if (!stack.TryGetValue(SfName, out var n) || n.ToString() != keyPrefix)
+                        var stack = BuildStack(session, new[] { sf }).First();
+                        if (!stack.Value.TryGetValue(SfName, out var n) || n.ToString() != keyPrefix)
                             continue;
                         keyPrefix = sf;
                         break;
@@ -578,21 +543,13 @@ namespace EdwServiceLib
                 name = newName;
             }
 
-            var stackFrame = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", e =>
-            {
-                e.AddExpirationToken(new CancellationChangeToken(token));
-                e.RegisterPostEvictionCallback((key, value, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(key);
-                });
-                return JsonWrapper.Serialize(data ?? new JObject());
-            });
+            var stackFrame = session.GetOrCreate($"{session.Id}:{Sf}:{name}", () => JsonWrapper.Serialize(data ?? new JObject()));
             return Task.FromResult((name, stackFrame));
         }
 
-        private void TransformData(
-            Guid sessionId, CancellationToken token, JToken data,
-            IReadOnlyCollection<IDictionary<string, JToken>> stack, string stackFrame)
+        private static void TransformData(
+            Session session, JToken data,
+            Stack stack, string stackFrame)
         {
             if (data.Type != JTokenType.Object)
                 return;
@@ -600,26 +557,26 @@ namespace EdwServiceLib
             var obj = (JObject)data;
             var toRemove = new List<string>();
                 
-            foreach (var kv in obj)
+            foreach (var kv in obj.Properties().ToList())
             {
                 if (kv.Value.Type != JTokenType.String)
                     continue;
 
                 var str = (string)kv.Value;
-                var key = $"{sessionId}:{stackFrame}:{kv.Key}";
+                var key = $"{session.Id}:{stackFrame}:{kv.Name}";
 
-                if (ParseCounter(token, key, obj, kv, str)) continue;
-                if (ParseAccumulator(token, key, obj, kv, str, toRemove)) continue;
-                ParseStack(obj, kv, str, stack);
+                if (ParseCounter(session, key, obj, kv, str)) continue;
+                if (ParseAccumulator(session, key, obj, kv, str, toRemove)) continue;
+                ParseStackAccess(obj, kv, str, stack);
             }
 
             foreach (var rm in toRemove)
                 obj.Remove(rm);
         }
 
-        private bool ParseAccumulator(
-            CancellationToken token, string key, JObject obj, 
-            KeyValuePair<string, JToken> kv, string str, ICollection<string> toRemove)
+        private static bool ParseAccumulator(
+            Session session, string key, JObject obj, 
+            JProperty property, string str, ICollection<string> toRemove)
         {
             var regex = new Regex("^(?<varName>.+)\\+(?<options>(?<count>\\d+)(?<distinct>[d]?)(?<mode>[fl]?))?$");
             var match = regex.Match(str);
@@ -658,26 +615,18 @@ namespace EdwServiceLib
 
             if (varName != null && obj.TryGetValue(varName, out var variable))
             {
-                var values = (JArray)JsonWrapper.TryParse(_cache.GetOrCreate(key, e =>
-                {
-                    e.AddExpirationToken(new CancellationChangeToken(token));
-                    e.RegisterPostEvictionCallback((k, value, reason, state) => {
-                        if (reason != EvictionReason.Replaced)
-                            Debug.WriteLine(key);
-                    });
-                    return "[]";
-                }));
+                var values = (JArray)JsonWrapper.TryParse(session.GetOrCreate(key, () => "[]"));
 
                 if (count > 0 && !last && values.Count >= count)
                 {
-                    obj[kv.Key] = values;
+                    obj[property.Name] = values;
                     return true;
                 }
 
                 var strVal = variable.ToString();
                 if (distinct && values.Any(t => t.Value<string>() == strVal))
                 {
-                    obj[kv.Key] = values;
+                    obj[property.Name] = values;
                     return true;
                 }
 
@@ -686,63 +635,62 @@ namespace EdwServiceLib
 
                 values.Add(variable);
 
-                _cache.Set(key, JsonWrapper.Serialize(values), new MemoryCacheEntryOptions()
-                    .AddExpirationToken(new CancellationChangeToken(token))
-                    .RegisterPostEvictionCallback((k, v, reason, state) => {
-                        if (reason != EvictionReason.Replaced)
-                            Debug.WriteLine(key);
-                    }));
-                obj[kv.Key] = values;
+                session.Set(key, JsonWrapper.Serialize(values));
+                obj[property.Name] = values;
             }
             else
             {
-                toRemove.Add(kv.Key);
+                toRemove.Add(property.Name);
             }
 
             return true;
         }
 
-        private bool ParseCounter(CancellationToken token, string key, JObject obj, KeyValuePair<string, JToken> kv, string str)
+        private static bool ParseCounter(Session session, string key, JObject obj, JProperty property, string str)
         {
             if (str != "0+")
                 return false;
 
-            var value = _cache.GetOrCreate(key, e =>
-            {
-                e.AddExpirationToken(new CancellationChangeToken(token));
-                e.RegisterPostEvictionCallback((k, v, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(key);
-                });
-                return 0;
-            });
+            var value = session.GetOrCreate(key, () => 0);
             value++;
-            _cache.Set(key, value, new MemoryCacheEntryOptions()
-                .AddExpirationToken(new CancellationChangeToken(token))
-                .RegisterPostEvictionCallback((k, v, reason, state) => {
-                    if (reason != EvictionReason.Replaced)
-                        Debug.WriteLine(key);
-                }));
-            obj[kv.Key] = value;
+            session.Set(key, value);
+            obj[property.Name] = value;
 
             return true;
         }
 
-        private static void ParseStack(JObject obj, KeyValuePair<string, JToken> kv, string str, 
-            IReadOnlyCollection<IDictionary<string, JToken>> stack)
+        private static void ParseStackAccess(JObject obj, JProperty property, string str, Stack stack)
         {
             if (stack == null || !(str.StartsWith("{") && str.EndsWith("}")))
                 return;
             
             var varName = str.Substring(1, str.Length - 2);
             JToken value = null;
-            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var stackFrame in stack)
+            if (varName.Contains("."))
             {
-                if (stackFrame.TryGetValue(varName, out value))
-                    break;
+                var parts = varName.Split(".");
+                if (parts.Length != 2)
+                    throw new InvalidOperationException("Invalid stack access expression.");
+
+                if (stack.TryGetValue(parts[0], out var stackFrame) && 
+                    stackFrame.TryGetValue(varName, out var v))
+                    value = v;
             }
-            obj[kv.Key] = value;
+            else
+            {
+                foreach (var (_, dictionary) in stack)
+                {
+                    if (!dictionary.TryGetValue(varName, out var v))
+                        continue;
+                    value = v;
+                    break;
+                }
+            }
+
+            if (value == null)
+                obj.Remove(property.Name);
+            else
+                obj[property.Name] = value;
         }
     }
 }
