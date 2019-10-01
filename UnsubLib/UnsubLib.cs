@@ -1657,7 +1657,7 @@ namespace UnsubLib
 
             try
             {
-                var locationUrl = await networkProvider.GetSuppresionLocationUrl(network, unsubRelationshipId);
+                var locationUrl = await networkProvider.GetSuppressionLocationUrl(network, unsubRelationshipId);
 
                 if (locationUrl != null)
                 {
