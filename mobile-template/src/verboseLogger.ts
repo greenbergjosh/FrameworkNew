@@ -1,14 +1,18 @@
 let runOnce = false
 
 if (!runOnce) {
-  const logger = console.log
+  const log = console.log
+  const debug = console.debug
+  const warn = console.warn
+  const error = console.error
 
   /**
    * Verbose mode for debugging on mobile devices
    * because objects are converted to strings
+   * @param type
    * @param args
    */
-  const verboseLogger = (...args: []) => {
+  const verboseLogger = (type: string, ...args: []) => {
     const reducer = (acc: string, arg: string | {} | undefined) => {
       if (acc.length > 0) {
         acc = `${acc}, `
@@ -30,10 +34,16 @@ if (!runOnce) {
       return `${acc}${arg}`
     }
     const stringifiedArgs = args.reduce(reducer, "")
-    logger(stringifiedArgs)
+    log(`[${type}]`, stringifiedArgs)
   }
 
-  console.log = verboseLogger
+  // @ts-ignore
+  const getVerboseLogger = (type: string) => (...args: []) => verboseLogger(type, args)
+
+  console.log = getVerboseLogger("log")
+  console.debug = getVerboseLogger("debug")
+  console.warn = getVerboseLogger("warn")
+  console.error = getVerboseLogger("error")
   runOnce = true
 }
 
