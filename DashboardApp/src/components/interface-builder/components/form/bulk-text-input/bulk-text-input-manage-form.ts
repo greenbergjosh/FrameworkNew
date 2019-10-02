@@ -2,11 +2,11 @@ import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
 import { separator } from "./codec"
 
-export const dataInputManageForm = (...extend: Partial<ComponentDefinition>[]) => {
-  return baseManageForm(...csvInputManageFormDefinition, ...extend)
+export const bulkTextInputManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+  return baseManageForm(...bulkTextInputManageFormDefinition, ...extend)
 }
 
-const csvInputManageFormDefinition: Partial<ComponentDefinition>[] = [
+const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [
@@ -23,14 +23,6 @@ const csvInputManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "value",
-              },
-              {
-                key: "maxLength",
-                valueKey: "maxLength",
-                ordinal: 10,
-                component: "number-input",
-                defaultValue: null,
-                label: "Max length",
               },
               {
                 key: "itemSeparator",

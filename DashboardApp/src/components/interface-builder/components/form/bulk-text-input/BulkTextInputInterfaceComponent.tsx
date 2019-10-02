@@ -1,14 +1,16 @@
-import { Form, Input } from "antd"
+import { Input } from "antd"
 import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
-import { dataInputManageForm } from "./data-input-manage-form"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
-import CharCounter from "../_shared/CharCounter"
+import { bulkTextInputManageForm } from "./bulk-text-input-manage-form"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinitionNamedProps,
+} from "../../base/BaseInterfaceComponent"
 import { Codec, getCodec, separator } from "./codec"
 
-export interface CsvInputInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "data-input"
+export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitionNamedProps {
+  component: "bulk-text-input"
   defaultValue: string
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
@@ -17,31 +19,36 @@ export interface CsvInputInterfaceComponentProps extends ComponentDefinitionName
   autosize?: boolean
   minRows?: number
   maxRows?: number
-  maxLength?: number
   itemSeparator: separator
   newlinePlaceholder: string
   commaPlaceholder: string
 }
 
-interface CsvInputInterfaceComponentState {
-}
+interface BulkTextInputInterfaceComponentState {}
 
 function getAutosize(
   minRows: number | undefined,
   maxRows: number | undefined,
-  autosize: boolean | undefined,
-): true | { minRows: number | undefined, maxRows: number | undefined } | undefined {
+  autosize: boolean | undefined
+): true | { minRows: number | undefined; maxRows: number | undefined } | undefined {
   const minMaxRows = minRows || maxRows ? { minRows, maxRows } : undefined
   return typeof autosize !== "undefined" && autosize ? true : minMaxRows
 }
 
-function getValue(valueKey: string, userInterfaceData: UserInterfaceProps["data"], defaultValue: string, codec: Codec) {
+function getValue(
+  valueKey: string,
+  userInterfaceData: UserInterfaceProps["data"],
+  defaultValue: string,
+  codec: Codec
+) {
   const rawValue = get(valueKey, userInterfaceData)
   const value = codec.join(rawValue)
   return typeof value !== "undefined" ? value : defaultValue
 }
 
-export class DataInputInterfaceComponent extends BaseInterfaceComponent<CsvInputInterfaceComponentProps> {
+export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<
+  BulkTextInputInterfaceComponentProps
+> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -51,20 +58,20 @@ export class DataInputInterfaceComponent extends BaseInterfaceComponent<CsvInput
   static getLayoutDefinition() {
     return {
       category: "Form",
-      name: "data-input",
-      title: "Data Input",
+      name: "bulk-text-input",
+      title: "Bulk Text Input",
       icon: "import",
       formControl: true,
       componentDefinition: {
-        component: "data-input",
-        label: "Data Input",
+        component: "bulk-text-input",
+        label: "Bulk Text Input",
       },
     }
   }
 
-  static manageForm = dataInputManageForm
+  static manageForm = bulkTextInputManageForm
 
-  constructor(props: CsvInputInterfaceComponentProps) {
+  constructor(props: BulkTextInputInterfaceComponentProps) {
     super(props)
   }
 
@@ -83,26 +90,21 @@ export class DataInputInterfaceComponent extends BaseInterfaceComponent<CsvInput
       autosize,
       minRows,
       maxRows,
-      maxLength,
       itemSeparator,
       newlinePlaceholder,
-      commaPlaceholder
+      commaPlaceholder,
     } = this.props
     const codec: Codec = getCodec(itemSeparator)
     const value = getValue(valueKey, userInterfaceData, defaultValue, codec)
     const autosizeValue = getAutosize(minRows, maxRows, autosize)
     const placeholder = itemSeparator === separator.comma ? commaPlaceholder : newlinePlaceholder
     return (
-      <>
-        <Input.TextArea
-          onChange={this.handleChange}
-          value={value}
-          autosize={autosizeValue}
-          maxLength={maxLength}
-          placeholder={placeholder}
-        />
-        <CharCounter text={value} maxLength={maxLength}/>
-      </>
+      <Input.TextArea
+        onChange={this.handleChange}
+        value={value}
+        autosize={autosizeValue}
+        placeholder={placeholder}
+      />
     )
   }
 }
