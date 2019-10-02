@@ -60,7 +60,7 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<
       category: "Form",
       name: "bulk-text-input",
       title: "Bulk Text Input",
-      icon: "import",
+      icon: "copy",
       formControl: true,
       componentDefinition: {
         component: "bulk-text-input",
