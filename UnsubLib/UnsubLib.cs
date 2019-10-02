@@ -1652,7 +1652,8 @@ namespace UnsubLib
                 new UnsubFileProviders.UnsubCentralV2(_fw),
                 new UnsubFileProviders.Ezepo(_fw,SeleniumChromeDriverPath),
                 new UnsubFileProviders.Optizmo(_fw),
-                new UnsubFileProviders.MidEnity(_fw)
+                new UnsubFileProviders.MidEnity(_fw),
+                new UnsubFileProviders.W4(_fw) 
             };
 
             try
