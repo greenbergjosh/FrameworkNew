@@ -1612,7 +1612,8 @@ namespace UnsubLib
                 throw new Exception("Search failed.");
             }
 
-            var emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToArray();
+            var emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToList();
+            emailsNotFound.AddRange(requestMd5s.Where(m => binarySearchResults.notFound.Contains(m.ToLower())).Select(m => m).ToList());
 
             if (globalSupp)
             {
@@ -1624,7 +1625,7 @@ namespace UnsubLib
 
                     var res = await Data.CallFn("Signal", "inSignalGroups", args);
 
-                    emailsNotFound = res?.GetL("out").Select(g => g.GetS("")).ToArray();
+                    emailsNotFound = res?.GetL("out").Select(g => g.GetS("")).ToList();
                 }
                 catch (Exception e)
                 {
