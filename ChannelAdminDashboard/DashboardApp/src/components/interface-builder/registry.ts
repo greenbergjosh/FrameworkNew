@@ -5,14 +5,14 @@ import { CardInterfaceComponent } from "./components/display/card/CardInterfaceC
 import { CollapseInterfaceComponent } from "./components/display/collapse/CollapseInterfaceComponent"
 import { ColumnInterfaceComponent } from "./components/display/column/ColumnInterfaceComponent"
 import { DividerInterfaceComponent } from "./components/display/divider/DividerInterfaceComponent"
-import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
+// import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
 import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
 import { ProgressInterfaceComponent } from "./components/display/progress/ProgressInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { WizardInterfaceComponent } from "./components/display/wizard/WizardInterfaceComponent"
-import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
+// import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { BulkTextInputInterfaceComponent } from "./components/form/bulk-text-input/BulkTextInputInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
@@ -47,7 +47,7 @@ export interface ComponentRegistryCache {
 
 export const registry: ComponentRegistry = {
   cache: {
-    button: ButtonInterfaceComponent,
+    // button: ButtonInterfaceComponent,
     card: CardInterfaceComponent,
     checkbox: CheckboxInterfaceComponent,
     "code-editor": CodeEditorInterfaceComponent,
@@ -58,7 +58,7 @@ export const registry: ComponentRegistry = {
     date: DateInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     divider: DividerInterfaceComponent,
-    "filtered-menu": FilteredMenuInterfaceComponent,
+    // "filtered-menu": FilteredMenuInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
