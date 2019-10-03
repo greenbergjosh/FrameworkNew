@@ -1,15 +1,43 @@
-import { Form, Button, Icon, Tooltip } from "antd"
-import { get, set, throttle } from "lodash/fp"
+import {
+  Button,
+  Col,
+  Form,
+  Icon,
+  Popover,
+  Row,
+  Tooltip,
+  Typography
+  } from "antd"
+import {
+  get,
+  merge,
+  set,
+  throttle
+  } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
-import { buttonManageForm, buttonDisplayType, shapeType, sizeType } from "./button-manage-form"
+import {
+  buttonDisplayType,
+  buttonManageForm,
+  shapeType,
+  sizeType
+  } from "./button-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
+interface ConfirmationProps {
+  title?: string
+  message?: string
+  okText?: string
+  cancelText?: string
+}
+
 export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "button"
+  requireConfirmation: boolean
+  confirmation?: ConfirmationProps
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
@@ -26,9 +54,13 @@ export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedP
 }
 
 interface ButtonInterfaceComponentState {
+  isShowingConfirmation: boolean
 }
 
-export class ButtonInterfaceComponent extends BaseInterfaceComponent<ButtonInterfaceComponentProps> {
+export class ButtonInterfaceComponent extends BaseInterfaceComponent<
+  ButtonInterfaceComponentProps,
+  ButtonInterfaceComponentState
+> {
   static defaultProps = {
     valueKey: "value",
   }
@@ -42,7 +74,6 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<ButtonInter
       formControl: true,
       componentDefinition: {
         component: "button",
-        label: "Text",
       },
     }
   }
@@ -51,11 +82,35 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<ButtonInter
 
   constructor(props: ButtonInterfaceComponentProps) {
     super(props)
+
+    this.state = {
+      isShowingConfirmation: false,
+    }
   }
 
   handleClick = ({ target }: React.MouseEvent<HTMLInputElement>) => {
-    const { onChangeData, userInterfaceData, valueKey } = this.props
-    // onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
+    const { requireConfirmation } = this.props
+    const { isShowingConfirmation } = this.state
+
+    if (requireConfirmation && !isShowingConfirmation) {
+      this.setState({ isShowingConfirmation: true })
+    } else {
+      // Do action
+      console.log("ButtonInterfaceComponent.handleClick", "TODO: Perform action here")
+
+      // Close Popup
+      this.setState({ isShowingConfirmation: false })
+    }
+  }
+
+  handleCloseConfirmation = ({ target }: React.MouseEvent<HTMLInputElement>) => {
+    if (this.state.isShowingConfirmation) {
+      this.setState({ isShowingConfirmation: false })
+    }
+  }
+
+  handleConfirmationVisibleChange = (visible: boolean) => {
+    this.setState({ isShowingConfirmation: visible })
   }
 
   render(): JSX.Element {
@@ -71,12 +126,21 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<ButtonInter
       displayType,
       block,
       ghost,
+
+      requireConfirmation,
     } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
-    return (
+
+    // Merge any incoming confirmation properties on top of the defaults
+    const confirmation = merge(
+      this.props.confirmation || {},
+      ButtonInterfaceComponent.getManageFormDefaults().confirmation
+    )
+
+    const content = (
       <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null}>
         <Button
           onClick={this.handleClick}
@@ -86,9 +150,40 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<ButtonInter
           size={size}
           type={displayType}
           block={block}
-          ghost={ghost}
-        >{!hideButtonLabel && !isCircle ? buttonLabel : null}</Button>
+          ghost={ghost}>
+          {!hideButtonLabel && !isCircle ? buttonLabel : null}
+        </Button>
       </Tooltip>
+    )
+
+    return requireConfirmation ? (
+      <Popover
+        content={
+          <>
+            <Typography.Paragraph>{confirmation.message}</Typography.Paragraph>
+            <Row>
+              <Col span={12}>
+                <Button block onClick={this.handleCloseConfirmation}>
+                  {confirmation.cancelText}
+                </Button>
+              </Col>
+              <Col span={12}>
+                <Button block type="danger" onClick={this.handleClick}>
+                  {confirmation.okText}
+                </Button>
+              </Col>
+            </Row>
+          </>
+        }
+        placement="topRight"
+        title={confirmation.title}
+        trigger="click"
+        onVisibleChange={this.handleConfirmationVisibleChange}
+        visible={this.state.isShowingConfirmation}>
+        {content}
+      </Popover>
+    ) : (
+      content
     )
   }
 }

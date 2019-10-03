@@ -61,7 +61,112 @@ export function UserInterfaceTest({ children, ...props }: WithRouteProps<Props>)
                 },
               ],
             },
+            {
+              key: "tab3",
+              label: "Progress Test",
+              component: "tab",
+              components: [
+                {
+                  hideLabel: false,
+                  label: "Progress",
+                  valueKey: "currentValue",
+                  calculatePercent: true,
+                  maxValueKey: "maxValue",
+                  forceStatus: "useAPI",
+                  statusKey: "status",
+                  statuses: {
+                    exception: "exception",
+                    success: "success",
+                    active: "active",
+                    normal: "normal",
+                  },
+                  type: "line",
+                  smallLine: false,
+                  hideInfo: false,
+                  hidden: false,
+                  component: "progress",
+                },
+                {
+                  hideLabel: false,
+                  label: "Columns",
+                  valueKey: "columns",
+                  hideTitle: false,
+                  components: [],
+                  gutter: 8,
+                  hidden: false,
+                  component: "column",
+                  columns: [
+                    {
+                      hideTitle: true,
+                      components: [
+                        {
+                          hideLabel: false,
+                          label: "Current Value",
+                          valueKey: "currentValue",
+                          hidden: false,
+                          component: "number-input",
+                        },
+                      ],
+                    },
+                    {
+                      hideTitle: true,
+                      components: [
+                        {
+                          hideLabel: false,
+                          label: "Max Value",
+                          valueKey: "maxValue",
+                          hidden: false,
+                          component: "number-input",
+                        },
+                      ],
+                    },
+                    {
+                      hideTitle: true,
+                      components: [
+                        {
+                          hideLabel: false,
+                          label: "Status",
+                          valueKey: "status",
+                          placeholder: null,
+                          multiple: false,
+                          defaultValue: "normal",
+                          dataHandlerType: "local",
+                          data: {
+                            values: [
+                              {
+                                label: "Normal",
+                                value: "normal",
+                              },
+                              {
+                                label: "Active",
+                                value: "active",
+                              },
+                              {
+                                label: "Success",
+                                value: "success",
+                              },
+                              {
+                                label: "Exception",
+                                value: "exception",
+                              },
+                            ],
+                          },
+                          allowCreateNew: false,
+                          createNewLabel: "Create New...",
+                          hidden: false,
+                          component: "select",
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
           ],
+        },
+        {
+          key: "post-tabs-divider",
+          component: "divider",
         },
         {
           key: "daterange1",
