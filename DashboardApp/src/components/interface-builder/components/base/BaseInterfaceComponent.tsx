@@ -96,8 +96,6 @@ export abstract class BaseInterfaceComponent<
 export function getDefaultsFromComponentDefinitions(componentDefinitions: ComponentDefinition[]) {
   // Iterate over all the definitions to accumulate their defaults
   return componentDefinitions.reduce((acc, componentDefinition) => {
-    // Check to see if there's a component type for this object
-    const Component = registry.lookup(componentDefinition.component)
     // If there are child lists of in the component's properties
     const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce(
       (acc2, [key, value]) => {
@@ -111,10 +109,13 @@ export function getDefaultsFromComponentDefinitions(componentDefinitions: Compon
       {}
     )
 
+    // Check to see if there's a component type for this object
+    const Component = registry.lookup(componentDefinition.component)
+
     // If this component has a value itself, get it
     const thisValue = (Component && Component.getDefintionDefaultValue(componentDefinition)) || {}
 
     // Combine the existing values with this level's value and any nested values
-    return { ...acc, ...thisValue, ...nestedValues }
+    return merge(nestedValues, merge(thisValue, acc))
   }, {})
 }

@@ -399,11 +399,27 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
         allowClear={allowClear}
         defaultValue={value}
         disabled={disabled}
-        filterOption={(input: any, option: any) =>
+        filterOption={(input: any, option: any) => {
           // When switching about the internals of component during configuration time, the type of children can change
-          typeof option.props.children.toLowerCase === "function" &&
-          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-        }
+          if (
+            typeof option.props.children.toLowerCase === "function" &&
+            option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          ) {
+            return true
+          } else if (Array.isArray(option.props.children)) {
+            return !!option.props.children.find((item: any) => {
+              if (
+                item &&
+                typeof item.toLowerCase === "function" &&
+                item.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              ) {
+                return true
+              }
+            })
+          }
+
+          return false
+        }}
         loading={loadStatus === "loading"}
         mode={mode}
         onChange={this.handleChange}

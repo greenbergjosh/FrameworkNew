@@ -22,18 +22,23 @@ const SIZE: TSEnum<ProgressSize> = {
   small: "small",
 }
 
+interface ProgressStatuses {
+  active?: string
+  exception?: string
+  normal?: string
+  success?: string
+}
+
 export interface ProgressInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "progress"
   valueKey: string
   calculatePercent: boolean
   hideInfo?: boolean
-  indicateStatus: boolean
+  forceStatus: ProgressProps["status"] | "useAPI"
   maxValueKey: string
   smallLine: boolean
-  statusActive: string
-  statusException: string
-  statusKey: string
-  statusSuccess: string
+  statuses?: ProgressStatuses
+  statusKey?: string
   successPercent?: number
   type: "line" | "circle" | "dashboard"
   userInterfaceData: UserInterfaceProps["data"]
@@ -65,14 +70,12 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<
     const {
       calculatePercent,
       defaultValue,
+      forceStatus,
       hideInfo,
-      indicateStatus,
       maxValueKey,
       smallLine,
-      statusActive,
-      statusException,
       statusKey,
-      statusSuccess,
+      statuses,
       successPercent,
       type,
       userInterfaceData,
@@ -80,29 +83,18 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<
       width,
     } = this.props
 
+    // Determine Status
+    const statusValue = statusKey && get(statusKey, userInterfaceData)
+    const status =
+      forceStatus === "useAPI" ? mapStatus(statuses || STATUS, statusValue) : forceStatus
+
+    // Determine Value
     const rawValue = get(valueKey, userInterfaceData)
-    const statusValue = get(statusKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     let percent = value
-    let status = STATUS.normal
     let format
 
-    if (indicateStatus) {
-      switch (statusValue) {
-        case statusSuccess:
-          status = STATUS.success
-          break
-        case statusException:
-          status = STATUS.exception
-          break
-        case statusActive:
-          status = STATUS.active
-          break
-        default:
-          status = STATUS.normal
-      }
-    }
-
+    // Calculate percent, if necessary
     if (calculatePercent) {
       const rawTotal = get(maxValueKey, userInterfaceData)
       const total = typeof rawTotal !== "undefined" ? rawTotal : defaultValue
@@ -122,5 +114,19 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<
         width={width}
       />
     )
+  }
+}
+
+const mapStatus = (statuses: ProgressStatuses, statusValue: string) => {
+  console.log("Progress", statuses, statusValue)
+  switch (statusValue) {
+    case statuses.success:
+      return STATUS.success
+    case statuses.exception:
+      return STATUS.exception
+    case statuses.active:
+      return STATUS.active
+    default:
+      return STATUS.normal
   }
 }
