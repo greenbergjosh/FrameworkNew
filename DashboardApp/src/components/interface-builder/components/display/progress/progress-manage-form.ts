@@ -33,7 +33,8 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 label: "Calculate Percent",
-                help: "Calculate the percent from the current count and a maximum value. When not selected, the data is assumed to be a percentage.",
+                help:
+                  "Calculate the percent from the current count and a maximum value. When not selected, the data is assumed to be a percentage.",
               },
               {
                 key: "maxValueKey",
@@ -52,11 +53,36 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "appearance",
             components: [
               {
-                key: "indicateStatus",
-                valueKey: "indicateStatus",
-                component: "toggle",
-                defaultValue: false,
-                label: "Indicate Status",
+                key: "forceStatus",
+                valueKey: "forceStatus",
+                component: "select",
+                defaultValue: "normal",
+                label: "Status",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "Normal",
+                      value: "normal",
+                    },
+                    {
+                      label: "Active",
+                      value: "active",
+                    },
+                    {
+                      label: "Success",
+                      value: "success",
+                    },
+                    {
+                      label: "Exception",
+                      value: "exception",
+                    },
+                    {
+                      label: "Read from API",
+                      value: "useAPI",
+                    },
+                  ],
+                },
               },
               {
                 key: "statusGroup",
@@ -73,32 +99,36 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                     help: "The API property name to use for the Progress component status.",
                   },
                   {
-                    key: "statusActive",
-                    valueKey: "statusActive",
+                    key: "statuses.normal",
+                    valueKey: "statuses.normal",
+                    component: "input",
+                    defaultValue: "normal",
+                    label: "Normal Value",
+                  },
+                  {
+                    key: "statuses.active",
+                    valueKey: "statuses.active",
                     component: "input",
                     defaultValue: "active",
                     label: "Active Value",
                   },
                   {
-                    key: "statusSuccess",
-                    valueKey: "statusSuccess",
+                    key: "statuses.success",
+                    valueKey: "statuses.success",
                     component: "input",
                     defaultValue: "success",
                     label: "Success Value",
                   },
                   {
-                    key: "statusException",
-                    valueKey: "statusException",
+                    key: "statuses.exception",
+                    valueKey: "statuses.exception",
                     component: "input",
                     defaultValue: "exception",
                     label: "Exception Value",
-                    visibilityConditions: {
-                      "===": [true, { var: "indicateStatus" }],
-                    },
                   },
                 ],
                 visibilityConditions: {
-                  "===": [true, { var: "indicateStatus" }],
+                  "===": ["useAPI", { var: "forceStatus" }],
                 },
               },
               {
@@ -119,7 +149,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                       value: "circle",
                     },
                     {
-                      label: "Dashboard",
+                      label: "Gauge",
                       value: "dashboard",
                     },
                   ],

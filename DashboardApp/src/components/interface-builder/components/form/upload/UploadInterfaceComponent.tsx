@@ -1,5 +1,11 @@
-import { Form, Upload, Button, Icon, message } from "antd"
-import { UploadChangeParam, UploadFile, HttpRequestHeader } from "antd/lib/upload/interface"
+import {
+  Button,
+  Form,
+  Icon,
+  message,
+  Upload
+  } from "antd"
+import { HttpRequestHeader, UploadChangeParam, UploadFile } from "antd/lib/upload/interface"
 import { get, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -20,13 +26,15 @@ export interface UploadInterfaceComponentProps extends ComponentDefinitionNamedP
   accept: string
   acceptOther?: string
   buttonLabel: string
-  headers: HttpRequestHeader,
+  headers: HttpRequestHeader
   editHeaders: boolean
 }
 
 interface UploadInterfaceComponentState {}
 
-export class UploadInterfaceComponent extends BaseInterfaceComponent<UploadInterfaceComponentProps> {
+export class UploadInterfaceComponent extends BaseInterfaceComponent<
+  UploadInterfaceComponentProps
+> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -53,16 +61,16 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<UploadInter
   }
 
   handleChange = (info: UploadChangeParam<UploadFile>) => {
-    const { status } = info.file;
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList);
+    const { status } = info.file
+    if (status !== "uploading") {
+      console.log(info.file, info.fileList)
     }
-    if (status === 'done') {
+    if (status === "done") {
       const { onChangeData, userInterfaceData, valueKey } = this.props
       onChangeData && onChangeData(set(valueKey, info.file, userInterfaceData))
-      message.success(`${info.file.name} file uploaded successfully.`);
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
+      message.success(`${info.file.name} file uploaded successfully.`)
+    } else if (status === "error") {
+      message.error(`${info.file.name} file upload failed.`)
     }
   }
 
@@ -72,7 +80,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<UploadInter
       return headers
     }
     return {
-      authorization: "authorization-text"
+      authorization: "authorization-text",
     }
   }
 
@@ -103,10 +111,10 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<UploadInter
         action={uploadUrl}
         accept={acceptType}
         headers={this.getHeaders()}
-        onChange={this.handleChange}
-      >
+        onChange={this.handleChange}>
         <Button>
-          <Icon type="upload" />{hideButtonLabel ? null : ` ${buttonLabel}`}
+          <Icon type="upload" />
+          {hideButtonLabel ? null : ` ${buttonLabel}`}
         </Button>
       </Upload>
     )

@@ -60,15 +60,18 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                     },
                     {
                       label: "Microsoft Excel (xls, xlsx)",
-                      value: "application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      value:
+                        "application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     },
                     {
                       label: "Microsoft PowerPoint (ppt, pptx)",
-                      value: "application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                      value:
+                        "application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     },
                     {
                       label: "Microsoft Word (doc, docx)",
-                      value: "application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                      value:
+                        "application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     },
                     {
                       label: "Adobe Portable Document Format (pdf)",
@@ -94,32 +97,8 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 visibilityConditions: {
                   "===": ["other", { var: "accept" }],
                 },
-                help: "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
-              },
-              {
-                key: "headersGroup",
-                valueKey: "headersGroup",
-                label: "HTTP Request Headers",
-                component: "card",
-                components: [
-                  {
-                    key: "editHeaders",
-                    valueKey: "editHeaders",
-                    component: "toggle",
-                    defaultValue: false,
-                    label: "Edit Headers",
-                  },
-                  {
-                    key: "headers.authorization",
-                    valueKey: "headers.authorization",
-                    component: "input",
-                    defaultValue: "authorization-text",
-                    label: "Authorization",
-                    visibilityConditions: {
-                      "===": [true, { var: "editHeaders" }],
-                    },
-                  },
-                ]
+                help:
+                  "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
               },
             ],
           },
@@ -143,7 +122,32 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "===": [false, { var: "hideButtonLabel" }],
                 },
               },
-            ]
+            ],
+          },
+          {
+            key: "http-headers",
+            component: "tab",
+            hideLabel: true,
+            label: "HTTP Headers",
+            components: [
+              {
+                key: "editHeaders",
+                valueKey: "editHeaders",
+                component: "toggle",
+                defaultValue: false,
+                label: "Edit Headers",
+              },
+              {
+                key: "headers.authorization",
+                valueKey: "headers.authorization",
+                component: "input",
+                defaultValue: "",
+                label: "Authorization",
+                visibilityConditions: {
+                  "===": [true, { var: "editHeaders" }],
+                },
+              },
+            ],
           },
         ],
       },
