@@ -20,7 +20,9 @@ interface TemplateManagerProps {
 
 export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
   const [template, setTemplate] = React.useState(DEFAULT_TEMPLATE)
-  const [dataState, setDataState] = React.useState({} as { [key: string]: string })
+  const [dataState, setDataState] = React.useState({} as {
+    [key: string]: string
+  })
   const [popoverState, setPopoverState] = React.useState({} as { [key: string]: boolean })
   const wrapperRef = React.useRef() as React.RefObject<HTMLDivElement>
 
@@ -65,32 +67,42 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
     getgotService && getgotService.selectPhoto(dataValueKey)
   }, [])
 
-  const onClickHTMLTextElement = React.useCallback((e: Event) => {
-    let element = e.target as HTMLElement
+  const onClickHTMLTextElement = React.useCallback(
+    (e: Event) => {
+      let element = e.target as HTMLElement
 
-    while (element.parentElement && !element.getAttribute("data-value-key")) {
-      element = element.parentElement
-    }
-    const dataValueKey = element.getAttribute("data-value-key")
+      while (element.parentElement && !element.getAttribute("data-value-key")) {
+        element = element.parentElement
+      }
+      const dataValueKey = element.getAttribute("data-value-key")
 
-    console.log("Click Text Spot", dataValueKey, element)
-    getgotService && getgotService.editText(dataValueKey)
-  }, [])
+      console.log("Click Text Spot", dataValueKey, element)
+      getgotService && getgotService.editText(dataValueKey)
+    },
+    [getgotService]
+  )
 
-  const loadedPhoto = React.useCallback((photoBase64: string, key: string = "photo") => {
-    console.debug("Callback: loadedPhoto", { photoBase64, key })
-    setDataState({ ...dataState, [key]: photoBase64 })
-  }, [])
+  const loadedPhoto = React.useCallback(
+    (photoBase64: string, key: string = "photo") => {
+      console.debug("Callback: loadedPhoto", { photoBase64, key })
+      setDataState({ ...dataState, [key]: photoBase64 })
+    },
+    [dataState]
+  )
 
-  const editedText = React.useCallback((text: string, key: string = "message") => {
-    console.debug("Callback: editedText", { text, key })
-    setDataState({ ...dataState, [key]: text })
-  }, [])
+  const editedText = React.useCallback(
+    (text: string, key: string = "message") => {
+      console.debug("Callback: editedText", { text, key })
+      console.debug("Spreading existing dataState", dataState, "and adding", { [key]: text })
+      setDataState({ ...dataState, [key]: text })
+    },
+    [dataState]
+  )
 
   React.useEffect(() => {
     window.loadedPhoto = loadedPhoto
     window.editedText = editedText
-  }, [loadedPhoto])
+  }, [loadedPhoto, editedText])
 
   React.useEffect(() => {
     if (wrapperRef && wrapperRef.current) {
@@ -203,7 +215,7 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
     return () => {
       if (wrapperRef && wrapperRef.current) {
         const photoElements = wrapperRef.current.getElementsByClassName("add-photo")
-        console.log("Photo Spots (Remove)", photoElements)
+        console.debug("Photo Spots (Remove)", photoElements)
         Array.from(photoElements).forEach((element: Element) => {
           element.removeEventListener("click", onClickHTMLPhotoElement)
         })
@@ -214,18 +226,26 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
   React.useEffect(() => {
     if (wrapperRef && wrapperRef.current) {
       const textElements = wrapperRef.current.getElementsByClassName("add-text")
-      console.log("Text Spots", textElements)
+      console.debug("Text Spots", textElements)
       Array.from(textElements).forEach((element: Element) => {
-        console.log("Text Spot", element)
+        const elementValueKey = element.getAttribute("data-value-key")
+        const elementValue = elementValueKey && dataState[elementValueKey]
+        console.debug("Text Spot", element, "Value: ", elementValue)
 
         element.addEventListener("click", onClickHTMLTextElement)
         const addMessageDiv = document.createElement("div")
-        addMessageDiv.className = "add-text"
+        addMessageDiv.className = classNames("add-text-inner", { "-blank": !elementValue })
         element.appendChild(addMessageDiv)
         ReactDOM.render(
-          <>
-            <span>Add Message</span>
-          </>,
+          <span>
+            {elementValue ? (
+              <>
+                <Icon type="edit" /> {elementValue}
+              </>
+            ) : (
+              "Add Message"
+            )}
+          </span>,
           addMessageDiv
         )
       })
@@ -237,10 +257,15 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
         console.log("Text Spots (Remove)", textElements)
         Array.from(textElements).forEach((element: Element) => {
           element.removeEventListener("click", onClickHTMLTextElement)
+
+          const textInnerElements = element.getElementsByClassName("add-text-inner")
+          Array.from(textInnerElements).forEach((innerElement: Element) => {
+            element.removeChild(innerElement)
+          })
         })
       }
     }
-  }, [wrapperRef])
+  }, [wrapperRef, dataState])
 
   return (
     <div ref={wrapperRef}>
