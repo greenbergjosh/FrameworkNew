@@ -1,12 +1,11 @@
 import * as Reach from "@reach/router"
-import { ClickEventArgs } from "@syncfusion/ej2-navigations"
+import { ColumnModel, GridComponent, SortDescriptorModel } from "@syncfusion/ej2-react-grids"
 import { Button, PageHeader } from "antd"
 import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import React from "react"
-import { context } from "react-dnd/lib/cjs/DragDropContext"
 import { Helmet } from "react-helmet"
 import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
@@ -17,32 +16,13 @@ import { UserInterface } from "../interface-builder/UserInterface"
 import { QueryForm } from "./QueryForm"
 import { Report } from "./Report"
 import {
+  DataMappingItem,
   GlobalConfigReference,
   LocalReportConfig,
-  ParameterItem,
   QueryConfig,
   ReportDetails,
   SimpleLayoutConfig,
-  DataMappingItem,
 } from "../../data/Report"
-import {
-  Aggregate,
-  ColumnChooser,
-  DetailDataBoundEventArgs,
-  DetailRow,
-  ExcelExport,
-  FilterSettingsModel,
-  Freeze,
-  GridComponent,
-  Inject,
-  PdfExport,
-  Resize,
-  Sort,
-  Toolbar,
-  Filter,
-  SortDescriptorModel,
-  ColumnModel,
-} from "@syncfusion/ej2-react-grids"
 
 export interface ReportBodyProps {
   isChildReport?: boolean
@@ -198,15 +178,8 @@ export const ReportBody = React.memo(
           )}
 
         <div>
-          {/* <PureGridComponent
-            ref={grid}
-            detailTemplate={createDetailTemplate}
-            dataSource={queryResultData.getOrElse(emptyArray)}
-            sortSettings={sortSettings}
-            columns={reportConfig.columns}>
-            <Inject services={gridComponentServices} />
-          </PureGridComponent> */}
           <StandardGrid
+            key={reportId.getOrElse("no-report-id")}
             ref={grid}
             columns={reportConfig.columns as ColumnModel[]}
             contextData={contextData}
@@ -220,51 +193,6 @@ export const ReportBody = React.memo(
     )
   }
 )
-
-const PureGridComponent = React.memo(GridComponent)
-
-const gridComponentServices = [
-  Toolbar,
-  ColumnChooser,
-  Resize,
-  DetailRow,
-  ExcelExport,
-  PdfExport,
-  Sort,
-  Filter,
-  Freeze,
-  Aggregate,
-]
-
-// const flattenObject = (obj: any) => {
-//   const flattened: any = {}
-
-//   Object.keys(obj).forEach((key) => {
-//     if (typeof obj[key] === "object" && obj[key] !== null && obj[key]["_unrollValue"] === true) {
-//       Object.assign(flattened, obj[key].data)
-//     } else {
-//       flattened[key] = obj[key]
-//     }
-//   })
-
-//   return flattened
-// }
-
-// const detailMapper = (childData: any[]) => ({
-//   // @ts-ignore
-//   childGrid,
-//   data: parentDataRecord,
-// }: DetailDataBoundEventArgs): void => {
-//   childGrid.dataSource = childData.map((childRecord) =>
-//     parentDataRecord && childGrid.queryString
-//       ? {
-//           // @ts-ignore
-//           [childGrid.queryString]: parentDataRecord[childGrid.queryString],
-//           ...childRecord,
-//         }
-//       : childRecord
-//   )
-// }
 
 const reportDetailsToComponent = (
   details: string | ReportDetails | LocalReportConfig,
