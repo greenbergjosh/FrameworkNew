@@ -13,19 +13,20 @@ var impressionEvent = {
     duplicate: true
   },
   data: {
-    event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+    event: 'impression',
     page: '{page}',
     pageOrder: '{pageOrder}',
     pageCount: '{pageCount}',
     groupPageCount: '{groupPageCount}',
     surveyPageCount: '{surveyPageCount}',
     questionPageCount: '{questionPageCount}',
+    answerPageCount: '{answerPageCount}',
     survey: '{survey}',
     question: '{question}'
   }
 };
 
-var reportSurvey = function(page, id) {
+var reportSurvey = function(page, id, nextFn) {
   var surveyConfig = edw.createConfig(surveyStack, {}, [impressionEvent]);
 
   edw.reportToEdw(surveyConfig, function(cf) {
@@ -36,7 +37,8 @@ var reportSurvey = function(page, id) {
       surveyPageCount: '0+',
       survey: id
     };
-  });
+  },
+  nextFn);
 };
 
 var reportSmartPath = function() {
@@ -51,10 +53,13 @@ var reportSmartPath = function() {
   });
 };
 
-var answerConfig = null;
+var answerConfig = {};
 
-var reportQuestion = function(page, id) {
+var reportQuestion = function(page, id, nextFn) {
   var survey = edw.getUrlParameter('survey');
+  if (!survey) {
+    survey = 'American';
+  }
   surveyStack[survey] = {};
 
   var qObj = {};
@@ -71,19 +76,20 @@ var reportQuestion = function(page, id) {
   });
   
   var questionConfig = edw.createConfig(questionStack, {}, [impressionEvent]);
-  answerConfig = edw.createConfig(answerStack, {}, [{
+  answerConfig[id] = edw.createConfig(answerStack, {}, [{
     key: ['event'],
     duplicate: {
       duplicate: true
     },
     data: {
-      event: '4F28AF59-CAEE-4A50-827B-2125DBE163AF',
+      event: 'click',
       page: '{page}',
       pageOrder: '{pageOrder}',
       pageCount: '{pageCount}',
       groupPageCount: '{groupPageCount}',
       surveyPageCount: '{surveyPageCount}',
       questionPageCount: '{questionPageCount}',
+      answerPageCount: '{answerPageCount}',
       survey: '{survey}',
       question: '{question}',
       answer: '{answer}'
@@ -91,26 +97,77 @@ var reportQuestion = function(page, id) {
   }]);
 
   edw.reportToEdw(questionConfig, function(cf) {
-    cf.ss.session.page = page;
-    cf.ss.session.pageCount = '0+';
-    cf.ss.grp1.groupPageCount = '0+';
+    if (page) {
+      cf.ss.session.page = page;
+      cf.ss.session.pageCount = '0+';
+      cf.ss.grp1.groupPageCount = '0+';
+    } else {
+      cf.ss.session = {};
+      cf.ss.grp1 = {};
+    }
+    
     cf.ss[survey] = {};
     cf.ss['question' + id].questionPageCount = '0+'
     cf.ss['question' + id].question = id;
+  },
+  nextFn);
+};
+
+var createAnswerConfig = function(survey, questionId) {
+  var qObj = {};
+  qObj['question' + questionId] = {
+    keyPrefix: survey
+  };
+  
+  var questionStack = edw.stackBasedOn(surveyStack, qObj);
+  
+  var answerStack = edw.stackBasedOn(questionStack, {
+    answer: {
+      keyPrefix: 'question' + questionId
+    }
+  });
+  
+  var config = edw.createConfig(answerStack, {}, [impressionEvent]);
+  config.ss.session = {};
+  config.ss.grp1 = {};
+  config.ss.answer.answerPageCount = '0+';
+  return config;
+};
+
+var reportAnswersImpression = function(survey) {
+  var config = createAnswerConfig(survey, 1);
+  edw.reportToEdw(config, null,
+  function() {
+    config = createAnswerConfig(survey, 2);
+    edw.reportToEdw(config, null,
+    function() {
+      config = createAnswerConfig(survey, 3);
+      edw.reportToEdw(config, null,
+      function() {
+        config = createAnswerConfig(survey, 4);
+        edw.reportToEdw(config);
+      });
+    });
   });
 };
 
 var nextPage = null;
 
-var reportAnswer = function(answer) {
-  edw.reportToEdw(answerConfig, function(cf) {
+var reportAnswer = function(questionId, answer) {
+  edw.reportToEdw(answerConfig[questionId], function(cf) {
+    if (!nextPage) {
+      cf.ss.grp1 = {};
+      cf.ss.session = {};
+    }
     cf.ss.answer.answer = answer;
   }, function() {
     if (nextPage) {
       var survey = edw.getUrlParameter('survey');
       window.location = nextPage + '.html?survey=' + survey;
     } else {
-      window.location = 'smartPath.html';
+      if (window.location.href.indexOf('full.html') === -1 || questionId === 4) {
+        window.location = 'smartPath.html';
+      }
     }
   });
 };
