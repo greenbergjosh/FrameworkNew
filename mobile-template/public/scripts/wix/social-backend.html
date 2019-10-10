@@ -1,0 +1,25 @@
+<script type="text/javascript">
+  function registerGetGotSocialBackend() {
+    console.debug("-- BEGIN Registering GetGot Social Backend --", document)
+    try {
+      window.onmessage = (event) => {
+        if (event.data) {
+          console.log("HTML Code Element received a message!", event.data)
+          if (event.data.action === "share") {
+            const productString = encodeURI(JSON.stringify(event.data.product))
+            const getgotWindow = window.open(
+              `http://ec2-35-170-186-135.compute-1.amazonaws.com/createpromotion.html?product=${productString}`,
+              "Share with GetGot",
+              "location=0,status=0,width=400,height=650"
+            )
+          }
+        }
+      }
+
+      console.debug("-- COMPLETE Registering GetGot Social Backend --")
+    } catch (ex) {
+      console.error("-- FAILED Registering GetGot Social Backend --", ex)
+    }
+  }
+  setTimeout(registerGetGotSocialBackend, 1000)
+</script>
