@@ -22,7 +22,7 @@ namespace EdwServiceLib
         private FrameworkWrapper _fw;
 
         private static readonly string SessionTerminateEventId = "sessionTimeout";
-        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(20);
+        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(300);
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         private readonly Dictionary<string, Func<HttpContext, Task<object>>> _routes =
@@ -488,7 +488,12 @@ namespace EdwServiceLib
             be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
             // await _fw.EdwWriter.Write(be);
 
-            await SetStackFrame(session, stack.Last().Key, JObject.FromObject(sfData));
+            var jObj = JObject.FromObject(sfData);
+            await SetStackFrame(session, stack.Last().Key, jObj);
+            foreach (var (s, value) in jObj)
+            {
+                stackFrame[s] = value;
+            }
 
             return data;
         }
