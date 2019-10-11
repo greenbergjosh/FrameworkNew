@@ -22,7 +22,7 @@ namespace EdwServiceLib
         private FrameworkWrapper _fw;
 
         private static readonly string SessionTerminateEventId = "sessionTimeout";
-        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(20);
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         private readonly Dictionary<string, Func<HttpContext, Task<object>>> _routes =
@@ -40,6 +40,7 @@ namespace EdwServiceLib
         private const string Rs = "rs";
         private const string Ev = "ev";
         private const string Cf = "cf";
+        private const string Es = "es";
         private const string ConfigId = "configId";
         private const string KeyPrefix = "keyPrefix";
         private const string SfName = "__sfName";
@@ -58,6 +59,7 @@ namespace EdwServiceLib
             _routes.Add($"/{Cf}", Config);
             _routes.Add($"/{Ss}", SetStackFrame);
             _routes.Add($"/{Sf}", GetOrCreateStackFrame);
+            _routes.Add($"/{Es}", EndSession);
         }
 
         public async Task Run(HttpContext context)
@@ -208,7 +210,7 @@ namespace EdwServiceLib
                 e.AddExpirationToken(new CancellationChangeToken(cts.Token))
                  .RegisterPostEvictionCallback(async (key, value, reason, state) =>
                  {
-                     if (reason == EvictionReason.Replaced)
+                     if (reason != EvictionReason.TokenExpired)
                          return;
 
                      Debug.WriteLine(key);
@@ -237,6 +239,21 @@ namespace EdwServiceLib
             });
             tokens.cts.CancelAfter(SessionTimeout);
             return tokens.ctsKey.Token;
+        }
+
+        private async Task<object> EndSession(HttpContext context)
+        {
+            var body = await context.GetRawBodyStringAsync();
+            var json = (JObject)JsonWrapper.TryParse(body);
+
+            var session = GetOrCreateSession(context, json);
+            var key = $"{session.Id}";
+            var tokens = _cache.Get<(CancellationTokenSource cts, CancellationTokenSource ctsKey)>(key);
+            _cache.Remove(key);
+            tokens.cts.Dispose();
+            tokens.ctsKey.Cancel();
+            tokens.ctsKey.Dispose();
+            return null;
         }
 
         private async Task<object> GetOrCreateRs(HttpContext context)
@@ -309,7 +326,7 @@ namespace EdwServiceLib
             var rsid = Guid.NewGuid();
             be.AddRS(edwType, rsid, DateTime.UtcNow, pl, configId);
 
-            await _fw.EdwWriter.Write(be);
+            //await _fw.EdwWriter.Write(be);
 
             var rsList = session.GetOrCreate(rsListKey, () => new List<(string, Guid)>());
             if (rsList.All(tuple => tuple.Item1 != name))
@@ -469,7 +486,7 @@ namespace EdwServiceLib
             }
 
             be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
-            await _fw.EdwWriter.Write(be);
+            // await _fw.EdwWriter.Write(be);
 
             await SetStackFrame(session, stack.Last().Key, JObject.FromObject(sfData));
 

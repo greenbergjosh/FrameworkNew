@@ -98,6 +98,13 @@ export const ev = async (key, data, addToWhep = false, includeWhep = false, dupl
   return result;
 };
 
+export const es = async (sessionId = null) => {
+  const result = await post(url('es'), {
+    sessionId
+  });
+  return result;
+};
+
 const url = (path, sessionId, params) => {
   const url = new URL(serverAddress + '/' + path);
   if (sessionId) {
