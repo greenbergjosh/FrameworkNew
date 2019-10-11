@@ -48,6 +48,12 @@ export interface Effects {
     accessToken: string
   }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
+  authLoginOneLogin(p: {
+    profileId: string
+    idToken: string
+    accessToken: string
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
+
   globalConfigsDeleteById(
     ids: Array<PersistedConfig["id"]>
   ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
@@ -168,6 +174,41 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         body: {
           "auth:login": {
             google: params,
+          },
+        },
+        expect: AdminApi.authResponsePayloadCodec.login,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        transformResponse: (data) => {
+          const jsonThingHopefullyIsData = JSON5.parse(data)
+          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
+            ? {
+                "auth:login": {
+                  r: 0,
+                  result: jsonThingHopefullyIsData["auth:login"],
+                },
+              }
+            : data
+        },
+        url: apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+            return payload["auth:login"].r === 0
+              ? AdminApi.OK(payload["auth:login"].result)
+              : AdminApi.mkAdminApiError(payload["auth:login"].r)
+          }
+        )
+      )
+    },
+
+    authLoginOneLogin(params, { remoteDataClient }) {
+      return request({
+        body: {
+          "auth:login": {
+            onelogin: params,
           },
         },
         expect: AdminApi.authResponsePayloadCodec.login,
