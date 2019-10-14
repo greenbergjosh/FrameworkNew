@@ -7,9 +7,28 @@
 <body>
   <form>
     <h1>Choose your domain</h1>
-    <button type="button" onclick="reportDomain('domain1', '9CC89491-9EB7-4899-BDEC-5213E01AFAFE', function() {window.location = 'browse2.html';})">domain1</button>
-    <button type="button" onclick="reportDomain('domain2', '9CC89491-9EB7-4899-BDEC-5213E01AFAFE', function() {window.location = 'browse2.html';})">domain2</button>
+    <button type="button" onclick="createRs('domain1')">domain1</button>
+    <button type="button" onclick="createRs('domain2')">domain2</button>
   </form>
 <script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+<script type="text/javascript">
+  var createRs = function(domain) {
+    edw.reportToEdw({
+      rs: {
+        partial: {
+          configId: '9CC89491-9EB7-4899-BDEC-5213E01AFAFE',
+          type: 'Immediate',
+          data: {
+            domain: domain
+          }
+        }
+      }
+    },
+    null,
+    function() {
+      window.location = 'browse2.html';
+    });
+  };
+</script>
 </body>
 </html>

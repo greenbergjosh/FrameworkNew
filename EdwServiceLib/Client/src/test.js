@@ -1,4 +1,4 @@
-var surveyStack = {
+var baseStack = {
   session: {
     pageOrder: 'page+'
   },
@@ -7,13 +7,9 @@ var surveyStack = {
   }
 };
 
-var impressionEvent = {
-  key: ['event'],
-  duplicate: {
-    duplicate: true
-  },
-  data: {
-    event: 'impression',
+var createEventData = function(event) {
+  return {
+    event: event,
     page: '{page}',
     pageOrder: '{pageOrder}',
     pageCount: '{pageCount}',
@@ -24,31 +20,24 @@ var impressionEvent = {
     surveyId: '{survey}',
     questionId: '{question}',
     answerId: '{answerId}'
-  }
+  };
 };
 
-var clickEvent = {
-  key: ['event'],
-  duplicate: {
-    duplicate: true
-  },
-  data: {
-    event: 'click',
-    page: '{page}',
-    pageOrder: '{pageOrder}',
-    pageCount: '{pageCount}',
-    groupPageCount: '{groupPageCount}',
-    surveyPageCount: '{surveyPageCount}',
-    questionPageCount: '{questionPageCount}',
-    answerPageCount: '{answerPageCount}',
-    surveyId: '{survey}',
-    questionId: '{question}',
-    answerId: '{answerId}'
-  }
+var createEventConfig = function(event) {
+  return {
+    key: ['event'],
+    duplicate: {
+      duplicate: true
+    },
+    data: createEventData(event)
+  };
 };
+
+var impressionEvent = createEventConfig('impression');
+var clickEvent = createEventConfig('click');
 
 var reportSurvey = function(page, id, nextFn) {
-  var surveyConfig = edw.createConfig(surveyStack, {}, [impressionEvent]);
+  var surveyConfig = edw.createConfig(baseStack, {}, [impressionEvent, clickEvent]);
 
   edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.session.page = page;
@@ -67,12 +56,12 @@ var reportSmartPath = function() {
     session: {
       pageOrder: 'page+'
     }
-  }, {}, [impressionEvent]);
+  }, {}, [impressionEvent, clickEvent]);
 
   edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.session.page = 'smartPath';
   }, function() {
-    edw.es();
+    edw.es(); // End session
   });
 };
 
@@ -83,14 +72,14 @@ var reportQuestion = function(page, id, nextFn) {
   if (!survey) {
     survey = 'American';
   }
-  surveyStack[survey] = {};
+  baseStack[survey] = {};
 
   var qObj = {};
   qObj['question' + id] = {
     keyPrefix: survey
   };
   
-  var questionStack = edw.stackBasedOn(surveyStack, qObj);
+  var questionStack = edw.stackBasedOn(baseStack, qObj);
   
   var answerStack = edw.stackBasedOn(questionStack, {
     answer: {
@@ -124,7 +113,7 @@ var createAnswerConfig = function(survey, questionId, answerId) {
     keyPrefix: survey
   };
   
-  var questionStack = edw.stackBasedOn(surveyStack, qObj);
+  var questionStack = edw.stackBasedOn(baseStack, qObj);
   
   var answerStack = edw.stackBasedOn(questionStack, {
     answer: {
@@ -137,19 +126,7 @@ var createAnswerConfig = function(survey, questionId, answerId) {
     duplicate: {
       duplicate: true
     },
-    data: {
-      event: 'impression',
-      page: '{page}',
-      pageOrder: '{pageOrder}',
-      pageCount: '{pageCount}',
-      groupPageCount: '{groupPageCount}',
-      surveyPageCount: '{surveyPageCount}',
-      questionPageCount: '{questionPageCount}',
-      answerPageCount: '{answerPageCount}',
-      surveyId: '{survey}',
-      questionId: '{question}',
-      answerId: '{answerId}'
-    }
+    data: createEventData('impression')
   }]);
   config.ss.session = {};
   config.ss.grp1 = {};
@@ -208,68 +185,37 @@ var setupSmartPath = function() {
   };
 };
 
-var reportDomain = function(domain, configId, nextFn) {
+var reportDomain = function(domain, nextFn) {
   edw.reportToEdw({
     rs: {
-      /*full: {
-        configId: '46D13674-95C8-4CD0-A21A-2EFA513FB8B4',
-        type: 'Immediate',
-        data: {
-          domain: domain
-        }
-      },*/
       partial: {
-        configId: configId,
+        configId: 'A0465746-CC44-4F66-B9FB-66EDE6619B47',
         type: 'Immediate',
         data: {
           domain: domain
         }
-      }/*,
-      paged: {
-        configId: '9CC89491-9EB7-4899-BDEC-5213E01AFAFE',
-        type: 'Immediate',
-        data: {
-          domain: domain
-        }
-      }*/
+      }
     }
   }, 
   function() {},
   nextFn);
 };
 
-var orderGroupStack = {
-  session: {
-    pageOrder: 'page+'
-  },
-  grp1: {
-
-  }
-};
-
 var setupOrderGroup = function() {
   window.onload = function() {
-    reportOrderGroup();
+    var config = edw.createConfig(baseStack, {}, [impressionEvent, clickEvent]);
+    edw.reportToEdw(config, function(cf) {
+      cf.ss.session.page = 'OrderGroup';
+    });
   };
-};
-
-var reportOrderGroup = function() {
-  var config = edw.createConfig(orderGroupStack, {}, [impressionEvent, clickEvent]);
-  edw.reportToEdw(config, function(cf) {
-    cf.ss.session.page = 'OrderGroup';
-  });
 };
 
 var setupPage = function(page) {
   window.onload = function() {
-    reportPage(page);
+    var config = edw.createConfig(baseStack, {}, [impressionEvent, clickEvent]);
+    edw.reportToEdw(config, function(cf) {
+      cf.ss.session.page = page;
+      cf.ss[page] = {};
+    });
   };
-};
-
-var reportPage = function(page) {
-  var config = edw.createConfig(orderGroupStack, {}, [impressionEvent, clickEvent]);
-  edw.reportToEdw(config, function(cf) {
-    cf.ss.session.page = page;
-    cf.ss[page] = {};
-  });
 };

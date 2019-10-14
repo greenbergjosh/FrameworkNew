@@ -21,8 +21,8 @@ namespace EdwServiceLib
     {
         private FrameworkWrapper _fw;
 
-        private static readonly string SessionTerminateEventId = "sessionTimeout";
-        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(300);
+        private const string SessionTerminateEventId = "sessionTimeout";
+        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(10);
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         private readonly Dictionary<string, Func<HttpContext, Task<object>>> _routes =
@@ -248,11 +248,11 @@ namespace EdwServiceLib
 
             var session = GetOrCreateSession(context, json);
             var key = $"{session.Id}";
-            var tokens = _cache.Get<(CancellationTokenSource cts, CancellationTokenSource ctsKey)>(key);
+            var (cts, ctsKey) = _cache.Get<(CancellationTokenSource cts, CancellationTokenSource ctsKey)>(key);
             _cache.Remove(key);
-            tokens.cts.Dispose();
-            tokens.ctsKey.Cancel();
-            tokens.ctsKey.Dispose();
+            cts.Dispose();
+            ctsKey.Cancel();
+            ctsKey.Dispose();
             return null;
         }
 
@@ -326,7 +326,7 @@ namespace EdwServiceLib
             var rsid = Guid.NewGuid();
             be.AddRS(edwType, rsid, DateTime.UtcNow, pl, configId);
 
-            //await _fw.EdwWriter.Write(be);
+            await _fw.EdwWriter.Write(be);
 
             var rsList = session.GetOrCreate(rsListKey, () => new List<(string, Guid)>());
             if (rsList.All(tuple => tuple.Item1 != name))
@@ -485,8 +485,8 @@ namespace EdwServiceLib
                 sfData.Add(Whep, whepArray);
             }
 
-            be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
-            // await _fw.EdwWriter.Write(be);
+            be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl); 
+            await _fw.EdwWriter.Write(be);
 
             var jObj = JObject.FromObject(sfData);
             await SetStackFrame(session, stack.Last().Key, jObj);
