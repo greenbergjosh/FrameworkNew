@@ -13,14 +13,14 @@ namespace EdwServiceLib
 
         public bool TryGetValue(string key, out IDictionary<string, JToken> value)
         {
-            var match = this.FirstOrDefault(pair => pair.Key == key);
-            if (string.IsNullOrEmpty(match.Key))
+            var (s, dictionary) = this.FirstOrDefault(pair => pair.Key == key);
+            if (string.IsNullOrEmpty(s))
             {
                 value = null;
                 return false;
             }
 
-            value = match.Value;
+            value = dictionary;
             return true;
         }
     }
