@@ -132,12 +132,16 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
       if (grid.current.allowGrouping) {
         grid.current.groupModule.expandAll()
       }
-      grid.current.detailRowModule.expandAll()
+      if (grid.current.detailRowModule) {
+        grid.current.detailRowModule.expandAll()
+      }
     } else if (id === "collapse") {
       if (grid.current.allowGrouping) {
         grid.current.groupModule.collapseAll()
       }
-      grid.current.detailRowModule.collapseAll()
+      if (grid.current.detailRowModule) {
+        grid.current.detailRowModule.collapseAll()
+      }
     }
   }
 }
