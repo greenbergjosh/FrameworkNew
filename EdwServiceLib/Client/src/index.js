@@ -7,10 +7,10 @@ export const rsTypes = {
 };
 
 let stack = [];
-let isLogging = false;
+let isLogging = true;
 
 export const enableLogging = (enable) => {
-  isLogging = true;
+  isLogging = enable;
 };
 
 export const sfAllow = async (names, sessionId = null) => {
@@ -100,6 +100,9 @@ export const es = async (sessionId = null) => {
   const result = await post(url('es'), {
     sessionId
   });
+  if (isLogging) {
+    console.log('onPop: ' + JSON.stringify(result, undefined, 2));
+  }
   return result;
 };
 

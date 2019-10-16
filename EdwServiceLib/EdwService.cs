@@ -342,14 +342,14 @@ namespace EdwServiceLib
             var session = GetOrCreateSession(context, json);
             var newStack = BuildStack(session, new[] { Session });
             var oldStack = GetOldStack(session);
-            await PopStackFrames(session, oldStack, newStack, false);
+            var result = await PopStackFrames(session, oldStack, newStack, false);
             var key = $"{session.Id}";
             var (cts, ctsKey) = _cache.Get<(CancellationTokenSource cts, CancellationTokenSource ctsKey)>(key);
             _cache.Remove(key);
             cts.Dispose();
             ctsKey.Cancel();
             ctsKey.Dispose();
-            return null;
+            return JsonWrapper.Serialize(result);
         }
 
         private async Task<object> GetOrCreateRs(HttpContext context)
@@ -491,7 +491,7 @@ namespace EdwServiceLib
 
         private static (string stackAge, string preName, string name) ExtractNames(string value)
         {
-            var nameParts = value.Split(',');
+            var nameParts = value.Split('.');
             var stackAge = NewStack;
             string preName = null;
             string name;
@@ -540,20 +540,7 @@ namespace EdwServiceLib
                 }
                 else
                 {
-                    Stack stack;
-                    switch (stackAge)
-                    {
-                        case OldStack:
-                            stack = oldStack;
-                            break;
-
-                        case NewStack:
-                            stack = newStack;
-                            break;
-
-                        default:
-                            throw new InvalidOperationException($"Invalid newStack name {stackAge}.");
-                    }
+                    var stack = GetStackByAge(oldStack, newStack, stackAge);
 
                     if (!string.IsNullOrEmpty(preName))
                     {
@@ -579,7 +566,7 @@ namespace EdwServiceLib
             Session session,
             Stack oldStack, Stack newStack,
             IEnumerable<string> keyParts, JObject data, 
-            bool addToWhep, bool includeWhep, JObject duplicate, JArray when)
+            bool addToWhep, bool includeWhep, JObject duplicate, IEnumerable when)
         {
             // Get last newStack frame and get/create event dictionary.
             var stackFrame = newStack.Last().Value;
@@ -891,21 +878,7 @@ namespace EdwServiceLib
             }
             else
             {
-                Stack stack;
-                switch (stackAge)
-                {
-                    case OldStack:
-                        stack = oldStack;
-                        break;
-
-                    case NewStack:
-                        stack = newStack;
-                        break;
-
-                    default:
-                        throw new InvalidOperationException($"Invalid newStack name {stackAge}.");
-                }
-
+                var stack = GetStackByAge(oldStack, newStack, stackAge);
                 if (stack != null)
                 {
                     if (!string.IsNullOrEmpty(preName))
@@ -919,6 +892,26 @@ namespace EdwServiceLib
                 data.Remove(property.Name);
             else
                 data[property.Name] = value;
+        }
+
+        private static Stack GetStackByAge(Stack oldStack, Stack newStack, string stackAge)
+        {
+            Stack stack;
+            switch (stackAge)
+            {
+                case OldStack:
+                    stack = oldStack;
+                    break;
+
+                case NewStack:
+                    stack = newStack;
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Invalid newStack name {stackAge}.");
+            }
+
+            return stack;
         }
     }
 }

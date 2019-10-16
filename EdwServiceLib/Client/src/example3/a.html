@@ -38,7 +38,7 @@
               key: ['event'],
               data: {
                 event: 'reached',
-                pageOrder: '{pageOrder}'
+                pageOrder: '{oldStack.grp1.pageOrder}'
               }
             },
             {
@@ -46,7 +46,7 @@
               key: ['event'],
               data: {
                 event: 'sessionTimeout',
-                pageOrder: '{pageOrder}'
+                pageOrder: '{oldStack.grp1.pageOrder}'
               }
             }
           ]
@@ -72,7 +72,7 @@
 
     Array.from(document.getElementsByClassName("link")).forEach(element => {
       edw.forwardUrlParams(element);
-      element.addEventListener("click", function(event){
+      element.addEventListener("click", function(event) {
         event.preventDefault();
         
         edw.ev([
