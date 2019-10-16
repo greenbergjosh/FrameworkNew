@@ -34,9 +34,18 @@
           page: document.title,
           onPop: [
             {
+              whenSessionTimeout: false,
               key: ['event'],
               data: {
                 event: 'reached',
+                pageOrder: '{pageOrder}'
+              }
+            },
+            {
+              whenSessionTimeout: true,
+              key: ['event'],
+              data: {
+                event: 'sessionTimeout',
                 pageOrder: '{pageOrder}'
               }
             }
@@ -46,7 +55,7 @@
           onPush: [
             {
               key: ['event'],
-              duplicate: {
+              whenDuplicate: {
                 duplicate: true
               },
               data: {
@@ -75,7 +84,7 @@
           ev: [
             {
               key: ['event'],
-              duplicate: {
+              whenDuplicate: {
                 duplicate: true
               },
               data: {

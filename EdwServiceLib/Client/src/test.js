@@ -27,7 +27,7 @@ var createEventConfig = function(event) {
   return {
     key: ['event', 'page'],
     onPop: true,
-    /*duplicate: {
+    /*whenDuplicate: {
       duplicate: true
     },*/
     data: createEventData(event)
@@ -113,7 +113,7 @@ var createAnswerConfig = function(survey, questionId, answerId) {
   var config = edw.createConfig(answerStack, {}, [{
     key: ['event','answerId'],
     onPop: true,
-    /*duplicate: {
+    /*whenDuplicate: {
       duplicate: true
     },*/
     data: createEventData('impression')
