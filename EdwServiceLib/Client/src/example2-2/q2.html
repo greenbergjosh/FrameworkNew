@@ -29,7 +29,7 @@
     var survey = edw.getUrlParameter('survey');
     var domain = edw.getUrlParameter('domain');
 
-    var reportAnswer = function(element, responseId) {
+    var reportAnswer = function(element, answerId) {
       var questionId = element.getAttribute('data-question');
       edw.ev([
         {
@@ -42,7 +42,7 @@
             pageOrder: '{oldStack.grp1.pageOrder}',
             surveyId: survey,
             questionId: questionId,
-            responseId: responseId
+            answerId: answerId
           }
         }
       ]);
