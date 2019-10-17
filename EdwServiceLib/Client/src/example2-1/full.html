@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Full Survey</title>
+</head>
+<body>
+  <div id="app">
+      <h1>Full Survey</h1>
+      <h3>This is the full survey!</h3>
+  </div>
+  <br />
+  <br />
+  <form>
+    <h1>Question 1</h1>
+    <h3>What is your favorite salad dressing?</h3>
+    <button class="q1" data-question="1" data-answer="1" type="button">Ranch</button>
+    <button class="q1" data-question="1" data-answer="2" type="button">Italian</button>
+    <button class="q1" data-question="1" data-answer="3" type="button">Cesar</button>
+    <button class="q1" data-question="1" data-answer="4" type="button">Garlic</button>
+  </form>
+  <br />
+  <br />
+  <form>
+    <h1>Question 2</h1>
+    <h3>How many children do you have?</h3>
+    <input type="number" name="nbChildren" min="1" max="5">
+    <button class="q2" data-question="2" type="button">Submit</button>
+  </form>
+  <br />
+  <br />
+  <form>
+    <h1>Question 3</h1>
+    <h3>Do you have a car?</h3>
+    <input class="radio" type="radio" name="hasCar" value="false" checked>No
+    <input class="radio" type="radio" name="hasCar" value="true">Yes<br>
+    <br/>
+    <div>
+      <label for="brand">Brand</label>
+      <input type="text" name="brand" disabled></input>
+    </div>
+    <div>
+      <label for="model">Model</label>
+      <input type="text" name="model" disabled></input>
+    </div>
+    <div>
+      <label for="brand">Year</label>
+      <input type="number" name="year" min="1886" max="2019" disabled></input>
+    </div>
+    <br/>
+    <button class="q3" data-question="3" type="button">Submit</button>
+  </form>
+  <br />
+  <br />
+  <form>
+    <h1>Question 4</h1>
+    <h3>What is your date of birth?</h3>
+    <input type="date" id="start" name="dateOfBirth" >
+    <button class="q4" data-question="4" type="button">Submit</button>
+  </form>
+  <br />
+  <br />
+  <a href="smartPath.html">Submit Survey</a>
+  <br />
+  <br />
+<script type="text/javascript">
+  var survey = edw.getUrlParameter('survey');
+  var domain = edw.getUrlParameter('domain');
+
+  var reportAnswer = function(element, responseId) {
+    var questionId = element.getAttribute('data-question');
+    edw.ev([
+      {
+        rs: ['clicks'],
+        onPop: true,
+        key: ['event','questionId'],
+        data: {
+          event: 'submit',
+          lastPage: '{oldStack.grp1.page}',
+          pageOrder: '{oldStack.grp1.pageOrder}',
+          surveyId: survey,
+          questionId: questionId,
+          responseId: responseId
+        }
+      }
+    ]);
+  };
+
+  window.onload = function() {
+    var config = {
+      rs: {
+        clicks: {
+          configId: 'A0465746-CC44-4F66-B9FB-66EDE6619B47',
+          type: 'Immediate',
+          data: {
+            domain: domain
+          }
+        }
+      },
+      st: {
+        session: {},
+        grp1: {
+
+        }
+      }
+    };
+
+    
+    config.st[survey] = {
+      surveyId: survey,
+      onPush: [
+        {
+          rs: ['clicks'],
+          key: ['event','surveyId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}'
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 1
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 2
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 3
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 4
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: 1,
+            answerId: 1
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 1,
+            answerId: 2
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 1,
+            answerId: 3
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','questionId','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: survey,
+            questionId: 1,
+            answerId: 4
+          }
+        }
+      ]
+    };
+
+    edw.reportToEdw(config);
+
+    Array.from(document.getElementsByClassName("q1")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, element.getAttribute('data-answer'));
+      });
+    });
+
+    Array.from(document.getElementsByClassName("q2")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, document.getElementsByName('nbChildren')[0].value);
+      });
+    });
+
+    Array.from(document.getElementsByClassName("q3")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, document.querySelector('input[name="hasCar"]:checked').value);
+      });
+    });
+
+    Array.from(document.getElementsByClassName("q4")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, document.getElementsByName('dateOfBirth')[0].value);
+      });
+    });
+
+    Array.from(document.getElementsByClassName("radio")).forEach(element => {
+      element.addEventListener("change", function(event) {
+        var disabled = !(document.querySelector('input[name="hasCar"]:checked').value == "true");
+        document.getElementsByName("brand")[0].disabled = disabled;
+        document.getElementsByName("model")[0].disabled = disabled;
+        document.getElementsByName("year")[0].disabled = disabled;
+      });
+    });
+  };
+</script>
+</body>
+</html>

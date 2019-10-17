@@ -121,15 +121,6 @@ const url = (path, sessionId, params) => {
   return url;
 };
 
-export const forwardUrlParams = (element) => {
-  element.href = element.href + window.location.search;
-};
-
-export const getUrlParam = (id) => {
-  const params = new URLSearchParams(location.search);
-  return params.get(id);
-};
-
 const post = async (url, json) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -142,11 +133,11 @@ const post = async (url, json) => {
   return await response.json();
 };
 
-export const createConfig = (ss, rs, ev = []) => {
+export const createConfig = (st, rs, ev = []) => {
   return {
     enableLogging: isLogging,
     rs: rs,
-    ss: ss,
+    st: ss,
     ev: ev
   };
 };
@@ -171,4 +162,13 @@ export const getUrlParameter = (name) => {
 
 export const stackBasedOn = (base, values) => {
   return Object.assign({}, JSON.parse(JSON.stringify(base)), values);
+};
+
+export const forwardUrlParams = (element) => {
+  var newSearch = window.location.search;
+  var url = new URL(element.href);
+  if (url.search.length > 0 && url.search[0] == '?' && newSearch.length > 0)
+    newSearch = '&' + newSearch.substr(1);
+
+  element.href = element.href + newSearch;
 };
