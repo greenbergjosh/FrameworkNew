@@ -173,6 +173,22 @@ namespace EdwServiceLib
             return null;
         }
 
+        private static bool AddEventTo(Session session, JObject evObj, Stack newStack, string propertyName)
+        {
+            if (!evObj.TryGetValue(propertyName, out var addTo) || addTo.Type != JTokenType.Boolean ||
+                !addTo.ToObject<bool>()) return false;
+
+            evObj.Remove(propertyName);
+            var sfName = newStack.Last().Key;
+            var sfData = JObject.FromObject(new Dictionary<string, object>
+            {
+                [propertyName] = new JArray { evObj }
+            });
+
+            DelegateEvent(session, sfName, sfData, propertyName);
+            return true;
+        }
+
         private async Task<List<object>> PublishEvents(Session session, Stack oldStack, Stack newStack, IEnumerable<JToken> evList, bool isSessionTimeout)
         {
             var evResults = new List<object>();
@@ -188,6 +204,12 @@ namespace EdwServiceLib
                 JObject duplicate = null;
                 JArray when = null;
                 string[] rsNames = null;
+
+                if (AddEventTo(session, evObj, newStack, OnPush))
+                    continue;
+
+                if (AddEventTo(session, evObj, newStack, OnPop))
+                    continue;
 
                 if (evObj.TryGetValue(WhenSessionTimeout, out var rawWhenSessionTimeout) &&
                     rawWhenSessionTimeout.Type == JTokenType.Boolean &&
@@ -701,8 +723,7 @@ namespace EdwServiceLib
             {
                 var keyParts = ((JArray)((JObject)ev)[Key]).ToObject<string[]>();
                 var key = ComputeEventKey(keyParts, (JObject)((JObject)ev)[Data]);
-                if (evDictionary.Properties().All(p => p.Name != key))
-                    evDictionary[key] = ev;
+                evDictionary[key] = ev;
             }
 
             session.Set($"{session.Id}:{Sf}:{stackFrameName}:{propertyName}", evDictionary);
