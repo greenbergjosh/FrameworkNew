@@ -172,7 +172,7 @@ namespace EdwServiceLib
             return null;
         }
 
-        private async Task<List<object>> PublishEvents(Session session, Stack oldStack, Stack newStack, JArray evList, bool isSessionTimeout)
+        private async Task<List<object>> PublishEvents(Session session, Stack oldStack, Stack newStack, IEnumerable<JToken> evList, bool isSessionTimeout)
         {
             var evResults = new List<object>();
 
@@ -240,11 +240,12 @@ namespace EdwServiceLib
             while (oldStackCount > diffIndex)
             {
                 var oldStackFrame = oldStack[oldStackCount - 1].Key;
-                var onPop = session.Get<JArray>($"{session.Id}:{Sf}:{oldStackFrame}:{OnPop}");
+                var onPop = session.Get<JObject>($"{session.Id}:{Sf}:{oldStackFrame}:{OnPop}");
                 if (onPop != null)
                 {
                     var subStack = oldStack.Range(oldStackCount);
-                    var poppedEvents = await PublishEvents(session, subStack, newStack, onPop, isSessionTimeout);
+                    var evList = onPop.Properties().Select(p => p.Value).ToArray();
+                    var poppedEvents = await PublishEvents(session, subStack, newStack, evList, isSessionTimeout);
                     evResults.AddRange(poppedEvents);
                 }
 
@@ -262,10 +263,11 @@ namespace EdwServiceLib
             for (var i = diffIndex; i < newStack.Count; i++)
             {
                 var newStackFrame = newStack[i].Key;
-                var onPush = session.Get<JArray>($"{session.Id}:{Sf}:{newStackFrame}:{OnPush}");
+                var onPush = session.Get<JObject>($"{session.Id}:{Sf}:{newStackFrame}:{OnPush}");
                 if (onPush == null) continue;
                 var subStack = newStack.Range(i + 1);
-                var pushedEvents = await PublishEvents(session, subStack, newStack, onPush, false);
+                var evList = onPush.Properties().Select(p => p.Value).ToArray();
+                var pushedEvents = await PublishEvents(session, subStack, newStack, evList, false);
                 evResults.AddRange(pushedEvents);
             }
 
@@ -510,11 +512,11 @@ namespace EdwServiceLib
                     name = nameParts[0];
                     break;
                 default:
-                    throw new InvalidOperationException($"Invalid variable name {value}.");
+                    throw new InvalidOperationException($"Invalid variable stackFrameName {value}.");
             }
 
             if (string.IsNullOrEmpty(name))
-                throw new InvalidOperationException($"Invalid variable name {name}.");
+                throw new InvalidOperationException($"Invalid variable stackFrameName {name}.");
 
             return (stackAge, preName, name);
         }
@@ -562,26 +564,8 @@ namespace EdwServiceLib
             return true;
         }
 
-        private async Task<object> PublishEvent(
-            Session session,
-            Stack oldStack, Stack newStack,
-            IEnumerable<string> keyParts, JObject data, 
-            bool addToWhep, bool includeWhep, JObject duplicate, IEnumerable when)
+        private static string ComputeEventKey(IEnumerable<string> keyParts, JObject data)
         {
-            // Get last newStack frame and get/create event dictionary.
-            var stackFrame = newStack.Last().Value;
-            JArray evArray;
-            if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
-                evArray = (JArray)rawEvArray;
-            else
-                evArray = new JArray();
-
-            TransformData(session, oldStack, newStack, newStack.Last().Key, data);
-
-            if (!EvaluatePredicate(when, oldStack, newStack, data))
-                return null;
-
-            // Compute event key
             var keyValues = new List<string>();
             foreach (var keyPart in keyParts)
             {
@@ -592,7 +576,30 @@ namespace EdwServiceLib
             }
 
             var key = string.Join(",", keyValues);
+            return key;
+        }
+
+        private async Task<object> PublishEvent(
+            Session session,
+            Stack oldStack, Stack newStack,
+            IEnumerable<string> keyParts, JObject data, 
+            bool addToWhep, bool includeWhep, JObject duplicate, IEnumerable when)
+        {
+            TransformData(session, oldStack, newStack, newStack.Last().Key, data);
+
+            if (!EvaluatePredicate(when, oldStack, newStack, data))
+                return null;
+
+            // Get last newStack frame and get/create event dictionary.
+            var stackFrame = newStack.Last().Value;
+            JArray evArray;
+            if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
+                evArray = (JArray)rawEvArray;
+            else
+                evArray = new JArray();
+
             // look for event key in event dictionary.
+            var key = ComputeEventKey(keyParts, data);
             var eventPresent = evArray.ToObject<string[]>().Contains(key);
 
             // If event key was already published and no duplicate info is passed, do not publish.
@@ -668,34 +675,40 @@ namespace EdwServiceLib
             return null;
         }
 
-        private static Task<(string Json, JToken Data)> SetStackFrame(Session session, string name, JToken data)
+        private static void DelegateEvent(Session session, string stackFrameName, JObject stackData, string propertyName)
+        {
+            if (!stackData.TryGetValue(propertyName, out var rawOnPush) || !(rawOnPush is JArray onPushOrPop)) 
+                return;
+
+            var evDictionary = session.Get<JObject>($"{session.Id}:{Sf}:{stackFrameName}:{propertyName}") ?? new JObject();
+
+            foreach (var ev in onPushOrPop)
+            {
+                var keyParts = ((JArray)((JObject)ev)[Key]).ToObject<string[]>();
+                var key = ComputeEventKey(keyParts, (JObject)((JObject)ev)[Data]);
+                if (evDictionary.Properties().All(p => p.Name != key))
+                    evDictionary[key] = ev;
+            }
+
+            session.Set($"{session.Id}:{Sf}:{stackFrameName}:{propertyName}", evDictionary);
+            stackData.Remove(propertyName);
+        }
+
+        private static Task<(string Json, JToken Data)> SetStackFrame(Session session, string stackFrameName, JToken data)
         {
             if (data is JObject obj)
             {
-                // Get onPush and onPop definitions.
-                // Move them in their own keys
-                if (obj.TryGetValue(OnPush, out var rawOnPush) &&
-                    rawOnPush is JArray onPush)
-                {
-                    session.Set($"{session.Id}:{Sf}:{name}:{OnPush}", onPush);
-                    obj.Remove(OnPush);
-                }
-
-                if (obj.TryGetValue(OnPop, out var rawOnPop) &&
-                    rawOnPop is JArray onPop)
-                {
-                    session.Set($"{session.Id}:{Sf}:{name}:{OnPop}", onPop);
-                    obj.Remove(OnPop);
-                }
+                DelegateEvent(session, stackFrameName, obj, OnPush);
+                DelegateEvent(session, stackFrameName, obj, OnPop);
             }
 
-            TransformData(session, null, null, name, data);
-            var serializedScope = session.GetOrCreate($"{session.Id}:{Sf}:{name}", () => JsonWrapper.Serialize(new JObject()));
+            TransformData(session, null, null, stackFrameName, data);
+            var serializedScope = session.GetOrCreate($"{session.Id}:{Sf}:{stackFrameName}", () => JsonWrapper.Serialize(new JObject()));
             var scopeStack = new StackFrameParser(serializedScope);
             scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
             var jsonStack = scopeStack.Json();
             serializedScope = JsonWrapper.Serialize(jsonStack);
-            session.Set($"{session.Id}:{Sf}:{name}", serializedScope);
+            session.Set($"{session.Id}:{Sf}:{stackFrameName}", serializedScope);
             return Task.FromResult((serializedScope, jsonStack));
         }
 
@@ -908,7 +921,7 @@ namespace EdwServiceLib
                     break;
 
                 default:
-                    throw new InvalidOperationException($"Invalid newStack name {stackAge}.");
+                    throw new InvalidOperationException($"Invalid newStack stackFrameName {stackAge}.");
             }
 
             return stack;
