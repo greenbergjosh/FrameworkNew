@@ -43,47 +43,6 @@ export const cf = async (data, sessionId = null) => {
   return result;
 };
 
-export const sf = async (name, data, sessionId = null) => {
-  const result = await post(url('sf'), {
-    sessionId,
-    name,
-    data,
-    stack
-  });
-  //TODO: Get sf name from result and push on stack
-  if (isLogging) {
-    console.log('StackFrame: ' + JSON.stringify(result, undefined, 2));
-  }
-  return result;
-};
-
-export const ss = async (name, data, sessionId = null) => {
-  const result = await post(url('ss'), {
-    sessionId,
-    name,
-    data
-  });
-  if (isLogging) {
-    console.log('StackFrame: ' + JSON.stringify(result, undefined, 2));
-  }
-  return result;
-};
-
-export const rs = async (type, name, configId, data, sessionId = null) => {
-  const result = await post(url('rs'), {
-    sessionId,
-    stack,
-    name,
-    configId,
-    data,
-    type
-  });
-  if (isLogging) {
-    console.log('Rs: ' + JSON.stringify(result, undefined, 2));
-  }
-  return result;
-};
-
 export const ev = async (data, nextFn = null, sessionId = null) => {
   const result = await post(url('ev'), {
     sessionId,

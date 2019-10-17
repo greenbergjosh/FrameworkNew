@@ -6,8 +6,8 @@
 </head>
 <body>
   <div id="app">
-      <h1>Full Survey</h1>
-      <h3>This is the full survey!</h3>
+    <h1>Full Survey</h1>
+    <h3>This is the full survey!</h3>
   </div>
   <br />
   <br />
@@ -64,29 +64,29 @@
   <br />
   <br />
 <script type="text/javascript">
-  var survey = edw.getUrlParameter('survey');
-  var domain = edw.getUrlParameter('domain');
-
-  var reportAnswer = function(element, responseId) {
-    var questionId = element.getAttribute('data-question');
-    edw.ev([
-      {
-        rs: ['clicks'],
-        onPop: true,
-        key: ['event','questionId'],
-        data: {
-          event: 'submit',
-          lastPage: '{oldStack.grp1.page}',
-          pageOrder: '{oldStack.grp1.pageOrder}',
-          surveyId: survey,
-          questionId: questionId,
-          responseId: responseId
-        }
-      }
-    ]);
-  };
-
   window.onload = function() {
+    var survey = edw.getUrlParameter('survey');
+    var domain = edw.getUrlParameter('domain');
+
+    var reportAnswer = function(element, responseId) {
+      var questionId = element.getAttribute('data-question');
+      edw.ev([
+        {
+          rs: ['clicks'],
+          onPop: true,
+          key: ['event','questionId'],
+          data: {
+            event: 'submit',
+            lastPage: '{oldStack.grp1.page}',
+            pageOrder: '{oldStack.grp1.pageOrder}',
+            surveyId: survey,
+            questionId: questionId,
+            responseId: responseId
+          }
+        }
+      ]);
+    };
+    
     var config = {
       rs: {
         clicks: {
@@ -100,12 +100,12 @@
       st: {
         session: {},
         grp1: {
-
+          pageOrder: 'page+',
+          page: document.title,
         }
       }
     };
 
-    
     config.st[survey] = {
       surveyId: survey,
       onPush: [
@@ -126,7 +126,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 1
           }
         },
@@ -137,7 +137,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 2
           }
         },
@@ -148,7 +148,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 3
           }
         },
@@ -159,7 +159,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 4
           }
         },
@@ -182,7 +182,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 1,
             answerId: 2
           }
@@ -194,7 +194,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 1,
             answerId: 3
           }
@@ -206,7 +206,7 @@
             event: 'impression',
             page: '{page}',
             pageOrder: '{pageOrder}',
-            surveyId: survey,
+            surveyId: '{surveyId}',
             questionId: 1,
             answerId: 4
           }
