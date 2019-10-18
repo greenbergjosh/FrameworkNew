@@ -38,25 +38,27 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
     const { defaultActiveKey, onChangeData, tabs, userInterfaceData } = this.props
     return (
       <DataPathContext path="tabs">
-        <Tabs defaultActiveKey={defaultActiveKey}>
+        <Tabs defaultActiveKey="tab0">
           {tabs &&
-            tabs.map((tab) => (
-              <Tabs.TabPane tab={tab.label} key={tab.key}>
-                <ComponentRenderer
-                  components={
-                    (tab as ComponentDefinitionRecursiveProp).components ||
-                    ([] as ComponentDefinition[])
-                  }
-                  data={userInterfaceData}
-                  onChangeData={onChangeData}
-                  onChangeSchema={(newSchema) => {
-                    console.warn(
-                      "TabsInterfaceComponent.render",
-                      "TODO: Cannot alter schema inside ComponentRenderer in Tabs",
-                      { newSchema }
-                    )
-                  }}
-                />
+            tabs.map((tab, index) => (
+              <Tabs.TabPane tab={tab.label} key={`tab${index}`}>
+                <DataPathContext path={`${index}.components`}>
+                  <ComponentRenderer
+                    components={
+                      (tab as ComponentDefinitionRecursiveProp).components ||
+                      ([] as ComponentDefinition[])
+                    }
+                    data={userInterfaceData}
+                    onChangeData={onChangeData}
+                    onChangeSchema={(newSchema) => {
+                      console.warn(
+                        "TabsInterfaceComponent.render",
+                        "TODO: Cannot alter schema inside ComponentRenderer in Tabs",
+                        { newSchema }
+                      )
+                    }}
+                  />
+                </DataPathContext>
               </Tabs.TabPane>
             ))}
         </Tabs>
