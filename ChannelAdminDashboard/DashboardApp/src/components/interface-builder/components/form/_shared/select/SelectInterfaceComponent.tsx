@@ -5,7 +5,7 @@ import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
-import { get, set } from "lodash/fp"
+import { get, intersectionWith, isEqual, set } from "lodash/fp"
 import React from "react"
 import { KeyValuePairConfig } from "../../../../../../data/AdminApi"
 import { Right } from "../../../../../../data/Either"
@@ -15,13 +15,8 @@ import { QueryConfigCodec } from "../../../../../../data/Report"
 import { cheapHash } from "../../../../../../lib/json"
 import { UserInterfaceContext } from "../../../../UserInterfaceContextManager"
 import { BaseInterfaceComponent } from "../../../base/BaseInterfaceComponent"
-import { SelectInterfaceComponentState } from "./interfaces"
-import {
-  modes,
-  modeType,
-  RemoteDataHandlerType,
-  SelectInterfaceComponentProps
-  } from "./types"
+import { SelectInterfaceComponentState, SelectOption } from "./interfaces"
+import { modes, modeType, RemoteDataHandlerType, SelectInterfaceComponentProps } from "./types"
 // import { selectManageForm } from "../../select/select-manage-form"
 
 export class SelectInterfaceComponent extends BaseInterfaceComponent<
@@ -79,10 +74,21 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<
     //   props.dataHandlerType,
     //   props.data
     // )
-    if (state.loadStatus === "none" && props.dataHandlerType === "local") {
-      return { options: (props.data && props.data.values) || [], loadStatus: "loaded" }
+    if (
+      props.dataHandlerType === "local" &&
+      SelectInterfaceComponent.optionsDidChange(props.data && props.data.values, state.options)
+    ) {
+      return {
+        options: (props.data && props.data.values) || [],
+        loadStatus: "loaded",
+      }
     }
     return null
+  }
+
+  private static optionsDidChange(values: SelectOption[], options: SelectOption[]) {
+    const intersection = intersectionWith(isEqual, values, options)
+    return intersection.length !== values.length || values.length !== options.length
   }
 
   handleChange = (value: string | string[]) => {
