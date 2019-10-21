@@ -63,27 +63,29 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<
       <Collapse accordion={accordion}>
         {sections.map((section, sectionIndex) => (
           <Collapse.Panel key={section.title} header={section.title}>
-            <ComponentRenderer
-              components={section.components}
-              data={userInterfaceData}
-              onChangeData={onChangeData}
-              onChangeSchema={(newSchema) => {
-                if (this.props.mode === "edit") {
-                  const { onChangeSchema, userInterfaceSchema } = this.props
-                  console.warn("CollapseInterfaceComponent.render", {
-                    newSchema,
-                    sectionIndex,
-                    onChangeSchema: this.props.onChangeSchema,
-                    userInterfaceSchema: this.props.userInterfaceSchema,
-                  })
-                  onChangeSchema &&
-                    userInterfaceSchema &&
-                    onChangeSchema(
-                      set(`sections.${sectionIndex}.components`, newSchema, userInterfaceSchema)
-                    )
-                }
-              }}
-            />
+            <DataPathContext path={`sections.${sectionIndex}.components`}>
+              <ComponentRenderer
+                components={section.components}
+                data={userInterfaceData}
+                onChangeData={onChangeData}
+                onChangeSchema={(newSchema) => {
+                  if (this.props.mode === "edit") {
+                    const { onChangeSchema, userInterfaceSchema } = this.props
+                    console.warn("CollapseInterfaceComponent.render", {
+                      newSchema,
+                      sectionIndex,
+                      onChangeSchema: this.props.onChangeSchema,
+                      userInterfaceSchema: this.props.userInterfaceSchema,
+                    })
+                    onChangeSchema &&
+                      userInterfaceSchema &&
+                      onChangeSchema(
+                        set(`sections.${sectionIndex}.components`, newSchema, userInterfaceSchema)
+                      )
+                  }
+                }}
+              />
+            </DataPathContext>
           </Collapse.Panel>
         ))}
       </Collapse>

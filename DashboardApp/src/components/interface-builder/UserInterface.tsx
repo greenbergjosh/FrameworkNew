@@ -230,6 +230,18 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                                 (itemToAdd.path === UI_ROOT
                                   ? components
                                   : get(itemToAdd.path, components)) || []
+
+                              if (typeof relevantList.slice !== "function") {
+                                console.warn(
+                                  "UserInterface",
+                                  "The path",
+                                  itemToAdd.path,
+                                  "yields",
+                                  relevantList,
+                                  "which is not an array!"
+                                )
+                              }
+
                               // Slice this item into the list
                               const updatedList = [
                                 ...relevantList.slice(0, itemToAdd.index),
@@ -252,6 +264,18 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                                 (itemToEdit.path === UI_ROOT
                                   ? components
                                   : get(itemToEdit.path, components)) || []
+
+                              if (typeof relevantList.slice !== "function") {
+                                console.warn(
+                                  "UserInterface",
+                                  "The path",
+                                  itemToEdit.path,
+                                  "yields",
+                                  relevantList,
+                                  "which is not an array!"
+                                )
+                              }
+
                               // Slice this item into the list, replacing the existing item
                               const updatedList = [
                                 ...relevantList.slice(0, itemToEdit.index),
