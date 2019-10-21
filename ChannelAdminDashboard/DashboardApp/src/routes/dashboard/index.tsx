@@ -205,20 +205,18 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         <Row className={`${styles.layoutContainer} ${styles.breadCrumbsRow}`}>
           <Breadcrumb>
             {props.location.pathname.split("/").map((_, idx, parts) => (
-              <>
-                <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
-                  <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
-                  {guidRegex().exec(parts[idx]) && (
-                    <CopyToClipboard
-                      text={parts[idx].toLowerCase()}
-                      onCopy={() => message.success("Copied!")}>
-                      <Button size="small" style={{ margin: "0 5px", opacity: 0.75 }}>
-                        <Icon type="copy" />
-                      </Button>
-                    </CopyToClipboard>
-                  )}
-                </Breadcrumb.Item>
-              </>
+              <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
+                <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
+                {guidRegex().exec(parts[idx]) && (
+                  <CopyToClipboard
+                    text={parts[idx].toLowerCase()}
+                    onCopy={() => message.success("Copied!")}>
+                    <Button size="small" style={{ margin: "0 5px", opacity: 0.75 }}>
+                      <Icon type="copy" />
+                    </Button>
+                  </CopyToClipboard>
+                )}
+              </Breadcrumb.Item>
             ))}
           </Breadcrumb>
         </Row>
