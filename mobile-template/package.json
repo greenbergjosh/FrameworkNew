@@ -1,6 +1,6 @@
 {
   "name": "getgot-mobile-template",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@babel/polyfill": "^7.4.3",

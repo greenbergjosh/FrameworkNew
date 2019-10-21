@@ -1,20 +1,195 @@
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  .getgotButtonWrapper {
+    position: absolute;
+    top: 109px;
+    left: 10px;
+  }
+  .getgotButton {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    background: url("https://getgotapp.com/login/img/getgot-logo.png") no-repeat center;
+    background-size: contain;
+  }
+  .getgotButton:hover,
+  .success .getgotButton {
+    background-image: url("https://getgotapp.com/login/img/getgot-logo-hover.png");
+  }
+
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    /* border-bottom: 1px dotted black; */
+  }
+
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 170px;
+    background-color: #2e2e2e;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: calc(100% + 4px);
+    left: 50px;
+    margin-left: -60px;
+    font-family: "SF Text", Helvetica, sans;
+    font-size: 14pt;
+
+    /* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
+    opacity: 0;
+    transition: opacity 1s;
+  }
+
+  .tooltip .tooltiptext a {
+    color: #70d3d0;
+  }
+
+  .tooltip.success .tooltiptext {
+    visibility: visible;
+    opacity: 0.9;
+  }
+  .tooltip.done .tooltiptext {
+    visibility: visible;
+    opacity: 0;
+  }
+
+  .tooltip .tooltipText::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 10%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #2e2e2e transparent transparent transparent;
+  }
+</style>
+
 <script type="text/javascript">
+  const appId = "ac92be97-05f3-4ae0-a4af-13bd9e2b4569"
+  let getgotWindow
+  let productInfo = null
+  let getgotButton = null
+  let getgotButtonWrapper = null
+
   function registerGetGotSocialBackend() {
     console.debug("-- BEGIN Registering GetGot Social Backend --", document)
     try {
-      window.onmessage = (event) => {
-        if (event.data) {
-          console.log("HTML Code Element received a message!", event.data)
-          if (event.data.action === "share") {
-            const productString = encodeURI(JSON.stringify(event.data.product))
-            const getgotWindow = window.open(
-              `http://ec2-35-170-186-135.compute-1.amazonaws.com/createpromotion.html?product=${productString}`,
-              "Share with GetGot",
-              "location=0,status=0,width=400,height=650"
-            )
+      window.onmessage = async (event) => {
+        try {
+          if (event.data) {
+            console.log("HTML Code Element received a message!", event.data)
+            if (event.data.action === "prepare") {
+              if (!productInfo) {
+                productInfo = event.data.product
+
+                getgotButtonWrapper = document.createElement("div")
+                getgotButtonWrapper.className = "getgotButtonWrapper tooltip"
+
+                const tooltiptext = document.createElement("span")
+                tooltiptext.className = "tooltiptext"
+                tooltiptext.innerHTML =
+                  "Promotion created. <a href='#'>Launch the app</a> to create and share a campaign."
+
+                getgotButton = document.createElement("div")
+                getgotButton.className = "getgotButton"
+
+                getgotButton.onclick = promptAuthorize
+
+                getgotButtonWrapper.appendChild(tooltiptext)
+                getgotButtonWrapper.appendChild(getgotButton)
+                document.body.appendChild(getgotButtonWrapper)
+
+                window.parent.postMessage("prepared", "*")
+              }
+            } else if (event.data.action === "share") {
+              const productString = encodeURI(JSON.stringify(event.data.product))
+              // const getgotWindow = window.open(
+              //   `http://ec2-35-170-186-135.compute-1.amazonaws.com/createpromotion.html?product=${productString}`,
+              //   "Share with GetGot",
+              //   "location=0,status=0,width=400,height=650"
+              // )
+              getgotWindow = window.open(
+                `https://getgotapp.com/login/index.html?appid=ac92be97-05f3-4ae0-a4af-13bd9e2b4569`,
+                "Share with GetGot",
+                "location=0,status=0,width=400,height=700"
+              )
+
+              // getgotWindow.addEventListener("message", async (e) => {
+
+              // })
+            } else if (event.data.success) {
+              console.log(
+                "social-backend.html",
+                "Received Login message from getgetLogin",
+                event.data
+              )
+
+              if (event.data.success) {
+                console.log("social-backend.html", "Success!", event.data.success)
+                const { success } = event.data
+                getgotWindow.close()
+
+                const rawResponse = await fetch("https://getgotapp.com/createPromotion", {
+                  method: "POST",
+                  headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    i: { t: success.t },
+                    p: {
+                      createPromotion: {
+                        publisherUserId: "ac92be97-05f3-4ae0-a4af-13bd9e2b4569", // Unique user ID for the publisher
+                        // fromCampaignId: "", // Future, can be null
+                        // expires: "2019-...", // ISO-8601 (optional)
+                      },
+                    },
+                  }),
+                })
+                const content = await rawResponse.json()
+
+                console.log("social-backened.html", "Create Promotion result", content)
+
+                if (content.createPromotion && content.createPromotion.r === 0) {
+                  getgotButton.onclick = () => {
+                    getgotButtonWrapper.className = getgotButtonWrapper.className.replace(
+                      /\sdone/,
+                      ""
+                    )
+                    setTimeout(() => {
+                      getgotButtonWrapper.className += " done"
+                    }, 5000)
+                  }
+                  getgotButtonWrapper.className += " success"
+                  setTimeout(() => {
+                    getgotButtonWrapper.className += " done"
+                  }, 5000)
+                } else {
+                  console.log(
+                    "social-backend.html",
+                    "Something went wrong in the createPromotion process",
+                    content
+                  )
+                }
+              }
+            }
           }
+        } catch (ex) {
+          console.error("-- FAILED Handling GetGot Social Backend Message --", ex, event.data)
         }
       }
+
+      const iframe2 = document.createElement("iframe")
+      iframe2.src = "http://ec2-35-170-186-135.compute-1.amazonaws.com/createpromotion.html"
+      // document.body.appendChild(iframe2)
 
       console.debug("-- COMPLETE Registering GetGot Social Backend --")
     } catch (ex) {
@@ -22,4 +197,14 @@
     }
   }
   setTimeout(registerGetGotSocialBackend, 1000)
+
+  function promptAuthorize() {
+    console.log("social-backend.html", "Prompting for authorization...")
+    const productString = encodeURI(JSON.stringify(productInfo))
+    getgotWindow = window.open(
+      `https://getgotapp.com/login/index.html?appid=${appId}`,
+      "Share on GetGot",
+      "location=0,status=0,width=400,height=700"
+    )
+  }
 </script>
