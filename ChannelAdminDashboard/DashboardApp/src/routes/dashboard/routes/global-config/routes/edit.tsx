@@ -166,9 +166,17 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
             // TODO: Eventually merge these layouts, perhaps?
             const layout = record
               .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
-              .chain(({ config }) =>
-                tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
-              )
+              .chain(({ config }) => {
+                const parseResult = tryCatch(
+                  () => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
+                )
+
+                if (!parseResult) {
+                  console.warn("GlobalConfig.edit", "Failed to parse", config.getOrElse("null"))
+                }
+
+                return parseResult
+              })
               .toNullable()
 
             if (layout) {
