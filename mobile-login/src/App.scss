@@ -1,0 +1,11 @@
+body {
+  font-family: "SF Text", sans-serif;
+}
+
+h1 {
+  font-family: "SF Display", sans-serif;
+  font-weight: 200;
+}
+
+@import "styles/theme.scss";
+@import "styles/sf-pro.font.css";
