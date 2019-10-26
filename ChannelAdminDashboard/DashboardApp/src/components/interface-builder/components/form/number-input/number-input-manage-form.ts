@@ -17,7 +17,7 @@ const numberInputManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Input Value",
+                defaultValue: "Number",
               },
               {
                 key: "valueKey",

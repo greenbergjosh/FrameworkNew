@@ -113,25 +113,6 @@ export interface Effects {
   navigate: typeof Reach.navigate
 }
 
-// export interface RouteMeta {
-//   /** the absolute url */
-//   abs: string
-//   /** the component to render at this route */
-//   component: React.ComponentType<WithRouteProps<any>>
-//   context?: Record<string, unknown>
-//   /** for possible UI display; provide more info about the route's purpose */
-//   description: string
-//   /** a name for UI presentation */
-//   title: string
-//   /** the name of an icon from `antd` */
-//   iconType: string
-//   /** the url relative to parent's abs url */
-//   path: string
-//   redirectFrom: Array<string>
-//   shouldAppearInSideNav: boolean
-//   subroutes: Record<string, RouteMeta>
-// }
-
 export interface IRouteMeta {
   /** the absolute url */
   abs: string
@@ -642,40 +623,6 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
           )
 
           return returnMap
-          //   return record
-          //     .lookup("Navigation.Item", configsByType)
-          //     .map((records) =>
-          //       records.map((navigationItem) => ({
-          //         [navigationItem.id]: {
-          //           abs: navigationItem.,
-          //           component: BusinessApplicationView,
-          //           description: "",
-          //           title: businessApplication.name as string,
-          //           iconType: "appstore",
-          //           path: businessApplication.id as string,
-          //           context: { id: businessApplication.id as string },
-          //           redirectFrom: [],
-          //           shouldAppearInSideNav: true,
-          //           subroutes: {},
-          //         },
-          //       }))
-          //     )
-          //     .map((routes) =>
-          //       routes.reduce(
-          //         (acc, route) => ({
-          //           ...acc,
-          //           ...route,
-          //         }),
-          //         {}
-          //       )
-          //     )
-          //     .map((routesDict) =>
-          //       appsSubroutes.set({
-          //         ...appsSubroutes.get(staticRoutesMap),
-          //         ...routesDict,
-          //       })(staticRoutesMap)
-          //     )
-          //     .getOrElse(staticRoutesMap)
         }
       )
     },
@@ -693,7 +640,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
                   description: "",
                   title: businessApplication.name as string,
                   iconType: "appstore",
-                  path: businessApplication.id as string,
+                  path: `${businessApplication.id}/:pageId`,
                   context: { id: businessApplication.id as string },
                   redirectFrom: [],
                   shouldAppearInSideNav: true,
