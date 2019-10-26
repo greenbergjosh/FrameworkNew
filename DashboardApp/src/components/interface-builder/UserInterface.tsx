@@ -1,11 +1,18 @@
 import {
   Alert,
+  Button,
+  Col,
   Divider,
+  Icon,
   Layout,
+  Row,
+  Tooltip,
   Typography
   } from "antd"
+import classNames from "classnames"
 import _ from "lodash"
-import { get, set } from "lodash/fp"
+import { get, getOr, set } from "lodash/fp"
+import { getOrd } from "newtype-ts"
 import React from "react"
 import rainy_window_png from "../../images/rainy-window.png"
 import { moveInList } from "../../lib/move-in-list"
@@ -43,6 +50,7 @@ export type UserInterfaceProps = DisplayUserInterfaceProps | EditUserInterfacePr
 export interface UserInterfaceState extends DropHelperResult {
   clipboardComponent: null | DraggedItemProps
   error: null | string
+  fullscreen: boolean
 }
 
 export class UserInterface extends React.Component<UserInterfaceProps, UserInterfaceState> {
@@ -52,6 +60,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     error: null,
     itemToAdd: null,
     itemToEdit: null,
+    fullscreen: false,
   } as UserInterfaceState
 
   handleDrop = (draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps) => {
@@ -78,7 +87,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
 
   render() {
     const { components, contextManager, data, mode, onChangeData } = this.props
-    const { clipboardComponent, error, itemToAdd, itemToEdit } = this.state
+    const { clipboardComponent, error, fullscreen, itemToAdd, itemToEdit } = this.state
 
     if (error) {
       return (
@@ -128,7 +137,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
             const originalList =
               deleteItem.parentDroppableId === UI_ROOT
                 ? components
-                : (get(deleteItem.parentDroppableId, components) as ComponentDefinition[])
+                : (getOr([], deleteItem.parentDroppableId, components) as ComponentDefinition[])
 
             // Remove item from list
             const updatedList = [
@@ -184,7 +193,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     )
 
     return (
-      <div className="user-iterface-builder">
+      <div className={classNames("user-iterface-builder", { fullscreen })}>
         <DataPathContext>
           {(parentPath) => (
             <DataPathContext reset>
@@ -194,7 +203,23 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                     <DraggableContext.Provider value={draggableContextHandlers}>
                       <Layout>
                         <Layout.Sider style={{ background: "#fff" }}>
-                          <Typography.Title level={4}>Components</Typography.Title>
+                          <Row>
+                            <Col span={19}>
+                              <Typography.Title level={4}>Components</Typography.Title>
+                            </Col>
+                            <Col span={5}>
+                              <Tooltip
+                                title={`${fullscreen ? "Exit" : "Enter"} Full Screen Designer`}>
+                                <Button
+                                  type="link"
+                                  icon={`fullscreen${fullscreen ? "-exit" : ""}`}
+                                  size="large"
+                                  style={{ fontSize: 28 }}
+                                  onClick={() => this.setState({ fullscreen: !fullscreen })}
+                                />
+                              </Tooltip>
+                            </Col>
+                          </Row>
                           <Divider />
                           <InterfaceComponentChoices />
                         </Layout.Sider>
@@ -229,7 +254,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                               const relevantList =
                                 (itemToAdd.path === UI_ROOT
                                   ? components
-                                  : get(itemToAdd.path, components)) || []
+                                  : getOr([], itemToAdd.path, components)) || []
 
                               if (typeof relevantList.slice !== "function") {
                                 console.warn(
@@ -263,7 +288,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                               const relevantList =
                                 (itemToEdit.path === UI_ROOT
                                   ? components
-                                  : get(itemToEdit.path, components)) || []
+                                  : getOr([], itemToEdit.path, components)) || []
 
                               if (typeof relevantList.slice !== "function") {
                                 console.warn(
@@ -348,7 +373,7 @@ export function handleDropHelper(
     const originalList =
       dropTarget.droppableId === UI_ROOT
         ? components
-        : (get(dropTarget.droppableId, components) as ComponentDefinition[])
+        : (getOr([], dropTarget.droppableId, components) as ComponentDefinition[])
     const updatedList = moveInList(originalList, draggedItem.index, dropTarget.dropIndex)
     return {
       components:
@@ -367,13 +392,13 @@ export function handleDropHelper(
       const sourceList =
         draggedItem.parentDroppableId === UI_ROOT
           ? components
-          : (get(draggedItem.parentDroppableId, components) as ComponentDefinition[])
+          : (getOr([], draggedItem.parentDroppableId, components) as ComponentDefinition[])
 
       // Find the sublist the drop occurred in, and add the dragged item
       const destinationList =
         dropTarget.droppableId === UI_ROOT
           ? components
-          : (get(dropTarget.droppableId, components) as ComponentDefinition[])
+          : ((getOr([], dropTarget.droppableId, components) || []) as ComponentDefinition[])
 
       // We know both lists can't be "root" because then we'd have hit the outer if instead
       // If the item was dragged from the root, take the update source list as the new root
@@ -436,7 +461,11 @@ export function handleDropHelper(
     // Check to see if the dropTarget is a parent/ancestor of the item being dragged
     else if (draggedItem.parentDroppableId.startsWith(`${dropTarget.droppableId}.`)) {
       // Find the sublist the dragged item came from and remove it
-      const sourceList = get(draggedItem.parentDroppableId, components) as ComponentDefinition[]
+      const sourceList = getOr(
+        [],
+        draggedItem.parentDroppableId,
+        components
+      ) as ComponentDefinition[]
       const updatedSourceList = [
         ...sourceList.slice(0, draggedItem.index),
         ...sourceList.slice(draggedItem.index + 1),
@@ -448,7 +477,8 @@ export function handleDropHelper(
 
       // Find the sublist the drop occurred in, and add the dragged item
       // By using the interim components, we'll include the dragged item removal from above
-      const destinationList = get(
+      const destinationList = getOr(
+        [],
         dropTarget.droppableId,
         interimComponents
       ) as ComponentDefinition[]
@@ -466,10 +496,14 @@ export function handleDropHelper(
     }
     // Check to see if the draggedItem comes from a parent/ancestor of the dropTarget
     else if (dropTarget.droppableId.startsWith(`${draggedItem.parentDroppableId}.`)) {
-      const tmpSourceList = get(draggedItem.parentDroppableId, components) as ComponentDefinition[]
+      const tmpSourceList = getOr(
+        [],
+        draggedItem.parentDroppableId,
+        components
+      ) as ComponentDefinition[]
 
       // Find the sublist the dropTarget came from and add the dragged item into it
-      const destinationList = get(dropTarget.droppableId, components) as ComponentDefinition[]
+      const destinationList = getOr([], dropTarget.droppableId, components) as ComponentDefinition[]
       const updatedDestinationList = [
         ...destinationList.slice(0, dropTarget.dropIndex),
         tmpSourceList[draggedItem.index],
@@ -482,7 +516,8 @@ export function handleDropHelper(
 
       // Find the sublist the draggedItem came from, and remote it
       // By using the interim components, we'll include the dragged item addition from above
-      const sourceList = get(
+      const sourceList = getOr(
+        [],
         draggedItem.parentDroppableId,
         interimComponents
       ) as ComponentDefinition[]
@@ -498,7 +533,11 @@ export function handleDropHelper(
       }
     } else {
       // Find the sublist the dragged item came from and remove it
-      const sourceList = get(draggedItem.parentDroppableId, components) as ComponentDefinition[]
+      const sourceList = getOr(
+        [],
+        draggedItem.parentDroppableId,
+        components
+      ) as ComponentDefinition[]
       const updatedSourceList = [
         ...sourceList.slice(0, draggedItem.index),
         ...sourceList.slice(draggedItem.index + 1),
@@ -508,7 +547,8 @@ export function handleDropHelper(
       const interimComponents = set(draggedItem.parentDroppableId, updatedSourceList, components)
 
       // Find the sublist the drop occurred in, and add the dragged item
-      const destinationList = get(
+      const destinationList = getOr(
+        [],
         dropTarget.droppableId,
         interimComponents
       ) as ComponentDefinition[]
@@ -531,7 +571,7 @@ export function handleDropHelper(
     const destinationList =
       dropTarget.droppableId === UI_ROOT
         ? components
-        : (get(dropTarget.droppableId, components) as ComponentDefinition[])
+        : (getOr([], dropTarget.droppableId, components) as ComponentDefinition[])
     const updatedDestinationList = [
       ...destinationList.slice(0, dropTarget.dropIndex),
       draggedItem.item as ComponentDefinition,

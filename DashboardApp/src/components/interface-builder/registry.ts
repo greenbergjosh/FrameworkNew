@@ -5,16 +5,15 @@ import { CardInterfaceComponent } from "./components/display/card/CardInterfaceC
 import { CollapseInterfaceComponent } from "./components/display/collapse/CollapseInterfaceComponent"
 import { ColumnInterfaceComponent } from "./components/display/column/ColumnInterfaceComponent"
 import { DividerInterfaceComponent } from "./components/display/divider/DividerInterfaceComponent"
-// import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
+import { EmptyInterfaceComponent } from "./components/display/empty/EmptyInterfaceComponent"
 import { ListInterfaceComponent } from "./components/display/list/ListInterfaceComponent"
 import { ProgressInterfaceComponent } from "./components/display/progress/ProgressInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "./components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { TableInterfaceComponent } from "./components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceComponent"
 import { WizardInterfaceComponent } from "./components/display/wizard/WizardInterfaceComponent"
-// import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
-import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { BulkTextInputInterfaceComponent } from "./components/form/bulk-text-input/BulkTextInputInterfaceComponent"
+import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
 import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
@@ -29,11 +28,14 @@ import { TagsInterfaceComponent } from "./components/form/tags/TagsInterfaceComp
 import { TextAreaInterfaceComponent } from "./components/form/textarea/TextAreaInterfaceComponent"
 import { TimeRangeInterfaceComponent } from "./components/form/time-range/TimeRangeInterfaceComponent"
 import { ToggleInterfaceComponent } from "./components/form/toggle/ToggleInterfaceComponent"
+import { TreeInterfaceComponent } from "./components/form/tree/TreeInterfaceComponent"
 import { UploadInterfaceComponent } from "./components/form/upload/UploadInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "./components/special/code-editor/CodeEditorInterfaceComponent"
 import { QueryInterfaceComponent } from "./components/special/query/QueryInterfaceComponent"
 import { RemoteComponentInterfaceComponent } from "./components/special/remote-component/RemoteComponentInterfaceComponent"
 import { UserInterfaceInterfaceComponent } from "./components/special/user-interface/UserInterfaceInterfaceComponent"
+// import { FilteredMenuInterfaceComponent } from "./components/display/filtered-menu/FilteredMenuInterfaceComponent"
+// import { ButtonInterfaceComponent } from "./components/form/button/ButtonInterfaceComponent"
 
 export interface ComponentRegistry {
   cache: ComponentRegistryCache
@@ -59,6 +61,7 @@ export const registry: ComponentRegistry = {
     "date-range": DateRangeInterfaceComponent,
     divider: DividerInterfaceComponent,
     // "filtered-menu": FilteredMenuInterfaceComponent,
+    empty: EmptyInterfaceComponent,
     form: FormInterfaceComponent,
     input: InputInterfaceComponent,
     list: ListInterfaceComponent,
@@ -77,6 +80,7 @@ export const registry: ComponentRegistry = {
     textarea: TextAreaInterfaceComponent,
     "time-range": TimeRangeInterfaceComponent,
     toggle: ToggleInterfaceComponent,
+    tree: TreeInterfaceComponent,
     upload: UploadInterfaceComponent,
     "user-interface": UserInterfaceInterfaceComponent,
     wizard: WizardInterfaceComponent,
