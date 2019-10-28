@@ -2,12 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
+using Microsoft.Net.Http.Headers;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using TurnerSoftware.SitemapTools;
 using Utility;
 using Jw = Utility.JsonWrapper;
 using Utility.DataLayer;
@@ -75,13 +79,20 @@ namespace SchedulerServiceLib
 
                 var jobDetail = JobBuilder.Create<LmbJob>()
                     .WithIdentity(name)
+                    .UsingJobData(new JobDataMap(parameters))
                     .Build();
+
+                IDictionary<string, object> triggerData = new Dictionary<string, object>
+                {
+                    ["lbmId"] = lbmId
+                };
+                var triggerJobData = new JobDataMap(triggerData);
 
                 var trigger = TriggerBuilder.Create()
                     .WithIdentity(name)
                     .WithCronSchedule(cron)
-                    .UsingJobData(new JobDataMap(parameters))
                     .ForJob(jobDetail)
+                    .UsingJobData(triggerJobData)
                     .Build();
 
                 await _scheduler.ScheduleJob(jobDetail, trigger);
@@ -212,32 +223,36 @@ namespace SchedulerServiceLib
             await context.Response.WriteAsync(json);
         }
 
+        [DisallowConcurrentExecution]
         internal class LmbJob : IJob
         {
             public async Task Execute(IJobExecutionContext context)
             {
                 var key = context.JobDetail.Key;
                 var dataMap = context.JobDetail.JobDataMap;
-
-                var id = Guid.Parse(dataMap.GetString("id"));
-                var myFloatValue = dataMap.GetFloat("myFloatValue");
+                var lbmId = Guid.Parse(context.Trigger.JobDataMap["lbmId"].ToString());
 
                 try
                 {
-                    var code = await _fw.Entities.GetEntity(id);
-
-                    /*if (code?.GetS("Type") != "LBM.CS")
+                    var code = await _fw.Entities.GetEntity(lbmId);
+                    if (code?.GetS("Type") != "LBM.CS")
                     {
-                        await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"{code?.GetS("Type")} LBM not supported. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}");
-                        continue;
-                    }*/
-                    var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
+                        var error = $"{code?.GetS("Type")} LBM not supported. ({lbmId})\n";
+                        throw new InvalidOperationException(error);
+                    }
 
-                    _fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), code.GetS("Config"), debug, debugDir), true);
+                    var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
+                    var source = code.GetS("Config");
+                    var sd = new ScriptDescriptor(lbmId, lbmId.ToString(), source, debug, debugDir);
+                    _fw.RoslynWrapper.CompileAndCache(sd);
+
+                    //await Test();
+
+                    await _fw.RoslynWrapper.RunFunction(lbmId.ToString(), dataMap, null);
                 }
                 catch (Exception e)
                 {
-                    //await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"Failed to compile. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}\nCode:\n{code.GetS("")}\n\n{e.UnwrapForLog()}");
+                    await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"{e.UnwrapForLog()}");
                 }
             }
         }
