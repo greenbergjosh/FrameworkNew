@@ -70,9 +70,9 @@ namespace SchedulerServiceLib
             foreach (var job in JobConfigs.GetL(""))
             {
                 var name = job.GetS("Name");
+                var lbmId = job.GetS("Config/lbmId");
                 var enabled = job.GetB("Config/enabled");
                 var cronGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/schedule") }));
-                var lbmGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/consumer") }));
 
                 var cron = cronGe.GetS("instruction");
                 var parameters = job.GetD("Config").ToDictionary(p => p.Item1, p => p.Item2);
