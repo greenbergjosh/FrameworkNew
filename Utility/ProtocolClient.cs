@@ -995,6 +995,12 @@ namespace Utility
             }
         }
 
+        public static async Task<bool> CompareHttpContent(string remoteContentLocation, string contentToCompare)
+        {
+            var r = await HttpGetAsync(remoteContentLocation);
+            return r.success && r.body == contentToCompare;
+        }
+
         public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
         {
             var siteMapQuery = new SitemapQuery();
