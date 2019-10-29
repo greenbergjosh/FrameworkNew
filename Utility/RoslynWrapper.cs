@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Net.Http.Headers;
 
 namespace Utility
 {
@@ -59,7 +60,9 @@ namespace Utility
                             Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
                             Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
                             Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
-                            Assembly.GetAssembly(typeof(JsonWrapper))
+                            Assembly.GetAssembly(typeof(JsonWrapper)),
+                            Assembly.GetAssembly(typeof(HtmlAgilityPack.HtmlAttribute)),
+                            Assembly.GetAssembly(typeof(SetCookieHeaderValue))
                         )
                         .AddReferences(dynamicAssemblies)
                         .AddImports("System.Dynamic", "System.Xml");
