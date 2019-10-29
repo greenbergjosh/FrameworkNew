@@ -13,7 +13,9 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using TurnerSoftware.SitemapTools;
 using Utility;
+using Jw = Utility.JsonWrapper;
 using Utility.DataLayer;
+using DataManager;
 
 namespace SchedulerServiceLib
 {
@@ -64,13 +66,16 @@ namespace SchedulerServiceLib
             var factory = new StdSchedulerFactory(props);
             _scheduler = await factory.GetScheduler();
 
-            var jobs = _fw.StartupConfiguration.GetL("Config/Jobs");
-            foreach (var job in jobs)
+            var JobConfigs = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "JobConfig" }), "");
+            foreach (var job in JobConfigs.GetL(""))
             {
-                var cron = job.GetS("cron");
-                var name = job.GetS("name");
-                var lbmId = job.GetS("lbmId");
-                var parameters = job.GetD("params").ToDictionary(p => p.Item1, p => p.Item2);
+                var name = job.GetS("Name");
+                var lbmId = job.GetS("Config/lbmId");
+                var enabled = job.GetB("Config/enabled");
+                var cronGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/schedule") }));
+
+                var cron = cronGe.GetS("instruction");
+                var parameters = job.GetD("Config").ToDictionary(p => p.Item1, p => p.Item2);
 
                 var jobDetail = JobBuilder.Create<LmbJob>()
                     .WithIdentity(name)
