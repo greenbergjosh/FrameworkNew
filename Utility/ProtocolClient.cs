@@ -955,23 +955,21 @@ namespace Utility
             SendMail(smtpRelay, smtpPort, msg, useSsl);
         }
 
-        public static Task DownloadFileFromS3Bucket(string accessKeyId, string secretAccessKey,
-            string bucketName, string destination, string file)
-        {
-            return DownloadFilesFromS3Bucket(accessKeyId, secretAccessKey, bucketName, destination, new[] {file}, 1);
-        }
-
         public static async Task DownloadFilesFromS3Bucket(string accessKeyId, string secretAccessKey,
-            string bucketName, string destination, IEnumerable<string> files, int parallelism)
+            string bucketName, IEnumerable<string> files, int parallelism, Func<string, string, Task> action)
         {
             using (var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1))
             {
                 using (var t = new TransferUtility(client))
                 {
-                    await files.ForEachAsync(parallelism, s =>
+                    await files.ForEachAsync(parallelism, async s =>
                     {
-                        var fName = s.Split("/").Last();
-                        return t.DownloadAsync($"{destination}\\{fName}", bucketName, s);
+                        using (var stream = await t.OpenStreamAsync(bucketName, s))
+                        using (var reader = new StreamReader(stream))
+                        {
+                            var content = reader.ReadToEnd();
+                            await action(s, content);
+                        }
                     });
                 }
             }
@@ -995,120 +993,6 @@ namespace Utility
                     .ToList();
                 return files;
             }
-        }
-
-        public static async Task DownloadNotifyAiJson(FrameworkWrapper fw, string username, string password,
-            DateTime startDate, DateTime endDate, string destFile)
-        {
-            var parameters = new Dictionary<string, string>
-            {
-                [""] = "{\"username\":\"" + username + "\", \"password\":\"" + password + "\",\"rememberMe\":false}"
-            };
-            var response = await HttpPostAsync("https://app.notifyai.io/api/authenticate", parameters, 60,
-                "application/json", 1);
-            var ge = JsonWrapper.ToGenericEntity(JsonWrapper.TryParse(response));
-            var token = ge.GetS("id_token");
-            var headers = new List<(string key, string value)> {("Authorization", "Bearer " + token)};
-            var start = startDate.ToString("yyyy-MM-dd");
-            var end = endDate.ToString("yyyy-MM-dd");
-            var url = $"https://app.notifyai.io/api/rollup-push-sites/all-stats/" + start + "/" + end + "/";
-
-            var (success, body) = await HttpGetAsync(url, headers);
-            if (success)
-            {
-                await File.WriteAllTextAsync(destFile, body);
-            }
-            else
-            {
-                await fw.Error(nameof(DownloadNotifyAiJson),
-                    $"Could not download file for startDate: {startDate} endDate: {endDate}");
-            }
-        }
-
-        public static async Task DownloadHitPathJson(FrameworkWrapper fw, string url, string key, string type,
-            DateTime startDate, DateTime endDate, string destFile)
-        {
-            var rqst = url + "?key=" + key + "&type=" + type + "&start=" +
-                       System.Web.HttpUtility.UrlEncode(startDate.ToShortDateString())
-                       + "&end=" + System.Web.HttpUtility.UrlEncode(endDate.ToShortDateString()) +
-                       "&all_details=true&nozip=1";
-
-            var (success, body) = await HttpGetAsync(rqst);
-            if (success)
-            {
-                await File.WriteAllTextAsync(destFile, body);
-            }
-            else
-            {
-                await fw.Error(nameof(DownloadNotifyAiJson),
-                    $"Could not download file for startDate: {startDate} endDate: {endDate}");
-            }
-        }
-
-
-        public static async Task DownloadCakeJson(FrameworkWrapper fw, string affiliateId, string key, string url,
-            string type, DateTime startDate, DateTime endDate, string destFile)
-        {
-            // url = https://ckadmin.com/affiliates/api/Reports/
-
-            // https://ckadmin.com/affiliates/api/Reports/Clicks?               start_date=10%2F22%2F2019&end_date=10%2F23%2F2019
-            // https://ckadmin.com/affiliates/api/Reports/Conversions?          start_date=10%2F22%2F2019&end_date=10%2F23%2F2019&conversion_type=all&exclude_bot_traffic=true&unbilled_only=true&start_at_row=1&row_limit=30&api_key=nuzgj47Oafmy9r6cuVwHkg&affiliate_id=1968
-            // https://ckadmin.com/affiliates/api/Reports/SubAffiliateSummary?  start_date=10%2F22%2F2019&end_date=10%2F23%2F2019&conversion_type=all&start_at_row=1&row_limit=30&api_key=nuzgj47Oafmy9r6cuVwHkg&affiliate_id=1968
-
-            
-            var urlTemplate = url + type + "?start_date=" +
-                              System.Web.HttpUtility.UrlEncode(startDate.ToShortDateString())
-                              + "&end_date=" + System.Web.HttpUtility.UrlEncode(endDate.ToShortDateString())
-                              + "&api_key=" + System.Web.HttpUtility.UrlEncode(key)
-                              + "&affiliate_id=" + System.Web.HttpUtility.UrlEncode(affiliateId);
-
-            var row = 1;
-            const int rowLimit = 10;
-
-            var request = urlTemplate + "&start_at_row=" + row
-                          + "&row_limit=" + rowLimit;
-
-            var (success, body) = await HttpGetAsync(request);
-            var allRows = new List<object>();
-
-            do
-            {
-                var ge = JsonWrapper.JsonToGenericEntity(body);
-
-                if (!success)
-                    throw new InvalidOperationException("bad cake request");
-
-                var rowCount = int.Parse(ge.GetS("row_count"));
-                if (rowCount == 0)
-                    break;
-
-                row += rowCount;
-                var results = ge.Get<System.Collections.Generic.IEnumerable<object>>("data").ToList();
-                allRows.AddRange(results);
-
-                if (rowCount < rowLimit)
-                    break;
-
-                request = urlTemplate + "&start_at_row=" + row
-                          + "&row_limit=" + rowLimit;
-                (success, body) = await HttpGetAsync(request);
-
-            } while (true);
-
-
-            var json = JsonWrapper.Serialize(new Dictionary<string, object>
-            {
-                ["row_count"] = row,
-                ["data"] = allRows
-            });
-
-            await File.WriteAllTextAsync(destFile, json);
-        }
-
-        public static async Task<bool> CompareHttpContent(string remoteContentLocation, string contentToCompare)
-        {
-            var r = await HttpGetAsync(remoteContentLocation);
-            return r.success && r.body == contentToCompare;
         }
 
         public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
