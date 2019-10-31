@@ -994,5 +994,49 @@ namespace Utility
                 return files;
             }
         }
+
+        public static async Task<bool> CompareHttpContent(string remoteContentLocation, string contentToCompare)
+        {
+            var r = await HttpGetAsync(remoteContentLocation);
+            return r.success && r.body == contentToCompare;
+        }
+
+        public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
+        {
+            var siteMapQuery = new SitemapQuery();
+            IEnumerable<SitemapFile> siteMaps = await siteMapQuery.GetAllSitemapsForDomain(domain);
+            var uris = new List<Uri>();
+            foreach (var siteMapFile in siteMaps)
+            {
+                if (!siteMapFile.Location.ToString().EndsWith(sitemapFileName)) continue;
+
+                uris.AddRange(siteMapFile.Urls
+                    .Where(u => u.Location != null)
+                    .Select(u => u.Location)
+                    .ToList());
+            }
+            return uris;
+        }
+
+        public static bool DomElementExists(string uri, string xpath, Stack<(string attr, string attrVal)> attrVals)
+        {
+            var web = new HtmlWeb();
+            var doc = web.Load(uri);
+            var nodes = doc.DocumentNode.SelectNodes(xpath);
+
+            bool SearchNodes(Stack<(string attr, string attrVal)> recAttrVals)
+            {
+                (string attribute, string attributeVal) = recAttrVals.Pop();
+                var found = nodes.Select(attr => new { attr, attrValue = attr.GetAttributeValue(attribute, string.Empty) })
+                            .Where(x => x.attrValue == attributeVal)
+                            .Select(x => x.attrValue).Any();
+
+                if (!found) { return false; }
+                if (recAttrVals.Count > 0) { return SearchNodes(recAttrVals); }
+                else { return true; }
+
+            }
+            return SearchNodes(attrVals);
+        }
     }
 }
