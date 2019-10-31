@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CsvHelper.Configuration;
 using Newtonsoft.Json.Linq;
 using Utility.GenericEntity;
 
@@ -225,25 +226,29 @@ namespace Utility
         public static string ConvertCsvToJson(string csv, IList<string> names, bool excludeHeader = false)
         {
             var jArray = new JArray();
-            //var sb = new StringBuilder("[");
+
             using (var reader = new StringReader(csv))
             {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                using (var csvReader = new CsvHelper.CsvReader(reader))
                 {
-                    if (excludeHeader)
+                    while (csvReader.Read())
                     {
-                        excludeHeader = false;
-                        continue;
+                        if (excludeHeader)
+                        {
+                            excludeHeader = false;
+                            continue;
+                        }
+
+                        var jObject = new JObject();
+
+                        for (var i = 0; i < names.Count; i++)
+                        {
+                            if (csvReader.TryGetField(i, out string value))
+                                jObject.Add(names[i], value);
+                        }
+
+                        jArray.Add(jObject);
                     }
-
-                    var cols = line.Split(',');
-                    var jObject = new JObject();
-                    
-                    for (var i = 0; i < names.Count; i++)
-                        jObject.Add(names[i], cols[i]);
-
-                    jArray.Add(jObject);
                 }
             }
             return Serialize(jArray);
