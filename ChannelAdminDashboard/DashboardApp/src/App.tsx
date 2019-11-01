@@ -18,7 +18,11 @@ import { store } from "./state/store"
 
 const persistor = getPersistor()
 
-function AppLoadingScreen() {
+interface AppLoadingScreenProps {
+  title?: string
+}
+
+function AppLoadingScreen({ title }: AppLoadingScreenProps) {
   return (
     <>
       <Helmet>
@@ -26,7 +30,7 @@ function AppLoadingScreen() {
       </Helmet>
 
       <div className={`${styles.appLoadingIndicator}`}>
-        <Spin size="large" tip="Initializing OnPoint Admin" />
+        <Spin size="large" tip={"Initializing OnPoint Admin" + (title ? `... ${title}` : "")} />
       </div>
     </>
   )
@@ -43,11 +47,13 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   return (
-    <PersistGate persistor={persistor} loading={<AppLoadingScreen />}>
+    <PersistGate
+      persistor={persistor}
+      loading={<AppLoadingScreen title="Restoring Application State" />}>
       <div className={`${styles.app}`}>
         <ReactRedux.Provider store={store}>
           {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
-            <AppLoadingScreen />
+            <AppLoadingScreen title="Checking Session Authentication" />
           ) : (
             <Routes />
           )}
