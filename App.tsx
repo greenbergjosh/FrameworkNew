@@ -1,14 +1,17 @@
-import { Provider } from "@ant-design/react-native"
-import { AppLoading } from "expo"
 import * as Font from "expo-font"
-import React from "react"
-import { Transition } from "react-native-reanimated"
-import { createAppContainer } from "react-navigation"
-import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
+
+import React, { useEffect } from "react"
+
+import { AppLoading } from "expo"
+import { AuthContextProvider } from "./providers/auth-context-provider"
 import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
 import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
+import { Provider } from "@ant-design/react-native"
+import { Transition } from "react-native-reanimated"
+import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
+import { createAppContainer } from "react-navigation"
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -38,39 +41,46 @@ const sectionNavigator = createAnimatedSwitchNavigator(
 )
 const RootNavigator = createAppContainer(sectionNavigator)
 
-export default class App extends React.Component {
-  state = {
-    theme: null,
-    currentTheme: null,
-    isReady: false,
-  }
-  changeTheme = (theme, currentTheme) => {
-    this.setState({ theme, currentTheme })
-  }
-  async componentDidMount() {
-    await Font.loadAsync(
-      "antoutline",
-      // eslint-disable-next-line
-      require("@ant-design/icons-react-native/fonts/antoutline.ttf")
-    )
+const App = () => {
+  const [theme, setTheme] = React.useState(null)
+  const [currentTheme, setCurrentTheme] = React.useState(null)
+  const [isReady, setIsReady] = React.useState(false)
 
-    await Font.loadAsync(
-      "antfill",
-      // eslint-disable-next-line
-      require("@ant-design/icons-react-native/fonts/antfill.ttf")
-    )
-    // eslint-disable-next-line
-    this.setState({ isReady: true })
+  const changeTheme = (theme, currentTheme) => {
+    setTheme(theme);
+    setCurrentTheme(currentTheme);
   }
-  render() {
-    const { theme, currentTheme, isReady } = this.state
-    if (!isReady) {
-      return <AppLoading />
-    }
-    return (
+
+  useEffect(() => {
+    async function init() {
+      await Font.loadAsync(
+        "antoutline",
+        // eslint-disable-next-line
+        require("@ant-design/icons-react-native/fonts/antoutline.ttf")
+      )
+  
+      await Font.loadAsync(
+        "antfill",
+        // eslint-disable-next-line
+        require("@ant-design/icons-react-native/fonts/antfill.ttf")
+      )
+      setIsReady(true)
+    }  
+  
+    init();
+  }, []);
+  
+  if (!isReady) {
+    return <AppLoading />
+  }
+
+  return (
+    <AuthContextProvider>
       <Provider theme={theme}>
-        <RootNavigator screenProps={{ changeTheme: this.changeTheme, currentTheme }} />
+        <RootNavigator screenProps={{ changeTheme: changeTheme, currentTheme }} />
       </Provider>
-    )
-  }
+    </AuthContextProvider>
+  )
 }
+
+export default App;
