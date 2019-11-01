@@ -126,7 +126,6 @@ export interface IRouteMeta {
   /** the url relative to parent's abs url */
   path: string
   redirectFrom: Array<string>
-  shouldAppearInSideNav: boolean
   subroutes: Record<string, RouteMeta>
 }
 
@@ -152,7 +151,7 @@ export type WithUnauthenticatedRouteProps<P> = P &
 
 export type WithRouteProps<P> = P &
   RouteMeta &
-  Required<Reach.RouteComponentProps> & { children: JSX.Element }
+  Required<Reach.RouteComponentProps> & { "*"?: string; children: JSX.Element }
 
 export type RoutesMap = typeof staticRoutesMap
 
@@ -174,7 +173,6 @@ const Login = mkUnauthenticatedRoute({
   path: "login",
   redirectFrom: ["/"],
   requiresAuthentication: false as const,
-  shouldAppearInSideNav: false,
   subroutes: {},
 })
 
@@ -188,7 +186,6 @@ const DashSummary = mkAuthenticatedRoute({
   path: "summary",
   redirectFrom: ["/dashboard"],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: true,
   subroutes: {},
 })
 
@@ -202,7 +199,6 @@ const DashReports = mkAuthenticatedRoute({
   path: "reports",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: false,
   subroutes: {},
 })
 
@@ -216,7 +212,6 @@ const DashBusinessApplications = mkAuthenticatedRoute({
   path: "apps",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: true,
   subroutes: {},
 })
 
@@ -232,7 +227,6 @@ const GlobalConfigList = mkAuthenticatedRoute({
   path: "/",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: false,
   subroutes: {},
 })
 
@@ -248,7 +242,6 @@ const GlobalConfigCreate = mkAuthenticatedRoute({
   path: "create",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: false,
   subroutes: {},
 })
 
@@ -264,7 +257,6 @@ const GlobalConfigEdit = mkAuthenticatedRoute({
   path: ":configId/edit",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: false,
   subroutes: {},
 })
 
@@ -280,7 +272,6 @@ const GlobalConfigShow = mkAuthenticatedRoute({
   path: ":configId",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: false,
   subroutes: {},
 })
 
@@ -294,7 +285,6 @@ const GlobalConfigShow = mkAuthenticatedRoute({
 //   path: "form-editor-test",
 //   redirectFrom: [],
 //   requiresAuthentication: true as const,
-//   shouldAppearInSideNav: true,
 //   subroutes: {},
 // })
 
@@ -307,7 +297,6 @@ const UserInterfaceSandbox = mkAuthenticatedRoute({
   path: "user-interface-test",
   redirectFrom: [],
   requiresAuthentication: true as const,
-  shouldAppearInSideNav: true,
   subroutes: {},
 })
 
@@ -322,7 +311,6 @@ const staticRoutesMap = {
     path: "login",
     redirectFrom: ["/"],
     requiresAuthentication: false as const,
-    shouldAppearInSideNav: false,
     subroutes: {},
   },
 
@@ -336,7 +324,6 @@ const staticRoutesMap = {
     path: "dashboard",
     redirectFrom: [],
     requiresAuthentication: true as const,
-    shouldAppearInSideNav: false,
     subroutes: {
       summary: {
         abs: "/dashboard/summary",
@@ -348,7 +335,6 @@ const staticRoutesMap = {
         path: "summary",
         redirectFrom: ["/dashboard"],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: true,
         subroutes: {},
       },
       reports: {
@@ -361,7 +347,6 @@ const staticRoutesMap = {
         path: "reports",
         redirectFrom: [],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: false,
         subroutes: {
           reports: {
             abs: "/dashboard/reports/:reportId",
@@ -372,7 +357,6 @@ const staticRoutesMap = {
             path: ":reportId",
             redirectFrom: [],
             requiresAuthentication: true as const,
-            shouldAppearInSideNav: false,
             subroutes: {},
           },
           "import-ingestion": {
@@ -384,14 +368,12 @@ const staticRoutesMap = {
             path: "import-ingestion",
             redirectFrom: [],
             requiresAuthentication: true as const,
-            shouldAppearInSideNav: false,
             subroutes: {},
           },
         },
       },
       apps: {
         abs: "/dashboard/apps",
-        // component: React.lazy(() => import("../routes/dashboard/routes/reports")), //Reports,
         component: BusinessApplications,
         description: "Manage On Point Business Applications",
         title: "Business Applications",
@@ -399,8 +381,31 @@ const staticRoutesMap = {
         path: "apps",
         redirectFrom: [],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: true,
-        subroutes: {},
+        subroutes: {
+          ":id": {
+            abs: `/dashboard/apps/:id`,
+            component: BusinessApplicationView,
+            description: "",
+            title: "Business App",
+            iconType: "appstore",
+            path: `:id`,
+            redirectFrom: [],
+            requiresAuthentication: true as const,
+            subroutes: {
+              ":pageId": {
+                abs: `/dashboard/apps/:id/:pageId`,
+                component: BusinessApplicationView,
+                description: "",
+                title: "Business App Page",
+                iconType: "appstore",
+                path: `:pageId`,
+                redirectFrom: [],
+                requiresAuthentication: true as const,
+                subroutes: {},
+              },
+            },
+          },
+        },
       },
       "global-config": {
         abs: "/dashboard/global-config",
@@ -412,7 +417,6 @@ const staticRoutesMap = {
         path: "global-config",
         redirectFrom: [],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: true,
         subroutes: {
           "/": {
             abs: "/dashboard/global-config",
@@ -426,7 +430,6 @@ const staticRoutesMap = {
             path: "/",
             redirectFrom: [],
             requiresAuthentication: true as const,
-            shouldAppearInSideNav: false,
             subroutes: {},
           },
           create: {
@@ -441,7 +444,6 @@ const staticRoutesMap = {
             path: "create",
             redirectFrom: [],
             requiresAuthentication: true as const,
-            shouldAppearInSideNav: false,
             subroutes: {},
           },
           ":configId/edit": {
@@ -456,7 +458,6 @@ const staticRoutesMap = {
             path: ":configId/edit",
             redirectFrom: [],
             requiresAuthentication: true as const,
-            shouldAppearInSideNav: false,
             subroutes: {},
           },
           ":configId": {
@@ -471,7 +472,6 @@ const staticRoutesMap = {
             path: ":configId",
             redirectFrom: [],
             requiresAuthentication: true as const,
-            shouldAppearInSideNav: false,
             subroutes: {},
           },
         },
@@ -486,7 +486,6 @@ const staticRoutesMap = {
       //   path: "form-editor-test",
       //   redirectFrom: [],
       //   requiresAuthentication: true as const,
-      //   shouldAppearInSideNav: false,
       //   subroutes: {},
       // },
       "user-interface-test": {
@@ -498,7 +497,6 @@ const staticRoutesMap = {
         path: "user-interface-test",
         redirectFrom: [],
         requiresAuthentication: true as const,
-        shouldAppearInSideNav: false,
         subroutes: {},
       },
     },
@@ -631,40 +629,40 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
       return createSelector(
         (state) => select.globalConfig.configsByType(state),
         (configsByType) => {
-          return record
-            .lookup("BusinessApplication", configsByType)
-            .map((records) =>
-              records.map((businessApplication) => ({
-                [businessApplication.id]: {
-                  abs: `/dashboard/apps/${businessApplication.id}`,
-                  component: BusinessApplicationView,
-                  description: "",
-                  title: businessApplication.name as string,
-                  iconType: "appstore",
-                  path: `${businessApplication.id}/:pageId`,
-                  context: { id: businessApplication.id as string },
-                  redirectFrom: [],
-                  shouldAppearInSideNav: true,
-                  subroutes: {},
-                },
-              }))
-            )
-            .map((routes) =>
-              routes.reduce(
-                (acc, route) => ({
-                  ...acc,
-                  ...route,
-                }),
-                {}
-              )
-            )
-            .map((routesDict) =>
-              appsSubroutes.set({
-                ...appsSubroutes.get(staticRoutesMap),
-                ...routesDict,
-              })(staticRoutesMap)
-            )
-            .getOrElse(staticRoutesMap)
+          return staticRoutesMap
+          // return record
+          //   .lookup("BusinessApplication", configsByType)
+          //   .map((records) =>
+          //     records.map((businessApplication) => ({
+          //       [businessApplication.id]: {
+          //         abs: `/dashboard/apps/${businessApplication.id}`,
+          //         component: BusinessApplicationView,
+          //         description: "",
+          //         title: businessApplication.name as string,
+          //         iconType: "appstore",
+          //         path: `${businessApplication.id}/:pageId`,
+          //         context: { id: businessApplication.id as string },
+          //         redirectFrom: [],
+          //         subroutes: {},
+          //       },
+          //     }))
+          //   )
+          //   .map((routes) =>
+          //     routes.reduce(
+          //       (acc, route) => ({
+          //         ...acc,
+          //         ...route,
+          //       }),
+          //       {}
+          //     )
+          //   )
+          //   .map((routesDict) =>
+          //     appsSubroutes.set({
+          //       ...appsSubroutes.get(staticRoutesMap),
+          //       ...routesDict,
+          //     })(staticRoutesMap)
+          //   )
+          //   .getOrElse(staticRoutesMap)
         }
       )
     },

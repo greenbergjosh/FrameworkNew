@@ -76,7 +76,7 @@ export const BusinessApplication = ({
     businessApplicationPageConfig,
   })
 
-  return businessApplicationConfig.navigation.length === 0 ? (
+  return businessApplicationConfig.navigation.length === 0 || !pageId ? (
     <DefaultBusinessApplication
       applicationId={applicationId}
       businessApplicationConfig={businessApplicationConfig}
