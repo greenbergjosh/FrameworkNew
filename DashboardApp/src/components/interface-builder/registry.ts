@@ -14,6 +14,7 @@ import { TabsInterfaceComponent } from "./components/display/tabs/TabsInterfaceC
 import { WizardInterfaceComponent } from "./components/display/wizard/WizardInterfaceComponent"
 import { BulkTextInputInterfaceComponent } from "./components/form/bulk-text-input/BulkTextInputInterfaceComponent"
 import { CheckboxInterfaceComponent } from "./components/form/checkbox/CheckboxInterfaceComponent"
+import { DataDictionaryInterfaceComponent } from "./components/form/data-dictionary/DataDictionaryInterfaceComponent"
 import { DataMapInterfaceComponent } from "./components/form/data-map/DataMapInterfaceComponent"
 import { DateRangeInterfaceComponent } from "./components/form/date-range/DateRangeInterfaceComponent"
 import { DateInterfaceComponent } from "./components/form/date/DateInterfaceComponent"
@@ -57,6 +58,7 @@ export const registry: ComponentRegistry = {
     column: ColumnInterfaceComponent,
     "bulk-text-input": BulkTextInputInterfaceComponent,
     "data-map": DataMapInterfaceComponent,
+    "data-dictionary": DataDictionaryInterfaceComponent,
     date: DateInterfaceComponent,
     "date-range": DateRangeInterfaceComponent,
     divider: DividerInterfaceComponent,
