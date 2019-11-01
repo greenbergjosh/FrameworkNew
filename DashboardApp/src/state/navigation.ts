@@ -536,7 +536,8 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
       ),
 
     navigate(path, rootState, navOptions) {
-      return Reach.navigate(path, navOptions)
+      // FIXME Remove the casting and correct the types
+      return Reach.navigate(String(path), navOptions as Reach.NavigateOptions<{}>)
     },
   }),
 
