@@ -2,83 +2,179 @@ import {
   Button,
   Drawer,
   Icon,
-  List
+  List,
+  WhiteSpace
   } from "@ant-design/react-native"
+import { IconProps } from "@ant-design/react-native/lib/icon"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
 import React from "react"
 import { ScrollView, Text, View } from "react-native"
-import { NavigationParams, NavigationRoute } from "react-navigation"
-import { NavigationStackProp } from "react-navigation-stack"
+import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
 import { useAuthContext } from "../../../providers/auth-context-provider"
 
+interface NavigationItem {
+  title: string
+  route: string
+  icon?: IconProps["name"]
+}
 
-export interface SettingsDrawerProps {
+export const SettingsDrawerContext = React.createContext({
+  open: false,
+  toggle: (state?: boolean) => {},
+})
+
+export interface SettingsDrawerChildProps {
+  open?: () => void
+  close?: () => void
+}
+
+export interface SettingsDrawerProps extends React.PropsWithChildren<any> {
   open: boolean
-  navigation: NavigationStackProp<NavigationRoute<NavigationParams>, NavigationParams>
+  navigation: NavigationSwitchProp<NavigationRoute<NavigationParams>, NavigationParams>
 }
 
 export const SettingsDrawer = (props: SettingsDrawerProps) => {
   const auth: any = useAuthContext()
   const { navigate } = props.navigation
-  let drawer: DrawerLayout
+  const drawerRef = React.useRef<DrawerLayout>(null)
 
   const logout = () => {
     auth.handleLogout()
     navigate("Authentication")
   }
 
-  const renderSettingsDrawerContents = () => {
-    const contents = Array.apply(null, Array(20))
-      .map(function(_, i) {
-        return i
-      })
-      .map((_i, index) => {
-        if (index === 0) {
-          return (
-            <List.Item key={index} multipleLine>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}>
-                <Text>Categories - {index}</Text>
-              </View>
-            </List.Item>
-          )
-        } else if (index === 1) {
-          return (
-            <List.Item key={index} multipleLine>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}>
-                <Button type="primary" size="small" onPress={() => logout()}>
-                  Logout
-                </Button>
-              </View>
-            </List.Item>
-          )
-        }
-      })
-
-    return (
-      <ScrollView style={{ flex: 1 }}>
-        <List>{contents}</List>
-      </ScrollView>
-    )
-  }
-
   return (
-    <Drawer
-      sidebar={renderSettingsDrawerContents()}
-      position="left"
-      open={props.open}
-      drawerRef={(el) => (drawer = el)}
-      drawerBackgroundColor="#ccc">
-      <></>
-    </Drawer>
+    <SettingsDrawerContext.Consumer>
+      {({ open, toggle }) => (
+        <Drawer
+          sidebar={renderSettingsDrawerContents(
+            navigate,
+            drawerRef && drawerRef.current && drawerRef.current.closeDrawer,
+            logout
+          )}
+          position="left"
+          open={props.open || open}
+          drawerRef={(ref) => (drawerRef.current = ref)}
+          drawerBackgroundColor="#343997"
+          onOpenChange={(value) => toggle(value)}>
+          {props.children}
+        </Drawer>
+      )}
+    </SettingsDrawerContext.Consumer>
+  )
+}
+
+const renderDrawerItem = (
+  {
+    title,
+    route,
+    icon,
+  }: {
+    title: string
+    route: string
+    icon?: IconProps["name"]
+  },
+  navigate,
+  closeDrawer
+) => {
+  return (
+    <List.Item
+      key={title}
+      multipleLine
+      style={{ backgroundColor: "#343997", borderWidth: 0 }}
+      thumb={icon && <Icon name={icon} />}
+      onPress={() => {
+        navigate(route)
+        closeDrawer()
+      }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderWidth: 0,
+          borderBottomColor: "red",
+          borderTopColor: "green",
+        }}>
+        <Text style={{ color: "#fff" }}>{title}</Text>
+      </View>
+    </List.Item>
+  )
+}
+
+const settingsRoutes: NavigationItem[] = [
+  {
+    title: "Analytics",
+    route: "Analytics",
+    icon: "line-chart",
+  },
+  {
+    title: "Privacy Options",
+    route: "PrivacyOptions",
+    icon: "lock",
+  },
+  {
+    title: "Notifications",
+    route: "Notifications",
+    icon: "bell",
+  },
+  {
+    title: "Blocked Users",
+    route: "BlockedUsers",
+    icon: "stop",
+  },
+  {
+    title: "Quick Tour",
+    route: "Tour",
+  },
+]
+
+const renderSettingsDrawerContents = (navigate, closeDrawer, logout) => {
+  return (
+    <>
+      <ScrollView style={{ flex: 1 }}>
+        <WhiteSpace />
+        <List>
+          <List.Item
+            thumb="https://os.alipayobjects.com/rmsportal/mOoPurdIfmcuqtr.png"
+            style={{ backgroundColor: "#343997" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+              <Text style={{ color: "#fff" }}>Username</Text>
+              <Button
+                size="small"
+                style={{ backgroundColor: "#343997", borderWidth: 0 }}
+                onPress={() => closeDrawer()}>
+                <Icon name="left" color="#fff" />
+              </Button>
+            </View>
+          </List.Item>
+          <>{settingsRoutes.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
+          <List.Item
+            multipleLine
+            style={{ backgroundColor: "#343997", borderWidth: 0 }}
+            onPress={() => {
+              closeDrawer()
+              logout()
+            }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderWidth: 0,
+                borderBottomColor: "red",
+                borderTopColor: "green",
+              }}>
+              <Text style={{ color: "#fff" }}>Log out</Text>
+            </View>
+          </List.Item>
+        </List>
+      </ScrollView>
+    </>
   )
 }
