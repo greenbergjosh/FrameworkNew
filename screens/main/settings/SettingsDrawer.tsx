@@ -1,16 +1,16 @@
 import {
-    Button,
-    Drawer,
-    Icon,
-    List
-} from "@ant-design/react-native"
-import { NavigationParams, NavigationRoute } from "react-navigation"
-import { ScrollView, Text, View } from "react-native"
-
+  Button,
+  Drawer,
+  Icon,
+  List
+  } from "@ant-design/react-native"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
-import { NavigationStackProp } from "react-navigation-stack"
 import React from "react"
+import { ScrollView, Text, View } from "react-native"
+import { NavigationParams, NavigationRoute } from "react-navigation"
+import { NavigationStackProp } from "react-navigation-stack"
 import { useAuthContext } from "../../../providers/auth-context-provider"
+
 
 export interface SettingsDrawerProps {
   open: boolean
@@ -19,7 +19,7 @@ export interface SettingsDrawerProps {
 
 export const SettingsDrawer = (props: SettingsDrawerProps) => {
   const auth: any = useAuthContext()
-  const { navigate } = props.navigation;
+  const { navigate } = props.navigation
   let drawer: DrawerLayout
 
   const logout = () => {
@@ -82,4 +82,3 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
     </Drawer>
   )
 }
-

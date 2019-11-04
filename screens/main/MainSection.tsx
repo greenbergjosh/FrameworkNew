@@ -1,21 +1,24 @@
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { createStackNavigator } from "react-navigation-stack"
 import { createBottomTabNavigator } from "react-navigation-tabs"
 import { HeaderLogo } from "../../components/HeaderLogo"
-import { ExploreScreen } from "./explore/ExploreScreen"
+import { ExploreSection } from "./explore/ExploreSection"
 import { FollowsScreen } from "./follows/FollowsScreen"
 import { HomeSection } from "./home/HomeSection"
 import { ProfileScreen } from "./profile/ProfileScreen"
-import { PromotionsScreen } from "./promotions/PromotionsScreen"
+import { PromotionsSection } from "./promotions/PromotionsSection"
+import { SettingsDrawer, SettingsDrawerContext } from "./settings/SettingsDrawer"
 
 interface MainSectionProps extends NavigationSwitchScreenProps {}
+interface MainSectionState {
+  settingsDrawerOpen: boolean
+}
 
 const MainNavigator = createBottomTabNavigator(
   {
     Home: { screen: HomeSection },
-    Explore: { screen: ExploreScreen },
-    Promotions: { screen: PromotionsScreen },
+    Explore: { screen: ExploreSection },
+    Promotions: { screen: PromotionsSection },
     Follows: { screen: FollowsScreen },
     Profile: { screen: ProfileScreen },
   },
@@ -25,8 +28,12 @@ const MainNavigator = createBottomTabNavigator(
   }
 )
 
-export class MainSection extends React.Component<MainSectionProps> {
+export class MainSection extends React.Component<MainSectionProps, MainSectionState> {
   static router = MainNavigator.router
+
+  state = {
+    settingsDrawerOpen: false,
+  }
 
   static navigationOptions = ({ navigation }) => {
     return {
@@ -34,6 +41,20 @@ export class MainSection extends React.Component<MainSectionProps> {
     }
   }
   render() {
-    return <MainNavigator navigation={this.props.navigation} />
+    return (
+      <SettingsDrawerContext.Provider
+        value={{
+          open: this.state.settingsDrawerOpen,
+          toggle: (state?: boolean) =>
+            this.setState({
+              settingsDrawerOpen:
+                typeof state === "boolean" ? state : !this.state.settingsDrawerOpen,
+            }),
+        }}>
+        <SettingsDrawer open={this.state.settingsDrawerOpen} navigation={this.props.navigation}>
+          <MainNavigator navigation={this.props.navigation} />
+        </SettingsDrawer>
+      </SettingsDrawerContext.Provider>
+    )
   }
 }
