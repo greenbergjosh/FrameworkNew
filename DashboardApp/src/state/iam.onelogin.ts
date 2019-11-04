@@ -4,8 +4,8 @@ import * as Store from "./store.types"
 import { UserManager, SigninResponse } from "oidc-client"
 
 const ONELOGIN_CONFIG = {
-  authority: "https://onpoint-global-dev.onelogin.com/oidc",
-  client_id: "55531b50-cda7-0137-fbe6-024363fc1e1e157199", // eslint-disable-line @typescript-eslint/camelcase
+  authority: "https://onpoint.onelogin.com/oidc",
+  client_id: "2d4a9f30-dd76-0137-cba6-0265d75027d4148697", // eslint-disable-line @typescript-eslint/camelcase
   redirect_uri: window.location.origin, // eslint-disable-line @typescript-eslint/camelcase
   response_type: "id_token token", // eslint-disable-line @typescript-eslint/camelcase
   scope: "openid profile",
