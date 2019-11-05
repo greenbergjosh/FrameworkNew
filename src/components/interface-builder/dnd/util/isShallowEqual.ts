@@ -12,6 +12,7 @@ export function isShallowEqual(a: unknown, b: unknown): boolean {
   if ((isPOJO(a) && isPOJO(b)) || (Array.isArray(a) && Array.isArray(b))) {
     if (ObjectIs(a, b)) return true
     if (Object.keys(a).length !== Object.keys(b).length) return false
+    // @ts-ignore
     for (const k in a) if (!ObjectIs(a[k], b[k])) return false
     return true
   }

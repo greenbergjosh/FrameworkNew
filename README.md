@@ -28,4 +28,4 @@ class Example extends React.Component {
 
 ## License
 
-MIT © [the-author](https://github.com/the-author)
+ISC © [the-author](https://github.com/the-author)

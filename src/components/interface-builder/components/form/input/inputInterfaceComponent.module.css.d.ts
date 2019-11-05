@@ -1,7 +1,10 @@
-declare const styles: {
-  readonly "wrapper": string;
-  readonly "input": string;
-  readonly "counter": string;
-};
-export = styles;
-
+export const wrapper: string
+export const input: string
+export const counter: string
+interface Namespace {
+	"wrapper": string,
+	"input": string,
+	"counter": string,
+}
+declare const inputInterfaceComponentModule: Namespace
+export default inputInterfaceComponentModule
