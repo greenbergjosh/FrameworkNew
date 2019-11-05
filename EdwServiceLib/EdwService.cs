@@ -61,6 +61,7 @@ namespace EdwServiceLib
             _routes.Add($"/{Cf}", Config);
             _routes.Add($"/{Ev}", PublishEvents);
             _routes.Add($"/{Es}", EndSession);
+            _routes.Add($"/edwid", GetSessionId);
         }
 
         public async Task Run(HttpContext context)
@@ -296,6 +297,17 @@ namespace EdwServiceLib
             }
 
             return evResults;
+        }
+
+        private async Task<object> GetSessionId(HttpContext context)
+        {
+            var body = await context.GetRawBodyStringAsync();
+            var json = string.IsNullOrEmpty(body) 
+                ? new JObject()
+                : (JObject)JsonWrapper.TryParse(body);
+
+            var session = GetOrCreateSession(context, json);
+            return new { edwid = session.Id };
         }
 
         private Session GetOrCreateSession(HttpContext context, JObject json)
