@@ -55,7 +55,10 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
     attemptResumeSession(_, { remoteDataClient }) {
       onelogin.checkOneLoginAuthSignedIn(dispatch)
       return !remoteDataClient.token
-        ? Promise.resolve()
+        ? Promise.resolve().then(() => {
+            dispatch.remoteDataClient.update({ token: null })
+            dispatch.iam.update({ profile: none })
+          })
         : dispatch.remoteDataClient.authGetUserDetails().then((e) =>
             e.fold(
               Left((HttpError) => {

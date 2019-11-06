@@ -23,7 +23,7 @@ export const ManageComponentPreview = ({
   const renderedComponent = (
     <RenderInterfaceComponent
       Component={Component}
-      componentDefinition={componentDefinition}
+      componentDefinition={{ ...componentDefinition, _preview: true }}
       data={previewData}
       index={0}
       mode={"display"}

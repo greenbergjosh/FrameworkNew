@@ -1,23 +1,18 @@
 import { Atom, swap, useAtom } from "@dbeining/react-atom"
 import * as Reach from "@reach/router"
+import classNames from "classnames"
 import { identity } from "fp-ts/lib/function"
-import { some, toArray } from "fp-ts/lib/Record"
+import { toArray } from "fp-ts/lib/Record"
 import React from "react"
 import CopyToClipboard from "react-copy-to-clipboard"
+import { BusinessApplication } from "../../components/business-application/BusinessApplication"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks"
 import { guidRegex } from "../../lib/regexp"
 import { Profile } from "../../state/iam"
+import { NavigationGroupWithChildren, NavigationItem, WithRouteProps } from "../../state/navigation"
 import { store } from "../../state/store"
 import styles from "./dashboard.module.css"
-
-import {
-  RouteMeta,
-  WithRouteProps,
-  NavigationItem,
-  NavigationGroup,
-  NavigationGroupWithChildren,
-} from "../../state/navigation"
 import {
   Avatar,
   Breadcrumb,
@@ -27,10 +22,12 @@ import {
   Icon,
   Layout,
   Menu,
-  Row,
-  Typography,
-  Spin,
   message,
+  Row,
+  Spin,
+  Typography,
+  Carousel,
+  Tooltip,
 } from "antd"
 
 interface Props {
@@ -57,13 +54,51 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
   }, [props.subroutes, props.location.pathname])
 
   const [fromStore, dispatch] = useRematch((s) => ({
+    configsById: store.select.globalConfig.configsById(s),
     profile: s.iam.profile,
     loadingGlobalConfigs: s.loading.effects.globalConfig.loadRemoteConfigs,
     navigation: store.select.navigation.primaryNavigation(s),
   }))
 
-  console.log("Navigation", fromStore.navigation)
+  const navigationDepthComponentRef: React.Ref<Carousel> = React.useRef(null)
 
+  // Determine if we're rendering the special case for business apps
+  const isBusinessApp = props.location.pathname.split("/")[2] === "apps"
+  const businessAppId = isBusinessApp ? props.location.pathname.split("/")[3] : null
+
+  const nestedNavigation = React.useMemo(
+    () =>
+      isBusinessApp
+        ? BusinessApplication.generateNavigation(businessAppId || "", fromStore.configsById)
+        : null,
+    [isBusinessApp, businessAppId, fromStore.configsById]
+  )
+
+  React.useEffect(() => {
+    if (navigationDepthComponentRef.current) {
+      if (businessAppId && nestedNavigation) {
+        navigationDepthComponentRef.current.goTo(1)
+      } else {
+        navigationDepthComponentRef.current.goTo(0)
+      }
+    }
+  }, [businessAppId, nestedNavigation, navigationDepthComponentRef.current])
+
+  const showPrimaryNavigation = React.useCallback(() => {
+    if (navigationDepthComponentRef.current) {
+      navigationDepthComponentRef.current.goTo(0)
+    }
+  }, [navigationDepthComponentRef.current])
+
+  const showNestedNavigation = React.useCallback(() => {
+    if (navigationDepthComponentRef.current) {
+      navigationDepthComponentRef.current.goTo(1)
+    }
+  }, [navigationDepthComponentRef.current])
+
+  console.log("Dashboard/index", "BusinessApp?", { isBusinessApp, nestedNavigation })
+
+  // Make sure that remote configs are loaded
   React.useEffect(() => {
     dispatch.globalConfig.loadRemoteConfigs()
   }, [dispatch])
@@ -77,9 +112,6 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         width={200}
         onCollapse={setSiderCollapsed}>
         <div style={{ position: identity<"relative">("relative") }}>
-          <div className={`${styles.logo} ${siderCollapsed ? styles.logoCollapsed : ""}`}>
-            <Typography.Title level={4}>{siderCollapsed ? "OPG" : "ONPOINT"}</Typography.Title>
-          </div>
           <Button
             className={styles.trigger}
             shape="circle-outline"
@@ -88,44 +120,53 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
             <Icon type={siderCollapsed ? "menu-unfold" : "menu-fold"} />
           </Button>
         </div>
-        <Menu
-          theme="dark"
-          mode="vertical"
-          defaultOpenKeys={activeMenuKeys}
-          selectedKeys={activeMenuKeys}>
-          {renderNavEntriesAsMenu(fromStore.navigation || [])}
-          {/* {(function renderRoutesAsMenuItems(
-            appRoutes: Record<string, RouteMeta>,
-            nested?: boolean
-          ) {
-            return toArray(appRoutes)
-              .filter(([path, route]) => route.shouldAppearInSideNav)
-              .sort(([pathA, routeA], [pathB, routeB]) =>
-                nested ? routeB.title.localeCompare(routeA.title) : 0
-              )
-              .map(([path, route]) => {
-                return some(route.subroutes, (route) => route.shouldAppearInSideNav) ? (
-                  <Menu.SubMenu
-                    key={route.abs}
-                    title={
-                      <span>
-                        <Icon type={route.iconType} />
-                        <span>{route.title}</span>
-                      </span>
-                    }>
-                    {renderRoutesAsMenuItems(route.subroutes, true)}
-                  </Menu.SubMenu>
-                ) : (
-                  <Menu.Item key={route.abs}>
-                    <Icon type={route.iconType} />
-                    <span>{route.title}</span>
-                    <Reach.Link to={route.abs} />
-                  </Menu.Item>
-                )
-              })
-              .reverse()
-          })(props.subroutes)} */}
-        </Menu>
+
+        <Carousel dots={false} ref={navigationDepthComponentRef}>
+          <div>
+            <div className={classNames(styles.logo, { [styles.logoCollapsed]: siderCollapsed })}>
+              <Typography.Title level={4}>{siderCollapsed ? "OPG" : "ONPOINT"}</Typography.Title>
+            </div>
+            {nestedNavigation && (
+              <div className={classNames(styles.navigationRightArrow, styles.navigationArrow)}>
+                <Button ghost onClick={showNestedNavigation}>
+                  <Typography.Text>{nestedNavigation.title} Navigation</Typography.Text>
+                  <Icon type="arrow-right" />
+                </Button>
+              </div>
+            )}
+            <Menu
+              theme="dark"
+              mode="vertical"
+              defaultOpenKeys={activeMenuKeys}
+              selectedKeys={activeMenuKeys}>
+              {renderNavEntriesAsMenu(fromStore.navigation || [])}
+            </Menu>
+          </div>
+          {nestedNavigation && (
+            <div>
+              <div className={classNames(styles.logo, { [styles.logoCollapsed]: siderCollapsed })}>
+                <Typography.Title level={4}>
+                  {siderCollapsed
+                    ? (nestedNavigation.title || "").replace(/[aeiou]+|\s+/gi, "")
+                    : nestedNavigation.title}
+                </Typography.Title>
+              </div>
+              <div className={classNames(styles.navigationLeftArrow, styles.navigationArrow)}>
+                <Button ghost onClick={showPrimaryNavigation}>
+                  <Icon type="arrow-left" />
+                  <Typography.Text>Admin Navigation</Typography.Text>
+                </Button>
+              </div>
+              <Menu
+                theme="dark"
+                mode="vertical"
+                defaultOpenKeys={activeMenuKeys}
+                selectedKeys={activeMenuKeys}>
+                {renderNavEntriesAsMenu(nestedNavigation.routes || [])}
+              </Menu>
+            </div>
+          )}
+        </Carousel>
       </Layout.Sider>
 
       <Layout>
@@ -137,15 +178,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                   {({ match }) => {
                     if (!match) return
                     return (
-                      <Row align="middle" style={{ display: "flex" }}>
-                        <Col>
-                          <Typography.Text strong={true}>{subroute.title}</Typography.Text>
-                        </Col>
-                        <Space.Vertical width={15} />
-                        <Col>
-                          <Typography.Text type="secondary">{subroute.description}</Typography.Text>
-                        </Col>
-                      </Row>
+                      <HeaderTextLayout title={subroute.title} description={subroute.description} />
                     )
                   }}
                 </Reach.Match>
@@ -205,20 +238,18 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         <Row className={`${styles.layoutContainer} ${styles.breadCrumbsRow}`}>
           <Breadcrumb>
             {props.location.pathname.split("/").map((_, idx, parts) => (
-              <>
-                <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
-                  <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
-                  {guidRegex().exec(parts[idx]) && (
-                    <CopyToClipboard
-                      text={parts[idx].toLowerCase()}
-                      onCopy={() => message.success("Copied!")}>
-                      <Button size="small" style={{ margin: "0 5px", opacity: 0.75 }}>
-                        <Icon type="copy" />
-                      </Button>
-                    </CopyToClipboard>
-                  )}
-                </Breadcrumb.Item>
-              </>
+              <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
+                <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
+                {guidRegex().exec(parts[idx]) && (
+                  <CopyToClipboard
+                    text={parts[idx].toLowerCase()}
+                    onCopy={() => message.success("Copied!")}>
+                    <Button size="small" style={{ margin: "0 5px", opacity: 0.75 }}>
+                      <Icon type="copy" />
+                    </Button>
+                  </CopyToClipboard>
+                )}
+              </Breadcrumb.Item>
             ))}
           </Breadcrumb>
         </Row>
@@ -263,3 +294,15 @@ const renderNavEntriesAsMenu = (navEntries: (NavigationItem | NavigationGroupWit
       </Menu.Item>
     )
   )
+
+const HeaderTextLayout = ({ title, description }: { title: string; description: string }) => (
+  <Row align="middle" style={{ display: "flex" }}>
+    <Col>
+      <Typography.Text strong={true}>{title}</Typography.Text>
+    </Col>
+    <Space.Vertical width={15} />
+    <Col>
+      <Typography.Text type="secondary">{description}</Typography.Text>
+    </Col>
+  </Row>
+)

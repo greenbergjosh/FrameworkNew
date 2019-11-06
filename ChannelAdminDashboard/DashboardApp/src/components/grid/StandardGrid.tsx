@@ -2,7 +2,7 @@ import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
 import { Spin } from "antd"
 import jsonLogic from "json-logic-js"
-import { cloneDeep, sortBy } from "lodash/fp"
+import { cloneDeep, merge, sortBy } from "lodash/fp"
 import moment from "moment"
 import React from "react"
 import { tryCatch } from "../../data/Either"
@@ -132,12 +132,16 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
       if (grid.current.allowGrouping) {
         grid.current.groupModule.expandAll()
       }
-      grid.current.detailRowModule.expandAll()
+      if (grid.current.detailRowModule) {
+        grid.current.detailRowModule.expandAll()
+      }
     } else if (id === "collapse") {
       if (grid.current.allowGrouping) {
         grid.current.groupModule.collapseAll()
       }
-      grid.current.detailRowModule.collapseAll()
+      if (grid.current.detailRowModule) {
+        grid.current.detailRowModule.collapseAll()
+      }
     }
   }
 }
@@ -200,6 +204,13 @@ export const StandardGrid = React.forwardRef(
         // Default should be to NOT allow HTML rendering. That's a terrible practice.
         if (typeof col.disableHtmlEncode === "undefined" || col.disableHtmlEncode === null) {
           col.disableHtmlEncode = !col.allowHTMLText
+        }
+        // Remove cell padding option
+        if (col.removeCellPadding) {
+          col.customAttributes = merge(
+            { class: "-remove-cell-padding" },
+            col.customAttributes || {}
+          )
         }
 
         // Managing custom formatting options for Dates
