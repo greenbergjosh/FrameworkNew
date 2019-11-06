@@ -1,3 +1,13 @@
+import { TSEnum } from "./@types/ts-enum"
+import antComponentsPlugin from "./ant.ibplugin"
+import { JSONRecord } from "./components/interface-builder/@types/JSONTypes"
+import { ComponentDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentDefinitionNamedProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentRenderMetaProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import { FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
+import { registry } from "./components/interface-builder/registry"
+import { UserInterfaceProps } from "./components/interface-builder/UserInterface"
+import { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
 export const foo = "Bar!"
 /**
  * Framework
@@ -44,16 +54,13 @@ export { shallowPropCheck } from "./components/interface-builder/dnd"
 // export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
 
 /**
+ * Register plugins
+ */
+antComponentsPlugin(registry)
+
+/**
  * Re-exported Types
  */
-import { ComponentDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { ComponentDefinitionNamedProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { ComponentRenderMetaProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
-import { JSONRecord } from "./components/interface-builder/@types/JSONTypes"
-import { TSEnum } from "./@types/ts-enum"
-import { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
-import { UserInterfaceProps } from "./components/interface-builder/UserInterface"
 
 export type ComponentDefinition = ComponentDefinition
 export type ComponentDefinitionNamedProps = ComponentDefinitionNamedProps

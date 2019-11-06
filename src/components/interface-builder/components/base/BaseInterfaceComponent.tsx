@@ -52,6 +52,7 @@ export interface ComponentRenderMetaProps {
 }
 
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps
+export type BaseInterfaceComponentType = typeof BaseInterfaceComponent
 
 export abstract class BaseInterfaceComponent<
   T extends BaseInterfaceComponentProps,

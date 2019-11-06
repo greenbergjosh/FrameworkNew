@@ -1,6 +1,6 @@
 import React from "react"
+import config from "./config.json"
 import {
-
   /* This first section are .ts files and will NOT crash the app */
 
   foo,
@@ -33,9 +33,7 @@ import {
   // EditorLangCodec,
   // shallowPropCheck,
   // ConfirmableDeleteButton,
-
-} from "interface-builder/src"
-import config from "./config.json"
+} from "interface-builder/lib"
 
 const cleanFoo = sanitizeText(foo) + " " + Date.now()
 
