@@ -6,7 +6,7 @@ import React, { useEffect } from "react"
 import { Transition } from "react-native-reanimated"
 import { createAppContainer } from "react-navigation"
 import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
-import { AuthContextProvider } from "./providers/auth-context-provider"
+import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
 import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
 import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
@@ -74,7 +74,7 @@ const App = () => {
   }
 
   return (
-    <AuthContextProvider>
+    <GetGotRootDataContextProvider>
       <Provider theme={theme}>
         <ActionSheetProvider>
           <RootNavigator
@@ -93,7 +93,7 @@ const App = () => {
           />
         </ActionSheetProvider>
       </Provider>
-    </AuthContextProvider>
+    </GetGotRootDataContextProvider>
   )
 }
 

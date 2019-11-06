@@ -10,7 +10,7 @@ import DrawerLayout from "@bang88/react-native-drawer-layout"
 import React from "react"
 import { ScrollView, Text, View } from "react-native"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
-import { useAuthContext } from "../../../providers/auth-context-provider"
+import { AuthContextType, useAuthContext } from "../../../providers/auth-context-provider"
 
 interface NavigationItem {
   title: string
@@ -28,13 +28,13 @@ export interface SettingsDrawerChildProps {
   close?: () => void
 }
 
-export interface SettingsDrawerProps extends React.PropsWithChildren<any> {
+export interface SettingsDrawerProps extends React.PropsWithChildren<unknown> {
   open: boolean
   navigation: NavigationSwitchProp<NavigationRoute<NavigationParams>, NavigationParams>
 }
 
 export const SettingsDrawer = (props: SettingsDrawerProps) => {
-  const auth: any = useAuthContext()
+  const auth = useAuthContext()
   const { navigate } = props.navigation
   const drawerRef = React.useRef<DrawerLayout>(null)
 
@@ -48,6 +48,7 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
       {({ open, toggle }) => (
         <Drawer
           sidebar={renderSettingsDrawerContents(
+            auth,
             navigate,
             drawerRef && drawerRef.current && drawerRef.current.closeDrawer,
             logout
@@ -61,6 +62,86 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
         </Drawer>
       )}
     </SettingsDrawerContext.Consumer>
+  )
+}
+
+const settingsRoutes: NavigationItem[] = [
+  {
+    title: "Analytics",
+    route: "Analytics",
+    icon: "line-chart",
+  },
+  {
+    title: "Privacy Options",
+    route: "PrivacyOptions",
+    icon: "lock",
+  },
+  {
+    title: "Notifications",
+    route: "Notifications",
+    icon: "bell",
+  },
+  {
+    title: "Blocked Users",
+    route: "BlockedUsers",
+    icon: "stop",
+  },
+  {
+    title: "Quick Tour",
+    route: "Tour",
+  },
+]
+
+const renderSettingsDrawerContents = (
+  auth: AuthContextType,
+  navigate: SettingsDrawerProps["navigation"]["navigate"],
+  closeDrawer: DrawerLayout["closeDrawer"],
+  logout: () => void
+) => {
+  return (
+    <>
+      <ScrollView style={{ flex: 1 }}>
+        <WhiteSpace />
+        <List>
+          <List.Item thumb={auth.imageurl} style={{ backgroundColor: "#343997" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+              <Text style={{ color: "#fff" }}>{auth.handle}</Text>
+              <Button
+                size="small"
+                style={{ backgroundColor: "#343997", borderWidth: 0 }}
+                onPress={() => closeDrawer()}>
+                <Icon name="left" color="#fff" />
+              </Button>
+            </View>
+          </List.Item>
+          <>{settingsRoutes.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
+          <List.Item
+            multipleLine
+            style={{ backgroundColor: "#343997", borderWidth: 0 }}
+            onPress={() => {
+              closeDrawer()
+              logout()
+            }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderWidth: 0,
+                borderBottomColor: "red",
+                borderTopColor: "green",
+              }}>
+              <Text style={{ color: "#fff" }}>Log out</Text>
+            </View>
+          </List.Item>
+        </List>
+      </ScrollView>
+    </>
   )
 }
 
@@ -99,82 +180,5 @@ const renderDrawerItem = (
         <Text style={{ color: "#fff" }}>{title}</Text>
       </View>
     </List.Item>
-  )
-}
-
-const settingsRoutes: NavigationItem[] = [
-  {
-    title: "Analytics",
-    route: "Analytics",
-    icon: "line-chart",
-  },
-  {
-    title: "Privacy Options",
-    route: "PrivacyOptions",
-    icon: "lock",
-  },
-  {
-    title: "Notifications",
-    route: "Notifications",
-    icon: "bell",
-  },
-  {
-    title: "Blocked Users",
-    route: "BlockedUsers",
-    icon: "stop",
-  },
-  {
-    title: "Quick Tour",
-    route: "Tour",
-  },
-]
-
-const renderSettingsDrawerContents = (navigate, closeDrawer, logout) => {
-  return (
-    <>
-      <ScrollView style={{ flex: 1 }}>
-        <WhiteSpace />
-        <List>
-          <List.Item
-            thumb="https://os.alipayobjects.com/rmsportal/mOoPurdIfmcuqtr.png"
-            style={{ backgroundColor: "#343997" }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}>
-              <Text style={{ color: "#fff" }}>Username</Text>
-              <Button
-                size="small"
-                style={{ backgroundColor: "#343997", borderWidth: 0 }}
-                onPress={() => closeDrawer()}>
-                <Icon name="left" color="#fff" />
-              </Button>
-            </View>
-          </List.Item>
-          <>{settingsRoutes.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
-          <List.Item
-            multipleLine
-            style={{ backgroundColor: "#343997", borderWidth: 0 }}
-            onPress={() => {
-              closeDrawer()
-              logout()
-            }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                borderWidth: 0,
-                borderBottomColor: "red",
-                borderTopColor: "green",
-              }}>
-              <Text style={{ color: "#fff" }}>Log out</Text>
-            </View>
-          </List.Item>
-        </List>
-      </ScrollView>
-    </>
   )
 }
