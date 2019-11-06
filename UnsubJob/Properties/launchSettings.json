@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "\"n:Direct Agents\" c:37902"
+      "commandLineArgs": "\"n:W4\""
     }
   }
 }

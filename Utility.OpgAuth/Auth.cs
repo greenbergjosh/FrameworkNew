@@ -296,7 +296,7 @@ namespace Utility.OpgAuth
             });
         }
 
-        private static IGenericEntity GetConfig(bool throwOnNull = true)
+        internal static IGenericEntity GetConfig(bool throwOnNull = true)
         {
             var conf = _fw?.StartupConfiguration.GetE("Config/OpgAuth");
 

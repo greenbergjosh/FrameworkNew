@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 
 namespace Utility.Mta
 {
@@ -11,6 +12,17 @@ namespace Utility.Mta
         {
             From = sender;
             To = new[] {to};
+            JobId = jobId;
+            Subject = subject;
+            Body = body;
+            Headers = headers;
+            FromHasTokens = MailService.HasTokens(From.Address).Any() || MailService.HasTokens(From.LocalPart).Any() || MailService.HasTokens(From.Domain).Any();
+        }
+
+        public MailPackage(Sender sender, string to, string jobId, string subject, string body, IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            From = sender;
+            To = new[] {new Recipient(new MailAddress(to), null),};
             JobId = jobId;
             Subject = subject;
             Body = body;

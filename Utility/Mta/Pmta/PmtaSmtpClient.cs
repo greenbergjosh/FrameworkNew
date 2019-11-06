@@ -10,7 +10,6 @@ namespace Utility.Mta.Pmta
 {
     public class PmtaSmtpClient : IDisposable
     {
-        private static readonly string[] RemoveChars = {"\\", "&", "="};
         private TcpClient _tcp;
         private NetworkStream _networkStream;
         private const int DefaultPort = 25;
@@ -127,7 +126,7 @@ namespace Utility.Mta.Pmta
                 {
                     var line = reader.ReadLine();
 
-                    if (line != null) Buffer.Write(line);
+                    if (line != null) await Buffer.Write(line);
                     else break;
                 }
 
@@ -140,7 +139,7 @@ namespace Utility.Mta.Pmta
 
         public void Dispose()
         {
-            Close();
+            Close().GetAwaiter().GetResult();
         }
 
         private class StreamBuffer
@@ -185,7 +184,7 @@ namespace Utility.Mta.Pmta
                 {
                     if (!msg.EndsWith("\r\n")) msg += "\r\n";
 
-                    SmtpTrace(msg);
+                    await SmtpTrace(msg);
 
                     buffer = Encoding.ASCII.GetBytes(msg);
 
@@ -204,8 +203,6 @@ namespace Utility.Mta.Pmta
             {
                 var buffer = new byte[1024];
 
-                var i = 0;
-                int b;
                 var timeout = Environment.TickCount;
 
                 try
@@ -226,6 +223,7 @@ namespace Utility.Mta.Pmta
                 Raw = Encoding.ASCII.GetString(buffer).Replace("\0", string.Empty);
             }
         }
-
     }
+
+
 }

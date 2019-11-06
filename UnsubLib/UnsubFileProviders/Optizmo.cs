@@ -46,10 +46,15 @@ namespace UnsubLib.UnsubFileProviders
             }).Where(rx => rx != null).ToArray();
         }
 
-        public bool CanHandle(IGenericEntity network, Uri uri) => uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace();
+        public bool CanHandle(IGenericEntity network, Uri uri) => 
+            uri.ToString().Contains("mailer-api.optizmo.net") || 
+            uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace();
 
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {
+            if (uri.ToString().Contains("mailer-api.optizmo.net/accesskey/getfile/"))
+                return uri.ToString();
+
             var useApi = network.GetS("Credentials/UseOptizmoApi").ParseBool() ?? false;
             var authToken = network.GetS($"Credentials/OptizmoToken");
 
@@ -78,7 +83,7 @@ namespace UnsubLib.UnsubFileProviders
 
                     if (res.success)
                     {
-                        var resGE = res.success ? Jw.JsonToGenericEntity(res.body) : null;
+                        var resGE = Jw.JsonToGenericEntity(res.body);
                         
                         if (String.Equals(resGE?.GetS("error"), "You do not have access to MD5 downloads", StringComparison.CurrentCultureIgnoreCase))
                         {
@@ -90,9 +95,9 @@ namespace UnsubLib.UnsubFileProviders
 
                         if (!download.IsNullOrWhitespace()) return download;
 
-                        await _fw.Error(_logMethod, $"Optizmo API get file url call failed: {uri} Response: {resGE?.GetS("")}");
+                        await _fw.Error(_logMethod, $"Optizmo API get file url call failed: {baseUrl} derived from: {uri} Response: {resGE?.GetS("")}");
                     }
-                    else await _fw.Error(_logMethod, $"Optizmo API get file url call failed: {uri}");
+                    else await _fw.Error(_logMethod, $"Optizmo API get file call failed against: {baseUrl} derived from: {uri}, with response body: {res.body}");
                 }
             }
             else

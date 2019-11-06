@@ -183,7 +183,7 @@ namespace Utility
 
                         await fs.ReadAsync(buffer, 0, 32);
 
-                        var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(md5);
+                        var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(md5.ToLower());
 
                         if (cmp < 0) bottom = cur + 1;
                         else if (cmp > 0) top = cur - 1;
