@@ -5,6 +5,7 @@ export interface EnrichedColumnDefinition extends ColumnModel {
   allowHTMLText?: boolean
   aggregationFunction?: AggregateType
   customFormat?: string // Custom date or numeric format, typically
+  removeCellPadding?: boolean
   skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
   precision?: number // integer
   visibilityConditions?: JSONObject // JSON Logic

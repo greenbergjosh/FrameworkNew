@@ -45,7 +45,7 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = dateManageForm
 
-  handleChange = (inputMoment: moment.Moment, dateString: string) => {
+  handleChange = (inputMoment: moment.Moment | null, dateString: string) => {
     const { onChangeData, timeSettings, userInterfaceData, valueKey } = this.props
     const timeFormat = getTimeFormat(timeSettings)
     const newValueMoment = moment(

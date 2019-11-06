@@ -1,11 +1,11 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
 
-export const numberInputManageForm = (...extend: Partial<ComponentDefinition>[]) => {
-  return baseManageForm(...numberInputManageFormDefinition, ...extend)
+export const dataDictionaryManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+  return baseManageForm(...dataDictionaryManageFormDefinition, ...extend)
 }
 
-const numberInputManageFormDefinition: Partial<ComponentDefinition>[] = [
+const dataDictionaryManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [
@@ -17,11 +17,18 @@ const numberInputManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Number",
+                defaultValue: "Data Dictionary",
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+              },
+              {
+                key: "keyLabel",
+                valueKey: "keyLabel",
+                label: "Key Label",
+                defaultValue: "Key",
+                component: "input",
               },
             ],
           },

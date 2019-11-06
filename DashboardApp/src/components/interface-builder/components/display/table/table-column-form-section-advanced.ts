@@ -11,5 +11,13 @@ export const tableAdvancedForm = {
       component: "toggle",
       defaultValue: false,
     },
+    {
+      key: "removeCellPadding",
+      valueKey: "removeCellPadding",
+      label: "Remove Cell Padding",
+      help: "Removes the default spacing around cell contents to make more readable",
+      component: "toggle",
+      defaultValue: false,
+    },
   ],
 } as SectionDefinition

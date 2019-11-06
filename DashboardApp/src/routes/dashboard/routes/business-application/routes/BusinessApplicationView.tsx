@@ -1,5 +1,7 @@
+import { Divider } from "antd"
 import React from "react"
 import Helmet from "react-helmet"
+import { BusinessApplicationPageId } from "../../../../../components/business-application/business-application.types"
 import { BusinessApplication } from "../../../../../components/business-application/BusinessApplication"
 import { WithRouteProps } from "../../../../../state/navigation"
 
@@ -11,6 +13,8 @@ interface BusinessApplicationContext {
 
 interface ViewProps {
   context: BusinessApplicationContext
+  id: BusinessApplicationId
+  pageId: BusinessApplicationPageId
 }
 export function BusinessApplicationView(props: WithRouteProps<ViewProps>): JSX.Element {
   return (
@@ -18,8 +22,11 @@ export function BusinessApplicationView(props: WithRouteProps<ViewProps>): JSX.E
       <Helmet>
         <title>{props.title || "Application Management"} | Channel Admin | OPG</title>
       </Helmet>
-
-      <BusinessApplication applicationId={props.context.id} title={props.title} />
+      {props["*"] ? (
+        props.children
+      ) : (
+        <BusinessApplication applicationId={props.id} pageId={props.pageId} title={props.title} />
+      )}
     </>
   )
 }

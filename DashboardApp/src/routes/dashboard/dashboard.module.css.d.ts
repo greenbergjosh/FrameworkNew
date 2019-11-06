@@ -10,6 +10,10 @@ declare const styles: {
   readonly "layoutContainer": string;
   readonly "logo": string;
   readonly "logoCollapsed": string;
+  readonly "navigationLeftArrow": string;
+  readonly "navigationRightArrow": string;
+  readonly "navigationArrow": string;
+  readonly "hoverColorText": string;
 };
 export = styles;
 

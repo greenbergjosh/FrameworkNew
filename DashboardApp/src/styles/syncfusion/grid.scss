@@ -46,6 +46,10 @@
     background-color: $background-color-primary-light;
   }
 
+  td.e-rowcell.-remove-cell-padding {
+    padding: 0;
+  }
+
   .e-toolbar .e-toolbar-items .e-toolbar-left .e-toolbar-item:first-child {
     margin-left: 0;
   }

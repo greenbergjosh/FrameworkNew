@@ -24,14 +24,14 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: true,
               },
               {
-                key: "tabNames",
-                valueKey: "tabNames",
+                key: "tabs",
+                valueKey: "tabs",
                 ordinal: 20,
                 component: "list",
                 components: [
                   {
-                    key: "tabName",
-                    valueKey: "tabName",
+                    key: "label",
+                    valueKey: "label",
                     component: "input",
                     label: "Tab",
                     defaultValue: "Tab",
