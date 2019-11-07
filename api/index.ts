@@ -51,14 +51,14 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
     },
   }
 
-  // console.debug("Fetching", baseAddress, {
-  //   method: "POST",
-  //   headers: {
-  //     Accept: "application/json",
-  //     "Content-Type": "application/json",
-  //   },
-  //   body,
-  // })
+  console.debug("Fetching", baseAddress, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body,
+  })
 
   const response = await fetch(baseAddress, {
     method: "POST",

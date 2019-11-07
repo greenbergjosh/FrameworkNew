@@ -2,10 +2,12 @@ import { ReactComponentLike } from "prop-types"
 import React from "react"
 import { AuthContextProvider } from "./auth-context-provider"
 import { FeedContextProvider } from "./feed-context-provider"
+import { PromotionsContextProvider } from "./promotions-context-provider"
 
 const providers: { [key: string]: ReactComponentLike } = {
   AuthContextProvider,
   FeedContextProvider,
+  PromotionsContextProvider,
 }
 
 export const GetGotRootDataContextProvider = (props: { children: JSX.Element }) =>
