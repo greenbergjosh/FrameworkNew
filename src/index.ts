@@ -1,34 +1,33 @@
 import { TSEnum } from "./@types/ts-enum"
-import antComponentsPlugin from "./ant.ibplugin"
 import { JSONRecord } from "./components/interface-builder/@types/JSONTypes"
 import { ComponentDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 import { ComponentDefinitionNamedProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 import { ComponentRenderMetaProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 import { FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
-import { registry } from "./components/interface-builder/registry"
 import { UserInterfaceProps } from "./components/interface-builder/UserInterface"
 import { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
-export const foo = "Bar!"
+
 /**
  * Framework
  */
-// export {
-//   BaseInterfaceComponent,
-// } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-// export { baseManageForm } from "./components/interface-builder/components/base/base-component-form"
-// export {
-//   CodeEditor,
-// } from "./components/interface-builder/components/special/code-editor/code-editor"
-// export { ComponentRenderer } from "./components/interface-builder/ComponentRenderer"
+export { default as antComponents } from "./ant.ibplugin"
+export {
+  BaseInterfaceComponent,
+} from "./components/interface-builder/components/base/BaseInterfaceComponent"
+export { baseManageForm } from "./components/interface-builder/components/base/base-component-form"
+export {
+  CodeEditor,
+} from "./components/interface-builder/components/special/code-editor/code-editor"
+export { ComponentRenderer } from "./components/interface-builder/ComponentRenderer"
 export { DataPathContext } from "./components/interface-builder/util/DataPathContext"
 export {
   getDefaultsFromComponentDefinitions,
 } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-// export {
-//   registerMonacoEditorMount,
-// } from "./components/interface-builder/components/special/code-editor/code-editor"
-// export { registry } from "./components/interface-builder/registry"
-// export { UserInterface } from "./components/interface-builder/UserInterface"
+export {
+  registerMonacoEditorMount,
+} from "./components/interface-builder/components/special/code-editor/code-editor"
+export { registry } from "./components/interface-builder/registry"
+export { UserInterface } from "./components/interface-builder/UserInterface"
 export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager"
 
 /**
@@ -51,17 +50,12 @@ export { shallowPropCheck } from "./components/interface-builder/dnd"
 /**
  * Non-Framework Components
  */
-// export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
-
-/**
- * Register plugins
- */
-antComponentsPlugin(registry)
+export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
 
 /**
  * Re-exported Types
+ * Because you can't export a type directly from another module
  */
-
 export type ComponentDefinition = ComponentDefinition
 export type ComponentDefinitionNamedProps = ComponentDefinitionNamedProps
 export type ComponentRenderMetaProps = ComponentRenderMetaProps
