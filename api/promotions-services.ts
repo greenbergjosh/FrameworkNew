@@ -91,7 +91,7 @@ export const loadPromotionCampaigns = async (
   searchText?: string,
   lastPromotionId?: string
 ) => {
-  return await getgotRequest<PromotionCampaignsResponse>("getCampaignPromotions", {
+  return await getgotRequest<PromotionCampaignsResponse>("getPromotionCampaigns", {
     promotionId,
     pageSize,
     searchText,
