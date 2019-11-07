@@ -21,7 +21,7 @@ declare module "./store.types" {
   }
 }
 
-const apiUrl = "http://data.techopg.com/pr"
+const apiUrl = "//data.techopg.com/pr"
 
 export interface State {
   token: null | string
@@ -208,7 +208,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       return request({
         body: {
           "auth:login": {
-            onelogin: params,
+            OneLogin: params,
           },
         },
         expect: AdminApi.authResponsePayloadCodec.login,

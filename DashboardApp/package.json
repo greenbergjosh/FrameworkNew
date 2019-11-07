@@ -62,7 +62,7 @@
     "dev": "concurrently \"npm:start\"  \"npm:watch-*\"",
     "watch-css": "tcm --watch -p src/**/*.module.css",
     "watch-scss": "tsm --watch src/**/*.module.scss",
-    "start": "react-app-rewired --max_old_space_size=4096 start",
+    "start": "export HTTPS=true&&react-app-rewired --max_old_space_size=4096 start",
     "build": "react-app-rewired --max_old_space_size=4096 build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
