@@ -35,11 +35,11 @@ import {
   // ConfirmableDeleteButton,
 } from "interface-builder"
 
+registry.register(antComponents)
+
 const App: React.FC = () => {
   const [data, setData] = React.useState({})
   const [schema, /*setSchema*/] = React.useState([config])
-
-  registry.register(antComponents)
 
   return (
     <div>

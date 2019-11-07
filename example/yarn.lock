@@ -5338,25 +5338,9 @@ inquirer@^6.2.2:
     strip-ansi "^5.1.0"
     through "^2.3.6"
 
-"interface-builder@file:..":
-  version "0.1.0"
-  dependencies:
-    "@babel/polyfill" "7.4.3"
-    "@reach/component-component" "0.1.3"
-    "@syncfusion/ej2-react-grids" "17.1.42"
-    "@syncfusion/ej2-react-navigations" "17.1.43"
-    antd "3.20.1"
-    ckeditor4 "4.13.0"
-    ckeditor4-react "1.0.0"
-    fp-ts "1.17.1"
-    io-ts "1.8.5"
-    io-ts-types "0.4.7"
-    json-logic-js "^1.2.2"
-    monaco-editor "0.18.1"
-    react-dnd "7.4.5"
-    react-dnd-html5-backend "7.4.4"
-    react-dnd-touch-backend "0.8.3"
-    react-monaco-editor "0.32.1"
+"interface-builder@link:..":
+  version "0.0.0"
+  uid ""
 
 internal-ip@^4.2.0:
   version "4.3.0"
@@ -6881,6 +6865,11 @@ monaco-editor@0.18.1:
   resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.18.1.tgz#ced7c305a23109875feeaf395a504b91f6358cfc"
   integrity sha512-fmL+RFZ2Hrezy+X/5ZczQW51LUmvzfcqOurnkCIRFTyjdVjzR7JvENzI6+VKBJzJdPh6EYL4RoWl92b2Hrk9fw==
 
+monocle-ts@1.7.2, monocle-ts@^1.0.0:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/monocle-ts/-/monocle-ts-1.7.2.tgz#d9825ae18846ab63f915cb6f2194a78a40025610"
+  integrity sha512-F08hPUzQ14vOtac2vOagnvXPr0R0MRKWXF6Bwd3gQ4XnV2qfU0MzPL+L18kX4dXBkat74pxbL88V1BjAj3YOWg==
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/move-concurrently/-/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"
@@ -6976,6 +6965,14 @@ neo-async@^2.5.0, neo-async@^2.6.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
+
+newtype-ts@0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/newtype-ts/-/newtype-ts-0.2.1.tgz#9a88a721b2bf3bb4f2ab34db733be359190a634d"
+  integrity sha512-Gnch+o9P/7RgKdkwx5mqWr3iR+Sxxvk2mykPaH93Y9WDhnVQ/ojdOoAGb9O/qHjnYMqJYW0xee9uNebdfpyCLg==
+  dependencies:
+    fp-ts "^1.0.0"
+    monocle-ts "^1.0.0"
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -9097,6 +9094,10 @@ react-dom@16.11.0:
     prop-types "^15.6.2"
     scheduler "^0.17.0"
 
+"react-dom@link:../node_modules/react-dom":
+  version "0.0.0"
+  uid ""
+
 react-error-overlay@^6.0.3:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.3.tgz#c378c4b0a21e88b2e159a3e62b2f531fd63bf60d"
@@ -9207,6 +9208,10 @@ react@16.11.0:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.2"
+
+"react@link:../node_modules/react":
+  version "0.0.0"
+  uid ""
 
 read-pkg-up@^2.0.0:
   version "2.0.0"
