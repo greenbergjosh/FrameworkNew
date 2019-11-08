@@ -82,6 +82,7 @@ export const DataMap = ({
         <Col {...deleteColumnProps}>
           {index < data.length && (
             <Button
+              style={{ padding: 1 }}
               icon="close"
               onClick={itemDeleteHandler(data, index, onDataChanged)}
               type="danger"

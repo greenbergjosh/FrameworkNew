@@ -196,7 +196,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                               <Typography.Title level={4}>Components</Typography.Title>
                             </Col>
                             <Col span={5}>
-                              <Tooltip
+                              {/*<Tooltip
                                 title={`${fullscreen ? "Exit" : "Enter"} Full Screen Designer`}>
                                 <Button
                                   type="link"
@@ -205,7 +205,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                                   style={{ fontSize: 28 }}
                                   onClick={() => this.setState({ fullscreen: !fullscreen })}
                                 />
-                              </Tooltip>
+                              </Tooltip>*/}
                             </Col>
                           </Row>
                           <Divider />
