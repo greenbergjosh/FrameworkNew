@@ -17,25 +17,18 @@ export {
 export { baseManageForm } from "./components/interface-builder/components/base/base-component-form"
 export {
   CodeEditor,
+  editorLanguages,
+  EditorLangCodec,
+  registerMonacoEditorMount,
 } from "./components/interface-builder/components/special/code-editor/code-editor"
 export { ComponentRenderer } from "./components/interface-builder/ComponentRenderer"
 export { DataPathContext } from "./components/interface-builder/util/DataPathContext"
 export {
   getDefaultsFromComponentDefinitions,
 } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-export {
-  registerMonacoEditorMount,
-} from "./components/interface-builder/components/special/code-editor/code-editor"
 export { registry } from "./components/interface-builder/registry"
 export { UserInterface } from "./components/interface-builder/UserInterface"
 export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager"
-
-/**
- * Types
- */
-export {
-  EditorLangCodec,
-} from "./components/interface-builder/components/special/code-editor/code-editor"
 
 /**
  * Utility
