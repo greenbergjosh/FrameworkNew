@@ -69,7 +69,16 @@ namespace EdwServiceLib
             try
             {
                 var result = await ExecuteRequest(context);
+
+                if (!context.Request.Headers.TryGetValue("origin", out var origin))
+                    origin = "*";
+
                 context.Response.ContentType = MediaTypeNames.Application.Json;
+                context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
+                context.Response.Headers.Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+                context.Response.Headers.Add("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, proxy-revalidate");
+
                 await context.Response.WriteAsync(result == null ? "null" : result.ToString());
             }
             catch (Exception ex)
@@ -126,7 +135,7 @@ namespace EdwServiceLib
                         if (sfConfig.TryGetValue(KeyPrefix, out var keyPrefix))
                             prefixConfig = JObject.FromObject(new Dictionary<string, object> { [KeyPrefix] = keyPrefix });
                         var (name, _) = await GetOrCreateStackFrame(session, key, prefixConfig, stackFrames);
-                        var (_, jToken) = await SetStackFrame(session, name, sfConfig);
+                        var (_, jToken) = await SetStackFrame(context, session, name, sfConfig);
                         stackFrames.Add(name);
                         stResults[name] = jToken;
                     }
@@ -144,18 +153,24 @@ namespace EdwServiceLib
                         var rsConfig = (JObject)value;
                         var type = rsConfig[Type].ToString();
                         var configId = Guid.Parse(rsConfig[ConfigId].ToString());
-                        var (_, jToken) = await GetOrCreateRs(session, oldStack, newStack, key, type, configId, rsConfig[Data]);
+                        var (_, jToken) = await GetOrCreateRs(context, session, oldStack, newStack, key, type, configId, rsConfig[Data]);
                         rsResults[key] = jToken;
                     }
                 }
 
-                var poppedEvents = await PopStackFrames(session, oldStack, newStack, false);
-                var pushedEvents = await PushStackFrames(session, oldStack, newStack);
+                var poppedEvents = await PopStackFrames(context, session, oldStack, newStack, false);
+                var pushedEvents = await PushStackFrames(context, session, oldStack, newStack);
 
                 result[OnPop] = JArray.FromObject(poppedEvents);
                 result[OnPush] = JArray.FromObject(pushedEvents);
 
-                await SetStackFrame(session, Session, JObject.FromObject(new Dictionary<string, object>
+                if (obj.TryGetValue(Ev, out var evList) && evList.Type == JTokenType.Array)
+                {
+                    var events = await PublishEvents(context, session, oldStack, newStack, evList, false);
+                    result[Ev] = JArray.FromObject(events);
+                }
+
+                await SetStackFrame(context, session, Session, JObject.FromObject(new Dictionary<string, object>
                 {
                     [OldStack] = stackFrames.ToArray(),
                     [NewStack] = stackFrames.ToArray()
@@ -184,7 +199,9 @@ namespace EdwServiceLib
             return true;
         }
 
-        private async Task<List<object>> PublishEvents(Session session, Stack oldStack, Stack newStack, IEnumerable<JToken> evList, bool isSessionTimeout)
+        private async Task<List<object>> PublishEvents(
+            HttpContext context, Session session, 
+            Stack oldStack, Stack newStack, IEnumerable<JToken> evList, bool isSessionTimeout)
         {
             var evResults = new List<object>();
 
@@ -226,7 +243,7 @@ namespace EdwServiceLib
                 if (evObj.TryGetValue(Rs, out var rawRsNames) && rawRsNames.Type == JTokenType.Array)
                     rsNames = rawRsNames.ToObject<string[]>();
 
-                var evResult = await PublishEvent(session, oldStack, newStack, evKey.ToObject<string[]>(), 
+                var evResult = await PublishEvent(context, session, oldStack, newStack, evKey.ToObject<string[]>(), 
                     evData, addToWhep, includeWhep, duplicate, when, rsNames);
                 if (evResult != null)
                     evResults.Add(evResult);
@@ -249,7 +266,7 @@ namespace EdwServiceLib
         }
 
         private async Task<List<object>> PopStackFrames(
-            Session session, Stack oldStack, Stack newStack, bool isSessionTimeout)
+            HttpContext context, Session session, Stack oldStack, Stack newStack, bool isSessionTimeout)
         {
             var evResults = new List<object>();
             
@@ -267,7 +284,7 @@ namespace EdwServiceLib
                 {
                     var subStack = oldStack.Range(oldStackCount);
                     var evList = onPop.Properties().Select(p => p.Value).ToArray();
-                    var poppedEvents = await PublishEvents(session, subStack, newStack, evList, isSessionTimeout);
+                    var poppedEvents = await PublishEvents(context, session, subStack, newStack, evList, isSessionTimeout);
                     evResults.AddRange(poppedEvents);
                 }
 
@@ -277,7 +294,7 @@ namespace EdwServiceLib
             return evResults;
         }
 
-        private async Task<List<object>> PushStackFrames(Session session, Stack oldStack, Stack newStack)
+        private async Task<List<object>> PushStackFrames(HttpContext context, Session session, Stack oldStack, Stack newStack)
         {
             var evResults = new List<object>();
             var diffIndex = DiffStacks(newStack, oldStack);
@@ -292,7 +309,7 @@ namespace EdwServiceLib
 
                 var subStack = newStack.Range(i + 1);
                 var evList = onPush.Properties().Select(p => p.Value).ToArray();
-                var pushedEvents = await PublishEvents(session, subStack, newStack, evList, false);
+                var pushedEvents = await PublishEvents(context, session, subStack, newStack, evList, false);
                 evResults.AddRange(pushedEvents);
             }
 
@@ -312,24 +329,32 @@ namespace EdwServiceLib
 
         private Session GetOrCreateSession(HttpContext context, JObject json)
         {
+            var cookieOptions = new CookieOptions
+            {
+                MaxAge = TimeSpan.FromSeconds(2592000),
+                HttpOnly = true,
+                Secure = context.Request.IsHttps,
+                //Domain = TODO: strip 8080 or edw.*... talk with Aaron before.
+            };
+
             if (context.Request.Cookies.TryGetValue(SessionId, out var cookieSessionId))
             {
                 var sid = Guid.Parse(cookieSessionId);
-                return new Session(_cache, sid, ExtendSession(sid));
+                return new Session(_cache, sid, ExtendSession(context, sid));
             }
             if (json.TryGetValue(SessionId, out var raw) &&
                 Guid.TryParse(raw?.ToString(), out var sessionId))
             {
-                context.Response.Cookies.Append(SessionId, sessionId.ToString());
-                return new Session(_cache, sessionId, ExtendSession(sessionId));
+                context.Response.Cookies.Append(SessionId, sessionId.ToString(), cookieOptions);
+                return new Session(_cache, sessionId, ExtendSession(context, sessionId));
             }
 
             var newSessionId = Guid.NewGuid();
-            context.Response.Cookies.Append(SessionId, newSessionId.ToString());
-            return new Session(_cache, newSessionId, ExtendSession(newSessionId));
+            context.Response.Cookies.Append(SessionId, newSessionId.ToString(), cookieOptions);
+            return new Session(_cache, newSessionId, ExtendSession(context, newSessionId));
         }
 
-        private CancellationToken ExtendSession(Guid sessionId)
+        private CancellationToken ExtendSession(HttpContext context, Guid sessionId)
         {
             var tokens = _cache.GetOrCreate($"{sessionId}", e => {
                 var cts = new CancellationTokenSource();
@@ -348,7 +373,7 @@ namespace EdwServiceLib
                      var newStack = BuildStack(session, stackFrames);
 
                      if (newStack.Any())
-                         await PopStackFrames(session, oldStack, newStack, true);
+                         await PopStackFrames(context, session, oldStack, newStack, true);
 
                      cts.Dispose();
                      ctsKey.Cancel();
@@ -380,7 +405,7 @@ namespace EdwServiceLib
             var session = GetOrCreateSession(context, json);
             var newStack = BuildStack(session, new[] { Session });
             var oldStack = GetOldStack(session);
-            var result = await PopStackFrames(session, oldStack, newStack, false);
+            var result = await PopStackFrames(context, session, oldStack, newStack, false);
             var key = $"{session.Id}";
             var (cts, ctsKey) = _cache.Get<(CancellationTokenSource cts, CancellationTokenSource ctsKey)>(key);
             _cache.Remove(key);
@@ -390,7 +415,7 @@ namespace EdwServiceLib
             return JsonWrapper.Serialize(result);
         }
 
-        private async Task<(string Json, JToken Data)> GetOrCreateRs(
+        private async Task<(string Json, JToken Data)> GetOrCreateRs(HttpContext context,
             Session session, Stack oldStack, Stack newStack,
             string name, string type, Guid configId, JToken data)
         {
@@ -421,7 +446,7 @@ namespace EdwServiceLib
                     return (oldData, oldObj);
             }
 
-            TransformData(session, oldStack, newStack, newStack.Select(pair => pair.Key).LastOrDefault(), data);
+            TransformData(context, session, oldStack, newStack, newStack.Select(pair => pair.Key).LastOrDefault(), data);
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
@@ -489,7 +514,7 @@ namespace EdwServiceLib
             if (json.TryGetValue(Data, out var data) && data is JArray evList)
             {
                 var stack = GetOldStack(session);
-                var result = await PublishEvents(session, stack, stack, evList, false);
+                var result = await PublishEvents(context, session, stack, stack, evList, false);
                 return JsonWrapper.Serialize(result);
             }
 
@@ -586,12 +611,13 @@ namespace EdwServiceLib
         }
 
         private async Task<object> PublishEvent(
+            HttpContext context,
             Session session,
             Stack oldStack, Stack newStack,
             IEnumerable<string> keyParts, JObject data, 
             bool addToWhep, bool includeWhep, JObject duplicate, IEnumerable when, string[] rsNames)
         {
-            TransformData(session, oldStack, newStack, newStack.Last().Key, data);
+            TransformData(context, session, oldStack, newStack, newStack.Last().Key, data);
 
             if (!EvaluatePredicate(when, oldStack, newStack, data))
                 return null;
@@ -659,7 +685,7 @@ namespace EdwServiceLib
             await _fw.EdwWriter.Write(be);
 
             var jObj = JObject.FromObject(sfData);
-            await SetStackFrame(session, newStack.Last().Key, jObj);
+            await SetStackFrame(context, session, newStack.Last().Key, jObj);
 
             // Update memory
             foreach (var (s, value) in jObj)
@@ -686,7 +712,7 @@ namespace EdwServiceLib
             stackData.Remove(propertyName);
         }
 
-        private static Task<(string Json, JToken Data)> SetStackFrame(Session session, string stackFrameName, JToken data)
+        private static Task<(string Json, JToken Data)> SetStackFrame(HttpContext context, Session session, string stackFrameName, JToken data)
         {
             if (data is JObject obj)
             {
@@ -694,7 +720,7 @@ namespace EdwServiceLib
                 DelegateEvent(session, stackFrameName, obj, OnPop);
             }
 
-            TransformData(session, null, null, stackFrameName, data);
+            TransformData(context, session, null, null, stackFrameName, data);
             var serializedScope = session.GetOrCreate($"{session.Id}:{Sf}:{stackFrameName}", () => JsonWrapper.Serialize(new JObject()));
             var scopeStack = new StackFrameParser(serializedScope);
             scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
@@ -739,7 +765,7 @@ namespace EdwServiceLib
             return Task.FromResult((name, stackFrame));
         }
 
-        private static void TransformData(Session session, Stack oldStack, Stack newStack, string stackFrame, JToken data)
+        private static void TransformData(HttpContext context, Session session, Stack oldStack, Stack newStack, string stackFrame, JToken data)
         {
             if (data.Type != JTokenType.Object)
                 return;
@@ -755,6 +781,7 @@ namespace EdwServiceLib
                 var str = (string)kv.Value;
                 var key = $"{session.Id}:{stackFrame}:{kv.Name}";
 
+                if (ParseHeaders(context, obj, kv, str)) continue;
                 if (ParseCounter(session, key, obj, kv, str)) continue;
                 if (ParseAccumulator(session, key, obj, kv, str, toRemove)) continue;
                 ParseStackAccess(kv, str, oldStack, newStack, obj);
@@ -845,6 +872,30 @@ namespace EdwServiceLib
             value++;
             session.Set(key, value);
             obj[property.Name] = value;
+
+            return true;
+        }
+
+        private static bool ParseHeaders(HttpContext context, JObject obj, JProperty property, string str)
+        {
+            if (!(str.StartsWith("[") && str.EndsWith("]")))
+                return false;
+
+            var headerName = str.Substring(1, str.Length - 2);
+
+            if (headerName == "ip")
+            {
+                obj[property.Name] = context.Connection.RemoteIpAddress.ToString();
+            }
+            else if (context.Request.Headers.TryGetValue(headerName, out var value))
+            {
+                if (value.Count == 0)
+                    obj.Remove(property.Name);
+                else
+                    obj[property.Name] = value[0];
+            }
+            else
+                obj.Remove(property.Name);
 
             return true;
         }
