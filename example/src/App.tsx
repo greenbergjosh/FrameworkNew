@@ -1,58 +1,38 @@
 import React from "react"
-import config from "./config.json"
-import {
-  /* This first section are .ts files and will NOT crash the app */
+import { Breadcrumb, Layout } from "antd"
+import "antd/dist/antd.css"
+import { antComponents, registry } from "interface-builder"
+import TopMenu from "./components/nav/top-menu"
+import SideMenu from "./components/nav/side-menu"
+import DndExample from "./components/examples/dnd"
+import "./styles/index.css"
+import "./App.css"
 
-  // cheapHash,
-  // ComponentDefinition,
-  // ComponentDefinitionNamedProps,
-  // ComponentRenderMetaProps,
-  // DataPathContext,
-  // deepDiff,
-  // evalExpression,
-  // FormInterfaceComponentProps,
-  // JSONRecord,
-  // Right,
-  // sanitizeText,
-  // TSEnum,
-  // UserInterfaceContextManager,
-  // UserInterfaceProps,
-
-  /* Below involve .tsx files and most will crash the app */
-
-  antComponents,
-  // BaseInterfaceComponent
-  // baseManageForm,
-  // CodeEditor,
-  // ComponentRenderer,
-  // getDefaultsFromComponentDefinitions,
-  // registerMonacoEditorMount,
-  registry,
-  UserInterface,
-  // UserInterfaceContext,
-  // EditorLangCodec,
-  // shallowPropCheck,
-  // ConfirmableDeleteButton,
-} from "interface-builder"
-
+const { Header, Content, Sider } = Layout
 registry.register(antComponents)
 
 const App: React.FC = () => {
-  const [data, setData] = React.useState({})
-  const [schema, /*setSchema*/] = React.useState([config])
-
   return (
-    <div>
-      <UserInterface
-        mode="display"
-        components={schema}
-        data={data}
-        onChangeData={(newData) => {
-          console.log("New Data", newData)
-          setData(newData)
-        }}
-      />
-    </div>
+    <Layout className="App">
+      <Header className="header">
+        <div className="logo" />
+        <TopMenu />
+      </Header>
+      <Layout>
+        <Sider width={200} style={{ background: "#fff" }}>
+          <SideMenu />
+        </Sider>
+        <Layout style={{ padding: "0 24px 24px" }}>
+          <Breadcrumb style={{ margin: "16px 0" }}>
+            <Breadcrumb.Item>Examples</Breadcrumb.Item>
+            <Breadcrumb.Item>Drag-n-Drop</Breadcrumb.Item>
+          </Breadcrumb>
+          <Content>
+            <DndExample />
+          </Content>
+        </Layout>
+      </Layout>
+    </Layout>
   )
 }
 

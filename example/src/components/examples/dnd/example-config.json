@@ -15,8 +15,31 @@
           "component": "tab",
           "components": [
             {
-              "key": "pick1",
+              "hidden": false,
+              "allowClear": true,
+              "placeholder": "Please select",
+              "data": {
+                "values": [
+                  {
+                    "label": "one",
+                    "value": "1"
+                  },
+                  {
+                    "label": "two",
+                    "value": "2"
+                  },
+                  {
+                    "label": "three",
+                    "value": "3"
+                  }
+                ]
+              },
+              "multiple": false,
+              "dataHandlerType": "local",
+              "valueKey": "value",
               "label": "Pick Something",
+              "hideLabel": false,
+              "key": "pick1",
               "component": "select"
             },
             {
@@ -37,8 +60,31 @@
               "component": "input"
             },
             {
-              "key": "pick2",
+              "hidden": false,
+              "allowClear": true,
+              "placeholder": "Please select",
+              "data": {
+                "values": [
+                  {
+                    "label": "one",
+                    "value": "1"
+                  },
+                  {
+                    "label": "two",
+                    "value": "2"
+                  },
+                  {
+                    "label": "three",
+                    "value": "3"
+                  }
+                ]
+              },
+              "multiple": false,
+              "dataHandlerType": "local",
+              "valueKey": "value",
               "label": "Pick something Else",
+              "hideLabel": false,
+              "key": "pick2",
               "component": "select"
             }
           ]

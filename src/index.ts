@@ -10,7 +10,7 @@ import { UserInterfaceContextManager } from "./components/interface-builder/User
 /**
  * Framework
  */
-export { default as antComponents } from "./ant.ibplugin"
+export { default as antComponents } from "./plugins/ant.ibplugin"
 export {
   BaseInterfaceComponent,
 } from "./components/interface-builder/components/base/BaseInterfaceComponent"
