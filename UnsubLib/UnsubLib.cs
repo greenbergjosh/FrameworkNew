@@ -547,7 +547,7 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Retrieved file url for {networkName} campaign {campaignId}");
 
-                        if (!String.IsNullOrEmpty(uri))
+                        if (!string.IsNullOrEmpty(uri))
                         {
                             if (uris.ContainsKey(uri)) uris[uri].Add(c);
                             else uris.TryAdd(uri, new List<IGenericEntity>() { c });
@@ -1668,6 +1668,7 @@ namespace UnsubLib
 
                     if (providers.Any())
                     {
+
                         uri = providers.Select(p => p.GetFileUrl(network, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                         if (uri.IsNullOrWhitespace())
@@ -1755,51 +1756,93 @@ namespace UnsubLib
                 return UNKNOWNHANDLER;
             }
 
+            string[] lines;
             using (var sr = f.OpenText())
             {
                 var buffer = new char[400];
                 await sr.ReadAsync(buffer, 0, 400);
                 theText = new string(buffer);
 
-                var lines = theText.Split(
+                lines = theText.Split(
                     new[] { "\r\n", "\r", "\n" },
                     StringSplitOptions.None);
+            }
 
-                var allMd5 = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            var allMd5 = true;
+            var firstLineHeader = false;
+            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            {
+                if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
                 {
-                    if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
+                    if (l == 0)
+                    {
+                        firstLineHeader = true;
+                        continue;
+                    }
+                    else
                     {
                         allMd5 = false;
                         break;
                     }
                 }
-                if (allMd5) return MD5HANDLER;
+            }
 
-                var allPlain = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            if (firstLineHeader && lines.Length > 1 && allMd5)
+            {
+                // Remove the header
+                // sed -i '1d' "emails.txt"
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+            else if (firstLineHeader)
+            {
+                allMd5 = false;
+            }
+
+            if (allMd5) return MD5HANDLER;
+
+            var allPlain = true;
+            firstLineHeader = false;
+            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            {
+                if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
                 {
-                    if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
+                    if (l == 0)
+                    {
+                        firstLineHeader = true;
+                        continue;
+                    }
+                    else
                     {
                         allPlain = false;
                         break;
-                    }
+                    } 
                 }
-                if (allPlain) return PLAINTEXTHANDLER;
-
-                var allDom = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (lines[l].Length == 0) continue;
-                    if (!lines[l].Contains("."))
-                    {
-                        allDom = false;
-                        break;
-                    }
-                }
-                if (allDom) return DOMAINHANDLER;
-
             }
+
+            if (firstLineHeader && lines.Length > 1 && allPlain)
+            {
+                // Remove the header
+                // sed -i '1d' "emails.txt"
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+            else if (firstLineHeader)
+            {
+                allPlain = false;
+            }
+
+            if (allPlain) return PLAINTEXTHANDLER;
+
+            var allDom = true;
+            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            {
+                if (lines[l].Length == 0) continue;
+                if (!lines[l].Contains("."))
+                {
+                    allDom = false;
+                    break;
+                }
+            }
+            if (allDom) return DOMAINHANDLER;
 
             await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}::{theText}");
             return UNKNOWNHANDLER;
