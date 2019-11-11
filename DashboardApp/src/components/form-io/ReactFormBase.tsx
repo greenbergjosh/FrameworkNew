@@ -1,9 +1,15 @@
 import { Typography } from "antd"
+import { stringify } from "flatted/esm"
 import Base from "formiojs/components/base/Base"
+import { LRUMap } from "lru_map"
 import React from "react"
 import ReactDOM from "react-dom"
 
-interface Stateful<T> {
+export interface ValueHolder {
+  value: any
+}
+
+interface Stateful<T extends ValueHolder> {
   state: T
 }
 
@@ -12,7 +18,10 @@ type FormIOOptions = any
 type FormIOData = any
 type FormIOSchemaItem = any
 
-export default abstract class ReactFormBase<T> extends Base implements Stateful<T> {
+const elementCache = new LRUMap(200)
+
+export default abstract class ReactFormBase<T extends ValueHolder> extends Base
+  implements Stateful<T> {
   private _state!: T
   private initialState!: T
 
@@ -25,13 +34,63 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
   }
 
   build() {
-    this.element = this.ce("div", { class: "react-form-base-outer-container" })
-    this.createLabel(this.element)
+    const { component, options, data } = this
+    const key = btoa(stringify({ component, options, data }))
 
-    this.renderContainer = this.ce("div", { class: "react-form-base-container" })
-    this.element.appendChild(this.renderContainer)
+    console.log("ReactFormBase.build", {
+      label: component.label,
+      id: component.id,
+      key,
+      oldKey: this._lastBuildKey,
+    })
+    if (key === this._lastBuildKey) return
+    this._lastBuildKey = key
 
-    setTimeout(this.buildReactComponent, 100)
+    // console.log("ReactFormBase.build: Existing Element", component.id, this.element)
+    // if (!this.element && document.getElementById(component.id)) {
+    //   this.element = document.getElementById(component.id)
+    // }
+    // console.log("ReactFormBase.build: Found DOM Element", component.id, this.element)
+
+    // if (!this.element && elementCache.has(component.id)) {
+    //   this.element = elementCache.get(component.id)
+    //   console.log("ReactFormBase.build: Found Cached Element", component.id, this.element)
+    //   this.element.removeAttribute("hidden")
+    //   this.element.style.visibility = "auto"
+    //   this.element.style.position = "auto"
+    // }
+
+    if (this.element && !this.renderContainer) {
+      this.renderContainer = this.element.getElementsByClassName("react-form-base-container")[0]
+    }
+
+    if (!this.element || !this.renderContainer) {
+      if (!this.element) {
+        this.element = this.ce("div", {
+          id: component.id,
+          class: "react-form-base-outer-container",
+        })
+        this.createLabel(this.element)
+      }
+
+      if (!this.renderContainer) {
+        this.renderContainer = this.ce("div", {
+          class: "react-form-base-container form-group has-feedback formio-component",
+        })
+      }
+      this.element.appendChild(this.renderContainer)
+
+      elementCache.set(component.id, this.element)
+
+      setTimeout(this.buildReactComponent, 100)
+    } else {
+      console.log(
+        "ReactFormBase.build: Partial rebuild as element framing already exists",
+        this.element
+      )
+      this.element.getElementsByClassName("control-label")[0].innerText = component.label
+      setTimeout(this.buildReactComponent, 100)
+    }
   }
 
   abstract render(): JSX.Element | JSX.Element[]
@@ -44,7 +103,13 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
       const wrappedComponent = (
         <DumbStateComponent state={this.state}>{renderedComponent}</DumbStateComponent>
       )
+      console.debug("ReactFormBase.buildReactComponent", this.component.label)
       ReactDOM.render(wrappedComponent, this.renderContainer)
+    } else {
+      console.debug(
+        "ReactFormBase.buildReactComponent",
+        "Skipped rendering because this.renderContainer was not ready"
+      )
     }
   }
 
@@ -58,19 +123,23 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
     return info
   }
 
-  abstract get emptyValue(): T
+  abstract get emptyValue(): T["value"]
 
-  getValue(): T {
+  getValue(): T["value"] {
     // console.log("ReactFormBase.getValue", this._state)
-    return this.state
+    return this.state.value
   }
 
   get hasSetValue() {
-    return this.hasValue()
+    return this.haAny
   }
 
-  setValue(value: T) {
-    this.setState(value)
+  setValue(value: T["value"]) {
+    this.setState({ value } as Partial<T>)
+  }
+
+  deleteValue() {
+    this.setValue(this.emptyValue)
   }
 
   get defaultSchema() {
@@ -101,12 +170,20 @@ export default abstract class ReactFormBase<T> extends Base implements Stateful<
       this.state = state as T
     }
     // If this is called after there's an initial state, it can be a partial state
-    else {
+    else if (JSON.stringify(this.state) !== JSON.stringify(state)) {
+      console.debug("ReactFormBase.setState", { currentState: this.state, nextState: state })
       this.state = { ...this.state, ...state }
     }
   }
 }
 
 const DumbStateComponent = ({ state, children }: { state: any; children: any }) => {
+  const foo = React.useEffect(() => {
+    console.debug("DumbStateComponent.onMount", state)
+    return () => {
+      console.debug("DumbStateComponent.onUnmount", state)
+    }
+  }, [])
+
   return <>{children}</>
 }

@@ -32,6 +32,23 @@ export default function(...extend) {
           },
         ],
       },
+      {
+        key: "data",
+        components: [
+          {
+            key: "allowCalculateOverride",
+            ignore: true,
+          },
+          {
+            key: "encrypted",
+            ignore: true,
+          },
+          {
+            key: "dbIndex",
+            ignore: true,
+          },
+        ],
+      },
     ],
     ...extend
   )

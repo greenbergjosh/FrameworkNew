@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Amazon;
@@ -955,23 +956,21 @@ namespace Utility
             SendMail(smtpRelay, smtpPort, msg, useSsl);
         }
 
-        public static Task DownloadFileFromS3Bucket(string accessKeyId, string secretAccessKey,
-            string bucketName, string destination, string file)
-        {
-            return DownloadFilesFromS3Bucket(accessKeyId, secretAccessKey, bucketName, destination, new[] {file}, 1);
-        }
-
         public static async Task DownloadFilesFromS3Bucket(string accessKeyId, string secretAccessKey,
-            string bucketName, string destination, IEnumerable<string> files, int parallelism)
+            string bucketName, IEnumerable<string> files, int parallelism, Func<string, string, Task> action)
         {
             using (var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1))
             {
                 using (var t = new TransferUtility(client))
                 {
-                    await files.ForEachAsync(parallelism, s =>
+                    await files.ForEachAsync(parallelism, async s =>
                     {
-                        var fName = s.Split("/").Last();
-                        return t.DownloadAsync($"{destination}\\{fName}", bucketName, s);
+                        using (var stream = await t.OpenStreamAsync(bucketName, s))
+                        using (var reader = new StreamReader(stream))
+                        {
+                            var content = reader.ReadToEnd();
+                            await action(s, content);
+                        }
                     });
                 }
             }
@@ -997,275 +996,48 @@ namespace Utility
             }
         }
 
-        public static async Task DownloadNotifyAiJson(FrameworkWrapper fw, string username, string password,
-            DateTime startDate, DateTime endDate, string destFile)
+        public static async Task<bool> CompareHttpContent(string remoteContentLocation, string contentToCompare)
         {
-            var parameters = new Dictionary<string, string>
-            {
-                [""] = "{\"username\":\"" + username + "\", \"password\":\"" + password + "\",\"rememberMe\":false}"
-            };
-            var response = await HttpPostAsync("https://app.notifyai.io/api/authenticate", parameters, 60,
-                "application/json", 1);
-            var ge = JsonWrapper.ToGenericEntity(JsonWrapper.TryParse(response));
-            var token = ge.GetS("id_token");
-            var headers = new List<(string key, string value)> {("Authorization", "Bearer " + token)};
-            var start = startDate.ToString("yyyy-MM-dd");
-            var end = endDate.ToString("yyyy-MM-dd");
-            var url = $"https://app.notifyai.io/api/rollup-push-sites/all-stats/" + start + "/" + end + "/";
-
-            var (success, body) = await HttpGetAsync(url, headers);
-            if (success)
-            {
-                await File.WriteAllTextAsync(destFile, body);
-            }
-            else
-            {
-                await fw.Error(nameof(DownloadNotifyAiJson),
-                    $"Could not download file for startDate: {startDate} endDate: {endDate}");
-            }
+            var r = await HttpGetAsync(remoteContentLocation);
+            return r.success && r.body == contentToCompare;
         }
 
-        public static async Task DownloadHitPathJson(FrameworkWrapper fw, string url, string key, string type,
-            DateTime startDate, DateTime endDate, string destFile)
+        public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
         {
-            var rqst = url + "?key=" + key + "&type=" + type + "&start=" +
-                       System.Web.HttpUtility.UrlEncode(startDate.ToShortDateString())
-                       + "&end=" + System.Web.HttpUtility.UrlEncode(endDate.ToShortDateString()) +
-                       "&all_details=true&nozip=1";
+            var siteMapQuery = new SitemapQuery();
+            IEnumerable<SitemapFile> siteMaps = await siteMapQuery.GetAllSitemapsForDomain(domain);
+            var uris = new List<Uri>();
+            foreach (var siteMapFile in siteMaps)
+            {
+                if (!siteMapFile.Location.ToString().EndsWith(sitemapFileName)) continue;
 
-            var (success, body) = await HttpGetAsync(rqst);
-            if (success)
-            {
-                await File.WriteAllTextAsync(destFile, body);
+                uris.AddRange(siteMapFile.Urls
+                    .Where(u => u.Location != null)
+                    .Select(u => u.Location)
+                    .ToList());
             }
-            else
-            {
-                await fw.Error(nameof(DownloadNotifyAiJson),
-                    $"Could not download file for startDate: {startDate} endDate: {endDate}");
-            }
+            return uris;
         }
 
-
-        public static async Task DownloadCakeJson(FrameworkWrapper fw, string affiliateId, string key, string url,
-            string type, DateTime startDate, DateTime endDate, string destFile)
+        public static bool DomElementExists(string uri, string xpath, Stack<(string attr, string attrVal)> attrVals)
         {
-            // url = https://ckadmin.com/affiliates/api/Reports/
+            var web = new HtmlWeb();
+            var doc = web.Load(uri);
+            var nodes = doc.DocumentNode.SelectNodes(xpath);
 
-            // https://ckadmin.com/affiliates/api/Reports/Clicks?               start_date=10%2F22%2F2019&end_date=10%2F23%2F2019
-            // https://ckadmin.com/affiliates/api/Reports/Conversions?          start_date=10%2F22%2F2019&end_date=10%2F23%2F2019&conversion_type=all&exclude_bot_traffic=true&unbilled_only=true&start_at_row=1&row_limit=30&api_key=nuzgj47Oafmy9r6cuVwHkg&affiliate_id=1968
-            // https://ckadmin.com/affiliates/api/Reports/SubAffiliateSummary?  start_date=10%2F22%2F2019&end_date=10%2F23%2F2019&conversion_type=all&start_at_row=1&row_limit=30&api_key=nuzgj47Oafmy9r6cuVwHkg&affiliate_id=1968
-
-            var urlTemplate = url + type + "?start_date=" +
-                              System.Web.HttpUtility.UrlEncode(startDate.ToShortDateString())
-                              + "&end_date=" + System.Web.HttpUtility.UrlEncode(endDate.ToShortDateString())
-                              + "&api_key=" + System.Web.HttpUtility.UrlEncode(key)
-                              + "&affiliate_id=" + System.Web.HttpUtility.UrlEncode(affiliateId);
-
-            var row = 1;
-            const int rowLimit = 10;
-
-            var request = urlTemplate + "&start_at_row=" + row
-                          + "&row_limit=" + rowLimit;
-
-            var (success, body) = await HttpGetAsync(request);
-            var allRows = new List<object>();
-            try
+            bool SearchNodes(Stack<(string attr, string attrVal)> recAttrVals)
             {
-                do
-                {
-                    var ge = JsonWrapper.JsonToGenericEntity(body);
+                (string attribute, string attributeVal) = recAttrVals.Pop();
+                var found = nodes.Select(attr => new { attr, attrValue = attr.GetAttributeValue(attribute, string.Empty) })
+                            .Where(x => x.attrValue == attributeVal)
+                            .Select(x => x.attrValue).Any();
 
-                    if (!success)
-                        throw new InvalidOperationException("bad cake request");
+                if (!found) { return false; }
+                if (recAttrVals.Count > 0) { return SearchNodes(recAttrVals); }
+                else { return true; }
 
-                    var rowCount = int.Parse(ge.GetS("row_count"));
-                    if (rowCount == 0)
-                        break;
-
-                    row += rowCount;
-                    var results = ge.Get<System.Collections.Generic.IEnumerable<object>>("data").ToList();
-                    allRows.AddRange(results);
-
-                    if (rowCount < rowLimit)
-                        break;
-
-                    request = urlTemplate + "&start_at_row=" + row
-                              + "&row_limit=" + rowLimit;
-                    (success, body) = await HttpGetAsync(request);
-
-                } while (true);
-
-
-                var json = JsonWrapper.Serialize(new Dictionary<string, object>
-                {
-                    ["row_count"] = row,
-                    ["data"] = allRows
-                });
-
-                await File.WriteAllTextAsync(destFile, json);
             }
-            catch (Exception e)
-            {
-                await fw.Error(nameof(DownloadCakeJson),
-                    $"Cake response from {url} was invalid xml.\r\nResponse:\r\n{body}");
-            }
-        }
-
-        public static async Task SendNotification(FrameworkWrapper fw, string from, string to, string subject,
-            string uri)
-        {
-            var payload = PL.O(new
-            {
-                from_address = from,
-                subject,
-                body = uri
-            });
-            var addresses = JsonConvert.SerializeObject(new object[] {new {email_address = to}});
-            payload.Add(PL.O(new {email_addresses = addresses}, new[] {false}));
-            await fw.PostingQueueWriter.Write(new PostingQueueEntry("SendEmail", DateTime.Now, payload.ToString()));
-        }
-
-        public static async Task RunPushnamiOnDomains(FrameworkWrapper fw, IEnumerable<string> domains)
-        {
-            const string serviceWorker =
-                "if (typeof window === \"undefined\") {\n" +
-                "\timportScripts('https://secureanalytic.com/scripts/ext/script/57dkr96ew8?url='+encodeURI(self.location.hostname));\n" +
-                "}\n" +
-                "importScripts(\"https://api.pushnami.com/scripts/v2/pushnami-sw/5b271c911f0c9927d30443f5\");";
-
-            foreach (var domain in domains)
-            {
-                // Compare service worker
-                var (success, body) = await HttpGetAsync("https://" + domain + "/service-worker.js");
-                if (!success || body != serviceWorker)
-                    continue;
-
-                var siteMapQuery = new SitemapQuery();
-                var siteMaps = await siteMapQuery.GetAllSitemapsForDomain(domain);
-                var uris = new List<Uri>();
-                foreach (var siteMapFile in siteMaps)
-                {
-                    if (!siteMapFile.Location.ToString().EndsWith("page-sitemap.xml")) continue;
-
-                    uris.AddRange(siteMapFile.Urls
-                        .Where(u => u.Location != null)
-                        .Select(u => u.Location)
-                        .ToList());
-                }
-
-                if (uris.Count == 0)
-                    uris.Add(new Uri("https://" + domain + "/"));
-
-                var web = new HtmlWeb();
-
-                foreach (var uri in uris)
-                {
-                    var doc = web.Load(uri);
-                    var found = doc.DocumentNode.SelectNodes("//link[@rel]")
-                        .Select(link => new {link, relValue = link.GetAttributeValue("rel", string.Empty)})
-                        .Select(@t => new {@t, hrefValue = @t.link.GetAttributeValue("href", string.Empty)})
-                        .Where(@t => @t.@t.relValue == "dns-prefetch" && @t.hrefValue == "//api.pushnami.com")
-                        .Select(@t => @t.@t.relValue).Any();
-
-                    if (!found)
-                    {
-                        foreach (var script in doc.DocumentNode.SelectNodes("//script[@src]"))
-                        {
-                            var srcValue = script.GetAttributeValue("src", string.Empty);
-                            if (srcValue != "https://api.pushnami.com/scripts/v1/push/5b27f5fe56cc4120d071a221")
-                                continue;
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                        await SendNotification(fw, "llvovsky@onpointglobal.com", "llvovsky@onpointglobal.com",
-                            "Pushnami could not be found", uri.ToString());
-                }
-            }
-        }
-
-        public static async Task DownloadPushyJson(FrameworkWrapper fw, string username, string password,
-            DateTime startDate, DateTime endDate, string destFile)
-        {
-            string csrftoken = null;
-            // First perform a GET on https://pushy.ai/partner/login/ to get a csrftoken cookie
-            var getResponse = await HttpGetHeadersAsync("https://pushy.ai/partner/login/");
-            if (getResponse.success && getResponse.headers.TryGetValue("Set-Cookie", out var cookie))
-            {
-                SetCookieHeaderValue.ParseList(cookie.SelectMany(s => s.Split(';')).ToList()).ForEach(c =>
-                {
-                    if (c.Name == "csrftoken")
-                        csrftoken = c.Value.ToString();
-                });
-            }
-
-            //Also get the csrfmiddlewaretoken out of the page
-            var doc = new HtmlDocument();
-            doc.LoadHtml(getResponse.body);
-            var csrfmiddlewaretoken = doc.DocumentNode.SelectNodes("//input[@name]")
-                .Select(input => new
-                {
-                    name = input.GetAttributeValue("name", string.Empty),
-                    value = input.GetAttributeValue("value", string.Empty)
-                })
-                .Where(@t => @t.name == "csrfmiddlewaretoken")
-                .Select(@t => @t.value)
-                .FirstOrDefault();
-
-            // todo: throw if not token
-
-            var parameters = new Dictionary<string, string>
-            {
-                ["csrfmiddlewaretoken"] = csrfmiddlewaretoken,
-                ["username"] = username,
-                ["password"] = password
-            };
-            var headers = new List<(string key, string value)>
-            {
-                ("Referer", "https://pushy.ai/partner/login/"),
-                ("cookie", "csrftoken=" + csrftoken)
-            };
-
-            var response =
-                await HttpPostGetHeadersAsync("https://pushy.ai/partner/login/", parameters, 60, "", 1, headers);
-
-            string sessionId = null;
-            string csrftoken2 = null;
-            // Now get login token from response
-            if (response.headers.TryGetValue("Set-Cookie", out var cookie2))
-            {
-                SetCookieHeaderValue.ParseList(cookie2.SelectMany(s => s.Split(';')).ToList()).ForEach(c =>
-                {
-                    if (c.Name == "csrftoken")
-                        csrftoken2 = c.Value.ToString();
-                    if (c.Name == "sessionid")
-                        sessionId = c.Value.ToString();
-                });
-            }
-
-            headers = new List<(string key, string value)>
-            {
-                ("cookie", "csrftoken=" + csrftoken2 + ";sessionid=" + sessionId)
-            };
-            var url =
-                "https://pushy.ai/partner/stats-data/?startdate=" + System.Web.HttpUtility.UrlEncode(
-                                                                      startDate.ToShortDateString())
-                                                                  + "&enddate=" +
-                                                                  System.Web.HttpUtility.UrlEncode(
-                                                                      endDate.ToShortDateString())
-                                                                  + "&group_by=";
-            var result = await HttpPostAsync(url, new Dictionary<string, string>(), 60, "application/json", 1, headers);
-            await File.WriteAllTextAsync(destFile, result);
-        }
-
-        public static async Task DownloadFromGoogleDrive(string fileId, string destFile)
-        {
-            var url = "https://docs.google.com/spreadsheets/d/" + fileId + "/export?exportFormat=csv";
-            var (success, body) = await HttpGetAsync(url);
-            if (success)
-                await File.WriteAllTextAsync(destFile, body);
+            return SearchNodes(attrVals);
         }
     }
 }

@@ -12,6 +12,7 @@ import { logger } from "./logger"
 import { navigation } from "./navigation"
 import { remoteDataClient } from "./remote-data-client"
 import { reports } from "./reports"
+import { importIngestionReport } from "./import-ingestion-report"
 import * as Store from "./store.types"
 
 const appModels: Omit<Store.AppModelConfigs, "loading"> = {
@@ -23,6 +24,7 @@ const appModels: Omit<Store.AppModelConfigs, "loading"> = {
   navigation,
   remoteDataClient,
   reports,
+  importIngestionReport,
 }
 
 const _store = Rematch.init({

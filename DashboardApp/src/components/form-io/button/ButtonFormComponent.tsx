@@ -4,7 +4,9 @@ import React, { SyntheticEvent } from "react"
 import ReactFormBase from "../ReactFormBase"
 import editForm from "./button.form"
 
-interface ButtonOptions {}
+interface ButtonOptions {
+  value: boolean
+}
 
 export default class ButtonFormComponent extends ReactFormBase<ButtonOptions> {
   static schema(...extend: any[]) {
@@ -73,7 +75,7 @@ export default class ButtonFormComponent extends ReactFormBase<ButtonOptions> {
   //   return this.buttonElement;
   // }
 
-  onChange = (value: ButtonOptions, isValid: boolean) => {
+  onChange = (value: ButtonOptions["value"], isValid: boolean) => {
     this.done = false
     if (isValid && this.hasError) {
       this.hasError = false
@@ -139,7 +141,7 @@ export default class ButtonFormComponent extends ReactFormBase<ButtonOptions> {
 
     this.on(
       "change",
-      (value: ButtonOptions & { isValid: boolean }) => {
+      (value: ButtonOptions["value"] & { isValid: boolean }) => {
         this.loading = false
         this.disabled = this.options.readOnly || (this.component.disableOnInvalid && !value.isValid)
         if (this.component.action === "submit") {
@@ -261,7 +263,7 @@ export default class ButtonFormComponent extends ReactFormBase<ButtonOptions> {
     return false
   }
 
-  set dataValue(value: ButtonOptions) {
+  set dataValue(value: ButtonOptions["value"]) {
     if (!this.component.input) {
       return
     }

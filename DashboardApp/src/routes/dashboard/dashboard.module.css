@@ -65,6 +65,7 @@
   background: rgba(255, 255, 255, 0);
   margin: 16px;
   transition: transform ease-in-out;
+  text-transform: uppercase;
 }
 
 .logo * {
@@ -74,4 +75,37 @@
 
 .logo.logoCollapsed {
   transform: scale(0.8);
+}
+
+.navigationLeftArrow {
+  padding-left: 15px;
+  display: flex;
+  justify-content: flex-start;
+}
+.navigationRightArrow {
+  padding-right: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+.navigationArrow button {
+  border: 0;
+  color: rgba(255, 255, 255, 0.65);
+}
+.navigationArrow button span {
+  color: inherit !important;
+}
+.navigationArrow:hover button {
+  color: rgba(255, 255, 255, 1);
+}
+
+.hoverColorText {
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+    border-color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+    background 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+    padding 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.hoverColorText:hover {
+  color: rgba(255, 255, 255, 1);
 }

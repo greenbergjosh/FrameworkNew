@@ -4,6 +4,7 @@ import { none } from "fp-ts/lib/Option"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { GoogleAuth } from "../../components/auth/GoogleAuth"
+import { OneLoginAuth } from "../../components/auth/OneLoginAuth"
 import { Space } from "../../components/space"
 import { useRematch } from "../../hooks/use-rematch"
 import image from "../../images/go-get-em-coffee-mug.jpg"
@@ -107,6 +108,8 @@ export function Landing(props: WithRouteProps<Props>) {
 
                     <Row>
                       <GoogleAuth />
+                      <Space.Horizontal height={25} />
+                      <OneLoginAuth />
                     </Row>
                   </Layout.Content>
                 ),
@@ -135,7 +138,7 @@ export function Landing(props: WithRouteProps<Props>) {
 
                         <div>
                           <Typography.Text className={styles.welcomeBackText}>{`Welcome back, ${
-                            profile.name
+                            profile.Name
                           }!`}</Typography.Text>
                         </div>
                       </Row>

@@ -1,5 +1,18 @@
-import { failure, initial, pending, RemoteData, success } from "@devexperts/remote-data-ts"
-import { array, head, mapOption, snoc, sort, uniq } from "fp-ts/lib/Array"
+import {
+  failure,
+  initial,
+  pending,
+  RemoteData,
+  success
+  } from "@devexperts/remote-data-ts"
+import {
+  array,
+  head,
+  mapOption,
+  snoc,
+  sort,
+  uniq
+  } from "fp-ts/lib/Array"
 import { concat, identity, tuple } from "fp-ts/lib/function"
 import { fromNullable, some } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
@@ -63,12 +76,6 @@ export interface Selectors {
    * which should correspond to some other configs' config.type */
   entityTypeConfigs(state: Store.AppState): Record<GC.ConfigType, GC.PersistedConfig>
 }
-/*
-{
-  "asdfasdf-asdf-adsf-afs-fsdff": {usedBy: ["asdf-45-54-ggg-45"], referencedBy: [""], uses:[], references: []}
-
-}
-*/
 
 export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
@@ -328,17 +335,22 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
       return createSelector(
         slice((self) => self.configs),
         (state) => select.globalConfig.configsById(state),
-        (configs, configsById) => {
+        (state) => select.globalConfig.entityTypeConfigs(state),
+        (configs, configsById, entityTypeConfigs) => {
           return configs
-            .map((cs) => {
-              const associations = record.fromFoldable(array)(cs.map(toKeyValuePair), identity)
-              return record.reduceWithKey(associations, associations, (guid, acc, a) => {
-                a.references.forEach((id) => {
+            .map((globalConfigItems) => {
+              const associationsMap = record.fromFoldable(array)(
+                globalConfigItems.map(toAssociationsTuple),
+                identity
+              )
+
+              record.reduceWithKey(associationsMap, associationsMap, (guid, acc, associations) => {
+                associations.references.forEach((id) => {
                   record
                     .lookup(id, acc)
                     .map((associatedRecord) => associatedRecord.referencedBy.push(guid))
                 })
-                a.uses.forEach((id) => {
+                associations.uses.forEach((id) => {
                   record
                     .lookup(id, acc)
                     .map((associatedRecord) => associatedRecord.usedBy.push(guid))
@@ -346,13 +358,24 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
 
                 return acc
               })
+
+              globalConfigItems.forEach(({ id, type }) => {
+                record.lookup(type, entityTypeConfigs).map(({ id: typeId }) => {
+                  record.lookup(typeId, associationsMap).map((associations) => {
+                    associations.isTypeOf.push(id)
+                  })
+                })
+              })
+
+              return associationsMap
             })
             .getOrElse([])
 
-          function toKeyValuePair(c: GC.PersistedConfig) {
+          function toAssociationsTuple(c: GC.PersistedConfig) {
             return tuple(
               c.id,
               GC.Associations({
+                isTypeOf: [],
                 referencedBy: [],
                 references: uniq<NonEmptyString>(setoidString)(
                   c.config.map(extractGuids).getOrElse([])

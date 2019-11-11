@@ -138,7 +138,7 @@ namespace UnsubLib.NetworkProviders
 
                 try
                 {
-                    var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
+                    var resp = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") }, 300);
                     var ge = Jw.JsonToGenericEntity(resp.body);
                     var success = ge.GetB("success");
 
@@ -147,6 +147,8 @@ namespace UnsubLib.NetworkProviders
 
                     var data = Jw.JsonToGenericEntity(ge.GetS("data"));
                     var suppressionUrl = data.GetS("download_link");
+
+                    await _fw.Trace(_logMethod, $"Got URL {networkName} {campaignId}:{url}:{suppressionUrl}:{resp.body}");
 
                     return new Uri(suppressionUrl);
                 }
@@ -287,7 +289,7 @@ namespace UnsubLib.NetworkProviders
 
         }
 
-        private class Other : INetworkProvider
+        public class Other : INetworkProvider
         {
             private readonly FrameworkWrapper _fw;
             private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Other)}";
@@ -385,8 +387,14 @@ namespace UnsubLib.NetworkProviders
 
                     xml.LoadXml(suppDetails);
                     var xn = xml.SelectSingleNode("/dataset/data/suppurl");
+                    var url = xn.FirstChild.Value;
 
-                    return new Uri(xn.FirstChild.Value);
+                    await _fw.Trace("UV2C", $"GetSuppressionLocationUrl {url} {unsubRelationshipId}");
+
+                    if (url.Contains("unsubcentral"))
+                        url += $"|cid={unsubRelationshipId}";
+
+                    return new Uri(url);
                 }
                 catch (HttpRequestException e)
                 {

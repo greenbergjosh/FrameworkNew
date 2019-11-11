@@ -1,5 +1,6 @@
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
+import JSON5 from "json5"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
 import { CompleteLocalDraft, PersistedConfig } from "../data/GlobalConfig.Config"
@@ -20,8 +21,9 @@ declare module "./store.types" {
   }
 }
 
+const apiUrl = "//data.techopg.com/pr"
+
 export interface State {
-  apiUrl: string
   token: null | string
 }
 
@@ -41,6 +43,12 @@ export interface Effects {
   }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
   authLoginGoogle(p: {
+    profileId: string
+    idToken: string
+    accessToken: string
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
+
+  authLoginOneLogin(p: {
     profileId: string
     idToken: string
     accessToken: string
@@ -78,7 +86,6 @@ export interface Selectors {}
 
 export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {
-    apiUrl: "http://admin.techopg.com/api",
     token: null,
   },
 
@@ -99,20 +106,24 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         method: "POST",
         timeout: none,
         transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON.parse(data)
+          const jsonThingHopefullyIsData = JSON5.parse(data)
           return typeof jsonThingHopefullyIsData["auth:userDetails"].r === "undefined"
             ? {
                 "auth:login": {
                   r: 0,
                   result: {
-                    token: remoteDataClient.token,
+                    // The API doesn't send back the same shape as auth:login like one would expect
+                    LoginToken: jsonThingHopefullyIsData["auth:userDetails"]["t"],
+                    Email: jsonThingHopefullyIsData["auth:userDetails"]["primaryemail"],
+                    ImageUrl: jsonThingHopefullyIsData["auth:userDetails"]["image"],
+                    Name: jsonThingHopefullyIsData["auth:userDetails"]["name"],
                     ...jsonThingHopefullyIsData["auth:userDetails"],
                   },
                 },
               }
             : data
         },
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -135,7 +146,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         method: "POST",
         timeout: none,
         transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON.parse(data)
+          const jsonThingHopefullyIsData = JSON5.parse(data)
           return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
             ? {
                 "auth:login": {
@@ -145,7 +156,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
               }
             : data
         },
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -170,7 +181,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         method: "POST",
         timeout: none,
         transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON.parse(data)
+          const jsonThingHopefullyIsData = JSON5.parse(data)
           return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
             ? {
                 "auth:login": {
@@ -180,7 +191,42 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
               }
             : data
         },
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<AdminApi.AuthLoginPayload> => {
+            return payload["auth:login"].r === 0
+              ? AdminApi.OK(payload["auth:login"].result)
+              : AdminApi.mkAdminApiError(payload["auth:login"].r)
+          }
+        )
+      )
+    },
+
+    authLoginOneLogin(params, { remoteDataClient }) {
+      return request({
+        body: {
+          "auth:login": {
+            OneLogin: params,
+          },
+        },
+        expect: AdminApi.authResponsePayloadCodec.login,
+        headers: {},
+        method: "POST",
+        timeout: none,
+        transformResponse: (data) => {
+          const jsonThingHopefullyIsData = JSON5.parse(data)
+          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
+            ? {
+                "auth:login": {
+                  r: 0,
+                  result: jsonThingHopefullyIsData["auth:login"],
+                },
+              }
+            : data
+        },
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -243,7 +289,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map((payload) => {
@@ -264,7 +310,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -287,7 +333,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -313,7 +359,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
@@ -336,7 +382,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map((payload) => {
@@ -357,7 +403,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        url: remoteDataClient.apiUrl,
+        url: apiUrl,
         withCredentials: false,
       }).then((result) =>
         result.map(
