@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
+    "build": "react-scripts build",
     "clean": "rm -rf node_modules/interface-builder/src node_modules/interface-builder/.idea node_modules/interface-builder/example node_modules/interface-builder/node_modules/react node_modules/interface-builder/node_modules/react-dom",
-    "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
