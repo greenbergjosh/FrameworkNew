@@ -6,6 +6,7 @@ import { ComponentRenderMetaProps } from "./components/interface-builder/compone
 import { FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
 import { UserInterfaceProps } from "./components/interface-builder/UserInterface"
 import { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
+import "./styles/index.scss"
 
 /**
  * Framework

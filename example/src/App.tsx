@@ -5,7 +5,6 @@ import { antComponents, registry } from "interface-builder"
 import TopMenu from "./components/nav/top-menu"
 import SideMenu from "./components/nav/side-menu"
 import DndExample from "./components/examples/dnd"
-import "./styles/index.css"
 import "./App.css"
 
 const { Header, Content, Sider } = Layout

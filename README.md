@@ -14,18 +14,35 @@ npm install --save interface-builder
 
 ```tsx
 import * as React from 'react'
+import { 
+    ComponentDefinition, 
+    UserInterface, 
+    antComponents, 
+    registry 
+} from 'interface-builder'
+import config from "./example-config.json"
 
-import MyComponent from 'interface-builder'
+registry.register(antComponents)
 
-class Example extends React.Component {
-  render () {
-    return (
-      <MyComponent />
-    )
-  }
+const MyComponent: React.FC = () => {
+  const [data, setData] = React.useState({})
+  const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
+
+  return (
+        <UserInterface
+            mode="display"
+            components={schema}
+            data={data}
+            onChangeData={(newData) => {
+                console.log("New Data", newData)
+                setData(newData)
+            }}
+        />
+
+  )
 }
 ```
 
 ## License
 
-ISC © [the-author](https://github.com/the-author)
+ISC © [OnPoint Global](https://onpointglobal.com/)

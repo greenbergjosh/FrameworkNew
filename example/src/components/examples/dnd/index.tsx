@@ -3,6 +3,7 @@ import Helmet from "react-helmet"
 import { Card, Divider, Layout, PageHeader, Tabs, Typography } from "antd"
 import { ComponentDefinition, UserInterface } from "interface-builder"
 import config from "./example-config.json"
+import "./code.css"
 
 const { Title, Text } = Typography
 const { TabPane } = Tabs
