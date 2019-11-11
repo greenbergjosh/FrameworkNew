@@ -47,6 +47,10 @@ namespace TheGreatWallOfDataLib
             string requestBody = null;
             var returnHttpFail = false;
 
+            context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            context.Response.Headers.Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+
             try
             {
                 requestBody = await context.GetRawBodyStringAsync();
