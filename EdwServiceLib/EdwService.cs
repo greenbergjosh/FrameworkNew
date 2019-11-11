@@ -74,7 +74,7 @@ namespace EdwServiceLib
                     origin = "*";
 
                 context.Response.ContentType = MediaTypeNames.Application.Json;
-                context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
+                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                 context.Response.Headers.Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                 context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
                 context.Response.Headers.Add("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, proxy-revalidate");
@@ -323,35 +323,44 @@ namespace EdwServiceLib
                 ? new JObject()
                 : (JObject)JsonWrapper.TryParse(body);
 
-            var session = GetOrCreateSession(context, json);
-            return new { edwid = session.Id };
+            var session = GetOrCreateSession(context, json, true);
+            var response = session != null ? new { edwid = session.Id.ToString() } : null;
+            return JsonWrapper.Serialize(response);
         }
 
-        private Session GetOrCreateSession(HttpContext context, JObject json)
+        private Session GetOrCreateSession(HttpContext context, JObject json, bool onlyGet = false)
         {
             var cookieOptions = new CookieOptions
             {
                 MaxAge = TimeSpan.FromSeconds(2592000),
                 HttpOnly = true,
                 Secure = context.Request.IsHttps,
-                //Domain = TODO: strip 8080 or edw.*... talk with Aaron before.
+                SameSite = SameSiteMode.None,
+                IsEssential = true
             };
+
+            Guid sessionId;
 
             if (context.Request.Cookies.TryGetValue(SessionId, out var cookieSessionId))
             {
-                var sid = Guid.Parse(cookieSessionId);
-                return new Session(_cache, sid, ExtendSession(context, sid));
+                sessionId = Guid.Parse(cookieSessionId);
             }
-            if (json.TryGetValue(SessionId, out var raw) &&
-                Guid.TryParse(raw?.ToString(), out var sessionId))
+            else if (json.TryGetValue(SessionId, out var raw) &&
+                Guid.TryParse(raw?.ToString(), out var sid))
             {
-                context.Response.Cookies.Append(SessionId, sessionId.ToString(), cookieOptions);
-                return new Session(_cache, sessionId, ExtendSession(context, sessionId));
+                sessionId = sid;
             }
-
-            var newSessionId = Guid.NewGuid();
-            context.Response.Cookies.Append(SessionId, newSessionId.ToString(), cookieOptions);
-            return new Session(_cache, newSessionId, ExtendSession(context, newSessionId));
+            else if (onlyGet)
+            {
+                return null;
+            }
+            else
+            {
+                sessionId = Guid.NewGuid();
+            }
+            
+            context.Response.Cookies.Append(SessionId, sessionId.ToString(), cookieOptions);
+            return new Session(_cache, sessionId, ExtendSession(context, sessionId));
         }
 
         private CancellationToken ExtendSession(HttpContext context, Guid sessionId)
