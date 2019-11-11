@@ -18,14 +18,9 @@
     "@syncfusion/ej2-react-layouts": "^17.1.43",
     "@syncfusion/ej2-react-maps": "^17.1.43",
     "@syncfusion/ej2-react-navigations": "^17.1.43",
-<<<<<<< HEAD:DashboardApp/package.json
-    "antd": "^3.16.6",
-    "axios": "^0.19.0",
-=======
     "@types/classnames": "^2.2.8",
     "antd": "^3.20.1",
     "axios": "^0.18.0",
->>>>>>> ChannelAdminDevelop-dnd1_add-onelogin:ChannelAdminDashboard/DashboardApp/package.json
     "bootstrap": "^4.3.1",
     "bootswatch": "^4.3.1",
     "ckeditor4-react": "^1.0.0-beta.2",
@@ -67,7 +62,7 @@
     "dev": "concurrently \"npm:start\"  \"npm:watch-*\"",
     "watch-css": "tcm --watch -p src/**/*.module.css",
     "watch-scss": "tsm --watch src/**/*.module.scss",
-    "start": "export HTTPS=true&&react-app-rewired --max_old_space_size=4096 start",
+    "start": "cross-env HTTPS=true && react-app-rewired --max_old_space_size=4096 start",
     "build": "react-app-rewired --max_old_space_size=4096 build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
@@ -107,6 +102,7 @@
     "babel-eslint": "^10.0.1",
     "babel-plugin-import": "^1.11.0",
     "concurrently": "^4.1.0",
+    "cross-env": "^6.0.3",
     "customize-cra": "^0.2.12",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",

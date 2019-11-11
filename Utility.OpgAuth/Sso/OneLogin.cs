@@ -17,7 +17,7 @@ namespace Utility.OpgAuth.Sso
         {
             try
             {
-                var token = authData.GetS("idToken");
+                var token = authData.GetS("accessToken");
 
                 var (success, body) = await ProtocolClient.HttpGetAsync("https://openid-connect.onelogin.com/oidc/me",
                     new (string key, string value)[]
@@ -40,7 +40,7 @@ namespace Utility.OpgAuth.Sso
                 var name = ge.GetS("name");
                 var email = ge.GetS("email");
 
-                var user = new UserDetails(subject, name, email, null, null, null, authData.GetS(""));
+                var user = new UserDetails(subject, name, email, string.Empty, string.Empty, token, authData.GetS(""));
 
                 return user;
             }

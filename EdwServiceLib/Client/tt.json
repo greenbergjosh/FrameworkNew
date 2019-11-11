@@ -1,0 +1,238 @@
+{
+    "RoslynScriptsPath": "..\\..\\GenericDataServiceDynamicDlls\\SchedulerServiceLib\\RoslynScripts",
+    "DataServiceAssemblyFilePath": "D:\\Sources\\RoslynArticle\\SchedulerServiceLib\\bin\\Debug\\netcoreapp2.2\\SchedulerServiceLib.dll",
+    "DataServiceTypeName": "SchedulerServiceLib.SchedulerService",
+    "AssemblyDirs": ["D:\\Sources\\RoslynArticle\\SchedulerServiceLib\\bin\\Debug\\netcoreapp2.2"],
+    "ErrorFilePath": "..\\..\\workspace\\errorfilepath\\error.txt",
+    "EdwDataFilePath": "..\\..\\workspace\\edwdatafilepath\\data.txt",
+    "EdwErrorFilePath": "..\\..\\workspace\\edwerrorfilepath\\error.txt",
+    "WorkingDirectory": "..\\..\\workspace",
+    "HttpListenerUrl": "http://*:8002",
+    "ConnectionStrings": {
+      "Staging": "51ab8b3e-e5ce-49be-9888-f5381323178a",
+      "AppCache": "36f96c1a-1f76-487a-8266-c30f78a9e093"
+    },
+    "Jobs": [
+      {
+        "cron": "*/10 * * * * ?",
+        "name": "Google Drive OPG",
+        "lbmId": "5ef46de8-2b7a-4aac-acd3-150deb801236",
+        "params": {
+          "table": "DownloadGoogleDrive",
+          "cacheScopeId": "f781adbe-4d62-4bbd-bc88-f94a60c44639",
+          "fileId": "1Hpu3V70HRAWdyNaGAuGqYBhzaEFjASB_94NqtlbIWY4"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "VerifyPushnami section-8-housing.org",
+        "lbmId": "7608a8a8-af98-4df6-83d6-209173eb48cb",
+        "params": {
+          "domain": "section-8-housing.org"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "VerifyPushnami aboutunemployment.org",
+        "lbmId": "7608a8a8-af98-4df6-83d6-209173eb48cb",
+        "params": {
+          "domain": "aboutunemployment.org"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadPushy OnPoint",
+        "lbmId": "0b1622dc-857b-44a6-b99a-8c62314b5c9a",
+        "params": {
+          "table": "DownloadPushy",
+          "username": "onpoint",
+          "password": "onYmETiniuSE"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadCake Clicks 1968",
+        "lbmId": "ef40ed4d-bc18-4483-827a-39a9e886a1b2",
+        "params": {
+          "table": "DownloadCake",
+          "affiliateId": "1968",
+          "key": "nuzgj47Oafmy9r6cuVwHkg",
+          "url": "https://ckadmin.com/affiliates/api/Reports/",
+          "type": "Clicks"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadCake Conversions 1968",
+        "lbmId": "ef40ed4d-bc18-4483-827a-39a9e886a1b2",
+        "params": {
+          "table": "DownloadCake",
+          "affiliateId": "1968",
+          "key": "nuzgj47Oafmy9r6cuVwHkg",
+          "url": "https://ckadmin.com/affiliates/api/Reports/",
+          "type": "Conversions"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadCake SubAffiliateSummary 1968",
+        "lbmId": "ef40ed4d-bc18-4483-827a-39a9e886a1b2",
+        "params": {
+          "table": "DownloadCake",
+          "affiliateId": "1968",
+          "key": "nuzgj47Oafmy9r6cuVwHkg",
+          "url": "https://ckadmin.com/affiliates/api/Reports/",
+          "type": "SubAffiliateSummary"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadCake Clicks 2061",
+        "lbmId": "ef40ed4d-bc18-4483-827a-39a9e886a1b2",
+        "params": {
+          "table": "DownloadCake",
+          "affiliateId": "2061",
+          "key": "dBlLbH02znAhVReGI8Dfvw",
+          "url": "https://ckadmin.com/affiliates/api/Reports/",
+          "type": "Clicks"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadCake Conversions 2061",
+        "lbmId": "ef40ed4d-bc18-4483-827a-39a9e886a1b2",
+        "params": {
+          "table": "DownloadCake",
+          "affiliateId": "2061",
+          "key": "dBlLbH02znAhVReGI8Dfvw",
+          "url": "https://ckadmin.com/affiliates/api/Reports/",
+          "type": "Conversions"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadCake SubAffiliateSummary 2061",
+        "lbmId": "ef40ed4d-bc18-4483-827a-39a9e886a1b2",
+        "params": {
+          "table": "DownloadCake",
+          "affiliateId": "2061",
+          "key": "dBlLbH02znAhVReGI8Dfvw",
+          "url": "https://ckadmin.com/affiliates/api/Reports/",
+          "type": "SubAffiliateSummary"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadHitPath Clicks OPG",
+        "lbmId": "6f97a930-e893-444c-af0d-2a6394291d54",
+        "params": {
+          "key": "c997dcee0acb22499f5ccac8340a21a27fdd26744b4d035e6290f110e97aa226",
+          "url": "http://reporting.pushreturn.com/api.php",
+          "type": "clicks"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadHitPath Sales OPG",
+        "lbmId": "6f97a930-e893-444c-af0d-2a6394291d54",
+        "params": {
+          "key": "c997dcee0acb22499f5ccac8340a21a27fdd26744b4d035e6290f110e97aa226",
+          "url": "http://reporting.pushreturn.com/api.php",
+          "type": "sales"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadHitPath Clicks Ceissa",
+        "lbmId": "6f97a930-e893-444c-af0d-2a6394291d54",
+        "params": {
+          "key": "6cf83650367470961feb8a4cacbcf55016a080f8786ce7a36290f110e97aa226",
+          "url": "http://reporting.pushreturn.com/api.php",
+          "type": "clicks"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadHitPath Sales Ceissa",
+        "lbmId": "6f97a930-e893-444c-af0d-2a6394291d54",
+        "params": {
+          "key": "6cf83650367470961feb8a4cacbcf55016a080f8786ce7a36290f110e97aa226",
+          "url": "http://reporting.pushreturn.com/api.php",
+          "type": "sales"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadNotifyAi OPG",
+        "lbmId": "d6205d4d-15ca-4e06-b39d-dba9aea5436c",
+        "params": {
+          "username": "Onpointglobal",
+          "password": "Welcome1"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadNotifyAi OPG Suslow",
+        "lbmId": "d6205d4d-15ca-4e06-b39d-dba9aea5436c",
+        "params": {
+          "username": "suslow@onpointglobal.com",
+          "password": "Welcome1"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadPushnamiS3 Zeta Account",
+        "lbmId": "33237f95-e3fc-4bfb-909c-7942b589cf2b",
+        "params": {
+          "accessKeyId": "AKIAJZLG56HQIDBJAOOA",
+          "secretKey": "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",
+          "bucketName": "pushnami-reports",
+          "path": "stats/5b24232ac1ab4f179c401797/"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadPushnamiS3 OPG 1",
+        "lbmId": "33237f95-e3fc-4bfb-909c-7942b589cf2b",
+        "params": {
+          "accessKeyId": "AKIAJZLG56HQIDBJAOOA",
+          "secretKey": "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",
+          "bucketName": "pushnami-reports",
+          "path": "stats/5b2277244fe76843e8d78fa8/"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadPushnamiS3 OPG 5/AveI",
+        "lbmId": "33237f95-e3fc-4bfb-909c-7942b589cf2b",
+        "params": {
+          "accessKeyId": "AKIAJZLG56HQIDBJAOOA",
+          "secretKey": "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",
+          "bucketName": "pushnami-reports",
+          "path": "stats/5d2f43a01190930011e25450/"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadPushnamiS3 OPG 6",
+        "lbmId": "33237f95-e3fc-4bfb-909c-7942b589cf2b",
+        "params": {
+          "accessKeyId": "AKIAJZLG56HQIDBJAOOA",
+          "secretKey": "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",
+          "bucketName": "pushnami-reports",
+          "path": "stats/5d823164b93b3e0012bf20e2/"
+        }
+      },
+      {
+        "cron": "0 0 2 * * ?",
+        "name": "DownloadPushnamiS3 DMV Account",
+        "lbmId": "33237f95-e3fc-4bfb-909c-7942b589cf2b",
+        "params": {
+          "accessKeyId": "AKIAJZLG56HQIDBJAOOA",
+          "secretKey": "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",
+          "bucketName": "pushnami-reports",
+          "path": "stats/5b622a786e775913b44b42e4/"
+        }
+      }
+    ]
+  }
