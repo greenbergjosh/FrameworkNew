@@ -8,9 +8,11 @@ import editForm from "./date-range.form"
 type ISO8601String = string
 
 interface DateRangeOptions {
-  _unrollValue: boolean
-  data: {
-    [key: string]: ISO8601String | null
+  value: {
+    _unrollValue: boolean
+    data: {
+      [key: string]: ISO8601String | null
+    }
   }
 }
 
@@ -39,31 +41,68 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
     const now = moment.utc()
 
     return {
-      Today: [now.clone(), now.clone()],
-      Yesterday: [now.clone().subtract(1, "day"), now.clone().subtract(1, "day")],
-      "This Week": [now.clone().startOf("week"), now.clone().endOf("week")],
+      Today: [now.clone().startOf("day"), now.clone().endOf("day")],
+      Yesterday: [
+        now
+          .clone()
+          .subtract(1, "day")
+          .startOf("day"),
+        now
+          .clone()
+          .subtract(1, "day")
+          .endOf("day"),
+      ],
+      "This Week": [
+        now
+          .clone()
+          .startOf("week")
+          .startOf("day"),
+        now
+          .clone()
+          .endOf("week")
+          .endOf("day"),
+      ],
       "Last Week": [
         now
           .clone()
           .subtract(1, "week")
-          .startOf("week"),
+          .startOf("week")
+          .startOf("day"),
         now
           .clone()
           .subtract(1, "week")
-          .endOf("week"),
+          .endOf("week")
+          .endOf("day"),
       ],
-      "This Month": [now.clone().startOf("month"), now.clone().endOf("month")],
+      "This Month": [
+        now
+          .clone()
+          .startOf("month")
+          .startOf("day"),
+        now
+          .clone()
+          .endOf("month")
+          .endOf("day"),
+      ],
       "Last Month": [
         now
           .clone()
           .subtract(1, "month")
-          .startOf("month"),
+          .startOf("month")
+          .startOf("day"),
         now
           .clone()
           .subtract(1, "month")
-          .endOf("month"),
+          .endOf("month")
+          .endOf("day"),
       ],
-      YTD: [now.clone().startOf("year"), now.clone()],
+      YTD: [
+        now
+          .clone()
+          .startOf("year")
+          .startOf("day"),
+        now.clone().endOf("day"),
+      ],
     }
   }
 
@@ -75,20 +114,22 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
 
   constructor(component: any, options: any, data: any) {
     super(component, options, data)
-
     const range = DateRangeFormComponent.standardRanges()[component.defaultRangeValue]
 
     this.state = {
-      _unrollValue: true,
-      data: {
-        [component.startDateKey]: Array.isArray(range) && range[0] ? range[0].toISOString() : null,
-        [component.endDateKey]: Array.isArray(range) && range[1] ? range[1].toISOString() : null,
+      value: {
+        _unrollValue: true,
+        data: {
+          [component.startDateKey]:
+            Array.isArray(range) && range[0] ? range[0].toISOString() : null,
+          [component.endDateKey]: Array.isArray(range) && range[1] ? range[1].toISOString() : null,
+        },
       },
     }
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
-    this.setState({
+    this.setValue({
       _unrollValue: true,
       data: {
         [this.component.startDateKey]:
@@ -100,8 +141,8 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
   }
 
   render(): JSX.Element {
-    const startDateValue = this.state.data[this.component.startDateKey]
-    const endDateValue = this.state.data[this.component.endDateKey]
+    const startDateValue = this.state.value.data[this.component.startDateKey]
+    const endDateValue = this.state.value.data[this.component.endDateKey]
     const value = [moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]
     return (
       <DatePicker.RangePicker
@@ -112,7 +153,7 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
     )
   }
 
-  isEmpty(value: DateRangeOptions) {
+  isEmpty(value: DateRangeOptions["value"]) {
     return (
       !value ||
       !value.data ||
@@ -134,7 +175,7 @@ export default class DateRangeFormComponent extends ReactFormBase<DateRangeOptio
     }
   }
 
-  setValue(value: DateRangeOptions) {
+  setValue(value: DateRangeOptions["value"]) {
     super.setValue(value)
   }
 

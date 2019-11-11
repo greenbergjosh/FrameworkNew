@@ -34,7 +34,7 @@ export interface Effects {
     resultURI: string
     query: Pick<QueryConfig, "query">["query"]
     params: JSONRecord | JSONArray
-  }): void
+  }): Promise<any>
 }
 
 export interface Selectors {
@@ -69,7 +69,10 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
         })
         .then((x) =>
           x.fold(
-            Left(dispatch.remoteDataClient.defaultHttpErrorHandler),
+            Left((error) => {
+              dispatch.remoteDataClient.defaultHttpErrorHandler(error)
+              throw error
+            }),
             Right((ApiResponse) =>
               ApiResponse({
                 OK(payload) {
@@ -77,17 +80,21 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
-                  dispatch.feedback.notify({
-                    type: "error",
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
                     message: `You do not have permission to run this report`,
-                  })
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
                 },
                 ServerException(err) {
                   dispatch.logger.logError(err.reason)
-                  dispatch.feedback.notify({
-                    type: "error",
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
                     message: `An error occurred while running this report: ${err.reason}`,
-                  })
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
                 },
               })
             )
