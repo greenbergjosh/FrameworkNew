@@ -20,6 +20,25 @@ export interface LoginResponseFailure extends ILoginResponse {
 
 export type LoginResponse = LoginResponseSuccess | LoginResponseFailure
 
+export interface IProfileResponse {
+  r: 0 | 106
+}
+
+export interface ProfileResponseSuccess extends IProfileResponse {
+  r: 0
+  handle: string
+  profile_image_url: string
+  name: string | null
+  date_of_birth: null
+}
+
+export interface ProfileResponseFailure extends IProfileResponse {
+  r: 106
+  err: string
+}
+
+export type ProfileResponse = ProfileResponseSuccess | ProfileResponseFailure
+
 export const getgotServices = {
   login: async (username: string, password: string): Promise<LoginResponse> => {
     const rawResponse = await fetch("https://getgotapp.com/login", {
@@ -44,7 +63,7 @@ export const getgotServices = {
     }
     return content
   },
-  fetchProfile: async (token: string): Promise<LoginResponse> => {
+  fetchProfile: async (token: string): Promise<ProfileResponse> => {
     const rawResponse = await fetch("https://getgotapp.com/api", {
       method: "POST",
       headers: {

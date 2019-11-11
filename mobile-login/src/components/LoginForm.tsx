@@ -68,9 +68,27 @@ class _LoginForm extends React.Component<LoginFormProps, LoginFormState> {
   }
 
   retrieveProfile = async (token: string) => {
-    const profile = await getgotServices.fetchProfile(token)
+    try {
+      const profile = await getgotServices.fetchProfile(token)
 
-    console.log("Found profile", profile)
+      if (profile.r !== 0) {
+        console.error("Unsuccessful profile lookup", profile)
+        this.setState({ error: profile.err, success: null, loading: false })
+      } else {
+        const successData: LoginResponse = {
+          r: profile.r,
+          email: "",
+          handle: profile.handle,
+          imageurl: profile.profile_image_url,
+          name: profile.name,
+          t: token,
+        }
+        this.setState({ error: null, success: successData, loading: false })
+      }
+    } catch (ex) {
+      console.error("Failed to execute profile lookup", ex)
+      this.setState({ error: ex.message, success: null, loading: false })
+    }
   }
 
   handleSubmit = (e: any) => {
@@ -83,8 +101,10 @@ class _LoginForm extends React.Component<LoginFormProps, LoginFormState> {
           console.log("Results!", result)
           if (result.r !== 0) {
             console.error("Unsuccessful login attempt", result)
+            localStorage.removeItem("loginToken")
             this.setState({ error: result.err, success: null, loading: false })
           } else {
+            localStorage.setItem("loginToken", result.t)
             this.setState({ error: null, success: result, loading: false })
           }
         } catch (ex) {
@@ -113,6 +133,11 @@ class _LoginForm extends React.Component<LoginFormProps, LoginFormState> {
     setTimeout(() => {
       window.close()
     }, 1000)
+  }
+
+  handleLogout = () => {
+    localStorage.removeItem("loginToken")
+    this.setState({ error: null, success: null, loading: false })
   }
 
   render() {
@@ -146,6 +171,11 @@ class _LoginForm extends React.Component<LoginFormProps, LoginFormState> {
             this.state.success
               ? `Welcome, ${(this.state.success || ({} as any)).handle}!`
               : "Welcome!"
+          }
+          extra={
+            <Button type="link" onClick={this.handleLogout}>
+              (Not You?)
+            </Button>
           }
           cover={
             requestingApp.image && (
