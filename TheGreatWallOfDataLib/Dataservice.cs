@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +47,7 @@ namespace TheGreatWallOfDataLib
             var fResults = new Dictionary<string, string>();
             string requestBody = null;
             var returnHttpFail = false;
+            var returnIoFail = false;
 
             context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
             context.Response.Headers.Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -53,9 +55,7 @@ namespace TheGreatWallOfDataLib
 
             try
             {
-                requestBody = await context.GetRawBodyStringAsync();
-
-                if (requestBody.IsNullOrWhitespace())
+                if (!context.Request.ContentLength.HasValue || context.Request.ContentLength == 0)
                 {
                     //  Probably a bot or other form of sniffer, return nothing
                     // ToDo: Drop response as if there were no HTTP listener. Possible?
@@ -64,13 +64,16 @@ namespace TheGreatWallOfDataLib
                     return;
                 }
 
-                await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
+                requestBody = await context.GetRawBodyStringAsync();
                 var req = Jw.JsonToGenericEntity(requestBody);
+                //var req = await context.GetGenericEntityAsync();
+                //requestBody = Jw.Serialize(req);
+                await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
                 var funcs = req.GetD("").Where(p => p.Item1 != "i");
                 var cancellation = new CancellationTokenSource();
-                
+
                 async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
                 {
                     var scopeFunc = p.Item1;
@@ -141,10 +144,33 @@ namespace TheGreatWallOfDataLib
 
                 fResults.AddRange(tasks.Select(t => t.Result).Where(r => r.result != null));
             }
+            catch (IOException e)
+            {
+                returnIoFail = true;
+                try
+                {
+
+                    await Fw.Error(nameof(Run), $"IO exception: { context.Ip()} Path: { context.Request.Path} UserAgent: { context.UserAgent()} { e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
+                    returnHttpFail = true;
+                }
+                catch
+                {
+                    await Fw.Error(nameof(Run), $"IO exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
+                    returnHttpFail = true;
+                }
+            }
             catch (Exception e)
             {
-                await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
-                returnHttpFail = true;
+                try
+                {
+                    await Fw.Error(nameof(Run), $"Unhandled exception: { context.Ip()} Path: { context.Request.Path} UserAgent: { context.UserAgent()} { e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
+                    returnHttpFail = true;
+                }
+                catch
+                {
+                    await Fw.Error(nameof(Run), $"Unhandled exception: {e.UnwrapForLog()}\r\n{requestBody.IfNullOrWhitespace("[null]")}");
+                    returnHttpFail = true;
+                }
             }
 
             var body = new PL();
@@ -157,7 +183,8 @@ namespace TheGreatWallOfDataLib
 
             try
             {
-                if(returnHttpFail) await context.WriteFailureRespAsync(resp);
+                if (returnIoFail) await context.WriteFailureRespAsync("IO FAILED", null, "text/plain");
+                else if (returnHttpFail) await context.WriteFailureRespAsync(resp);
                 else await context.WriteSuccessRespAsync(resp);
             }
             catch (Exception e)
