@@ -1,11 +1,11 @@
-import { TSEnum } from "./@types/ts-enum"
-import { JSONRecord } from "./components/interface-builder/@types/JSONTypes"
-import { ComponentDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { ComponentDefinitionNamedProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { ComponentRenderMetaProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
-import { UserInterfaceProps } from "./components/interface-builder/UserInterface"
-import { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
+import { TSEnum as _TSEnum } from "./@types/ts-enum"
+import { JSONRecord as _JSONRecord } from "./components/interface-builder/@types/JSONTypes"
+import { ComponentDefinition as _ComponentDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentDefinitionNamedProps as _ComponentDefinitionNamedProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentRenderMetaProps as _ComponentRenderMetaProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import { FormInterfaceComponentProps as _FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
+import { UserInterfaceProps as _UserInterfaceProps } from "./components/interface-builder/UserInterface"
+import { UserInterfaceContextManager as _UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
 import "./styles/index.scss"
 
 /**
@@ -50,11 +50,11 @@ export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
  * Re-exported Types
  * Because you can't export a type directly from another module
  */
-export type ComponentDefinition = ComponentDefinition
-export type ComponentDefinitionNamedProps = ComponentDefinitionNamedProps
-export type ComponentRenderMetaProps = ComponentRenderMetaProps
-export type FormInterfaceComponentProps = FormInterfaceComponentProps
-export type JSONRecord = JSONRecord
-export type TSEnum<T extends string | undefined> = TSEnum<T>
-export type UserInterfaceContextManager = UserInterfaceContextManager
-export type UserInterfaceProps = UserInterfaceProps
+export type ComponentDefinition = _ComponentDefinition
+export type ComponentDefinitionNamedProps = _ComponentDefinitionNamedProps
+export type ComponentRenderMetaProps = _ComponentRenderMetaProps
+export type FormInterfaceComponentProps = _FormInterfaceComponentProps
+export type JSONRecord = _JSONRecord
+export type TSEnum<T extends string | undefined> = _TSEnum<T>
+export type UserInterfaceContextManager = _UserInterfaceContextManager
+export type UserInterfaceProps = _UserInterfaceProps

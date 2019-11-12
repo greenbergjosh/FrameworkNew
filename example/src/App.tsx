@@ -1,7 +1,7 @@
 import React from "react"
 import { Breadcrumb, Layout } from "antd"
 import "antd/dist/antd.css"
-import { antComponents, registry } from "interface-builder"
+import { antComponents, registry } from "@opg/interface-builder"
 import TopMenu from "./components/nav/top-menu"
 import SideMenu from "./components/nav/side-menu"
 import DndExample from "./components/examples/dnd"

@@ -1,7 +1,7 @@
 import React from "react"
 import Helmet from "react-helmet"
 import { Card, Divider, Layout, PageHeader, Tabs, Typography } from "antd"
-import { ComponentDefinition, UserInterface } from "interface-builder"
+import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import config from "./example-config.json"
 import "./code.css"
 
