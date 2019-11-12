@@ -1157,10 +1157,10 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@opg/interface-builder@1.0.0-alpha.7":
-  version "1.0.0-alpha.7"
-  resolved "http://ec2-35-170-186-135.compute-1.amazonaws.com:4000/@opg%2finterface-builder/-/interface-builder-1.0.0-alpha.7.tgz#dc31388f0e5edcf50e2dda02301dd3099eb7395f"
-  integrity sha512-rakfGZH6HVK1xclbfyN6c4pGC0FBnPXNzOBAN7enzkRFKDexo/Q+0r1Sgiz0AqDlUgLLh9mcj1yf6+XUd31FQw==
+"@opg/interface-builder@1.0.0-alpha.8":
+  version "1.0.0-alpha.8"
+  resolved "http://ec2-35-170-186-135.compute-1.amazonaws.com:4000/@opg%2finterface-builder/-/interface-builder-1.0.0-alpha.8.tgz#70f7e73697265fcc595a56b9244118fddfa4cbae"
+  integrity sha512-gY47d2giq9g5V1V10H7uKhGTd1XLDcGch7H32wqAYfOWMf35TBjjozAL8wQwlwWqTIlJ2XuG70RD2+K2SmmcUw==
   dependencies:
     "@babel/polyfill" "7.7.0"
     "@reach/component-component" "0.5.0"
