@@ -13,7 +13,7 @@ namespace UnsubLib.UnsubFileProviders
     public class Unsubly : IUnsubLocationProvider
     {
         private readonly FrameworkWrapper _fw;
-        private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(UnsubCentral)}";
+        private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(Unsubly)}";
 
         public Unsubly(FrameworkWrapper fw)
         {
