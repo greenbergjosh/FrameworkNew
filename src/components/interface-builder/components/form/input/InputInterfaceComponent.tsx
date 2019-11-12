@@ -8,7 +8,7 @@ import {
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
-import styles from "./inputInterfaceComponent.module.css"
+import styles from "./input.scss"
 
 export interface InputInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "input"

@@ -4,7 +4,7 @@ import { ClickParam } from "antd/lib/menu"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { Selectable, SelectableChildProps, SelectableProps } from "../../_shared/selectable"
 import { menuManageForm } from "./menu-manage-form"
-import styles from "./styles.scss"
+import styles from "./menu.scss"
 
 /******************************
  * Interfaces, Types, Enums

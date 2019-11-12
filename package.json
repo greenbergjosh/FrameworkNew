@@ -20,7 +20,8 @@
     "build:copy-nonsource": "copyfiles -u 1 \"src/**/*.jpg\" \"src/**/*.png\" \"src/**/*.module.css\"  ./lib",
     "build:replace-sass-imports": "replace 'import (.*?)\\.s[ac]ss(.*)' 'import $1.css$2' ./lib -r",
     "build:replace-sass-requires": "replace 'require\\((.*?).s[ac]ss(.*?)\\)' 'require($1.css$2)' ./lib -r",
-    "wp-build": "webpack"
+    "wp-build": "webpack",
+    "prepublish": "npm version prerelease"
   },
   "keywords": [
     "react",
