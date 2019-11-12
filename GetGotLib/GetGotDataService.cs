@@ -133,7 +133,7 @@ namespace GetGotLib
                                 }
                                 fResultCode = fResult?.GetS("r").ParseInt() ?? 100;
 
-                                if (fResultCode != 0) throw new FunctionException(fResultCode, $"Error in function call {p.Item1}: {fResult?.GetS("") ?? "null"}");
+                                if (fResultCode != 0) throw new FunctionException(fResultCode, $"Error in function call {p.Item1}", fResult);
                             }
                             catch (Exception e)
                             {
@@ -144,8 +144,8 @@ namespace GetGotLib
                                 if (e is FunctionException fe)
                                 {
                                     var inner = fe.InnerException == null ? "" : $"\r\n\r\nInner Exception:\r\n{fe.InnerException.UnwrapForLog()}";
-
-                                    await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}");
+                                    var data = fe.Ge != null ? Jw.Serialize(fe.Ge) : null;
+                                    await _fw.Error($"DB:{p.Item1}", $"Function exception:{funcContext}\r\nResponse: {fe.Message}\r\n{fe.StackTrace}{inner}\r\nData: {data}");
 
                                     if (fe?.HaltExecution == true)
                                     {
@@ -154,6 +154,9 @@ namespace GetGotLib
                                     }
                                     else if (fe.LogAndReturnSuccess) fResult = Jw.JsonToGenericEntity("{ \"r\": 0}");
                                     else fResult = Jw.JsonToGenericEntity("{ \"r\": " + fe.ResultCode + "}");
+
+                                    if (fe.Ge != null)
+                                        fResult.Set("d", fe.Ge);
                                 }
                                 else
                                 {
@@ -261,10 +264,10 @@ namespace GetGotLib
                 if (e is FunctionException fe)
                 {
                     fe.LogAndReturnSuccess = true;
-                    throw fe;
+                    throw;
                 }
 
-                throw new FunctionException(100, "Unhandled exception sending confirmation code", e, true);
+                throw new FunctionException(100, "Unhandled exception sending confirmation code", e, null, true);
             }
         }
 
@@ -280,7 +283,7 @@ namespace GetGotLib
 
             if (rc == 109) throw new FunctionException(rc, $"Contact doesn't exist: {contact}");
 
-            if (rc != 0) throw new FunctionException(rc, $"DB failure generating conf code: {res.GetS("")}");
+            if (rc != 0) throw new FunctionException(rc, $"DB failure generating conf code", res);
 
             var code = res.GetS("code");
 
@@ -289,7 +292,7 @@ namespace GetGotLib
 
             if (!userName.IsNullOrWhitespace()) return (null, userName, res);
 
-            throw new FunctionException(100, $"Bad DB response generating conf code, no code nor username: {res.GetS("")}");
+            throw new FunctionException(100, $"Bad DB response generating conf code, no code nor username", res);
         }
 
         private Contact ValidateContact(string contactStr)
@@ -324,7 +327,7 @@ namespace GetGotLib
                 return null;
             }
 
-            throw new FunctionException(rc ?? 100, $"Exceeded {nameof(maxRetries)} of {maxRetries} for {method}: {res?.GetS("") ?? "null"}");
+            throw new FunctionException(rc ?? 100, $"Exceeded {nameof(maxRetries)} of {maxRetries} for {method}", res);
         }
 
         public async Task SendResetPasswordCode(string payload, string reqId)
@@ -351,14 +354,14 @@ namespace GetGotLib
                 if (e is FunctionException fe)
                 {
                     fe.LogAndReturnSuccess = true;
-                    throw fe;
+                    throw;
                 }
 
-                throw new FunctionException(100, "Unhandled exception sending password reset code", e, true);
+                throw new FunctionException(100, "Unhandled exception sending password reset code", e, null, true);
             }
         }
 
-        public async Task SendSMS(Contact contact, string message)
+        public Task SendSMS(Contact contact, string message)
         {
             throw new FunctionException(103, "SMS not supported");
         }
@@ -370,7 +373,7 @@ namespace GetGotLib
             var res = await Data.CallFn(Conn, "submitcnfmcode", Jw.Serialize(new { u = contact.Cleaned, code }));
             var rc = res?.GetS("r");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code: {res?.GetS("") ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error validating code", res);
         }
 
         public async Task<IGenericEntity> SetNewPassword(string payload)
@@ -428,14 +431,14 @@ namespace GetGotLib
                     return Task.CompletedTask;
                 }
 
-                throw new FunctionException(resultCode ?? 100, $"Error creating user: {result?.GetS("") ?? "null"}");
+                throw new FunctionException(resultCode ?? 100, $"Error creating user", result);
             });
 
             var rc = res?.GetS("r");
 
             if (rc == "108") throw new FunctionException(108, $"Failed to find unique handle, {handlesAttempted} attempted");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error creating user: {res?.GetS("") ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error creating user", res);
 
             var uid = res.GetS("uid").ParseGuid()?.ToString();
 
@@ -445,14 +448,14 @@ namespace GetGotLib
             initHash = res.GetS("inithash");
             saltHash = res.GetS("salthash");
 
-            if (uid.IsNullOrWhitespace()) throw new FunctionException(100, $"DB create user returned invalid or empty uid: {res.GetS("") ?? "null"}");
+            if (uid.IsNullOrWhitespace()) throw new FunctionException(100, $"DB create user returned invalid or empty uid", res);
 
             var pwdHash = GeneratePasswordHash(password, new[] { sid, srcId, initHash, uid, saltHash });
 
             res = await Data.CallFn(Conn, "SetInitialPassword", Jw.Serialize(new { u = contact.Cleaned, code, uid, pwdHash }));
 
             rc = res?.GetS("r");
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error saving password: {res?.GetS("") ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error saving password", res);
 
             res = await Login(uid, pwdHash, pl.GetS("d").IfNullOrWhitespace($"Unnamed device - {DateTime.Now:yyyy-MM-dd}"));
             if (res.GetS("r") == "0") res.Set("h", handle);
@@ -465,7 +468,7 @@ namespace GetGotLib
             var res = await Data.CallFn(Conn, "GetUserLoginDetails", contact.ToJson());
             var rc = res?.GetS("r");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error getting login details: {res?.GetS("") ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error getting login details", res);
 
             var uid = res.GetS("uid");
             var seid = res.GetS("seid");
@@ -495,7 +498,7 @@ namespace GetGotLib
             var res = await Data.CallFn(Conn, "GetAuthToken", Jw.Serialize(new { uid, passwordHash, deviceName }));
             var rc = res?.GetS("r");
 
-            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in: {res?.GetS("") ?? "null"}");
+            if (rc != "0") throw new FunctionException(rc.ParseInt() ?? 100, $"Error logging in", res);
 
             return res;
         }
@@ -573,9 +576,9 @@ namespace GetGotLib
 
             var r = res.GetS("r")?.ParseInt();
 
-            if (!r.HasValue) throw new FunctionException(100, $"Invalid db response {res.GetS("")}");
+            if (!r.HasValue) throw new FunctionException(100, $"Invalid db response", res);
 
-            if (r.Value != 0) throw new FunctionException(r.Value, $"DB response: {res.GetS("")}");
+            if (r.Value != 0) throw new FunctionException(r.Value, $"DB response", res);
 
             return res;
         }
