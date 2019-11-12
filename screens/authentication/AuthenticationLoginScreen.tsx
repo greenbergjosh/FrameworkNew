@@ -1,22 +1,19 @@
 import { ActivityIndicator, Button, InputItem } from "@ant-design/react-native"
+import React, { useContext } from "react"
 
+import { AuthContext } from "../../providers/auth-context-provider"
 import { HeaderLogo } from "../../components/HeaderLogo"
-import { NavigationSwitchScreenProps } from "react-navigation"
-import React from "react"
+import { NavigationContext } from "react-navigation"
 import { Text } from "react-native";
 import { login as getGotLogin } from "../../api"
-import { useAuthContext } from "../../providers/auth-context-provider"
 
-interface AuthenticationLoginScreenProps extends NavigationSwitchScreenProps {}
-
-export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps) => {
-  const auth: any = useAuthContext();
+export const AuthenticationLoginScreen = () => {
+  const auth: any = useContext(AuthContext);
+  const {navigate} = useContext(NavigationContext);
   const [userName, setUserName] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(false)
-
-  const { navigate } = props.navigation;
 
   const login = async () =>
   {

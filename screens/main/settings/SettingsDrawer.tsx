@@ -1,25 +1,22 @@
 import {
     Button,
     Drawer,
-    Icon,
     List
 } from "@ant-design/react-native"
-import { NavigationParams, NavigationRoute } from "react-navigation"
+import React, { useContext } from "react"
 import { ScrollView, Text, View } from "react-native"
 
+import { AuthContext } from "../../../providers/auth-context-provider"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
-import { NavigationStackProp } from "react-navigation-stack"
-import React from "react"
-import { useAuthContext } from "../../../providers/auth-context-provider"
+import { NavigationContext } from "react-navigation"
 
 export interface SettingsDrawerProps {
   open: boolean
-  navigation: NavigationStackProp<NavigationRoute<NavigationParams>, NavigationParams>
 }
 
 export const SettingsDrawer = (props: SettingsDrawerProps) => {
-  const auth: any = useAuthContext()
-  const { navigate } = props.navigation;
+  const auth: any = useContext(AuthContext)
+  const {navigate} = useContext(NavigationContext);
   let drawer: DrawerLayout
 
   const logout = () => {
@@ -27,8 +24,7 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
     navigate("Authentication")
   }
 
-  const renderSettingsDrawerContents = () => {
-    const contents = Array.apply(null, Array(20))
+  const contents = Array.apply(null, Array(20))
       .map(function(_, i) {
         return i
       })
@@ -49,21 +45,15 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
         } else if (index === 1) {
           return (
             <List.Item key={index} multipleLine>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}>
-                <Button type="primary" size="small" onPress={() => logout()}>
-                  Logout
-                </Button>
-              </View>
+              <Button type="primary" size="small" onPress={() => logout()}>
+                Logout
+              </Button>
             </List.Item>
           )
         }
       })
 
+  const renderSettingsDrawerContents = () => {
     return (
       <ScrollView style={{ flex: 1 }}>
         <List>{contents}</List>

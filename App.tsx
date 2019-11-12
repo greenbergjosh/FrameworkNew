@@ -77,7 +77,7 @@ const App = () => {
   return (
     <AuthContextProvider>
       <Provider theme={theme}>
-        <RootNavigator screenProps={{ changeTheme: changeTheme, currentTheme }} />
+        <RootNavigator screenProps={{ changeTheme, currentTheme }} />
       </Provider>
     </AuthContextProvider>
   )

@@ -1,4 +1,4 @@
-import React, { useContext } from "react"
+import React from "react"
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -21,7 +21,7 @@ const initialState = {
   
 }
 
-const AuthContext = React.createContext({})
+export const AuthContext = React.createContext({})
 
 export const AuthContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
@@ -39,5 +39,3 @@ export const AuthContextProvider = ({ ...props }) => {
     </AuthContext.Provider>
   )
 }
-
-export const useAuthContext = () => useContext(AuthContext);

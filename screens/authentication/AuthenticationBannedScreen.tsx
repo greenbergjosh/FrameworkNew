@@ -1,22 +1,20 @@
+import React, { useContext } from "react"
+
 import { Button } from "@ant-design/react-native"
-import React from "react"
-import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "../../components/HeaderLogo"
+import { NavigationContext } from "react-navigation"
 
-interface AuthenticationBannedScreenProps extends NavigationSwitchScreenProps {}
+export const AuthenticationBannedScreen = () => {
+  const {navigate} = useContext(NavigationContext);
+  return (
+    <>
+      <Button onPress={() => navigate("Landing")}>Sign Out</Button>
+    </>
+  )
+}
 
-export class AuthenticationBannedScreen extends React.Component<AuthenticationBannedScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
-    }
-  }
-  render() {
-    const { navigate } = this.props.navigation
-    return (
-      <>
-        <Button onPress={() => navigate("Landing")}>Sign Out</Button>
-      </>
-    )
+AuthenticationBannedScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
   }
 }
