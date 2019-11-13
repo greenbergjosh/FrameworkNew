@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Queueing;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
@@ -59,6 +61,8 @@ namespace SeleniumPostmaster
 
             foreach (var ps in postmasterAccts.GetL(""))
             {
+                bool foundSpam = false,
+                     foundComplaint = false;
                 if (ps.GetS("Config/Enabled").IsNullOrWhitespace() || ps.GetS("Config/Enabled").ToLower() == "false")
                 {
                     continue;
@@ -97,13 +101,39 @@ namespace SeleniumPostmaster
                     }
 
                     IWebDriver driver =  new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"),chromeOptions);
-                    await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
+                    (foundSpam, foundComplaint) = await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
                     driver.Close();
+
+                }
+                if (foundSpam|| foundComplaint)
+                {
+                    await Fw.Trace(nameof(Main), $"Will send a spam/complaint notification for {type} on account {username}");
+#if !DEBUG
+                    await SendNotification
+                    (
+                        from: Fw.StartupConfiguration.GetS("Config/ListingFromEmailAddress"),
+                        subject: $"{type} Postmaster spam or complaint entries detected",
+                        body: $"The Postmaster application has found spam or FBL entries for {type} account {username}. Please see the postmaster report for details: {Fw.StartupConfiguration.GetS(type == "Gmail" ? "Config/GoogleListingReportUrl" : "Config/HotmailListingReportUrl")}",
+                        to: Fw.StartupConfiguration.GetS("Config/ListingEmailAddresses")
+                    );
+#endif
                 }
             }
         }
 
-        public static async Task DoHotmail(string pmAcctId, string username, string password,
+        public static async Task SendNotification (string subject, string body, string from, string to )
+        {
+            var payload = PL.O(new
+            {
+                from_address = from,
+                subject,
+                body
+            }) ;
+            payload.Add(PL.O(new { email_addresses = to }, new bool[] { false }));
+            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SendEmail", DateTime.Now,payload.ToString() ));
+        }
+
+        public static async Task<(bool foundTrap, bool foundComplaint)> DoHotmail(string pmAcctId, string username, string password,
             string url, string apiKey, string proxyHostAndPort)
         {
             // Get standard data - go back to prior days and update
@@ -112,6 +142,8 @@ namespace SeleniumPostmaster
             string dataLayerFn = "";
             IGenericEntity result = null;
             bool dateRangeContainsData = false;
+            bool foundTrap = false;
+            bool foundComplaint = false;
             for (int i = 0; i < 14; i++)
             {
                 try
@@ -181,6 +213,7 @@ namespace SeleniumPostmaster
                         if (!string.IsNullOrEmpty(ret3))
                         {
                             var trapEmail = ParseEmail(ret3);
+                            foundTrap = true;
 
                             result = await Data.CallFn(ConnectionName, dataLayerFn,
                                 Jw.Json(new
@@ -203,6 +236,7 @@ namespace SeleniumPostmaster
                         if (!string.IsNullOrEmpty(ret4))
                         {
                             var compEmail = ParseEmail(ret4);
+                            foundComplaint = true;
 
                             result = await Data.CallFn(ConnectionName, dataLayerFn,
                                 Jw.Json(new
@@ -256,6 +290,7 @@ namespace SeleniumPostmaster
                 await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP status for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
             }
 
+            return (foundTrap, foundComplaint);
         }
 
         public static Tuple<string, string> ParseEmail(string message)
@@ -288,8 +323,10 @@ namespace SeleniumPostmaster
             return new Tuple<string, string>(toemail, oremail);
         }
 
-        public static async Task DoGmail(IWebDriver driver, string pmAcctId, string username, string pswd, string phone, string url)
+        public static async Task<(bool foundSpamRate, bool foundFbl)> DoGmail(IWebDriver driver, string pmAcctId, string username, string pswd, string phone, string url)
         {
+            bool foundSpamRate = false;
+            bool foundFbl = false;
             try
             {
                 // Log in
@@ -374,6 +411,7 @@ namespace SeleniumPostmaster
 
                         if (!driver.PageSource.Contains("No data to display at this time"))
                         {
+                            foundSpamRate = true;
                             IList<IWebElement> dateCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-date')]"));
                             IList<IWebElement> numberCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-number')]"));
 
@@ -506,6 +544,7 @@ namespace SeleniumPostmaster
 
                         if (!driver.PageSource.Contains("No data to display at this time"))
                         {
+                            foundFbl = true;
                             IWebElement chart2 = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
                             IList<IWebElement> bars2 = chart2.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect']"));
 
@@ -725,6 +764,8 @@ namespace SeleniumPostmaster
             {
                 await Fw.Error(nameof(DoGmail), $"Caught unhandled (for now) exception: {ex.UnwrapForLog()}");
             }
+
+            return (foundSpamRate, foundFbl);
         }
 
         public static DateTime ParseDateFromHeader(string[] hdrParts)
