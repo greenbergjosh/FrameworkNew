@@ -90,15 +90,20 @@ namespace SeleniumPostmaster
 
                 if (type == "Hotmail" && (ArgsProvider.IsNullOrWhitespace() || ArgsProvider == "Hotmail"))
                 {
-                    await DoHotmail(pmAcctId, username, password, HotmailPostmasterUrl, ps.GetS("Config/ApiKey"), proxyHostAndPort);
+#if DEBUG
+                    proxyHostAndPort = null;
+#endif
+                    (foundSpam, foundComplaint) = await DoHotmail(pmAcctId, username, password, HotmailPostmasterUrl, ps.GetS("Config/ApiKey"), proxyHostAndPort);
                 }
                 else if (type == "Gmail" && (ArgsProvider.IsNullOrWhitespace() || ArgsProvider == "Gmail"))
                 {
                     var chromeOptions = new ChromeOptions();
+#if !DEBUG
                     if (! proxyHostAndPort.IsNullOrWhitespace())
                     {
                         chromeOptions.AddArgument($"--proxy-server={proxyHostAndPort}");
                     }
+#endif
 
                     IWebDriver driver =  new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"),chromeOptions);
                     (foundSpam, foundComplaint) = await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
@@ -155,13 +160,21 @@ namespace SeleniumPostmaster
                     if (!string.IsNullOrEmpty(ret1))
                     {
                         dateRangeContainsData = true;
-                        string retj1 = Utility.JsonWrapper.ConvertCsvToJson(ret1,
+                        var retj1ge = Jw.JsonToGenericEntity(Utility.JsonWrapper.ConvertCsvToJson(ret1,
                         new List<string> { "ip", "sap", "eap", "rcpt", "data", "mrc", "fr", "cr",
-                                        "tmps", "tmpe", "thc", "helo", "from", "cmnt"});
+                                        "tmps", "tmpe", "thc", "helo", "from", "cmnt"}));
 
-                        
+                        JArray ja = new JArray();
+                        foreach(var line in retj1ge.GetL(""))
+                        {
+                            string reverse = Utility.Dns.ReverseLookupIp(line.GetS("ip"));
+                            JObject jo = JObject.Parse(line.GetS(""));
+                            jo.Add("rih", reverse);
+                            ja.Add(jo);
+                        }
+
                         dataLayerFn = "InsertHotmailData";
-                        result = await Data.CallFn( ConnectionName, dataLayerFn, Jw.Json(new { PostmasterAccountId = pmAcctId }), retj1);
+                        result = await Data.CallFn( ConnectionName, dataLayerFn, Jw.Json(new { PostmasterAccountId = pmAcctId }), ja.ToString());
                         if (result.GetS("Result") != "Success")
                         {
                             await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
@@ -177,7 +190,6 @@ namespace SeleniumPostmaster
                 if (!dateRangeContainsData)
                 {
                     await Fw.Log(nameof(DoHotmail), $"No IP data for specified date range on account id {pmAcctId}, with user {username}, password {password}, at {finalDataUrl}");
-                    return;
                 }
             }
 
@@ -451,29 +463,72 @@ namespace SeleniumPostmaster
                         if (!driver.PageSource.Contains("No data to display at this time"))
                         {
                             IWebElement chart = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
-                            IList<IWebElement> bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @fill='#f2a600']"));
+                            IList<IWebElement> bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @height!='0.5' and (@fill='#a52714' or @fill='#db4437' or @fill='#f2a600' or @fill='#0f9d58')]"));
 
                             List<Tuple<string, string, DateTime, string>> domIpRep
                                         = new List<Tuple<string, string, DateTime, string>>();
-                            foreach (var bar in bars)
+                            DateTime previousDate = new DateTime();
+                            for (int i = 0; i < bars.Count; i++)
                             {
-                                Actions actions = new Actions(driver);
-                                actions.MoveToElement(bar).Click().Build().Perform();
-                                Wait(driver, 500, 500);
+                                var bar = bars[i];
+                                await Fw.Trace(nameof(DoGmail), $"Found {bars.Count} IP reputation bars, about to click bar {i+1}");
+                                new Actions(driver).Click(bar).Perform();
 
-                                IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
-                                string[] hdrParts = ipHdr.Text.Split(' ');
-                                string reputation = hdrParts[0];
-                                DateTime repDate = ParseDateFromHeader(hdrParts);
+
+                                // Google unpredictably buries the bar from above one level deeper, and when we "click" the bar
+                                // nothing actually shows up in terms of IPs.  If this happens, look for this nesting, and drop into
+                                // it.  There should only be one "bar" in there, click it, and proceed as before.
+                                if (driver.FindElements(By.XPath("//tr[@class='google-visualization-table-tr-head']/th")).Count == 0 )
+                                {
+                                    await Fw.Trace(nameof(DoGmail), $"Found no IP table for bar {i+1}, descent into possibly deeper bar collection, finding, and clicking");
+                                    bar = ReturnHiddenBar();
+                                    new Actions(driver).Click(bar).Perform();
+                                    Wait(driver, 500, 500);
+                                }
+
+                                // by now we know that *a* bar has been selected, however, it may be the bar from the previous date
+                                (string reputation, DateTime repDate) = SelectedReputationParts();
+                                await Fw.Trace(nameof(DoGmail), $"Just assigned reputation {reputation}, and date: {repDate}");
+
+                                if (previousDate != DateTime.MinValue && i > 0 && previousDate == repDate)
+                                {
+                                    await Fw.Trace(nameof(DoGmail), $"Previous date current date match: previous date: {previousDate}, current parsed date: {repDate}, about to find and click hidden bar");
+                                    bar = ReturnHiddenBar();
+                                    new Actions(driver).Click(bar).Perform();
+                                    Wait(driver, 500, 500);
+                                    (reputation, repDate) = SelectedReputationParts();
+                                    await Fw.Trace(nameof(DoGmail), $"After assigning to current values, reputation is {reputation} and reputation date is: {repDate}");
+                                }
+
+                                IWebElement ReturnHiddenBar()
+                                {
+                                    IList<IWebElement> innerBars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='g']/*[name()='rect' and @height!='0.5' and (@fill='#a52714' or @fill='#db4437' or @fill='#f2a600' or @fill='#0f9d58')]"));
+
+                                    // there's only one
+                                    Fw.Trace(nameof(ReturnHiddenBar), $"Found {innerBars.Count} hidden bars now returning right-most").GetAwaiter().GetResult();
+                                    return innerBars[innerBars.Count-1];
+                                }
+                                
+                                (string reputation, DateTime repDate) SelectedReputationParts ()
+                                {
+                                    IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
+                                    string[] hdrParts = ipHdr.Text.Split(' ');
+                                    return (reputation : hdrParts[0], repDate : ParseDateFromHeader(hdrParts));
+                                }
 
                                 IList<IWebElement> ips = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr/td"));
                                 foreach (var ip in ips)
                                 {
                                     string ipaddr = ip.Text;
+                                    await Fw.Trace(nameof(DoGmail), $"Before adding to database-bound list: IP is {ipaddr}, bar count is {bars.Count}, current bar is {i+1}, ips count is: {ips.Count}, for date: {repDate}, reputation: {reputation}");
+
                                     domIpRep.Add(new Tuple<string, string, DateTime, string>
                                         (domId, ipaddr, repDate, reputation));
                                 }
+                                previousDate = repDate;
 
+                                //chart = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
+                                //bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @height!='0.5' and (@fill='#a52714' or @fill='#db4437' or @fill='#f2a600' or @fill='#0f9d58')]"));
                             }
 
                             string jsIpRep = Utility.JsonWrapper.JsonTuple<Tuple<string, string, DateTime, string>>
