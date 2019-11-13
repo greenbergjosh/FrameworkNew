@@ -56,10 +56,12 @@ namespace GenericDataService
 
             try
             {
-                fw = new FrameworkWrapper();
-                fw.Cache = app.ApplicationServices.GetService<IMemoryCache>();
+                fw = new FrameworkWrapper
+                {
+                    Cache = app.ApplicationServices.GetService<IMemoryCache>()
+                };
 
-                using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
+                using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
                     DataService = dynamicContext.Assembly.CreateInstance(fw.StartupConfiguration.GetS("Config/DataServiceTypeName"));
                 }
