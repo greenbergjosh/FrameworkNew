@@ -2,11 +2,11 @@ import { Button, Icon, WhiteSpace } from "@ant-design/react-native"
 import Item from "@ant-design/react-native/lib/list/ListItem"
 import React from "react"
 import {
-    Image,
-    Text,
-    TouchableOpacity,
-    View
-    } from "react-native"
+  Image,
+  Text,
+  TouchableOpacity,
+  View
+  } from "react-native"
 import Collapsible from "react-native-collapsible"
 import { TouchableHighlight } from "react-native-gesture-handler"
 import { Campaign, Promotion } from "../../api/promotions-services"
@@ -25,7 +25,7 @@ export interface PromotionRowProps {
 export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: PromotionRowProps) => {
   const [isCollapsed, setCollapsed] = React.useState(true)
   const navigateToCreateCampaign = React.useCallback(
-    () => navigate("PromotionsCampaign", { promotionId: promotion.id, draft: true }),
+    () => navigate("PromotionsCampaignTemplates", { promotionId: promotion.id }),
     [promotion.id]
   )
   return (
@@ -91,7 +91,7 @@ export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: Promo
       </TouchableOpacity>
       <Collapsible collapsed={isCollapsed}>
         <View style={{ backgroundColor: "#F8F8F8EB" }}>
-          {campaigns ? (
+          {campaigns.length > 0 ? (
             <Text>{JSON.stringify(campaigns, null, 2)}</Text>
           ) : (
             <Empty

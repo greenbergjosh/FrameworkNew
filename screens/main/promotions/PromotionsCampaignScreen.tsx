@@ -7,32 +7,45 @@ import React from "react"
 import { Text } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { CampaignTemplate } from "../../../api/promotions-services"
 import { HeaderTitle } from "../../../components/HeaderTitle"
 import { TextAreaModal } from "../../../components/TextAreaModal"
+
+export interface PromotionsCampaignScreenState {
+  influencerTokens: { [key: string]: any }
+  promptKey: string | null
+  showMessageModal: boolean
+}
 
 interface ActionMessage {
   action: string
   payload: any
 }
 
-interface PromotionsCampaignScreenProps extends NavigationTabScreenProps, ActionSheetProps {}
-interface PromotionsCampaignScreenState {
-  influencerTokens: { [key: string]: any }
-  promptKey: string | null
-  showMessageModal: boolean
+interface PromotionsCampaignNavigationParams {
+  draft: boolean
+  template: CampaignTemplate
+
+  influencerTokens: PromotionsCampaignScreenState["influencerTokens"]
 }
+
+interface PromotionsCampaignScreenProps
+  extends NavigationTabScreenProps<PromotionsCampaignNavigationParams>,
+    ActionSheetProps {}
 class _PromotionsCampaignScreen extends React.Component<
   PromotionsCampaignScreenProps,
   PromotionsCampaignScreenState
 > {
   static navigationOptions = ({ navigation }) => {
-    const { draft } = navigation.state.params
+    console.log("PromotionsCampaignScreen#navigationOptions", navigation.state)
+    const { draft, influencerTokens = {} } = navigation.state
+      .params as PromotionsCampaignNavigationParams
     return {
       headerLeft:
         draft &&
         (() => (
           <Button
-            onPress={() => navigation.navigate("PromotionCampaignList")}
+            onPress={() => navigation.goBack("PromotionsCampaignList")}
             style={{ backgroundColor: "#343997", borderWidth: 0 }}>
             <Text style={{ color: "#fff" }}>Cancel</Text>
           </Button>
@@ -40,9 +53,12 @@ class _PromotionsCampaignScreen extends React.Component<
       headerTitle: () => <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
       headerRight: () => (
         <Button
-          onPress={() => navigation.navigate("PromotionCampaignList")}
+          onPress={() => {
+            console.log("Parameters", navigation.params)
+            navigation.navigate("PromotionsCampaignAdditionalImages", { draft, influencerTokens })
+          }}
           style={{ backgroundColor: "#343997", borderWidth: 0 }}>
-          <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
+          <Text style={{ fontWeight: "bold", color: "#fff" }}>Next</Text>
         </Button>
       ),
     }
@@ -116,6 +132,12 @@ class _PromotionsCampaignScreen extends React.Component<
               [promptKey]: imageBase64,
             },
           })
+          this.props.navigation.setParams({
+            influencerTokens: {
+              ...influencerTokens,
+              [promptKey]: imageBase64,
+            },
+          })
 
           this.getgotWebTemplate.injectJavaScript(
             `
@@ -141,6 +163,7 @@ class _PromotionsCampaignScreen extends React.Component<
   }
 
   render() {
+    const { draft, template } = this.props.navigation.state.params
     const { influencerTokens, promptKey, showMessageModal } = this.state
     return (
       <>
@@ -152,6 +175,10 @@ class _PromotionsCampaignScreen extends React.Component<
               showMessageModal: false,
               influencerTokens: { ...influencerTokens, [this.state.promptKey]: message },
             })
+            this.props.navigation.setParams({
+              influencerTokens: { ...influencerTokens, [this.state.promptKey]: message },
+            })
+
             this.getgotWebTemplate.injectJavaScript(
               `
               window.editedText(\`${message}\`${promptKey ? ", `" + promptKey + "`" : ""}); 
@@ -165,8 +192,14 @@ class _PromotionsCampaignScreen extends React.Component<
         <WebView
           ref={(ref) => (this.getgotWebTemplate = ref)}
           nativeConfig={{ props: { webContentsDebuggingEnabled: true } }}
-          injectedJavaScript={`${initializeGetGotInterface.toString()}; initializeGetGotInterface();`}
-          source={{ uri: "http://ec2-35-170-186-135.compute-1.amazonaws.com/" }}
+          injectedJavaScript={`${initializeGetGotInterface.toString()}; initializeGetGotInterface(); window.setTemplate(\`${
+            template.template.html
+          }\`);`}
+          source={{
+            uri: `http://ec2-35-170-186-135.compute-1.amazonaws.com/?templateId=${
+              template.id
+            }&randomSeed=${Math.round(Math.random() * 4000)}`,
+          }}
           onMessage={(event) => {
             const message: ActionMessage = JSON.parse(event.nativeEvent.data)
             this.handlers[message.action](message.payload, this.props.showActionSheetWithOptions)

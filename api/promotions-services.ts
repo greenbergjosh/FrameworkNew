@@ -34,6 +34,21 @@ export interface Campaign {
   send_date: ISO8601String
 }
 
+export interface CampaignTemplate {
+  id: string
+  advertiserUserId: string
+  name: string
+  template: CampaignTemplateBody
+  externalUrl: string | null
+  meta: string | null
+}
+
+export interface CampaignTemplateBody {
+  retailerTokens: { [key: string]: unknown }
+  previewImage: string
+  html?: string | null
+}
+
 export interface PromotionsResponse extends GetGotSuccessResponse {
   results: Promotion[]
 }
@@ -42,9 +57,13 @@ export interface PromotionCampaignsResponse extends GetGotSuccessResponse {
   campaigns: Campaign[]
 }
 
+export interface CampaignTemplatesResponse extends GetGotSuccessResponse {
+  results: CampaignTemplate[]
+}
+
 export const loadPromotions = async (
-  pageSize?: number,
   searchText?: string,
+  pageSize?: number,
   lastPromotionId?: string
 ) => {
   const response = await getgotRequest<PromotionsResponse>("getPromotions", {
@@ -87,8 +106,8 @@ export const loadPromotions = async (
 
 export const loadPromotionCampaigns = async (
   promotionId: string,
-  pageSize?: number,
   searchText?: string,
+  pageSize?: number,
   lastPromotionId?: string
 ) => {
   return await getgotRequest<PromotionCampaignsResponse>("getPromotionCampaigns", {
@@ -97,4 +116,38 @@ export const loadPromotionCampaigns = async (
     searchText,
     lastPromotionId,
   })
+}
+
+export const loadCampaignTemplates = async (
+  search?: string,
+  pageSize?: number,
+  lastMessageBodyTemplateId?: string
+) => {
+  const response = await getgotRequest<CampaignTemplatesResponse>("getMessageBodyTemplates", {
+    pageSize,
+    search,
+    lastMessageBodyTemplateId,
+  })
+
+  if (response.r === 0) {
+    // On success responses, we need to parse the template JSON
+    response.results = response.results.reduce((acc, campaignTemplate) => {
+      try {
+        if (typeof campaignTemplate.template === "string") {
+          campaignTemplate.template = JSON.parse(campaignTemplate.template)
+        }
+        acc.push(campaignTemplate)
+      } catch (ex) {
+        console.warn(
+          "promotions-services",
+          "Campaign Template excluded from result for failing to parse",
+          campaignTemplate,
+          ex
+        )
+      }
+
+      return acc
+    }, [])
+  }
+  return response
 }
