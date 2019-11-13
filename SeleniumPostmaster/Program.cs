@@ -217,7 +217,10 @@ namespace SeleniumPostmaster
                         }
                         catch (Exception ex)
                         {
-                            await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP blacklist for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
+                            if (ex.InnerException.Message != "BadRequest")
+                            {
+                                await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP blacklist for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
+                            }
                             continue;
                         }
 
