@@ -1,6 +1,7 @@
-let baseAddress = "https://getgotapp.com"
+import { getOr } from "lodash/fp"
+import { getgotStorage } from "../storage/getgotStorage"
 
-const resultCodes = {
+export const resultCodes = {
   0: "Success",
   1: "Unhandled exception",
   2: "Server resource exception - Some external resource such as the DB or required API is down",
@@ -16,51 +17,76 @@ const resultCodes = {
   108: "Exhausted unique handle attempts",
   109: "Contact not found",
   110: "Name already used in context",
-  111:  "Invalid promotion payload"
+  111: "Invalid promotion payload",
 }
 
+let baseAddress = "https://getgotapp.com"
 export const setBaseAddress = (address: string) => {
   baseAddress = address
 }
 
-const getGotRequest = async (name: string, request: object) => {
+export interface GetGotResponse {
+  r: keyof (typeof resultCodes)
+}
+
+export interface GetGotSuccessResponse extends GetGotResponse {
+  r: 0
+}
+
+export interface GetGotErrorResponse extends GetGotResponse {
+  r: Exclude<GetGotResponse["r"], 0>
+  error: string
+}
+
+export const getgotRequest = async <T extends GetGotSuccessResponse>(
+  name: string,
+  request: object = {},
+  token?: string
+): Promise<T | GetGotErrorResponse> => {
+  const storedToken = await getgotStorage.get("authToken")
   const body = {
+    i: { t: token || storedToken },
     p: {
-      
-    }
+      [name]: request,
+    },
   }
-  body.p[name] = request;
+
+  console.debug("Fetching", baseAddress, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body,
+  })
+
   const response = await fetch(baseAddress, {
     method: "POST",
     headers: {
       Accept: "application/json",
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   })
   const json = await response.json()
-  console.log(json);
+  console.debug("api/index.ts", `getgotRequest fn: ${name} | result:`, json)
+
+  // This is an error at the network/request level
   if (json.r !== 0) {
-    let msg = resultCodes[json.r]
-    if (!msg) {
-      msg = 'an unexpected generic error occured.'
+    return {
+      error: getOr("An unexpected GetGot error occured.", json.r, resultCodes),
+      r: json.r,
     }
-    throw new Error(msg)
   }
-  if (json.login.r !== 0) {
-    let msg = resultCodes[json.login.r]
-    if (!msg) {
-      msg = 'an unexpected specific error occured.'
+  // This is an error for the specific [name] function
+  if (json[name].r !== 0) {
+    return {
+      error: getOr(`An unexpected ${name} service error occured`, json.r, resultCodes),
+      r: json.r,
     }
-    throw new Error(msg)
   }
-  return json[name]
+
+  return json[name] as T
 }
 
-export const login = async (username: string, password: string, device: string) => {
-  return await getGotRequest('login', {
-    u: username, 
-    p: password,
-    d: device
-  })
-}
+getgotRequest.token = null

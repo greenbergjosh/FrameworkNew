@@ -2,6 +2,10 @@ import { Icon } from "@ant-design/react-native"
 import React from "react"
 import { createStackNavigator } from "react-navigation-stack"
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
+import { AnalyticsScreen } from "../analytics/AnalyticsScreen"
+import { BlockedUsersScreen } from "../blocked-users/BlockedUsersScreen"
+import { NotificationsScreen } from "../notifications/NotificationsScreen"
+import { PrivacyOptionsScreen } from "../privacy-options/PrivacyOptionsScreen"
 import { HomeFeedScreen } from "./HomeFeedScreen"
 import { MessagesScreen } from "./MessagesScreen"
 import { NewMessageScreen } from "./NewMessageScreen"
@@ -15,6 +19,12 @@ const HomeNavigator = createStackNavigator(
     Messages: { screen: MessagesScreen },
     NewMessage: { screen: NewMessageScreen },
     ViewThread: { screen: ViewThreadScreen },
+
+    Analytics: { screen: AnalyticsScreen },
+    PrivacyOptions: { screen: PrivacyOptionsScreen },
+    Notifications: { screen: NotificationsScreen },
+    BlockedUsers: { screen: BlockedUsersScreen },
+    // Tour: { screen: TourScreen },
   },
   {
     initialRouteName: "HomeFeed",

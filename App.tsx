@@ -1,17 +1,16 @@
-import * as Font from "expo-font"
-
-import React, { useEffect } from "react"
-
+import { Provider } from "@ant-design/react-native"
+import { ActionSheetProvider } from "@expo/react-native-action-sheet"
 import { AppLoading } from "expo"
-import { AuthContextProvider } from "./providers/auth-context-provider"
+import * as Font from "expo-font"
+import React, { useEffect } from "react"
+import { Transition } from "react-native-reanimated"
+import { createAppContainer } from "react-navigation"
+import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
+import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
 import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
 import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
-import { Provider } from "@ant-design/react-native"
-import { Transition } from "react-native-reanimated"
-import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
-import { createAppContainer } from "react-navigation"
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -47,8 +46,8 @@ const App = () => {
   const [isReady, setIsReady] = React.useState(false)
 
   const changeTheme = (theme, currentTheme) => {
-    setTheme(theme);
-    setCurrentTheme(currentTheme);
+    setTheme(theme)
+    setCurrentTheme(currentTheme)
   }
 
   useEffect(() => {
@@ -58,29 +57,58 @@ const App = () => {
         // eslint-disable-next-line
         require("@ant-design/icons-react-native/fonts/antoutline.ttf")
       )
-  
+
       await Font.loadAsync(
         "antfill",
         // eslint-disable-next-line
         require("@ant-design/icons-react-native/fonts/antfill.ttf")
       )
       setIsReady(true)
-    }  
-  
-    init();
-  }, []);
-  
+    }
+
+    init()
+  }, [])
+
   if (!isReady) {
     return <AppLoading />
   }
 
   return (
-    <AuthContextProvider>
+    <GetGotRootDataContextProvider>
       <Provider theme={theme}>
-        <RootNavigator screenProps={{ changeTheme, currentTheme }} />
+        <ActionSheetProvider>
+          <RootNavigator
+            screenProps={{ changeTheme, currentTheme }}
+            onNavigationStateChange={(prevState, currentState, action) => {
+              const currentRouteName = getActiveRouteName(currentState)
+              const previousRouteName = getActiveRouteName(prevState)
+
+              if (previousRouteName !== currentRouteName) {
+                // TODO Event and Analytics tracking
+                // the line below uses the @react-native-firebase/analytics tracker
+                // change the tracker here to use other Mobile analytics SDK.
+                // analytics().setCurrentScreen(currentRouteName, currentRouteName)
+              }
+            }}
+          />
+        </ActionSheetProvider>
       </Provider>
-    </AuthContextProvider>
+    </GetGotRootDataContextProvider>
   )
 }
 
-export default App;
+export default App
+
+// SEE: https://reactnavigation.org/docs/en/screen-tracking.html
+// gets the current screen from navigation state
+function getActiveRouteName(navigationState) {
+  if (!navigationState) {
+    return null
+  }
+  const route = navigationState.routes[navigationState.index]
+  // dive into nested navigators
+  if (route.routes) {
+    return getActiveRouteName(route)
+  }
+  return route.routeName
+}

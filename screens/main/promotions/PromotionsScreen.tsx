@@ -1,25 +1,75 @@
-import { Button, Icon, Toast } from "@ant-design/react-native"
+import {
+  ActivityIndicator,
+  Button,
+  List,
+  Toast
+  } from "@ant-design/react-native"
+import ListStyles from "@ant-design/react-native/lib/list/style"
+import { WithTheme } from "@ant-design/react-native/lib/style"
 import React from "react"
-import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
+import { ScrollView } from "react-native"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { loadPromotionCampaigns } from "../../../api/promotions-services"
+import { HeaderTitle } from "../../../components/HeaderTitle"
+import { PromotionRow } from "../../../components/promotions/PromotionRow"
+import { usePromotionsContext } from "../../../providers/promotions-context-provider"
 
-interface PromotionsScreenProps extends NavigationTabScreenProps {}
+export interface PromotionsScreenProps extends NavigationTabScreenProps {}
 
-export class PromotionsScreen extends React.Component<PromotionsScreenProps> {
-  static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
-    return {
-      tabBarIcon: ({ focused, horizontal, tintColor }) => {
-        return <Icon name="shopping" color={focused ? "#343977" : "#999999"} />
-      },
-    }
+export const PromotionsScreen = (props: PromotionsScreenProps) => {
+  const promotionsContext = usePromotionsContext()
+
+  if (!promotionsContext.lastLoadPromotions) {
+    promotionsContext.loadPromotions()
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
-  render() {
-    const { navigate } = this.props.navigation
-    return (
-      <>
-        <Button onPress={() => Toast.info("This is an Promotions toast")}>
-          Show Promotions Toast
-        </Button>
-      </>
-    )
+
+  const promotions = promotionsContext.results
+
+  console.log("PromotionsScreen", { promotions })
+
+  const { navigate } = props.navigation
+  return (
+    <>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#f5f5f9" }}
+        automaticallyAdjustContentInsets={false}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}>
+        <List>
+          {promotions.map((promotion) => (
+            <PromotionRow
+              key={promotion.id}
+              campaigns={promotionsContext.promotionCampaigns[promotion.id] || []}
+              navigate={navigate}
+              onExpand={() =>
+                // If there's no data
+                !promotionsContext.promotionCampaigns[promotion.id] &&
+                // Load the campaigns for this promotion
+                loadPromotionCampaigns(promotion.id)
+              }
+              promotion={promotion}
+            />
+          ))}
+        </List>
+      </ScrollView>
+
+      <Button onPress={() => Toast.info("This is a Promotions toast")}>
+        Show Promotions Toast
+      </Button>
+      <Button onPress={() => navigate("PromotionsCampaignList")}>Jump to Single Promotion</Button>
+      <Button onPress={() => navigate("PromotionsCampaign", { draft: true })}>
+        Jump to Single Campaign (Draft)
+      </Button>
+      <Button onPress={() => navigate("PromotionsCampaign")}>
+        Jump to Single Campaign (Published)
+      </Button>
+    </>
+  )
+}
+
+PromotionsScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerTitle: () => <HeaderTitle title="Promotions" align="left" size="large" />,
   }
 }
