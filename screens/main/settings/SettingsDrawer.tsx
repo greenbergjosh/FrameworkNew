@@ -1,16 +1,17 @@
+import { AuthContextType, useAuthContext } from "../../../providers/auth-context-provider"
 import {
   Button,
   Drawer,
   Icon,
   List,
   WhiteSpace
-  } from "@ant-design/react-native"
-import { IconProps } from "@ant-design/react-native/lib/icon"
-import DrawerLayout from "@bang88/react-native-drawer-layout"
-import React from "react"
-import { ScrollView, Text, View } from "react-native"
+} from "@ant-design/react-native"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
-import { AuthContextType, useAuthContext } from "../../../providers/auth-context-provider"
+import { ScrollView, Text, View } from "react-native"
+
+import DrawerLayout from "@bang88/react-native-drawer-layout"
+import { IconProps } from "@ant-design/react-native/lib/icon"
+import React from "react"
 
 interface NavigationItem {
   title: string
