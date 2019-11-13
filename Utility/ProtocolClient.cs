@@ -102,7 +102,7 @@ namespace Utility
             }
             else
             {
-                throw new Exception("HttpResponseMessage.IsSuccessStatusCode was false.");
+                throw new Exception("HttpResponseMessage.IsSuccessStatusCode was false.", new Exception(response.StatusCode.ToString()));
             }
 
             return resp;
