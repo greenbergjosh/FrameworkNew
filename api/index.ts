@@ -74,19 +74,17 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
   // This is an error at the network/request level
   if (json.r !== 0) {
     return {
-      error: getOr("An unexpected GetGot error occured.", json.r, resultCodes),
+      error: getOr("An unexpected GetGot error occurred.", json.r, resultCodes),
       r: json.r,
     }
   }
   // This is an error for the specific [name] function
   if (json[name].r !== 0) {
     return {
-      error: getOr(`An unexpected ${name} service error occured`, json.r, resultCodes),
-      r: json.r,
+      error: getOr(`An unexpected ${name} service error occurred`, json[name].r, resultCodes),
+      r: json[name].r,
     }
   }
 
   return json[name] as T
 }
-
-getgotRequest.token = null
