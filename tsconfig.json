@@ -8,6 +8,15 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "sourceRoot": "./",
-    "inlineSourceMap": true
+    "inlineSourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "api": ["./api"],
+      "assets": ["./assets"],
+      "components": ["./components"],
+      "hooks": ["./hooks"],
+      "screens": ["./screens"],
+      "util": ["./util/index.ts"]
+    }
   }
 }

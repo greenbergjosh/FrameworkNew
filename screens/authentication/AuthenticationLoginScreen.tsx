@@ -61,6 +61,9 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
       <Button disabled={loading} onPress={() => navigate("AuthenticationBanned")}>
         Login (Banned)
       </Button>
+      <Button disabled={loading} onPress={() => navigate("OnBoarding")}>
+        Sign Up
+      </Button>
 
       <Text style={{ color: "red", textAlign: "center", paddingTop: 10 }}>{error}</Text>
     </>
