@@ -26,12 +26,15 @@ export const styles = {
     fontWeight: FontWeight.regular,
     color: Colors.grey,
   } as StyleProp<TextStyle>,
-  Link: {
+  LinkText: {
     fontSize: 14,
     lineHeight: 22,
     fontWeight: FontWeight.regular,
     color: Colors.blue,
   } as StyleProp<TextStyle>,
+  LinkButton: {
+    borderWidth: 0,
+  } as StyleProp<ViewStyle>,
   Button: {
     minWidth: 200,
   } as StyleProp<ViewStyle>,
