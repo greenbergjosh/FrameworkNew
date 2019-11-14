@@ -4,8 +4,6 @@ import {
   List,
   Toast
   } from "@ant-design/react-native"
-import ListStyles from "@ant-design/react-native/lib/list/style"
-import { WithTheme } from "@ant-design/react-native/lib/style"
 import React from "react"
 import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
