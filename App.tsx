@@ -3,7 +3,6 @@ import * as Font from "expo-font"
 import React, { useEffect } from "react"
 
 import { ActionSheetProvider } from "@expo/react-native-action-sheet"
-import { AppLoading } from "expo"
 import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
 import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
 import { LandingScreen } from "./screens/landing/LandingScreen"
@@ -13,6 +12,17 @@ import { Provider } from "@ant-design/react-native"
 import { Transition } from "react-native-reanimated"
 import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
 import { createAppContainer } from "react-navigation"
+
+//import { AppLoading } from "expo"
+
+
+
+
+
+
+
+
+
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -71,9 +81,9 @@ const App = () => {
     init()
   }, [])
 
-  if (!isReady) {
+  /*if (!isReady) {
     return <AppLoading />
-  }
+  }*/
 
   return (
     <GetGotRootDataContextProvider>
