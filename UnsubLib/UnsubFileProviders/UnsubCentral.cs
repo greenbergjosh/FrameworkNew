@@ -103,7 +103,7 @@ namespace UnsubLib.UnsubFileProviders
                     resp = await client.PostAsync(loginUrl, new FormUrlEncodedContent(data));
                     var res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
 
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} after login {res}");
+                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} after login {res.GetS("")}");
 
                     var token = res.GetS("payload");
 
