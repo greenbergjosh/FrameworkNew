@@ -1,10 +1,10 @@
-import React from "react"
-import { NavigationSwitchScreenProps } from "react-navigation"
-import { createStackNavigator } from "react-navigation-stack"
-import { HeaderLogo } from "../../components/HeaderLogo"
+import React, { useContext } from "react"
+
 import { AuthenticationBannedScreen } from "./AuthenticationBannedScreen"
 import { AuthenticationLoginScreen } from "./AuthenticationLoginScreen"
-interface AuthenticationSectionProps extends NavigationSwitchScreenProps {}
+import { HeaderLogo } from "../../components/HeaderLogo"
+import { NavigationContext } from "react-navigation"
+import { createStackNavigator } from "react-navigation-stack"
 
 const AuthenticationNavigator = createStackNavigator(
   {
@@ -25,15 +25,14 @@ const AuthenticationNavigator = createStackNavigator(
   }
 )
 
-export class AuthenticationSection extends React.Component<AuthenticationSectionProps> {
-  static router = AuthenticationNavigator.router
+export const AuthenticationSection = () => {
+  const navigation = useContext(NavigationContext);
+  return <AuthenticationNavigator navigation={navigation} />
+}
 
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerTitle: () => <HeaderLogo />,
-    }
-  }
-  render() {
-    return <AuthenticationNavigator navigation={this.props.navigation} />
+AuthenticationSection.router = AuthenticationNavigator.router
+AuthenticationSection.navigationOptions = () => {
+  return {
+    headerTitle: () => <HeaderLogo />,
   }
 }

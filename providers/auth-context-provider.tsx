@@ -1,6 +1,6 @@
+import { LoginData, LoginResponse, loadProfile } from "../api/auth-services"
 import React, { useContext } from "react"
-import { getgotRequest } from "../api"
-import { loadProfile, LoginData, LoginResponse } from "../api/auth-services"
+
 import { getgotStorage } from "../storage/getgotStorage"
 
 export interface AuthState extends Partial<LoginData> {

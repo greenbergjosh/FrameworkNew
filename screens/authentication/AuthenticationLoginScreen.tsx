@@ -1,9 +1,10 @@
 import { ActivityIndicator, Button, InputItem } from "@ant-design/react-native"
+
+import { HeaderLogo } from "../../components/HeaderLogo"
+import { NavigationSwitchScreenProps } from "react-navigation"
 import React from "react"
 import { Text } from "react-native"
-import { NavigationSwitchScreenProps } from "react-navigation"
 import { getgotLogin } from "../../api/auth-services"
-import { HeaderLogo } from "../../components/HeaderLogo"
 import { useAuthContext } from "../../providers/auth-context-provider"
 
 interface AuthenticationLoginScreenProps extends NavigationSwitchScreenProps {}

@@ -1,16 +1,28 @@
-import { Provider } from "@ant-design/react-native"
-import { ActionSheetProvider } from "@expo/react-native-action-sheet"
-import { AppLoading } from "expo"
 import * as Font from "expo-font"
+
 import React, { useEffect } from "react"
-import { Transition } from "react-native-reanimated"
-import { createAppContainer } from "react-navigation"
-import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
-import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
+
+import { ActionSheetProvider } from "@expo/react-native-action-sheet"
 import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
+import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
 import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
+import { Provider } from "@ant-design/react-native"
+import { Transition } from "react-native-reanimated"
+import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
+import { createAppContainer } from "react-navigation"
+
+//import { AppLoading } from "expo"
+
+
+
+
+
+
+
+
+
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -69,16 +81,16 @@ const App = () => {
     init()
   }, [])
 
-  if (!isReady) {
+  /*if (!isReady) {
     return <AppLoading />
-  }
+  }*/
 
   return (
     <GetGotRootDataContextProvider>
       <Provider theme={theme}>
         <ActionSheetProvider>
           <RootNavigator
-            screenProps={{ changeTheme: this.changeTheme, currentTheme }}
+            screenProps={{ changeTheme, currentTheme }}
             onNavigationStateChange={(prevState, currentState, action) => {
               const currentRouteName = getActiveRouteName(currentState)
               const previousRouteName = getActiveRouteName(prevState)

@@ -1,7 +1,8 @@
 import { ActivityIndicator, Button, WhiteSpace } from "@ant-design/react-native"
-import React from "react"
-import { NavigationSwitchScreenProps } from "react-navigation"
+
 import { HeaderLogo } from "../../components/HeaderLogo"
+import { NavigationSwitchScreenProps } from "react-navigation"
+import React from "react"
 import { useAuthContext } from "../../providers/auth-context-provider"
 
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
