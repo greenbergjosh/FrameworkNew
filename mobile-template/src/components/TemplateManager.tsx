@@ -134,9 +134,13 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
                     <SelectVideoPopover
                       url={elementValue}
                       linkText="Different Video"
-                      onSelectVideo={(url) =>
-                        elementValueKey && setDataState({ ...dataState, [elementValueKey]: url })
-                      }
+                      onSelectVideo={(url) => {
+                        if (elementValueKey) {
+                          setDataState({ ...dataState, [elementValueKey]: url })
+                        }
+
+                        getgotService.selectVideo(elementValueKey || "video", url)
+                      }}
                     />
                     <a
                       className="rightLink ant-btn-danger ant-btn-background-ghost"
@@ -172,9 +176,12 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
                   </a>
                   <SelectVideoPopover
                     url={elementValue}
-                    onSelectVideo={(url) =>
-                      elementValueKey && setDataState({ ...dataState, [elementValueKey]: url })
-                    }
+                    onSelectVideo={(url) => {
+                      if (elementValueKey) {
+                        setDataState({ ...dataState, [elementValueKey]: url })
+                      }
+                      getgotService.selectVideo(elementValueKey || "video", url)
+                    }}
                   />
                 </>
               }

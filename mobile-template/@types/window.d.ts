@@ -1,6 +1,7 @@
 declare interface Window {
   GetGotInterface: {
     selectPhoto: (jsonObject?: string) => {}
+    selectVideo: (jsonObject?: string, url: string) => {}
     submitForm: (jsonObject?: string) => {}
     test: (jsonObject?: string) => {}
     [key: string]: (jsonObject?: string) => {}

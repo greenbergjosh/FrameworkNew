@@ -4,6 +4,9 @@ export const GetGotService = {
   selectPhoto(propertyName: string | null) {
     invoke("selectPhoto", propertyName)
   },
+  selectVideo(propertyName: string, url: string) {
+    invoke("selectVideo", propertyName, url)
+  },
   editText(propertyName: string | null) {
     invoke("editText", propertyName || message)
   },
@@ -12,8 +15,8 @@ export const GetGotService = {
   },
 }
 
-function invoke(functionName: string, arg?: any) {
-  console.debug("Invoke Function", { functionName, arg })
+function invoke(functionName: string, ...args: any[]) {
+  console.debug("Invoke Function", { functionName, arg: args })
   try {
     if (window.GetGotInterface) {
       console.debug(
@@ -21,26 +24,18 @@ function invoke(functionName: string, arg?: any) {
         Object.keys(window.GetGotInterface).join(", "),
         window.GetGotInterface
       )
-      // if (arg) {
-      //   window.GetGotInterface[functionName](arg)
-      // } else {
-      window.GetGotInterface[functionName]()
-      // }
+      window.GetGotInterface[functionName](...args)
     } else if (window.webkit && window.webkit.messageHandlers) {
       console.debug(
         "Webkit available methods",
         Object.keys(window.webkit.messageHandlers).join(", "),
         window.webkit
       )
-      if (typeof arg !== "undefined") {
-        window.webkit.messageHandlers[functionName].postMessage(arg)
-      } else {
-        window.webkit.messageHandlers[functionName].postMessage()
-      }
+      window.webkit.messageHandlers[functionName].postMessage(args)
     } else {
       message.error("Sorry! Only Android and iOS devices are supported currently!")
     }
   } catch (ex) {
-    console.error(`Attempted invocation of ${functionName} failed`, arg, ex)
+    console.error(`Attempted invocation of ${functionName} failed`, args, ex)
   }
 }
