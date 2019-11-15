@@ -108,7 +108,7 @@ namespace UnsubLib.UnsubFileProviders
 
                 if (optizmoUnsubUrl != "") return optizmoUnsubUrl;
 
-                await _fw.Error(_logMethod, $"Empty Optizmo url: {uri}");
+                await _fw.Error(_logMethod, $"Empty Optizmo url returned from: {uri}");
             }
 
             return null;
@@ -127,24 +127,43 @@ namespace UnsubLib.UnsubFileProviders
                 //503 Service Unavailable
                 var retryCount = 0;
                 var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
-                while (retryCount < 5)
+                while (retryCount < retryWalkaway.Length)
                 {
-                    var aojson = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), null, 60 * 30);
-                    if (!String.IsNullOrEmpty(aojson.Item2) && aojson.Item1)
+                    try
                     {
-                        if (aojson.Item2.Contains("503 Service Unavailable"))
+                        await _fw.Trace(nameof(GetOptizmoUnsubFileUri), $"Requesting unsub file uri via: {optizmoUrl}, retries remaining: {retryWalkaway.Length - retryCount}");
+                        var (success, body) = await ProtocolClient.HttpGetAsync(optizmoUrl.ToString(), null, 60 * 30);
+                        if (success && !string.IsNullOrEmpty(body))
                         {
-                            await Task.Delay(retryWalkaway[retryCount] * 1000);
-                            retryCount += 1;
-                            continue;
+                            if (body.Contains("503 Service Unavailable"))
+                                throw new InvalidOperationException("503 Service Unavailable");
+
+                            var te = new GenericEntityJson();
+                            var ts = (JObject)JsonConvert.DeserializeObject(body);
+                            te.InitializeEntity(null, null, ts);
+                            if (te.GetS("download_link") != null)
+                            {
+                                optizmoUnsubUrl = te.GetS("download_link");
+                            }
+                            else
+                            {
+                                await _fw.Error(nameof(GetOptizmoUnsubFileUri), $"Via: {optizmoUrl}, download_link value is null");
+                                break;
+                            }
                         }
-                        IGenericEntity te = new GenericEntityJson();
-                        var ts = (JObject)JsonConvert.DeserializeObject(aojson.Item2);
-                        te.InitializeEntity(null, null, ts);
-                        if (te.GetS("download_link") != null)
+                        else
                         {
-                            optizmoUnsubUrl = te.GetS("download_link");
+                            throw new InvalidOperationException("Invalid response");
                         }
+                    }
+                    catch (Exception)
+                    {
+                        retryCount += 1;
+                        if (retryCount >= retryWalkaway.Length)
+                            throw;
+
+                        await Task.Delay(retryWalkaway[retryCount-1] * 1000);
+                        continue;
                     }
                     break;
                 }
@@ -153,7 +172,7 @@ namespace UnsubLib.UnsubFileProviders
             }
             catch (Exception e)
             {
-                await _fw.Error(_logMethod, $"Unhandled exception getting unsub link: {e.UnwrapForLog()}");
+                await _fw.Error(nameof(GetOptizmoUnsubFileUri), $"Unhandled exception getting unsub link: {e.UnwrapForLog()}");
                 return null;
             }
         }

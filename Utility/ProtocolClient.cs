@@ -119,7 +119,7 @@ namespace Utility
             }
             else
             {
-                throw new Exception("HttpResponseMessage.IsSuccessStatusCode was false.");
+                throw new Exception("HttpResponseMessage.IsSuccessStatusCode was false.", new Exception(response.StatusCode.ToString()));
             }
 
             return resp;
@@ -283,9 +283,29 @@ namespace Utility
                 }
             }
         }
+        public static async Task<Stream> GetSFtpFileStreamWithPassword(string sourceFile, string host, int? port, string userName, string password)
+        {
+            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, password) : new SftpClient(host, userName, password))
+            {
+                try
+                {
+                    client.Connect();
+                    var ms = new MemoryStream();
 
-        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName,
-            string keyFilePath)
+                    await Task.Factory.FromAsync(client.BeginDownloadFile(sourceFile, ms), client.EndDownloadFile);
+
+                    ms.Position = 0;
+
+                    return ms;
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            }
+        }
+
+        public static async Task<Stream> GetSFtpFileStreamWithKeyFile(string sourceFile, string host, int? port, string userName, string keyFilePath)
         {
             var pk = new PrivateKeyFile(keyFilePath);
 
