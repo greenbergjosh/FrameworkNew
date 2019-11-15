@@ -4,7 +4,6 @@ import { createStackNavigator } from "react-navigation-stack"
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { OnBoardingCodeEntryScreen } from "./OnBoardingCodeEntryScreen"
 import { OnBoardingResendCodeScreen } from "./OnBoardingResendCodeScreen"
-import { OnBoardingSelectInfluencersScreen } from "./OnBoardingSelectInfluencersScreen"
 import { OnBoardingSelectInterestsScreen } from "./OnBoardingSelectInterestsScreen"
 import { OnBoardingSetPasswordScreen } from "./OnBoardingSetPasswordScreen"
 import { OnBoardingStartScreen } from "./OnBoardingStartScreen"
@@ -21,7 +20,6 @@ const OnBoardingNavigator = createStackNavigator(
     OnBoardingSetPassword: { screen: OnBoardingSetPasswordScreen },
     OnBoardingSelectInterests: { screen: OnBoardingSelectInterestsScreen },
     OnBoardingSyncContacts: { screen: OnBoardingSyncContactsScreen },
-    OnBoardingSelectInfluencers: { screen: OnBoardingSelectInfluencersScreen },
   },
   {
     initialRouteName: routes.OnBoarding.Start,

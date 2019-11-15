@@ -34,7 +34,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           type="ghost"
           size="large"
           style={styles.LinkButton}
-          onPress={() => navigate(routes.OnBoarding.SelectInfluencers)}>
+          onPress={() => navigate(routes.Home.HomeFeed)}>
           Not Now
         </Button>
       </Flex>
@@ -55,14 +55,14 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
             text: "Don’t Allow",
             onPress: () => {
               setModalVisible(false)
-              navigate(routes.OnBoarding.SelectInfluencers)
+              navigate(routes.Home.HomeFeed)
             },
           },
           {
             text: "OK",
             onPress: () => {
               setModalVisible(false)
-              navigate(routes.OnBoarding.SelectInfluencers)
+              navigate(routes.Home.HomeFeed)
             },
           },
         ]}>

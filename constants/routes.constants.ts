@@ -16,7 +16,6 @@ export enum Home {
 export enum OnBoarding {
   CodeEntry = "OnBoardingCodeEntry",
   ResendCode = "OnBoardingResendCode",
-  SelectInfluencers = "OnBoardingSelectInfluencers",
   SelectInterests = "OnBoardingSelectInterests",
   SetPassword = "OnBoardingSetPassword",
   Start = "OnBoardingStart",
