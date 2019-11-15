@@ -18,7 +18,7 @@ export enum OnBoarding {
   ResendCode = "OnBoardingResendCode",
   SelectInterests = "OnBoardingSelectInterests",
   SetPassword = "OnBoardingSetPassword",
-  Start = "OnBoardingStart",
+  CreateAccount = "OnBoardingCreateAccount",
   SyncContacts = "OnBoardingSyncContacts",
 }
 

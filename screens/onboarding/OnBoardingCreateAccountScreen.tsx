@@ -6,9 +6,9 @@ import { Text, View } from "react-native"
 import { routes, styles } from "constants"
 import { LegalAgreement } from "components/LegalAgreement"
 
-interface OnBoardingStartScreenProps extends NavigationSwitchScreenProps {}
+interface OnBoardingCreateAccountScreenProps extends NavigationSwitchScreenProps {}
 
-export const OnBoardingStartScreen = (props: OnBoardingStartScreenProps) => {
+export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScreenProps) => {
   const [name, setName] = React.useState("")
   const [phoneOrEmail, setPhoneOrEmail] = React.useState("")
   const [modalVisible, setModalVisible] = React.useState(false)
@@ -82,7 +82,7 @@ export const OnBoardingStartScreen = (props: OnBoardingStartScreenProps) => {
   )
 }
 
-OnBoardingStartScreen.navigationOptions = ({ navigation }) => {
+OnBoardingCreateAccountScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
   }

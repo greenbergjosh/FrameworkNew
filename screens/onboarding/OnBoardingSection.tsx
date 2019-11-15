@@ -6,15 +6,20 @@ import { OnBoardingCodeEntryScreen } from "./OnBoardingCodeEntryScreen"
 import { OnBoardingResendCodeScreen } from "./OnBoardingResendCodeScreen"
 import { OnBoardingSelectInterestsScreen } from "./OnBoardingSelectInterestsScreen"
 import { OnBoardingSetPasswordScreen } from "./OnBoardingSetPasswordScreen"
-import { OnBoardingStartScreen } from "./OnBoardingStartScreen"
+import { OnBoardingCreateAccountScreen } from "./OnBoardingCreateAccountScreen"
 import { OnBoardingSyncContactsScreen } from "./OnBoardingSyncContactsScreen"
 import { routes } from "constants"
+
+export const OnBoardingContext = React.createContext({
+  name: "",
+  contact: "",
+})
 
 interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 
 const OnBoardingNavigator = createStackNavigator(
   {
-    OnBoardingStart: { screen: OnBoardingStartScreen },
+    OnBoardingCreateAccount: { screen: OnBoardingCreateAccountScreen },
     OnBoardingCodeEntry: { screen: OnBoardingCodeEntryScreen },
     OnBoardingResendCode: { screen: OnBoardingResendCodeScreen },
     OnBoardingSetPassword: { screen: OnBoardingSetPasswordScreen },
@@ -22,7 +27,7 @@ const OnBoardingNavigator = createStackNavigator(
     OnBoardingSyncContacts: { screen: OnBoardingSyncContactsScreen },
   },
   {
-    initialRouteName: routes.OnBoarding.Start,
+    initialRouteName: routes.OnBoarding.CreateAccount,
     defaultNavigationOptions: {
       headerStyle: {
         backgroundColor: "#343997",
