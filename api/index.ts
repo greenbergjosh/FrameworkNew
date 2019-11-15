@@ -41,14 +41,26 @@ export interface GetGotErrorResponse extends GetGotResponse {
 export const getgotRequest = async <T extends GetGotSuccessResponse>(
   name: string,
   request: object = {},
-  token?: string
+  token?: string,
+  sid?: string
 ): Promise<T | GetGotErrorResponse> => {
-  const storedToken = await getgotStorage.get("authToken")
+  let storedToken: string
+  if (!sid && !token) {
+    token = await getgotStorage.get("authToken")
+  }
+  
   const body = {
-    i: { t: token || storedToken },
     p: {
       [name]: request,
-    },
+    }
+  }
+
+  if (token) {
+    body['i'] = { t: token }
+  }
+
+  if (sid) {
+    body['sid'] = sid
   }
 
   console.debug("Fetching", baseAddress, {
