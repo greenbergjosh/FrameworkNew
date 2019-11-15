@@ -13,7 +13,7 @@ module.exports = function(api) {
             "components": "./components",
             "hooks": "./hooks",
             "screens": "./screens",
-            "util": "./util/index.ts",
+            "constants": "./constants",
           },
         },
       ],
