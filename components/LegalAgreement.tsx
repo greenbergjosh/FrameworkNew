@@ -7,10 +7,10 @@ export const LegalAgreement: FunctionComponent<{}> = () => {
   return (
     <Flex justify="start">
       <Text style={styles.SmallCopy}>
-        You agree to the GetGot <Text style={styles.SmallCopyLink}>Terms of Service</Text> and{" "}
-        <Text style={styles.SmallCopyLink}>Privacy Policy</Text>, and{" "}
-        <Text style={styles.SmallCopyLink}>Cookie Policy</Text>. Others will be able to find you by email or
-        phone number when provided. <Text style={styles.SmallCopyLink}>Privacy Options</Text>.
+        You agree to the GetGot <Text style={styles.LinkText}>Terms of Service</Text> and{" "}
+        <Text style={styles.LinkText}>Privacy Policy</Text>, and{" "}
+        <Text style={styles.LinkText}>Cookie Policy</Text>. Others will be able to find you by email or
+        phone number when provided. <Text style={styles.LinkText}>Privacy Options</Text>.
       </Text>
     </Flex>
   )
