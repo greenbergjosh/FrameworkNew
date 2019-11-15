@@ -12,19 +12,21 @@ enum FontWeight {
 export const styles = {
   H1: {
     fontSize: 34,
-    lineHeight: 41,
+    lineHeight: 42,
     fontWeight: FontWeight.light,
   } as StyleProp<TextStyle>,
   H2: {
     fontSize: 24,
-    lineHeight: 41,
+    lineHeight: 30,
     fontWeight: FontWeight.light,
+    textAlign: "center",
   } as StyleProp<TextStyle>,
   H3: {
     fontSize: 17,
-    lineHeight: 18,
+    lineHeight: 22,
     fontWeight: FontWeight.regular,
     color: Colors.grey,
+    textAlign: "center",
   } as StyleProp<TextStyle>,
   LinkText: {
     fontSize: 14,

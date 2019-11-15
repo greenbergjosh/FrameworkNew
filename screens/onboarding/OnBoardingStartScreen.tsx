@@ -1,9 +1,9 @@
-import { Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
+import { Button, Flex, InputItem, Modal, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { Text, View } from "react-native"
-import { styles, routes } from "constants"
+import { routes, styles } from "constants"
 import { LegalAgreement } from "components/LegalAgreement"
 
 interface OnBoardingStartScreenProps extends NavigationSwitchScreenProps {}
@@ -11,6 +11,7 @@ interface OnBoardingStartScreenProps extends NavigationSwitchScreenProps {}
 export const OnBoardingStartScreen = (props: OnBoardingStartScreenProps) => {
   const [name, setName] = React.useState("")
   const [phoneOrEmail, setPhoneOrEmail] = React.useState("")
+  const [modalVisible, setModalVisible] = React.useState(false)
 
   const { navigate } = props.navigation
 
@@ -46,7 +47,7 @@ export const OnBoardingStartScreen = (props: OnBoardingStartScreenProps) => {
           type="primary"
           size="large"
           style={styles.Button}
-          onPress={() => navigate(routes.OnBoarding.CodeEntry)}>
+          onPress={() => setModalVisible(true)}>
           Sign Up
         </Button>
       </Flex>
@@ -60,6 +61,23 @@ export const OnBoardingStartScreen = (props: OnBoardingStartScreenProps) => {
           Log In
         </Button>
       </Flex>
+
+      <Modal
+        title="Verify Email"
+        transparent
+        onClose={() => {
+          setModalVisible(false)
+          navigate(routes.OnBoarding.CodeEntry)
+        }}
+        maskClosable
+        visible={modalVisible}
+        footer={[{ text: "OK" }]}>
+        <View style={{ paddingVertical: 20 }}>
+          <Text style={{ textAlign: "center" }}>
+            We&rsquo;ll email your verification code to sampleuser@domain.com
+          </Text>
+        </View>
+      </Modal>
     </View>
   )
 }
