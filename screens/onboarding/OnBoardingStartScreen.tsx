@@ -16,7 +16,7 @@ export const OnBoardingStartScreen = (props: OnBoardingStartScreenProps) => {
   const { navigate } = props.navigation
 
   return (
-    <View style={styles.View}>
+    <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
         <Text style={styles.H2}>Create your account</Text>

@@ -17,7 +17,7 @@ export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProp
   React.useMemo(() => setEmail("sample@domain.com"), [])
 
   return (
-    <View style={styles.View}>
+    <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
         <Text style={styles.H2}>Resend verification code</Text>

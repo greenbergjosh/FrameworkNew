@@ -12,14 +12,13 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
   const { navigate } = props.navigation
 
   return (
-    <View style={styles.View}>
+    <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
-      <Flex justify="center">
-        <Text style={styles.H2}>
-          Connect your address book to find people you may know on GetGot
-        </Text>
-      </Flex>
-      <WhiteSpace size="lg" />
+      <Text style={styles.H2}>Connect your address book to find people you may know on GetGot</Text>
+      <WhiteSpace size="xl" />
+      <WhiteSpace size="xl" />
+      <WhiteSpace size="xl" />
+      <WhiteSpace size="xl" />
       <Flex justify="center">
         <Button
           type="primary"
@@ -29,7 +28,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           Sync Contacts
         </Button>
       </Flex>
-      <WhiteSpace size="lg" />
+      <WhiteSpace size="md" />
       <Flex justify="center">
         <Button
           type="ghost"
@@ -39,13 +38,12 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           Not Now
         </Button>
       </Flex>
-      <Flex justify="start">
-        <Text style={styles.SmallCopy}>
-          Contacts from your address book will be uploaded to GetGot on an ongoing basis. You can
-          turn of syncing and remove previously uploaded contacts in your settings.{" "}
-          <Text style={styles.SmallCopyLink}>Learn More</Text>.
-        </Text>
-      </Flex>
+      <WhiteSpace size="xl" />
+      <Text style={styles.SmallCopy}>
+        Contacts from your address book will be uploaded to GetGot on an ongoing basis. You can turn
+        of syncing and remove previously uploaded contacts in your settings.
+        <Text style={styles.LinkText}>Learn More</Text>.
+      </Text>
 
       <Modal
         title="&ldquo;GetGot&rdquo; Would Like to Access&nbsp;Your&nbsp;Contacts"

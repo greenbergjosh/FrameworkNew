@@ -16,7 +16,7 @@ export const OnBoardingCodeEntryScreen = (props: OnBoardingCodeEntryScreenProps)
   const phone = "+1 (888) 555-1212"
 
   return (
-    <View style={styles.View}>
+    <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
         <Text style={styles.H2}>We sent you a code</Text>
