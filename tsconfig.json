@@ -14,9 +14,10 @@
       "api": ["./api"],
       "assets": ["./assets"],
       "components": ["./components"],
+      "constants": ["./constants"],
       "hooks": ["./hooks"],
-      "screens": ["./screens"],
-      "constants": ["./constants"]
+      "providers": ["./providers"],
+      "screens": ["./screens"]
     }
   }
 }

@@ -2,11 +2,37 @@ import { Button, Card, Flex, SearchBar, Tag, WhiteSpace } from "@ant-design/reac
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "../../components/HeaderLogo"
-import { ScrollView, Text, View, ViewStyle } from "react-native"
-import { Colors, FontWeights, styles } from "constants"
-import { TagStyle } from "@ant-design/react-native/es/tag/style"
+import { ScrollView, Text, View } from "react-native"
+import { FontWeights, styles } from "constants"
 
 interface OnBoardingSelectInterestsScreenProps extends NavigationSwitchScreenProps {}
+
+const interests = {
+  Sports: ["Football", "Baseball", "Soccer", "Basketball"],
+  Arts: ["Music", "Painting", "Reading", "Woodworking"],
+  Culture: ["Traveling", "Cooking"],
+  Technology: ["Blogging", "Gaming"],
+  Community: ["Volunteer Work", "Community Involvement"],
+}
+
+const Interests = () => (
+  <>
+    {Object.keys(interests).map((topic) => (
+      <Card key={topic} full style={{ borderTopWidth: 0 }}>
+        <WhiteSpace size="sm" />
+        <Text style={[styles.H3, { fontWeight: FontWeights.bold }]}>{topic}</Text>
+        <WhiteSpace size="lg" />
+        <Flex direction="row" wrap="wrap">
+          {interests[topic].map((interest) => (
+            <Tag key={interest} style={{ marginRight: 10, marginBottom: 10 }}>
+              {interest}
+            </Tag>
+          ))}
+        </Flex>
+      </Card>
+    ))}
+  </>
+)
 
 export class OnBoardingSelectInterestsScreen extends React.Component<
   OnBoardingSelectInterestsScreenProps
@@ -29,20 +55,7 @@ export class OnBoardingSelectInterestsScreen extends React.Component<
           <WhiteSpace size="sm" />
         </View>
         <ScrollView style={[styles.View, { marginTop: 0, flex: 1 }]}>
-          <Card full style={{ borderTopWidth: 0 }}>
-            <Text style={[styles.H3, { fontWeight: FontWeights.bold }]}>Topic Name</Text>
-            <WhiteSpace size="lg" />
-            <Flex direction="row" wrap="wrap">
-              <Tag style={{ marginRight: 10, marginBottom: 10 }}>Topic One</Tag>
-              <Tag selected style={{ marginRight: 10, marginBottom: 10 }}>
-                Topic Two
-              </Tag>
-              <Tag style={{ marginRight: 10, marginBottom: 10 }}>Topic Three</Tag>
-              <Tag style={{ marginRight: 10, marginBottom: 10 }}>Topic Four</Tag>
-              <Tag style={{ marginRight: 10, marginBottom: 10 }}>Topic Five</Tag>
-            </Flex>
-            <WhiteSpace size="sm" />
-          </Card>
+          <Interests />
         </ScrollView>
         <View style={styles.BottomButtonBar}>
           <Button
