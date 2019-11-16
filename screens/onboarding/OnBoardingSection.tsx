@@ -10,11 +10,6 @@ import { OnBoardingCreateAccountScreen } from "./OnBoardingCreateAccountScreen"
 import { OnBoardingSyncContactsScreen } from "./OnBoardingSyncContactsScreen"
 import { routes } from "constants"
 
-export const OnBoardingContext = React.createContext({
-  name: "",
-  contact: "",
-})
-
 interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 
 const OnBoardingNavigator = createStackNavigator(
