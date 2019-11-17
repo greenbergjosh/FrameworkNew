@@ -6,7 +6,12 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "../../../components/HeaderTitle"
 import { usePromotionsContext } from "../../../providers/promotions-context-provider"
 
-export interface PromotionsCampaignTemplateScreenProps extends NavigationTabScreenProps {}
+interface PromotionsCampaignTemplateScreenNavigationParams {
+  promotionId: GUID
+}
+
+export interface PromotionsCampaignTemplateScreenProps
+  extends NavigationTabScreenProps<PromotionsCampaignTemplateScreenNavigationParams> {}
 
 interface ImageItem {
   id: string
@@ -16,7 +21,12 @@ interface ImageItem {
 export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTemplateScreenProps) => {
   const promotionsContext = usePromotionsContext()
   const [searchText, setSearchText] = React.useState("")
-  const { navigate } = props.navigation
+  const {
+    navigate,
+    state: {
+      params: { promotionId },
+    },
+  } = props.navigation
 
   const { campaignTemplatesBySearchKey, campaignTemplatesById } = promotionsContext
   const onLongPressImage = React.useCallback(
@@ -39,7 +49,11 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
           {
             text: "Select Template",
             onPress: () => {
-              navigate("PromotionsCampaign", { draft: true, template: pressedTemplate })
+              navigate("PromotionsCampaign", {
+                draft: true,
+                promotionId,
+                template: pressedTemplate,
+              })
             },
           },
         ]
@@ -50,7 +64,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   const onPressImage = React.useCallback(
     ({ id }) => {
       const pressedTemplate = campaignTemplatesById[id]
-      navigate("PromotionsCampaign", { draft: true, template: pressedTemplate })
+      navigate("PromotionsCampaign", { draft: true, promotionId, template: pressedTemplate })
     },
     [campaignTemplatesById, navigate]
   )

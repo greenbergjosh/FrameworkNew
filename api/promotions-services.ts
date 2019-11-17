@@ -26,9 +26,9 @@ export interface Campaign {
   messageBodyTemplateId: GUID | null
   messageBodyTemplateName: string | null
   messageBodyTemplateUrl: string | null
-  templateParts: string
+  templateParts: { [key: string]: unknown }
   approvedByAdvertiser: string // Should this have tighter typing?
-  subject: string | null
+  subject: string
   created: ISO8601String
   feedImage: Base64EncodedImage
   send_date: ISO8601String
@@ -54,11 +54,15 @@ export interface PromotionsResponse extends GetGotSuccessResponse {
 }
 
 export interface PromotionCampaignsResponse extends GetGotSuccessResponse {
-  campaigns: Campaign[]
+  results: Campaign[]
 }
 
 export interface CampaignTemplatesResponse extends GetGotSuccessResponse {
   results: CampaignTemplate[]
+}
+
+export interface CreateCampaignResponse extends GetGotSuccessResponse {
+  result: Campaign
 }
 
 export const loadPromotions = async (
@@ -148,6 +152,30 @@ export const loadCampaignTemplates = async (
 
       return acc
     }, [])
+  }
+  return response
+}
+
+export const createCampaign = async (campaign: Partial<Campaign>) => {
+  const preparedCampaign = { ...campaign, templateParts: JSON.stringify(campaign.templateParts) }
+  const response = await getgotRequest<CreateCampaignResponse>("createCampaign", preparedCampaign)
+
+  if (response.r === 0) {
+    // On success responses, we need to parse the template JSON
+    try {
+      response.result.templateParts = JSON.parse(
+        (response.result.templateParts as unknown) as string
+      )
+    } catch (ex) {
+      console.warn(
+        "promotions-services",
+        "Create Campaign succeeded, but the templateParts were unparseable",
+        response,
+        preparedCampaign,
+        ex
+      )
+      response.result.templateParts = {}
+    }
   }
   return response
 }

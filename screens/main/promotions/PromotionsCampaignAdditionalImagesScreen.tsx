@@ -4,8 +4,9 @@ import React from "react"
 import { Text, View } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { CampaignTemplate, createCampaign } from "../../../api/promotions-services"
 import { HeaderTitle } from "../../../components/HeaderTitle"
-import { PromotionsCampaignScreenState } from "./PromotionsCampaignScreen"
+import { InfluencerTokens } from "./PromotionsCampaignScreen"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
@@ -13,9 +14,11 @@ import {
 
 const placeholderImage = require("../../../assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
-  images?: string[]
   draft: boolean
-  influencerTokens: PromotionsCampaignScreenState["influencerTokens"]
+  images?: string[]
+  influencerTokens: InfluencerTokens
+  promotionId: GUID
+  template: CampaignTemplate
 }
 
 export interface PromotionsCampaignAdditionalImagesScreenProps
@@ -137,6 +140,8 @@ interface HeaderRightDoneButtonProps {
 const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
   const { showActionSheetWithOptions } = useActionSheet()
 
+  const { images, influencerTokens, promotionId, template } = navigation.state.params
+
   const options = ["Save Draft", "Publish", "Cancel"]
   const cancelButtonIndex = 2
 
@@ -149,6 +154,58 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
             cancelButtonIndex,
           },
           async (buttonIndex) => {
+            if (buttonIndex === 0) {
+              // Save Draft
+            } else if (buttonIndex === 1) {
+              // Publish Campaign
+              const publishResult = await createCampaign({
+                promotionId,
+                feedImage: images[0],
+                templateParts: influencerTokens,
+                messageBodyTemplateId: template.id,
+                messageBodyTemplateName: "",
+                messageBodyTemplateUrl: "",
+                approvedByAdvertiser: "0",
+                subject: "Campaign",
+              })
+
+              if (publishResult.r === 0) {
+                Modal.alert(
+                  "Campaign Created",
+                  <Text>The campaign was successfully created! Copy the sharing link?</Text>,
+                  [
+                    {
+                      text: "Later",
+                      style: "cancel",
+                      onPress: () => {
+                        navigation.navigate("PromotionsCampaignList", { promotionId })
+                      },
+                    },
+
+                    {
+                      text: "Copy",
+                      onPress: () => {
+                        setTimeout(() => {
+                          Modal.alert("Link Copied!", null, [
+                            {
+                              text: "OK",
+                              onPress: () => {
+                                navigation.navigate("PromotionsCampaignList", { promotionId })
+                              },
+                            },
+                          ])
+                        }, 1000)
+                      },
+                    },
+                  ]
+                )
+              } else {
+                alert(
+                  `Failed to publish campaign (Code ${publishResult.r}): ${publishResult.error}`
+                )
+              }
+            }
+
             const action =
               buttonIndex === 0 ? "saveDraft" : buttonIndex === 1 ? "publish" : "cancel"
             console.log("Create Campaign", navigation.state, action)

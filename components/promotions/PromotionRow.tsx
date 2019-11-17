@@ -11,6 +11,7 @@ import Collapsible from "react-native-collapsible"
 import { TouchableHighlight } from "react-native-gesture-handler"
 import { Campaign, Promotion } from "../../api/promotions-services"
 import { PromotionsScreenProps } from "../../screens/main/promotions/PromotionsScreen"
+import { CampaignRow } from "../campaigns/CampaignRow"
 import { Empty } from "../Empty"
 
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
@@ -92,7 +93,14 @@ export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: Promo
       <Collapsible collapsed={isCollapsed}>
         <View style={{ backgroundColor: "#F8F8F8EB" }}>
           {campaigns.length > 0 ? (
-            <Text>{JSON.stringify(campaigns, null, 2)}</Text>
+            campaigns.map((campaign) => (
+              <CampaignRow
+                key={campaign.id}
+                navigate={navigate}
+                campaign={campaign}
+                promotion={promotion}
+              />
+            ))
           ) : (
             <Empty
               message={

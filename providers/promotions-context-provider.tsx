@@ -52,7 +52,7 @@ type PromotionsAction =
   | LoadCampaignTemplatesAction
 
 const reducer = (state: PromotionsState, action: PromotionsAction) => {
-  console.log({ state, action })
+  console.log("promotions-context-provider#reducer", { state, action })
   switch (action.type) {
     case "loadPromotions":
       return {
@@ -61,11 +61,15 @@ const reducer = (state: PromotionsState, action: PromotionsAction) => {
         lastLoadPromotions: new Date().toISOString(),
       }
     case "loadPromotionCampaigns":
+      console.log("promotions-context-provider#reducer", "loadPromotionCampaigns", {
+        ...state.promotionCampaigns,
+        [action.payload.promotionId]: action.payload.response.results,
+      })
       return {
         ...state,
         promotionCampaigns: {
           ...state.promotionCampaigns,
-          [action.payload.promotionId]: action.payload.response.campaigns,
+          [action.payload.promotionId]: action.payload.response.results,
         },
       }
     case "loadCampaignTemplates":

@@ -10,11 +10,13 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { CampaignTemplate } from "../../../api/promotions-services"
 import { HeaderTitle } from "../../../components/HeaderTitle"
 import { TextAreaModal } from "../../../components/TextAreaModal"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "../../../hooks/useActionSheetTakeSelectPhoto"
 
-export interface PromotionsCampaignScreenState {
-  influencerTokens: { [key: string]: any }
-  promptKey: string | null
-  showMessageModal: boolean
+export interface InfluencerTokens {
+  [key: string]: unknown
 }
 
 interface ActionMessage {
@@ -26,203 +28,176 @@ interface PromotionsCampaignNavigationParams {
   draft: boolean
   template: CampaignTemplate
 
-  influencerTokens: PromotionsCampaignScreenState["influencerTokens"]
+  influencerTokens: InfluencerTokens
+  requiredTokens: string[]
+  promotionId: GUID
 }
 
 interface PromotionsCampaignScreenProps
   extends NavigationTabScreenProps<PromotionsCampaignNavigationParams>,
     ActionSheetProps {}
-class _PromotionsCampaignScreen extends React.Component<
-  PromotionsCampaignScreenProps,
-  PromotionsCampaignScreenState
-> {
-  static navigationOptions = ({ navigation }) => {
-    console.log("PromotionsCampaignScreen#navigationOptions", navigation.state)
-    const { draft, influencerTokens = {} } = navigation.state
-      .params as PromotionsCampaignNavigationParams
-    return {
-      headerLeft:
-        draft &&
-        (() => (
-          <Button
-            onPress={() => navigation.goBack("PromotionsCampaignList")}
-            style={{ backgroundColor: "#343997", borderWidth: 0 }}>
-            <Text style={{ color: "#fff" }}>Cancel</Text>
-          </Button>
-        )),
-      headerTitle: () => <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
-      headerRight: () => (
-        <Button
-          onPress={() => {
-            console.log("Parameters", navigation.params)
-            navigation.navigate("PromotionsCampaignAdditionalImages", { draft, influencerTokens })
-          }}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
-          <Text style={{ fontWeight: "bold", color: "#fff" }}>Next</Text>
-        </Button>
-      ),
-    }
-  }
+export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) => {
+  const getgotWebTemplate: React.RefObject<WebView> = React.useRef(null)
+  const [showMessageModal, setShowMessageModal] = React.useState(false)
+  const [promptKey, setPromptKey] = React.useState<string>(null)
 
-  getgotWebTemplate: WebView
-  state = {
-    showMessageModal: false,
-    promptKey: null,
-    influencerTokens: {},
-  }
+  const { draft, template, influencerTokens = {} } = props.navigation.state.params
+  const setInfluencerToken = React.useCallback(
+    (value, tokenKey?: string) => {
+      props.navigation.setParams({
+        influencerTokens: {
+          ...influencerTokens,
+          [tokenKey || promptKey]: value,
+        },
+      })
+    },
+    [influencerTokens, promptKey, props.navigation]
+  )
 
-  promptSelectPhoto = async (promptKey) => {
-    // Same interface as https://facebook.github.io/react-native/docs/actionsheetios.html
-    const options = ["Take Photo...", "Select from Library...", "Cancel"]
-    const cancelButtonIndex = 2
-    const neededPermissions = {
-      0: [Permissions.CAMERA_ROLL, Permissions.CAMERA],
-      1: [Permissions.CAMERA_ROLL],
-    }
+  const setRequiredTokens = React.useCallback(
+    (requiredTokens: string[]) => {
+      props.navigation.setParams({
+        requiredTokens,
+      })
+    },
+    [influencerTokens, promptKey, props.navigation]
+  )
 
-    this.props.showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex,
-      },
-      async (buttonIndex) => {
-        // Do something here depending on the button index selected
+  const showPhotoPrompt = useActionSheetTakeSelectPhoto(
+    (imageResult, promptKey: string = "photo") => {
+      if (imageResult.status === PhotoSelectStatus.PERMISSION_NOT_GRANTED) {
+        alert("Sorry, GetGot needs your permission to enable selecting this photo!")
+        setPromptKey(null)
+      } else if (imageResult.status === PhotoSelectStatus.SUCCESS) {
+        const imageBase64 = imageResult.base64
 
-        if (Constants.platform.ios) {
-          const { status } = await Permissions.askAsync(...neededPermissions[buttonIndex])
-          if (status !== "granted") {
-            alert("Sorry, GetGot needs your permission to enable selecting this photo!")
-            this.setState({
-              promptKey: null,
-            })
+        setShowMessageModal(false)
+        setInfluencerToken(imageBase64, promptKey)
+        setPromptKey(null)
 
-            return
-          }
-        }
-
-        const action =
-          buttonIndex === 0
-            ? "launchCameraAsync"
-            : buttonIndex === 1
-            ? "launchImageLibraryAsync"
-            : ""
-
-        if (!action) {
-          this.setState({
-            promptKey: null,
-          })
-          return
-        }
-
-        const imageResult = await ImagePicker[action]({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          base64: true,
-        })
-
-        if (imageResult.cancelled === false) {
-          const { influencerTokens } = this.state
-          const imageBase64 = (imageResult as any).base64
-
-          this.setState({
-            showMessageModal: false,
-            promptKey: null,
-            influencerTokens: {
-              ...influencerTokens,
-              [promptKey]: imageBase64,
-            },
-          })
-          this.props.navigation.setParams({
-            influencerTokens: {
-              ...influencerTokens,
-              [promptKey]: imageBase64,
-            },
-          })
-
-          this.getgotWebTemplate.injectJavaScript(
+        if (getgotWebTemplate.current) {
+          getgotWebTemplate.current.injectJavaScript(
             `
-              window.loadedPhoto(\`${imageBase64}\`${promptKey ? `, \`${promptKey}\`` : ""}); 
-              true;
-              `
+          window.loadedPhoto(\`${imageBase64}\`${promptKey ? `, \`${promptKey}\`` : ""}); 
+          true;
+          `
           )
         }
       }
-    )
-  }
+    }
+  )
 
-  handlers = {
-    selectPhoto: async ({ propertyName }, showActionSheetWithOptions) => {
-      this.promptSelectPhoto(propertyName)
-    },
-    editText: ({ propertyName }) => {
-      this.setState({ showMessageModal: true, promptKey: propertyName })
-    },
-    test: () => {
-      alert("Test!")
-    },
-  }
+  const handlers = React.useMemo(
+    () => ({
+      selectPhoto: async ({ propertyName }) => {
+        showPhotoPrompt(propertyName)
+      },
+      selectVideo: async ({ propertyName, url }) => {
+        alert(`Selected video - ${propertyName}:${url}`)
+        setInfluencerToken(url, propertyName)
+      },
+      editText: ({ propertyName }) => {
+        setShowMessageModal(true)
+        setPromptKey(propertyName)
+      },
+      setRequiredTokens: ({ requiredTokens }) => {
+        setRequiredTokens(requiredTokens)
+      },
+      test: () => {
+        alert("Test!")
+      },
+    }),
+    [showPhotoPrompt]
+  )
 
-  render() {
-    const { draft, template } = this.props.navigation.state.params
-    const { influencerTokens, promptKey, showMessageModal } = this.state
-    return (
-      <>
-        <TextAreaModal
-          initialValue={influencerTokens[promptKey]}
-          onCancel={() => this.setState({ showMessageModal: false })}
-          onOK={(message) => {
-            this.setState({
-              showMessageModal: false,
-              influencerTokens: { ...influencerTokens, [this.state.promptKey]: message },
-            })
-            this.props.navigation.setParams({
-              influencerTokens: { ...influencerTokens, [this.state.promptKey]: message },
-            })
+  const renderedWebView = React.useMemo(
+    () => (
+      <WebView
+        ref={getgotWebTemplate}
+        injectedJavaScript={`${initializeGetGotInterface.toString()}; initializeGetGotInterface(); 
+  
+  setTimeout(() => window.setTemplate(\`${template.template.html}\`), 10); `}
+        source={{
+          uri: `http://ec2-35-170-186-135.compute-1.amazonaws.com/?&templateId=${
+            template.id
+          }&randomSeed=${Math.round(Math.random() * 4000)}`,
+        }}
+        onMessage={(event) => {
+          const message: ActionMessage = JSON.parse(event.nativeEvent.data)
+          handlers[message.action](message.payload)
+        }}
+      />
+    ),
+    []
+  )
 
-            this.getgotWebTemplate.injectJavaScript(
-              `
+  return (
+    <>
+      <TextAreaModal
+        initialValue={influencerTokens[promptKey] as string}
+        onCancel={() => setShowMessageModal(false)}
+        onOK={(message) => {
+          setShowMessageModal(false)
+          setInfluencerToken(message)
+
+          getgotWebTemplate.current.injectJavaScript(
+            `
               window.editedText(\`${message}\`${promptKey ? ", `" + promptKey + "`" : ""}); 
               true;
               `
-            )
-          }}
-          title={promptKey}
-          visible={showMessageModal}
-        />
-        <WebView
-          ref={(ref) => (this.getgotWebTemplate = ref)}
-          nativeConfig={{ props: { webContentsDebuggingEnabled: true } }}
-          injectedJavaScript={`${initializeGetGotInterface.toString()}; initializeGetGotInterface(); window.setTemplate(\`${
-            template.template.html
-          }\`);`}
-          source={{
-            uri: `http://ec2-35-170-186-135.compute-1.amazonaws.com/?templateId=${
-              template.id
-            }&randomSeed=${Math.round(Math.random() * 4000)}`,
-          }}
-          onMessage={(event) => {
-            const message: ActionMessage = JSON.parse(event.nativeEvent.data)
-            this.handlers[message.action](message.payload, this.props.showActionSheetWithOptions)
-          }}
-        />
-      </>
-    )
-  }
+          )
+          setPromptKey(null)
+        }}
+        title={promptKey}
+        visible={showMessageModal}
+      />
+      {renderedWebView}
+      {/* <WebView
+        ref={getgotWebTemplate}
+        injectedJavaScript={`${initializeGetGotInterface.toString()}; initializeGetGotInterface(); 
+        
+        setTimeout(() => window.setTemplate(\`${
+          template.template.html
+        }\`), 10); alert("Javascript Injected")`}
+        source={{
+          uri: `http://ec2-35-170-186-135.compute-1.amazonaws.com/?templateId=${
+            template.id
+          }&randomSeed=${Math.round(Math.random() * 4000)}`,
+        }}
+        onMessage={(event) => {
+          const message: ActionMessage = JSON.parse(event.nativeEvent.data)
+          handlers[message.action](message.payload)
+        }}
+      /> */}
+    </>
+  )
 }
 
 function initializeGetGotInterface() {
   // @ts-ignore
   window.GetGotInterface = {
-    selectPhoto(propertyName: string | null) {
+    selectPhoto(propertyName: string) {
       // @ts-ignore
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ action: "selectPhoto", payload: { propertyName } })
+      )
+    },
+    selectVideo(propertyName: string, url: string) {
+      // @ts-ignore
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ action: "selectVideo", payload: { propertyName, url } })
       )
     },
     editText(propertyName: string | null) {
       // @ts-ignore
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ action: "editText", payload: { propertyName } })
+      )
+    },
+    setRequiredTokens(requiredTokens: string[]) {
+      // @ts-ignore
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ action: "setRequiredTokens", payload: { requiredTokens } })
       )
     },
     test() {
@@ -234,4 +209,36 @@ function initializeGetGotInterface() {
   console.info("GetGotInterface has been initialized!")
 }
 
-export const PromotionsCampaignScreen = connectActionSheet(_PromotionsCampaignScreen)
+PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
+  console.log("PromotionsCampaignScreen#navigationOptions", navigation.state)
+  const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
+    .state.params as PromotionsCampaignNavigationParams
+  return {
+    headerLeft:
+      draft &&
+      (() => (
+        <Button
+          onPress={() => navigation.goBack("PromotionsCampaignList")}
+          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          <Text style={{ color: "#fff" }}>Cancel</Text>
+        </Button>
+      )),
+    headerTitle: () => <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
+    headerRight: () => (
+      <Button
+        disabled={!requiredTokens.every((token) => token in influencerTokens)}
+        onPress={() => {
+          console.log("Parameters", navigation.params)
+          navigation.navigate("PromotionsCampaignAdditionalImages", {
+            draft,
+            influencerTokens,
+            promotionId,
+            template,
+          })
+        }}
+        style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+        <Text style={{ fontWeight: "bold", color: "#fff" }}>Next</Text>
+      </Button>
+    ),
+  }
+}

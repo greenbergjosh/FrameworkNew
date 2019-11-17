@@ -2,6 +2,7 @@ import { useActionSheet } from "@expo/react-native-action-sheet"
 import Constants from "expo-constants"
 import * as ImagePicker from "expo-image-picker"
 import * as Permissions from "expo-permissions"
+import React from "react"
 
 export enum PhotoSelectStatus {
   PERMISSION_NOT_GRANTED,
@@ -12,6 +13,7 @@ export enum PhotoSelectStatus {
 interface PhotoSelectResultSuccessful {
   status: PhotoSelectStatus.SUCCESS
   image: string
+  base64: string // BASE64 encoded image
 }
 
 interface PhotoSelectResultUnsuccessful {
@@ -19,7 +21,7 @@ interface PhotoSelectResultUnsuccessful {
 }
 
 export type PhotoSelectResult = PhotoSelectResultSuccessful | PhotoSelectResultUnsuccessful
-export type PhotoSelectCallback = (result: PhotoSelectResult) => void
+export type PhotoSelectCallback = (result: PhotoSelectResult, ...passthroughArgs: unknown[]) => void
 
 export const useActionSheetTakeSelectPhoto = (callback: PhotoSelectCallback) => {
   const { showActionSheetWithOptions } = useActionSheet()
@@ -32,46 +34,69 @@ export const useActionSheetTakeSelectPhoto = (callback: PhotoSelectCallback) => 
     1: [Permissions.CAMERA_ROLL],
   }
 
-  return () =>
-    showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex,
-      },
-      async (buttonIndex) => {
-        if (Constants.platform.ios) {
-          const { status } = await Permissions.askAsync(...neededPermissions[buttonIndex])
-          if (status !== "granted") {
-            alert("Sorry, GetGot needs your permission to enable selecting this photo!")
-            return callback({ status: PhotoSelectStatus.PERMISSION_NOT_GRANTED })
+  return React.useCallback(
+    (...passthroughArgs) =>
+      showActionSheetWithOptions(
+        {
+          options,
+          cancelButtonIndex,
+        },
+        async (buttonIndex) => {
+          if (Constants.platform.ios) {
+            const { status } = await Permissions.askAsync(...neededPermissions[buttonIndex])
+            if (status !== "granted") {
+              alert("Sorry, GetGot needs your permission to enable selecting this photo!")
+              return callback(
+                { status: PhotoSelectStatus.PERMISSION_NOT_GRANTED },
+                ...passthroughArgs
+              )
+            }
+          }
+
+          const action =
+            buttonIndex === 0
+              ? "launchCameraAsync"
+              : buttonIndex === 1
+              ? "launchImageLibraryAsync"
+              : ""
+
+          if (!action) {
+            return callback({ status: PhotoSelectStatus.CANCELED }, ...passthroughArgs)
+          }
+
+          const imageResult = await ImagePicker[action]({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            base64: true,
+          })
+          if (imageResult.cancelled === true) {
+            return callback({ status: PhotoSelectStatus.CANCELED }, ...passthroughArgs)
+          } else if (imageResult.cancelled === false) {
+            // @ts-ignore The ImagePickerResult does not properly declare the .base64 property
+            const imageBase64 = imageResult.base64
+
+            const extension = imageResult.uri.substr(imageResult.uri.lastIndexOf(".")).toLowerCase()
+
+            const imageType =
+              extension === ".jpg" || extension === ".jpeg" || extension === ".jpe"
+                ? "image/jpeg"
+                : extension === ".png"
+                ? "image/png"
+                : extension === ".gif"
+                ? "image/gif"
+                : "image"
+
+            return callback(
+              {
+                status: PhotoSelectStatus.SUCCESS,
+                image: imageResult.uri,
+                base64: `data:${imageType};base64,${imageBase64}`,
+              },
+              ...passthroughArgs
+            )
           }
         }
-
-        const action =
-          buttonIndex === 0
-            ? "launchCameraAsync"
-            : buttonIndex === 1
-            ? "launchImageLibraryAsync"
-            : ""
-
-        if (!action) {
-          return callback({ status: PhotoSelectStatus.CANCELED })
-        }
-
-        const imageResult = await ImagePicker[action]({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          base64: true,
-        })
-        if (imageResult.cancelled === true) {
-          return callback({ status: PhotoSelectStatus.CANCELED })
-        } else if (imageResult.cancelled === false) {
-          // @ts-ignore The ImagePickerResult does not properly declare the .base64 property
-          const imageBase64 = imageResult.base64
-          const { base64, ...result2 } = imageResult as any
-          console.log("ImagePicker Result", result2)
-          return callback({ status: PhotoSelectStatus.SUCCESS, image: imageResult.uri })
-        }
-      }
-    )
+      ),
+    [callback, options, cancelButtonIndex, neededPermissions]
+  )
 }

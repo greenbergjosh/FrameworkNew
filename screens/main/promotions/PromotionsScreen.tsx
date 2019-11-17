@@ -7,7 +7,6 @@ import {
 import React from "react"
 import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { loadPromotionCampaigns } from "../../../api/promotions-services"
 import { HeaderTitle } from "../../../components/HeaderTitle"
 import { PromotionRow } from "../../../components/promotions/PromotionRow"
 import { usePromotionsContext } from "../../../providers/promotions-context-provider"
@@ -24,7 +23,7 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
 
   const promotions = promotionsContext.results
 
-  console.log("PromotionsScreen", { promotions })
+  console.log("PromotionsScreen", { promotions, campaigns: promotionsContext.promotionCampaigns })
 
   const { navigate } = props.navigation
   return (
@@ -44,7 +43,7 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
                 // If there's no data
                 !promotionsContext.promotionCampaigns[promotion.id] &&
                 // Load the campaigns for this promotion
-                loadPromotionCampaigns(promotion.id)
+                promotionsContext.loadPromotionCampaigns(promotion.id)
               }
               promotion={promotion}
             />
