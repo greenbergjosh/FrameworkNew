@@ -98,6 +98,11 @@ namespace SimpleImportExport
             return (isMatch, fileDate, filePath, additionalFields);
         }
 
+        protected string CombineUrl(Func<string, string> modifier, params string[] list)
+        {
+            return list.Select(i => modifier(i)).Where(i => !i.IsNullOrWhitespace()).Join("/");
+        }
+
         protected string CombineUrl(params string[] list) => list.Select(i => i?.Trim('/')).Where(i => !i.IsNullOrWhitespace()).Join("/");
     }
 }
