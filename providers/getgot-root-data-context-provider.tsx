@@ -4,12 +4,14 @@ import { AuthContextProvider } from "./auth-context-provider"
 import { FeedContextProvider } from "./feed-context-provider"
 import { OnBoardingContextProvider } from "./onboarding-context-provider"
 import { PromotionsContextProvider } from "./promotions-context-provider"
+import { ProfileContextProvider } from "./profile-context-provider"
 
 const providers: { [key: string]: ReactComponentLike } = {
   AuthContextProvider,
   FeedContextProvider,
   PromotionsContextProvider,
   OnBoardingContextProvider,
+  ProfileContextProvider,
 }
 
 export const GetGotRootDataContextProvider = (props: { children: JSX.Element }) =>

@@ -4,12 +4,61 @@ import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { Text, View } from "react-native"
 import { routes, styles } from "constants"
+import { useProfileContext, Contact } from "providers/profile-context-provider"
+import * as Contacts from "expo-contacts"
+import { Contact as ExpoContactType } from "expo-contacts/build/Contacts"
+import * as Permissions from "expo-permissions"
 
 interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
 export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreenProps) => {
   const [modalVisible, setModalVisible] = React.useState(false)
+  const [error, setError] = React.useState()
+  const [isWaiting, setWaiting] = React.useState(false)
+
   const { navigate } = props.navigation
+  const profileContext = useProfileContext()
+
+  async function syncContacts() {
+    setError(null)
+    const { status, expires, permissions } = await Permissions.askAsync(Permissions.CONTACTS)
+    if (status !== "granted") {
+      alert("Contacts were not imported")
+      return
+    }
+    const { data } = await Contacts.getContactsAsync({
+      fields: [Contacts.Fields.Emails],
+    })
+    if (data.length <= 0) {
+      // User has no contacts
+      return
+    }
+    setWaiting(true)
+    try {
+      // Convert Expo Contacts to GetGot Contacts
+      // TODO: better way to do this...
+      const contacts: Contact[] = data.map((mobileContact) => {
+        return {
+          fname: mobileContact.firstName || null,
+          lname: mobileContact.lastName || null,
+          phone: (mobileContact.phoneNumbers && mobileContact.phoneNumbers[0].number) || null,
+          email: (mobileContact.emails && mobileContact.emails[0].email) || null,
+          dob: null,
+          gender: null,
+        }
+      })
+
+      const response = await profileContext.syncContacts(contacts)
+      if (response.r !== 0) {
+        setError(response.error)
+      } else {
+        navigate(routes.Home.HomeFeed)
+      }
+      setWaiting(false)
+    } catch (ex) {
+      setWaiting(false)
+    }
+  }
 
   return (
     <View style={styles.ViewContainer}>
@@ -20,13 +69,10 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
       <Flex justify="center" direction="column">
-        <Button
-          type="primary"
-          size="large"
-          style={styles.Button}
-          onPress={() => setModalVisible(true)}>
+        <Button type="primary" size="large" style={styles.Button} onPress={syncContacts}>
           Sync Contacts
         </Button>
+        {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
         <WhiteSpace size="md" />
         <Button
           type="ghost"

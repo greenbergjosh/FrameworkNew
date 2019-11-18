@@ -2256,6 +2256,13 @@ expo-constants@~7.0.0:
   dependencies:
     ua-parser-js "^0.7.19"
 
+expo-contacts@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/expo-contacts/-/expo-contacts-7.0.0.tgz#f29972fd5394fd549dcf64102e79e02dc661228c"
+  integrity sha512-Du1tJpw4I/sVpAA27CpSYFk4gxOXOAMYv7XxbuO6XJdM0uFKOawheAPkv+9NkOTw1VQVpqYQdhdx67xCTfkckA==
+  dependencies:
+    uuid-js "^0.7.5"
+
 expo-file-system@~7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/expo-file-system/-/expo-file-system-7.0.0.tgz#ac98233b18774cce299fffd9451f08f21b116564"
@@ -2292,7 +2299,7 @@ expo-location@~7.0.0:
   dependencies:
     invariant "^2.2.4"
 
-expo-permissions@~7.0.0:
+expo-permissions@^7.0.0, expo-permissions@~7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/expo-permissions/-/expo-permissions-7.0.0.tgz#f4135c3cf8e49c673a9a714459a1eb2b40fe2092"
   integrity sha512-C+qyVz+pdZO4YpVR2HSC3gsBZg0Qb8brCFgzmDmWcAtgrOiHClaLPdhI2XtQuGh8ubXcKPUGZp++UCEGiG0Jxg==
