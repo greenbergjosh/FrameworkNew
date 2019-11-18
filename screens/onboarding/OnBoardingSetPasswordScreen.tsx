@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  Button,
-  Flex,
-  InputItem,
-  WhiteSpace
-  } from "@ant-design/react-native"
+import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { LegalAgreement } from "components/LegalAgreement"
 import { routes, styles } from "constants"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
@@ -28,11 +22,9 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
   ) : (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
-      <Flex justify="center">
+      <Flex justify="center" direction="column">
         <Text style={styles.H2}>Set your password</Text>
-      </Flex>
-      <WhiteSpace size="lg" />
-      <Flex justify="center">
+        <WhiteSpace size="lg" />
         <Text style={styles.H3}>Make sure it&rsquo;s 6 characters or more.</Text>
       </Flex>
       <WhiteSpace size="lg" />

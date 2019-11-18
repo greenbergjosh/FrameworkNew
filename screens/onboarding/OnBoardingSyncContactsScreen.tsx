@@ -19,7 +19,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
-      <Flex justify="center">
+      <Flex justify="center" direction="column">
         <Button
           type="primary"
           size="large"
@@ -27,9 +27,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           onPress={() => setModalVisible(true)}>
           Sync Contacts
         </Button>
-      </Flex>
-      <WhiteSpace size="md" />
-      <Flex justify="center">
+        <WhiteSpace size="md" />
         <Button
           type="ghost"
           size="large"

@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  Button,
-  Flex,
-  InputItem,
-  WhiteSpace
-  } from "@ant-design/react-native"
+import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { HeaderLogo } from "components/HeaderLogo"
 import { routes, styles } from "constants"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
@@ -28,14 +22,10 @@ export const OnBoardingCodeEntryScreen = (props: OnBoardingCodeEntryScreenProps)
   ) : (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
-      <Flex justify="center">
+      <Flex justify="center" direction="column">
         <Text style={styles.H2}>We sent you a code</Text>
-      </Flex>
-      <WhiteSpace size="lg" />
-      <Flex justify="center">
+        <WhiteSpace size="lg" />
         <Text style={styles.H3}>Enter it below to verify</Text>
-      </Flex>
-      <Flex justify="center">
         <Text style={styles.H3}>{onBoardingContext.contact}</Text>
       </Flex>
       <WhiteSpace size="lg" />

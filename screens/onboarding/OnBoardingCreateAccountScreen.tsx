@@ -55,7 +55,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
       <WhiteSpace size="lg" />
       <LegalAgreement />
       <WhiteSpace size="lg" />
-      <Flex justify="center">
+      <Flex justify="center" direction="column">
         <Button
           type="primary"
           size="large"
@@ -63,10 +63,9 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
           onPress={() => setModalVisible(true)}>
           Sign Up
         </Button>
-      </Flex>
-      <WhiteSpace size="lg" />
-      <Text>If you already have an account</Text>
-      <Flex justify="center">
+        <WhiteSpace size="xl" />
+        <WhiteSpace size="xl" />
+        <Text style={[styles.Body, { textAlign: "center" }]}>Already have an account?</Text>
         <Button
           type="ghost"
           size="large"
