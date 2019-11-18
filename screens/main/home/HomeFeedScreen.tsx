@@ -7,35 +7,32 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { useAuthContext } from "providers/auth-context-provider"
 import { useFeedContext } from "providers/feed-context-provider"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
-import { Colors, styles } from "constants"
-
-const fpoImage =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQMAAADCCAMAAAB6zFdcAAAANlBMVEXf39+goKDi4uKdnZ2np6e4uLjU1NSamprOzs7KysrExMTj4+PBwcHc3NyoqKiioqKwsLC0tLSjj0KtAAADSklEQVR4nO2b2WKqMBBAA0EjAkL//2fLIMuAigsXeh3OebAVQiWnM9kkrihcITih0HRvhzPqZ/Nb+6IuHA6P3riW27/XnR7KTI/oGxofvHfLo3PdBcM9uQnXgzeHYZcQBzgAAAAAAACAeZg34kDAAQAAaOgXcCDgAAcCDgCgg/YABwIOcCDgAAcCDnAg4AAHAg5wIOAABwIOAABAQ7+AAwEHOBBwgAMBBzgAAIAx9As4EFZ3EC9n7VtcnfywmG+P1TgJfiHh+NeVWEic+GghNhwsCILagTfhoPq8LdjCwdrtjTjwp+zTLiHzVhykH3dvMQ6sOIiuDorj2zhrDs7hXUpnzsHb44QkxsHFsIMy8sFH4akTiQO3hYO1uePA+0Ndq+Jc+nkNjYPIqINj21X+7MaBnzjoFbjsMiuhywUTc6aRA3/I+pNFeOYgtulA1Si77MpB3DtQ4+b4MJcMdh1E2kG+TwdejUj+kzjYfIzkU3WyVFUukwcODI4Tkz4Z4lSFgf85edMOnB4fdJ1jfNSVDmk2WX417CDyVZHVDYREgY6DOizCXhzUUyZf5edDOfqv+yqbrsNvNmf6gzhoqjyZL/mQumkgbDZf+CMHE8prlxmPuoadOWhSYRoIF+O5MCVcl55HgWBsHck9jYO2tB48b+ZgbV5cT6zaMcNRJYOh+cIrDvoBdKaSwZyDeMaB96EvrpJhPw588FU6tEpqaWknDuqhUi1AfxtZTxr81g42+871jgMfqtRNHrlSyWBovvDAQSMgu71gSAZjDtyNA58UdwQ43TMYcnB/zpQ8vCCftgdGHTxWoJJhMwdrczcX6kR4fEWfDKYdzEWBmjxadjCvoA6EVoK5dSQ1RnqioJdgbg0lzrvnlp8qaNJBClpz4E55yyufmEnps61ckNpcNyK8uBtBijXFbTn47HIbDhY9p2rneeX89DFWHNRzRMV4j0q43eaijwUb/cLifSw4sLCWVpXJQspvd8D+xu/g2/dP/gtwgAMBBzgQcIADAQc4EHCAAwEHOBBwgAMAABhDv4ADAQc4EHCAAwEHOACAAdoDHAg4wIGAAxwIOMCBgAMcAMAA7QEOBBzgQMABDgQcAAAAAADAI5gv4AAAen4BZVMuzK5mga8AAAAASUVORK5CYII="
+import { Colors, styles, ImageUris } from "constants"
 
 const mockInfluencers = [
   {
     userId: 1,
     name: "loren",
-    avatar: fpoImage,
+    avatar: ImageUris.placeholder,
     description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
     source: "From your contacts",
-    feedImages: [fpoImage, fpoImage, fpoImage],
+    feedImages: [ImageUris.placeholder, ImageUris.placeholder, ImageUris.placeholder],
   },
   {
     userId: 2,
     name: "snoren",
-    avatar: fpoImage,
+    avatar: ImageUris.placeholder,
     description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
     source: "From your contacts",
-    feedImages: [fpoImage, fpoImage, fpoImage],
+    feedImages: [ImageUris.placeholder, ImageUris.placeholder, ImageUris.placeholder],
   },
   {
     userId: 3,
     name: "boren",
-    avatar: fpoImage,
+    avatar: ImageUris.placeholder,
     description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
     source: "From your contacts",
-    feedImages: [fpoImage, fpoImage, fpoImage],
+    feedImages: [ImageUris.placeholder, ImageUris.placeholder, ImageUris.placeholder],
   },
 ]
 
@@ -96,8 +93,8 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           <Text style={[styles.H3, { textAlign: "center" }]}>
             When you follow people, you&rsquo;ll see the products and services that they recommend.
           </Text>
-          <WhiteSpace size="xl"/>
-          <WhiteSpace size="xl"/>
+          <WhiteSpace size="xl" />
+          <WhiteSpace size="xl" />
           <Carousel afterChange={this.onHorizontalSelectedIndexChange}>
             {mockInfluencers.map((influencer) => (
               <View style={carouselStyles.carouselHorizontal} key={influencer.userId}>
