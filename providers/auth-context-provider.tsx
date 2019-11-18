@@ -1,7 +1,7 @@
-import { LoginData, LoginResponse, loadProfile } from "../api/auth-services"
 import React, { useContext } from "react"
-
+import { loadProfile, LoginData, LoginResponse } from "../api/auth-services"
 import { getgotStorage } from "../storage/getgotStorage"
+
 
 export interface AuthState extends Partial<LoginData> {
   // Local Properties
@@ -74,10 +74,6 @@ export const AuthContextProvider = ({ ...props }) => {
     ;(async () => {
       if (!state.authenticated) {
         const storedToken = await getgotStorage.get("authToken")
-        // console.debug(
-        //   "auth-context-provider",
-        //   storedToken ? `There's a stored token ${storedToken}` : "There is no stored token"
-        // )
         if (storedToken) {
           dispatch({ type: "isAuthenticating", payload: true })
           try {

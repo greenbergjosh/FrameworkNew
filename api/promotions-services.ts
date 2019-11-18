@@ -87,11 +87,6 @@ export const loadPromotions = async (
         if (promotion.payload && promotion.payload.name) {
           acc.push(promotion)
         } else {
-          // console.warn(
-          //   "promotions-services",
-          //   "Promotion excluded from result for lacking 'payload.name'",
-          //   promotion
-          // )
         }
       } catch (ex) {
         console.warn(

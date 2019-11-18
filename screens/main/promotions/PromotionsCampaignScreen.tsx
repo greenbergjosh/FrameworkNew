@@ -247,7 +247,6 @@ function initializeGetGotInterface() {
 }
 
 PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
-  console.log("PromotionsCampaignScreen#navigationOptions", navigation.state)
   const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
   return {
@@ -266,7 +265,6 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
         <Button
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
           onPress={() => {
-            console.log("Parameters", navigation.params)
             navigation.navigate("PromotionsCampaignAdditionalImages", {
               draft,
               influencerTokens,

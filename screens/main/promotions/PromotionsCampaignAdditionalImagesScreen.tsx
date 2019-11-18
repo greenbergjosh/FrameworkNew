@@ -115,7 +115,6 @@ export const PromotionsCampaignAdditionalImagesScreen = (
 }
 
 PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) => {
-  console.log("PromotionsCampaignScreen#navigationOptions", navigation.state)
   const { draft, influencerTokens } = navigation.state
     .params as PromotionsCampaignAdditionalImagesScreenNavigationParams
   return {
@@ -209,7 +208,6 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
 
             const action =
               buttonIndex === 0 ? "saveDraft" : buttonIndex === 1 ? "publish" : "cancel"
-            console.log("Create Campaign", navigation.state, action)
           }
         )
       }}

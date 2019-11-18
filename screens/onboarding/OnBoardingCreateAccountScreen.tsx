@@ -1,10 +1,18 @@
-import { Button, Flex, InputItem, Modal, WhiteSpace } from "@ant-design/react-native"
-import React from "react"
-import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
-import { Text, View } from "react-native"
-import { routes, styles } from "constants"
 import { LegalAgreement } from "components/LegalAgreement"
+import { routes, styles } from "constants"
+import { useOnBoardingContext } from "providers/onboarding-context-provider"
+import React from "react"
+import { Text, View } from "react-native"
+import { NavigationSwitchScreenProps } from "react-navigation"
+import {
+  Button,
+  Flex,
+  InputItem,
+  Modal,
+  WhiteSpace,
+  ActivityIndicator,
+} from "@ant-design/react-native"
 
 interface OnBoardingCreateAccountScreenProps extends NavigationSwitchScreenProps {}
 
@@ -12,10 +20,15 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
   const [name, setName] = React.useState("")
   const [phoneOrEmail, setPhoneOrEmail] = React.useState("")
   const [modalVisible, setModalVisible] = React.useState(false)
+  const [isWaiting, setWaiting] = React.useState(false)
 
   const { navigate } = props.navigation
 
-  return (
+  const onBoardingContext = useOnBoardingContext()
+
+  return isWaiting ? (
+    <ActivityIndicator animating toast size="large" text="Loading..." />
+  ) : (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
@@ -27,7 +40,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
         name="name"
         value={name}
         placeholder="Name"
-        onChange={(e) => setName(e)}
+        onChange={setName}
         clearButtonMode="always"
       />
       <WhiteSpace size="lg" />
@@ -36,7 +49,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
         name="phoneOrEmail"
         value={phoneOrEmail}
         placeholder="Phone or email"
-        onChange={(e) => setPhoneOrEmail(e)}
+        onChange={setPhoneOrEmail}
         clearButtonMode="always"
       />
       <WhiteSpace size="lg" />
@@ -52,6 +65,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
         </Button>
       </Flex>
       <WhiteSpace size="lg" />
+      <Text>If you already have an account</Text>
       <Flex justify="center">
         <Button
           type="ghost"
@@ -65,16 +79,24 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
       <Modal
         title="Verify Email"
         transparent
-        onClose={() => {
+        onClose={async () => {
           setModalVisible(false)
-          navigate(routes.OnBoarding.CodeEntry)
+          setWaiting(true)
+          try {
+            await onBoardingContext.startNewAccount(name, phoneOrEmail)
+            setWaiting(false)
+            navigate(routes.OnBoarding.CodeEntry)
+          } catch (ex) {
+            setWaiting(false)
+          }
         }}
         maskClosable
         visible={modalVisible}
         footer={[{ text: "OK" }]}>
         <View style={{ paddingVertical: 20 }}>
           <Text style={{ textAlign: "center" }}>
-            We&rsquo;ll email your verification code to sampleuser@domain.com
+            We&rsquo;ll {isEmail(phoneOrEmail) ? "email" : "SMS"} your verification code to{" "}
+            {phoneOrEmail}
           </Text>
         </View>
       </Modal>
@@ -86,4 +108,9 @@ OnBoardingCreateAccountScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
   }
+}
+
+const isEmail = (phoneOrEmail: string) => {
+  // Simple check to determine if this is an email
+  return phoneOrEmail.includes("@")
 }

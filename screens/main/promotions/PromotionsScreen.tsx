@@ -23,8 +23,6 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
 
   const promotions = promotionsContext.results
 
-  console.log("PromotionsScreen", { promotions, campaigns: promotionsContext.campaignsByPromotion })
-
   const { navigate } = props.navigation
   return (
     <>

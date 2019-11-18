@@ -25,18 +25,20 @@ export const setBaseAddress = (address: string) => {
   baseAddress = address
 }
 
-export interface GetGotResponse {
-  r: keyof (typeof resultCodes)
+export interface IGetGotResponse {
+  r: keyof typeof resultCodes
 }
 
-export interface GetGotSuccessResponse extends GetGotResponse {
+export interface GetGotSuccessResponse extends IGetGotResponse {
   r: 0
 }
 
-export interface GetGotErrorResponse extends GetGotResponse {
-  r: Exclude<GetGotResponse["r"], 0>
+export interface GetGotErrorResponse extends IGetGotResponse {
+  r: Exclude<IGetGotResponse["r"], 0>
   error: string
 }
+
+export type GetGotResponse = GetGotSuccessResponse | GetGotErrorResponse
 
 export const getgotRequest = async <T extends GetGotSuccessResponse>(
   name: string,
@@ -48,19 +50,19 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
   if (!sid && !token) {
     token = await getgotStorage.get("authToken")
   }
-  
+
   const body = {
     p: {
       [name]: request,
-    }
+    },
   }
 
   if (token) {
-    body['i'] = { t: token }
+    body["i"] = { t: token }
   }
 
   if (sid) {
-    body['sid'] = sid
+    body["sid"] = sid
   }
 
   console.debug("Fetching", baseAddress, {

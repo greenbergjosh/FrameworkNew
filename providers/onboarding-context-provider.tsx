@@ -1,4 +1,6 @@
+import { GetGotResponse } from "api"
 import React, { useContext } from "react"
+import { getgotStorage } from "../storage/getgotStorage"
 import {
   createUser,
   CreateUserResponse,
@@ -7,7 +9,6 @@ import {
   submitCode,
   SubmitCodeResponse,
 } from "api/onboarding-services"
-import { getgotStorage } from "../storage/getgotStorage"
 
 /*************************************************************
  * API steps to create an account:
@@ -21,34 +22,34 @@ import { getgotStorage } from "../storage/getgotStorage"
 export interface OnBoardingState {
   name: string
   contact: string
-  code?: string
-  password?: string
+  code?: string | null
+  password?: string | null
 }
 
 export interface OnBoardingContextType extends OnBoardingState {
   // State + Handlers
 
   // api sendCode
-  handleCreateAccount: (payload: SendCodeResponse) => void
+  startNewAccount: (name: string, contact: string) => Promise<GetGotResponse>
 
   // api submitCode
-  handleEnterCode: (payload: SubmitCodeResponse) => void
+  enterCode: (code: string) => Promise<GetGotResponse>
 
   // api sendCode
-  handleResendCode: (payload: SendCodeResponse) => void
+  resendCode: (contact: string) => Promise<GetGotResponse>
 
   // api createUser
-  handleSetPassword: (payload: CreateUserResponse) => void
+  finalizeCreateAccount: (password: string, device?: string) => Promise<GetGotResponse>
 }
 
-interface CreateAccountAction {
-  type: "createAccount"
-  payload: SendCodeResponse
+interface StartNewAccountAction {
+  type: "startNewAccount"
+  payload: { name: string; contact: string }
 }
 
 interface EnterCodeAction {
   type: "enterCode"
-  payload: SubmitCodeResponse
+  payload: { code: string }
 }
 
 interface ResendCodeAction {
@@ -56,20 +57,20 @@ interface ResendCodeAction {
   payload: SendCodeResponse
 }
 
-interface SetPasswordAction {
-  type: "setPassword"
+interface FinalizeCreateAccountAction {
+  type: "finalizeCreateAccount"
   payload: CreateUserResponse
 }
 
 type OnBoardingAction =
-  | CreateAccountAction
+  | StartNewAccountAction
   | EnterCodeAction
   | ResendCodeAction
-  | SetPasswordAction
+  | FinalizeCreateAccountAction
 
-const reducer = (state: OnBoardingContextType, action: OnBoardingAction) => {
+const reducer = (state: OnBoardingState, action: OnBoardingAction) => {
   switch (action.type) {
-    case "createAccount":
+    case "startNewAccount":
       return {
         ...state,
         ...action.payload,
@@ -77,17 +78,17 @@ const reducer = (state: OnBoardingContextType, action: OnBoardingAction) => {
     case "enterCode":
       return {
         ...state,
-        code: action.payload,
+        ...action.payload,
       }
     case "resendCode":
       return {
         ...state,
-        code: action.payload,
+        // code: action.payload,
       }
-    case "setPassword":
+    case "finalizeCreateAccount":
       return {
         ...state,
-        password: action.payload,
+        // password: action.payload,
       }
     default:
       return state
@@ -98,14 +99,14 @@ const initialState: OnBoardingState = { name: "", contact: "", code: null, passw
 
 const initialContext: OnBoardingContextType = {
   ...initialState,
-  handleCreateAccount: () => {},
-  handleEnterCode: () => {},
-  handleResendCode: () => {},
-  handleSetPassword: () => {},
+  startNewAccount: async () => ({} as GetGotResponse),
+  enterCode: async () => ({} as GetGotResponse),
+  resendCode: async () => ({} as GetGotResponse),
+  finalizeCreateAccount: async () => ({} as GetGotResponse),
 }
 
 const OnBoardingContext = React.createContext(initialContext)
-/*
+
 export const OnBoardingContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
 
@@ -113,10 +114,49 @@ export const OnBoardingContextProvider = ({ ...props }) => {
     <OnBoardingContext.Provider
       value={{
         ...state,
-        handleCreateAccount: (payload) => dispatch({ type: "createAccount", payload }),
-        handleEnterCode: (payload) => dispatch({ type: "enterCode", payload }),
-        handleResendCode: (payload) => dispatch({ type: "resendCode", payload }),
-        handleSetPassword: (payload) => dispatch({ type: "setPassword", payload }),
+
+        // -----====== ACTION CREATORS =====----- \\
+
+        startNewAccount: async (name: string, contact: string) => {
+          const response = await sendCode(contact)
+
+          if (response.r === 0) {
+            dispatch({ type: "startNewAccount", payload: { name, contact } })
+          } else {
+            console.error("Error sending code", { response, contact })
+            return response
+          }
+        },
+        enterCode: async (code: string) => {
+          const response = await submitCode(state.contact, code)
+
+          if (response.r === 0) {
+            dispatch({ type: "enterCode", payload: { code } })
+          } else {
+            console.error("Error entering code", { response, contact: state.contact, code })
+            return response
+          }
+        },
+        resendCode: async (contact: string) => {
+          const response = await sendCode(contact)
+
+          if (response.r === 0) {
+            dispatch({ type: "resendCode", payload: response })
+          } else {
+            console.error("Error resending code", { response, contact })
+          }
+          return response
+        },
+        finalizeCreateAccount: async (password: string, device: string = "test") => {
+          const response = await createUser(state.name, password, device, state.contact, state.code)
+
+          if (response.r === 0) {
+            dispatch({ type: "finalizeCreateAccount", payload: response })
+          } else {
+            console.error("Error finalizing account", response, state)
+          }
+          return response
+        },
       }}>
       {props.children}
     </OnBoardingContext.Provider>
@@ -124,4 +164,3 @@ export const OnBoardingContextProvider = ({ ...props }) => {
 }
 
 export const useOnBoardingContext = () => useContext(OnBoardingContext)
-*/

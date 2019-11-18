@@ -1,19 +1,31 @@
-import { Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
-import React from "react"
-import { NavigationSwitchScreenProps } from "react-navigation"
-import { HeaderLogo } from "components/HeaderLogo"
-import { Text, View } from "react-native"
-import { styles, routes } from "constants"
+import {
+  ActivityIndicator,
+  Button,
+  Flex,
+  InputItem,
+  WhiteSpace
+  } from "@ant-design/react-native"
 import { LegalAgreement } from "components/LegalAgreement"
+import { routes, styles } from "constants"
+import { useOnBoardingContext } from "providers/onboarding-context-provider"
+import React from "react"
+import { Text, View } from "react-native"
+import { NavigationSwitchScreenProps } from "react-navigation"
+import { HeaderLogo } from "../../components/HeaderLogo"
 
 interface OnBoardingSetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
 export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenProps) => {
   const [password, setPassword] = React.useState("")
+  const [error, setError] = React.useState()
+  const [isWaiting, setWaiting] = React.useState(false)
 
   const { navigate } = props.navigation
+  const onBoardingContext = useOnBoardingContext()
 
-  return (
+  return isWaiting ? (
+    <ActivityIndicator animating toast size="large" text="Loading..." />
+  ) : (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
@@ -29,9 +41,13 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
         name="password"
         value={password}
         placeholder="Password"
-        onChange={(e) => setPassword(e)}
+        onChange={(value) => {
+          setError(null)
+          setPassword(value)
+        }}
         clearButtonMode="always"
       />
+      {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
       <WhiteSpace size="lg" />
       <LegalAgreement />
       <WhiteSpace size="lg" />
@@ -40,7 +56,20 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
           type="primary"
           size="large"
           style={styles.Button}
-          onPress={() => navigate(routes.OnBoarding.SelectInterests)}>
+          onPress={async () => {
+            setWaiting(true)
+            try {
+              const response = await onBoardingContext.finalizeCreateAccount(password)
+              if (response.r !== 0) {
+                setError(response.error)
+              } else {
+                navigate(routes.OnBoarding.SelectInterests)
+              }
+              setWaiting(false)
+            } catch (ex) {
+              setWaiting(false)
+            }
+          }}>
           Save
         </Button>
       </Flex>

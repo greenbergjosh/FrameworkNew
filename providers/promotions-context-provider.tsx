@@ -28,9 +28,9 @@ export interface PromotionsState {
 
 export interface PromotionsContextType extends PromotionsState {
   // State + Handlers
-  loadPromotions: () => void
-  loadPromotionCampaigns: (promotionId: GUID) => void
-  loadCampaignTemplates: (searchText?: string) => void
+  loadPromotions: () => Promise<void>
+  loadPromotionCampaigns: (promotionId: GUID) => Promise<void>
+  loadCampaignTemplates: (searchText?: string) => Promise<void>
 }
 
 interface LoadPromotionsAction {
@@ -54,7 +54,7 @@ type PromotionsAction =
   | LoadCampaignTemplatesAction
 
 const reducer = (state: PromotionsState, action: PromotionsAction) => {
-  console.log("promotions-context-provider#reducer", { state, action })
+
   switch (action.type) {
     case "loadPromotions":
       return {
@@ -123,9 +123,9 @@ const initialState: PromotionsState = {
 
 const initialContext: PromotionsContextType = {
   ...initialState,
-  loadPromotions: () => {},
-  loadPromotionCampaigns: (promotionId: GUID) => {},
-  loadCampaignTemplates: (searchText?: string) => {},
+  loadPromotions: async () => {},
+  loadPromotionCampaigns: async (promotionId: GUID) => {},
+  loadCampaignTemplates: async (searchText?: string) => {},
 }
 
 const PromotionsContext = React.createContext(initialContext)

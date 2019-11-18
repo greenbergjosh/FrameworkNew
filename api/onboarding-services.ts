@@ -1,4 +1,4 @@
-import { GetGotSuccessResponse, getgotRequest } from "./index"
+import { getgotRequest, GetGotSuccessResponse } from "./index"
 
 export interface SendCodeResponse extends GetGotSuccessResponse {}
 export interface SubmitCodeResponse extends GetGotSuccessResponse {}
