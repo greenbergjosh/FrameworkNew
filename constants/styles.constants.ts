@@ -1,8 +1,9 @@
-import { StyleProp, TextStyle, ViewStyle } from "react-native"
+import { ImageStyle, StyleProp, TextStyle, ViewStyle } from "react-native"
 import { ButtonStyles } from "@ant-design/react-native/es/button/style"
 
 export enum Colors {
   lightgrey = "#F8F8F8",
+  medgrey = "#D6D4CD",
   grey = "#707070",
   blue = "#007AFF",
 }
@@ -63,6 +64,13 @@ export const styles = {
     justifyContent: "space-between",
     backgroundColor: Colors.lightgrey,
   } as StyleProp<ViewStyle>,
+  Avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderColor: Colors.medgrey,
+    borderWidth: 1,
+  } as StyleProp<ImageStyle>,
 }
 
 export const combineStyles = (a, b) => ({ ...a, ...b })
