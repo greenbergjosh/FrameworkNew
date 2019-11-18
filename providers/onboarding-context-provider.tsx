@@ -1,6 +1,7 @@
 import { GetGotResponse } from "api"
 import React, { useContext } from "react"
 import { getgotStorage } from "../storage/getgotStorage"
+import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
 import {
   createUser,
   CreateUserResponse,
@@ -26,7 +27,7 @@ export interface OnBoardingState {
   password?: string | null
 }
 
-export interface OnBoardingContextType extends OnBoardingState {
+export interface OnBoardingContextType extends OnBoardingState, GetGotContextType {
   // State + Handlers
 
   // api sendCode
@@ -68,7 +69,7 @@ type OnBoardingAction =
   | ResendCodeAction
   | FinalizeCreateAccountAction
 
-const reducer = (state: OnBoardingState, action: OnBoardingAction) => {
+const reducer = (state: OnBoardingState, action: OnBoardingAction | GetGotResetAction) => {
   switch (action.type) {
     case "startNewAccount":
       return {
@@ -90,6 +91,8 @@ const reducer = (state: OnBoardingState, action: OnBoardingAction) => {
         ...state,
         // password: action.payload,
       }
+    case "reset":
+      return initialState
     default:
       return state
   }
@@ -103,6 +106,7 @@ const initialContext: OnBoardingContextType = {
   enterCode: async () => ({} as GetGotResponse),
   resendCode: async () => ({} as GetGotResponse),
   finalizeCreateAccount: async () => ({} as GetGotResponse),
+  reset: () => {},
 }
 
 const OnBoardingContext = React.createContext(initialContext)
@@ -156,6 +160,9 @@ export const OnBoardingContextProvider = ({ ...props }) => {
             console.error("Error finalizing account", response, state)
           }
           return response
+        },
+        reset: () => {
+          dispatch(getgotResetAction)
         },
       }}>
       {props.children}

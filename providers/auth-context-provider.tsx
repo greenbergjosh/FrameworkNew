@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { loadProfile, LoginData, LoginResponse } from "../api/auth-services"
 import { getgotStorage } from "../storage/getgotStorage"
-
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
 
 export interface AuthState extends Partial<LoginData> {
   // Local Properties
@@ -11,7 +11,7 @@ export interface AuthState extends Partial<LoginData> {
   // JSON Properties come from LoginData. All marked optional via Partial
 }
 
-export interface AuthContextType extends AuthState {
+export interface AuthContextType extends AuthState, GetGotContextType {
   // State + Handlers
   handleLogin: (payload: LoginResponse) => void
   handleLogout: () => void
@@ -33,7 +33,7 @@ interface SetIsAuthenticatingAction {
 
 type AuthAction = LoginAction | LogoutAction | SetIsAuthenticatingAction
 
-const reducer = (state: AuthContextType, action: AuthAction) => {
+const reducer = (state: AuthContextType, action: AuthAction | GetGotResetAction) => {
   switch (action.type) {
     case "isAuthenticating":
       return {
@@ -53,6 +53,11 @@ const reducer = (state: AuthContextType, action: AuthAction) => {
 
       // Clears the rest of the auth state and sets it back to default
       return initialState
+    case "reset":
+      getgotStorage.clear("authToken")
+
+      // Clears the rest of the auth state and sets it back to default
+      return initialState
     default:
       return state
   }
@@ -64,6 +69,7 @@ const initialContext: AuthContextType = {
   ...initialState,
   handleLogin: () => {},
   handleLogout: () => {},
+  reset: () => {},
 }
 
 const AuthContext = React.createContext(initialContext)
@@ -106,6 +112,7 @@ export const AuthContextProvider = ({ ...props }) => {
         ...state,
         handleLogin: (payload) => dispatch({ type: "login", payload }),
         handleLogout: () => dispatch({ type: "logout" }),
+        reset: () => dispatch(getgotResetAction),
       }}>
       {props.children}
     </AuthContext.Provider>

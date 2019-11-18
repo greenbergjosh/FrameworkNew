@@ -1,24 +1,46 @@
 import { ReactComponentLike } from "prop-types"
-import React from "react"
-import { AuthContextProvider } from "./auth-context-provider"
-import { FeedContextProvider } from "./feed-context-provider"
-import { OnBoardingContextProvider } from "./onboarding-context-provider"
-import { PromotionsContextProvider } from "./promotions-context-provider"
-import { ProfileContextProvider } from "./profile-context-provider"
+import React, { useContext } from "react"
+import { AuthContextProvider, useAuthContext } from "./auth-context-provider"
+import { FeedContextProvider, useFeedContext } from "./feed-context-provider"
+import { GetGotContextType, GetGotRootDataContextType } from "./getgot-context-type"
+import { OnBoardingContextProvider, useOnBoardingContext } from "./onboarding-context-provider"
+import { ProfileContextProvider, useProfileContext } from "./profile-context-provider"
+import { PromotionsContextProvider, usePromotionsContext } from "./promotions-context-provider"
 
-const providers: { [key: string]: ReactComponentLike } = {
-  AuthContextProvider,
-  FeedContextProvider,
-  PromotionsContextProvider,
-  OnBoardingContextProvider,
-  ProfileContextProvider,
+const providers: {
+  [key: string]: { provider: ReactComponentLike; hook: () => GetGotContextType }
+} = {
+  AuthContextProvider: { provider: AuthContextProvider, hook: useAuthContext },
+  FeedContextProvider: { provider: FeedContextProvider, hook: useFeedContext },
+  PromotionsContextProvider: { provider: PromotionsContextProvider, hook: usePromotionsContext },
+  OnBoardingContextProvider: { provider: OnBoardingContextProvider, hook: useOnBoardingContext },
+  ProfileContextProvider: { provider: ProfileContextProvider, hook: useProfileContext },
 }
 
-export const GetGotRootDataContextProvider = (props: { children: JSX.Element }) =>
+const initialContext: GetGotRootDataContextType = {
+  reset: () => {},
+}
+
+const GetGotRootDataContext = React.createContext(initialContext)
+
+export const GetGotRootDataContextProvider = (props: { children: JSX.Element }) => {
+  const dataContexts = Object.values(providers).map(({ hook }) => hook())
+
   // Given the providers map above, iterate over each and wrap each on around the next one
-  Object.values(providers)
-    .reverse()
-    .reduce(
-      (children, parentComponent) => React.createElement(parentComponent, {}, children),
-      props.children
-    )
+  return (
+    <GetGotRootDataContext.Provider
+      value={{
+        reset: () => dataContexts.forEach((dataContext) => dataContext.reset()),
+      }}>
+      {Object.values(providers)
+        .reverse()
+        .reduce(
+          (children, { provider: parentComponent }) =>
+            React.createElement(parentComponent, {}, children),
+          props.children
+        )}
+    </GetGotRootDataContext.Provider>
+  )
+}
+
+export const useGetGotRootDataContext = () => useContext(GetGotRootDataContext)

@@ -141,7 +141,6 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
         showPhotoPrompt(propertyName)
       },
       selectVideo: async ({ propertyName, url }) => {
-        alert(`Selected video - ${propertyName}:${url}`)
         setInfluencerToken(url, propertyName)
       },
       editText: ({ propertyName }) => {
@@ -167,7 +166,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
   setTimeout(() => {
     window.setTemplate(\`${template.template && template.template.html}\`)
     window.setTokenValues(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
-    alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
+    // alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
   }, 10); `}
         source={{
           uri:

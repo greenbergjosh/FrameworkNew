@@ -1,4 +1,5 @@
 import React, { useContext } from "react"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
 import {
   loadPromotions,
   Promotion,
@@ -26,7 +27,7 @@ export interface PromotionsState {
   results: Promotion[]
 }
 
-export interface PromotionsContextType extends PromotionsState {
+export interface PromotionsContextType extends PromotionsState, GetGotContextType {
   // State + Handlers
   loadPromotions: () => Promise<void>
   loadPromotionCampaigns: (promotionId: GUID) => Promise<void>
@@ -53,8 +54,7 @@ type PromotionsAction =
   | LoadPromotionCampaignsAction
   | LoadCampaignTemplatesAction
 
-const reducer = (state: PromotionsState, action: PromotionsAction) => {
-
+const reducer = (state: PromotionsState, action: PromotionsAction | GetGotResetAction) => {
   switch (action.type) {
     case "loadPromotions":
       return {
@@ -103,6 +103,8 @@ const reducer = (state: PromotionsState, action: PromotionsAction) => {
           [action.payload.searchText]: new Date().toISOString(),
         },
       }
+    case "reset":
+      return initialState
     default:
       return state
   }
@@ -126,10 +128,12 @@ const initialContext: PromotionsContextType = {
   loadPromotions: async () => {},
   loadPromotionCampaigns: async (promotionId: GUID) => {},
   loadCampaignTemplates: async (searchText?: string) => {},
+  reset: () => {},
 }
 
 const PromotionsContext = React.createContext(initialContext)
 
+// Provider is used by GetGotRootDataContextProvider
 export const PromotionsContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
   return (
@@ -165,6 +169,9 @@ export const PromotionsContextProvider = ({ ...props }) => {
           } else {
             console.error("Error loading Templates for Campaigns", { campaignTemplates })
           }
+        },
+        reset: () => {
+          dispatch(getgotResetAction)
         },
       }}>
       {props.children}
