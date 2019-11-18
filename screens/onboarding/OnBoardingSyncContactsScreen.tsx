@@ -49,12 +49,12 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
       })
 
       const response = await profileContext.syncContacts(contacts)
+      setWaiting(false)
       if (response.r !== 0) {
         setError(response.error)
       } else {
         navigate(routes.Home.HomeFeed)
       }
-      setWaiting(false)
     } catch (ex) {
       setWaiting(false)
     }
