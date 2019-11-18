@@ -1,7 +1,7 @@
 import { Button, Icon, Modal } from "@ant-design/react-native"
 import { useActionSheet } from "@expo/react-native-action-sheet"
 import React from "react"
-import { Text, View } from "react-native"
+import { Clipboard, Text, View } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { CampaignTemplate, createCampaign } from "../../../api/promotions-services"
@@ -185,6 +185,7 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
                     {
                       text: "Copy",
                       onPress: () => {
+                        Clipboard.setString(`https://getgotapp.com/c/${publishResult.result.id}`)
                         setTimeout(() => {
                           Modal.alert("Link Copied!", null, [
                             {

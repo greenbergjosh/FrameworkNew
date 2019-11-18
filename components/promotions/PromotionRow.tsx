@@ -17,13 +17,20 @@ import { Empty } from "../Empty"
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
 
 export interface PromotionRowProps {
+  alwaysExpanded: boolean
   campaigns?: Campaign[]
   navigate: PromotionsScreenProps["navigation"]["navigate"]
   onExpand: () => void
   promotion: Promotion
 }
 
-export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: PromotionRowProps) => {
+export const PromotionRow = ({
+  alwaysExpanded,
+  campaigns,
+  navigate,
+  onExpand,
+  promotion,
+}: PromotionRowProps) => {
   const [isCollapsed, setCollapsed] = React.useState(true)
   const navigateToCreateCampaign = React.useCallback(
     () => navigate("PromotionsCampaignTemplates", { promotionId: promotion.id }),
@@ -45,6 +52,7 @@ export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: Promo
         Line: { paddingRight: 0 },
       }}>
       <TouchableOpacity
+        disabled={alwaysExpanded}
         onPress={() => {
           onExpand && isCollapsed && onExpand()
           setCollapsed(!isCollapsed)
@@ -76,7 +84,9 @@ export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: Promo
             <Text style={{ color: "#707070" }}># active campaign(s)</Text>
             <WhiteSpace />
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <Icon name={isCollapsed ? "down" : "up"} color="#C7C7CC" size="xs" />
+              {!alwaysExpanded && (
+                <Icon name={isCollapsed ? "down" : "up"} color="#C7C7CC" size="xs" />
+              )}
             </View>
           </View>
           <View style={{ width: 90, flexDirection: "column", justifyContent: "space-between" }}>
@@ -90,7 +100,7 @@ export const PromotionRow = ({ navigate, promotion, campaigns, onExpand }: Promo
           </View>
         </View>
       </TouchableOpacity>
-      <Collapsible collapsed={isCollapsed}>
+      <Collapsible collapsed={!alwaysExpanded && isCollapsed}>
         <View style={{ backgroundColor: "#F8F8F8EB" }}>
           {campaigns.length > 0 ? (
             campaigns.map((campaign) => (

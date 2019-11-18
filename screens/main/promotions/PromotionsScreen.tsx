@@ -23,7 +23,7 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
 
   const promotions = promotionsContext.results
 
-  console.log("PromotionsScreen", { promotions, campaigns: promotionsContext.promotionCampaigns })
+  console.log("PromotionsScreen", { promotions, campaigns: promotionsContext.campaignsByPromotion })
 
   const { navigate } = props.navigation
   return (
@@ -37,11 +37,11 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
           {promotions.map((promotion) => (
             <PromotionRow
               key={promotion.id}
-              campaigns={promotionsContext.promotionCampaigns[promotion.id] || []}
+              campaigns={promotionsContext.campaignsByPromotion[promotion.id] || []}
               navigate={navigate}
               onExpand={() =>
                 // If there's no data
-                !promotionsContext.promotionCampaigns[promotion.id] &&
+                !promotionsContext.campaignsByPromotion[promotion.id] &&
                 // Load the campaigns for this promotion
                 promotionsContext.loadPromotionCampaigns(promotion.id)
               }

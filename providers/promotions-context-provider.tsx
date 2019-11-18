@@ -13,12 +13,14 @@ import {
 
 export interface PromotionsState {
   // Local Properties
+  campaignsById: { [campaignId: string /* GUID */]: Campaign }
+  campaignsByPromotion: { [promotionId: string /* GUID */]: Campaign[] }
   lastLoadPromotions: ISO8601String | null
-  promotionCampaigns: { [promotionId: string /* GUID */]: Campaign[] }
+  promotionsById: { [promotionId: string /* GUID */]: Promotion }
 
-  lastLoadCampaignTemplates: { [searchKey: string]: ISO8601String | null }
-  campaignTemplatesBySearchKey: { [searchKey: string]: CampaignTemplate[] }
   campaignTemplatesById: { [templateId: string /* GUID */]: CampaignTemplate }
+  campaignTemplatesBySearchKey: { [searchKey: string]: CampaignTemplate[] }
+  lastLoadCampaignTemplates: { [searchKey: string]: ISO8601String | null }
 
   // JSON Properties come from Responses
   results: Promotion[]
@@ -58,18 +60,28 @@ const reducer = (state: PromotionsState, action: PromotionsAction) => {
       return {
         ...state,
         ...action.payload,
+        promotionsById: {
+          ...state.promotionsById,
+          ...action.payload.results.reduce((acc, promotion) => {
+            acc[promotion.id] = promotion
+            return acc
+          }, {}),
+        },
         lastLoadPromotions: new Date().toISOString(),
       }
     case "loadPromotionCampaigns":
-      console.log("promotions-context-provider#reducer", "loadPromotionCampaigns", {
-        ...state.promotionCampaigns,
-        [action.payload.promotionId]: action.payload.response.results,
-      })
       return {
         ...state,
-        promotionCampaigns: {
-          ...state.promotionCampaigns,
+        campaignsByPromotion: {
+          ...state.campaignsByPromotion,
           [action.payload.promotionId]: action.payload.response.results,
+        },
+        campaignsById: {
+          ...state.campaignsById,
+          ...action.payload.response.results.reduce((acc, campaign) => {
+            acc[campaign.id] = campaign
+            return acc
+          }, {}),
         },
       }
     case "loadCampaignTemplates":
@@ -97,11 +109,14 @@ const reducer = (state: PromotionsState, action: PromotionsAction) => {
 }
 
 const initialState: PromotionsState = {
+  campaignsById: {},
+  campaignsByPromotion: {},
   lastLoadPromotions: null,
-  promotionCampaigns: {},
-  lastLoadCampaignTemplates: {},
+  promotionsById: {},
+
   campaignTemplatesBySearchKey: {},
   campaignTemplatesById: {},
+  lastLoadCampaignTemplates: {},
 
   results: [],
 }
