@@ -7,7 +7,7 @@ import { routes, styles } from "constants"
 import { useProfileContext } from "providers/profile-context-provider"
 import * as Contacts from "expo-contacts"
 import * as Permissions from "expo-permissions"
-import { expoContactTranslations } from "../../providers/model-translations/contacts"
+import { toContacts } from "../../providers/model-translations/contacts"
 
 interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
@@ -35,7 +35,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
     }
     setWaiting(true)
     try {
-      const contacts = expoContactTranslations.toContacts(data)
+      const contacts = toContacts(data)
       const response = await profileContext.syncContacts(contacts)
       setWaiting(false)
       if (response.r !== 0) {
