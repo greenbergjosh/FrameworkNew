@@ -1,7 +1,8 @@
 import { GetGotResponse } from "api"
+import { syncContacts, SyncContactsResponse } from "api/profile-services"
 import React, { useContext } from "react"
 import { getgotStorage } from "../storage/getgotStorage"
-import { syncContacts, SyncContactsResponse } from "api/profile-services"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
 
 export type Contact = {
   fname?: string | null
@@ -16,7 +17,7 @@ export interface ProfileState {
   contacts: Contact[]
 }
 
-export interface ProfileContextType extends ProfileState {
+export interface ProfileContextType extends ProfileState, GetGotContextType {
   // State + Handlers
   syncContacts: (contacts: Contact[]) => Promise<GetGotResponse>
 }
@@ -28,7 +29,7 @@ interface SyncContactsAction {
 
 type ProfileAction = SyncContactsAction
 
-const reducer = (state: ProfileState, action: ProfileAction) => {
+const reducer = (state: ProfileState, action: ProfileAction | GetGotResetAction) => {
   switch (action.type) {
     case "syncContacts":
       return {
@@ -45,6 +46,7 @@ const initialState: ProfileState = { contacts: [] }
 const initialContext: ProfileContextType = {
   ...initialState,
   syncContacts: async () => ({} as GetGotResponse),
+  reset: () => {},
 }
 
 const ProfileContext = React.createContext(initialContext)
@@ -68,6 +70,9 @@ export const ProfileContextProvider = ({ ...props }) => {
             console.error("Error syncing contacts", { response, contacts })
           }
           return response
+        },
+        reset: () => {
+          dispatch(getgotResetAction)
         },
       }}>
       {props.children}

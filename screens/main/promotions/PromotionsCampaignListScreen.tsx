@@ -36,11 +36,19 @@ export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreen
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
 
+  const campaigns = promotionsContext.campaignsByPromotion[promotionId]
+
+  React.useEffect(() => {
+    if (!campaigns) {
+      promotionsContext.loadPromotionCampaigns(promotionId)
+    }
+  }, [campaigns])
+
   return (
     <PromotionRow
       key={promotionId}
       alwaysExpanded
-      campaigns={promotionsContext.campaignsByPromotion[promotionId] || []}
+      campaigns={campaigns || []}
       navigate={navigate}
       promotion={promotion}
     />

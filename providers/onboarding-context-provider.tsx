@@ -2,6 +2,7 @@ import { GetGotResponse } from "api"
 import React, { useContext } from "react"
 import { getgotStorage } from "../storage/getgotStorage"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 import {
   createUser,
   CreateUserResponse,
@@ -20,14 +21,14 @@ import {
  * 4. login -- SetPasswordScreen (step B)
  */
 
-export interface OnBoardingState {
+export interface OnBoardingState extends LoadifyStateType<OnBoardingContextBaseType> {
   name: string
   contact: string
   code?: string | null
   password?: string | null
 }
 
-export interface OnBoardingContextType extends OnBoardingState, GetGotContextType {
+export interface OnBoardingContextBaseType extends GetGotContextType {
   // State + Handlers
 
   // api sendCode
@@ -42,26 +43,15 @@ export interface OnBoardingContextType extends OnBoardingState, GetGotContextTyp
   // api createUser
   finalizeCreateAccount: (password: string, device?: string) => Promise<GetGotResponse>
 }
+export interface OnBoardingContextType extends OnBoardingContextBaseType, OnBoardingState {}
 
-interface StartNewAccountAction {
-  type: "startNewAccount"
-  payload: { name: string; contact: string }
-}
+type StartNewAccountAction = FSA<"startNewAccount", { name: string; contact: string }>
 
-interface EnterCodeAction {
-  type: "enterCode"
-  payload: { code: string }
-}
+type EnterCodeAction = FSA<"enterCode", { code: string }>
 
-interface ResendCodeAction {
-  type: "resendCode"
-  payload: SendCodeResponse
-}
+type ResendCodeAction = FSA<"resendCode", SendCodeResponse>
 
-interface FinalizeCreateAccountAction {
-  type: "finalizeCreateAccount"
-  payload: CreateUserResponse
-}
+type FinalizeCreateAccountAction = FSA<"finalizeCreateAccount", CreateUserResponse>
 
 type OnBoardingAction =
   | StartNewAccountAction
@@ -69,45 +59,59 @@ type OnBoardingAction =
   | ResendCodeAction
   | FinalizeCreateAccountAction
 
-const reducer = (state: OnBoardingState, action: OnBoardingAction | GetGotResetAction) => {
-  switch (action.type) {
-    case "startNewAccount":
-      return {
-        ...state,
-        ...action.payload,
-      }
-    case "enterCode":
-      return {
-        ...state,
-        ...action.payload,
-      }
-    case "resendCode":
-      return {
-        ...state,
-        // code: action.payload,
-      }
-    case "finalizeCreateAccount":
-      return {
-        ...state,
-        // password: action.payload,
-      }
-    case "reset":
-      return initialState
-    default:
-      return state
+const reducer = loadifyReducer(
+  (state: OnBoardingState, action: OnBoardingAction | GetGotResetAction) => {
+    switch (action.type) {
+      case "startNewAccount":
+        return {
+          ...state,
+          ...action.payload,
+        }
+      case "enterCode":
+        return {
+          ...state,
+          ...action.payload,
+        }
+      case "resendCode":
+        return {
+          ...state,
+          // code: action.payload,
+        }
+      case "finalizeCreateAccount":
+        return {
+          ...state,
+          // password: action.payload,
+        }
+      case "reset":
+        return initialState
+      default:
+        return state
+    }
   }
+)
+
+const initialState: OnBoardingState = {
+  name: "",
+  contact: "",
+  code: null,
+  password: null,
+  loading: {
+    startNewAccount: {},
+    enterCode: {},
+    resendCode: {},
+    finalizeCreateAccount: {},
+    reset: {},
+  },
 }
 
-const initialState: OnBoardingState = { name: "", contact: "", code: null, password: null }
-
-const initialContext: OnBoardingContextType = {
+const initialContext: OnBoardingContextType = loadifyContext(() => {}, {
   ...initialState,
   startNewAccount: async () => ({} as GetGotResponse),
   enterCode: async () => ({} as GetGotResponse),
   resendCode: async () => ({} as GetGotResponse),
   finalizeCreateAccount: async () => ({} as GetGotResponse),
   reset: () => {},
-}
+})
 
 const OnBoardingContext = React.createContext(initialContext)
 
@@ -116,7 +120,7 @@ export const OnBoardingContextProvider = ({ ...props }) => {
 
   return (
     <OnBoardingContext.Provider
-      value={{
+      value={loadifyContext(dispatch, {
         ...state,
 
         // -----====== ACTION CREATORS =====----- \\
@@ -164,7 +168,7 @@ export const OnBoardingContextProvider = ({ ...props }) => {
         reset: () => {
           dispatch(getgotResetAction)
         },
-      }}>
+      })}>
       {props.children}
     </OnBoardingContext.Provider>
   )

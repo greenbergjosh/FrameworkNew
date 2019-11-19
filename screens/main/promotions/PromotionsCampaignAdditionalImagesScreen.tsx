@@ -1,4 +1,9 @@
-import { Button, Icon, Modal } from "@ant-design/react-native"
+import {
+  ActivityIndicator,
+  Button,
+  Icon,
+  Modal
+  } from "@ant-design/react-native"
 import { useActionSheet } from "@expo/react-native-action-sheet"
 import React from "react"
 import { Clipboard, Text, View } from "react-native"
@@ -48,7 +53,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
 
   const imagePrompt = useActionSheetTakeSelectPhoto((result) => {
     if (result.status === PhotoSelectStatus.SUCCESS) {
-      setParams({ images: [...(params.images || []), result.image] })
+      setParams({ images: [...(params.images || []), result.base64] })
     }
   })
 
@@ -138,6 +143,7 @@ interface HeaderRightDoneButtonProps {
 
 const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
   const { showActionSheetWithOptions } = useActionSheet()
+  const [workingText, setWorkingText] = React.useState<string | null>(null)
 
   const { images, influencerTokens, promotionId, template } = navigation.state.params
 
@@ -145,74 +151,76 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
   const cancelButtonIndex = 2
 
   return (
-    <Button
-      onPress={() => {
-        showActionSheetWithOptions(
-          {
-            options,
-            cancelButtonIndex,
-          },
-          async (buttonIndex) => {
-            if (buttonIndex === 0) {
-              // Save Draft
-            } else if (buttonIndex === 1) {
-              // Publish Campaign
-              const publishResult = await createCampaign({
-                promotionId,
-                feedImage: images[0],
-                templateParts: influencerTokens,
-                messageBodyTemplateId: template.id,
-                messageBodyTemplateName: "",
-                messageBodyTemplateUrl: "",
-                approvedByAdvertiser: "0",
-                subject: "Campaign",
-              })
+    <>
+      <ActivityIndicator animating={!!workingText} toast size="large" text={workingText} />
+      <Button
+        onPress={() => {
+          showActionSheetWithOptions(
+            {
+              options,
+              cancelButtonIndex,
+            },
+            async (buttonIndex) => {
+              if (buttonIndex === 0) {
+                // Save Draft
+              } else if (buttonIndex === 1) {
+                setWorkingText("Publishing...")
+                // Publish Campaign
+                const publishResult = await createCampaign({
+                  promotionId,
+                  feedImage: images[0],
+                  templateParts: influencerTokens,
+                  messageBodyTemplateId: template.id,
+                  messageBodyTemplateName: "",
+                  messageBodyTemplateUrl: "",
+                  approvedByAdvertiser: "0",
+                  subject: "Campaign",
+                })
+                setWorkingText(null)
 
-              if (publishResult.r === 0) {
-                Modal.alert(
-                  "Campaign Created",
-                  <Text>The campaign was successfully created! Copy the sharing link?</Text>,
-                  [
-                    {
-                      text: "Later",
-                      style: "cancel",
-                      onPress: () => {
-                        navigation.navigate("PromotionsCampaignList", { promotionId })
+                if (publishResult.r === 0) {
+                  Modal.alert(
+                    "Campaign Created",
+                    <Text>The campaign was successfully created! Copy the sharing link?</Text>,
+                    [
+                      {
+                        text: "Later",
+                        style: "cancel",
+                        onPress: () => {
+                          navigation.navigate("PromotionsCampaignList", { promotionId })
+                        },
                       },
-                    },
 
-                    {
-                      text: "Copy",
-                      onPress: () => {
-                        Clipboard.setString(`https://getgotapp.com/c/${publishResult.result.id}`)
-                        setTimeout(() => {
-                          Modal.alert("Link Copied!", null, [
-                            {
-                              text: "OK",
-                              onPress: () => {
-                                navigation.navigate("PromotionsCampaignList", { promotionId })
+                      {
+                        text: "Copy",
+                        onPress: () => {
+                          Clipboard.setString(`https://getgotapp.com/c/${publishResult.result.id}`)
+                          setTimeout(() => {
+                            Modal.alert("Link Copied!", null, [
+                              {
+                                text: "OK",
+                                onPress: () => {
+                                  navigation.navigate("PromotionsCampaignList", { promotionId })
+                                },
                               },
-                            },
-                          ])
-                        }, 1000)
+                            ])
+                          }, 1000)
+                        },
                       },
-                    },
-                  ]
-                )
-              } else {
-                alert(
-                  `Failed to publish campaign (Code ${publishResult.r}): ${publishResult.error}`
-                )
+                    ]
+                  )
+                } else {
+                  alert(
+                    `Failed to publish campaign (Code ${publishResult.r}): ${publishResult.error}`
+                  )
+                }
               }
             }
-
-            const action =
-              buttonIndex === 0 ? "saveDraft" : buttonIndex === 1 ? "publish" : "cancel"
-          }
-        )
-      }}
-      style={{ backgroundColor: "#343997", borderWidth: 0 }}>
-      <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
-    </Button>
+          )
+        }}
+        style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+        <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
+      </Button>
+    </>
   )
 }

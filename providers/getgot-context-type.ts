@@ -4,9 +4,7 @@ export interface GetGotContextType {
 
 export interface GetGotRootDataContextType extends GetGotContextType {}
 
-export interface GetGotResetAction {
-  type: "reset"
-}
+export type GetGotResetAction = FSA<"reset">
 
 export const getgotResetAction: GetGotResetAction = {
   type: "reset",

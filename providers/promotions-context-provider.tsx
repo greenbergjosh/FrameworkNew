@@ -1,5 +1,6 @@
 import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 import {
   loadPromotions,
   Promotion,
@@ -12,10 +13,11 @@ import {
   CampaignTemplatesResponse,
 } from "../api/promotions-services"
 
-export interface PromotionsState {
+export interface PromotionsState extends LoadifyStateType<PromotionsContextBaseType> {
   // Local Properties
   campaignsById: { [campaignId: string /* GUID */]: Campaign }
   campaignsByPromotion: { [promotionId: string /* GUID */]: Campaign[] }
+  lastLoadPromotionCampaigns: { [searchKey: string]: ISO8601String | null }
   lastLoadPromotions: ISO8601String | null
   promotionsById: { [promotionId: string /* GUID */]: Promotion }
 
@@ -27,92 +29,95 @@ export interface PromotionsState {
   results: Promotion[]
 }
 
-export interface PromotionsContextType extends PromotionsState, GetGotContextType {
+export interface PromotionsContextBaseType extends GetGotContextType {
   // State + Handlers
   loadPromotions: () => Promise<void>
   loadPromotionCampaigns: (promotionId: GUID) => Promise<void>
   loadCampaignTemplates: (searchText?: string) => Promise<void>
 }
+export interface PromotionsContextType extends PromotionsContextBaseType, PromotionsState {}
 
-interface LoadPromotionsAction {
-  type: "loadPromotions"
-  payload: PromotionsResponse
-}
-
-interface LoadPromotionCampaignsAction {
-  type: "loadPromotionCampaigns"
-  payload: { promotionId: GUID; response: PromotionCampaignsResponse }
-}
-
-interface LoadCampaignTemplatesAction {
-  type: "loadCampaignTemplates"
-  payload: { searchText: string; response: CampaignTemplatesResponse }
-}
+type LoadPromotionsAction = FSA<"loadPromotions", PromotionsResponse>
+type LoadPromotionCampaignsAction = FSA<
+  "loadPromotionCampaigns",
+  { promotionId: GUID; response: PromotionCampaignsResponse }
+>
+type LoadCampaignTemplatesAction = FSA<
+  "loadCampaignTemplates",
+  { searchText: string; response: CampaignTemplatesResponse }
+>
 
 type PromotionsAction =
   | LoadPromotionsAction
   | LoadPromotionCampaignsAction
   | LoadCampaignTemplatesAction
 
-const reducer = (state: PromotionsState, action: PromotionsAction | GetGotResetAction) => {
-  switch (action.type) {
-    case "loadPromotions":
-      return {
-        ...state,
-        ...action.payload,
-        promotionsById: {
-          ...state.promotionsById,
-          ...action.payload.results.reduce((acc, promotion) => {
-            acc[promotion.id] = promotion
-            return acc
-          }, {}),
-        },
-        lastLoadPromotions: new Date().toISOString(),
-      }
-    case "loadPromotionCampaigns":
-      return {
-        ...state,
-        campaignsByPromotion: {
-          ...state.campaignsByPromotion,
-          [action.payload.promotionId]: action.payload.response.results,
-        },
-        campaignsById: {
-          ...state.campaignsById,
-          ...action.payload.response.results.reduce((acc, campaign) => {
-            acc[campaign.id] = campaign
-            return acc
-          }, {}),
-        },
-      }
-    case "loadCampaignTemplates":
-      return {
-        ...state,
-        campaignTemplatesBySearchKey: {
-          ...state.campaignTemplatesBySearchKey,
-          [action.payload.searchText]: action.payload.response.results,
-        },
-        campaignTemplatesById: {
-          ...state.campaignTemplatesById,
-          ...action.payload.response.results.reduce((acc, template) => {
-            acc[template.id] = template
-            return acc
-          }, {}),
-        },
-        lastLoadCampaignTemplates: {
-          ...state.lastLoadCampaignTemplates,
-          [action.payload.searchText]: new Date().toISOString(),
-        },
-      }
-    case "reset":
-      return initialState
-    default:
-      return state
+const reducer = loadifyReducer(
+  (state: PromotionsState, action: PromotionsAction | GetGotResetAction) => {
+    switch (action.type) {
+      case "loadPromotions":
+        return {
+          ...state,
+          ...action.payload,
+          promotionsById: {
+            ...state.promotionsById,
+            ...action.payload.results.reduce((acc, promotion) => {
+              acc[promotion.id] = promotion
+              return acc
+            }, {}),
+          },
+          lastLoadPromotions: new Date().toISOString(),
+        }
+      case "loadPromotionCampaigns":
+        return {
+          ...state,
+          campaignsByPromotion: {
+            ...state.campaignsByPromotion,
+            [action.payload.promotionId]: action.payload.response.results,
+          },
+          campaignsById: {
+            ...state.campaignsById,
+            ...action.payload.response.results.reduce((acc, campaign) => {
+              acc[campaign.id] = campaign
+              return acc
+            }, {}),
+          },
+          lastLoadPromotionCampaigns: {
+            ...state.lastLoadPromotionCampaigns,
+            [action.payload.promotionId]: new Date().toISOString(),
+          },
+        }
+      case "loadCampaignTemplates":
+        return {
+          ...state,
+          campaignTemplatesBySearchKey: {
+            ...state.campaignTemplatesBySearchKey,
+            [action.payload.searchText]: action.payload.response.results,
+          },
+          campaignTemplatesById: {
+            ...state.campaignTemplatesById,
+            ...action.payload.response.results.reduce((acc, template) => {
+              acc[template.id] = template
+              return acc
+            }, {}),
+          },
+          lastLoadCampaignTemplates: {
+            ...state.lastLoadCampaignTemplates,
+            [action.payload.searchText]: new Date().toISOString(),
+          },
+        }
+      case "reset":
+        return initialState
+      default:
+        return state
+    }
   }
-}
+)
 
 const initialState: PromotionsState = {
   campaignsById: {},
   campaignsByPromotion: {},
+  lastLoadPromotionCampaigns: {},
   lastLoadPromotions: null,
   promotionsById: {},
 
@@ -121,15 +126,22 @@ const initialState: PromotionsState = {
   lastLoadCampaignTemplates: {},
 
   results: [],
+
+  loading: {
+    loadCampaignTemplates: {},
+    loadPromotionCampaigns: {},
+    loadPromotions: {},
+    reset: {},
+  },
 }
 
-const initialContext: PromotionsContextType = {
+const initialContext: PromotionsContextType = loadifyContext(() => {}, {
   ...initialState,
   loadPromotions: async () => {},
   loadPromotionCampaigns: async (promotionId: GUID) => {},
   loadCampaignTemplates: async (searchText?: string) => {},
   reset: () => {},
-}
+})
 
 const PromotionsContext = React.createContext(initialContext)
 
@@ -138,7 +150,7 @@ export const PromotionsContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
   return (
     <PromotionsContext.Provider
-      value={{
+      value={loadifyContext(dispatch, {
         ...state,
         loadPromotions: async () => {
           const promotionsResults = await loadPromotions()
@@ -173,7 +185,7 @@ export const PromotionsContextProvider = ({ ...props }) => {
         reset: () => {
           dispatch(getgotResetAction)
         },
-      }}>
+      })}>
       {props.children}
     </PromotionsContext.Provider>
   )

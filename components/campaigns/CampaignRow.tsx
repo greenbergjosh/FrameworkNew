@@ -1,5 +1,6 @@
 import { Button, Icon, WhiteSpace } from "@ant-design/react-native"
 import Item from "@ant-design/react-native/lib/list/ListItem"
+import moment from "moment"
 import React from "react"
 import {
   Image,
@@ -61,12 +62,11 @@ export const CampaignRow = ({ navigate, promotion, campaign }: CampaignRowProps)
             />
           </View>
           <View style={{ flex: 1, flexDirection: "column", justifyContent: "flex-start" }}>
-            <Text style={{ fontSize: 17 }}>Retailer Name</Text>
+            <Text style={{ fontSize: 17 }}>{campaign.subject}</Text>
+            <Text style={{ fontSize: 15 }}>{campaign.templateParts.message}</Text>
           </View>
           <View style={{ width: 90, flexDirection: "column", justifyContent: "space-between" }}>
-            <Text style={{ opacity: promotion.expires ? 0.5 : 0, fontSize: 8 }}>
-              Promotion Expires
-            </Text>
+            <Text style={{ fontSize: 12 }}>{moment(campaign.created).calendar()}</Text>
             <WhiteSpace />
           </View>
         </View>

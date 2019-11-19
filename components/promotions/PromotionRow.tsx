@@ -1,4 +1,9 @@
-import { Button, Icon, WhiteSpace } from "@ant-design/react-native"
+import {
+  ActivityIndicator,
+  Button,
+  Icon,
+  WhiteSpace
+  } from "@ant-design/react-native"
 import Item from "@ant-design/react-native/lib/list/ListItem"
 import React from "react"
 import {
@@ -8,25 +13,28 @@ import {
   View
   } from "react-native"
 import Collapsible from "react-native-collapsible"
-import { TouchableHighlight } from "react-native-gesture-handler"
+import { ScrollView, TouchableHighlight } from "react-native-gesture-handler"
 import { Campaign, Promotion } from "../../api/promotions-services"
 import { PromotionsScreenProps } from "../../screens/main/promotions/PromotionsScreen"
 import { CampaignRow } from "../campaigns/CampaignRow"
 import { Empty } from "../Empty"
 
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
+const EXPANDED_CAMPAIGN_THRESHOLD = 3
 
 export interface PromotionRowProps {
-  alwaysExpanded: boolean
+  alwaysExpanded?: boolean
   campaigns?: Campaign[]
+  loading?: boolean
   navigate: PromotionsScreenProps["navigation"]["navigate"]
-  onExpand: () => void
+  onExpand?: () => void
   promotion: Promotion
 }
 
 export const PromotionRow = ({
   alwaysExpanded,
   campaigns,
+  loading,
   navigate,
   onExpand,
   promotion,
@@ -36,6 +44,7 @@ export const PromotionRow = ({
     () => navigate("PromotionsCampaignTemplates", { promotionId: promotion.id }),
     [promotion.id]
   )
+
   return (
     <Item
       wrap
@@ -52,7 +61,7 @@ export const PromotionRow = ({
         Line: { paddingRight: 0 },
       }}>
       <TouchableOpacity
-        disabled={alwaysExpanded}
+        disabled={alwaysExpanded || loading}
         onPress={() => {
           onExpand && isCollapsed && onExpand()
           setCollapsed(!isCollapsed)
@@ -101,30 +110,56 @@ export const PromotionRow = ({
         </View>
       </TouchableOpacity>
       <Collapsible collapsed={!alwaysExpanded && isCollapsed}>
-        <View style={{ backgroundColor: "#F8F8F8EB" }}>
-          {campaigns.length > 0 ? (
-            campaigns.map((campaign) => (
-              <CampaignRow
-                key={campaign.id}
-                navigate={navigate}
-                campaign={campaign}
-                promotion={promotion}
+        {!campaigns || loading ? (
+          <ActivityIndicator animating size="large" text="Loading..." />
+        ) : (
+          <View style={{ backgroundColor: "#F8F8F8EB" }}>
+            {campaigns.length > 0 ? (
+              <>
+                {campaigns
+                  .slice(0, alwaysExpanded ? campaigns.length : EXPANDED_CAMPAIGN_THRESHOLD)
+                  .map((campaign) => (
+                    <CampaignRow
+                      key={campaign.id}
+                      navigate={navigate}
+                      campaign={campaign}
+                      promotion={promotion}
+                    />
+                  ))}
+                {!alwaysExpanded && campaigns.length > EXPANDED_CAMPAIGN_THRESHOLD && (
+                  <TouchableOpacity
+                    disabled={alwaysExpanded}
+                    onPress={() => {
+                      navigate("PromotionsCampaignList", { promotionId: promotion.id })
+                    }}>
+                    <View
+                      style={{
+                        height: 60,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}>
+                      <Text>{campaigns.length - EXPANDED_CAMPAIGN_THRESHOLD} more</Text>
+                      <Icon name="right" />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <Empty
+                message={
+                  <>
+                    <Text>You haven't created any campaigns for this promotion. </Text>
+                    <Text style={{ color: "#0000FF" }} onPress={navigateToCreateCampaign}>
+                      Create one now?
+                    </Text>
+                  </>
+                }
+                style={{ paddingTop: 10, paddingBottom: 10 }}
               />
-            ))
-          ) : (
-            <Empty
-              message={
-                <>
-                  <Text>You haven't created any campaigns for this promotion. </Text>
-                  <Text style={{ color: "#0000FF" }} onPress={navigateToCreateCampaign}>
-                    Create one now?
-                  </Text>
-                </>
-              }
-              style={{ paddingTop: 10, paddingBottom: 10 }}
-            />
-          )}
-        </View>
+            )}
+          </View>
+        )}
       </Collapsible>
     </Item>
   )
