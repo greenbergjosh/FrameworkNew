@@ -13,7 +13,7 @@ import {
   CampaignTemplatesResponse,
 } from "../api/promotions-services"
 
-export interface PromotionsState extends LoadifyStateType<PromotionsContextBaseType> {
+export interface PromotionsState extends LoadifyStateType<PromotionsActionCreatorType> {
   // Local Properties
   campaignsById: { [campaignId: string /* GUID */]: Campaign }
   campaignsByPromotion: { [promotionId: string /* GUID */]: Campaign[] }
@@ -29,13 +29,13 @@ export interface PromotionsState extends LoadifyStateType<PromotionsContextBaseT
   results: Promotion[]
 }
 
-export interface PromotionsContextBaseType extends GetGotContextType {
-  // State + Handlers
+export interface PromotionsActionCreatorType extends GetGotContextType {
+  // Action Creators
   loadPromotions: () => Promise<void>
   loadPromotionCampaigns: (promotionId: GUID) => Promise<void>
   loadCampaignTemplates: (searchText?: string) => Promise<void>
 }
-export interface PromotionsContextType extends PromotionsContextBaseType, PromotionsState {}
+export interface PromotionsContextType extends PromotionsActionCreatorType, PromotionsState {}
 
 type LoadPromotionsAction = FSA<"loadPromotions", PromotionsResponse>
 type LoadPromotionCampaignsAction = FSA<

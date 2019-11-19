@@ -28,7 +28,7 @@ export function loadifyContext<T extends object, A extends FSA>(
   return Object.entries(actionCreators).reduce((acc, entry) => {
     const [key, value] = entry
     // If the the item is a function, we're going to wrap the function
-    if (typeof entry === "function") {
+    if (typeof value === "function") {
       acc[key] = loadingDetectionWrapper(key, value, dispatch)
     } else {
       // Leave other value types alone

@@ -21,15 +21,15 @@ import {
  * 4. login -- SetPasswordScreen (step B)
  */
 
-export interface OnBoardingState extends LoadifyStateType<OnBoardingContextBaseType> {
+export interface OnBoardingState extends LoadifyStateType<OnBoardingActionCreatorType> {
   name: string
   contact: string
   code?: string | null
   password?: string | null
 }
 
-export interface OnBoardingContextBaseType extends GetGotContextType {
-  // State + Handlers
+export interface OnBoardingActionCreatorType extends GetGotContextType {
+  // Action Creators
 
   // api sendCode
   startNewAccount: (name: string, contact: string) => Promise<GetGotResponse>
@@ -43,7 +43,7 @@ export interface OnBoardingContextBaseType extends GetGotContextType {
   // api createUser
   finalizeCreateAccount: (password: string, device?: string) => Promise<GetGotResponse>
 }
-export interface OnBoardingContextType extends OnBoardingContextBaseType, OnBoardingState {}
+export interface OnBoardingContextType extends OnBoardingActionCreatorType, OnBoardingState {}
 
 type StartNewAccountAction = FSA<"startNewAccount", { name: string; contact: string }>
 

@@ -36,6 +36,8 @@ const reducer = (state: ProfileState, action: ProfileAction | GetGotResetAction)
         ...state,
         // password: action.payload,
       }
+    case "reset":
+      return initialState
     default:
       return state
   }
