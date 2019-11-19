@@ -23,7 +23,7 @@ namespace SimpleImportExport
             MaxDepth = ge.GetS("MaxDepth").ParseInt() ?? 0;
             _isSFtp = ge.GetB("isSftp");
 
-            if (Password.IsNullOrWhitespace() || ! _isSFtp ) // in case we haven't explicitly set it up top, check implicitly
+            if (Password.IsNullOrWhitespace())
             {
                 if (KeyPath.IsNullOrWhitespace() || !File.Exists(KeyPath)) throw new Exception($"Invalid FTP config, if Password not set SFTP KeyPath must point to existing file");
 
