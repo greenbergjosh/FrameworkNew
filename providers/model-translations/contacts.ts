@@ -1,11 +1,11 @@
 import { Contact as ExpoContactType } from "expo-contacts/build/Contacts"
 import { Contact } from "../profile-context-provider"
 
-export function toContacts(expoContacts: ExpoContactType[]): Contact[] {
-  return expoContacts.map((expoContact) => toContact(expoContact))
+export function ExpoContactsToContacts(expoContacts: ExpoContactType[]): Contact[] {
+  return expoContacts.map((expoContact) => ExpoContactToContact(expoContact))
 }
 
-export const toContact = (expoContact) => ({
+export const ExpoContactToContact = (expoContact) => ({
   fname: expoContact.firstName || null,
   lname: expoContact.lastName || null,
   phone: (expoContact.phoneNumbers && expoContact.phoneNumbers[0].number) || null,
