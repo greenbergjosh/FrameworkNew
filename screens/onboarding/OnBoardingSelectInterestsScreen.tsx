@@ -4,28 +4,21 @@ import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { ScrollView, Text, View } from "react-native"
 import { FontWeights, styles } from "constants"
+import { UserInterestsResponse } from "providers/profile-context-provider"
 
 interface OnBoardingSelectInterestsScreenProps extends NavigationSwitchScreenProps {}
 
-const interests = {
-  Sports: ["Football", "Baseball", "Soccer", "Basketball"],
-  Arts: ["Music", "Painting", "Reading", "Woodworking"],
-  Culture: ["Traveling", "Cooking"],
-  Technology: ["Blogging", "Gaming"],
-  Community: ["Volunteer Work", "Community Involvement"],
-}
-
-const Interests = () => (
+const Interests = (value: InterestsResponse) => (
   <>
-    {Object.keys(interests).map((topic) => (
-      <Card key={topic} full style={{ borderTopWidth: 0 }}>
+    {value.map((group) => (
+      <Card key={group.id} full style={{ borderTopWidth: 0 }}>
         <WhiteSpace size="sm" />
-        <Text style={[styles.H3, { fontWeight: FontWeights.bold }]}>{topic}</Text>
+        <Text style={[styles.H3, { fontWeight: FontWeights.bold }]}>{group.name}</Text>
         <WhiteSpace size="lg" />
         <Flex direction="row" wrap="wrap">
-          {interests[topic].map((interest) => (
-            <Tag key={interest} style={{ marginRight: 10, marginBottom: 10 }}>
-              {interest}
+          {group.interests.map((interest) => (
+            <Tag key={interest.id} style={{ marginRight: 10, marginBottom: 10 }}>
+              {interest.name}
             </Tag>
           ))}
         </Flex>
@@ -55,7 +48,7 @@ export class OnBoardingSelectInterestsScreen extends React.Component<
           <WhiteSpace size="sm" />
         </View>
         <ScrollView style={[styles.View, { marginTop: 0, flex: 1 }]}>
-          <Interests />
+          <Interests value={} />
         </ScrollView>
         <View style={styles.BottomButtonBar}>
           <Button
