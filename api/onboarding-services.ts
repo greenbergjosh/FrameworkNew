@@ -17,7 +17,7 @@ export const sendCode = async (contact: string) => {
 }
 
 export const submitCode = async (contact: string, code: string) => {
-  return await getgotRequest<SubmitCodeResponse>("submitcnfmcode", { u: contact, code })
+  return await getgotRequest<SubmitCodeResponse>("submitcode", { u: contact, code })
 }
 
 export const createUser = async (

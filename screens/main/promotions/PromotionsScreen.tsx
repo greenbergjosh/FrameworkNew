@@ -35,30 +35,21 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
           {promotions.map((promotion) => (
             <PromotionRow
               key={promotion.id}
-              campaigns={promotionsContext.campaignsByPromotion[promotion.id] || []}
+              campaigns={promotionsContext.campaignsByPromotion[promotion.id]}
               navigate={navigate}
-              onExpand={() =>
+              loading={promotionsContext.loading.loadPromotionCampaigns[promotion.id]}
+              onExpand={async () => {
                 // If there's no data
-                !promotionsContext.campaignsByPromotion[promotion.id] &&
-                // Load the campaigns for this promotion
-                promotionsContext.loadPromotionCampaigns(promotion.id)
-              }
+                if (!promotionsContext.campaignsByPromotion[promotion.id]) {
+                  // Load the campaigns for this promotion
+                  await promotionsContext.loadPromotionCampaigns(promotion.id)
+                }
+              }}
               promotion={promotion}
             />
           ))}
         </List>
       </ScrollView>
-
-      <Button onPress={() => Toast.info("This is a Promotions toast")}>
-        Show Promotions Toast
-      </Button>
-      <Button onPress={() => navigate("PromotionsCampaignList")}>Jump to Single Promotion</Button>
-      <Button onPress={() => navigate("PromotionsCampaign", { draft: true })}>
-        Jump to Single Campaign (Draft)
-      </Button>
-      <Button onPress={() => navigate("PromotionsCampaign")}>
-        Jump to Single Campaign (Published)
-      </Button>
     </>
   )
 }

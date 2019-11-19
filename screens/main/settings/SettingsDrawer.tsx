@@ -1,17 +1,17 @@
-import { AuthContextType, useAuthContext } from "../../../providers/auth-context-provider"
 import {
   Button,
   Drawer,
   Icon,
   List,
   WhiteSpace
-} from "@ant-design/react-native"
-import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
-import { ScrollView, Text, View } from "react-native"
-
-import DrawerLayout from "@bang88/react-native-drawer-layout"
+  } from "@ant-design/react-native"
 import { IconProps } from "@ant-design/react-native/lib/icon"
+import DrawerLayout from "@bang88/react-native-drawer-layout"
+import { useGetGotRootDataContext } from "providers/getgot-root-data-context-provider"
 import React from "react"
+import { ScrollView, Text, View } from "react-native"
+import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
+import { AuthContextType, useAuthContext } from "../../../providers/auth-context-provider"
 
 interface NavigationItem {
   title: string
@@ -36,11 +36,13 @@ export interface SettingsDrawerProps extends React.PropsWithChildren<unknown> {
 
 export const SettingsDrawer = (props: SettingsDrawerProps) => {
   const auth = useAuthContext()
+  const rootDataContext = useGetGotRootDataContext()
   const { navigate } = props.navigation
   const drawerRef = React.useRef<DrawerLayout>(null)
 
   const logout = () => {
     auth.handleLogout()
+    rootDataContext.reset()
     navigate("Authentication")
   }
 

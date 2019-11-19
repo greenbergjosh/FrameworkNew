@@ -1,5 +1,6 @@
 import React, { useContext } from "react"
 import { loadHomeFeed } from "../api/feed-services"
+import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
 
 export interface FeedState {
   // Local Properties
@@ -8,7 +9,7 @@ export interface FeedState {
   // JSON Properties come from Response
 }
 
-export interface FeedContextType extends FeedState {
+export interface FeedContextType extends FeedState, GetGotContextType {
   // State + Handlers
   loadHomeFeed: (force?: boolean) => void
 }
@@ -20,7 +21,7 @@ interface LoadHomeFeedAction {
 
 type FeedAction = LoadHomeFeedAction // | FooAction | BarAction | BazAction
 
-const reducer = (state: FeedState, action: FeedAction) => {
+const reducer = (state: FeedState, action: FeedAction | GetGotResetAction) => {
   switch (action.type) {
     case "loadHomeFeed":
       return {
@@ -28,6 +29,8 @@ const reducer = (state: FeedState, action: FeedAction) => {
         ...action.payload,
         lastLoadHomeFeed: new Date().toISOString(),
       }
+    case "reset":
+      return initialState
     default:
       return state
   }
@@ -38,6 +41,7 @@ const initialState: FeedState = { lastLoadHomeFeed: null }
 const initialContext: FeedContextType = {
   ...initialState,
   loadHomeFeed: () => {},
+  reset: () => {},
 }
 
 const FeedContext = React.createContext(initialContext)
@@ -51,6 +55,9 @@ export const FeedContextProvider = ({ ...props }) => {
         loadHomeFeed: async () => {
           const homeFeedResults = await loadHomeFeed()
           dispatch({ type: "loadHomeFeed", payload: homeFeedResults })
+        },
+        reset: () => {
+          dispatch(getgotResetAction)
         },
       }}>
       {props.children}
