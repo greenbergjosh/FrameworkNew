@@ -1,13 +1,13 @@
-import { Button, Flex, InputItem, Modal, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
+import { Button, Flex, Modal, WhiteSpace } from "@ant-design/react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { Text, View } from "react-native"
 import { routes, styles } from "constants"
-import { useProfileContext, Contact } from "providers/profile-context-provider"
+import { useProfileContext } from "providers/profile-context-provider"
 import * as Contacts from "expo-contacts"
-import { Contact as ExpoContactType } from "expo-contacts/build/Contacts"
 import * as Permissions from "expo-permissions"
+import { expoContactTranslations } from "../../providers/model-translations/contacts"
 
 interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
@@ -35,19 +35,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
     }
     setWaiting(true)
     try {
-      // Convert Expo Contacts to GetGot Contacts
-      // TODO: better way to do this...
-      const contacts: Contact[] = data.map((mobileContact) => {
-        return {
-          fname: mobileContact.firstName || null,
-          lname: mobileContact.lastName || null,
-          phone: (mobileContact.phoneNumbers && mobileContact.phoneNumbers[0].number) || null,
-          email: (mobileContact.emails && mobileContact.emails[0].email) || null,
-          dob: null,
-          gender: null,
-        }
-      })
-
+      const contacts = expoContactTranslations.toContacts(data)
       const response = await profileContext.syncContacts(contacts)
       setWaiting(false)
       if (response.r !== 0) {
