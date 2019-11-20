@@ -1,3 +1,4 @@
+import React, { useContext } from "react"
 import { GetGotResponse } from "api"
 import {
   saveUserInterests,
@@ -5,7 +6,7 @@ import {
   syncContacts,
   SyncContactsResponse,
 } from "api/profile-services"
-import React, { useContext } from "react"
+import { Interest } from "api/catalog-services"
 import { getgotStorage } from "../storage/getgotStorage"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
 
@@ -18,26 +19,13 @@ export type Contact = {
   gender: null
 }
 
-export type Interest = {
-  id: number
-  groupId: number
-  name: string
-  description: string
-}
-
-export type InterestGroup = {
-  id: number
-  name: string
-  description: string
-}
-
 export interface ProfileState {
   contacts: Contact[]
-  interests: InterestGroup[] | Interest[]
+  interests: Interest[]
 }
 
 export interface ProfileContextType extends ProfileState, GetGotContextType {
-  // State + Handlers
+  // Action Creators
   syncContacts: (contacts: Contact[]) => Promise<GetGotResponse>
   saveInterests: (interests: Interest[]) => Promise<GetGotResponse>
 }
@@ -104,13 +92,13 @@ export const ProfileContextProvider = ({ ...props }) => {
           return response
         },
         saveInterests: async (interests: Interest[]) => {
-          const interestIds = interests.map(interest => interest.id)
+          const interestIds = interests.map((interest) => interest.id)
           const response = await saveUserInterests(interestIds)
 
           if (response.r === 0) {
             dispatch({ type: "saveInterests", payload: response })
           } else {
-            console.error("Error syncing interests", { response, interests })
+            console.error("Error saving user interests", { response, interests })
           }
           return response
         },

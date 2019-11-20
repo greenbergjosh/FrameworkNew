@@ -57,7 +57,12 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
       <Flex justify="center" direction="column">
-        <Button type="primary" size="large" style={styles.Button} onPress={syncContacts}>
+        <Button
+          type="primary"
+          size="large"
+          style={styles.Button}
+          onPress={syncContacts}
+          loading={isWaiting}>
           Sync Contacts
         </Button>
         {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
@@ -66,7 +71,8 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           type="ghost"
           size="large"
           style={styles.LinkButton}
-          onPress={() => navigate(routes.Home.HomeFeed)}>
+          onPress={() => navigate(routes.Home.HomeFeed)}
+          disabled={isWaiting}>
           Not Now
         </Button>
       </Flex>

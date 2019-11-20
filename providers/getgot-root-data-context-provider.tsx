@@ -6,6 +6,7 @@ import { GetGotContextType, GetGotRootDataContextType } from "./getgot-context-t
 import { OnBoardingContextProvider, useOnBoardingContext } from "./onboarding-context-provider"
 import { ProfileContextProvider, useProfileContext } from "./profile-context-provider"
 import { PromotionsContextProvider, usePromotionsContext } from "./promotions-context-provider"
+import { CatalogContextProvider, useCatalogContext } from "./catalog-context-provider"
 
 const providers: {
   [key: string]: { provider: ReactComponentLike; hook: () => GetGotContextType }
@@ -15,6 +16,7 @@ const providers: {
   PromotionsContextProvider: { provider: PromotionsContextProvider, hook: usePromotionsContext },
   OnBoardingContextProvider: { provider: OnBoardingContextProvider, hook: useOnBoardingContext },
   ProfileContextProvider: { provider: ProfileContextProvider, hook: useProfileContext },
+  CatalogContextProvider: { provider: CatalogContextProvider, hook: useCatalogContext },
 }
 
 const initialContext: GetGotRootDataContextType = {

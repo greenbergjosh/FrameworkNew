@@ -1,5 +1,4 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
-import { interests } from "api/catalog-services"
 
 /********************
  * Contacts

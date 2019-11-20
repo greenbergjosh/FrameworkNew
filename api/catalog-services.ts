@@ -1,20 +1,34 @@
-import { getgotRequest, GetGotSuccessResponse } from "./index"
+import { getgotRequest, GetGotResponse, GetGotSuccessResponse } from "./index"
 
 /********************
  * Interests
  */
 
+export type Interest = {
+  id: number
+  groupId: number
+  name: string
+  description: string
+}
+
+export type InterestGroup = {
+  id: number
+  name: string
+  description: string
+  interests: Interest[]
+}
+
 // TODO: Fetch this from the API
 export const interests: InterestsResponse = {
   r: 0,
-  interests: [
+  results: [
     {
       id: 3,
       name: "Sports",
       description: "",
       interests: [
-        { id: 6, name: "Football", description: "" },
-        { id: 5, name: "Baseball", description: "" },
+        { id: 6, groupId: 3, name: "Football", description: "" },
+        { id: 5, groupId: 3, name: "Baseball", description: "" },
       ],
     },
     {
@@ -22,10 +36,10 @@ export const interests: InterestsResponse = {
       name: "Arts",
       description: "",
       interests: [
-        { id: 8, name: "Music", description: "" },
-        { id: 7, name: "Painting", description: "" },
-        { id: 9, name: "Reading", description: "" },
-        { id: 10, name: "Woodworking", description: "" },
+        { id: 8, groupId: 4, name: "Music", description: "" },
+        { id: 7, groupId: 4, name: "Painting", description: "" },
+        { id: 9, groupId: 4, name: "Reading", description: "" },
+        { id: 10, groupId: 4, name: "Woodworking", description: "" },
       ],
     },
     {
@@ -33,8 +47,8 @@ export const interests: InterestsResponse = {
       name: "Culture",
       description: "",
       interests: [
-        { id: 11, name: "Traveling", description: "" },
-        { id: 12, name: "Cooking", description: "" },
+        { id: 11, groupId: 5, name: "Traveling", description: "" },
+        { id: 12, groupId: 5, name: "Cooking", description: "" },
       ],
     },
     {
@@ -42,8 +56,8 @@ export const interests: InterestsResponse = {
       name: "Technology",
       description: "",
       interests: [
-        { id: 3, name: "Blogging", description: "" },
-        { id: 4, name: "Gaming", description: "" },
+        { id: 3, groupId: 2, name: "Blogging", description: "" },
+        { id: 4, groupId: 2, name: "Gaming", description: "" },
       ],
     },
     {
@@ -51,27 +65,22 @@ export const interests: InterestsResponse = {
       name: "Community",
       description: "",
       interests: [
-        { id: 1, name: "Volunteer Work", description: "" },
-        { id: 2, name: "Community Involvement", description: "" },
+        { id: 1, groupId: 1, name: "Volunteer Work", description: "" },
+        { id: 2, groupId: 1, name: "Community Involvement", description: "" },
       ],
     },
   ],
 }
 
 export interface InterestsResponse extends GetGotSuccessResponse {
-  interests: {
-    id: number
-    name: string
-    description: string
-    interests: {
-      id: number
-      name: string
-      description: string
-    }[]
-  }[]
+  results: InterestGroup[]
 }
 
-export const getInterests = async () => {
-  // TODO: update with the final function name
-  return await getgotRequest<InterestsResponse>("getinterests", {})
+export const loadInterests = async () => {
+  console.log("loadInterests!")
+  // TODO: update with the final api function name
+  // return await getgotRequest<InterestsResponse>("getinterests", {})
+  return new Promise<InterestsResponse>(resolve => {
+    setTimeout(resolve, 2000, interests);
+  })
 }
