@@ -1,8 +1,11 @@
 export enum Authentication {
+  default = "AuthenticationLogin",
   AuthenticationBanned = "AuthenticationBanned",
   AuthenticationLogin = "AuthenticationLogin",
+  AuthenticationResetPassword = "AuthenticationResetPassword",
 }
 export enum Home {
+  default = "HomeFeed",
   Analytics = "Analytics",
   BlockedUsers = "BlockedUsers",
   HomeFeed = "HomeFeed",
@@ -14,6 +17,7 @@ export enum Home {
   ViewThread = "ViewThread",
 }
 export enum OnBoarding {
+  default = "OnBoardingCreateAccount",
   CodeEntry = "OnBoardingCodeEntry",
   ResendCode = "OnBoardingResendCode",
   SelectInterests = "OnBoardingSelectInterests",

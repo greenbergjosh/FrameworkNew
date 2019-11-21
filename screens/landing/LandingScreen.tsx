@@ -1,8 +1,9 @@
-import { ActivityIndicator, Button, WhiteSpace } from "@ant-design/react-native"
-
+import React from "react"
+import { Text, View } from "react-native"
+import { ActivityIndicator, Button, Flex, WhiteSpace } from "@ant-design/react-native"
+import { routes, styles } from "constants"
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import React from "react"
 import { useAuthContext } from "../../providers/auth-context-provider"
 
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
@@ -19,11 +20,27 @@ export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) 
   }
 
   return (
-    <>
-      <WhiteSpace />
-      <HeaderLogo />
-      <Button onPress={() => navigate("OnBoarding")}>Create New Account</Button>
-      <Button onPress={() => navigate("Authentication")}>Login</Button>
-    </>
+    <View style={[styles.ViewContainer, { marginTop: 300 }]}>
+      <Flex justify="center" direction="column">
+        <Text style={[styles.H3, { marginBottom: 20 }]}>[ Large GetGot Logo ]</Text>
+        <Text style={[styles.Body, { fontStyle: "italic", marginBottom: 200 }]}>Our value proposition to you!</Text>
+        <Button
+          type="primary"
+          size="large"
+          style={styles.Button}
+          onPress={() => navigate(routes.OnBoarding.default)}>
+          Create New Account
+        </Button>
+        <WhiteSpace size="xl" />
+        <WhiteSpace size="xl" />
+        <Button
+          type="ghost"
+          size="large"
+          style={styles.LinkButton}
+          onPress={() => navigate(routes.Authentication.default)}>
+          Log In
+        </Button>
+      </Flex>
+    </View>
   )
 }

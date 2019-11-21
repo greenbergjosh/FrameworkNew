@@ -1,11 +1,12 @@
-import { ActivityIndicator, Button, InputItem } from "@ant-design/react-native"
+import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import React from "react"
-import { Text } from "react-native"
+import { Text, View } from "react-native"
 import { getgotLogin } from "../../api/auth-services"
 import { useAuthContext } from "../../providers/auth-context-provider"
+import { routes, styles } from "constants"
 
 interface AuthenticationLoginScreenProps extends NavigationSwitchScreenProps {}
 
@@ -37,37 +38,65 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
   }
 
   return (
-    <>
+    <View style={styles.ViewContainer}>
       <ActivityIndicator animating={loading} toast size="large" text="Signing In..." />
-
+      <WhiteSpace size="lg" />
+      <Text style={styles.H2}>Log in to GetGot</Text>
+      <WhiteSpace size="lg" />
       <InputItem
         type="email-address"
         name="email"
         value={userName}
-        placeholder="john@mail.com"
+        placeholder="Phone, email or username"
         onChange={(e) => setUserName(e)}
+        clearButtonMode="always"
       />
-
+      <WhiteSpace size="lg" />
       <InputItem
         type="password"
         name="password"
         value={password}
-        placeholder="********"
+        placeholder="Password"
         onChange={(e) => setPassword(e)}
+        clearButtonMode="always"
       />
-
-      <Button disabled={loading} onPress={() => login()}>
-        Login
-      </Button>
-      <Button disabled={loading} onPress={() => navigate("AuthenticationBanned")}>
-        Login (Banned)
-      </Button>
-      <Button disabled={loading} onPress={() => navigate("OnBoarding")}>
-        Sign Up
-      </Button>
-
-      <Text style={{ color: "red", textAlign: "center", paddingTop: 10 }}>{error}</Text>
-    </>
+      <WhiteSpace size="sm" />
+      {!error ? null : <Text style={[styles.Body, styles.ErrorText]}>{error}</Text>}
+      <Flex justify="start">
+        <Button
+          type="ghost"
+          size="large"
+          style={styles.LinkButton}
+          onPress={() => navigate(routes.Authentication.AuthenticationResetPassword)}>
+          Forgot password?
+        </Button>
+        <Button size="small" disabled={loading} onPress={() => navigate("AuthenticationBanned")}>
+          Login (Banned)
+        </Button>
+      </Flex>
+      <WhiteSpace size="lg" />
+      <WhiteSpace size="lg" />
+      <Flex justify="center" direction="column">
+        <Button
+          type="primary"
+          size="large"
+          style={styles.Button}
+          disabled={loading}
+          onPress={() => login()}>
+          Log In
+        </Button>
+        <WhiteSpace size="xl" />
+        <WhiteSpace size="xl" />
+        <Button
+          type="ghost"
+          size="large"
+          style={styles.LinkButton}
+          disabled={loading}
+          onPress={() => navigate("OnBoarding")}>
+          Sign Up
+        </Button>
+      </Flex>
+    </View>
   )
 }
 

@@ -99,7 +99,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
             {mockInfluencers.map((influencer) => (
               <View style={carouselStyles.carouselHorizontal} key={influencer.userId}>
                 <Flex direction="column" align="center">
-                  <Image source={{ uri: influencer.avatar }} style={styles.Avatar} />
+                  <Image source={{ uri: influencer.avatar }} style={styles.AvatarLG} />
                   <Text style={styles.H2}>{influencer.name}</Text>
                   <WhiteSpace size="sm" />
                   <Text style={styles.Body}>{influencer.description}</Text>
