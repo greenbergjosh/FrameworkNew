@@ -77,7 +77,6 @@ export interface InterestsResponse extends GetGotSuccessResponse {
 }
 
 export const loadInterests = async () => {
-  console.log("loadInterests!")
   // TODO: update with the final api function name
   // return await getgotRequest<InterestsResponse>("getinterests", {})
   return new Promise<InterestsResponse>(resolve => {
