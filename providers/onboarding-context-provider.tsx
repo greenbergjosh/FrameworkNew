@@ -127,7 +127,7 @@ const initialState: OnBoardingState = {
   lastLoadSuggestedFollows: null,
 }
 
-const initialContext: OnBoardingContextType = loadifyContext(() => {}, {
+const initialContext: OnBoardingContextType = {
   ...initialState,
   startNewAccount: async () => ({} as GetGotResponse),
   enterCode: async () => ({} as GetGotResponse),
@@ -135,7 +135,7 @@ const initialContext: OnBoardingContextType = loadifyContext(() => {}, {
   finalizeCreateAccount: async () => ({} as GetGotResponse),
   loadSuggestedFollows: async () => ({} as GetGotResponse),
   reset: () => {},
-})
+}
 
 const OnBoardingContext = React.createContext(initialContext)
 

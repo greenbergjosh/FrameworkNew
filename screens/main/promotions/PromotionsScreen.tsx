@@ -16,7 +16,7 @@ export interface PromotionsScreenProps extends NavigationTabScreenProps {}
 export const PromotionsScreen = (props: PromotionsScreenProps) => {
   const promotionsContext = usePromotionsContext()
 
-  if (!promotionsContext.lastLoadPromotions) {
+  if (!promotionsContext.lastLoadPromotions && !promotionsContext.loading.loadPromotions["[]"]) {
     promotionsContext.loadPromotions()
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }

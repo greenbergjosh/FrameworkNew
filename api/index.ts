@@ -65,7 +65,7 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
     body["sid"] = sid
   }
 
-  console.debug("Fetching", baseAddress, {
+  console.debug("api/index.ts", "Fetching", baseAddress, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -82,6 +82,8 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
     },
     body: JSON.stringify(body),
   })
+  console.debug("api/index.ts", `getgotRequest fn: ${name} | Waiting on JSON`)
+
   const json = await response.json()
   console.debug("api/index.ts", `getgotRequest fn: ${name} | result:`, json)
 

@@ -135,23 +135,22 @@ const initialState: PromotionsState = {
   },
 }
 
-const initialContext: PromotionsContextType = loadifyContext(() => {}, {
+const initialContext: PromotionsContextType = {
   ...initialState,
   loadPromotions: async () => {},
   loadPromotionCampaigns: async (promotionId: GUID) => {},
   loadCampaignTemplates: async (searchText?: string) => {},
   reset: () => {},
-})
+}
 
 const PromotionsContext = React.createContext(initialContext)
 
 // Provider is used by GetGotRootDataContextProvider
 export const PromotionsContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
-  return (
-    <PromotionsContext.Provider
-      value={loadifyContext(dispatch, {
-        ...state,
+  const loadifiedActionCreators = React.useMemo(
+    () =>
+      loadifyContext(dispatch, {
         loadPromotions: async () => {
           const promotionsResults = await loadPromotions()
           if (promotionsResults.r === 0) {
@@ -185,9 +184,17 @@ export const PromotionsContextProvider = ({ ...props }) => {
         reset: () => {
           dispatch(getgotResetAction)
         },
-      })}>
-      {props.children}
-    </PromotionsContext.Provider>
+      }),
+    [dispatch, getgotResetAction, loadPromotions, loadPromotionCampaigns, loadCampaignTemplates]
+  )
+
+  const contextValue = React.useMemo(() => ({ ...state, ...loadifiedActionCreators }), [
+    state,
+    loadifiedActionCreators,
+  ])
+
+  return (
+    <PromotionsContext.Provider value={contextValue}>{props.children}</PromotionsContext.Provider>
   )
 }
 

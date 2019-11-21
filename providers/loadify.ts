@@ -18,17 +18,17 @@ type UPDATE_LOADING_STATE_TYPE = "__updateLoadingState"
 export function loadifyContext<T extends object, A extends FSA>(
   dispatch: (action: A) => void,
   actionCreators: T
-): T & LoadifyStateType<T> {
-  // Base object
-  const updatedActionCreators: T & LoadifyStateType<T> = {
+): T {
+  // Base object, don't mutate the input parameter
+  const updatedActionCreators: T = {
     ...actionCreators,
-    loading: {} as { [key in keyof T]: { [key: string]: boolean } },
   }
   // Reduce across the action creators
   return Object.entries(actionCreators).reduce((acc, entry) => {
     const [key, value] = entry
     // If the the item is a function, we're going to wrap the function
     if (typeof value === "function") {
+      // Simply replace the function in the map with a wrapper around it
       acc[key] = loadingDetectionWrapper(key, value, dispatch)
     } else {
       // Leave other value types alone
