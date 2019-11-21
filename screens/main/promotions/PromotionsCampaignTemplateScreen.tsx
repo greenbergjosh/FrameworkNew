@@ -80,7 +80,11 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
     [campaignTemplatesBySearchKey[searchText]]
   )
 
-  if (!promotionsContext.lastLoadCampaignTemplates[searchText]) {
+  if (
+    !promotionsContext.lastLoadCampaignTemplates[searchText] &&
+    !promotionsContext.loading.loadCampaignTemplates[JSON.stringify([searchText])]
+  ) {
+    console.log(promotionsContext.loading.loadCampaignTemplates)
     promotionsContext.loadCampaignTemplates(searchText)
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
