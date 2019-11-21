@@ -1,5 +1,5 @@
 import React from "react"
-import { Button, Flex, Modal, WhiteSpace } from "@ant-design/react-native"
+import { Button, Flex, WhiteSpace } from "@ant-design/react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { Text, View } from "react-native"
@@ -12,7 +12,7 @@ import { ExpoContactsToContacts } from "../../providers/model-translations/conta
 interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
 export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreenProps) => {
-  const [modalVisible, setModalVisible] = React.useState(false)
+  // const [modalVisible, setModalVisible] = React.useState(false)
   const [error, setError] = React.useState()
   const [isWaiting, setWaiting] = React.useState(false)
 
@@ -82,32 +82,6 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
         of syncing and remove previously uploaded contacts in your settings.
         <Text style={styles.LinkText}>Learn More</Text>.
       </Text>
-
-      <Modal
-        title="&ldquo;GetGot&rdquo; Would Like to Access&nbsp;Your&nbsp;Contacts"
-        transparent
-        maskClosable
-        visible={modalVisible}
-        footer={[
-          {
-            text: "Don’t Allow",
-            onPress: () => {
-              setModalVisible(false)
-              navigate(routes.Home.HomeFeed)
-            },
-          },
-          {
-            text: "OK",
-            onPress: () => {
-              setModalVisible(false)
-              navigate(routes.Home.HomeFeed)
-            },
-          },
-        ]}>
-        <View style={{ paddingVertical: 20 }}>
-          <Text style={{ textAlign: "center" }}>GetGot requires access to your contacts</Text>
-        </View>
-      </Modal>
     </View>
   )
 }

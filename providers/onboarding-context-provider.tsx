@@ -6,10 +6,13 @@ import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 import {
   createUser,
   CreateUserResponse,
+  Influencer,
+  SuggestedFollowsResponse,
   sendCode,
   SendCodeResponse,
   submitCode,
   SubmitCodeResponse,
+  loadSuggestedFollows,
 } from "api/onboarding-services"
 
 /*************************************************************
@@ -26,6 +29,8 @@ export interface OnBoardingState extends LoadifyStateType<OnBoardingActionCreato
   contact: string
   code?: string | null
   password?: string | null
+  suggestedFollows?: Influencer[] | null
+  lastLoadSuggestedFollows?: ISO8601String | null
 }
 
 export interface OnBoardingActionCreatorType extends GetGotContextType {
@@ -42,6 +47,9 @@ export interface OnBoardingActionCreatorType extends GetGotContextType {
 
   // api createUser
   finalizeCreateAccount: (password: string, device?: string) => Promise<GetGotResponse>
+
+  // api -TBD-
+  loadSuggestedFollows: () => Promise<GetGotResponse>
 }
 export interface OnBoardingContextType extends OnBoardingActionCreatorType, OnBoardingState {}
 
@@ -53,11 +61,14 @@ type ResendCodeAction = FSA<"resendCode", SendCodeResponse>
 
 type FinalizeCreateAccountAction = FSA<"finalizeCreateAccount", CreateUserResponse>
 
+type LoadSuggestedFollowsAction = FSA<"loadSuggestedFollows", SuggestedFollowsResponse>
+
 type OnBoardingAction =
   | StartNewAccountAction
   | EnterCodeAction
   | ResendCodeAction
   | FinalizeCreateAccountAction
+  | LoadSuggestedFollowsAction
 
 const reducer = loadifyReducer(
   (state: OnBoardingState, action: OnBoardingAction | GetGotResetAction) => {
@@ -82,6 +93,15 @@ const reducer = loadifyReducer(
           ...state,
           // password: action.payload,
         }
+      case "loadSuggestedFollows":
+        return {
+          ...state,
+          ...action.payload,
+          suggestedFollows: [
+            ...action.payload.results,
+          ],
+          lastLoadSuggestedFollows: new Date().toISOString(),
+        }
       case "reset":
         return initialState
       default:
@@ -100,8 +120,11 @@ const initialState: OnBoardingState = {
     enterCode: {},
     resendCode: {},
     finalizeCreateAccount: {},
+    loadSuggestedFollows: {},
     reset: {},
   },
+  suggestedFollows: [],
+  lastLoadSuggestedFollows: null,
 }
 
 const initialContext: OnBoardingContextType = loadifyContext(() => {}, {
@@ -110,6 +133,7 @@ const initialContext: OnBoardingContextType = loadifyContext(() => {}, {
   enterCode: async () => ({} as GetGotResponse),
   resendCode: async () => ({} as GetGotResponse),
   finalizeCreateAccount: async () => ({} as GetGotResponse),
+  loadSuggestedFollows: async () => ({} as GetGotResponse),
   reset: () => {},
 })
 
@@ -162,6 +186,15 @@ export const OnBoardingContextProvider = ({ ...props }) => {
             dispatch({ type: "finalizeCreateAccount", payload: response })
           } else {
             console.error("Error finalizing account", response, state)
+          }
+          return response
+        },
+        loadSuggestedFollows: async () => {
+          const response = await loadSuggestedFollows()
+          if (response.r === 0) {
+            dispatch({ type: "loadSuggestedFollows", payload: response })
+          } else {
+            console.error("Error loading Suggested Follows", { response })
           }
           return response
         },
