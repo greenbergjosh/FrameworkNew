@@ -796,16 +796,16 @@ namespace Utility
 
         public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms,
             double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5,
-            IEnumerable<(string key, string value)> headers = null)
+            IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
         {
-            var result = await HttpPostGetHeadersAsync(uri, parms, timeoutSeconds, mediaType, maxConnections, headers);
+            var result = await HttpPostGetHeadersAsync(uri, parms, timeoutSeconds, mediaType, maxConnections, headers, doThrow);
             return result.body;
         }
 
         public static async Task<(string body, IDictionary<string, IEnumerable<string>> headers)>
             HttpPostGetHeadersAsync(string uri, IDictionary<string, string> parms,
                 double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5,
-                IEnumerable<(string key, string value)> headers = null)
+                IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
         {
             string responseBody = null;
 
@@ -844,6 +844,19 @@ namespace Utility
                     }
 
                     responseBody = await response.Content.ReadAsStringAsync();
+                }
+                else if (doThrow)
+                {
+                    try
+                    {
+                        responseBody = await response.Content.ReadAsStringAsync();
+                    }
+                    catch
+                    {
+
+                    }
+
+                    throw new InvalidOperationException($"HttpPostGetHeadersAsync Failed. code: {response.StatusCode} reason: {response.ReasonPhrase} body: {responseBody}");
                 }
             }
 
