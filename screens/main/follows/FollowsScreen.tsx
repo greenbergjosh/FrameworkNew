@@ -1,22 +1,25 @@
-import { Button, Icon, Toast } from "@ant-design/react-native"
 import React from "react"
-import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
+import { Tabs } from "@ant-design/react-native"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { HeaderTitle } from "components/HeaderTitle"
+import { FollowersList } from "./FollowersList"
+import { InfluencersList } from "./InfluencersList"
 
-interface FollowsScreenProps extends NavigationTabScreenProps {}
+export interface FollowsScreenProps extends NavigationTabScreenProps {}
 
 export class FollowsScreen extends React.Component<FollowsScreenProps> {
-  static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
+  static navigationOptions = ({ navigation }) => {
     return {
-      tabBarIcon: ({ focused, horizontal, tintColor }) => {
-        return <Icon name="heart" color={focused ? "#343977" : "#999999"} />
-      },
+      headerTitle: () => <HeaderTitle title="Follows" align="left" size="large" />,
     }
   }
   render() {
-    const { navigate } = this.props.navigation
     return (
       <>
-        <Button onPress={() => Toast.info("This is a Follows toast")}>Show Follows Toast</Button>
+        <Tabs tabs={[{ title: "You Follow" }, { title: "Following You" }]}>
+          <InfluencersList navigation={this.props.navigation} />
+          <FollowersList navigation={this.props.navigation} />
+        </Tabs>
       </>
     )
   }

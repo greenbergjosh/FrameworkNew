@@ -19,15 +19,20 @@ export enum Home {
 export enum OnBoarding {
   default = "OnBoardingCreateAccount",
   CodeEntry = "OnBoardingCodeEntry",
+  CreateAccount = "OnBoardingCreateAccount",
   ResendCode = "OnBoardingResendCode",
   SelectInterests = "OnBoardingSelectInterests",
   SetPassword = "OnBoardingSetPassword",
-  CreateAccount = "OnBoardingCreateAccount",
   SyncContacts = "OnBoardingSyncContacts",
+}
+export enum Follows {
+  Following = "FollowsFollowing",
+  Follows = "FollowsFollows",
 }
 
 export const routes = {
   Authentication,
+  Follows,
   Home,
   OnBoarding,
 }

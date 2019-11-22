@@ -6,6 +6,7 @@ export enum Colors {
   medgrey = "#D6D4CD",
   grey = "#707070",
   blue = "#007AFF",
+  navy = "#343997",
 }
 export enum FontWeights {
   light = "300",
@@ -15,6 +16,7 @@ export enum FontWeights {
 export enum Units {
   margin = 17,
   padding = 10,
+  thumbnailSM = 40,
   avatarLG = 80,
   avatarMD = 64,
   avatarSM = 32,
@@ -100,6 +102,12 @@ export const styles = {
     borderColor: Colors.medgrey,
     borderWidth: 1,
   } as StyleProp<ImageStyle>,
+  ThumbnailSM: {
+    width: Units.thumbnailSM,
+    height: Units.thumbnailSM,
+    borderColor: Colors.medgrey,
+    borderWidth: 1,
+  },
 }
 
 export const combineStyles = (a, b) => ({ ...a, ...b })

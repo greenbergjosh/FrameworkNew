@@ -1,21 +1,11 @@
-import {
-  ActivityIndicator,
-  Button,
-  Icon,
-  WhiteSpace
-  } from "@ant-design/react-native"
-import Item from "@ant-design/react-native/lib/list/ListItem"
 import React from "react"
-import {
-  Image,
-  Text,
-  TouchableOpacity,
-  View
-  } from "react-native"
+import { Image, Text, TouchableOpacity, View } from "react-native"
 import Collapsible from "react-native-collapsible"
 import { ScrollView, TouchableHighlight } from "react-native-gesture-handler"
-import { Campaign, Promotion } from "../../api/promotions-services"
-import { PromotionsScreenProps } from "../../screens/main/promotions/PromotionsScreen"
+import { ActivityIndicator, Button, Icon, WhiteSpace } from "@ant-design/react-native"
+import Item from "@ant-design/react-native/lib/list/ListItem"
+import { Campaign, Promotion } from "api/promotions-services"
+import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { CampaignRow } from "../campaigns/CampaignRow"
 import { Empty } from "../Empty"
 

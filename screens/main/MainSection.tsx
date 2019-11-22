@@ -3,7 +3,7 @@ import { NavigationSwitchScreenProps } from "react-navigation"
 import { createBottomTabNavigator } from "react-navigation-tabs"
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { ExploreSection } from "./explore/ExploreSection"
-import { FollowsScreen } from "./follows/FollowsScreen"
+import { FollowsSection } from "./follows/FollowsSection"
 import { HomeSection } from "./home/HomeSection"
 import { ProfileScreen } from "./profile/ProfileScreen"
 import { PromotionsSection } from "./promotions/PromotionsSection"
@@ -19,7 +19,7 @@ const MainNavigator = createBottomTabNavigator(
     Home: { screen: HomeSection },
     Explore: { screen: ExploreSection },
     Promotions: { screen: PromotionsSection },
-    Follows: { screen: FollowsScreen },
+    Follows: { screen: FollowsSection },
     Profile: { screen: ProfileScreen },
   },
   {

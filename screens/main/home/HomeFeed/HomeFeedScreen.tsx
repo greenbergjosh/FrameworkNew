@@ -16,9 +16,6 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const feed = useFeedContext()
   const { suggestedFollows, loadSuggestedFollows} = useOnBoardingContext()
-  console.log("START ##################################################################")
-  console.log("suggestedFollows\n", suggestedFollows)
-  console.log("END ##################################################################")
 
   React.useMemo(() => {
     loadSuggestedFollows()
