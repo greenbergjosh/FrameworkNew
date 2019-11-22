@@ -45,6 +45,7 @@ export { shallowPropCheck } from "./components/interface-builder/dnd"
  * Non-Framework Components
  */
 export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
+export { StandardGrid } from "./components/grid/StandardGrid"
 
 /**
  * Re-exported Types
