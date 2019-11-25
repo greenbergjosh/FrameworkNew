@@ -94,22 +94,33 @@ namespace UnsubJob
             if (args.Any(a => string.Equals(a, "gsl", StringComparison.CurrentCultureIgnoreCase)))
             {
                 var campaigns = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).ToList();
-                foreach (var n in networks)
-                {
-                    var np = Factory.GetInstance(Fw, n);
 
-                    foreach (var c in campaigns)
+                try
+                {
+                    foreach (var n in networks)
                     {
-                        try
+                        var np = Factory.GetInstance(Fw, n);
+
+                        foreach (var c in campaigns)
                         {
-                            var uri = await np.GetSuppressionLocationUrl(n, c);
-                            Console.WriteLine($"{c} {uri}");
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.Message);
+                            try
+                            {
+                                await nw.ScheduledUnsubJob(n, c);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
                         }
                     }
+                }
+                catch
+                {
+
+                }
+                finally
+                {
+                    
                 }
                 return;
             }
