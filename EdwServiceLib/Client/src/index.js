@@ -82,18 +82,16 @@ export const rs = async (type, name, configId, data, sessionId = null) => {
   return result;
 };
 
-export const ev = async (key, data, addToWhep = false, includeWhep = false, duplicate = null, sessionId = null) => {
+export const ev = async (data, nextFn = null, sessionId = null) => {
   const result = await post(url('ev'), {
     sessionId,
-    stack,
-    key,
-    data,
-    addToWhep,
-    includeWhep,
-    duplicate
+    data
   });
   if (isLogging) {
-    console.log('Event: ' + JSON.stringify(response, undefined, 2));
+    console.log('Event: ' + JSON.stringify(result, undefined, 2));
+  }
+  if (nextFn) {
+    nextFn();
   }
   return result;
 };
