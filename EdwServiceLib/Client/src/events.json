@@ -10,11 +10,11 @@ All events include these fields.
          //"1CCEEB9E-046A-43AB-9319-FF9204CBFFB1" // SessionTimeout
 
   "sf": //Dictionary of objects. Each entry represents a named stackframe.
-  {
+  [
     // A first entry named session is always present.
     // Session contains a "pageOrder" array field that represents the navigation history.
     // It also contains a "page" fields, which is a string that represents the current page.
-    "session": {
+    {
       "page": "page3",
       "pageOrder": [
         "Page1",
@@ -24,26 +24,35 @@ All events include these fields.
     },
 
     // The grp1 stackframe is optional. If present, it counts all the survey and question pages that were hit in the session. 
-    "grp1": {
+    {
+      "sfName": "group",
+      "key": "grp1",
       "pageCount": 8
     },
 
     // This stackframe contains information pertaining to the selected survey. It's name is variable: "American" or "Canadian".
     // It contains a pageCount field to count the number of times the survey landing page was hitin the session.
-    "American":  {
+    {
+      "sfName": "survey",
+      "order": 3,
+      "key": "American",
       "pageCount": 2
     },
 
     // This stackframe contains information pertaining to the selected survey question. It's name is variable: "American/questionX" or "Canadian/questionX".
     // It contains a pageCount field to count the number of times this question page was hit for the survey in the session.
     // The value of X is between 1 and 4.
-    "American/question1":  {
+    {
+      "sfName": "question",
+      "key": "American/question1",
+      //Future: id: UUID
       "pageCount": 1
     },
 
     // This stackframe contains information pertaining to the selected survey question answer. It's name is variable: "American/questionX/answer" or "Canadian/questionX/answer".
     // It contains a pageCount field to count the number of times this question page was hit for the survey in the session.
-    "American/question1/answer":  {
+    "answer":  {
+      "key": "American/question1/answer",
       "answer": "string containing the selected answer"
     }
   }
