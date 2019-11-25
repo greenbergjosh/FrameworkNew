@@ -1,0 +1,238 @@
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Impl.Matchers;
+using Utility;
+
+namespace SchedulerServiceLib
+{
+    public sealed class SchedulerService
+    {
+        private static FrameworkWrapper _fw;
+        private IScheduler _scheduler;
+
+        public void Config(FrameworkWrapper fw)
+        {
+            try
+            {
+                _fw = fw;
+                fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
+            }
+            catch (Exception ex)
+            {
+                _fw?.Error(nameof(Config), ex.UnwrapForLog());
+                throw;
+            }
+        }
+
+        public void OnStart()
+        {
+            _fw.Log("SchedulerService.OnStart", "Starting...");
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await InitScheduler();
+                    await _fw.Log("SchedulerService.OnStart", "Started.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            });
+        }
+
+        private async Task InitScheduler()
+        {
+            var props = new NameValueCollection
+            {
+                { "quartz.serializer.type", "binary" }
+            };
+            var factory = new StdSchedulerFactory(props);
+            _scheduler = await factory.GetScheduler();
+
+            var jobs = _fw.StartupConfiguration.GetL("Config/Jobs");
+            foreach (var job in jobs)
+            {
+                var cron = job.GetS("cron");
+                var name = job.GetS("name");
+                var parameters = job.GetD("params").ToDictionary(p => p.Item1, p => p.Item2);
+
+                var jobDetail = JobBuilder.Create<LmbJob>()
+                    .WithIdentity(name)
+                    .Build();
+
+                var trigger = TriggerBuilder.Create()
+                    .WithIdentity(name)
+                    .WithCronSchedule(cron)
+                    .UsingJobData(new JobDataMap(parameters))
+                    .ForJob(jobDetail)
+                    .Build();
+
+                await _scheduler.ScheduleJob(jobDetail, trigger);
+            }
+
+            await _scheduler.Start();
+        }
+
+        public void OnStop()
+        {
+            _fw.Log("SchedulerService.OnStop", "Stopping...");
+
+            ShutdownScheduler().GetAwaiter().GetResult();
+
+            _fw.Log("SchedulerService.OnStop", "Stopped");
+        }
+
+        private async Task ShutdownScheduler()
+        {
+            if (_scheduler != null) 
+                await _scheduler.Shutdown();
+            _scheduler = null;
+        }
+
+        public async Task HandleHttpRequest(HttpContext context)
+        {
+            try
+            {
+                var path = context.Request.Path.ToString().ToLowerInvariant();
+                if (path.EndsWith('/'))
+                    path = path.Remove(path.Length - 1);
+
+                if (path == string.Empty && context.Request.Method == WebRequestMethods.Http.Get)
+                    await GetStatus(context);
+                else if (path == "/pauseall" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    await _scheduler.PauseAll();
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                }
+                else if (path == "/resumeall" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    await _scheduler.ResumeAll();
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                }
+                else if (path == "/pause" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    var jobName = context.Request.Query["job"].ToString();
+                    await _scheduler.PauseJob(new JobKey(jobName));
+                    await _scheduler.PauseTrigger(new TriggerKey(jobName));
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                }
+                else if (path == "/resume" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    var jobName = context.Request.Query["job"].ToString();
+                    await _scheduler.ResumeJob(new JobKey(jobName));
+                    await _scheduler.ResumeTrigger(new TriggerKey(jobName));
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                }
+                else if (path == "/delete" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    var jobName = context.Request.Query["job"].ToString();
+                    await _scheduler.DeleteJob(new JobKey(jobName));
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                }
+                else if (path == "/reset" && context.Request.Method == WebRequestMethods.Http.Post)
+                {
+                    await ShutdownScheduler();
+                    await InitScheduler();
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                }
+                else
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
+            catch (Exception e)
+            {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await _fw.Error(nameof(HandleHttpRequest), $@"Caught exception processing request: {e.Message} : {e.UnwrapForLog()}");
+                throw;
+            }
+        }
+
+        private async Task GetStatus(HttpContext context)
+        {
+            var jobGroups = await _scheduler.GetJobGroupNames();
+
+            var jobs = new List<IDictionary<string, object>>();
+            foreach (var group in jobGroups)
+            {
+                var groupMatcher = GroupMatcher<JobKey>.GroupContains(group);
+                var jobKeys = await _scheduler.GetJobKeys(groupMatcher);
+                foreach (var jobKey in jobKeys)
+                {
+                    var detail = await _scheduler.GetJobDetail(jobKey);
+                    var triggers = await _scheduler.GetTriggersOfJob(jobKey);
+                    foreach (var trigger in triggers)
+                    {
+                        var triggerState = await _scheduler.GetTriggerState(trigger.Key);
+                        var job = new Dictionary<string, object>
+                        {
+                            {"group", group},
+                            {"name", jobKey.Name},
+                            {"description", detail.Description},
+                            {"triggerName", trigger.Key.Name},
+                            {"triggerGroup", trigger.Key.Group},
+                            {"triggerType", trigger.GetType().Name},
+                            {"triggerState", triggerState.ToString()}
+                        };
+
+                        var nextFireTime = trigger.GetNextFireTimeUtc();
+                        if (nextFireTime.HasValue)
+                            job.Add("nextFireTime", nextFireTime.Value.LocalDateTime);
+
+                        var previousFireTime = trigger.GetPreviousFireTimeUtc();
+                        if (previousFireTime.HasValue)
+                            job.Add("previousFireTime", previousFireTime.Value.LocalDateTime);
+
+                        jobs.Add(job);
+                    }
+                }
+            }
+
+            var result = new Dictionary<string, object>
+            {
+                ["jobs"] = jobs
+            };
+            context.Response.ContentType = "application/json";
+            var json = JsonWrapper.Serialize(result);
+            await context.Response.WriteAsync(json);
+        }
+
+        internal class LmbJob : IJob
+        {
+            public async Task Execute(IJobExecutionContext context)
+            {
+                var key = context.JobDetail.Key;
+                var dataMap = context.JobDetail.JobDataMap;
+
+                var id = Guid.Parse(dataMap.GetString("id"));
+                var myFloatValue = dataMap.GetFloat("myFloatValue");
+
+                try
+                {
+                    var code = await _fw.Entities.GetEntity(id);
+
+                    /*if (code?.GetS("Type") != "LBM.CS")
+                    {
+                        await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"{code?.GetS("Type")} LBM not supported. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}");
+                        continue;
+                    }*/
+                    var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
+
+                    _fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), code.GetS("Config"), debug, debugDir), true);
+                }
+                catch (Exception e)
+                {
+                    //await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"Failed to compile. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}\nCode:\n{code.GetS("")}\n\n{e.UnwrapForLog()}");
+                }
+            }
+        }
+    }
+}
