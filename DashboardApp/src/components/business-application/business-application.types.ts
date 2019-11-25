@@ -1,5 +1,5 @@
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { ComponentDefinition } from "../interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentDefinition } from "@opg/interface-builder"
 
 interface LabeledType {
   configType: PersistedConfig["id"]

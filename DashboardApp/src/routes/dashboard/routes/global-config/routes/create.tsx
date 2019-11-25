@@ -9,9 +9,14 @@ import JSON5 from "json5"
 import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { CodeEditor, EditorLangCodec, editorLanguages } from "../../../../../components/code-editor"
-import { UserInterface } from "../../../../../components/interface-builder/UserInterface"
-import { UserInterfaceContextManager } from "../../../../../components/interface-builder/UserInterfaceContextManager"
+import {
+  CodeEditor,
+  EditorLangCodec,
+  editorLanguages,
+  getDefaultsFromComponentDefinitions,
+  UserInterface,
+} from "@opg/interface-builder"
+import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager"
 import { Space } from "../../../../../components/space"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
@@ -22,11 +27,7 @@ import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
 import {
-  ComponentDefinition,
-  BaseInterfaceComponent,
-  getDefaultsFromComponentDefinitions,
-} from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
-import {
+  Alert,
   Button,
   Card,
   Col,
@@ -38,7 +39,6 @@ import {
   Select,
   Skeleton,
   Tabs,
-  Alert,
 } from "antd"
 import {
   fromEither,
@@ -100,7 +100,7 @@ export function CreateGlobalConfig({
     }))
   }, [setState])
 
-  const userInterfaceContextManager: UserInterfaceContextManager = {
+  const userInterfaceContextManager: AdminUserInterfaceContextManager = {
     executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
     reportDataByQuery: fromStore.reportDataByQuery,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {

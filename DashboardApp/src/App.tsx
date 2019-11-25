@@ -15,6 +15,13 @@ import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
+import { registry, registerMonacoEditorMount, antComponents } from "@opg/interface-builder"
+import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
+import { RemoteComponentInterfaceComponent } from "./components/custom-ib-components/remote-component/RemoteComponentInterfaceComponent"
+import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/slot-config/SlotConfigInterfaceComponent"
+import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
+import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
+import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 
 const persistor = getPersistor()
 
@@ -45,6 +52,16 @@ export function App(): JSX.Element {
   React.useEffect(() => {
     dispatch.iam.attemptResumeSession()
   }, [dispatch.iam])
+
+  React.useEffect(() => {
+    registry.register(antComponents)
+    registry.register({query: QueryInterfaceComponent})
+    registry.register({"remote-component": RemoteComponentInterfaceComponent})
+    registry.register({"slot-config": SlotConfigInterfaceComponent})
+    registry.register({select: SelectInterfaceComponent})
+    registry.register({tags: TagsInterfaceComponent})
+    registerMonacoEditorMount(getCustomEditorConstructionOptions)
+  }, [])
 
   return (
     <PersistGate

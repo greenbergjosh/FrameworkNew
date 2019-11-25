@@ -1,7 +1,7 @@
 import { Option, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
-import { ComponentDefinition } from "../components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentDefinition } from "@opg/interface-builder"
 import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { ROOT_CONFIG_COMPONENTS } from "../routes/dashboard/routes/global-config"
 import { AppSelectors } from "../state/store.types"

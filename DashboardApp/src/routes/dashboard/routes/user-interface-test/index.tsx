@@ -1,14 +1,7 @@
-import {
-  Button,
-  Card,
-  Divider,
-  Typography
-  } from "antd"
+import { Button, Card, Divider, Typography } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { ComponentDefinition } from "../../../../components/interface-builder/components/base/BaseInterfaceComponent"
-import { FormInterfaceComponentProps } from "../../../../components/interface-builder/components/form/FormInterfaceComponent"
-import { UserInterface } from "../../../../components/interface-builder/UserInterface"
+import { ComponentDefinition, FormInterfaceComponentProps, UserInterface } from "@opg/interface-builder"
 import { WithRouteProps } from "../../../../state/navigation"
 
 interface Props {}

@@ -2,6 +2,13 @@ const path = require("path")
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
 const { override, fixBabelImports } = require("customize-cra")
 
+/**
+ * See for more info:
+ * https://ant.design/docs/react/use-with-create-react-app
+ * https://www.npmjs.com/package/babel-plugin-import
+ * https://github.com/arackaf/customize-cra/blob/master/api.md#fixbabelimportslibraryname-options
+ * @type {Function[]}
+ */
 const overrides = [
   fixBabelImports("import", {
     libraryName: "antd",

@@ -5,8 +5,7 @@ import React from "react"
 import { useRematch } from "../../hooks"
 import { globalConfig } from "../../state/global-config"
 import { store } from "../../state/store"
-import { ComponentDefinition } from "../interface-builder/components/base/BaseInterfaceComponent"
-import { UserInterface } from "../interface-builder/UserInterface"
+import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import {
   BusinessApplicationConfig,
   BusinessApplicationId,
