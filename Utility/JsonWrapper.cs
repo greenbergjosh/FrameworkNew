@@ -222,25 +222,31 @@ namespace Utility
             return sb.ToString();
         }
 
-        public static string ConvertCsvToJson(string csv, IList<string> names)
+        public static string ConvertCsvToJson(string csv, IList<string> names, bool excludeHeader = false)
         {
-            StringBuilder sb = new StringBuilder("[");
-            using (StringReader reader = new StringReader(csv))
+            var jArray = new JArray();
+            //var sb = new StringBuilder("[");
+            using (var reader = new StringReader(csv))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] cols = line.Split(',');
-                    sb.Append("{");
-                    for (int i = 0; i < names.Count; i++)
-                        sb.Append("\"" + names[i] + "\": \"" + cols[i] + "\",");
-                    sb.Remove(sb.Length - 1, 1);
-                    sb.Append("},");
+                    if (excludeHeader)
+                    {
+                        excludeHeader = false;
+                        continue;
+                    }
+
+                    var cols = line.Split(',');
+                    var jObject = new JObject();
+                    
+                    for (var i = 0; i < names.Count; i++)
+                        jObject.Add(names[i], cols[i]);
+
+                    jArray.Add(jObject);
                 }
-                if (sb.Length > 1) sb.Remove(sb.Length - 1, 1);
-                sb.Append("]");
             }
-            return sb.ToString();
+            return Serialize(jArray);
         }
     }
 

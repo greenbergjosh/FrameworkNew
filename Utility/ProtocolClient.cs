@@ -1076,6 +1076,7 @@ namespace Utility
             // https://ckadmin.com/affiliates/api/Reports/Conversions?          start_date=10%2F22%2F2019&end_date=10%2F23%2F2019&conversion_type=all&exclude_bot_traffic=true&unbilled_only=true&start_at_row=1&row_limit=30&api_key=nuzgj47Oafmy9r6cuVwHkg&affiliate_id=1968
             // https://ckadmin.com/affiliates/api/Reports/SubAffiliateSummary?  start_date=10%2F22%2F2019&end_date=10%2F23%2F2019&conversion_type=all&start_at_row=1&row_limit=30&api_key=nuzgj47Oafmy9r6cuVwHkg&affiliate_id=1968
 
+            
             var urlTemplate = url + type + "?start_date=" +
                               System.Web.HttpUtility.UrlEncode(startDate.ToShortDateString())
                               + "&end_date=" + System.Web.HttpUtility.UrlEncode(endDate.ToShortDateString())
@@ -1090,203 +1091,39 @@ namespace Utility
 
             var (success, body) = await HttpGetAsync(request);
             var allRows = new List<object>();
-            try
+
+            do
             {
-                do
-                {
-                    var ge = JsonWrapper.JsonToGenericEntity(body);
+                var ge = JsonWrapper.JsonToGenericEntity(body);
 
-                    if (!success)
-                        throw new InvalidOperationException("bad cake request");
+                if (!success)
+                    throw new InvalidOperationException("bad cake request");
 
-                    var rowCount = int.Parse(ge.GetS("row_count"));
-                    if (rowCount == 0)
-                        break;
+                var rowCount = int.Parse(ge.GetS("row_count"));
+                if (rowCount == 0)
+                    break;
 
-                    row += rowCount;
-                    var results = ge.Get<System.Collections.Generic.IEnumerable<object>>("data").ToList();
-                    allRows.AddRange(results);
+                row += rowCount;
+                var results = ge.Get<System.Collections.Generic.IEnumerable<object>>("data").ToList();
+                allRows.AddRange(results);
 
-                    if (rowCount < rowLimit)
-                        break;
+                if (rowCount < rowLimit)
+                    break;
 
-                    request = urlTemplate + "&start_at_row=" + row
-                              + "&row_limit=" + rowLimit;
-                    (success, body) = await HttpGetAsync(request);
+                request = urlTemplate + "&start_at_row=" + row
+                          + "&row_limit=" + rowLimit;
+                (success, body) = await HttpGetAsync(request);
 
-                } while (true);
+            } while (true);
 
 
-                var json = JsonWrapper.Serialize(new Dictionary<string, object>
-                {
-                    ["row_count"] = row,
-                    ["data"] = allRows
-                });
-
-                await File.WriteAllTextAsync(destFile, json);
-            }
-            catch (Exception e)
+            var json = JsonWrapper.Serialize(new Dictionary<string, object>
             {
-                await fw.Error(nameof(DownloadCakeJson),
-                    $"Cake response from {url} was invalid xml.\r\nResponse:\r\n{body}");
-            }
-        }
-
-        public static async Task SendNotification(FrameworkWrapper fw, string from, string to, string subject,
-            string uri)
-        {
-            var payload = PL.O(new
-            {
-                from_address = from,
-                subject,
-                body = uri
+                ["row_count"] = row,
+                ["data"] = allRows
             });
-            var addresses = JsonConvert.SerializeObject(new object[] {new {email_address = to}});
-            payload.Add(PL.O(new {email_addresses = addresses}, new[] {false}));
-            await fw.PostingQueueWriter.Write(new PostingQueueEntry("SendEmail", DateTime.Now, payload.ToString()));
-        }
 
-        public static async Task RunPushnamiOnDomains(FrameworkWrapper fw, IEnumerable<string> domains)
-        {
-            const string serviceWorker =
-                "if (typeof window === \"undefined\") {\n" +
-                "\timportScripts('https://secureanalytic.com/scripts/ext/script/57dkr96ew8?url='+encodeURI(self.location.hostname));\n" +
-                "}\n" +
-                "importScripts(\"https://api.pushnami.com/scripts/v2/pushnami-sw/5b271c911f0c9927d30443f5\");";
-
-            foreach (var domain in domains)
-            {
-                // Compare service worker
-                var (success, body) = await HttpGetAsync("https://" + domain + "/service-worker.js");
-                if (!success || body != serviceWorker)
-                    continue;
-
-                var siteMapQuery = new SitemapQuery();
-                var siteMaps = await siteMapQuery.GetAllSitemapsForDomain(domain);
-                var uris = new List<Uri>();
-                foreach (var siteMapFile in siteMaps)
-                {
-                    if (!siteMapFile.Location.ToString().EndsWith("page-sitemap.xml")) continue;
-
-                    uris.AddRange(siteMapFile.Urls
-                        .Where(u => u.Location != null)
-                        .Select(u => u.Location)
-                        .ToList());
-                }
-
-                if (uris.Count == 0)
-                    uris.Add(new Uri("https://" + domain + "/"));
-
-                var web = new HtmlWeb();
-
-                foreach (var uri in uris)
-                {
-                    var doc = web.Load(uri);
-                    var found = doc.DocumentNode.SelectNodes("//link[@rel]")
-                        .Select(link => new {link, relValue = link.GetAttributeValue("rel", string.Empty)})
-                        .Select(@t => new {@t, hrefValue = @t.link.GetAttributeValue("href", string.Empty)})
-                        .Where(@t => @t.@t.relValue == "dns-prefetch" && @t.hrefValue == "//api.pushnami.com")
-                        .Select(@t => @t.@t.relValue).Any();
-
-                    if (!found)
-                    {
-                        foreach (var script in doc.DocumentNode.SelectNodes("//script[@src]"))
-                        {
-                            var srcValue = script.GetAttributeValue("src", string.Empty);
-                            if (srcValue != "https://api.pushnami.com/scripts/v1/push/5b27f5fe56cc4120d071a221")
-                                continue;
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                        await SendNotification(fw, "llvovsky@onpointglobal.com", "llvovsky@onpointglobal.com",
-                            "Pushnami could not be found", uri.ToString());
-                }
-            }
-        }
-
-        public static async Task DownloadPushyJson(FrameworkWrapper fw, string username, string password,
-            DateTime startDate, DateTime endDate, string destFile)
-        {
-            string csrftoken = null;
-            // First perform a GET on https://pushy.ai/partner/login/ to get a csrftoken cookie
-            var getResponse = await HttpGetHeadersAsync("https://pushy.ai/partner/login/");
-            if (getResponse.success && getResponse.headers.TryGetValue("Set-Cookie", out var cookie))
-            {
-                SetCookieHeaderValue.ParseList(cookie.SelectMany(s => s.Split(';')).ToList()).ForEach(c =>
-                {
-                    if (c.Name == "csrftoken")
-                        csrftoken = c.Value.ToString();
-                });
-            }
-
-            //Also get the csrfmiddlewaretoken out of the page
-            var doc = new HtmlDocument();
-            doc.LoadHtml(getResponse.body);
-            var csrfmiddlewaretoken = doc.DocumentNode.SelectNodes("//input[@name]")
-                .Select(input => new
-                {
-                    name = input.GetAttributeValue("name", string.Empty),
-                    value = input.GetAttributeValue("value", string.Empty)
-                })
-                .Where(@t => @t.name == "csrfmiddlewaretoken")
-                .Select(@t => @t.value)
-                .FirstOrDefault();
-
-            // todo: throw if not token
-
-            var parameters = new Dictionary<string, string>
-            {
-                ["csrfmiddlewaretoken"] = csrfmiddlewaretoken,
-                ["username"] = username,
-                ["password"] = password
-            };
-            var headers = new List<(string key, string value)>
-            {
-                ("Referer", "https://pushy.ai/partner/login/"),
-                ("cookie", "csrftoken=" + csrftoken)
-            };
-
-            var response =
-                await HttpPostGetHeadersAsync("https://pushy.ai/partner/login/", parameters, 60, "", 1, headers);
-
-            string sessionId = null;
-            string csrftoken2 = null;
-            // Now get login token from response
-            if (response.headers.TryGetValue("Set-Cookie", out var cookie2))
-            {
-                SetCookieHeaderValue.ParseList(cookie2.SelectMany(s => s.Split(';')).ToList()).ForEach(c =>
-                {
-                    if (c.Name == "csrftoken")
-                        csrftoken2 = c.Value.ToString();
-                    if (c.Name == "sessionid")
-                        sessionId = c.Value.ToString();
-                });
-            }
-
-            headers = new List<(string key, string value)>
-            {
-                ("cookie", "csrftoken=" + csrftoken2 + ";sessionid=" + sessionId)
-            };
-            var url =
-                "https://pushy.ai/partner/stats-data/?startdate=" + System.Web.HttpUtility.UrlEncode(
-                                                                      startDate.ToShortDateString())
-                                                                  + "&enddate=" +
-                                                                  System.Web.HttpUtility.UrlEncode(
-                                                                      endDate.ToShortDateString())
-                                                                  + "&group_by=";
-            var result = await HttpPostAsync(url, new Dictionary<string, string>(), 60, "application/json", 1, headers);
-            await File.WriteAllTextAsync(destFile, result);
-        }
-
-        public static async Task DownloadFromGoogleDrive(string fileId, string destFile)
-        {
-            var url = "https://docs.google.com/spreadsheets/d/" + fileId + "/export?exportFormat=csv";
-            var (success, body) = await HttpGetAsync(url);
-            if (success)
-                await File.WriteAllTextAsync(destFile, body);
+            await File.WriteAllTextAsync(destFile, json);
         }
     }
 }
