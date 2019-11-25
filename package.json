@@ -1,6 +1,6 @@
 {
   "name": "@opg/interface-builder",
-  "version": "1.0.0-alpha.11-TEST",
+  "version": "1.0.0-alpha.11-TEST.2",
   "description": "React Library for creating WYSIWYG interfaces",
   "author": "OnPoint UI Team",
   "license": "ISC",
@@ -49,11 +49,11 @@
     "react-dnd": "7.7.0",
     "react-dnd-html5-backend": "7.7.0",
     "react-dnd-touch-backend": "0.8.3",
-    "react-monaco-editor": "0.32.1"
+    "react-monaco-editor": "^0.25.1"
   },
   "peerDependencies": {
-    "react": ">=16.11.0",
-    "react-dom": ">=16.11.0"
+    "react": ">=16.8.6",
+    "react-dom": ">=16.8.6"
   },
   "devDependencies": {
     "@types/ckeditor": "4.9.8",
