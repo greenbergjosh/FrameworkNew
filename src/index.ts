@@ -57,5 +57,5 @@ export type ComponentRenderMetaProps = _ComponentRenderMetaProps
 export type FormInterfaceComponentProps = _FormInterfaceComponentProps
 export type JSONRecord = _JSONRecord
 export type TSEnum<T extends string | undefined> = _TSEnum<T>
-export type UserInterfaceContextManager = _UserInterfaceContextManager
+export type UserInterfaceContextManager<T> = _UserInterfaceContextManager<T>
 export type UserInterfaceProps = _UserInterfaceProps
