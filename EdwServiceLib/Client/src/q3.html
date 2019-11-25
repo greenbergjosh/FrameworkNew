@@ -46,18 +46,21 @@
 
   var reportAnswer = function(nbChildren) {
     var hasCar = document.querySelector('input[name="hasCar"]:checked').value == "true";
-    reportToEdw(answerConfig, function(cf) {
+    edw.reportToEdw(answerConfig, function(cf) {
       cf.ss.answer.hasCar = hasCar;
       if (hasCar) {
         cf.ev.push({
-          event: 'hasCarEvent',
-          brand: document.getElementsByName("brand")[0].value,
-          model: document.getElementsByName("model")[0].value,
-          year: document.getElementsByName("year")[0].value
+          key: ['event'],
+          data: {
+            event: '9AD3647F-17E2-403B-A7B5-8C2D49CE09BE',
+            brand: document.getElementsByName("brand")[0].value,
+            model: document.getElementsByName("model")[0].value,
+            year: document.getElementsByName("year")[0].value
+          }
         });
       }
     }, function() {
-      var survey = getUrlParameter('survey');
+      var survey = edw.getUrlParameter('survey');
       window.location = 'q4.html?survey=' + survey;
     });
   };

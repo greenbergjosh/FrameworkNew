@@ -17,10 +17,10 @@
   };
 
   var reportAnswer = function(nbChildren) {
-    reportToEdw(answerConfig, function(cf) {
+    edw.reportToEdw(answerConfig, function(cf) {
       cf.ss.answer.nbChildren = nbChildren;
     }, function() {
-      var survey = getUrlParameter('survey');
+      var survey = edw.getUrlParameter('survey');
       window.location = 'q3.html?survey=' + survey;
     });
   };

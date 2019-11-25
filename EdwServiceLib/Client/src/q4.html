@@ -17,7 +17,7 @@
   };
 
   var reportAnswer = function(dateOfBirth) {
-    reportToEdw(answerConfig, function(cf) {
+    edw.reportToEdw(answerConfig, function(cf) {
       cf.ss.answer.dateOfBirth = dateOfBirth;
     }, function() {
       window.location = 'smartpath.html';
