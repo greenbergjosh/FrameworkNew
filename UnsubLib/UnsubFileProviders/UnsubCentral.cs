@@ -68,6 +68,17 @@ namespace UnsubLib.UnsubFileProviders
 
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {
+            var uriStr = uri.ToString();
+            var campaignId = "unknown";
+            var cidIndex = uriStr.IndexOf("|cid=");
+            if (cidIndex != -1)
+            {
+                campaignId = uriStr.Substring(cidIndex + 5);
+                uri = new Uri(uriStr.Substring(0, cidIndex));
+            }
+
+            await _fw.Trace("UV2C", $"{campaignId} Entering GetFileUrl");
+
             var qs2 = HttpUtility.ParseQueryString(uri.Query);
 
             var defaultUrl = $"https://api.unsubcentral.com/api/service/keys/{qs2["key"]}?s={qs2["s"]}&format=hash&zipped=true";
@@ -76,7 +87,6 @@ namespace UnsubLib.UnsubFileProviders
             {
                 using (var client = new HttpClient())
                 {
-
                     string key;
                     string secure;
 
@@ -84,10 +94,13 @@ namespace UnsubLib.UnsubFileProviders
                     var qsOriginal = HttpUtility.ParseQueryString(uri.Query);
                     if (qsOriginal["keyID"] != null)
                     {
+                        await _fw.Trace("UV2C", $"{campaignId} Has keyID");
+
                         resp = await client.GetAsync(uri);
                         var redirectUrl = resp?.Headers?.Location;
                         if (redirectUrl == null)
                         {
+                            await _fw.Error("UV2C", $"{campaignId} Response had no redirect");
                             await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
                             return defaultUrl;
                         }
@@ -102,13 +115,23 @@ namespace UnsubLib.UnsubFileProviders
                         secure = qsOriginal["s"];
                     }
 
-                    if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace()) return defaultUrl;
+                    await _fw.Trace("UV2C", $"{campaignId} key {key} secure {secure}");
+
+                    if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace())
+                    {
+                        await _fw.Trace("UV2C", $"{campaignId} defaultUrl {defaultUrl}");
+                        return defaultUrl;
+                    } 
 
                     var data = new Dictionary<string, string> { { "key", key }, { "s", secure } };
                     var loginUrl = $"https://go.unsubcentral.com/backend/api/login";
 
+                    await _fw.Trace("UV2C", $"{campaignId} before login");
+
                     resp = await client.PostAsync(loginUrl, new FormUrlEncodedContent(data));
                     var res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+
+                    await _fw.Trace("UV2C", $"{campaignId} after login {res}");
 
                     var token = res.GetS("payload");
 
@@ -116,23 +139,35 @@ namespace UnsubLib.UnsubFileProviders
 
                     var fileIdUrl = $"https://go.unsubcentral.com/backend/api/keys?token={token}&find=ByAffiliateKeyStringEquals&keyString={key}";
 
+                    await _fw.Trace("UV2C", $"{campaignId} before get {fileIdUrl}");
+
                     resp = await client.GetAsync(fileIdUrl);
                     res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+
+                    await _fw.Trace("UV2C", $"{campaignId} after get {fileIdUrl}");
+
                     var unsubListId = res.GetS("unsubList/id");
                     var dlUrl = $"https://go.unsubcentral.com/backend/api/export/list/{unsubListId}/download?token={token}&type=DOWNLOAD_GRP_ENC_TEXT";
 
+                    await _fw.Trace("UV2C", $"{campaignId} before get {dlUrl}");
                     resp = await client.GetAsync(dlUrl);
                     res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+
+                    await _fw.Trace("UV2C", $"{campaignId} after get {dlUrl}");
 
                     var dl = res.GetS("payload");
 
                     await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {res}");
 
-                    return string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;
+                    var result = string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;
+                    await _fw.Trace("UV2C", $"{campaignId} result {result}");
+
+                    return result;
                 }
             }
             catch (Exception e)
             {
+                await _fw.Error("UV2C", $"{campaignId} Unhandled exception getting unsub link: {e.UnwrapForLog()}");
                 await _fw.Error(_logMethod, $"Unhandled exception getting unsub link: {e.UnwrapForLog()}");
                 return defaultUrl;
             }

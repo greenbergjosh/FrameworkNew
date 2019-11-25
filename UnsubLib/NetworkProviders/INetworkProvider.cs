@@ -386,7 +386,11 @@ namespace UnsubLib.NetworkProviders
                     xml.LoadXml(suppDetails);
                     var xn = xml.SelectSingleNode("/dataset/data/suppurl");
 
-                    return new Uri(xn.FirstChild.Value);
+                    var url = xn.FirstChild.Value;
+                    if (url.Contains("unsubcentral"))
+                        url += $"|cid={unsubRelationshipId}";
+
+                    return new Uri(url);
                 }
                 catch (HttpRequestException e)
                 {
