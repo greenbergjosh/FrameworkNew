@@ -48,6 +48,16 @@ export const addCache = async (name, data, sessionId = null) => {
   }));
 };
 
+export const getScope = async (sessionId = null) => {
+  return await get(url('scope', sessionId));
+};
+
+export const setScope = async (scope, sessionId = null) => {
+  return await post(url('scope'), json(sessionId, {
+    scope
+  }));
+};
+
 const url = (path, sessionId, params) => {
   const url = new URL(serverAddress + '/' + path);
   if (sessionId) {
