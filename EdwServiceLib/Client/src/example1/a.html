@@ -32,6 +32,7 @@
           page: document.title,
           onPush: [
             {
+              rs: ['impressionsAndClicks'],
               key: ['event'],
               whenDuplicate: {
                 duplicate: true
@@ -58,6 +59,7 @@
         
         edw.ev([
             {
+              rs: ['impressionsAndClicks'],
               key: ['event'],
               whenDuplicate: {
                 duplicate: true
