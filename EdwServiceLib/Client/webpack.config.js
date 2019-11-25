@@ -62,12 +62,12 @@ const config = {
   },
   // Plugins
   plugins: [
-    new CopyWebpackPlugin([
+    /*new CopyWebpackPlugin([
       {
           from: 'src/test.js',
           to: 'test.js'
       }
-    ])
+    ])*/
     /*new HtmlWebpackPlugin({
       template: './src/index.html',
       filename: './index.html',
