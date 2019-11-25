@@ -19,7 +19,7 @@
           data: {}
         }
       },
-      ss: {
+      st: {
         root: {                       // A stackframe named 'root' will be persisted in the server cache for the current session.
           myData: 'custom data here'  // A key/value pair will be persisted in 'root'.
         }
@@ -33,7 +33,7 @@
     edw.reportToEdw({
       // r1 was already created for the session on page load, no need to configure it again. 
       // Published events will include it in it's rsConfigs member.
-      ss: {
+      st: {
         root: {},                         // First stack level is the stackframe named 'root'. 
                                           // It's 'myData' property will be included in published events.
 
