@@ -242,6 +242,8 @@ namespace SchedulerServiceLib
                     await _fw.Log($"{nameof(LmbJob)}.{nameof(Execute)}", $"Running {context.JobDetail.Key.Name}");
 
                     var dataMap = context.JobDetail.JobDataMap;
+                    var parameters = dataMap.ToDictionary(k => k.Key, (k) => k.Value);
+                    parameters.Add("fw", _fw);
                     var lbmId = Guid.Parse(context.Trigger.JobDataMap["lbmId"].ToString());
                     var code = await _fw.Entities.GetEntity(lbmId);
                     if (code?.GetS("Type") != "LBM.CS")
@@ -255,7 +257,7 @@ namespace SchedulerServiceLib
                     var sd = new ScriptDescriptor(lbmId, lbmId.ToString(), source, debug, debugDir);
                     _fw.RoslynWrapper.CompileAndCache(sd);
 
-                    await _fw.RoslynWrapper.RunFunction(lbmId.ToString(), dataMap, null);
+                    await _fw.RoslynWrapper.RunFunction(lbmId.ToString(), parameters, null);
 
                     await _fw.Log($"{nameof(LmbJob)}.{nameof(Execute)}", $"Finished {context.JobDetail.Key.Name}");
                 }
