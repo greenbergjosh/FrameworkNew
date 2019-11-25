@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Utility;
@@ -219,9 +220,10 @@ namespace EdwServiceLib
             if (json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
             {
+                TransformData(data, sessionId);
                 var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JArray()));
                 var scopeStack = new StackFrameParser(serializedScope);
-                scopeStack.Apply(data.ToObject<Dictionary<string,string>>());
+                scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value?.ToString()));
                 var jsonStack = scopeStack.Json();
                 serializedScope = JsonWrapper.Serialize(jsonStack);
                 _cache.Set($"{sessionId}:{Sf}:{name}", serializedScope);

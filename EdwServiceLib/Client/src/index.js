@@ -31,8 +31,11 @@ export const enableLogging = (enable) => {
   isLogging = enable;
 };
 
-export const stackFrameAllow = (names) => {
+export const stackFrameAllow = async (names, sessionId =null) => {
   stack = names;
+  for (const name of names) {
+    await getOrCreateStackFrame(name, {}, sessionId);
+  }
 };
 
 export const getOrCreateRs = async (rsType, name, data, sessionId = null) => {
