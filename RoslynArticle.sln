@@ -102,6 +102,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpamhausMonitor", "Spamhaus
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackingDataLib", "TrackingDataLib\TrackingDataLib.csproj", "{356F1007-6156-42AA-97F7-8DF71D69552B}"
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CachingServiceLib", "CachingServiceLib\CachingServiceLib.csproj", "{8A5651C6-AFD3-4598-A60B-00FAFEC96040}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdwServiceLib", "EdwServiceLib\EdwServiceLib.csproj", "{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -362,6 +363,12 @@ Global
 		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A5651C6-AFD3-4598-A60B-00FAFEC96040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -402,9 +409,10 @@ Global
 		{4B200124-7DA8-44BD-9F40-5A6456204F41} = {A35D41AD-13B4-43B3-B39F-D06F1E3F6EB1}
 		{356F1007-6156-42AA-97F7-8DF71D69552B} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{8A5651C6-AFD3-4598-A60B-00FAFEC96040} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal

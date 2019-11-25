@@ -10,9 +10,9 @@ using Utility;
 using Utility.EDW.Reporting;
 using static System.Net.WebRequestMethods;
 
-namespace CachingServiceLib
+namespace EdwServiceLib
 {
-    public class CachingService
+    public class EdwService
     {
         private FrameworkWrapper _fw;
 
