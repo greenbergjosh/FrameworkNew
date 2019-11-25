@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace EdwServiceLib
         private const string Name = "name";
         private const string Data = "data";
         private const string Type = "type";
-        private const string Stack = "stack";
+        private const string Stack = "newStack";
         private const string Ss = "ss";
         private const string Sf = "sf";
         private const string Rs = "rs";
@@ -47,11 +48,12 @@ namespace EdwServiceLib
         private const string Whep = "whep";
         private const string AddToWhep = "addToWhep";
         private const string IncludeWhep = "includeWhep";
-        private const string WhenDuplicate = "whenDuplicate";
         private const string NewStack = "newStack";
         private const string OldStack = "oldStack";
         private const string OnPop = "onPop";
         private const string OnPush = "onPush";
+        private const string When = "when";
+        private const string WhenDuplicate = "whenDuplicate";
         private const string WhenSessionTimeout = "whenSessionTimeout";
 
         public void Config(FrameworkWrapper fw)
@@ -59,7 +61,7 @@ namespace EdwServiceLib
             _fw = fw;
 
             _routes.Add($"/{Rs}", GetOrCreateRs);
-            _routes.Add($"/{Ev}", PublishEvent);
+            _routes.Add($"/{Ev}", PublishEvents);
             _routes.Add($"/{Cf}", Config);
             _routes.Add($"/{Ss}", SetStackFrame);
             _routes.Add($"/{Sf}", GetOrCreateStackFrame);
@@ -113,6 +115,8 @@ namespace EdwServiceLib
                 var result = new JObject();
                 var obj = (JObject)data;
 
+                var oldStack = GetOldStack(session);
+
                 var stackFrames = new List<string>();
                 if (obj.TryGetValue(St, out var sfList) && sfList.Type == JTokenType.Object)
                 {
@@ -132,8 +136,8 @@ namespace EdwServiceLib
                     }
                 }
 
-                var stack = BuildStack(session, stackFrames);
-
+                var newStack = BuildStack(session, stackFrames);
+                
                 if (obj.TryGetValue(Rs, out var rsList) && rsList.Type == JTokenType.Object)
                 {
                     var rsResults = new JObject();
@@ -144,13 +148,13 @@ namespace EdwServiceLib
                         var rsConfig = (JObject)value;
                         var type = rsConfig[Type].ToString();
                         var configId = Guid.Parse(rsConfig[ConfigId].ToString());
-                        var (_, jToken) = await GetOrCreateRs(session, stack, key, type, configId, rsConfig[Data]);
+                        var (_, jToken) = await GetOrCreateRs(session, newStack, key, type, configId, rsConfig[Data]);
                         rsResults[key] = jToken;
                     }
                 }
 
-                var poppedEvents = await PopStackFrames(session, stack, stackFrames, false);
-                var pushedEvents = await PushStackFrames(session, stack, stackFrames);
+                var poppedEvents = await PopStackFrames(session, oldStack, newStack, false);
+                var pushedEvents = await PushStackFrames(session, oldStack, newStack);
 
                 result[OnPop] = JArray.FromObject(poppedEvents);
                 result[OnPush] = JArray.FromObject(pushedEvents);
@@ -168,7 +172,7 @@ namespace EdwServiceLib
             return null;
         }
 
-        private async Task<List<object>> PublishEvents(Session session, Stack stack, JArray evList, bool isSessionTimeout)
+        private async Task<List<object>> PublishEvents(Session session, Stack oldStack, Stack newStack, JArray evList, bool isSessionTimeout)
         {
             var evResults = new List<object>();
 
@@ -181,14 +185,16 @@ namespace EdwServiceLib
                 var addToWhep = false;
                 var includeWhep = false;
                 JObject duplicate = null;
+                JArray when = null;
 
                 if (evObj.TryGetValue(WhenSessionTimeout, out var rawWhenSessionTimeout) &&
                     rawWhenSessionTimeout.Type == JTokenType.Boolean &&
                     isSessionTimeout != rawWhenSessionTimeout.ToObject<bool>())
                     continue;
 
+                if (evObj.TryGetValue(When, out var rawWhen) && rawWhen.Type == JTokenType.Array)
+                    when = (JArray)rawWhen;
 
-                
                 if (evObj.TryGetValue(AddToWhep, out var rawAddToWhep) && rawAddToWhep.Type == JTokenType.Boolean)
                     addToWhep = rawAddToWhep.ToObject<bool>();
 
@@ -198,8 +204,8 @@ namespace EdwServiceLib
                 if (evObj.TryGetValue(WhenDuplicate, out var rawWhenDuplicate) && rawWhenDuplicate.Type == JTokenType.Object)
                     duplicate = (JObject)rawWhenDuplicate;
 
-                var evResult = await PublishEvent(session, stack, evKey.ToObject<string[]>(), 
-                    evData, addToWhep, includeWhep, duplicate);
+                var evResult = await PublishEvent(session, oldStack, newStack, evKey.ToObject<string[]>(), 
+                    evData, addToWhep, includeWhep, duplicate, when);
                 if (evResult != null)
                     evResults.Add(evResult);
             }
@@ -207,64 +213,59 @@ namespace EdwServiceLib
             return evResults;
         }
 
-        private async Task<List<object>> PopStackFrames(Session session, Stack stack, IReadOnlyList<string> stackFrames, bool isSessionTimeout)
+        private static int DiffStacks(Stack oldStack, Stack newStack)
         {
-            var evResults = new List<object>();
-            var (s, dictionary) = stack.SingleOrDefault(kv => kv.Key == Session);
-            if (s != Session ||
-                !dictionary.TryGetValue(OldStack, out var oldStackToken))
-                return evResults;
-
-            var oldStackFrames = oldStackToken.ToObject<string[]>().ToList();
-            var oldStackFrameIndex = 0;
-            for (; oldStackFrameIndex < oldStackFrames.Count; oldStackFrameIndex++)
+            var diffIndex = 0;
+            for (; diffIndex < oldStack.Count; diffIndex++)
             {
-                if (stackFrames.Count < oldStackFrameIndex + 1 ||
-                    oldStackFrames[oldStackFrameIndex] != stackFrames[oldStackFrameIndex])
+                if (newStack.Count < diffIndex + 1 ||
+                    oldStack[diffIndex].Key != newStack[diffIndex].Key)
                     break;
             }
 
-            while (oldStackFrames.Count > oldStackFrameIndex)
+            return diffIndex;
+        }
+
+        private async Task<List<object>> PopStackFrames(
+            Session session, Stack oldStack, Stack newStack, bool isSessionTimeout)
+        {
+            var evResults = new List<object>();
+            
+            if (!oldStack.Any())
+                return evResults;
+
+            var diffIndex = DiffStacks(oldStack, newStack);
+            var oldStackCount = oldStack.Count;
+
+            while (oldStackCount > diffIndex)
             {
-                var oldStackFrame = oldStackFrames.Last();
+                var oldStackFrame = oldStack[oldStackCount - 1].Key;
                 var onPop = session.Get<JArray>($"{session.Id}:{Sf}:{oldStackFrame}:{OnPop}");
                 if (onPop != null)
                 {
-                    var oldStack = BuildStack(session, oldStackFrames);
-                    var poppedEvents = await PublishEvents(session, oldStack, onPop, isSessionTimeout);
+                    var subStack = oldStack.Range(oldStackCount);
+                    var poppedEvents = await PublishEvents(session, subStack, newStack, onPop, isSessionTimeout);
                     evResults.AddRange(poppedEvents);
                 }
-                oldStackFrames.RemoveAt(oldStackFrames.Count - 1);
+
+                oldStackCount--;
             }
 
             return evResults;
         }
 
-        private async Task<List<object>> PushStackFrames(Session session, Stack stack, List<string> stackFrames)
+        private async Task<List<object>> PushStackFrames(Session session, Stack oldStack, Stack newStack)
         {
             var evResults = new List<object>();
-            var (s, dictionary) = stack.SingleOrDefault(kv => kv.Key == Session);
-            if (s != Session ||
-                !dictionary.TryGetValue(OldStack, out var oldStackToken))
-                oldStackToken = new JArray();
+            var diffIndex = DiffStacks(newStack, oldStack);
 
-            var oldStackFrames = oldStackToken.ToObject<string[]>().ToList();
-            var newStackFrameIndex = 0;
-            for (; newStackFrameIndex < stackFrames.Count; newStackFrameIndex++)
+            for (var i = diffIndex; i < newStack.Count; i++)
             {
-                if (oldStackFrames.Count < newStackFrameIndex + 1 ||
-                    stackFrames[newStackFrameIndex] != oldStackFrames[newStackFrameIndex])
-                    break;
-            }
-
-            for (var i = newStackFrameIndex; i < stackFrames.Count; i++)
-            {
-                var newStackFrame = stackFrames[i];
+                var newStackFrame = newStack[i].Key;
                 var onPush = session.Get<JArray>($"{session.Id}:{Sf}:{newStackFrame}:{OnPush}");
                 if (onPush == null) continue;
-                var parts = stackFrames.GetRange(0, i + 1);
-                var newStack = BuildStack(session, parts);
-                var pushedEvents = await PublishEvents(session, newStack, onPush, false);
+                var subStack = newStack.Range(i + 1);
+                var pushedEvents = await PublishEvents(session, subStack, newStack, onPush, false);
                 evResults.AddRange(pushedEvents);
             }
 
@@ -305,21 +306,11 @@ namespace EdwServiceLib
 
                      var session = new Session(_cache, sessionId, ctsKey.Token);
                      var stackFrames = new[] { Session };
-                     var stack = BuildStack(session, stackFrames);
-                     
-                     if (stack != null && stack.Any())
-                     {
-                         await PopStackFrames(session, stack, stackFrames, true);
+                     var oldStack = GetOldStack(session);
+                     var newStack = BuildStack(session, stackFrames);
 
-                         /*var data = new Dictionary<string, object>
-                         {
-                             [Event] = SessionTerminateEventId,
-                             ["page"] = "{page}",
-                             ["pageOrder"] = "{pageOrder}",
-                             ["pageCount"] = "{pageCount}"
-                         };
-                         await PublishEvent(session, stack, new[] { Event }, JObject.FromObject(data), false, false, null);*/
-                     }
+                     if (newStack.Any())
+                         await PopStackFrames(session, oldStack, newStack, true);
 
                      cts.Dispose();
                      ctsKey.Cancel();
@@ -331,15 +322,27 @@ namespace EdwServiceLib
             return tokens.ctsKey.Token;
         }
 
+        private Stack GetOldStack(Session session)
+        {
+            var sessionStack = BuildStack(session, new []{Session});
+            var (s, dictionary) = sessionStack.SingleOrDefault(kv => kv.Key == Session);
+            if (s != Session ||
+                !dictionary.TryGetValue(OldStack, out var oldStackToken))
+                oldStackToken = new JArray();
+
+            var oldStack = BuildStack(session, oldStackToken.ToObject<string[]>());
+            return oldStack;
+        }
+
         private async Task<object> EndSession(HttpContext context)
         {
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var session = GetOrCreateSession(context, json);
-            var stackFrames = new[] { Session };
-            var stack = BuildStack(session, stackFrames);
-            await PopStackFrames(session, stack, stackFrames, false);
+            var newStack = BuildStack(session, new[] { Session });
+            var oldStack = GetOldStack(session);
+            await PopStackFrames(session, oldStack, newStack, false);
             var key = $"{session.Id}";
             var (cts, ctsKey) = _cache.Get<(CancellationTokenSource cts, CancellationTokenSource ctsKey)>(key);
             _cache.Remove(key);
@@ -467,34 +470,16 @@ namespace EdwServiceLib
                 : cache.ToDictionary(rs => rs.Name, rs => (object)rs.Id);
         }
 
-        private async Task<object> PublishEvent(HttpContext context)
+        private async Task<object> PublishEvents(HttpContext context)
         {
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var session = GetOrCreateSession(context, json);
-            if (json.TryGetValue(Stack, out var rawStackFrames) && rawStackFrames.Type == JTokenType.Array &&
-                json.TryGetValue(Key, out var key) && key.Type == JTokenType.Array &&
-                json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
+            if (json.TryGetValue(Data, out var data) && data is JArray evList)
             {
-                var addToWhep = false;
-                var includeWhep = false;
-                JObject duplicate = null;
-
-                if (json.TryGetValue(AddToWhep, out var rawAddToWhep) && rawAddToWhep.Type == JTokenType.Boolean)
-                    addToWhep = rawAddToWhep.ToObject<bool>();
-
-                if (json.TryGetValue(IncludeWhep, out var rawIncludeWhep) && rawIncludeWhep.Type == JTokenType.Boolean)
-                    includeWhep = rawIncludeWhep.ToObject<bool>();
-
-                if (json.TryGetValue(WhenDuplicate, out var rawWhenDuplicate) && rawWhenDuplicate.Type == JTokenType.Object)
-                    duplicate = (JObject)rawWhenDuplicate;
-
-                var stackFrames = rawStackFrames.ToObject<string[]>();
-                var stack = BuildStack(session, stackFrames);
-
-                var result = await PublishEvent(session, stack, key.ToObject<string[]>(), 
-                                                (JObject)data, addToWhep, includeWhep, duplicate);
+                var stack = GetOldStack(session);
+                var result = await PublishEvents(session, stack, stack, evList, false);
                 return JsonWrapper.Serialize(result);
             }
 
@@ -502,13 +487,92 @@ namespace EdwServiceLib
             return null;
         }
 
+        private static bool EvaluatePredicate(IEnumerable when, Stack oldStack, Stack newStack, JObject data)
+        {
+            if (when == null)
+                return true;
+
+            foreach (var condition in when.OfType<JObject>())
+            {
+                if (!condition.TryGetValue("var", out var varName) || !condition.TryGetValue("in", out var rawIn) ||
+                    !(rawIn is JArray inValues)) continue;
+
+                var nameParts = varName.ToString().Split(',');
+                var stackAge = NewStack;
+                string preName = null;
+                string name;
+                switch (nameParts.Length)
+                {
+                    case 3:
+                        stackAge = nameParts[0];
+                        preName = nameParts[1];
+                        name = nameParts[2];
+                        break;
+                    case 2:
+                        preName = nameParts[0];
+                        name = nameParts[1];
+                        break;
+                    case 1:
+                        name = nameParts[0];
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Invalid variable name {varName}.");
+                }
+
+                if (string.IsNullOrEmpty(name))
+                    throw new InvalidOperationException($"Invalid variable name {name}.");
+
+                if (preName == Ev)
+                {
+                    if (!data.TryGetValue(name, out var value) || 
+                        value == null || 
+                        !inValues.ToObject<string[]>().Contains(value.ToString()))
+                        return false;
+                }
+                else
+                {
+                    Stack stack;
+                    switch (stackAge)
+                    {
+                        case OldStack:
+                            stack = oldStack;
+                            break;
+
+                        case NewStack:
+                            stack = newStack;
+                            break;
+
+                        default:
+                            throw new InvalidOperationException($"Invalid newStack name {stackAge}.");
+                    }
+
+                    if (!string.IsNullOrEmpty(preName))
+                    {
+                        if (!stack.TryGetStackFrameValue(preName, name, out var value) ||
+                            value == null ||
+                            !inValues.ToObject<string[]>().Contains(value.ToString()))
+                            return false;
+                    }
+                    else
+                    {
+                        if (!stack.TryGetValue(name, out var value) ||
+                            value == null ||
+                            !inValues.ToObject<string[]>().Contains(value.ToString()))
+                            return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         private async Task<object> PublishEvent(
             Session session,
-            Stack stack,
+            Stack oldStack, Stack stack,
             IEnumerable<string> keyParts, JObject data, 
-            bool addToWhep, bool includeWhep, JObject duplicate)
+            bool addToWhep, bool includeWhep, JObject duplicate, JArray when)
         {
-            // Get last stack frame and get/create event dictionary.
+            // Get last newStack frame and get/create event dictionary.
             var stackFrame = stack.Last().Value;
             JArray evArray;
             if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
@@ -517,6 +581,9 @@ namespace EdwServiceLib
                 evArray = new JArray();
 
             TransformData(session, data, stack, stack.Last().Key);
+
+            if (!EvaluatePredicate(when, oldStack, stack, data))
+                return null;
 
             // Compute event key
             var keyValues = new List<string>();
@@ -542,9 +609,6 @@ namespace EdwServiceLib
                 foreach (var (s, value) in duplicate)
                     data[s] = value;
             }
-
-            
-            //data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
 
             var rsids = GetRsIds(session.Id);
             var eventId = Guid.NewGuid();
@@ -583,10 +647,10 @@ namespace EdwServiceLib
 
             var jObj = JObject.FromObject(sfData);
             await SetStackFrame(session, stack.Last().Key, jObj);
+
+            // Update memory
             foreach (var (s, value) in jObj)
-            {
                 stackFrame[s] = value;
-            }
 
             return data;
         }
@@ -816,9 +880,9 @@ namespace EdwServiceLib
             {
                 var parts = varName.Split(".");
                 if (parts.Length != 2)
-                    throw new InvalidOperationException("Invalid stack access expression.");
+                    throw new InvalidOperationException("Invalid newStack access expression.");
 
-                if (stack.TryGetValue(parts[0], out var stackFrame) && 
+                if (stack.TryGetStackFrame(parts[0], out var stackFrame) && 
                     stackFrame.TryGetValue(varName, out var v))
                     value = v;
             }

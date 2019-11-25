@@ -37,7 +37,7 @@
                 duplicate: true
               },
               data: {
-                event: 'impression for question a',
+                event: 'impression',
                 page: '{page}',
                 pageOrder: '{pageOrder}'
               }
@@ -56,13 +56,7 @@
       element.addEventListener("click", function(event){
         event.preventDefault();
         
-        edw.reportToEdw({
-          st: {
-            session: {},
-            grp1: {},
-            pageA: {}
-          },
-          ev: [
+        edw.ev([
             {
               key: ['event'],
               whenDuplicate: {
@@ -74,8 +68,7 @@
                 pageOrder: '{pageOrder}'
               }
             }
-          ]
-        }, null, function(){
+          ], function() {
           window.location = element.getAttribute('href');
         });
       });
