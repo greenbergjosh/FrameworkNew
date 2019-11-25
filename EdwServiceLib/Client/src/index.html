@@ -9,80 +9,93 @@
     </div>
 <script type="text/javascript">
     window.onload = function() {
+        var logResponse = function(response) {
+            console.log('Response: ' + JSON.stringify(response));
+        };
+
         EdwClient.getOrCreateConfig({
             'test': 'EDA8BF65-C8CF-4B86-8BB1-81EE66F80ED2',
             'slot1': '2229C87C-E640-4909-85A6-BFABA3DD99BE',
             'slot2': '7C68F21C-AEBA-4895-BF44-248876C21103',
         })
-        .then(t => EdwClient.setScope('page+'))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
         .then(t => EdwClient.getScope())
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
-        .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
-            page: document.title,
-            pageNumber: '0+',
-            pageOrder: 'page+'
-        }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
-        .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
-            page: document.title,
-            pageNumber: '0+',
-            pageOrder: 'page+'
-        }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.setScope('page=1,smoker=false'))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.setScope('page=2'))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.setScope('age=39'))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
             event: 'buy',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.setScope('page='))
+        .then(t => logResponse(t))
+
+
+        /*.then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
+            page: document.title,
+            pageNumber: '0+',
+            pageOrder: 'page+'
+        }))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
+            page: document.title,
+            pageNumber: '0+',
+            pageOrder: 'page+'
+        }))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            scope: "event+",
             event: 'buy',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            scope: "event+",
-            event: 'sell',
+            event: 'buy',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            scope: "eventNumber+",
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
             event: 'sell',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
             event: 'sell',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            scope: "-",
             event: 'sell',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
         .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            scope: "-",
             event: 'sell',
             eventNumber: '0+',
             eventOrder: 'event+'
         }))
-        .then(t => console.log('Response: ' + JSON.stringify(t)))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
+            event: 'sell',
+            eventNumber: '0+',
+            eventOrder: 'event+'
+        }))
+        .then(t => logResponse(t))
+        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
+            event: 'sell',
+            eventNumber: '0+',
+            eventOrder: 'event+'
+        }))
+        .then(t => logResponse(t))*/
         .catch(reason => console.log('Error! Reason: ' + reason));
     }
 </script>
