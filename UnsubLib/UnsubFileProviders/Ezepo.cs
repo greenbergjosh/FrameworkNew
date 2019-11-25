@@ -39,6 +39,8 @@ namespace UnsubLib.UnsubFileProviders
         {
             var fileUrl = "";
 
+            await _fw.Trace("EZEPO", $"GetEzepoUnsubFileUri Entering");
+
             try
             {
                 var web = new HtmlWeb();
@@ -129,8 +131,11 @@ namespace UnsubLib.UnsubFileProviders
             }
             catch (Exception e)
             {
+                await _fw.Error("EZEPO", $"GetEzepoUnsubFileUri Failed");
                 await _fw.Error(nameof(GetEzepoUnsubFileUri), $"Ezepo failed {e.UnwrapForLog()}");
             }
+
+            await _fw.Trace("EZEPO", $"GetEzepoUnsubFileUri Succeeded {fileUrl}");
 
             return fileUrl;
         }
