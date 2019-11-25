@@ -475,8 +475,7 @@ namespace EdwServiceLib
 
             var stackFrame = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t =>
             {
-                var o = data == null ? new JObject() : data;
-                return JsonWrapper.Serialize(o);
+                return JsonWrapper.Serialize(data ?? new JObject());
             });
             return Task.FromResult((name, stackFrame));
         }
