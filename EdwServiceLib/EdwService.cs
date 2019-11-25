@@ -262,7 +262,7 @@ namespace EdwServiceLib
         {
             TransformData(data, sessionId);
             var stack = BuildStack(sessionId, stackFrames);
-            data[Sf] = new JArray(stack);
+            data[Sf] = JArray.FromObject(stack);
 
             var whep = ExtractWhepFromStack(stack);
             var rsids = GetRsIds(sessionId);
