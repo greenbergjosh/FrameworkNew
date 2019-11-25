@@ -283,38 +283,19 @@ namespace Utility
                 }
             }
         }
-        public static async Task<Stream> GetSFtpFileStreamWithPassword(string sourceFile, string host, int? port, string userName, string password)
+
+        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName, string keyFilePath = null, string password = null)
         {
-            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, password) : new SftpClient(host, userName, password))
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
             {
-                try
-                {
-                    client.Connect();
-                    var ms = new MemoryStream();
-
-                    await Task.Factory.FromAsync(client.BeginDownloadFile(sourceFile, ms), client.EndDownloadFile);
-
-                    ms.Position = 0;
-
-                    return ms;
-                }
-                finally
-                {
-                    client.Disconnect();
-                }
+                throw new ArgumentException($"{nameof(GetSFtpFileStream)} requires either key file or password, both were null.");
             }
-        }
-
-        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName,
-            string keyFilePath)
-        {
-            var pk = new PrivateKeyFile(keyFilePath);
 
             if (!sourceFile.StartsWith("/")) sourceFile = $"/{sourceFile}";
 
-            using (var client = port.HasValue
-                ? new SftpClient(host, port.Value, userName, pk)
-                : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -334,16 +315,18 @@ namespace Utility
             }
         }
 
-        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port,
-            string userName, string keyFilePath)
+        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port, string userName, string keyFilePath = null, string password = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(UploadSFtpStream)} requires either key file or password, both were null.");
+            }
 
             if (!destinationPath.StartsWith("/")) destinationPath = $"/{destinationPath}";
 
-            using (var client = port.HasValue
-                ? new SftpClient(host, port.Value, userName, pk)
-                : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -360,18 +343,22 @@ namespace Utility
 
         public delegate bool EnumerateDirectoryFunc(int depth, string parent, string name);
 
-        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host,
-            int? port, string userName, string keyFilePath, EnumerateDirectoryFunc enumerateDirectory = null)
+        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host, int? port, string userName, string keyFilePath = null, string password = null, EnumerateDirectoryFunc enumerateDirectory = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(SFtpGetFiles)} requires either key file or password, both were null.");
+            }
+
             var result = new List<(string directory, string file)>();
 
             if (dirName.IsNullOrWhitespace()) dirName = "";
             else if (!dirName.StartsWith("/")) dirName = $"/{dirName}";
 
-            using (var client = port.HasValue
-                ? new SftpClient(host, port.Value, userName, pk)
-                : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
