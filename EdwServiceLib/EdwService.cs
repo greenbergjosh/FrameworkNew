@@ -16,6 +16,7 @@ using static System.Net.WebRequestMethods;
 
 namespace EdwServiceLib
 {
+    // ReSharper disable once UnusedMember.Global
     public class EdwService
     {
         private FrameworkWrapper _fw;
@@ -27,24 +28,24 @@ namespace EdwServiceLib
         private readonly Dictionary<string, Func<HttpContext, Task<object>>> _routes =
             new Dictionary<string, Func<HttpContext, Task<object>>>();
 
-        const string SessionId = "sessionId";
-        const string Name = "name";
-        const string Data = "data";
-        const string Type = "type";
-        const string Stack = "stack";
-        const string Ss = "ss";
-        const string Sf = "sf";
-        const string Rs = "rs";
-        const string Ev = "ev";
-        const string Cf = "cf";
-        const string ConfigId = "configId";
-        const string KeyPrefix = "keyPrefix";
-        const string SfName = "__sfName";
-        const string Key = "key";
-        const string Whep = "whep";
-        const string AddToWhep = "addToWhep";
-        const string IncludeWhep = "includeWhep";
-        const string Duplicate = "duplicate";
+        private const string SessionId = "sessionId";
+        private const string Name = "name";
+        private const string Data = "data";
+        private const string Type = "type";
+        private const string Stack = "stack";
+        private const string Ss = "ss";
+        private const string Sf = "sf";
+        private const string Rs = "rs";
+        private const string Ev = "ev";
+        private const string Cf = "cf";
+        private const string ConfigId = "configId";
+        private const string KeyPrefix = "keyPrefix";
+        private const string SfName = "__sfName";
+        private const string Key = "key";
+        private const string Whep = "whep";
+        private const string AddToWhep = "addToWhep";
+        private const string IncludeWhep = "includeWhep";
+        private const string Duplicate = "duplicate";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -79,8 +80,6 @@ namespace EdwServiceLib
             if (path.EndsWith('/'))
                 path = path.Remove(path.Length - 1);
 
-            var verb = context.Request.Method;
-            
             if (context.Request.Method != Http.Post)
             {
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
@@ -209,7 +208,6 @@ namespace EdwServiceLib
                          Debug.WriteLine(key);
                          var data = new Dictionary<string, object>() { ["event"] = SessionTerminateEventId };
 
-                         //
                          await PublishEvent(Guid.Parse(key.ToString()), cts.Token, new[] { "session" }, new[] { "event" },
                                             JObject.FromObject(data), false, false, null);
 
@@ -341,7 +339,6 @@ namespace EdwServiceLib
 
         private Dictionary<string, object> GetRsIds(Guid sessionId)
         {
-            var rsids = new Dictionary<string, object>();
             var rsListKey = $"{sessionId}:{Rs}";
             return _cache.Get<List<(string Name, Guid Id)>>(rsListKey)
                 .ToDictionary(rs => rs.Name, rs => (object)rs.Id);
@@ -392,13 +389,14 @@ namespace EdwServiceLib
                 if (data.TryGetValue(keyPart, out var keyValue))
                     keyValues.Add($"{keyPart}:{keyValue}");
                 else
-                    throw new InvalidOperationException($"Data does not contain keypart \"keyPart\".");
+                    throw new InvalidOperationException($"Data does not contain keyPart \"{keyPart}\".");
             }
 
             var stack = BuildStack(sessionId, stackFrames);
 
             // Get last stack frame and get/create event dictionary.
-            var stackFrame = stack.Last();
+            var enumeratedStack = stack.ToList();
+            var stackFrame = enumeratedStack.Last();
             JArray evArray;
             if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
                 evArray = (JArray)rawEvArray;
@@ -414,16 +412,16 @@ namespace EdwServiceLib
                 return null; //TODO: return last event?
 
             // Add duplicate data if available
-            if (eventPresent && duplicate != null)
+            if (eventPresent)
             {
-                foreach (var kv in duplicate)
-                    data[kv.Key] = kv.Value;
+                foreach (var (s, value) in duplicate)
+                    data[s] = value;
             }
 
-            TransformData(sessionId, token, data, stack, stackFrames.Last());
+            TransformData(sessionId, token, data, enumeratedStack, stackFrames.Last());
             var jStack = new JObject();
             for (var i = 0; i < stackFrames.Length; i++)
-                jStack[stackFrames[i]] = JObject.FromObject(stack.ElementAt(i));
+                jStack[stackFrames[i]] = JObject.FromObject(enumeratedStack.ElementAt(i));
             data[Sf] = jStack;
             //data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
 
@@ -439,7 +437,7 @@ namespace EdwServiceLib
 
             // include whep data in new event.
             if (includeWhep)
-                whep = ExtractWhepFromStack(stack);
+                whep = ExtractWhepFromStack(enumeratedStack);
 
             // store new event key in ev array.
             if (!eventPresent)
@@ -537,17 +535,16 @@ namespace EdwServiceLib
                 obj.TryGetValue(KeyPrefix, out var rawKeyPrefix))
             {
                 var keyPrefix = rawKeyPrefix.ToString();
-
-                if (!stackFrames.Reverse().Any(sf => sf == keyPrefix))
+                var invertedStackFrames = stackFrames.Reverse().ToList();
+                if (invertedStackFrames.All(sf => sf != keyPrefix))
                 {
-                    foreach (var sf in stackFrames.Reverse())
+                    foreach (var sf in invertedStackFrames)
                     {
                         var stack = BuildStack(sessionId, new[] { sf }).First();
-                        if (stack.TryGetValue(SfName, out var n) && n.ToString() == keyPrefix)
-                        {
-                            keyPrefix = sf;
-                            break;
-                        }
+                        if (!stack.TryGetValue(SfName, out var n) || n.ToString() != keyPrefix)
+                            continue;
+                        keyPrefix = sf;
+                        break;
                     }
                 }
 
@@ -570,30 +567,29 @@ namespace EdwServiceLib
 
         private void TransformData(
             Guid sessionId, CancellationToken token, JToken data,
-            IEnumerable<IDictionary<string, JToken>> stack, string stackFrame)
+            List<IDictionary<string, JToken>> stack, string stackFrame)
         {
-            if (data.Type == JTokenType.Object)
-            {
-                var obj = (JObject)data;
-                var toRemove = new List<string>();
+            if (data.Type != JTokenType.Object)
+                return;
+
+            var obj = (JObject)data;
+            var toRemove = new List<string>();
                 
-                foreach (var kv in obj)
-                {
-                    if (kv.Value.Type != JTokenType.String)
-                        continue;
+            foreach (var kv in obj)
+            {
+                if (kv.Value.Type != JTokenType.String)
+                    continue;
 
-                    var str = (string)kv.Value;
-                    var key = $"{sessionId}:{stackFrame}:{kv.Key}";
+                var str = (string)kv.Value;
+                var key = $"{sessionId}:{stackFrame}:{kv.Key}";
 
-                    if (!ParseCounter(token, key, obj, kv, str) && 
-                        !ParseAccumulator(token, key, obj, kv, str, toRemove) &&
-                        !ParseStack(obj, kv, str, stack))
-                        continue;
-                }
-
-                foreach (var rm in toRemove)
-                    obj.Remove(rm);
+                if (ParseCounter(token, key, obj, kv, str)) continue;
+                if (ParseAccumulator(token, key, obj, kv, str, toRemove)) continue;
+                ParseStack(obj, kv, str, stack);
             }
+
+            foreach (var rm in toRemove)
+                obj.Remove(rm);
         }
 
         private bool ParseAccumulator(
@@ -603,16 +599,17 @@ namespace EdwServiceLib
             var regex = new Regex("^(?<varName>.+)\\+(?<options>(?<count>\\d+)(?<distinct>[d]?)(?<mode>[fl]?))?$");
             var match = regex.Match(str);
 
-            if (match == null || !match.Success)
+            if (!match.Success)
                 return false;
 
             string varName = null;
-            int count = 0;
-            bool distinct = false;
-            bool last = false;
+            var count = 0;
+            var distinct = false;
+            var last = false;
 
             foreach (Group group in match.Groups)
             {
+                // ReSharper disable once SwitchStatementMissingSomeCases
                 switch (group.Name)
                 {
                     case "varName":
@@ -634,7 +631,7 @@ namespace EdwServiceLib
                 }
             }
 
-            if (obj.TryGetValue(varName, out var variable))
+            if (varName != null && obj.TryGetValue(varName, out var variable))
             {
                 var values = (JArray)JsonWrapper.TryParse(_cache.GetOrCreate(key, e =>
                 {
@@ -706,13 +703,14 @@ namespace EdwServiceLib
             return true;
         }
 
-        private bool ParseStack(JObject obj, KeyValuePair<string, JToken> kv, string str, IEnumerable<IDictionary<string, JToken>> stack)
+        private static bool ParseStack(JObject obj, KeyValuePair<string, JToken> kv, string str, List<IDictionary<string, JToken>> stack)
         {
             if (stack == null || !(str.StartsWith("{") && str.EndsWith("}")))
                 return false;
             
             var varName = str.Substring(1, str.Length - 2);
             JToken value = null;
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var stackFrame in stack)
             {
                 if (stackFrame.TryGetValue(varName, out value))
