@@ -27,6 +27,26 @@ var impressionEvent = {
   }
 };
 
+var clickEvent = {
+  key: ['event'],
+  duplicate: {
+    duplicate: true
+  },
+  data: {
+    event: 'click',
+    page: '{page}',
+    pageOrder: '{pageOrder}',
+    pageCount: '{pageCount}',
+    groupPageCount: '{groupPageCount}',
+    surveyPageCount: '{surveyPageCount}',
+    questionPageCount: '{questionPageCount}',
+    answerPageCount: '{answerPageCount}',
+    surveyId: '{survey}',
+    questionId: '{question}',
+    answerId: '{answerId}'
+  }
+};
+
 var reportSurvey = function(page, id, nextFn) {
   var surveyConfig = edw.createConfig(surveyStack, {}, [impressionEvent]);
 
@@ -51,6 +71,8 @@ var reportSmartPath = function() {
 
   edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.session.page = 'smartPath';
+  }, function() {
+    edw.es();
   });
 };
 
@@ -77,25 +99,7 @@ var reportQuestion = function(page, id, nextFn) {
   });
   
   var questionConfig = edw.createConfig(questionStack, {}, [impressionEvent]);
-  answerConfig[id] = edw.createConfig(answerStack, {}, [{
-    key: ['event'],
-    duplicate: {
-      duplicate: true
-    },
-    data: {
-      event: 'click',
-      page: '{page}',
-      pageOrder: '{pageOrder}',
-      pageCount: '{pageCount}',
-      groupPageCount: '{groupPageCount}',
-      surveyPageCount: '{surveyPageCount}',
-      questionPageCount: '{questionPageCount}',
-      answerPageCount: '{answerPageCount}',
-      surveyId: '{survey}',
-      questionId: '{question}',
-      answerId: '{answerId}'
-    }
-  }]);
+  answerConfig[id] = edw.createConfig(answerStack, {}, [clickEvent]);
 
   edw.reportToEdw(questionConfig, function(cf) {
     if (page) {
@@ -207,15 +211,65 @@ var setupSmartPath = function() {
 var reportDomain = function(domain, configId, nextFn) {
   edw.reportToEdw({
     rs: {
-      domain: {
+      /*full: {
+        configId: '46D13674-95C8-4CD0-A21A-2EFA513FB8B4',
+        type: 'Immediate',
+        data: {
+          domain: domain
+        }
+      },*/
+      partial: {
         configId: configId,
         type: 'Immediate',
         data: {
           domain: domain
         }
-      }
+      }/*,
+      paged: {
+        configId: '9CC89491-9EB7-4899-BDEC-5213E01AFAFE',
+        type: 'Immediate',
+        data: {
+          domain: domain
+        }
+      }*/
     }
   }, 
   function() {},
   nextFn);
+};
+
+var orderGroupStack = {
+  session: {
+    pageOrder: 'page+'
+  },
+  grp1: {
+
+  }
+};
+
+var setupOrderGroup = function() {
+  window.onload = function() {
+    reportOrderGroup();
+  };
+};
+
+var reportOrderGroup = function() {
+  var config = edw.createConfig(orderGroupStack, {}, [impressionEvent, clickEvent]);
+  edw.reportToEdw(config, function(cf) {
+    cf.ss.session.page = 'OrderGroup';
+  });
+};
+
+var setupPage = function(page) {
+  window.onload = function() {
+    reportPage(page);
+  };
+};
+
+var reportPage = function(page) {
+  var config = edw.createConfig(orderGroupStack, {}, [impressionEvent, clickEvent]);
+  edw.reportToEdw(config, function(cf) {
+    cf.ss.session.page = page;
+    cf.ss[page] = {};
+  });
 };
