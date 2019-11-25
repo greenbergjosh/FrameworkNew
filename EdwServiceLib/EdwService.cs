@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Utility;
 using Utility.EDW.Reporting;
@@ -418,7 +419,7 @@ namespace EdwServiceLib
         private Task<(string Json, JToken Data)> SetStackFrame(Guid sessionId, string name, JToken data)
         {
             TransformData(data, sessionId, null);
-            var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JArray()));
+            var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JObject()));
             var scopeStack = new StackFrameParser(serializedScope);
             scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
             var jsonStack = scopeStack.Json();
@@ -474,8 +475,8 @@ namespace EdwServiceLib
 
             var stackFrame = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t =>
             {
-                var array = data == null ? new JArray() : new JArray() { data };
-                return JsonWrapper.Serialize(array);
+                var o = data == null ? new JObject() : data;
+                return JsonWrapper.Serialize(o);
             });
             return Task.FromResult((name, stackFrame));
         }
@@ -495,28 +496,69 @@ namespace EdwServiceLib
                     var str = (string)kv.Value;
                     var key = $"{sessionId}:{kv.Key}";
 
-                    if (str == "0+")
+                    var regex = new Regex("^(?<varName>.+)\\+(?<options>(?<count>\\d+)(?<distinct>[d]?)(?<mode>[fl]?))?$");
+                    var match = regex.Match(str);
+
+                    if (match != null && match.Success)
                     {
-                        var value = _cache.GetOrCreate(key, t => 0);
-                        value++;
-                        _cache.Set(key, value);
-                        obj[kv.Key] = value;
-                    }
-                    else if (str.EndsWith('+') && str.Length > 1)
-                    {
-                        var varName = str.Substring(0, str.Length - 1);
+                        string varName = null;
+                        int count = 0;
+                        bool distinct = false;
+                        bool last = false;
+
+                        foreach (Group group in match.Groups)
+                        {
+                            switch(group.Name)
+                            {
+                                case "varName":
+                                    varName = group.Value;
+                                    break;
+
+                                case "count":
+                                    if (!string.IsNullOrEmpty(group.Value))
+                                        count = int.Parse(group.Value);
+                                    break;
+
+                                case "distinct":
+                                    distinct = group.Value == "d";
+                                    break;
+
+                                case "mode":
+                                    last = group.Value == "l";
+                                    break;
+                            }
+                        }
+
                         if (obj.TryGetValue(varName, out var variable))
                         {
-                            var value = _cache.GetOrCreate(key, t => string.Empty);
-                            var separator = value == string.Empty ? string.Empty : ";";
-                            value = $"{value}{separator}{variable}";
-                            _cache.Set(key, value);
-                            obj[kv.Key] = new JArray(value.Split(";", StringSplitOptions.RemoveEmptyEntries));
+                            var values = (JArray)JsonWrapper.TryParse(_cache.GetOrCreate(key, t => "[]"));
+                            
+                            if (count > 0 && !last && values.Count >= count)
+                                continue;
+
+                            var strVal = variable.ToString();
+                            if (distinct && values.Any(t => t.Value<string>() == strVal))
+                                continue;
+
+                            if (last && count > 0 && values.Count >= count)
+                                values.RemoveAt(0);
+
+                            values.Add(variable);
+
+                            _cache.Set(key, JsonWrapper.Serialize(values));
+                            obj[kv.Key] = values;
                         }
                         else
                         {
                             toRemove.Add(kv.Key);
                         }
+                    }
+                    else if (str == "0+")
+                    {
+                        var value = _cache.GetOrCreate(key, t => 0);
+                        value++;
+                        _cache.Set(key, value);
+                        obj[kv.Key] = value;
                     }
                     else if (stack != null && str.StartsWith("{") && str.EndsWith("}"))
                     {
