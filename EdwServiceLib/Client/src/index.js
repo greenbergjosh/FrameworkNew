@@ -1,6 +1,6 @@
 const serverAddress = 'http://localhost:21339';
 
-export const RsTypes = {
+export const rsTypes = {
   Immediate: "Immediate",
   Checked: "Checked",
   CheckedDetail: "CheckedDetail"
@@ -9,78 +9,84 @@ export const RsTypes = {
 let stack = [];
 let isLogging = false;
 
-var logStackFrame = function(response) {
-  if (isLogging) {
-    console.log('Scope: ' + JSON.stringify(response));
-  }
-};
-
-var logRs = function(response) {
-  if (isLogging) {
-    console.log('Rs: ' + JSON.stringify(response));
-  }
-};
-
-var logEvent = function(response) {
-  if (isLogging) {
-    console.log('Event: ' + JSON.stringify(response));
-  }
-};
-
 export const enableLogging = (enable) => {
   isLogging = enable;
 };
 
-export const stackFrameAllow = async (names, sessionId =null) => {
+export const sfAllow = async (names, sessionId = null) => {
   stack = names;
   for (const name of names) {
     await getOrCreateStackFrame(name, {}, sessionId);
   }
 };
 
-export const getOrCreateRs = async (rsType, name, data, sessionId = null) => {
-  const j = json(sessionId, {
-    stack,
+export const cf = async (data, sessionId = null) => {
+  enableLogging(data.enableLogging);
+  
+  if (data.ss) {
+    stack = [];
+    for(const stackFrame in ss) {
+      stack.push(stackFrame);
+    }
+  }
+
+  const result = await post(url('cf'), {
+    sessionId,
+    data
+  });
+  if (isLogging) {
+    console.log('Config: ' + JSON.stringify(result));
+  }
+  return result;
+};
+
+export const sf = async (name, data, sessionId = null) => {
+  const result = await post(url('sf'), {
+    sessionId,
     name,
     data
   });
-  j['rsType'] = rsType;
-  const result = await post(url('rs'), j);
-  logRs(result);
+  if (isLogging) {
+    console.log('StackFrame: ' + JSON.stringify(result));
+  }
   return result;
 };
 
-export const addEvent = async (reportingSessions, data, sessionId = null) => {
-  const result = await post(url('event'), json(sessionId, {
+export const ss = async (name, data, sessionId = null) => {
+  const result = await post(url('ss'), {
+    sessionId,
+    name,
+    data
+  });
+  if (isLogging) {
+    console.log('StackFrame: ' + JSON.stringify(result));
+  }
+  return result;
+};
+
+export const rs = async (type, name, configId, data, sessionId = null) => {
+  const result = await post(url('rs'), {
+    sessionId,
+    name,
+    configId,
+    data,
+    type
+  });
+  if (isLogging) {
+    console.log('Rs: ' + JSON.stringify(result));
+  }
+  return result;
+};
+
+export const ev = async (data, sessionId = null) => {
+  const result = await post(url('ev'), {
+    sessionId,
     stack,
-    reportingSessions,
     data
-  }));
-  logEvent(result);
-  return result;
-};
-
-export const getOrCreateConfig = async (data, sessionId = null) => {
-  return await post(url('config'), json(sessionId, {
-    data
-  }));
-};
-
-export const setStackFrame = async (name, data, sessionId = null) => {
-  const result = await post(url('ss'), json(sessionId, {
-    name,
-    data
-  }));
-  logStackFrame(result);
-  return result;
-};
-
-export const getOrCreateStackFrame = async (name, data, sessionId = null) => {
-  const result = await post(url('sf'), json(sessionId, {
-    name,
-    data
-  }));
-  logStackFrame(result);
+  });
+  if (isLogging) {
+    console.log('Event: ' + JSON.stringify(response));
+  }
   return result;
 };
 
@@ -95,13 +101,6 @@ const url = (path, sessionId, params) => {
     }
   }
   return url;
-};
-
-const json = (sessionId, json) => {
-  if (sessionId) {
-    json.sessionId = sessionId;
-  }
-  return json;
 };
 
 const post = async (url, json) => {

@@ -21,27 +21,26 @@ namespace EdwServiceLib
             new Dictionary<string, Func<HttpContext, Task<object>>>();
 
         const string SessionId = "sessionId";
-        const string Rsid = "rsid";
         const string Name = "name";
         const string Data = "data";
-        const string ReportingSessions = "reportingSessions";
-        const string Rs = "rs";
-        const string Event = "event";
-        const string Cfg = "config";
-        const string RsType = "rsType";
-        const string Scope = "scope";
+        const string Type = "type";
+        const string Stack = "stack";
         const string Whep = "whep";
         const string Ss = "ss";
         const string Sf = "sf";
-        const string Stack = "stack";
+        const string Rs = "rs";
+        const string Ev = "ev";
+        const string Cf = "cf";
+        const string ConfigId = "configId";
+        const string EventId = "eventId";
 
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
 
             _routes.Add($"/{Rs}", GetOrCreateRs);
-            _routes.Add($"/{Event}", AddEvent);
-            _routes.Add($"/{Cfg}", GetOrCreateConfigIds);
+            _routes.Add($"/{Ev}", PublishEvent);
+            _routes.Add($"/{Cf}", Config);
             _routes.Add($"/{Ss}", SetStackFrame);
             _routes.Add($"/{Sf}", GetOrCreateStackFrame);
         }
@@ -83,23 +82,79 @@ namespace EdwServiceLib
             return "Path not found";
         }
 
+        private async Task<object> Config(HttpContext context)
+        {
+            var body = await context.GetRawBodyStringAsync();
+            var json = (JObject)JsonWrapper.TryParse(body);
+
+            var sessionId = GetOrCreateSessionId(context, json);
+            if (json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
+            {
+                var result = new JObject();
+                var obj = (JObject)data;
+
+                if (obj.TryGetValue(Rs, out var rsList) && rsList.Type == JTokenType.Object)
+                {
+                    var rsResults = new JObject();
+                    result[Rs] = rsResults;
+
+                    foreach (var rs in (JObject)rsList)
+                    {
+                        var rsConfig = (JObject)rs.Value;
+                        var type = rsConfig[Type].ToString();
+                        var configId = Guid.Parse(rsConfig[ConfigId].ToString());
+                        var rsResult = await GetOrCreateRs(sessionId, rs.Key, type, configId, rsConfig[Data]);
+                        rsResults[rs.Key] = rsResult.Data;
+                    }
+                }
+
+                var stackFrames = new List<string>();
+                if (obj.TryGetValue(Ss, out var ssList) && ssList.Type == JTokenType.Object)
+                {
+                    var ssResults = new JObject();
+                    result[Ss] = ssResults;
+
+                    foreach (var ss in (JObject)ssList)
+                    {
+                        var ssConfig = (JObject)ss.Value;
+                        await GetOrCreateStackFrame(sessionId, ss.Key, null);
+                        var ssResult = await SetStackFrame(sessionId, ss.Key, ssConfig);
+                        stackFrames.Add(ss.Key);
+                        ssResults[ss.Key] = ssResult.Data;
+                    }
+                }
+
+                if (obj.TryGetValue(Ev, out var evList) && evList.Type == JTokenType.Array)
+                {
+                    var evResults = new JArray();
+                    result[Ev] = evResults;
+
+                    foreach (var ev in (JArray)evList)
+                    {
+                        var evResult = await PublishEvent(sessionId, stackFrames.ToArray(), ev);
+                        evResults.Add(evResult);
+                    }
+                }
+
+                return JsonWrapper.Serialize(result);
+            }
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return null;
+        }
+
         private Guid GetOrCreateSessionId(HttpContext context, JObject json)
         {
             if (context.Request.Cookies.TryGetValue(SessionId, out var cookieSessionId))
                 return Guid.Parse(cookieSessionId);
 
             if (json.TryGetValue(SessionId, out var raw) &&
-                Guid.TryParse(raw.ToString(), out var sessionId))
+                Guid.TryParse(raw?.ToString(), out var sessionId))
                 return sessionId;
 
             var newSessionId = Guid.NewGuid();
             context.Response.Cookies.Append(SessionId, newSessionId.ToString());
             return newSessionId;
-        }
-
-        private Guid GetConfigId(Guid sessionId, string name)
-        {
-            return _cache.Get<Guid>($"{sessionId}:{Rsid}:{name}");
         }
 
         private async Task<object> GetOrCreateRs(HttpContext context)
@@ -108,107 +163,118 @@ namespace EdwServiceLib
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue(Stack, out var stack) && stack.Type == JTokenType.Array && 
-                json.TryGetValue(Name, out var name) &&
-                json.TryGetValue(RsType, out var rsType) &&
+            if (json.TryGetValue(Name, out var name) &&
+                json.TryGetValue(ConfigId, out var rawConfigId) &&
+                json.TryGetValue(Type, out var type) &&
                 json.TryGetValue(Data, out var data))
             {
-                if (_cache.TryGetValue($"{sessionId}:{Rs}:{name}", out var oldData))
-                    return oldData;
+                var configId = Guid.Parse(rawConfigId.ToString());
 
-                data[Scope] = JObject.FromObject(BuildStack(sessionId, stack.ToObject<string[]>()));
-                //TransformData(data, sessionId);
+                var result = await GetOrCreateRs(
+                    sessionId,
+                    name.ToString(), 
+                    type.ToString(), 
+                    configId, 
+                    data);
 
-                //TODO: Pass config id from client.
-                var edwType = Enum.Parse<EdwBulkEvent.EdwType>(rsType.ToString());
-                var be = new EdwBulkEvent();
-                be.AddRS(edwType, sessionId, DateTime.UtcNow, 
-                    PL.FromJsonString(JsonWrapper.Serialize(data)), 
-                    GetConfigId(sessionId, name.ToString()));
-                
-                await _fw.EdwWriter.Write(be);
-
-                var result = JsonWrapper.Serialize(data);
-                _cache.Set($"{sessionId}:{Rs}:{name}", result);
-
-                return result;
+                return result.Json;
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
         }
 
-        private IDictionary<string, string> BuildStack(Guid sessionId, string[] stackParts)
+        private Task<(string Json, JToken Data)> GetOrCreateRs(Guid sessionId, string name,string type, Guid configId, JToken data)
         {
-            var mergedScopes = new Dictionary<string, string>();
+            var rsListKey = $"{sessionId}:{Rs}";
+            var rsKey = $"{sessionId}:{Rs}:{name}";
+
+            if (_cache.TryGetValue<string>(rsKey, out var oldData))
+                return Task.FromResult((oldData, JsonWrapper.TryParse(oldData)));
+
+            TransformData(data, sessionId);
+
+            var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
+            var be = new EdwBulkEvent();
+            be.AddRS(edwType, sessionId, DateTime.UtcNow, PL.FromJsonString(JsonWrapper.Serialize(data)), configId);
+
+            //await _fw.EdwWriter.Write(be);
+
+            var rsList = _cache.GetOrCreate(rsListKey, t => new List<(string, Guid)>());
+            rsList.Add((name, configId));
+
+            var result = JsonWrapper.Serialize(data);
+            _cache.Set(rsKey, result);
+
+            return Task.FromResult((result, data));
+        }
+
+        private IEnumerable<IDictionary<string, JToken>> BuildStack(Guid sessionId, string[] stackParts)
+        {
+            var stackFrames = new List<IDictionary<string, JToken>>();
             foreach (var stackFrame in stackParts)
             {
                 if (_cache.TryGetValue<string>($"{sessionId}:{Sf}:{stackFrame}", out var serializedScope))
                 {
-                    var ss = new StackFrameParser(serializedScope);
-                    var d = ss.ToDictionary();
-                    foreach (var kv in d)
-                        mergedScopes[kv.Key] = kv.Value;
+                    var sf = new StackFrameParser(serializedScope);
+                    stackFrames.Add(sf.ToDictionary());
                 }
             }
-            return mergedScopes;
+            return stackFrames;
         }
 
-        private async Task<object> AddEvent(HttpContext context)
+        private List<string> ExtractWhepFromStack(IEnumerable<IDictionary<string, JToken>> stackFrames)
+        {
+            return stackFrames
+                .SkipLast(1)
+                .Where(sf => sf.ContainsKey(EventId))
+                .Select(sf => sf[EventId].ToString())
+                .ToList();
+        }
+
+        private Dictionary<string, object> GetRsIds(Guid sessionId)
+        {
+            var rsids = new Dictionary<string, object>();
+            var rsListKey = $"{sessionId}:{Rs}";
+            return _cache.Get<List<(string Name, Guid Id)>>(rsListKey)
+                .ToDictionary(rs => rs.Name, rs => (object)rs.Id);
+        }
+
+        private async Task<object> PublishEvent(HttpContext context)
         {
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
             if (json.TryGetValue(Stack, out var stack) && stack.Type == JTokenType.Array &&
-                json.TryGetValue(ReportingSessions, out var reportingSessions) &&
                 json.TryGetValue(Data, out var data))
             {
-                TransformData(data, sessionId);
-
-                data[Scope] = JObject.FromObject(BuildStack(sessionId, stack.ToObject<string[]>()));
-
-                var whep = _cache.GetOrCreate($"{sessionId}:{Whep}", t => new List<string>());
-
-                //TODO: Do this client side
-                var rsids = new Dictionary<string, object>();
-                foreach (var reportingSession in reportingSessions.ToObject<string[]>())
-                    rsids.Add(reportingSession, GetConfigId(sessionId, reportingSession));
-
-                var be = new EdwBulkEvent();
-                var eventId = Guid.NewGuid();
-                var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
-                be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
-                await _fw.EdwWriter.Write(be);
-                whep.Add(eventId.ToString());
-
-                return JsonWrapper.Serialize(data);
+                var stackFrames = stack.ToObject<string[]>();
+                var result = await PublishEvent(sessionId, stackFrames, data);
+                return JsonWrapper.Serialize(result);
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
         }
 
-        private async Task<object> GetOrCreateConfigIds(HttpContext context)
+        private Task<object> PublishEvent(Guid sessionId, string[] stackFrames, JToken data)
         {
-            var body = await context.GetRawBodyStringAsync();
-            var json = (JObject)JsonWrapper.TryParse(body);
+            TransformData(data, sessionId);
+            var stack = BuildStack(sessionId, stackFrames);
+            data[Sf] = new JArray(stack);
 
-            var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
-            {
-                var obj = (JObject)data;
-                foreach (var kv in obj)
-                {
-                    if (kv.Value.Type == JTokenType.String)
-                        _cache.GetOrCreate($"{sessionId}:{Rsid}:{kv.Key}", t => Guid.Parse(kv.Value.ToString()));
-                }
-                var result = JsonWrapper.Serialize(data);
-                return result;
-            }
+            var whep = ExtractWhepFromStack(stack);
+            var rsids = GetRsIds(sessionId);
 
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return null;
+            var be = new EdwBulkEvent();
+            var eventId = Guid.NewGuid();
+            var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
+            be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
+            //await _fw.EdwWriter.Write(be);
+            SetStackFrame(sessionId, stackFrames.Last(), JObject.FromObject(new Dictionary<string, object>() { [EventId] = eventId }));
+
+            return Task.FromResult<object>(data);
         }
 
         private async Task<object> SetStackFrame(HttpContext context)
@@ -220,18 +286,24 @@ namespace EdwServiceLib
             if (json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
             {
-                TransformData(data, sessionId);
-                var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JArray()));
-                var scopeStack = new StackFrameParser(serializedScope);
-                scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value?.ToString()));
-                var jsonStack = scopeStack.Json();
-                serializedScope = JsonWrapper.Serialize(jsonStack);
-                _cache.Set($"{sessionId}:{Sf}:{name}", serializedScope);
-                return serializedScope;
+                var result = await SetStackFrame(sessionId, name.ToString(), data);
+                return result.Json;
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
+        }
+
+        private Task<(string Json, JToken Data)> SetStackFrame(Guid sessionId, string name, JToken data)
+        {
+            TransformData(data, sessionId);
+            var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JArray()));
+            var scopeStack = new StackFrameParser(serializedScope);
+            scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
+            var jsonStack = scopeStack.Json();
+            serializedScope = JsonWrapper.Serialize(jsonStack);
+            _cache.Set($"{sessionId}:{Sf}:{name}", serializedScope);
+            return Task.FromResult((serializedScope, jsonStack));
         }
 
         private async Task<object> GetOrCreateStackFrame(HttpContext context)
@@ -243,18 +315,21 @@ namespace EdwServiceLib
             if (json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(Data, out var data))
             {
-                var stackFrame = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t =>
-                {
-                    return JsonWrapper.Serialize(new JArray
-                    {
-                        data
-                    });
-                });
-                return stackFrame;
+                return await GetOrCreateStackFrame(sessionId, name.ToString(), data);
             }
 
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
+        }
+
+        private Task<object> GetOrCreateStackFrame(Guid sessionId, string name, JToken data)
+        {
+            var stackFrame = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t =>
+            {
+                var array = data == null ? new JArray() : new JArray(data);
+                return JsonWrapper.Serialize(array);
+            });
+            return Task.FromResult<object>(stackFrame);
         }
 
         private void TransformData(JToken data, Guid sessionId)
@@ -286,7 +361,7 @@ namespace EdwServiceLib
                             var separator = value == string.Empty ? string.Empty : ";";
                             value = $"{value}{separator}{variable}";
                             _cache.Set(key, value);
-                            obj[kv.Key] = JArray.FromObject(value.Split(";", StringSplitOptions.RemoveEmptyEntries));
+                            obj[kv.Key] = new JArray(value.Split(";", StringSplitOptions.RemoveEmptyEntries));
                         }
                     }
                 }

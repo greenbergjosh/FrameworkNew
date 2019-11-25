@@ -7,7 +7,7 @@ namespace EdwServiceLib
 {
     public class StackFrameParser
     {
-        private readonly Stack<IDictionary<string, string>> _scopes = new Stack<IDictionary<string, string>>();
+        private readonly Stack<IDictionary<string, JToken>> _scopes = new Stack<IDictionary<string, JToken>>();
 
         public StackFrameParser(string serializedScopes)
         {
@@ -20,18 +20,18 @@ namespace EdwServiceLib
                     if (element.Type == JTokenType.Object)
                     {
                         var obj = (JObject)element;
-                        var scope = new Dictionary<string, string>();
+                        var scope = new Dictionary<string, JToken>();
                         foreach (var kv in obj)
-                            scope[kv.Key] = kv.Value.ToString();
+                            scope[kv.Key] = kv.Value;
                         _scopes.Push(scope);
                     }
                 }
             }
         }
 
-        public IDictionary<string, string> ToDictionary()
+        public IDictionary<string, JToken> ToDictionary()
         {
-            var result = new Dictionary<string, string>();
+            var result = new Dictionary<string, JToken>();
             foreach(var scope in _scopes)
             {
                 foreach (var kv in scope)
@@ -55,10 +55,10 @@ namespace EdwServiceLib
             return array;
         }
 
-        public void Apply(IDictionary<string, string> data)
+        public void Apply(IDictionary<string, JToken> data)
         {
             // Q: For multivalue scopes, should they all be null to pop?
-            var nullValue = data.FirstOrDefault(t => string.IsNullOrEmpty(t.Value));
+            var nullValue = data.FirstOrDefault(t => t.Value == null || t.Value.ToString() == string.Empty);
             if (!string.IsNullOrEmpty(nullValue.Key))
             {
                 var toPop = 0;
