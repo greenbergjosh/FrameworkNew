@@ -61,12 +61,12 @@ namespace EdwServiceLib
         {
             _fw = fw;
 
-            _routes.Add($"/{Rs}", GetOrCreateRs);
             _routes.Add($"/{Ev}", PublishEvents);
             _routes.Add($"/{Cf}", Config);
+            _routes.Add($"/{Es}", EndSession);
+            _routes.Add($"/{Rs}", GetOrCreateRs);
             _routes.Add($"/{Ss}", SetStackFrame);
             _routes.Add($"/{Sf}", GetOrCreateStackFrame);
-            _routes.Add($"/{Es}", EndSession);
         }
 
         public async Task Run(HttpContext context)

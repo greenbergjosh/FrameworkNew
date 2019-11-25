@@ -218,7 +218,7 @@ var fullConfig = {
       }
     }
   },
-  ss: {
+  st: {
     session: {
       
     },
