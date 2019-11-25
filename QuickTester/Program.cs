@@ -57,13 +57,16 @@ namespace QuickTester
             //{
             //    Console.WriteLine("Here");
             //}
+            await RoslynTester.TestRoslyn();
+            await DataFlowTester.TestDynamicBlockCreator();
 
             //var pc = ChannelsTester.CreateChannel(3, 3, channelProducer, channelConsumer);
             //await pc.Item1;
             //await pc.Item2;
 
-            await ChannelsTester.TestChanneler();
-            int stop = 1;
+
+            //await ChannelsTester.TestChanneler();
+            //int stop = 1;
 
            try
             {
