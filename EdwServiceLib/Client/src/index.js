@@ -21,7 +21,9 @@ export const sfAllow = async (names, sessionId = null) => {
 };
 
 export const cf = async (data, sessionId = null) => {
-  enableLogging(data.enableLogging);
+  if (data.enableLogging === true || data.enableLogging === false) {
+    enableLogging(data.enableLogging);
+  }
   stack = [];
 
   const result = await post(url('cf'), {
