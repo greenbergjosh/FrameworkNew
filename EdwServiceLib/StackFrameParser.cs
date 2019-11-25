@@ -101,13 +101,12 @@ namespace EdwServiceLib
                         foreach (var kv in data)
                             oldScope[kv.Key] = kv.Value;
                     }
-                            
-                    else
+                    else if (data.Count > 0)
                     {
                         _scopes.Push(data);
                     }
                 }
-                else
+                else if (data.Count > 0)
                 {
                     _scopes.Push(data);
                 }
