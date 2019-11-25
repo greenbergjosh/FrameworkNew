@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace Utility
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
         public bool TraceLogging = true;
         public bool TraceToConsole = false;
+        public IMemoryCache Cache;
 
         public FrameworkWrapper(string[] commandLineArgs = null)
         {

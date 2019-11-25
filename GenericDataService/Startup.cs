@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpOverrides;
 using Utility;
 using Utility.DataLayer;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace GenericDataService
 {
@@ -34,7 +35,7 @@ namespace GenericDataService
                     .SetIsOriginAllowed(x => { return true; })
                     );
             });
-
+            services.AddMemoryCache();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -57,6 +58,7 @@ namespace GenericDataService
             try
             {
                 fw = new FrameworkWrapper();
+                fw.Cache = app.ApplicationServices.GetService<IMemoryCache>();
 
                 using (var dynamicContext = new Utility.AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
                 {
@@ -99,6 +101,12 @@ namespace GenericDataService
             {
                 try
                 {
+                    if (context.Request.Path.HasValue && context.Request.Path.Value.Contains("favicon.ico"))
+                    {
+                        context.Response.StatusCode = 404;
+                        return;
+                    }
+
                     if (context.IsLocal() && context.Request.Query["m"] == "config")
                     {
                         await context.WriteSuccessRespAsync(fw.StartupConfiguration.GetS(""), Encoding.UTF8);
