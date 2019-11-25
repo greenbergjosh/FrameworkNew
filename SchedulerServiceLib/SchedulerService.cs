@@ -2,12 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
+using Microsoft.Net.Http.Headers;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using TurnerSoftware.SitemapTools;
 using Utility;
 using Jw = Utility.JsonWrapper;
 using Utility.DataLayer;
@@ -65,23 +69,27 @@ namespace SchedulerServiceLib
             var JobConfigs = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "JobConfig" }), "");
             foreach (var job in JobConfigs.GetL(""))
             {
-                var name = job.GetS("Name");
-                var enabled = job.GetB("Config/enabled");
-                var cronGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/schedule") }));
-                var lbmGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/consumer") }));
-
-                var cron = cronGe.GetS("instruction");
-                var parameters = job.GetD("Config").ToDictionary(p => p.Item1, p => p.Item2);
+                var cron = job.GetS("cron");
+                var name = job.GetS("name");
+                var lbmId = job.GetS("lbmId");
+                var parameters = job.GetD("params").ToDictionary(p => p.Item1, p => p.Item2);
 
                 var jobDetail = JobBuilder.Create<LmbJob>()
                     .WithIdentity(name)
                     .UsingJobData(new JobDataMap(parameters))
                     .Build();
 
+                IDictionary<string, object> triggerData = new Dictionary<string, object>
+                {
+                    ["lbmId"] = lbmId
+                };
+                var triggerJobData = new JobDataMap(triggerData);
+
                 var trigger = TriggerBuilder.Create()
                     .WithIdentity(name)
                     .WithCronSchedule(cron)
                     .ForJob(jobDetail)
+                    .UsingJobData(triggerJobData)
                     .Build();
 
                 await _scheduler.ScheduleJob(jobDetail, trigger);
@@ -219,22 +227,25 @@ namespace SchedulerServiceLib
             {
                 var key = context.JobDetail.Key;
                 var dataMap = context.JobDetail.JobDataMap;
-                var id = Guid.Parse(dataMap.Get("id").ToString());
+                var lbmId = Guid.Parse(context.Trigger.JobDataMap["lbmId"].ToString());
 
                 try
                 {
-                    var code = await _fw.Entities.GetEntity(id);
+                    var code = await _fw.Entities.GetEntity(lbmId);
                     if (code?.GetS("Type") != "LBM.CS")
                     {
-                        var error = $"{code?.GetS("Type")} LBM not supported. ({id})\n";
+                        var error = $"{code?.GetS("Type")} LBM not supported. ({lbmId})\n";
                         throw new InvalidOperationException(error);
                     }
 
                     var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
+                    var source = code.GetS("Config");
+                    var sd = new ScriptDescriptor(lbmId, lbmId.ToString(), source, debug, debugDir);
+                    _fw.RoslynWrapper.CompileAndCache(sd);
 
-                    _fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), code.GetS("Config"), debug, debugDir), true);
+                    //await Test();
 
-                    await _fw.RoslynWrapper.RunFunction(id.ToString(), dataMap, null);
+                    await _fw.RoslynWrapper.RunFunction(lbmId.ToString(), dataMap, null);
                 }
                 catch (Exception e)
                 {
