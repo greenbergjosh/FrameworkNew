@@ -11,7 +11,7 @@ const config = {
   // Output
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'bundle.js',
+    filename: 'cache-client-1.0.0.min.js',
     libraryTarget: 'var',
     library: 'CacheClient'
   },
