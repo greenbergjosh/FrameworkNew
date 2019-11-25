@@ -21,8 +21,9 @@ var impressionEvent = {
     surveyPageCount: '{surveyPageCount}',
     questionPageCount: '{questionPageCount}',
     answerPageCount: '{answerPageCount}',
-    survey: '{survey}',
-    question: '{question}'
+    surveyId: '{survey}',
+    questionId: '{question}',
+    answerId: '{answerId}'
   }
 };
 
@@ -90,9 +91,9 @@ var reportQuestion = function(page, id, nextFn) {
       surveyPageCount: '{surveyPageCount}',
       questionPageCount: '{questionPageCount}',
       answerPageCount: '{answerPageCount}',
-      survey: '{survey}',
-      question: '{question}',
-      answer: '{answer}'
+      surveyId: '{survey}',
+      questionId: '{question}',
+      answerId: '{answerId}'
     }
   }]);
 
@@ -113,7 +114,7 @@ var reportQuestion = function(page, id, nextFn) {
   nextFn);
 };
 
-var createAnswerConfig = function(survey, questionId) {
+var createAnswerConfig = function(survey, questionId, answerId) {
   var qObj = {};
   qObj['question' + questionId] = {
     keyPrefix: survey
@@ -127,25 +128,44 @@ var createAnswerConfig = function(survey, questionId) {
     }
   });
   
-  var config = edw.createConfig(answerStack, {}, [impressionEvent]);
+  var config = edw.createConfig(answerStack, {}, [{
+    key: ['event','answerId'],
+    duplicate: {
+      duplicate: true
+    },
+    data: {
+      event: 'impression',
+      page: '{page}',
+      pageOrder: '{pageOrder}',
+      pageCount: '{pageCount}',
+      groupPageCount: '{groupPageCount}',
+      surveyPageCount: '{surveyPageCount}',
+      questionPageCount: '{questionPageCount}',
+      answerPageCount: '{answerPageCount}',
+      surveyId: '{survey}',
+      questionId: '{question}',
+      answerId: '{answerId}'
+    }
+  }]);
   config.ss.session = {};
   config.ss.grp1 = {};
+  config.ss.answer.answerId = answerId;
   config.ss.answer.answerPageCount = '0+';
   return config;
 };
 
-var reportAnswersImpression = function(survey) {
-  var config = createAnswerConfig(survey, 1);
-  edw.reportToEdw(config, null,
+var reportAnswersImpression = function() {
+  var survey = edw.getUrlParameter('survey');
+  if (!survey) {
+    survey = 'American';
+  }
+  edw.reportToEdw(createAnswerConfig(survey, 1, 1), null,
   function() {
-    config = createAnswerConfig(survey, 2);
-    edw.reportToEdw(config, null,
+    edw.reportToEdw(createAnswerConfig(survey, 1, 2), null,
     function() {
-      config = createAnswerConfig(survey, 3);
-      edw.reportToEdw(config, null,
+      edw.reportToEdw(createAnswerConfig(survey, 1, 3), null,
       function() {
-        config = createAnswerConfig(survey, 4);
-        edw.reportToEdw(config);
+        edw.reportToEdw(createAnswerConfig(survey, 1, 4));
       });
     });
   });
@@ -155,19 +175,18 @@ var nextPage = null;
 
 var reportAnswer = function(questionId, answer) {
   edw.reportToEdw(answerConfig[questionId], function(cf) {
-    if (!nextPage) {
-      cf.ss.grp1 = {};
-      cf.ss.session = {};
-    }
+    cf.ss.grp1 = {};
+    cf.ss.session = {};
     cf.ss.answer.answer = answer;
   }, function() {
     if (nextPage) {
       var survey = edw.getUrlParameter('survey');
-      window.location = nextPage + '.html?survey=' + survey;
-    } else {
-      if (window.location.href.indexOf('full.html') === -1 || questionId === 4) {
-        window.location = 'smartPath.html';
+      if (!survey) {
+        survey = 'American';
       }
+      window.location = nextPage + '.html?survey=' + survey;
+    } else if (window.location.href.indexOf('full.html') === -1 || questionId === 4) {
+      window.location = 'smartPath.html';
     }
   });
 };
@@ -185,20 +204,18 @@ var setupSmartPath = function() {
   };
 };
 
-var reportDomain = function(domain) {
+var reportDomain = function(domain, configId, nextFn) {
   edw.reportToEdw({
     rs: {
       domain: {
-        configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
+        configId: configId,
         type: 'Immediate',
         data: {
           domain: domain
         }
       }
     }
-  }, function() {
-    
-  }, function() {
-    window.location = 'survey.html';
-  });
+  }, 
+  function() {},
+  nextFn);
 };
