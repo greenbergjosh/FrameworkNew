@@ -10,7 +10,16 @@
 </body>
 <script type="text/javascript">
 window.onload = function() {
-  CacheClient.addRs('test', {test: 'test'})
+    CacheClient.addRs('test', {
+      page: window.location.pathname,
+      pageNumber: '0+',
+      pageOrder: 'page+'
+    })
+    .then(t => CacheClient.addRs('test', {
+      page: window.location.pathname,
+      pageNumber: '0+',
+      pageOrder: 'page+'
+    }))
     .then(t => CacheClient.getRs('test'))
     .then(t => console.log('Response: ' + JSON.stringify(t)))
     .catch(reason => console.log('Error! Reason: ' + reason));
