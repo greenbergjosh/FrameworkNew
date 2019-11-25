@@ -3,36 +3,39 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Utility;
 using Utility.EDW.Reporting;
+using static System.Net.WebRequestMethods;
 
 namespace CachingServiceLib
 {
     public class CachingService
     {
         private FrameworkWrapper _fw;
-        private Dictionary<string, Guid> _rsids;
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         private readonly Dictionary<string, (Func<HttpContext, Task<object>> get, Func<HttpContext, Task<object>> post)> _routes =
             new Dictionary<string, (Func<HttpContext, Task<object>>, Func<HttpContext, Task<object>>)>();
 
+        const string SessionId = "sessionId";
+        const string Rsid = "rsid";
+        const string Name = "name";
+        const string Data = "data";
+        const string ReportingSession = "reportingSession";
+        const string ReportingSessions = "reportingSessions";
+        const string Rs = "rs";
+        const string Event = "event";
+        const string Cache = "cache";
+
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
 
-            // Get this list from EDW
-            _rsids = new Dictionary<string, Guid>()
-            {
-                ["progression"] = Guid.Parse("696F4248-7F96-4E9B-B39D-692A9621E295"),
-                ["event1"] = Guid.Parse("696F4248-7F96-4E9B-B39D-692A9621E296"),
-                ["event2"] = Guid.Parse("696F4248-7F96-4E9B-B39D-692A9621E297"),
-            };
-
-            _routes.Add("/rs", (GetRs, AddRs));
-            _routes.Add("/event", (GetEvent, AddEvent));
-            _routes.Add("/cache", (GetCache, AddCache));
+            _routes.Add($"/{Rs}", (GetRs, AddRs));
+            _routes.Add($"/{Event}", (GetEvent, AddEvent));
+            _routes.Add($"/{Cache}", (GetCache, AddCache));
         }
 
         async Task<object> ExecuteRequest(HttpContext context)
@@ -46,16 +49,19 @@ namespace CachingServiceLib
 
             if (_routes.TryGetValue(path, out var actions))
             {
-                if (verb == "GET")
+                if (verb == Http.Get)
                     result = await actions.get(context);
-                else if (verb == "POST")
+                else if (verb == Http.Post)
                     result = await actions.post(context);
                 else
-                    result = "Method not supported";
-
+                {
+                    context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                    result = "Method not allowed";
+                }
+                
                 return result;
             }
-
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
             return "Path not found";
         }
 
@@ -65,44 +71,54 @@ namespace CachingServiceLib
             {
                 var result = await ExecuteRequest(context);
                 var json = JsonWrapper.Json(result);
-                context.Response.ContentType = "application/json";
+                context.Response.ContentType = MediaTypeNames.Application.Json;
                 await context.Response.WriteAsync(json);
             }
             catch (Exception ex)
             {
                 await _fw.Error(nameof(Run), $@"Caught exception processing request: {ex.Message} : {ex.UnwrapForLog()}");
+                throw;
             }
         }
 
         Guid GetOrCreateSessionId(HttpContext context)
         {
-            if (context.Request.Query.TryGetValue("sessionId", out var sessionId))
+            if (context.Request.Cookies.TryGetValue(SessionId, out var cookieSessionId))
+                return Guid.Parse(cookieSessionId);
+
+            if (context.Request.Query.TryGetValue(SessionId, out var sessionId))
                 return Guid.Parse(sessionId);
 
             var newSessionId = Guid.NewGuid();
-            context.Response.Cookies.Append("sessionId", newSessionId.ToString());
+            context.Response.Cookies.Append(SessionId, newSessionId.ToString());
             return newSessionId;
         }
 
         Guid GetOrCreateSessionId(HttpContext context, JObject json)
         {
-            if (json.TryGetValue("sessionId", out var raw) &&
+            if (json.TryGetValue(SessionId, out var raw) &&
                 Guid.TryParse(raw.ToString(), out var sessionId))
                 return sessionId;
 
             var newSessionId = Guid.NewGuid();
-            context.Response.Cookies.Append("sessionId", newSessionId.ToString());
+            context.Response.Cookies.Append(SessionId, newSessionId.ToString());
             return newSessionId;
+        }
+
+        Guid GetOrCreateRsId(Guid sessionId, string name)
+        {
+            return _cache.GetOrCreate($"{sessionId}:{Rsid}:{name}", t => Guid.NewGuid());
         }
 
         Task<object> GetRs(HttpContext context)
         {
             var sessionId = GetOrCreateSessionId(context);
-            var name = context.Request.Query["name"];
+            var name = context.Request.Query[Name];
 
-            if (_cache.TryGetValue($"{sessionId}:rs:{name}", out var data))
+            if (_cache.TryGetValue($"{sessionId}:{Rs}:{name}", out var data))
                 return Task.FromResult(data);
 
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
             return Task.FromResult<object>(null);
         }
 
@@ -112,16 +128,17 @@ namespace CachingServiceLib
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue("name", out var name) &&
-                json.TryGetValue("data", out var data))
+            if (json.TryGetValue(Name, out var name) &&
+                json.TryGetValue(Data, out var data))
             {
                 var be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, sessionId, DateTime.UtcNow, 
-                    PL.FromJsonString(JsonWrapper.Serialize(data)), _rsids[name.ToString()]);
+                    PL.FromJsonString(JsonWrapper.Serialize(data)), 
+                    GetOrCreateRsId(sessionId, name.ToString()));
                 
                 await _fw.EdwWriter.Write(be);
 
-                _cache.Set($"{sessionId}:rs:{name}", data);
+                _cache.Set($"{sessionId}:{Rs}:{name}", data);
             }
 
             return null;
@@ -130,11 +147,12 @@ namespace CachingServiceLib
         Task<object> GetEvent(HttpContext context)
         {
             var sessionId = GetOrCreateSessionId(context);
-            var reportingSession = context.Request.Query["reportingSession"];
+            var reportingSession = context.Request.Query[ReportingSession];
 
-            if (_cache.TryGetValue($"{sessionId}:event:{reportingSession}", out var data))
+            if (_cache.TryGetValue($"{sessionId}:{Event}:{reportingSession}", out var data))
                 return Task.FromResult(data);
 
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
             return Task.FromResult<object>(null);
         }
 
@@ -144,15 +162,12 @@ namespace CachingServiceLib
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue("reportingSessions", out var reportingSessions) &&
-                json.TryGetValue("data", out var data))
+            if (json.TryGetValue(ReportingSessions, out var reportingSessions) &&
+                json.TryGetValue(Data, out var data))
             {
                 var rsids = new Dictionary<string, object>();
                 foreach (var reportingSession in reportingSessions.ToObject<string[]>())
-                {
-                    if (_rsids.TryGetValue(reportingSession, out var rsid))
-                        rsids.Add(reportingSession, rsid);
-                }
+                    rsids.Add(reportingSession, GetOrCreateRsId(sessionId, reportingSession));
 
                 var be = new EdwBulkEvent();
                 var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
@@ -160,9 +175,7 @@ namespace CachingServiceLib
                 await _fw.EdwWriter.Write(be);
 
                 foreach (var kv in rsids)
-                {
-                    _cache.Set($"{sessionId}:event:{kv.Key}", data);
-                }
+                    _cache.Set($"{sessionId}:{Event}:{kv.Key}", data);
             }
 
             return null;
@@ -171,11 +184,12 @@ namespace CachingServiceLib
         Task<object> GetCache(HttpContext context)
         {
             var sessionId = GetOrCreateSessionId(context);
-            var name = context.Request.Query["name"];
+            var name = context.Request.Query[Name];
 
             if (_cache.TryGetValue($"{sessionId}:{name}", out var data))
                 return Task.FromResult(data);
 
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
             return Task.FromResult<object>(null);
         }
 
@@ -185,8 +199,8 @@ namespace CachingServiceLib
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
-            if (json.TryGetValue("name", out var name) &&
-                json.TryGetValue("data", out var data))
+            if (json.TryGetValue(Name, out var name) &&
+                json.TryGetValue(Data, out var data))
             {
                 _cache.Set($"{sessionId}:{name}", data);
             }
