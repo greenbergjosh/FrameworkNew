@@ -232,8 +232,6 @@ namespace EdwServiceLib
                 else
                     return (oldData, oldObj);
             }
-            
-            TransformData(data, sessionId);
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
@@ -287,7 +285,6 @@ namespace EdwServiceLib
 
         private async Task<object> PublishEvent(HttpContext context)
         {
-            // TODO: stack to data syntax
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
@@ -357,7 +354,7 @@ namespace EdwServiceLib
                     data[kv.Key] = kv.Value;
             }
 
-            TransformData(data, sessionId);
+            TransformData(data, sessionId, stack);
             data[Sf] = JArray.FromObject(stack);
             data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
 
@@ -420,7 +417,7 @@ namespace EdwServiceLib
 
         private Task<(string Json, JToken Data)> SetStackFrame(Guid sessionId, string name, JToken data)
         {
-            TransformData(data, sessionId);
+            TransformData(data, sessionId, null);
             var serializedScope = _cache.GetOrCreate($"{sessionId}:{Sf}:{name}", t => JsonWrapper.Serialize(new JArray()));
             var scopeStack = new StackFrameParser(serializedScope);
             scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
@@ -483,7 +480,7 @@ namespace EdwServiceLib
             return Task.FromResult((name, stackFrame));
         }
 
-        private void TransformData(JToken data, Guid sessionId)
+        private void TransformData(JToken data, Guid sessionId, IEnumerable<IDictionary<string, JToken>> stack)
         {
             if (data.Type == JTokenType.Object)
             {
@@ -520,6 +517,17 @@ namespace EdwServiceLib
                         {
                             toRemove.Add(kv.Key);
                         }
+                    }
+                    else if (stack != null && str.StartsWith("{") && str.EndsWith("}"))
+                    {
+                        var varName = str.Substring(1, str.Length - 2);
+                        JToken value = null;
+                        foreach (var stackFrame in stack)
+                        {
+                            if (stackFrame.TryGetValue(varName, out value))
+                                break;
+                        }
+                        obj[kv.Key] = value;
                     }
                 }
 
