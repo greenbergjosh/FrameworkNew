@@ -1058,7 +1058,9 @@ namespace Utility
                 else { return true; }
 
             }
-            return SearchNodes(attrVals);
+            // if no attributes were specified, rely only on XPath
+            // if attributes were specified, rely on both
+            return attrVals == null || attrVals.Count == 0 ? nodes.Count > 0 : SearchNodes(attrVals);
         }
     }
 }
