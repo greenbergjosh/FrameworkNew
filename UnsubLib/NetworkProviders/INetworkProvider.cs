@@ -287,7 +287,7 @@ namespace UnsubLib.NetworkProviders
 
         }
 
-        private class Other : INetworkProvider
+        public class Other : INetworkProvider
         {
             private readonly FrameworkWrapper _fw;
             private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Other)}";
