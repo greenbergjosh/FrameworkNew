@@ -32,7 +32,7 @@ namespace UnsubLib.NetworkProviders
 
                 try
                 {
-                    await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
+                    await _fw.Log(_logMethod, $"Getting campaigns from {networkName}");
                     
                     var (_, body) = await ProtocolClient.HttpGetAsync(url);
 
@@ -64,7 +64,7 @@ namespace UnsubLib.NetworkProviders
 
                         } while (true);
 
-                        await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
+                        await _fw.Log(_logMethod, $"Retrieved campaigns from {networkName}");
                     }
                     catch
                     {
@@ -123,7 +123,7 @@ namespace UnsubLib.NetworkProviders
                     var data = Jw.JsonToGenericEntity(ge.GetS("data"));
                     var suppressionUrl = data.GetS("download_link");
 
-                    await _fw.Trace(_logMethod, $"Got URL {networkName} {campaignId}:{url}:{suppressionUrl}:{resp.body}");
+                    await _fw.Log(_logMethod, $"Got URL {networkName} {campaignId}:{url}:{suppressionUrl}:{resp.body}");
 
                     return new Uri(suppressionUrl);
                 }
