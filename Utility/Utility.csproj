@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -32,6 +32,8 @@
   <ItemGroup>
     <Reference Include="port25.pmta.api.submitter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>Mta\Pmta\libs\port25.pmta.api.submitter.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions">
+      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.extensions.caching.abstractions\2.2.0\lib\netstandard2.0\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
     </Reference>
   </ItemGroup>
 
