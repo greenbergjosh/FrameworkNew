@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.29403.142
+VisualStudioVersion = 16.0.29424.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlRegularExpressions", "SqlRegularExpressions\SqlRegularExpressions.csproj", "{3B4842DC-B8F0-4508-8837-6DC4BE76256C}"
 EndProject
@@ -104,7 +104,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackingDataLib", "Tracking
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CachingServiceLib", "CachingServiceLib\CachingServiceLib.csproj", "{8A5651C6-AFD3-4598-A60B-00FAFEC96040}"
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdwServiceLib", "EdwServiceLib\EdwServiceLib.csproj", "{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchedulerServiceLib", "SchedulerServiceLib\SchedulerServiceLib.csproj", "{D3165D2B-1922-4122-9554-CA2A23C11BE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchedulerServiceLib", "SchedulerServiceLib\SchedulerServiceLib.csproj", "{35E2E05C-6932-48DA-8C43-41DEE9969B85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -377,6 +377,12 @@ Global
 		{D3165D2B-1922-4122-9554-CA2A23C11BE9}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{D3165D2B-1922-4122-9554-CA2A23C11BE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3165D2B-1922-4122-9554-CA2A23C11BE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -419,9 +425,10 @@ Global
 		{8A5651C6-AFD3-4598-A60B-00FAFEC96040} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{4BD4ADF1-E0EF-4645-8A66-97D863F6BDB3} = {62C1BDD4-C651-4341-884A-948D5922D737}
 		{D3165D2B-1922-4122-9554-CA2A23C11BE9} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{35E2E05C-6932-48DA-8C43-41DEE9969B85} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}
 	EndGlobalSection
 EndGlobal
