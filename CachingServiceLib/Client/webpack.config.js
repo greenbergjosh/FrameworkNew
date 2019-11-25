@@ -7,11 +7,11 @@ require("babel-register");
 const config = {
   
   // Entry
-  entry: ['babel-polyfill', 'whatwg-fetch', './src/index.js'],
+  entry: ['whatwg-fetch', 'url-polyfill', './src/index.js'],
   // Output
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: 'cache-client-1.0.0.min.js',
+    filename: 'bundle.js',
     libraryTarget: 'var',
     library: 'CacheClient'
   },

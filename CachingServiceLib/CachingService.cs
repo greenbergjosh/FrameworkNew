@@ -70,9 +70,9 @@ namespace CachingServiceLib
             try
             {
                 var result = await ExecuteRequest(context);
-                var json = JsonWrapper.Json(result);
+                //var json = JsonWrapper.Json(result);
                 context.Response.ContentType = MediaTypeNames.Application.Json;
-                await context.Response.WriteAsync(json);
+                await context.Response.WriteAsync(result == null ? "null" : result.ToString());
             }
             catch (Exception ex)
             {
@@ -138,7 +138,7 @@ namespace CachingServiceLib
                 
                 await _fw.EdwWriter.Write(be);
 
-                _cache.Set($"{sessionId}:{Rs}:{name}", data);
+                _cache.Set($"{sessionId}:{Rs}:{name}", JsonWrapper.Serialize(data));
             }
 
             return null;
@@ -175,7 +175,7 @@ namespace CachingServiceLib
                 await _fw.EdwWriter.Write(be);
 
                 foreach (var kv in rsids)
-                    _cache.Set($"{sessionId}:{Event}:{kv.Key}", data);
+                    _cache.Set($"{sessionId}:{Event}:{kv.Key}", JsonWrapper.Serialize(data));
             }
 
             return null;
