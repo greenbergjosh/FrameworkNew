@@ -1,38 +1,30 @@
-var rsConfig = {
-  surveyRs: {
-    configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
-    type: 'Checked',
-    data: {
-
-    }
-  }
-};
-
 var surveyStack = {
   session: {
     pageOrder: 'page+'
   },
   grp1: {
-    
+
   }
 };
 
-var splashAndImpressionEvents = [
-  {
-    key: ['event'],
-    data: {
-      event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
-      page: '{page}'
-    }
+var impressionEvent = {
+  key: ['event'],
+  duplicate: {
+    duplicate: true
+  },
+  data: {
+    event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+    page: '{page}'
   }
-];
+};
 
 var reportSurvey = function(page, id) {
-  var surveyConfig = edw.createConfig(surveyStack, rsConfig, splashAndImpressionEvents);
+  var surveyConfig = edw.createConfig(surveyStack, {}, [impressionEvent]);
 
   edw.reportToEdw(surveyConfig, function(cf) {
     cf.ss.session.page = page;
     cf.ss.session.pageCount = '0+';
+    cf.ss.grp1.pageCount = '0+';
     cf.ss[id] = {
       pageCount: '0+'
     };
@@ -40,21 +32,14 @@ var reportSurvey = function(page, id) {
 };
 
 var reportSmartPath = function() {
-  var config = edw.createConfig({}, {}, []);
-
-  edw.reportToEdw(config, function(cf) {
-    cf.ss.session = {
-      page: 'smarthPath',
-      pageCount: '0+'
-    };
-    cf.rs.smartPathRs =  {
-      configId: 'BE513B78-3F4B-4262-86E8-ADF17C0CBCEE',
-      type: 'Immediate',
-      data: {
-        pageCount: '{pageCount}',
-        pageOrder: '{pageOrder}'
-      }
+  var surveyConfig = edw.createConfig({
+    session: {
+      pageOrder: 'page+'
     }
+  }, {}, [impressionEvent]);
+
+  edw.reportToEdw(surveyConfig, function(cf) {
+    cf.ss.session.page = 'smartPath';
   });
 };
 
@@ -77,11 +62,9 @@ var reportQuestion = function(page, id) {
     }
   });
   
-  var questionConfig = edw.createConfig(questionStack, rsConfig, splashAndImpressionEvents);
-  answerConfig = edw.createConfig(answerStack, rsConfig, [{
+  var questionConfig = edw.createConfig(questionStack, {}, [impressionEvent]);
+  answerConfig = edw.createConfig(answerStack, {}, [{
     key: ['event'],
-    addToWhep: true,
-    includeWhep: true,
     duplicate: {
       duplicate: true
     },
@@ -93,8 +76,55 @@ var reportQuestion = function(page, id) {
   edw.reportToEdw(questionConfig, function(cf) {
     cf.ss.session.page = page;
     cf.ss.session.pageCount = '0+';
+    cf.ss.grp1.pageCount = '0+';
     cf.ss[survey] = {};
     cf.ss['question' + id].pageCount = '0+'
     cf.ss['question' + id].id = id;
+  });
+};
+
+var nextPage = null;
+
+var reportAnswer = function(answer) {
+  edw.reportToEdw(answerConfig, function(cf) {
+    cf.ss.answer.answer = answer;
+  }, function() {
+    if (nextPage) {
+      var survey = edw.getUrlParameter('survey');
+      window.location = nextPage + '.html?survey=' + survey;
+    } else {
+      window.location = 'smartPath.html';
+    }
+  });
+};
+
+var setupQuestion = function(page, id, next) {
+  nextPage = next;
+  window.onload = function() {
+    reportQuestion(page, id);
+  };
+};
+
+var setupSmartPath = function() {
+  window.onload = function() {
+    reportSmartPath();
+  };
+};
+
+var reportDomain = function(domain) {
+  edw.reportToEdw({
+    rs: {
+      domain: {
+        configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
+        type: 'Immediate',
+        data: {
+          domain: domain
+        }
+      }
+    }
+  }, function() {
+    
+  }, function() {
+    window.location = 'survey.html';
   });
 };

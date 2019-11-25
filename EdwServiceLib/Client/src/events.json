@@ -1,4 +1,78 @@
-// Page Impression
+All events are reporting to an Immediate Rs, named domain, with configId '1C35091A-8504-4D8D-80F8-59A9C546656B' 
+This RS payload contains a single string field, named domain.
+
+All events include these fields.
+{
+  "event": //UUID Type of the event
+         "294C1DE8-03A7-4DC9-B7C2-74DB8480D803", // Impression
+         //"4F28AF59-CAEE-4A50-827B-2125DBE163AF" // Click
+         //"B89F2ACA-0F04-4699-B758-5A90DB8A522A" // Skip
+         //"1CCEEB9E-046A-43AB-9319-FF9204CBFFB1" // SessionTimeout
+
+  "sf": //Dictionary of objects. Each entry represents a named stackframe.
+  {
+    // A first entry named session is always present.
+    // Session contains a "pageOrder" array field that represents the navigation history.
+    // It also contains a "page" fields, which is a string that represents the current page.
+    "session": {
+      "page": "page3",
+      "pageOrder": [
+        "Page1",
+        "Page2",
+        "Page3"
+      ]
+    },
+
+    // The grp1 stackframe is optional. If present, it counts all the survey and question pages that were hit in the session. 
+    "grp1": {
+      "pageCount": 8
+    },
+
+    // This stackframe contains information pertaining to the selected survey. It's name is variable: "American" or "Canadian".
+    // It contains a pageCount field to count the number of times the survey landing page was hitin the session.
+    "American":  {
+      "pageCount": 2
+    },
+
+    // This stackframe contains information pertaining to the selected survey question. It's name is variable: "American/questionX" or "Canadian/questionX".
+    // It contains a pageCount field to count the number of times this question page was hit for the survey in the session.
+    // The value of X is between 1 and 4.
+    "American/question1":  {
+      "pageCount": 1
+    },
+
+    // This stackframe contains information pertaining to the selected survey question answer. It's name is variable: "American/questionX/answer" or "Canadian/questionX/answer".
+    // It contains a pageCount field to count the number of times this question page was hit for the survey in the session.
+    "American/question1/answer":  {
+      "answer": "string containing the selected answer"
+    }
+  }
+}
+
+// Possible keys for survey:
+"American"
+"Canadian"
+
+// Possible keys for questions:
+"American/question1"
+"American/question2"
+"American/question3"
+"American/question4"
+"Canadian/question1"
+"Canadian/question2"
+"Canadian/question3"
+"Canadian/question4"
+
+// Possible keys for answers
+"American/question1/answer"
+"American/question2/answer"
+"American/question3/answer"
+"American/question4/answer"
+"Canadian/question1/answer"
+"Canadian/question2/answer"
+"Canadian/question3/answer"
+"Canadian/question4/answer"
+
 {
   "event": "294C1DE8-03A7-4DC9-B7C2-74DB8480D803",
   "page": "AmericanSurvey",
@@ -14,24 +88,32 @@
   }
 }
 
+// Immediate RS
+{
+  "domains": "domain1"
+}
+
 // Page Impression
 {
   "event": "294C1DE8-03A7-4DC9-B7C2-74DB8480D803",
   "page": "SaladDressing",
   "sf": {
     "session": {
+      "whep": ["1cceeb9e-046a-43ab-9319-ff9204cbffb3"],
+      "page": "SaladDressing",
+      "pageOrder": [
+        "AmericanSurvey",
+        "SaladDressing"
+      ],
       "ev": [
         "event:1cceeb9e-046a-43ab-9319-ff9204cbffb1"
       ]
     },
     "grp1": {
-      "page": "SaladDressing",
-      "pageOrder": [
-        "AmericanSurvey",
-        "SaladDressing"
-      ]
+      "whep": ["1cceeb9e-046a-43ab-9319-ff9204cbffb2"],
     },
     "American": {
+      "whep": ["1cceeb9e-046a-43ab-9319-ff9204cbffb1"],
       "ev": [
         "event:294C1DE8-03A7-4DC9-B7C2-74DB8480D803"
       ]
