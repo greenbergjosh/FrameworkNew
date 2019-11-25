@@ -187,6 +187,7 @@ namespace EdwServiceLib
                 var includeWhep = false;
                 JObject duplicate = null;
                 JArray when = null;
+                string[] rsNames = null;
 
                 if (evObj.TryGetValue(WhenSessionTimeout, out var rawWhenSessionTimeout) &&
                     rawWhenSessionTimeout.Type == JTokenType.Boolean &&
@@ -205,8 +206,11 @@ namespace EdwServiceLib
                 if (evObj.TryGetValue(WhenDuplicate, out var rawWhenDuplicate) && rawWhenDuplicate.Type == JTokenType.Object)
                     duplicate = (JObject)rawWhenDuplicate;
 
+                if (evObj.TryGetValue(Rs, out var rawRsNames) && rawRsNames.Type == JTokenType.Array)
+                    rsNames = rawRsNames.ToObject<string[]>();
+
                 var evResult = await PublishEvent(session, oldStack, newStack, evKey.ToObject<string[]>(), 
-                    evData, addToWhep, includeWhep, duplicate, when);
+                    evData, addToWhep, includeWhep, duplicate, when, rsNames);
                 if (evResult != null)
                     evResults.Add(evResult);
             }
@@ -469,13 +473,16 @@ namespace EdwServiceLib
                 .ToList();
         }
 
-        private Dictionary<string, object> GetRsIds(Guid sessionId)
+        private Dictionary<string, object> GetRsIds(Guid sessionId, string[] rsNames)
         {
             var rsListKey = $"{sessionId}:{Rs}";
             var cache = _cache.Get<List<(string Name, Guid Id)>>(rsListKey);
-            return cache == null 
+            var cachedRs = cache == null 
                 ? new Dictionary<string, object>() 
                 : cache.ToDictionary(rs => rs.Name, rs => (object)rs.Id);
+            if (rsNames == null || rsNames.Length == 0)
+                return cachedRs;
+            return cachedRs.Where(kv => rsNames.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         private async Task<object> PublishEvents(HttpContext context)
@@ -587,7 +594,7 @@ namespace EdwServiceLib
             Session session,
             Stack oldStack, Stack newStack,
             IEnumerable<string> keyParts, JObject data, 
-            bool addToWhep, bool includeWhep, JObject duplicate, IEnumerable when)
+            bool addToWhep, bool includeWhep, JObject duplicate, IEnumerable when, string[] rsNames)
         {
             TransformData(session, oldStack, newStack, newStack.Last().Key, data);
 
@@ -617,7 +624,7 @@ namespace EdwServiceLib
                     data[s] = value;
             }
 
-            var rsids = GetRsIds(session.Id);
+            var rsids = GetRsIds(session.Id, rsNames);
             var eventId = Guid.NewGuid();
             List<string> whep = null;
             var sfData = new Dictionary<string, object>
