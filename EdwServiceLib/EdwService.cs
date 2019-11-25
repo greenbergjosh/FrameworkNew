@@ -215,13 +215,12 @@ namespace EdwServiceLib
                      Debug.WriteLine(key);
                      var data = new Dictionary<string, object> { [Event] = SessionTerminateEventId };
 
-                     var stack = BuildStack(sessionId, new[] { Session });
+                     var stackFrames = new[] { Session };
+                     var stack = BuildStack(sessionId, stackFrames);
                      if (stack != null && stack.Any())
                      {
-                         var stackFrames = new[] {Session};
-
-                         await GetOrCreateRs(sessionId, ctsKey.Token, stack, stackFrames, EndSession, 
-                             EdwBulkEvent.EdwType.Immediate.ToString(), SessionTerminateEventId, new JObject());
+                         /*await GetOrCreateRs(sessionId, ctsKey.Token, stack, stackFrames, EndSession, 
+                             EdwBulkEvent.EdwType.Immediate.ToString(), SessionTerminateEventId, new JObject());*/
 
                          await PublishEvent(Guid.Parse(key.ToString()), cts.Token, stack,
                              stackFrames, new[] { Event }, JObject.FromObject(data), false, false, null);
@@ -302,7 +301,7 @@ namespace EdwServiceLib
                     return (oldData, oldObj);
             }
 
-            TransformData(sessionId, token, data, stack, stackFrames.Last());
+            TransformData(sessionId, token, data, stack, stackFrames.LastOrDefault());
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();

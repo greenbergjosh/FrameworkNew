@@ -13,21 +13,7 @@
     <button type="button" onclick="reportAnswer(3)">Cesar</button>
     <button type="button" onclick="reportAnswer(4)">Garlic</button>
   </form>
-<script type="text/javascript">
-  window.onload = function() {
-    reportQuestion('SaladDressing', 1);
-  };
-
-  var reportAnswer = function(saladDressingId) {
-    edw.reportToEdw(answerConfig, function(cf) {
-      cf.rs.surveyRs.data.saladDressingId = saladDressingId;
-      cf.ss.answer.saladDressingId = saladDressingId;
-    }, function() {
-      var survey = edw.getUrlParameter('survey');
-      window.location = 'q2.html?survey=' + survey;
-    });
-  };
-</script>
 <script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+<script type="text/javascript">setupQuestion('SaladDressing', 1, 'q2');</script>
 </body>
 </html>
