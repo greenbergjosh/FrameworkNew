@@ -128,11 +128,13 @@ namespace UnsubLib.UnsubFileProviders
                     await _fw.Trace("UV2C", $"{campaignId} {uriStr} after get {dlUrl}");
 
                     var dl = res.GetS("payload");
-
-                    await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {res}");
+                    await _fw.Trace("UV2C", string.Format("{0} payload value: {1}", campaignId, !dl.IsNullOrWhitespace() ? dl : $"empty, will use default Url: {defaultUrl}"));
 
                     var result = string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} result {result}");
+
+                    await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {dl}");
+
+                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} final result {result}");
 
                     return result;
                 }
