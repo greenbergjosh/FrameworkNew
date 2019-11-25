@@ -12,15 +12,9 @@ import { useRematch } from "../../../../../../hooks"
 import { PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { WithRouteProps } from "../../../../../../state/navigation"
 import { store } from "../../../../../../state/store"
-import {
-  createUIContext,
-  UserInterfaceContext,
-} from "../../../../../../components/interface-builder/UserInterfaceContextManager"
-import {
-  INGESTION_STATUS_QUERY_CONFIG_ID,
-  EXPORT_STATUS_QUERY_CONFIG_ID,
-  PARTNER_QUERY_CONFIG_ID
-} from "./constants"
+import { UserInterfaceContext } from "@opg/interface-builder"
+import { createUIContext } from "../../../../../../data/AdminUserInterfaceContextManager"
+import { EXPORT_STATUS_QUERY_CONFIG_ID, INGESTION_STATUS_QUERY_CONFIG_ID, PARTNER_QUERY_CONFIG_ID } from "./constants"
 import ImportIngestionTable from "./ImportIngestionTable"
 import ExportTable from "./ExportTable"
 import "./import-ingestion.scss"
@@ -93,9 +87,9 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         dispatch,
         fromStore.reportDataByQuery,
         fromStore.configs,
-        fromStore.configsById,
+        fromStore.configsById
       ),
-    [dispatch, fromStore.reportDataByQuery, fromStore.configs, fromStore.configsById],
+    [dispatch, fromStore.reportDataByQuery, fromStore.configs, fromStore.configsById]
   )
 
   console.log("index.render", "Selected", fromStore.selectedPartner)
@@ -104,7 +98,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
       fromStore.selectedPartner && fromStore.selectedPartner.Tables
         ? Object.keys(fromStore.selectedPartner.Tables)
         : [],
-    [fromStore.selectedPartner],
+    [fromStore.selectedPartner]
   )
 
   const partnerMenu = React.useCallback<QueryProps<PartnerStatus>["children"]>(
@@ -124,7 +118,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         />
       </>
     ),
-    [fromStore.selectedPartner && fromStore.selectedPartner.id],
+    [fromStore.selectedPartner && fromStore.selectedPartner.id]
   )
 
   function sortByPartner<T>(data: T[], comparator: (item: T) => boolean): T[] {
@@ -134,22 +128,20 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     // We're using sortBy to move the items of the selected table to the front
     // without re-arranging anything else
     const sorted = sortBy(
-      (item) => //eslint-disable-line @typescript-eslint/camelcase
-        comparator(item)
-          ? 1
-          : 2,
-      data,
+      (
+        item //eslint-disable-line @typescript-eslint/camelcase
+      ) => (comparator(item) ? 1 : 2),
+      data
     )
     return sorted as T[]
   }
 
-  const isSelectedPartnerImportIngestion = (selectedPartnerTables: string[]) =>
-    (item: IngestionStatus) =>
-      selectedPartnerTables.includes(item.table_name)
+  const isSelectedPartnerImportIngestion = (selectedPartnerTables: string[]) => (
+    item: IngestionStatus
+  ) => selectedPartnerTables.includes(item.table_name)
 
-  const isSelectedPartnerExport = (selectedPartner: PartnerStatus | null) =>
-    (item: ExportStatus) =>
-      !!selectedPartner && (selectedPartner.name.toLowerCase() === item.partner.toLowerCase())
+  const isSelectedPartnerExport = (selectedPartner: PartnerStatus | null) => (item: ExportStatus) =>
+    !!selectedPartner && selectedPartner.name.toLowerCase() === item.partner.toLowerCase()
 
   function importIngestionRowDataBound(rowDataBoundEventArgs?: RowDataBoundEventArgs): void {
     if (!rowDataBoundEventArgs) {
@@ -159,11 +151,10 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     const ingestionStatusDecoded = IngestionStatusCodec.decode(rowDataBoundEventArgs.data)
     ingestionStatusDecoded.fold(
       () => {
-        console.warn(
-          "IngestionStatusReport.rowDataBound",
-          "Failed to parse row data",
-          { data: rowDataBoundEventArgs.data, message: reporter(ingestionStatusDecoded) },
-        )
+        console.warn("IngestionStatusReport.rowDataBound", "Failed to parse row data", {
+          data: rowDataBoundEventArgs.data,
+          message: reporter(ingestionStatusDecoded),
+        })
         return null
       },
       (ingestionStatus) => {
@@ -171,11 +162,10 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         if (!rowDataBoundEventArgs.row) {
           return
         }
-        if (!data.succeeded)
-          rowDataBoundEventArgs.row.classList.add("error-row")
+        if (!data.succeeded) rowDataBoundEventArgs.row.classList.add("error-row")
         else if (isSelectedPartnerImportIngestion(selectedPartnerTables)(data))
           rowDataBoundEventArgs.row.classList.add("highlight-row")
-      },
+      }
     )
   }
 
@@ -187,11 +177,10 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     const exportStatusDecoded = ExportStatusCodec.decode(rowDataBoundEventArgs.data)
     exportStatusDecoded.fold(
       () => {
-        console.warn(
-          "IngestionStatusReport.rowDataBound",
-          "Failed to parse row data",
-          { data: rowDataBoundEventArgs.data, message: reporter(exportStatusDecoded) },
-        )
+        console.warn("IngestionStatusReport.rowDataBound", "Failed to parse row data", {
+          data: rowDataBoundEventArgs.data,
+          message: reporter(exportStatusDecoded),
+        })
         return null
       },
       (exportStatus) => {
@@ -201,7 +190,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
         }
         if (isSelectedPartnerExport(fromStore.selectedPartner)(data))
           rowDataBoundEventArgs.row.classList.add("highlight-row")
-      },
+      }
     )
   }
 
@@ -216,11 +205,12 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
           style={{ padding: "15px" }}
           subTitle=""
           title="Import Ingestion"
-          className="import-ingestion-report"
-        >
+          className="import-ingestion-report">
           <Row gutter={32}>
             <Col span={4}>
-              <Typography.Text strong={true} className={"table-title"}>Partners</Typography.Text>
+              <Typography.Text strong={true} className={"table-title"}>
+                Partners
+              </Typography.Text>
               <Query<PartnerStatus>
                 queryType="remote-query"
                 remoteQuery={partnerQueryId}
@@ -236,7 +226,10 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 {({ data }) => (
                   <ImportIngestionTable
                     title="Ingestion"
-                    data={sortByPartner(data, isSelectedPartnerImportIngestion(selectedPartnerTables))}
+                    data={sortByPartner(
+                      data,
+                      isSelectedPartnerImportIngestion(selectedPartnerTables)
+                    )}
                     onRowDataBind={importIngestionRowDataBound}
                   />
                 )}

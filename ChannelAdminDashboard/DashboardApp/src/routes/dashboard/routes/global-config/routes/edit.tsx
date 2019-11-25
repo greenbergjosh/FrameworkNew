@@ -1,37 +1,19 @@
 import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Form,
-  Input,
-  Skeleton,
-  Tabs,
-  Typography
-  } from "antd"
+import { Alert, Button, Card, Empty, Form, Input, Skeleton, Tabs, Typography } from "antd"
 import * as Formik from "formik"
 import { array } from "fp-ts/lib/Array"
 import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
-import {
-  fromEither,
-  none,
-  Option,
-  some,
-  tryCatch
-  } from "fp-ts/lib/Option"
+import { fromEither, none, Option, some, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
 import { ConfirmableDeleteButton } from "../../../../../components/button/confirmable-delete"
-import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
-import { ComponentDefinition } from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
-import { UserInterface } from "../../../../../components/interface-builder/UserInterface"
-import { UserInterfaceContextManager } from "../../../../../components/interface-builder/UserInterfaceContextManager"
+import { CodeEditor, EditorLangCodec, ComponentDefinition, UserInterface } from "@opg/interface-builder"
+import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
 import { useMemoPlus } from "../../../../../hooks/use-memo-plus"
@@ -40,8 +22,8 @@ import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
 import {
-  PersistedConfig,
   InProgressRemoteUpdateDraft,
+  PersistedConfig,
 } from "../../../../../data/GlobalConfig.Config"
 
 interface Props {
@@ -100,7 +82,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     reportDataByQuery: s.reports.reportDataByQuery,
   }))
 
-  const userInterfaceContextManager: UserInterfaceContextManager = {
+  const userInterfaceContextManager: AdminUserInterfaceContextManager = {
     executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
     reportDataByQuery: fromStore.reportDataByQuery,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {

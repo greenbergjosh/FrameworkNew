@@ -7,16 +7,13 @@ import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../data/JSON"
 import { ParameterItem, QueryConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
-import { generateLayoutFromParameters } from "../../routes/dashboard/routes/reports/routes/report/generators"
 import { store } from "../../state/store"
-import { registry } from "../interface-builder/registry"
-import { UserInterface } from "../interface-builder/UserInterface"
-import { UserInterfaceContextManager } from "../interface-builder/UserInterfaceContextManager"
 import {
-  BaseInterfaceComponent,
   ComponentDefinition,
   getDefaultsFromComponentDefinitions,
-} from "../interface-builder/components/base/BaseInterfaceComponent"
+  UserInterface,
+  UserInterfaceContextManager,
+} from "@opg/interface-builder"
 
 interface Props {
   layout: QueryConfig["layout"]

@@ -12,8 +12,8 @@ import { JSONRecord } from "../../data/JSON"
 import { QueryConfig, QueryConfigCodec } from "../../data/Report"
 import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../lib/json"
-import { shallowPropCheck } from "../interface-builder/dnd"
-import { UserInterfaceContext } from "../interface-builder/UserInterfaceContextManager"
+import { shallowPropCheck, UserInterfaceContext } from "@opg/interface-builder"
+import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager"
 import { QueryForm } from "../report/QueryForm"
 
 export interface QueryChildProps<T = any> {
@@ -26,9 +26,9 @@ export interface QueryRefreshOptions {
 }
 
 export interface LoadDataParams {
-  executeQuery: Function,
-  queryResultURI: string,
-  queryConfig: QueryConfig,
+  executeQuery: Function
+  queryResultURI: string
+  queryConfig: QueryConfig
   satisfiedParams: JSONRecord
 }
 
@@ -127,7 +127,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
           promptLayout: [],
           promptParameters: [],
         }),
-        () => this.loadRemoteData(),
+        () => this.loadRemoteData()
       )
     } else if (
       this.props.queryType &&
@@ -154,7 +154,11 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   componentWillUnmount(): void {
     const refreshTimeout = this.state.refreshTimeout
     if (refreshTimeout) {
-      console.log("Query.componentWillUnmount", this.state.remoteQueryLoggingName, "Removing refresh timeout")
+      console.log(
+        "Query.componentWillUnmount",
+        this.state.remoteQueryLoggingName,
+        "Removing refresh timeout"
+      )
       clearTimeout(refreshTimeout)
     }
   }
@@ -169,7 +173,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       context: this.context,
     })
     if (this.context) {
-      const { executeQuery, loadById, loadByFilter, reportDataByQuery } = this.context
+      const { executeQuery, loadById, loadByFilter, reportDataByQuery } = this
+        .context as AdminUserInterfaceContextManager
 
       if (this.props.queryType === "remote-config") {
         if (this.props.remoteConfigType) {
@@ -180,24 +185,24 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
 
           const predicate = remoteDataFilter
             ? (config: PersistedConfig) => {
-              const parsedConfig = {
-                ...config,
-                config: config.config
-                  .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
-                  .toNullable(),
-              }
+                const parsedConfig = {
+                  ...config,
+                  config: config.config
+                    .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
+                    .toNullable(),
+                }
 
-              const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
-              return remoteConfigType
-                ? (config.type === remoteConfigType ||
-                config.type === remoteConfigTypeParentName) &&
-                dataFilterResult
-                : dataFilterResult
-            }
+                const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
+                return remoteConfigType
+                  ? (config.type === remoteConfigType ||
+                      config.type === remoteConfigTypeParentName) &&
+                      dataFilterResult
+                  : dataFilterResult
+              }
             : remoteConfigType
-              ? (config: PersistedConfig) =>
+            ? (config: PersistedConfig) =>
                 config.type === remoteConfigType || config.type === remoteConfigTypeParentName
-              : (config: PersistedConfig) => true
+            : (config: PersistedConfig) => true
 
           this.setState({
             data: (loadByFilter(predicate) as unknown) as T[],
@@ -212,7 +217,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
             const queryGlobalConfig = loadById(remoteQuery)
             if (queryGlobalConfig) {
               const queryConfig = QueryConfigCodec.decode(
-                JSON5.parse(queryGlobalConfig.config.getOrElse("")),
+                JSON5.parse(queryGlobalConfig.config.getOrElse(""))
               )
               queryConfig.fold(
                 (errors) => {
@@ -224,7 +229,12 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
                   }))
                 },
                 Right((queryConfig) => {
-                  console.log("Query.loadRemoteData", queryConfig.query, "Checking for loaded values", queryConfig)
+                  console.log(
+                    "Query.loadRemoteData",
+                    queryConfig.query,
+                    "Checking for loaded values",
+                    queryConfig
+                  )
 
                   // These are the parameters the form will prompt for
                   // -----
@@ -253,41 +263,61 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
                       ...inputData,
                       ...parameterValues,
                     },
-                    true,
+                    true
                   )
 
-                  if (!unsatisfiedByParentParams.length ||
-                    unsatisfiedByParentParams.every(({ required }) => required !== true)) {
+                  if (
+                    !unsatisfiedByParentParams.length ||
+                    unsatisfiedByParentParams.every(({ required }) => required !== true)
+                  ) {
                     const queryResultURI = cheapHash(queryConfig.query, satisfiedParams)
-                    const queryResult = record.lookup<JSONRecord[]>(queryResultURI, reportDataByQuery)
+                    const queryResult = record.lookup<JSONRecord[]>(
+                      queryResultURI,
+                      reportDataByQuery
+                    )
 
                     queryResult.foldL(
                       // Cache does not exist, fetch data
-                      this.loadRemoteWithRefresh({ executeQuery, queryResultURI, queryConfig, satisfiedParams }),
+                      this.loadRemoteWithRefresh({
+                        executeQuery,
+                        queryResultURI,
+                        queryConfig,
+                        satisfiedParams,
+                      }),
                       // Cache exists, reload from cache
                       (resultValues) => {
-                        console.log("Query.loadRemoteData", queryConfig.query, "Loading data into state (no remote)")
+                        console.log(
+                          "Query.loadRemoteData",
+                          queryConfig.query,
+                          "Loading data into state (no remote)"
+                        )
                         this.setState((state) => ({
                           ...state,
                           data: (resultValues as unknown) as T[],
                           loadStatus: "loaded",
                         }))
-                        if (this.props.refresh && this.props.refresh.interval && this.state.refreshTimeout === null) {
-                          this.queueNextRemoteDataLoad(
-                            this.props.refresh.interval,
-                            { executeQuery, queryResultURI, queryConfig, satisfiedParams },
-                          )
+                        if (
+                          this.props.refresh &&
+                          this.props.refresh.interval &&
+                          this.state.refreshTimeout === null
+                        ) {
+                          this.queueNextRemoteDataLoad(this.props.refresh.interval, {
+                            executeQuery,
+                            queryResultURI,
+                            queryConfig,
+                            satisfiedParams,
+                          })
                         }
-                      },
+                      }
                     )
                   } else {
                     console.log(
                       "Query.loadRemoteData",
                       "Cannot start loading due to unsatisfied parameters",
-                      unsatisfiedByParentParams,
+                      unsatisfiedByParentParams
                     )
                   }
-                }),
+                })
               )
             }
           }
@@ -296,7 +326,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     } else {
       console.warn(
         "Query.loadRemoteData",
-        "Query cannot load any data without a UserInterfaceContext in the React hierarchy",
+        "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
       )
     }
   }
@@ -305,15 +335,27 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     return () => {
       this.loadData(loadDataParams)
         .then(() => {
-          if (this.props.refresh && this.props.refresh.interval && this.state.refreshTimeout === null) {
-            console.log("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, "Queueing next")
+          if (
+            this.props.refresh &&
+            this.props.refresh.interval &&
+            this.state.refreshTimeout === null
+          ) {
+            console.log(
+              "Query.loadRemoteWithRefresh",
+              loadDataParams.queryConfig.query,
+              "Queueing next"
+            )
             this.queueNextRemoteDataLoad(this.props.refresh.interval, loadDataParams)
           } else {
-            console.log("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, "Next refresh already set")
+            console.log(
+              "Query.loadRemoteWithRefresh",
+              loadDataParams.queryConfig.query,
+              "Next refresh already set"
+            )
           }
         })
         .catch((e: Error) =>
-          console.error("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, e),
+          console.error("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, e)
         )
     }
   }
@@ -327,22 +369,25 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
 
   private setRemoteDataLoadInterval(interval: number, loadDataParams: LoadDataParams) {
     return new Promise((resolve, reject) => {
-      console.log("Query.setRemoteDataLoadInterval", loadDataParams.queryConfig.query, `Setting ${interval}s refresh interval`)
-      const refreshTimeout = setTimeout(
-        () => {
-          console.log(
-            "Query.setRemoteDataLoadInterval",
-            loadDataParams.queryConfig.query,
-            `Reached ${interval}s refresh interval`,
-          )
-          this.loadData(loadDataParams).then((response) => {
+      console.log(
+        "Query.setRemoteDataLoadInterval",
+        loadDataParams.queryConfig.query,
+        `Setting ${interval}s refresh interval`
+      )
+      const refreshTimeout = setTimeout(() => {
+        console.log(
+          "Query.setRemoteDataLoadInterval",
+          loadDataParams.queryConfig.query,
+          `Reached ${interval}s refresh interval`
+        )
+        this.loadData(loadDataParams)
+          .then((response) => {
             resolve(response)
-          }).catch((e: Error) => {
+          })
+          .catch((e: Error) => {
             reject(e)
           })
-        },
-        interval * 1000,
-      )
+      }, interval * 1000)
       this.setState((state) => ({ ...state, refreshTimeout }))
     })
   }
@@ -356,15 +401,17 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
         resultURI: queryResultURI,
         query: queryConfig.query,
         params: satisfiedParams,
-      }).then(() => {
-        console.log("Query.loadData", queryConfig.query, "Loaded. Clearing state.loadStatus")
-        this.setState((state) => ({ ...state, loadStatus: "none" }))
-        resolve()
-      }).catch((e: Error) => {
-        console.error("Query.loadData", queryConfig.query, e)
-        this.setState({ loadStatus: "error", loadError: e.message })
-        reject(e)
       })
+        .then(() => {
+          console.log("Query.loadData", queryConfig.query, "Loaded. Clearing state.loadStatus")
+          this.setState((state) => ({ ...state, loadStatus: "none" }))
+          resolve()
+        })
+        .catch((e: Error) => {
+          console.error("Query.loadData", queryConfig.query, e)
+          this.setState({ loadStatus: "error", loadError: e.message })
+          reject(e)
+        })
     })
   }
 
@@ -382,20 +429,21 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     } = this.state
 
     return loadStatus === "error" ? (
-      <Alert type="error" message={loadError || "An error occurred during data loading"}/>
+      <Alert type="error" message={loadError || "An error occurred during data loading"} />
     ) : (
       <Spin spinning={loadStatus === "loading"}>
-        {queryType === "remote-query" && !!promptParameters.length &&
-        promptParameters.some(({ required }) => required === true) && (
-          <QueryForm
-            layout={promptLayout}
-            parameters={promptParameters}
-            parameterValues={parameterValues}
-            onSubmit={(formProps) => {
-              console.log("Submitted Form Data", formProps)
-            }}
-          />
-        )}
+        {queryType === "remote-query" &&
+          !!promptParameters.length &&
+          promptParameters.some(({ required }) => required === true) && (
+            <QueryForm
+              layout={promptLayout}
+              parameters={promptParameters}
+              parameterValues={parameterValues}
+              onSubmit={(formProps) => {
+                console.log("Submitted Form Data", formProps)
+              }}
+            />
+          )}
         {renderedChildren}
 
         {/* <Alert type="warning" message={<pre>{JSON.stringify({ [dataKey]: data }, null, 2)}</pre>} /> */}

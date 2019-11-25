@@ -1,28 +1,18 @@
 import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Form,
-  Icon,
-  Skeleton,
-  Tabs,
-  Tag,
-  Tree,
-  Typography
-  } from "antd"
-import { TreeNode } from "antd/lib/tree-select"
+import { Alert, Button, Card, Empty, Form, Icon, Skeleton, Tabs, Tag, Tree, Typography } from "antd"
 import { fromEither, none, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
-import { ComponentDefinition } from "../../../../../components/interface-builder/components/base/BaseInterfaceComponent"
-import { UserInterface } from "../../../../../components/interface-builder/UserInterface"
-import { UserInterfaceContextManager } from "../../../../../components/interface-builder/UserInterfaceContextManager"
+import {
+  CodeEditor,
+  ComponentDefinition,
+  EditorLangCodec,
+  UserInterface,
+} from "@opg/interface-builder"
+import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
@@ -57,7 +47,7 @@ export function ShowGlobalConfig({
     reportDataByQuery: s.reports.reportDataByQuery,
   }))
 
-  const userInterfaceContextManager: UserInterfaceContextManager = {
+  const userInterfaceContextManager: AdminUserInterfaceContextManager = {
     executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
     reportDataByQuery: fromStore.reportDataByQuery,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {

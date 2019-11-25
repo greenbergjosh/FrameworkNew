@@ -1,7 +1,7 @@
 import { Card } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { ComponentDefinition } from "../../../../components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentDefinition } from "@opg/interface-builder"
 import { WithRouteProps } from "../../../../state/navigation"
 
 interface Props {}

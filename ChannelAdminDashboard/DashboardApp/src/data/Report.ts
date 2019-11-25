@@ -1,7 +1,7 @@
 import { none, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
-import { ComponentDefinition } from "../components/interface-builder/components/base/BaseInterfaceComponent"
+import { ComponentDefinition } from "@opg/interface-builder"
 import { JSONRecord } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>

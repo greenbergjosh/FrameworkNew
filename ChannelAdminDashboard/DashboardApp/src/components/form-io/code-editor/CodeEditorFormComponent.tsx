@@ -1,7 +1,7 @@
 import { init } from "@rematch/core"
 import { some } from "fp-ts/lib/Option"
 import React from "react"
-import { CodeEditor } from "../../code-editor"
+import { CodeEditor } from "@opg/interface-builder"
 import ReactFormBase from "../ReactFormBase"
 import editForm from "./code-editor.form"
 
