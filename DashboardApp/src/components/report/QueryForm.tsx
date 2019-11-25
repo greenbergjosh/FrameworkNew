@@ -74,7 +74,7 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
       loadByURL: (url: string) => {
         return [] // TODO: axios
       },
-    } as UserInterfaceContextManager,
+    } as UserInterfaceContextManager<PersistedConfig>,
   }))
 
   const defaultFormState = React.useMemo(() => {

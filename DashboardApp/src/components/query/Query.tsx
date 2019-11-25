@@ -32,10 +32,6 @@ export interface LoadDataParams {
   satisfiedParams: JSONRecord
 }
 
-export interface QueryConfig {
-  query: string
-}
-
 interface IQueryProps<T> {
   children: (childProps: QueryChildProps<T>) => JSX.Element | JSX.Element[] | null
   dataKey?: string

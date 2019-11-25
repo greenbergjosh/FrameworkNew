@@ -9,6 +9,7 @@ import {
   PageSettingsModel,
   RowDataBoundEventArgs,
 } from "@syncfusion/ej2-react-grids"
+import { EmitType } from "@syncfusion/ej2-base"
 import { DEFAULT_PAGE_SIZE } from "./constants"
 import "./import-ingestion.scss"
 import { ExportStatus } from "./index"
@@ -20,7 +21,7 @@ import { ExportStatus } from "./index"
 interface ExportTableProps<T> {
   data: T[],
   title?: string,
-  onRowDataBind?: (event: RowDataBoundEventArgs) => void,
+  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined,
 }
 
 interface RowCountColProps {
