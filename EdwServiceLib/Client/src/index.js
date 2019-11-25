@@ -10,7 +10,7 @@ let stack = [];
 let isLogging = false;
 
 export const enableLogging = (enable) => {
-  isLogging = enable;
+  isLogging = true;
 };
 
 export const sfAllow = async (names, sessionId = null) => {
@@ -81,11 +81,15 @@ export const rs = async (type, name, configId, data, sessionId = null) => {
   return result;
 };
 
-export const ev = async (data, sessionId = null) => {
+export const ev = async (key, data, addToWhep = false, includeWhep = false, duplicate = null, sessionId = null) => {
   const result = await post(url('ev'), {
     sessionId,
     stack,
-    data
+    key,
+    data,
+    addToWhep,
+    includeWhep,
+    duplicate
   });
   if (isLogging) {
     console.log('Event: ' + JSON.stringify(response, undefined, 2));
@@ -116,4 +120,29 @@ const post = async (url, json) => {
     body: JSON.stringify(json)
   });
   return await response.json();
+};
+
+export const createConfig = (ss, rs, ev = []) => {
+  return {
+    enableLogging: isLogging,
+    rs: rs,
+    ss: ss,
+    ev: ev
+  };
+};
+
+export const reportToEdw = (config, customizeConfig = () => {}, postConfig = () => {}) => {
+  customizeConfig(config);
+  return edw.cf(config)
+    .then(r => postConfig(r))
+    .catch(reason => console.log('Error! Reason: ' + reason));
+};
+
+export const getUrlParameter = (name) => {
+  var url = new URL(window.location.href);
+  return url.searchParams.get(name);
+};
+
+export const stackBasedOn = (base, values) => {
+  return Object.assign({}, JSON.parse(JSON.stringify(base)), values);
 };

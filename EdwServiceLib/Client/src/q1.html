@@ -19,10 +19,10 @@
   };
 
   var reportAnswer = function(saladDressingId) {
-    reportToEdw(answerConfig, function(cf) {
+    edw.reportToEdw(answerConfig, function(cf) {
       cf.ss.answer.saladDressingId = saladDressingId;
-    }, function(){
-      var survey = getUrlParameter('survey');
+    }, function() {
+      var survey = edw.getUrlParameter('survey');
       window.location = 'q2.html?survey=' + survey;
     });
   };
