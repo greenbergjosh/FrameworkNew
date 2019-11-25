@@ -59,7 +59,8 @@ namespace UnsubLib.UnsubFileProviders
             {
                 var qs = HttpUtility.ParseQueryString(uri.Query);
 
-                return qs["keyID"] != null;
+                return qs["key"] != null && qs["s"] != null ||
+                        qs["keyID"] != null;
             }
 
             return false;
@@ -67,24 +68,41 @@ namespace UnsubLib.UnsubFileProviders
 
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {
+            var qs2 = HttpUtility.ParseQueryString(uri.Query);
+
+            var defaultUrl = $"https://api.unsubcentral.com/api/service/keys/{qs2["key"]}?s={qs2["s"]}&format=hash&zipped=true";
+
             try
             {
                 using (var client = new HttpClient())
                 {
-                    var resp = await client.GetAsync(uri);
-                    var redirectUrl = resp?.Headers?.Location;
 
-                    if (redirectUrl == null)
+                    string key;
+                    string secure;
+
+                    HttpResponseMessage resp;
+                    var qsOriginal = HttpUtility.ParseQueryString(uri.Query);
+                    if (qsOriginal["keyID"] != null)
                     {
-                        await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
-                        return null;
+                        resp = await client.GetAsync(uri);
+                        var redirectUrl = resp?.Headers?.Location;
+                        if (redirectUrl == null)
+                        {
+                            await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
+                            return defaultUrl;
+                        }
+
+                        var qs = HttpUtility.ParseQueryString(redirectUrl.Query);
+                        key = qs["key"];
+                        secure = qs["s"];
+                    }
+                    else
+                    {
+                        key = qsOriginal["key"];
+                        secure = qsOriginal["s"];
                     }
 
-                    var qs = HttpUtility.ParseQueryString(redirectUrl.Query);
-                    var key = qs["key"];
-                    var secure = qs["s"];
-
-                    if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace()) return null;
+                    if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace()) return defaultUrl;
 
                     var data = new Dictionary<string, string> { { "key", key }, { "s", secure } };
                     var loginUrl = $"https://go.unsubcentral.com/backend/api/login";
@@ -94,7 +112,7 @@ namespace UnsubLib.UnsubFileProviders
 
                     var token = res.GetS("payload");
 
-                    if (token.IsNullOrWhitespace()) return null;
+                    if (token.IsNullOrWhitespace()) return defaultUrl;
 
                     var fileIdUrl = $"https://go.unsubcentral.com/backend/api/keys?token={token}&find=ByAffiliateKeyStringEquals&keyString={key}";
 
@@ -110,13 +128,13 @@ namespace UnsubLib.UnsubFileProviders
 
                     await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {res}");
 
-                    return dl;
+                    return string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;
                 }
             }
             catch (Exception e)
             {
                 await _fw.Error(_logMethod, $"Unhandled exception getting unsub link: {e.UnwrapForLog()}");
-                return null;
+                return defaultUrl;
             }
         }
     }

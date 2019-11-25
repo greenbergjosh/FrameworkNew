@@ -1649,12 +1649,13 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
             {
-                new UnsubFileProviders.UnsubCentral(_fw),
+                //new UnsubFileProviders.UnsubCentral(_fw),
                 new UnsubFileProviders.UnsubCentralV2(_fw),
-                new UnsubFileProviders.Ezepo(_fw,SeleniumChromeDriverPath),
+                new UnsubFileProviders.Ezepo(_fw),
                 new UnsubFileProviders.Optizmo(_fw),
                 new UnsubFileProviders.MidEnity(_fw),
-                new UnsubFileProviders.W4(_fw) 
+                new UnsubFileProviders.W4(_fw),
+                new UnsubFileProviders.Unsubly(_fw)
             };
 
             try
@@ -1705,15 +1706,39 @@ namespace UnsubLib
             var uri = new Uri(unsubUrl);
             var authString = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
-            dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
-                new Dictionary<string, Func<FileInfo, Task<object>>>()
+            if (unsubUrl.Contains("unsubly.com"))
+            {
+                var parts = unsubUrl.Split('|');
+                var ge = JsonWrapper.ToGenericEntity(JsonWrapper.TryParse(parts[1]));
+                var headers = new Dictionary<string, string>()
                 {
-                    { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
-                    { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
-                    { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
-                    { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
-                },
-                ClientWorkingDirectory, 30 * 60, parallelism);
+                    ["nid"] = ge.GetS("nid"),
+                    ["aid"] = ge.GetS("aid"),
+                    ["fid"] = ge.GetS("fid"),
+                    ["md5but"] = "Download Suppression List in MD5 format"
+                };
+                var csv = await ProtocolClient.HttpPostAsync(parts[0], headers, 30 * 60);
+                var fileName = Guid.NewGuid();
+
+                await File.WriteAllTextAsync($"{ClientWorkingDirectory}\\{fileName}.txt", csv);
+                dr = new Dictionary<string, object>
+                {
+                    [MD5HANDLER] = fileName
+                };
+            }
+            else
+            {
+                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
+                    new Dictionary<string, Func<FileInfo, Task<object>>>()
+                    {
+                        { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
+                        { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
+                        { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
+                        { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
+                    },
+                    ClientWorkingDirectory, 30 * 60, parallelism);
+            }
+            
 
             if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
 

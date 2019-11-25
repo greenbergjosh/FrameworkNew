@@ -26,6 +26,20 @@ namespace UnsubJob
 
             IEnumerable<IGenericEntity> networks = null;
 
+            /*var other = new Factory.Other(Fw);
+            var network = (await nw.GetNetworks("Amobee")).GetL("").First();
+
+            await ProtocolClient.DownloadEzepo();
+            var campaigns = await other.GetCampaigns(network);
+
+            var uri = await other.GetSuppressionLocationUrl(network, "2402");
+            
+            var l = new UnsubLib.UnsubFileProviders.Unsubly(Fw);
+            var canHandle = l.CanHandle(network, uri);
+            var uri2 = await l.GetFileUrl(network, uri);
+
+            await nw.DownloadSuppressionFiles(network, uri2, "test");*/
+                    
             try
             {
                 await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
