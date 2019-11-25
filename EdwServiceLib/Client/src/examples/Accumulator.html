@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // Using the DSL syntax, you  can setup an accumulator into which data will be aggregated each time the accumulator instruction 
+    // is interpreted by the server. Accumulator data is cached at the stackframe level. That is, each stackframe has 
+    // a different accumulator cache. This is usefull to generate statistics for page hierarchy navigation.
+    
+    var config = {
+      rs: {/*...*/},
+      ss: {
+        root: {
+          page: 'page1',
+          navigationHistory: 'page+' // The first time the server reads the '{varName}+' syntax on a property,
+                                     // a cached accumulator array is created on the server, for that specific stackframe property.
+                                     // Data is pushed in the accumulator array everytime the server it the accumulator property.
+        }
+      }
+    };
+
+    // In this example, every page load will push the content of the 'page' variable in the 'navigationHistory' accumulator.
+    // On first visit, the generated data will look like: {navigationHistory: ['page1']}
+    // On second visit, the generated data will look like: {navigationHistory: ['page1', 'page1']}
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>

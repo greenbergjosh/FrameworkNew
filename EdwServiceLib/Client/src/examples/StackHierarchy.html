@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+    <button type="button" onclick="publishEvent()">Publish Event</button>
+
+<script type="text/javascript">
+  window.onload = function() {
+    // To use a specific stack hierarchy, pass multiple key/value pairs in the ss property of the config object.
+    // You can pass an empty object to use a stackframewith it's current content on the server,without updating it.
+    var config = {
+      rs: {
+        r1: {
+          configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
+          type: 'Immediate',
+          data: {}
+        }
+      },
+      ss: {
+        root: {                       // A stackframe named 'root' will be persisted in the server cache for the current session.
+          myData: 'custom data here'  // A key/value pair will be persisted in 'root'.
+        }
+      }
+    }
+
+    edw.reportToEdw(config);
+  };
+
+  var publishEvent = function() {
+    edw.reportToEdw({
+      // r1 was already created for the session on page load, no need to configure it again. 
+      // Published events will include it in it's rsConfigs member.
+      ss: {
+        root: {},                         // First stack level is the stackframe named 'root'. 
+                                          // It's 'myData' property will be included in published events.
+
+        leaf: {                           // Second stack level is the stackframe named 'leaf'. 
+          leafData: 'Your leaf data here' // It's 'leafData' property will be included in published events.
+        }
+      },
+      ev: {
+        key: ['event'],
+        data: {
+          event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803'
+        }
+      }
+    });
+  };
+</script>
+</body>
+</html>
