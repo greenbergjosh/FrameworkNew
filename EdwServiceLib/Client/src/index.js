@@ -118,6 +118,15 @@ const url = (path, sessionId, params) => {
   return url;
 };
 
+export const forwardUrlParams = (element) => {
+  element.href = element.href + window.location.search;
+};
+
+export const getUrlParam = (id) => {
+  const params = new URLSearchParams(location.search);
+  return params.get(id);
+};
+
 const post = async (url, json) => {
   const response = await fetch(url, {
     method: 'POST',

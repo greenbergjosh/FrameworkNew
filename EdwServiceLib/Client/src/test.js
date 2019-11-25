@@ -1,9 +1,9 @@
 var baseStack = {
   session: {
-    pageOrder: 'page+'
+    
   },
   grp1: {
-
+    pageOrder: 'page+'
   }
 };
 
@@ -25,16 +25,19 @@ var createEventData = function(event) {
 
 var createEventConfig = function(event) {
   return {
-    key: ['event'],
-    duplicate: {
+    key: ['event', 'page'],
+    onPop: true,
+    /*duplicate: {
       duplicate: true
-    },
+    },*/
     data: createEventData(event)
   };
 };
 
 var impressionEvent = createEventConfig('impression');
 var clickEvent = createEventConfig('click');
+var reachedEvent = createEventConfig('reached');
+reachedEvent.key = ['event'];
 
 var reportSurvey = function(page, id, nextFn) {
   var surveyConfig = edw.createConfig(baseStack, {}, [impressionEvent, clickEvent]);
@@ -49,20 +52,6 @@ var reportSurvey = function(page, id, nextFn) {
     };
   },
   nextFn);
-};
-
-var reportSmartPath = function() {
-  var surveyConfig = edw.createConfig({
-    session: {
-      pageOrder: 'page+'
-    }
-  }, {}, [impressionEvent, clickEvent]);
-
-  edw.reportToEdw(surveyConfig, function(cf) {
-    cf.ss.session.page = 'smartPath';
-  }, function() {
-    edw.es(); // End session
-  });
 };
 
 var answerConfig = {};
@@ -123,9 +112,10 @@ var createAnswerConfig = function(survey, questionId, answerId) {
   
   var config = edw.createConfig(answerStack, {}, [{
     key: ['event','answerId'],
-    duplicate: {
+    onPop: true,
+    /*duplicate: {
       duplicate: true
-    },
+    },*/
     data: createEventData('impression')
   }]);
   config.ss.session = {};
@@ -158,7 +148,7 @@ var reportAnswer = function(questionId, answer) {
   edw.reportToEdw(answerConfig[questionId], function(cf) {
     cf.ss.grp1 = {};
     cf.ss.session = {};
-    cf.ss.answer.answer = answer;
+    cf.ss.answer.answerId = answer;
   }, function() {
     if (nextPage) {
       var survey = edw.getUrlParameter('survey');
@@ -181,7 +171,14 @@ var setupQuestion = function(page, id, next) {
 
 var setupSmartPath = function() {
   window.onload = function() {
-    reportSmartPath();
+    var config = edw.createConfig({
+      session: {}
+    }, {}, []);
+  
+    // TODO: Emit reached event
+    edw.reportToEdw(config, null, function() {
+      edw.es(); // End session
+    });
   };
 };
 
@@ -201,21 +198,59 @@ var reportDomain = function(domain, nextFn) {
   nextFn);
 };
 
+var rsConfig = {
+  partial: {
+    configId: 'A0465746-CC44-4F66-B9FB-66EDE6619B47',
+    type: 'Immediate',
+    data: {
+      domain: domain
+    }
+  }
+};
+
+var fullConfig = {
+  rs: {
+    partial: {
+      configId: 'A0465746-CC44-4F66-B9FB-66EDE6619B47',
+      type: 'Immediate',
+      data: {
+        domain: domain
+      }
+    }
+  },
+  ss: {
+    session: {
+      
+    },
+    grp1: {
+      pageOrder: 'page+'
+    }
+  },
+  ev: [reachedEvent]
+};
+
 var setupOrderGroup = function() {
   window.onload = function() {
-    var config = edw.createConfig(baseStack, {}, [impressionEvent, clickEvent]);
-    edw.reportToEdw(config, function(cf) {
-      cf.ss.session.page = 'OrderGroup';
-    });
+    var config = edw.createConfig(baseStack, rsConfig, [reachedEvent]);
+    edw.reportToEdw(config);
   };
 };
 
 var setupPage = function(page) {
   window.onload = function() {
-    var config = edw.createConfig(baseStack, {}, [impressionEvent, clickEvent]);
+    var config = edw.createConfig(baseStack, rsConfig, []);
     edw.reportToEdw(config, function(cf) {
       cf.ss.session.page = page;
-      cf.ss[page] = {};
+    });
+  };
+};
+
+var setupImpression = function(page) {
+  window.onload = function() {
+    var config = edw.createConfig(baseStack, rsConfig, [impressionEvent, clickEvent]);
+    edw.reportToEdw(config, function(cf) {
+      cf.ss.session.page = page;
+      // cf.ss[page] = {};
     });
   };
 };
