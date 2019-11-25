@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // Before an event is published, a stack can be established to persist and read hierarchical page data in the server cache.
+    // When the event is published, the current stackframe hierarchy is added as an array of objects to the event properties.
+    // The stack is composed of named stackframes. A stackframe is a simple json object.
+    // The server analyses stackfames that are passed in the config object and update it's internal state accordingly.
+    // To add a variable to a stackframe in the server cache, simply add a json key/value pair to the stackframe config.
+    // To update a value on a subsequent call add a json key/value pair with the same name.
+    // To remove a value from a stackframe, you need to pass a key/value pair with a null value.
+    // All named stackframes can be updated from any pages.
+    var config = {
+      rs: {/*...*/},
+      ss: {
+        myPage: {                     // A stackframe named 'myPage' will be saved in the server cache for the current session.
+          myData: 'custom data here'  // A key/value pair will be persisted in 'myPage'.
+        }
+      },
+      ev: [/*...*/]
+    };
+
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>

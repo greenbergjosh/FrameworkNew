@@ -178,7 +178,10 @@ namespace EdwServiceLib
 
             if (json.TryGetValue(SessionId, out var raw) &&
                 Guid.TryParse(raw?.ToString(), out var sessionId))
+            {
+                context.Response.Cookies.Append(SessionId, sessionId.ToString());
                 return sessionId;
+            }
 
             var newSessionId = Guid.NewGuid();
             context.Response.Cookies.Append(SessionId, newSessionId.ToString());
@@ -243,12 +246,22 @@ namespace EdwServiceLib
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
-            be.AddRS(edwType, sessionId, DateTime.UtcNow, PL.FromJsonString(JsonWrapper.Serialize(data)), configId);
+            var pl = PL.FromJsonString("{\"test\": \"test\"}");
+            be.AddRS(edwType, sessionId, DateTime.UtcNow, pl, configId);
 
-            //await _fw.EdwWriter.Write(be);
+            var plj = (JObject)JsonWrapper.TryParse(be.ToString());
+            Guid rsid = Guid.Empty;
+            if (plj.TryGetValue("IM", out var im))
+                rsid = Guid.Parse((((JObject)((JArray)im)[0])["id"]).ToString());
+            else if (plj.TryGetValue("CK", out var ck))
+                rsid = Guid.Parse((((JObject)((JArray)ck)[0])["id"]).ToString());
+            else if (plj.TryGetValue("CD", out var cd))
+                rsid = Guid.Parse((((JObject)((JArray)cd)[0])["id"]).ToString());
+
+            await _fw.EdwWriter.Write(be);
 
             var rsList = _cache.GetOrCreate(rsListKey, t => new List<(string, Guid)>());
-            rsList.Add((name, configId));
+            rsList.Add((name, rsid));
 
             var result = JsonWrapper.Serialize(new JObject
             {
@@ -399,7 +412,7 @@ namespace EdwServiceLib
             }
 
             be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
-            //await _fw.EdwWriter.Write(be);
+            await _fw.EdwWriter.Write(be);
 
             await SetStackFrame(sessionId, stackFrames.Last(), JObject.FromObject(sfData));
 
