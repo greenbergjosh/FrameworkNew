@@ -226,10 +226,17 @@ namespace EdwServiceLib
                 
                 var dataObj = (JObject)oldObj[Data];
                 var oldProps = dataObj.Properties().Select(p => p.Name).ToList();
-                var newProps = ((JObject)data).Properties().Select(p => p.Name).ToList();
+                var newProps = ((JObject)data).Properties().Select(p => p.Name)
+                    .Where(p => !oldProps.Contains(p))
+                    .ToList();
 
-                if (newProps.Count > oldProps.Count && oldProps.All(op => newProps.Contains(op)))
+                if (newProps.Any())
+                {
+                    foreach (var newProp in newProps)
+                        dataObj[newProp] = data[newProp];
+                    data = dataObj;
                     type = EdwBulkEvent.EdwType.CheckedDetail.ToString();
+                }
                 else
                     return (oldData, oldObj);
             }
