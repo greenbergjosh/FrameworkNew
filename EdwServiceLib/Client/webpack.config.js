@@ -13,7 +13,7 @@ const config = {
     path: path.resolve(__dirname, './dist'),
     filename: 'edw-client-1.0.0.min.js',
     libraryTarget: 'var',
-    library: 'EdwClient'
+    library: 'edw'
   },
   // Loaders
   module: {
