@@ -511,10 +511,11 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
   reducers: {},
 
   effects: () => ({
+    // TODO: FIXME Remove the casting and correct the types for each of the Some cases
     goToDashboard: (opts, { navigation: { routes } }) =>
       opts.foldL(
         None(() => Reach.navigate(routes.dashboard.abs)),
-        Some((opts) => Reach.navigate(routes.dashboard.abs, opts))
+        Some((opts) => Reach.navigate(routes.dashboard.abs, opts as Reach.NavigateOptions<{}>))
       ),
 
     showGlobalConfigById: ({ id, navOpts }, { navigation: { routes } }) => {
@@ -524,17 +525,16 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
     goToGlobalConfigs: (opts, { navigation: { routes } }) =>
       opts.foldL(
         None(() => Reach.navigate(routes.dashboard.subroutes["global-config"].abs)),
-        Some((opts) => Reach.navigate(routes.dashboard.subroutes["global-config"].abs, opts))
+        Some((opts) => Reach.navigate(routes.dashboard.subroutes["global-config"].abs, opts as Reach.NavigateOptions<{}>))
       ),
 
     goToLanding: (opts, { navigation: { routes } }) =>
       opts.foldL(
         None(() => Reach.navigate(routes.login.abs)),
-        Some((opts) => Reach.navigate(routes.login.abs, opts))
+        Some((opts) => Reach.navigate(routes.login.abs, opts as Reach.NavigateOptions<{}>))
       ),
 
     navigate(path, rootState, navOptions) {
-      // FIXME Remove the casting and correct the types
       return Reach.navigate(String(path), navOptions as Reach.NavigateOptions<{}>)
     },
   }),
