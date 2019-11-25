@@ -128,7 +128,7 @@ namespace EdwServiceLib
                         var sfConfig = (JObject)value;
                         JObject prefixConfig = null;
                         if (sfConfig.TryGetValue(KeyPrefix, out var keyPrefix))
-                            prefixConfig = JObject.FromObject(new Dictionary<string, object>() { [KeyPrefix] = keyPrefix });
+                            prefixConfig = JObject.FromObject(new Dictionary<string, object> { [KeyPrefix] = keyPrefix });
                         var (name, _) = await GetOrCreateStackFrame(session, key, prefixConfig, stackFrames);
                         var (_, jToken) = await SetStackFrame(session, name, sfConfig);
                         stackFrames.Add(name);
@@ -148,7 +148,7 @@ namespace EdwServiceLib
                         var rsConfig = (JObject)value;
                         var type = rsConfig[Type].ToString();
                         var configId = Guid.Parse(rsConfig[ConfigId].ToString());
-                        var (_, jToken) = await GetOrCreateRs(session, newStack, key, type, configId, rsConfig[Data]);
+                        var (_, jToken) = await GetOrCreateRs(session, oldStack, newStack, key, type, configId, rsConfig[Data]);
                         rsResults[key] = jToken;
                     }
                 }
@@ -366,11 +366,13 @@ namespace EdwServiceLib
             {
                 var configId = Guid.Parse(rawConfigId.ToString());
                 var stackFrames = rawStackFrames.ToObject<string[]>();
-                var stack = BuildStack(session, stackFrames);
+                var newStack = BuildStack(session, stackFrames);
+                var oldStack = GetOldStack(session);
 
                 var result = await GetOrCreateRs(
                     session,
-                    stack,
+                    oldStack,
+                    newStack,
                     name.ToString(), 
                     type.ToString(), 
                     configId, 
@@ -384,7 +386,7 @@ namespace EdwServiceLib
         }
 
         private async Task<(string Json, JToken Data)> GetOrCreateRs(
-            Session session, Stack stack,
+            Session session, Stack oldStack, Stack newStack,
             string name, string type, Guid configId, JToken data)
         {
             var rsListKey = $"{session.Id}:{Rs}";
@@ -414,7 +416,7 @@ namespace EdwServiceLib
                     return (oldData, oldObj);
             }
 
-            TransformData(session, data, stack, stack.Select(pair => pair.Key).LastOrDefault());
+            TransformData(session, oldStack, newStack, newStack.Select(pair => pair.Key).LastOrDefault(), data);
 
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
@@ -487,6 +489,36 @@ namespace EdwServiceLib
             return null;
         }
 
+        private static (string stackAge, string preName, string name) ExtractNames(string value)
+        {
+            var nameParts = value.Split(',');
+            var stackAge = NewStack;
+            string preName = null;
+            string name;
+            switch (nameParts.Length)
+            {
+                case 3:
+                    stackAge = nameParts[0];
+                    preName = nameParts[1];
+                    name = nameParts[2];
+                    break;
+                case 2:
+                    preName = nameParts[0];
+                    name = nameParts[1];
+                    break;
+                case 1:
+                    name = nameParts[0];
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid variable name {value}.");
+            }
+
+            if (string.IsNullOrEmpty(name))
+                throw new InvalidOperationException($"Invalid variable name {name}.");
+
+            return (stackAge, preName, name);
+        }
+
         private static bool EvaluatePredicate(IEnumerable when, Stack oldStack, Stack newStack, JObject data)
         {
             if (when == null)
@@ -497,30 +529,7 @@ namespace EdwServiceLib
                 if (!condition.TryGetValue("var", out var varName) || !condition.TryGetValue("in", out var rawIn) ||
                     !(rawIn is JArray inValues)) continue;
 
-                var nameParts = varName.ToString().Split(',');
-                var stackAge = NewStack;
-                string preName = null;
-                string name;
-                switch (nameParts.Length)
-                {
-                    case 3:
-                        stackAge = nameParts[0];
-                        preName = nameParts[1];
-                        name = nameParts[2];
-                        break;
-                    case 2:
-                        preName = nameParts[0];
-                        name = nameParts[1];
-                        break;
-                    case 1:
-                        name = nameParts[0];
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Invalid variable name {varName}.");
-                }
-
-                if (string.IsNullOrEmpty(name))
-                    throw new InvalidOperationException($"Invalid variable name {name}.");
+                var (stackAge, preName, name) = ExtractNames(varName.ToString());
 
                 if (preName == Ev)
                 {
@@ -568,21 +577,21 @@ namespace EdwServiceLib
 
         private async Task<object> PublishEvent(
             Session session,
-            Stack oldStack, Stack stack,
+            Stack oldStack, Stack newStack,
             IEnumerable<string> keyParts, JObject data, 
             bool addToWhep, bool includeWhep, JObject duplicate, JArray when)
         {
             // Get last newStack frame and get/create event dictionary.
-            var stackFrame = stack.Last().Value;
+            var stackFrame = newStack.Last().Value;
             JArray evArray;
             if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
                 evArray = (JArray)rawEvArray;
             else
                 evArray = new JArray();
 
-            TransformData(session, data, stack, stack.Last().Key);
+            TransformData(session, oldStack, newStack, newStack.Last().Key, data);
 
-            if (!EvaluatePredicate(when, oldStack, stack, data))
+            if (!EvaluatePredicate(when, oldStack, newStack, data))
                 return null;
 
             // Compute event key
@@ -620,7 +629,7 @@ namespace EdwServiceLib
 
             // include whep data in new event.
             if (includeWhep)
-                whep = ExtractWhepFromStack(stack);
+                whep = ExtractWhepFromStack(newStack);
 
             // store new event key in ev array.
             if (!eventPresent)
@@ -646,7 +655,7 @@ namespace EdwServiceLib
             await _fw.EdwWriter.Write(be);
 
             var jObj = JObject.FromObject(sfData);
-            await SetStackFrame(session, stack.Last().Key, jObj);
+            await SetStackFrame(session, newStack.Last().Key, jObj);
 
             // Update memory
             foreach (var (s, value) in jObj)
@@ -693,7 +702,7 @@ namespace EdwServiceLib
                 }
             }
 
-            TransformData(session, data, null, name);
+            TransformData(session, null, null, name, data);
             var serializedScope = session.GetOrCreate($"{session.Id}:{Sf}:{name}", () => JsonWrapper.Serialize(new JObject()));
             var scopeStack = new StackFrameParser(serializedScope);
             scopeStack.Apply(((JObject)data).Properties().ToDictionary(t => t.Name, t => t.Value));
@@ -736,8 +745,8 @@ namespace EdwServiceLib
                     {
                         foreach (var sf in invertedStackFrames)
                         {
-                            var stack = BuildStack(session, new[] { sf }).First();
-                            if (!stack.Value.TryGetValue(SfName, out var n) || n.ToString() != keyPrefix)
+                            var (_, value) = BuildStack(session, new[] { sf }).First();
+                            if (!value.TryGetValue(SfName, out var n) || n.ToString() != keyPrefix)
                                 continue;
                             keyPrefix = sf;
                             break;
@@ -750,16 +759,13 @@ namespace EdwServiceLib
                 }
             }
 
-            var stackFrame = session.GetOrCreate($"{session.Id}:{Sf}:{name}", () => JsonWrapper.Serialize(data ?? new JObject()));
-
-
+            var stackFrame = session.GetOrCreate($"{session.Id}:{Sf}:{name}", 
+                () => JsonWrapper.Serialize(data ?? new JObject()));
 
             return Task.FromResult((name, stackFrame));
         }
 
-        private static void TransformData(
-            Session session, JToken data,
-            Stack stack, string stackFrame)
+        private static void TransformData(Session session, Stack oldStack, Stack newStack, string stackFrame, JToken data)
         {
             if (data.Type != JTokenType.Object)
                 return;
@@ -777,7 +783,7 @@ namespace EdwServiceLib
 
                 if (ParseCounter(session, key, obj, kv, str)) continue;
                 if (ParseAccumulator(session, key, obj, kv, str, toRemove)) continue;
-                ParseStackAccess(obj, kv, str, stack);
+                ParseStackAccess(kv, str, oldStack, newStack, obj);
             }
 
             foreach (var rm in toRemove)
@@ -869,38 +875,50 @@ namespace EdwServiceLib
             return true;
         }
 
-        private static void ParseStackAccess(JObject obj, JProperty property, string str, Stack stack)
+        private static void ParseStackAccess(JProperty property, string str, Stack oldStack, Stack newStack, JObject data)
         {
-            if (stack == null || !(str.StartsWith("{") && str.EndsWith("}")))
+            if (newStack == null && oldStack == null || !(str.StartsWith("{") && str.EndsWith("}")))
                 return;
             
             var varName = str.Substring(1, str.Length - 2);
             JToken value = null;
-            if (varName.Contains("."))
-            {
-                var parts = varName.Split(".");
-                if (parts.Length != 2)
-                    throw new InvalidOperationException("Invalid newStack access expression.");
 
-                if (stack.TryGetStackFrame(parts[0], out var stackFrame) && 
-                    stackFrame.TryGetValue(varName, out var v))
-                    value = v;
+            var (stackAge, preName, name) = ExtractNames(varName);
+
+            if (preName == Ev)
+            {
+                data.TryGetValue(name, out value);
             }
             else
             {
-                foreach (var (_, dictionary) in stack)
+                Stack stack;
+                switch (stackAge)
                 {
-                    if (!dictionary.TryGetValue(varName, out var v))
-                        continue;
-                    value = v;
-                    break;
+                    case OldStack:
+                        stack = oldStack;
+                        break;
+
+                    case NewStack:
+                        stack = newStack;
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Invalid newStack name {stackAge}.");
+                }
+
+                if (stack != null)
+                {
+                    if (!string.IsNullOrEmpty(preName))
+                        stack.TryGetStackFrameValue(preName, name, out value);
+                    else
+                        stack.TryGetValue(name, out value);
                 }
             }
 
             if (value == null)
-                obj.Remove(property.Name);
+                data.Remove(property.Name);
             else
-                obj[property.Name] = value;
+                data[property.Name] = value;
         }
     }
 }
