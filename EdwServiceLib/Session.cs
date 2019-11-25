@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,6 +18,11 @@ namespace EdwServiceLib
             _cache = cache;
             Id = id;
             CancellationToken = cancellationToken;
+        }
+
+        public TResult Get<TResult>(string key)
+        {
+            return _cache.Get<TResult>(key);
         }
 
         public TResult GetOrCreate<TResult>(string key, Func<TResult> factory)

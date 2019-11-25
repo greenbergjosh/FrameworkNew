@@ -25,7 +25,10 @@ function generateHtmlPlugins (templateDir, dstDir = '') {
 
 // Call our function on our views directory.
 const htmlPlugins = generateHtmlPlugins('./src')
-const htmlPlugins2 = generateHtmlPlugins('./src/examples', 'examples/')
+const htmlPlugins2 = generateHtmlPlugins('./src/doc', 'doc/')
+const htmlPlugins3 = generateHtmlPlugins('./src/example1', 'example1/')
+const htmlPlugins4 = generateHtmlPlugins('./src/example2', 'example2/')
+const htmlPlugins5 = generateHtmlPlugins('./src/example3', 'example3/')
 
 // Webpack Configuration
 const config = {
@@ -68,7 +71,7 @@ const config = {
       filename: './index.html',
       hash: true
     })*/
-  ].concat(htmlPlugins).concat(htmlPlugins2),
+  ].concat(htmlPlugins).concat(htmlPlugins2).concat(htmlPlugins3).concat(htmlPlugins4).concat(htmlPlugins5),
 
   // Development Tools (Map Errors To Source File)
   devtool: 'source-map',
