@@ -11,12 +11,12 @@ namespace EdwServiceLib
         public StackFrameParser(string serializedStackFrame)
         {
             var token = JsonWrapper.TryParse(serializedStackFrame);
-            if (token.Type == JTokenType.Object)
-            {
-                var obj = (JObject)token;
-                foreach (var kv in obj)
-                    _values[kv.Key] = kv.Value;
-            }
+            if (token.Type != JTokenType.Object)
+                return;
+
+            var obj = (JObject)token;
+            foreach (var (key, value) in obj)
+                _values[key] = value;
         }
 
         public IDictionary<string, JToken> ToDictionary()
@@ -31,8 +31,8 @@ namespace EdwServiceLib
 
         public void Apply(IDictionary<string, JToken> data)
         {
-            foreach (var kv in data)
-                _values[kv.Key] = kv.Value;
+            foreach (var (key, value) in data)
+                _values[key] = value;
         }
     }
 }
