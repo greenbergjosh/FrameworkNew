@@ -133,9 +133,15 @@ export const createConfig = (ss, rs, ev = []) => {
 };
 
 export const reportToEdw = (config, customizeConfig = () => {}, postConfig = () => {}, sessionId = null) => {
-  customizeConfig(config);
+  if (customizeConfig) {
+    customizeConfig(config);
+  }
   return edw.cf(config, sessionId)
-    .then(r => postConfig(r))
+    .then(r => {
+      if (postConfig) {
+        postConfig(r);
+      }
+    })
     .catch(reason => console.log('Error! Reason: ' + reason));
 };
 

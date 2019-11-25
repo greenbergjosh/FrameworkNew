@@ -21,7 +21,7 @@ namespace EdwServiceLib
     {
         private FrameworkWrapper _fw;
 
-        private static readonly Guid SessionTerminateEventId = Guid.Parse("1CCEEB9E-046A-43AB-9319-FF9204CBFFB1");
+        private static readonly string SessionTerminateEventId = "sessionTimeout";
         private static readonly TimeSpan SessionTimeout = TimeSpan.FromMinutes(5);
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
