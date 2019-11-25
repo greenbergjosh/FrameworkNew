@@ -515,92 +515,114 @@ namespace EdwServiceLib
                     var str = (string)kv.Value;
                     var key = $"{sessionId}:{kv.Key}";
 
-                    var regex = new Regex("^(?<varName>.+)\\+(?<options>(?<count>\\d+)(?<distinct>[d]?)(?<mode>[fl]?))?$");
-                    var match = regex.Match(str);
-
-                    if (match != null && match.Success)
-                    {
-                        string varName = null;
-                        int count = 0;
-                        bool distinct = false;
-                        bool last = false;
-
-                        foreach (Group group in match.Groups)
-                        {
-                            switch(group.Name)
-                            {
-                                case "varName":
-                                    varName = group.Value;
-                                    break;
-
-                                case "count":
-                                    if (!string.IsNullOrEmpty(group.Value))
-                                        count = int.Parse(group.Value);
-                                    break;
-
-                                case "distinct":
-                                    distinct = group.Value == "d";
-                                    break;
-
-                                case "mode":
-                                    last = group.Value == "l";
-                                    break;
-                            }
-                        }
-
-                        if (obj.TryGetValue(varName, out var variable))
-                        {
-                            var values = (JArray)JsonWrapper.TryParse(_cache.GetOrCreate(key, t => "[]"));
-                            
-                            if (count > 0 && !last && values.Count >= count)
-                            {
-                                obj[kv.Key] = values;
-                                continue;
-                            }
-
-                            var strVal = variable.ToString();
-                            if (distinct && values.Any(t => t.Value<string>() == strVal))
-                            {
-                                obj[kv.Key] = values;
-                                continue;
-                            }
-
-                            if (last && count > 0 && values.Count >= count)
-                                values.RemoveAt(0);
-
-                            values.Add(variable);
-
-                            _cache.Set(key, JsonWrapper.Serialize(values));
-                            obj[kv.Key] = values;
-                        }
-                        else
-                        {
-                            toRemove.Add(kv.Key);
-                        }
-                    }
-                    else if (str == "0+")
-                    {
-                        var value = _cache.GetOrCreate(key, t => 0);
-                        value++;
-                        _cache.Set(key, value);
-                        obj[kv.Key] = value;
-                    }
-                    else if (stack != null && str.StartsWith("{") && str.EndsWith("}"))
-                    {
-                        var varName = str.Substring(1, str.Length - 2);
-                        JToken value = null;
-                        foreach (var stackFrame in stack)
-                        {
-                            if (stackFrame.TryGetValue(varName, out value))
-                                break;
-                        }
-                        obj[kv.Key] = value;
-                    }
+                    if (!ParseAccumulator(key, obj, kv, str, toRemove) &&
+                        !ParseCounter(key, obj, kv, str) &&
+                        !ParseStack(obj, kv, str, stack))
+                        continue;
                 }
 
                 foreach (var rm in toRemove)
                     obj.Remove(rm);
             }
+        }
+
+        private bool ParseAccumulator(string key, JObject obj, KeyValuePair<string, JToken> kv, string str, List<string> toRemove)
+        {
+            var regex = new Regex("^(?<varName>.+)\\+(?<options>(?<count>\\d+)(?<distinct>[d]?)(?<mode>[fl]?))?$");
+            var match = regex.Match(str);
+
+            if (match == null || !match.Success)
+                return false;
+
+            string varName = null;
+            int count = 0;
+            bool distinct = false;
+            bool last = false;
+
+            foreach (Group group in match.Groups)
+            {
+                switch (group.Name)
+                {
+                    case "varName":
+                        varName = group.Value;
+                        break;
+
+                    case "count":
+                        if (!string.IsNullOrEmpty(group.Value))
+                            count = int.Parse(group.Value);
+                        break;
+
+                    case "distinct":
+                        distinct = group.Value == "d";
+                        break;
+
+                    case "mode":
+                        last = group.Value == "l";
+                        break;
+                }
+            }
+
+            if (obj.TryGetValue(varName, out var variable))
+            {
+                var values = (JArray)JsonWrapper.TryParse(_cache.GetOrCreate(key, t => "[]"));
+
+                if (count > 0 && !last && values.Count >= count)
+                {
+                    obj[kv.Key] = values;
+                    return true;
+                }
+
+                var strVal = variable.ToString();
+                if (distinct && values.Any(t => t.Value<string>() == strVal))
+                {
+                    obj[kv.Key] = values;
+                    return true;
+                }
+
+                if (last && count > 0 && values.Count >= count)
+                    values.RemoveAt(0);
+
+                values.Add(variable);
+
+                _cache.Set(key, JsonWrapper.Serialize(values));
+                obj[kv.Key] = values;
+            }
+            else
+            {
+                toRemove.Add(kv.Key);
+            }
+
+            return true;
+        }
+
+        private bool ParseCounter(string key, JObject obj, KeyValuePair<string, JToken> kv, string str)
+        {
+            if (str != "0+")
+                return false;
+
+            var value = _cache.GetOrCreate(key, t => 0);
+            value++;
+            _cache.Set(key, value);
+            obj[kv.Key] = value;
+
+            return true;
+        }
+
+        private bool ParseStack(JObject obj, KeyValuePair<string, JToken> kv, string str, IEnumerable<IDictionary<string, JToken>> stack)
+        {
+            if (stack == null || !(str.StartsWith("{") && str.EndsWith("}")))
+                return false;
+            
+            var varName = str.Substring(1, str.Length - 2);
+            JToken value = null;
+            foreach (var stackFrame in stack)
+            {
+                if (stackFrame.TryGetValue(varName, out value))
+                    break;
+            }
+            obj[kv.Key] = value;
+
+            return true;
         }
     }
 }
