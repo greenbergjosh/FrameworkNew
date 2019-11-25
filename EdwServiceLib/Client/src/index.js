@@ -22,20 +22,21 @@ export const sfAllow = async (names, sessionId = null) => {
 
 export const cf = async (data, sessionId = null) => {
   enableLogging(data.enableLogging);
-  
-  if (data.ss) {
-    stack = [];
-    for(const stackFrame in ss) {
-      stack.push(stackFrame);
-    }
-  }
+  stack = [];
 
   const result = await post(url('cf'), {
     sessionId,
     data
   });
+
+  if (result.ss) {
+    for (const stackFrame in result.ss) {
+      stack.push(stackFrame);
+    }
+  }
+
   if (isLogging) {
-    console.log('Config: ' + JSON.stringify(result));
+    console.log('Config: ' + JSON.stringify(result, undefined, 2));
   }
   return result;
 };
@@ -44,10 +45,12 @@ export const sf = async (name, data, sessionId = null) => {
   const result = await post(url('sf'), {
     sessionId,
     name,
-    data
+    data,
+    stack
   });
+  //TODO: Get sf name from result and push on stack
   if (isLogging) {
-    console.log('StackFrame: ' + JSON.stringify(result));
+    console.log('StackFrame: ' + JSON.stringify(result, undefined, 2));
   }
   return result;
 };
@@ -59,7 +62,7 @@ export const ss = async (name, data, sessionId = null) => {
     data
   });
   if (isLogging) {
-    console.log('StackFrame: ' + JSON.stringify(result));
+    console.log('StackFrame: ' + JSON.stringify(result, undefined, 2));
   }
   return result;
 };
@@ -73,7 +76,7 @@ export const rs = async (type, name, configId, data, sessionId = null) => {
     type
   });
   if (isLogging) {
-    console.log('Rs: ' + JSON.stringify(result));
+    console.log('Rs: ' + JSON.stringify(result, undefined, 2));
   }
   return result;
 };
@@ -85,7 +88,7 @@ export const ev = async (data, sessionId = null) => {
     data
   });
   if (isLogging) {
-    console.log('Event: ' + JSON.stringify(response));
+    console.log('Event: ' + JSON.stringify(response, undefined, 2));
   }
   return result;
 };

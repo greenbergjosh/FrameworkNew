@@ -1,7 +1,30 @@
 // Imports: Dependencies
 const path = require('path');
-const htmlWebpackPlugin = require('html-webpack-plugin')
+const fs = require('fs')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 require("babel-register");
+
+// Our function that generates our html plugins
+function generateHtmlPlugins (templateDir) {
+  // Read files in template directory
+  const templateFiles = fs.readdirSync(path.resolve(__dirname, templateDir))
+  return templateFiles.filter(item => item.endsWith('.html')).map(item => {
+    // Split names and extension
+    const parts = item.split('.')
+    const name = parts[0]
+    const extension = parts[1]
+    // Create new HTMLWebpackPlugin with options
+    return new HtmlWebpackPlugin({
+      filename: `${name}.html`,
+      template: path.resolve(__dirname, `${templateDir}/${name}.${extension}`),
+      hash: true
+    })
+  })
+}
+
+// Call our function on our views directory.
+const htmlPlugins = generateHtmlPlugins('./src')
 
 // Webpack Configuration
 const config = {
@@ -33,12 +56,18 @@ const config = {
   },
   // Plugins
   plugins: [
-    new htmlWebpackPlugin({
+    new CopyWebpackPlugin([
+      {
+          from: 'src/test.js',
+          to: 'test.js'
+      }
+    ])
+    /*new HtmlWebpackPlugin({
       template: './src/index.html',
       filename: './index.html',
       hash: true
-    })
-  ],
+    })*/
+  ].concat(htmlPlugins),
 
   // Development Tools (Map Errors To Source File)
   devtool: 'source-map',

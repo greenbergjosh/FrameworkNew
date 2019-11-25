@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>EDW Client Test Survey</title>
+</head>
+<body>
+  <form>
+    <h1>Question 1</h1>
+    <h3>What is your favorite salad dressing?</h3>
+    <button type="button" onclick="reportAnswer(1)">Ranch</button>
+    <button type="button" onclick="reportAnswer(2)">Italian</button>
+    <button type="button" onclick="reportAnswer(3)">Cesar</button>
+    <button type="button" onclick="reportAnswer(4)">Garlic</button>
+  </form>
+<script type="text/javascript">
+  window.onload = function() {
+    reportQuestion('SaladDressing', 1);
+  };
+
+  var reportAnswer = function(saladDressingId) {
+    reportToEdw(answerConfig, function(cf) {
+      cf.ss.answer.saladDressingId = saladDressingId;
+    }, function(){
+      var survey = getUrlParameter('survey');
+      window.location = 'q2.html?survey=' + survey;
+    });
+  };
+</script>
+<script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+</body>
+</html>

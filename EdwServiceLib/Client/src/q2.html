@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>EDW Client Test Survey</title>
+</head>
+<body>
+  <form>
+    <h1>Question 2</h1>
+    <h3>How many children do you have?</h3>
+    <input type="number" name="nbChildren" min="1" max="5">
+    <button type="button" onclick="reportAnswer(document.getElementsByName('nbChildren')[0].value)">Next</button>
+  </form>
+<script type="text/javascript">
+  window.onload = function() {
+    reportQuestion('NbChildren', 2);
+  };
+
+  var reportAnswer = function(nbChildren) {
+    reportToEdw(answerConfig, function(cf) {
+      cf.ss.answer.nbChildren = nbChildren;
+    }, function() {
+      var survey = getUrlParameter('survey');
+      window.location = 'q3.html?survey=' + survey;
+    });
+  };
+</script>
+<script type="text/javascript" src="test.js?a9103bc220495899e108"></script>
+</body>
+</html>
