@@ -36,9 +36,6 @@
             {
               rs: ['impressionsAndClicks'],
               key: ['event'],
-              whenDuplicate: {
-                duplicate: true
-              },
               data: {
                 event: 'impression',
                 page: '{page}',
@@ -59,14 +56,12 @@
         edw.ev([
             {
               rs: ['impressionsAndClicks'],
+              onPop: true,
               key: ['event'],
-              whenDuplicate: {
-                duplicate: true
-              },
               data: {
                 event: 'click',
-                page: '{page}',
-                pageOrder: '{pageOrder}'
+                page: '{oldStack.grp1.page}',
+                pageOrder: '{oldStack.grp1.pageOrder}'
               }
             }
           ], function() {
