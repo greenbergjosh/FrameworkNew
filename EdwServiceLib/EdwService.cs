@@ -22,7 +22,7 @@ namespace EdwServiceLib
         private FrameworkWrapper _fw;
 
         private static readonly string SessionTerminateEventId = "sessionTimeout";
-        private static readonly TimeSpan SessionTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan SessionTimeout = TimeSpan.FromSeconds(30);
 
         private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         private readonly Dictionary<string, Func<HttpContext, Task<object>>> _routes =
@@ -219,7 +219,13 @@ namespace EdwServiceLib
 
                      if (stack != null && stack.Any())
                      {
-                         var data = new Dictionary<string, object> { [Event] = SessionTerminateEventId };
+                         var data = new Dictionary<string, object>
+                         {
+                             [Event] = SessionTerminateEventId,
+                             ["page"] = "{page}",
+                             ["pageOrder"] = "{pageOrder}",
+                             ["pageCount"] = "{pageCount}"
+                         };
                          await PublishEvent(session, stack, new[] { Event }, JObject.FromObject(data), false, false, null);
                      }
 
@@ -303,7 +309,7 @@ namespace EdwServiceLib
             var rsid = Guid.NewGuid();
             be.AddRS(edwType, rsid, DateTime.UtcNow, pl, configId);
 
-            //await _fw.EdwWriter.Write(be);
+            await _fw.EdwWriter.Write(be);
 
             var rsList = session.GetOrCreate(rsListKey, () => new List<(string, Guid)>());
             if (rsList.All(tuple => tuple.Item1 != name))
@@ -392,6 +398,16 @@ namespace EdwServiceLib
             IEnumerable<string> keyParts, JObject data, 
             bool addToWhep, bool includeWhep, JObject duplicate)
         {
+            // Get last stack frame and get/create event dictionary.
+            var stackFrame = stack.Last().Value;
+            JArray evArray;
+            if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
+                evArray = (JArray)rawEvArray;
+            else
+                evArray = new JArray();
+
+            TransformData(session, data, stack, stack.Last().Key);
+
             // Compute event key
             var keyValues = new List<string>();
             foreach (var keyPart in keyParts)
@@ -401,14 +417,6 @@ namespace EdwServiceLib
                 else
                     throw new InvalidOperationException($"Data does not contain keyPart \"{keyPart}\".");
             }
-
-            // Get last stack frame and get/create event dictionary.
-            var stackFrame = stack.Last().Value;
-            JArray evArray;
-            if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
-                evArray = (JArray)rawEvArray;
-            else
-                evArray = new JArray();
 
             var key = string.Join(",", keyValues);
             // look for event key in event dictionary.
@@ -425,7 +433,7 @@ namespace EdwServiceLib
                     data[s] = value;
             }
 
-            TransformData(session, data, stack, stack.Last().Key);
+            
             //data["edw_test_mark"] = "b8a291aa-b922-48f7-ba37-22a4b0ee9a93";
 
             var rsids = GetRsIds(session.Id);
@@ -461,7 +469,7 @@ namespace EdwServiceLib
             }
 
             be.AddEvent(eventId, DateTime.UtcNow, rsids, whep, pl);
-            //await _fw.EdwWriter.Write(be);
+            await _fw.EdwWriter.Write(be);
 
             await SetStackFrame(session, stack.Last().Key, JObject.FromObject(sfData));
 

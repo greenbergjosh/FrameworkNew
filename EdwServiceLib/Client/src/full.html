@@ -64,12 +64,14 @@
   };
 
   window.onload = function() {
-    reportSurvey('AmericanSurvey', 'American', function() {
-      reportQuestion(null, 1, function() {
-        reportQuestion(null, 2, function() {
-          reportQuestion(null, 3, function() {
-            reportQuestion(null, 4, function(){
-              reportAnswersImpression('American', 1);
+    reportDomain('domain1', '46D13674-95C8-4CD0-A21A-2EFA513FB8B4', function() {
+      reportSurvey('AmericanSurvey', 'American', function() {
+        reportQuestion(null, 1, function() {
+          reportQuestion(null, 2, function() {
+            reportQuestion(null, 3, function() {
+              reportQuestion(null, 4, function(){
+                reportAnswersImpression();
+              });
             });
           });
         });
