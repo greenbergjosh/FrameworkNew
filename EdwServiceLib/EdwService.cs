@@ -30,11 +30,8 @@ namespace EdwServiceLib
 
         private const string SessionId = "sessionId";
         private const string Session = "session";
-        private const string Name = "name";
         private const string Data = "data";
         private const string Type = "type";
-        private const string Stack = "newStack";
-        private const string Ss = "ss";
         private const string Sf = "sf";
         private const string Rs = "rs";
         private const string Ev = "ev";
@@ -61,12 +58,9 @@ namespace EdwServiceLib
         {
             _fw = fw;
 
-            _routes.Add($"/{Ev}", PublishEvents);
             _routes.Add($"/{Cf}", Config);
+            _routes.Add($"/{Ev}", PublishEvents);
             _routes.Add($"/{Es}", EndSession);
-            _routes.Add($"/{Rs}", GetOrCreateRs);
-            _routes.Add($"/{Ss}", SetStackFrame);
-            _routes.Add($"/{Sf}", GetOrCreateStackFrame);
         }
 
         public async Task Run(HttpContext context)
@@ -384,39 +378,6 @@ namespace EdwServiceLib
             return JsonWrapper.Serialize(result);
         }
 
-        private async Task<object> GetOrCreateRs(HttpContext context)
-        {
-            var body = await context.GetRawBodyStringAsync();
-            var json = (JObject)JsonWrapper.TryParse(body);
-
-            var session = GetOrCreateSession(context, json);
-            if (json.TryGetValue(Name, out var name) &&
-                json.TryGetValue(ConfigId, out var rawConfigId) &&
-                json.TryGetValue(Type, out var type) &&
-                json.TryGetValue(Data, out var data) &&
-                json.TryGetValue(Stack, out var rawStackFrames) && rawStackFrames.Type == JTokenType.Array)
-            {
-                var configId = Guid.Parse(rawConfigId.ToString());
-                var stackFrames = rawStackFrames.ToObject<string[]>();
-                var newStack = BuildStack(session, stackFrames);
-                var oldStack = GetOldStack(session);
-
-                var result = await GetOrCreateRs(
-                    session,
-                    oldStack,
-                    newStack,
-                    name.ToString(), 
-                    type.ToString(), 
-                    configId, 
-                    data);
-
-                return result.Json;
-            }
-
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return null;
-        }
-
         private async Task<(string Json, JToken Data)> GetOrCreateRs(
             Session session, Stack oldStack, Stack newStack,
             string name, string type, Guid configId, JToken data)
@@ -695,23 +656,6 @@ namespace EdwServiceLib
             return data;
         }
 
-        private async Task<object> SetStackFrame(HttpContext context)
-        {
-            var body = await context.GetRawBodyStringAsync();
-            var json = (JObject)JsonWrapper.TryParse(body);
-
-            var session = GetOrCreateSession(context, json);
-            if (json.TryGetValue(Name, out var name) &&
-                json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
-            {
-                var result = await SetStackFrame(session, name.ToString(), data);
-                return result.Json;
-            }
-
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return null;
-        }
-
         private static void DelegateEvent(Session session, string stackFrameName, JObject stackData, string propertyName)
         {
             if (!stackData.TryGetValue(propertyName, out var rawOnPush) || !(rawOnPush is JArray onPushOrPop)) 
@@ -746,24 +690,6 @@ namespace EdwServiceLib
             serializedScope = JsonWrapper.Serialize(jsonStack);
             session.Set($"{session.Id}:{Sf}:{stackFrameName}", serializedScope);
             return Task.FromResult((serializedScope, jsonStack));
-        }
-
-        private async Task<object> GetOrCreateStackFrame(HttpContext context)
-        {
-            var body = await context.GetRawBodyStringAsync();
-            var json = (JObject)JsonWrapper.TryParse(body);
-
-            var session = GetOrCreateSession(context, json);
-            if (json.TryGetValue(Stack, out var stack) &&
-                json.TryGetValue(Name, out var name) &&
-                json.TryGetValue(Data, out var data))
-            {
-                var result = await GetOrCreateStackFrame(session, name.ToString(), data, stack.ToObject<string[]>());
-                return result.Json;
-            }
-
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return null;
         }
 
         private Task<(string Name, string Json)> GetOrCreateStackFrame(

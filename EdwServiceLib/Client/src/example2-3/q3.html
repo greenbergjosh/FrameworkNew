@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Question3</title>
+</head>
+<body>
+  <form>
+    <h1>Question 3</h1>
+    <h3>Do you have a car?</h3>
+    <input class="radio" type="radio" name="hasCar" value="false" checked>No
+    <input class="radio" type="radio" name="hasCar" value="true">Yes<br>
+    <br/>
+    <div>
+      <label for="brand">Brand</label>
+      <input type="text" name="brand" disabled></input>
+    </div>
+    <div>
+      <label for="model">Model</label>
+      <input type="text" name="model" disabled></input>
+    </div>
+    <div>
+      <label for="brand">Year</label>
+      <input type="number" name="year" min="1886" max="2019" disabled></input>
+    </div>
+    <br/>
+    <button class="q3" data-question="3" type="button">Submit</button>
+  </form>
+  <div>
+    <h2>Browse</h2>
+    <a class="link" href="q1.html">Question 1</a>
+    <br />
+    <a class="link" href="q2.html">Question 2</a>
+    <br />
+    <a class="link" href="q3.html">Question 3</a>
+    <br />
+    <a class="link" href="q4.html">Question 4</a>
+    <br />
+    <a href="smartPath.html">SmartPath</a>
+    <br />
+  </div>
+<script type="text/javascript">
+  window.onload = function() {
+    var survey = edw.getUrlParameter('survey');
+    var domain = edw.getUrlParameter('domain');
+
+    var reportAnswer = function(element, responseId) {
+      var questionId = element.getAttribute('data-question');
+      edw.ev([
+        {
+          rs: ['clicks'],
+          onPop: true,
+          key: ['event'],
+          data: {
+            event: 'submit',
+            lastPage: '{oldStack.grp1.page}',
+            pageOrder: '{oldStack.grp1.pageOrder}',
+            surveyId: survey,
+            questionId: questionId,
+            responseId: responseId
+          }
+        }
+      ]);
+    };
+    
+    var config = {
+      st: {
+        session: {},
+        grp1: {
+          pageOrder: 'page+',
+          page: document.title,
+        }
+      }
+    };
+
+    config.st[survey] = {};
+
+    config.st.question3 = {
+      questionId: 3,
+      onPush: [
+        {
+          rs: ['clicks'],
+          key: ['event'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}'
+          }
+        }
+      ]
+    };
+
+    edw.reportToEdw(config);
+
+    Array.from(document.getElementsByClassName("q3")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, document.querySelector('input[name="hasCar"]:checked').value);
+      });
+    });
+
+    Array.from(document.getElementsByClassName("radio")).forEach(element => {
+      element.addEventListener("change", function(event) {
+        var disabled = !(document.querySelector('input[name="hasCar"]:checked').value == "true");
+        document.getElementsByName("brand")[0].disabled = disabled;
+        document.getElementsByName("model")[0].disabled = disabled;
+        document.getElementsByName("year")[0].disabled = disabled;
+      });
+    });
+
+    Array.from(document.getElementsByClassName("link")).forEach(element => {
+      edw.forwardUrlParams(element);
+    });
+  };
+</script>
+</body>
+</html>
