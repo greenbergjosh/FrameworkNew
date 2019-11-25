@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // The configuration object specifies the operations that should be performed by edw, in this order:
+    // 1: Create reporting sequences.
+    // 2: Build the stack.
+    // 3: Publish events.
+    var config = {
+      rs: {},
+      ss: {},
+      ev: []
+    }
+
+    // edw.reportToEdw is the main function that you should use to report both rs and events to edw.
+    // If you prefer to use promises or async await, use edw.cf 
+    // parameters
+    //  config          Mandatory. See config notes.
+    //  configFunction  Optional. Use to tweek the config dynamically. 
+    //                  i.e: adding data to events, pusing new events, or dynamically naming stackframes.
+    //  continuation    Optional. Called after the config has been sent. Usefull if you want to make sure an initial
+    //                  config has been processed before emitting other reports.
+    edw.reportToEdw(config);
+  };
+</script>
+</html>

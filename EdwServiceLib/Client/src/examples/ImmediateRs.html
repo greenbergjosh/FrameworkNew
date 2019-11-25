@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Immediate RS</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // Report an immediate rs. 
+    edw.reportToEdw({
+      rs: {
+        // Create an immediate report sequence named 'rs1'.
+        // Type, configId and data are mandatory fields.
+        rs1: {
+          type: edw.rsTypes.Immediate,
+          configId: '5BF665B1-7744-4A16-B9C9-91F9B390247E',
+          data: {
+            name: 'test data',
+            timestamp: Date.now()
+          }
+        }
+      }
+    });
+  };
+</script>
+</html>

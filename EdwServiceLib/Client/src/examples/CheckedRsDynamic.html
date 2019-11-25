@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Checked RS with chaining and dynamic config.</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    var config = {
+      rs: {
+        // Create a checked report sequence named 'rs2'.
+        rs2: {
+          type: 'Checked',
+          configId: '60EDCE19-7CDD-4211-B4EA-3DF405566DE0',
+          data: {
+            name: 'test data',
+            timestamp: Date.now()
+          }
+        }
+      }
+    };
+
+    // Report a Checked rs. 
+    edw.reportToEdw(config,
+      function () {
+        // Nothing to configure dynamically before sending the checked rs
+      },  
+      function () {
+        // Then report a CheckedDetail rs with additional data
+        edw.reportToEdw(
+          config,
+          function(cf) {
+            // Add new data before sending the config.
+            cf.rs.rs2.data.newValue = true;
+          }
+        );
+      }
+    );
+  };
+</script>
+</html>

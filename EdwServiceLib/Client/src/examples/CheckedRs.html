@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Checked RS with chaining</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // Report a Checked rs. 
+    edw.reportToEdw({
+        rs: {
+          // Create a checked report sequence named 'rs2'.
+          rs2: {
+            type: 'Checked',
+            configId: '60EDCE19-7CDD-4211-B4EA-3DF405566DE0',
+            data: {
+              name: 'test data',
+              timestamp: Date.now()
+            }
+          }
+        }
+      },
+      function () {
+        // Nothing to configure dynamically before sending the checked rs
+      },  
+      function () {
+        // Then report a CheckedDetail rs with additional data
+        edw.reportToEdw({
+          rs: {
+            rs2: {
+              type: 'CheckedDetail',
+              configId: '60EDCE19-7CDD-4211-B4EA-3DF405566DE0',
+              data: {
+                name: 'test data 2',    // This wont be reported as the key 'name' is already in rs2
+                timestamp: Date.now(),  // This wont be reported as the key 'timestamp' is already in rs2
+                newValue: true
+              }
+            }
+          }
+        });
+      }
+    );
+  };
+</script>
+</html>
