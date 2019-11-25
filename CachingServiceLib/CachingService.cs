@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Utility;
@@ -51,6 +52,7 @@ namespace CachingServiceLib
             }
             catch (Exception ex)
             {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await _fw.Error(nameof(Run), $@"Caught exception processing request: {ex.Message} : {ex.UnwrapForLog()}");
                 throw;
             }
@@ -177,6 +179,7 @@ namespace CachingServiceLib
                 json.TryGetValue(Data, out var data))
             {
                 TransformData(data, sessionId);
+                var whep = _cache.Get<string>($"{sessionId}:scope").Split(";").ToList();
 
                 var rsids = new Dictionary<string, object>();
                 foreach (var reportingSession in reportingSessions.ToObject<string[]>())
@@ -184,13 +187,15 @@ namespace CachingServiceLib
 
                 var be = new EdwBulkEvent();
                 var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
-                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, null, pl);
+                be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, whep, pl);
                 await _fw.EdwWriter.Write(be);
 
                 var result = JsonWrapper.Serialize(data);
                 foreach (var kv in rsids)
                     _cache.Set($"{sessionId}:{Event}:{kv.Key}", result);
 
+                data["scope"] = new JArray(whep);
+                result = JsonWrapper.Serialize(data);
                 return result;
             }
 
@@ -255,6 +260,9 @@ namespace CachingServiceLib
         {
             if (data.Type == JTokenType.Object)
             {
+                var scope = _cache.GetOrCreate($"{sessionId}:scope", t => string.Empty)
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+
                 var obj = (JObject)data;
                 foreach (var kv in obj)
                 {
@@ -262,7 +270,31 @@ namespace CachingServiceLib
                     {
                         var str = (string)kv.Value;
                         var key = $"{sessionId}:{kv.Key}";
-                        if (str == "0+")
+
+                        if (kv.Key == "scope")
+                        {
+                            var push = str.EndsWith('+');
+                            var pop = str.EndsWith('-');
+                            var template = str
+                                .Replace("+", string.Empty)
+                                .Replace("-", string.Empty)
+                                .Replace(" ", string.Empty);
+
+                            if (pop && scope.Any())
+                            {
+                                scope.RemoveAt(scope.Count - 1);
+                            }
+                            else
+                            {
+                                if (!push)
+                                    scope.Clear();
+
+                                var found = scope.Any(t => t.StartsWith($"{template}="));
+                                if (!found)
+                                    scope.Add($"{template}=");
+                            }
+                        }
+                        else if (str == "0+")
                         {
                             var value = _cache.GetOrCreate(key, t => 0);
                             value++;
@@ -283,6 +315,15 @@ namespace CachingServiceLib
                         }
                     }
                 }
+
+                foreach (var variable in scope.ToList())
+                {
+                    var parts = variable.Split('=');
+                    if (obj.TryGetValue(parts[0], out var value))
+                        scope[scope.IndexOf(variable)] = $"{parts[0]}={value}";
+                }
+
+                _cache.Set($"{sessionId}:scope", string.Join(';', scope));
             }
         }
     }
