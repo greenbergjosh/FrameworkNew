@@ -22,6 +22,12 @@ export const addEvent = async (reportingSessions, data, sessionId = null) => {
   }));
 };
 
+export const getOrCreateConfig = async (data, sessionId = null) => {
+  return await post(url('config'), json(sessionId, {
+    data
+  }));
+};
+
 export const getCache = async (name, sessionId = null) => {
   return await get(url('cache', sessionId, { name }));
 };

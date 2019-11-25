@@ -28,7 +28,8 @@ namespace CachingServiceLib
         const string Rs = "rs";
         const string Event = "event";
         const string Cache = "cache";
-
+        const string Cfg = "config";
+        
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
@@ -36,6 +37,7 @@ namespace CachingServiceLib
             _routes.Add($"/{Rs}", (GetRs, AddRs));
             _routes.Add($"/{Event}", (GetEvent, AddEvent));
             _routes.Add($"/{Cache}", (GetCache, AddCache));
+            _routes.Add($"/{Cfg}", (null, GetOrCreateConfigIds));
         }
 
         public async Task Run(HttpContext context)
@@ -65,9 +67,9 @@ namespace CachingServiceLib
 
             if (_routes.TryGetValue(path, out var actions))
             {
-                if (verb == Http.Get)
+                if (verb == Http.Get && actions.get != null)
                     result = await actions.get(context);
-                else if (verb == Http.Post)
+                else if (verb == Http.Post && actions.post != null)
                     result = await actions.post(context);
                 else
                 {
@@ -108,9 +110,9 @@ namespace CachingServiceLib
             return newSessionId;
         }
 
-        private Guid GetOrCreateRsId(Guid sessionId, string name)
+        private Guid GetConfigId(Guid sessionId, string name)
         {
-            return _cache.GetOrCreate($"{sessionId}:{Rsid}:{name}", t => Guid.NewGuid());
+            return _cache.Get<Guid>($"{sessionId}:{Rsid}:{name}");
         }
 
         private Task<object> GetRs(HttpContext context)
@@ -139,13 +141,17 @@ namespace CachingServiceLib
                 var be = new EdwBulkEvent();
                 be.AddRS(EdwBulkEvent.EdwType.Immediate, sessionId, DateTime.UtcNow, 
                     PL.FromJsonString(JsonWrapper.Serialize(data)), 
-                    GetOrCreateRsId(sessionId, name.ToString()));
+                    GetConfigId(sessionId, name.ToString()));
                 
                 await _fw.EdwWriter.Write(be);
 
-                _cache.Set($"{sessionId}:{Rs}:{name}", JsonWrapper.Serialize(data));
+                var result = JsonWrapper.Serialize(data);
+                _cache.Set($"{sessionId}:{Rs}:{name}", result);
+
+                return result;
             }
 
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
         }
 
@@ -174,17 +180,21 @@ namespace CachingServiceLib
 
                 var rsids = new Dictionary<string, object>();
                 foreach (var reportingSession in reportingSessions.ToObject<string[]>())
-                    rsids.Add(reportingSession, GetOrCreateRsId(sessionId, reportingSession));
+                    rsids.Add(reportingSession, GetConfigId(sessionId, reportingSession));
 
                 var be = new EdwBulkEvent();
                 var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
                 be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, null, pl);
                 await _fw.EdwWriter.Write(be);
 
+                var result = JsonWrapper.Serialize(data);
                 foreach (var kv in rsids)
-                    _cache.Set($"{sessionId}:{Event}:{kv.Key}", JsonWrapper.Serialize(data));
+                    _cache.Set($"{sessionId}:{Event}:{kv.Key}", result);
+
+                return result;
             }
 
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
         }
 
@@ -209,9 +219,35 @@ namespace CachingServiceLib
             if (json.TryGetValue(Name, out var name) &&
                 json.TryGetValue(Data, out var data))
             {
-                _cache.Set($"{sessionId}:{name}", data);
+                TransformData(data, sessionId);
+                var result = JsonWrapper.Serialize(data);
+                _cache.Set($"{sessionId}:{name}", result);
+                return result;
             }
 
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return null;
+        }
+
+        private async Task<object> GetOrCreateConfigIds(HttpContext context)
+        {
+            var body = await context.GetRawBodyStringAsync();
+            var json = (JObject)JsonWrapper.TryParse(body);
+
+            var sessionId = GetOrCreateSessionId(context, json);
+            if (json.TryGetValue(Data, out var data) && data.Type == JTokenType.Object)
+            {
+                var obj = (JObject)data;
+                foreach (var kv in obj)
+                {
+                    if (kv.Value.Type == JTokenType.String)
+                        _cache.GetOrCreate($"{sessionId}:{Rsid}:{kv.Key}", t => Guid.Parse(kv.Value.ToString()));
+                }
+                var result = JsonWrapper.Serialize(data);
+                return result;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return null;
         }
 
@@ -242,7 +278,7 @@ namespace CachingServiceLib
                                 var separator = value == string.Empty ? string.Empty : ";";
                                 value = $"{value}{separator}{variable}";
                                 _cache.Set(key, value);
-                                obj[kv.Key] = value;
+                                obj[kv.Key] = JArray.FromObject(value.Split(";", StringSplitOptions.RemoveEmptyEntries));
                             }
                         }
                     }
