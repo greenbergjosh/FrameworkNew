@@ -55,6 +55,7 @@ namespace EdwServiceLib
         private const string When = "when";
         private const string WhenDuplicate = "whenDuplicate";
         private const string WhenSessionTimeout = "whenSessionTimeout";
+        private const string Count = "__count";
 
         public void Config(FrameworkWrapper fw)
         {
@@ -263,8 +264,11 @@ namespace EdwServiceLib
             for (var i = diffIndex; i < newStack.Count; i++)
             {
                 var newStackFrame = newStack[i].Key;
+                newStack.IncrementPushCount(session, newStackFrame);
+
                 var onPush = session.Get<JObject>($"{session.Id}:{Sf}:{newStackFrame}:{OnPush}");
                 if (onPush == null) continue;
+
                 var subStack = newStack.Range(i + 1);
                 var evList = onPush.Properties().Select(p => p.Value).ToArray();
                 var pushedEvents = await PublishEvents(session, subStack, newStack, evList, false);
@@ -592,15 +596,15 @@ namespace EdwServiceLib
 
             // Get last newStack frame and get/create event dictionary.
             var stackFrame = newStack.Last().Value;
-            JArray evArray;
-            if (stackFrame.TryGetValue(Ev, out var rawEvArray) && rawEvArray.Type == JTokenType.Array)
-                evArray = (JArray)rawEvArray;
+            JObject publishedEvents;
+            if (stackFrame.TryGetValue(Ev, out var rawPublishedEvents) && rawPublishedEvents.Type == JTokenType.Object)
+                publishedEvents = (JObject)rawPublishedEvents;
             else
-                evArray = new JArray();
+                publishedEvents = new JObject();
 
             // look for event key in event dictionary.
             var key = ComputeEventKey(keyParts, data);
-            var eventPresent = evArray.ToObject<string[]>().Contains(key);
+            var eventPresent = publishedEvents.TryGetValue(key, out var count);
 
             // If event key was already published and no duplicate info is passed, do not publish.
             if (eventPresent && duplicate == null)
@@ -618,16 +622,20 @@ namespace EdwServiceLib
             List<string> whep = null;
             var sfData = new Dictionary<string, object>
             {
-                { Ev, evArray }
+                { Ev, publishedEvents }
             };
 
             // include whep data in new event.
             if (includeWhep)
                 whep = ExtractWhepFromStack(newStack);
 
-            // store new event key in ev array.
-            if (!eventPresent)
-                evArray.Add(key);
+            if (count == null)
+                count = 1;
+            else
+                count = int.Parse(count.ToString()) + 1;
+
+            publishedEvents[key] = count;
+            data[Count] = count;
 
             // add new event id to whep data
             if (addToWhep)
