@@ -9,167 +9,79 @@
     </div>
 <script type="text/javascript">
     window.onload = function() {
-        var logScope = function(response) {
-            console.log('Scope: ' + JSON.stringify(response));
-        };
-
-        var logRs = function(response) {
-            console.log('Rs: ' + JSON.stringify(response));
-        };
-
-        var logEvent = function(response) {
-            console.log('Event: ' + JSON.stringify(response));
-        };
+        EdwClient.enableLogging(true);
+        
+        EdwClient.stackFrameAllow(['sf1', 'sf2']);
 
         EdwClient.getOrCreateConfig({
             'r1': 'EDA8BF65-C8CF-4B86-8BB1-81EE66F80ED2',
             'r2': '2229C87C-E640-4909-85A6-BFABA3DD99BE',
             'r3': '7C68F21C-AEBA-4895-BF44-248876C21103'
         })
-        .then(t => EdwClient.setScope('date=09-09-2019,subId=1,pathStyleId=1'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.getOrCreateStackFrame('sf1', {test: 'test'}))
+        .then(t => EdwClient.setStackFrame('sf1', {
+            date: '09-09-2019',
+            subId: 1,
+            pathStyleId: 1
+        }))
         .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'r1', {}))
-        .then(t => logRs(t))
         .then(t => EdwClient.addEvent(['r1'], {             //E1
             splash: 's1',
             impression: 1
         }))
-        .then(t => logEvent(t))
         .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Checked, 'r2', {}))
-        .then(t => logRs(t))
         .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Checked, 'r3', {}))
-        .then(t => logRs(t))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E2
             splash: 's1',
             taken: 1,
             emailAddress: 'test@test.com'
         }))
-        .then(t => logEvent(t))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E3
             reg: 'r1',
             impression: 2
         }))
-        .then(t => logEvent(t))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E4
             reg: 'r1',
             click: 1,
             zip: 'ABDCDEF'
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyId=American'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame('sf1', {surveyId: American}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E5
             survey: 's1',
             impression: 1
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyQuestionId=1'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame('sf1', {surveyQuestionId: 1}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E5.1
             surveyQuestion: 'sq1',
             impression: 1
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyQuestionAnswerId=10'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame('sf1', {surveyQuestionAnswerId: 10}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E5.1.1
             surveyQuestionAnswer: 'sqa10',
             impression: 1
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyQuestionId=2'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame('sf1', {surveyQuestionId: 2}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E5.2
             surveyQuestion: 'sq2',
             impression: 1
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyQuestionAnswerId=20'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame('sf1', {surveyQuestionAnswerId: 20}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E5.2.1
             surveyQuestionAnswer: 'sqa20',
             impression: 1
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyQuestionAnswerId=21'))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame({surveyQuestionAnswerId: 21}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E5.2.2
             surveyQuestionAnswer: 'sqa21',
             impression: 1
         }))
-        .then(t => logEvent(t))
-        .then(t => EdwClient.setScope('surveyId='))
-        .then(t => logScope(t))
+        .then(t => EdwClient.setStackFrame('sf1', {surveyId: null}))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E6
             endSurvey: 'American'
         }))
-        .then(t => logEvent(t))
         .then(t => EdwClient.addEvent(['r1', 'r2', 'r3'], { //E7
             smoker: true
         }))
-        .then(t => logEvent(t))
-
-
-        /*.then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
-            page: document.title,
-            pageNumber: '0+',
-            pageOrder: 'page+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.getOrCreateRs(EdwClient.RsTypes.Immediate, 'test', {
-            page: document.title,
-            pageNumber: '0+',
-            pageOrder: 'page+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'buy',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'buy',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))
-        .then(t => EdwClient.addEvent(['slot1', 'slot2'], {
-            event: 'sell',
-            eventNumber: '0+',
-            eventOrder: 'event+'
-        }))
-        .then(t => logResponse(t))*/
         .catch(reason => console.log('Error! Reason: ' + reason));
     }
 </script>
