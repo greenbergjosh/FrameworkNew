@@ -48,8 +48,8 @@ namespace SimpleImportExport
             if (_isSFtp)
             {
                 return Password.IsNullOrWhitespace() ?
-                    await ProtocolClient.GetSFtpFileStreamWithKeyFile(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, KeyPath) :
-                    await ProtocolClient.GetSFtpFileStreamWithPassword(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, Password);
+                    await ProtocolClient.GetSFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, keyFilePath: KeyPath) :
+                    await ProtocolClient.GetSFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, password: Password);
             }
 
             return await ProtocolClient.GetFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, User, Password);
@@ -69,11 +69,11 @@ namespace SimpleImportExport
 
                 if (_isSFtp && Password.IsNullOrWhitespace())
                 {
-                    await ProtocolClient.UploadSFtpStreamWithKeyFile(destPath, ms, Host, Port, User, KeyPath);
+                    await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, keyFilePath: KeyPath);
                 }
                 else if (_isSFtp && !Password.IsNullOrWhitespace())
                 {
-                    await ProtocolClient.UploadSFtpStreamWithPassword(destPath, ms, Host, Port, User, Password);
+                    await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, password: Password);
                 }
                 else await ProtocolClient.UploadStream(destPath, ms, Host, User, Password);
 
@@ -89,8 +89,8 @@ namespace SimpleImportExport
             if (_isSFtp)
             {
                 dirFiles = Password.IsNullOrWhitespace() ?
-                    (await ProtocolClient.SFtpGetFilesWithKeyFile(BasePath, Host, Port, User, KeyPath, (depth, parent, name) => depth < MaxDepth)) :
-                    (await ProtocolClient.SFtpGetFilesWithPassword(BasePath, Host, Port, User, Password, (depth, parent, name) => depth < MaxDepth));
+                    (await ProtocolClient.SFtpGetFiles(BasePath, Host, Port, User, keyFilePath: KeyPath, enumerateDirectory: (depth, parent, name) => depth < MaxDepth)) :
+                    (await ProtocolClient.SFtpGetFiles(BasePath, Host, Port, User, password: Password, enumerateDirectory: (depth, parent, name) => depth < MaxDepth));
             }
             else
             {
