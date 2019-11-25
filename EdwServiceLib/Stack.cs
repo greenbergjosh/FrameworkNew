@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using Utility;
 
 namespace EdwServiceLib
 {
@@ -52,6 +53,20 @@ namespace EdwServiceLib
             for (var i = 0; i < Count && i < count; i++)
                 subStack.Add(this[i]);
             return subStack;
+        }
+
+        public void IncrementPushCount(Session session, string stackFrameName)
+        {
+            if (!TryGetStackFrame(stackFrameName, out var stackFrame)) 
+                return;
+
+            if (stackFrame.TryGetValue("__count", out var count))
+                count = int.Parse(count.ToString()) + 1;
+            else
+                count = 1;
+
+            stackFrame["__count"] = count;
+            session.Set($"{session.Id}:sf:{stackFrameName}", JsonWrapper.Serialize(JObject.FromObject(stackFrame)));
         }
     }
 }
