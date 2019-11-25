@@ -27,16 +27,22 @@ namespace Utility
 
         public static StackFrame CreateStackFrame(object o)
         {
-            StackFrame sf = new StackFrame();
+            var sf = new StackFrame();
             if (o == null)
-            {
                 throw new ArgumentNullException();
-            }
-            var t = o.GetType();
-            foreach (PropertyInfo pi in t.GetProperties())
+
+            if (o is IDictionary<string, object> d)
             {
-                sf.Add(pi.Name, pi.GetValue(o));
+                foreach (var (key, value) in d)
+                    sf.Add(key, value);
             }
+            else
+            {
+                var t = o.GetType();
+                foreach (var pi in t.GetProperties())
+                    sf.Add(pi.Name, pi.GetValue(o));
+            }
+            
             return sf;
         }
 
