@@ -62,6 +62,7 @@ namespace Utility
                             Assembly.GetAssembly(typeof(Microsoft.AspNetCore.Http.HttpContext)),
                             Assembly.GetAssembly(typeof(JsonWrapper)),
                             Assembly.GetAssembly(typeof(HtmlAgilityPack.HtmlAttribute)),
+                            Assembly.GetAssembly(typeof(TurnerSoftware.SitemapTools.SitemapEntry)),
                             Assembly.GetAssembly(typeof(SetCookieHeaderValue))
                         )
                         .AddReferences(dynamicAssemblies)

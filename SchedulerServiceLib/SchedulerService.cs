@@ -2,20 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
-using Microsoft.Net.Http.Headers;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-using TurnerSoftware.SitemapTools;
 using Utility;
-using Jw = Utility.JsonWrapper;
-using Utility.DataLayer;
-using DataManager;
 
 namespace SchedulerServiceLib
 {
@@ -66,16 +59,13 @@ namespace SchedulerServiceLib
             var factory = new StdSchedulerFactory(props);
             _scheduler = await factory.GetScheduler();
 
-            var JobConfigs = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "JobConfig" }), "");
-            foreach (var job in JobConfigs.GetL(""))
+            var jobs = _fw.StartupConfiguration.GetL("Config/Jobs");
+            foreach (var job in jobs)
             {
-                var name = job.GetS("Name");
-                var lbmId = job.GetS("Config/lbmId");
-                var enabled = job.GetB("Config/enabled");
-                var cronGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/schedule") }));
-
-                var cron = cronGe.GetS("instruction");
-                var parameters = job.GetD("Config").ToDictionary(p => p.Item1, p => p.Item2);
+                var cron = job.GetS("cron");
+                var name = job.GetS("name");
+                var lbmId = job.GetS("lbmId");
+                var parameters = job.GetD("params").ToDictionary(p => p.Item1, p => p.Item2);
 
                 var jobDetail = JobBuilder.Create<LmbJob>()
                     .WithIdentity(name)
@@ -213,6 +203,7 @@ namespace SchedulerServiceLib
                     }
                 }
             }
+            
 
             var result = new Dictionary<string, object>
             {
@@ -226,14 +217,18 @@ namespace SchedulerServiceLib
         [DisallowConcurrentExecution]
         internal class LmbJob : IJob
         {
+            private static async Task Test()
+            {
+                
+            }
+
             public async Task Execute(IJobExecutionContext context)
             {
-                var key = context.JobDetail.Key;
-                var dataMap = context.JobDetail.JobDataMap;
-                var lbmId = Guid.Parse(context.Trigger.JobDataMap["lbmId"].ToString());
-
                 try
                 {
+                    // var key = context.JobDetail.Key;
+                    var dataMap = context.JobDetail.JobDataMap;
+                    var lbmId = Guid.Parse(context.Trigger.JobDataMap["lbmId"].ToString());
                     var code = await _fw.Entities.GetEntity(lbmId);
                     if (code?.GetS("Type") != "LBM.CS")
                     {

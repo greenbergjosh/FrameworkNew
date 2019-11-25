@@ -19,15 +19,24 @@ namespace Utility
             return Guid.Parse(dataCacheKeys.GetE("result").Get("id").ToString());
         }
 
-        public static async Task<IEnumerable<IGenericEntity>> GetCacheKeys(Guid cacheScopeId)
+        public static async Task<IList<IGenericEntity>> GetCacheKeys(Guid cacheScopeId, params string[] keys)
         {
-            var args = JsonWrapper.Serialize(new {cacheScopeId});
-            var dataCacheKeys = await Data.CallFn(Conn, "listDataCacheKeys", args);
+            var rawArgs = new Dictionary<string, object>
+            {
+                ["cacheScopeId"] = cacheScopeId
+            };
+
+            for (var i = 0; i < keys.Length; i++)
+                rawArgs["x" + (i + 1)] = keys[i];
+
+            var args = JsonWrapper.Serialize(rawArgs);
+
+            var dataCacheKeys = await Data.CallFn(Conn, "getDataCaches", args);
             var results = dataCacheKeys.GetL("result");
-            return results?.ToList() ?? Enumerable.Empty<IGenericEntity>();
+            return results?.ToList() ?? Enumerable.Empty<IGenericEntity>().ToList();
         }
 
-        public static async Task AddDataCache(Guid cacheScopeId, string json, DateTime? expires, params string[] keys)
+        public static async Task AddDataCache(Guid cacheScopeId, DateTime? expires, params string[] keys)
         {
             var rawArgs = new Dictionary<string, object>
             {
@@ -42,7 +51,7 @@ namespace Utility
 
             var args = JsonWrapper.Serialize(rawArgs);
 
-            var res = await Data.CallFn(Conn, "addDataCache", args, json);
+            var res = await Data.CallFn(Conn, "addDataCache", args);
         }
 
         public static bool IsInCacheKeys(IEnumerable<IGenericEntity> cacheKeys, params string[] keys)
