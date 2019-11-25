@@ -68,12 +68,12 @@ namespace SchedulerServiceLib
 
                 var jobDetail = JobBuilder.Create<LmbJob>()
                     .WithIdentity(name)
+                    .UsingJobData(new JobDataMap(parameters))
                     .Build();
 
                 var trigger = TriggerBuilder.Create()
                     .WithIdentity(name)
                     .WithCronSchedule(cron)
-                    .UsingJobData(new JobDataMap(parameters))
                     .ForJob(jobDetail)
                     .Build();
 
@@ -205,32 +205,33 @@ namespace SchedulerServiceLib
             await context.Response.WriteAsync(json);
         }
 
+        [DisallowConcurrentExecution]
         internal class LmbJob : IJob
         {
             public async Task Execute(IJobExecutionContext context)
             {
                 var key = context.JobDetail.Key;
                 var dataMap = context.JobDetail.JobDataMap;
-
-                var id = Guid.Parse(dataMap.GetString("id"));
-                var myFloatValue = dataMap.GetFloat("myFloatValue");
+                var id = Guid.Parse(dataMap.Get("id").ToString());
 
                 try
                 {
                     var code = await _fw.Entities.GetEntity(id);
-
-                    /*if (code?.GetS("Type") != "LBM.CS")
+                    if (code?.GetS("Type") != "LBM.CS")
                     {
-                        await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"{code?.GetS("Type")} LBM not supported. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}");
-                        continue;
-                    }*/
+                        var error = $"{code?.GetS("Type")} LBM not supported. ({id})\n";
+                        throw new InvalidOperationException(error);
+                    }
+
                     var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
 
                     _fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), code.GetS("Config"), debug, debugDir), true);
+
+                    await _fw.RoslynWrapper.RunFunction(id.ToString(), dataMap, null);
                 }
                 catch (Exception e)
                 {
-                    //await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"Failed to compile. {map.Item1} ({id})\nLBM:\n{lbm.GetS("")}\nCode:\n{code.GetS("")}\n\n{e.UnwrapForLog()}");
+                    await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"{e.UnwrapForLog()}");
                 }
             }
         }
