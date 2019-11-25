@@ -30,12 +30,13 @@ namespace CachingServiceLib
         const string Event = "event";
         const string Cache = "cache";
         const string Cfg = "config";
-        
+        const string RsType = "rsType";
+
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
 
-            _routes.Add($"/{Rs}", (GetRs, AddRs));
+            _routes.Add($"/{Rs}", (GetRs, GetOrCreateRs));
             _routes.Add($"/{Event}", (GetEvent, AddEvent));
             _routes.Add($"/{Cache}", (GetCache, AddCache));
             _routes.Add($"/{Cfg}", (null, GetOrCreateConfigIds));
@@ -129,19 +130,24 @@ namespace CachingServiceLib
             return Task.FromResult<object>(null);
         }
 
-        private async Task<object> AddRs(HttpContext context)
+        private async Task<object> GetOrCreateRs(HttpContext context)
         {
             var body = await context.GetRawBodyStringAsync();
             var json = (JObject)JsonWrapper.TryParse(body);
 
             var sessionId = GetOrCreateSessionId(context, json);
             if (json.TryGetValue(Name, out var name) &&
+                json.TryGetValue(RsType, out var rsType) &&
                 json.TryGetValue(Data, out var data))
             {
+                if (_cache.TryGetValue($"{sessionId}:{Rs}:{name}", out var oldData))
+                    return oldData;
+
                 TransformData(data, sessionId);
 
+                var edwType = Enum.Parse<EdwBulkEvent.EdwType>(rsType.ToString());
                 var be = new EdwBulkEvent();
-                be.AddRS(EdwBulkEvent.EdwType.Immediate, sessionId, DateTime.UtcNow, 
+                be.AddRS(edwType, sessionId, DateTime.UtcNow, 
                     PL.FromJsonString(JsonWrapper.Serialize(data)), 
                     GetConfigId(sessionId, name.ToString()));
                 
