@@ -36,7 +36,7 @@ export const cf = async (data, sessionId = null) => {
   }
 
   if (isLogging) {
-    console.log('Config: ' + JSON.stringify(result, undefined, 2));
+    console.log(JSON.stringify(result, undefined, 2));
   }
   return result;
 };
@@ -70,6 +70,7 @@ export const ss = async (name, data, sessionId = null) => {
 export const rs = async (type, name, configId, data, sessionId = null) => {
   const result = await post(url('rs'), {
     sessionId,
+    stack,
     name,
     configId,
     data,

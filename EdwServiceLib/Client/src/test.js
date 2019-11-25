@@ -39,6 +39,25 @@ var reportSurvey = function(page, id) {
   });
 };
 
+var reportSmartPath = function() {
+  var config = edw.createConfig({}, {}, []);
+
+  edw.reportToEdw(config, function(cf) {
+    cf.ss.session = {
+      page: 'smarthPath',
+      pageCount: '0+'
+    };
+    cf.rs.smartPathRs =  {
+      configId: 'BE513B78-3F4B-4262-86E8-ADF17C0CBCEE',
+      type: 'Immediate',
+      data: {
+        pageCount: '{pageCount}',
+        pageOrder: '{pageOrder}'
+      }
+    }
+  });
+};
+
 var answerConfig = null;
 
 var reportQuestion = function(page, id) {
