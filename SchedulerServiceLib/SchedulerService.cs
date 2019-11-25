@@ -61,18 +61,25 @@ namespace SchedulerServiceLib
             var factory = new StdSchedulerFactory(props);
             _scheduler = await factory.GetScheduler();
 
-            var JobConfigs = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "JobConfig" }), "");
+            var JobConfigs = await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new
+            {
+                ConfigType = "JobConfig"
+            }), "");
+
             foreach (var job in JobConfigs.GetL(""))
             {
-                if (! job.GetB("Config/enabled")) { continue; }
+                if (!job.GetB("Config/enabled")) continue;
 
                 var name = job.GetS("Name");
                 var lbmId = job.GetS("Config/lbmId");
-                var cronGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new { InstanceId = job.GetS("Config/schedule") }));
+                var cronGe = await Data.CallFn("Config", "SelectConfigById", Jw.Json(new
+                {
+                    InstanceId = job.GetS("Config/schedule")
+                }));
                 var cron = cronGe.GetS("instruction");
 #if DEBUG
-                //if (job.GetS("Id") != "dda498aa-1f75-4f37-a1de-7ae9d6e52cf0") { continue;  }
-                //cron = "0 */1 * * * ?";
+                if (job.GetS("Id") != "dda498aa-1f75-4f37-a1de-7ae9d6e52cf0") continue;
+                cron = "*/10 * * * * ?";
 #endif
 
                 var parameters = job.GetD("Config").ToDictionary(p => p.Item1, p => p.Item2);
@@ -113,7 +120,7 @@ namespace SchedulerServiceLib
 
         private async Task ShutdownScheduler()
         {
-            if (_scheduler != null) 
+            if (_scheduler != null)
                 await _scheduler.Shutdown();
             _scheduler = null;
         }
@@ -170,7 +177,8 @@ namespace SchedulerServiceLib
             catch (Exception e)
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                await _fw.Error(nameof(HandleHttpRequest), $@"Caught exception processing request: {e.Message} : {e.UnwrapForLog()}");
+                var message = $@"Caught exception processing request: {e.Message} : {e.UnwrapForLog()}";
+                await _fw.Error(nameof(HandleHttpRequest), message);
                 throw;
             }
         }
@@ -214,30 +222,25 @@ namespace SchedulerServiceLib
                     }
                 }
             }
-            
 
             var result = new Dictionary<string, object>
             {
                 ["jobs"] = jobs
             };
             context.Response.ContentType = "application/json";
-            var json = JsonWrapper.Serialize(result);
+            var json = Jw.Serialize(result);
             await context.Response.WriteAsync(json);
         }
 
         [DisallowConcurrentExecution]
         internal class LmbJob : IJob
         {
-            private static async Task Test()
-            {
-                
-            }
-
             public async Task Execute(IJobExecutionContext context)
             {
                 try
                 {
-                    // var key = context.JobDetail.Key;
+                    await _fw.Log($"{nameof(LmbJob)}.{nameof(Execute)}", $"Running {context.JobDetail.Key.Name}");
+
                     var dataMap = context.JobDetail.JobDataMap;
                     var lbmId = Guid.Parse(context.Trigger.JobDataMap["lbmId"].ToString());
                     var code = await _fw.Entities.GetEntity(lbmId);
@@ -252,13 +255,14 @@ namespace SchedulerServiceLib
                     var sd = new ScriptDescriptor(lbmId, lbmId.ToString(), source, debug, debugDir);
                     _fw.RoslynWrapper.CompileAndCache(sd);
 
-                    //await Test();
-
                     await _fw.RoslynWrapper.RunFunction(lbmId.ToString(), dataMap, null);
+
+                    await _fw.Log($"{nameof(LmbJob)}.{nameof(Execute)}", $"Finished {context.JobDetail.Key.Name}");
                 }
                 catch (Exception e)
                 {
-                    await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", $"{e.UnwrapForLog()}");
+                    var message = $"job: {context.JobDetail.Key.Name} {e.UnwrapForLog()}";
+                    await _fw.Error($"{nameof(LmbJob)}.{nameof(Execute)}", message);
                 }
             }
         }
