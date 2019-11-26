@@ -8,9 +8,30 @@ import { styles, Colors } from "constants"
 export interface FollowerRowProps {
   follower?: Follower
   navigate: FollowsScreenProps["navigation"]["navigate"]
+  followRequest?: boolean
 }
 
-export const FollowerRow = ({ follower }: FollowerRowProps) => {
+const ActionButtons = ({ followRequest }) => {
+  if (!followRequest) {
+    return (
+      <Button type="primary" size="small">
+        Follow
+      </Button>
+    )
+  }
+  return (
+    <>
+      <Button type="primary" size="small">
+        Confirm
+      </Button>
+      <Button type="ghost" size="small" style={{ marginLeft: 10}}>
+        Delete
+      </Button>
+    </>
+  )
+}
+
+export const FollowerRow = ({ follower, followRequest }: FollowerRowProps) => {
   const { avatarUri, handle, id, name, userId } = follower
   return (
     <List.Item>
@@ -37,9 +58,7 @@ export const FollowerRow = ({ follower }: FollowerRowProps) => {
         {/**************************/}
         {/* Action Buttons */}
         <Flex direction="row" wrap="wrap" align="start" style={{ marginTop: 8 }}>
-          <Button type="primary" size="small">
-            Follow
-          </Button>
+          <ActionButtons followRequest={followRequest} />
         </Flex>
       </Flex>
     </List.Item>

@@ -1,5 +1,5 @@
 import React from "react"
-import { NavigationTabProp, NavigationTabScreenProps } from "react-navigation-tabs"
+import { NavigationTabProp } from "react-navigation-tabs"
 import { ScrollView } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { InfluencerRow } from "./InfluencerRow"

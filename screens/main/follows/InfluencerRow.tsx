@@ -17,7 +17,7 @@ const influencerPressHandler = () => alert("Feature to come: navigate to influen
 const feedPressHandler = () => alert("Feature to come: navigate to influencer's post")
 
 export const InfluencerRow = ({ influencer }: InfluencerRowProps) => {
-  const { avatarUri, statusPhrase, feedImagesSmall, handle, id, timeStamp, userId } = influencer
+  const { avatarUri, statusPhrase, feedImagesSmall, handle, id, lastActivity, userId } = influencer
   return (
     <List.Item>
       <Flex direction="row" align="start" justify="start">
@@ -37,7 +37,9 @@ export const InfluencerRow = ({ influencer }: InfluencerRowProps) => {
               <Text style={[styles.LinkText, { fontWeight: "bold" }]}>{handle} </Text>
             </TouchableOpacity>
             <Text>{pupa(statusPhrase.template, statusPhrase.data || [])} </Text>
-            <Text style={styles.SmallCopy}>{initialCase(moment(timeStamp).fromNow(true))}</Text>
+            <Text style={styles.SmallCopy}>
+              {initialCase(moment.utc(lastActivity).fromNow(true))}
+            </Text>
           </Flex>
 
           {/**************************/}

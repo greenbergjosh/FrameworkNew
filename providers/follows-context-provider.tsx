@@ -5,16 +5,18 @@ import {
   Influencer,
   InfluencersResponse,
   loadInfluencers,
-  Follower,
+  Followers,
   FollowersResponse,
   loadFollowers,
+  Follower,
 } from "api/follows-services"
+import moment from "moment"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {
   lastLoadInfluencers: ISO8601String | null
   influencers: Influencer[]
   lastLoadFollowers: ISO8601String | null
-  followers: Follower[]
+  followers: Followers
 }
 
 export interface FollowsActionCreatorType extends GetGotContextType {
@@ -43,7 +45,7 @@ const reducer = loadifyReducer((state: FollowsState, action: FollowsAction | Get
       return {
         ...state,
         ...action.payload,
-        followers: [...action.payload.results],
+        followers: { ...action.payload.result },
         lastLoadFollowers: new Date().toISOString(),
       }
     case "reset":
@@ -57,7 +59,7 @@ const initialState: FollowsState = {
   lastLoadInfluencers: null,
   influencers: [],
   lastLoadFollowers: null,
-  followers: [],
+  followers: { followers: [], followRequests: [] },
   loading: {
     loadInfluencers: {},
     loadFollowers: {},
@@ -112,3 +114,36 @@ export const FollowsContextProvider = ({ ...props }) => {
 }
 
 export const useFollowsContext = () => useContext(FollowsContext)
+
+/************************************************************************************
+ * UTILITY FUNCTIONS
+ */
+
+type FollowersByDate = { date: moment.Moment; relativeTime: string; followers: Follower[] }[]
+/**
+ *
+ * @param followers
+ */
+export function sortFollowersByDate(followers: Follower[]): FollowersByDate {
+  // Create object with dates as keys
+  const groups = followers.reduce((groups, follower) => {
+    const date = moment.utc(follower.followedDate)
+    const key = date.format("YYYYMMDD")
+    if (!groups[key]) {
+      groups[key] = { followers: [], date }
+    }
+    groups[key].followers.push(follower)
+    return groups
+  }, {})
+
+  // Convert object keys to array of objects
+  const keys = Object.keys(groups)
+  const sorted = keys.sort((a, b) => groups[b].date.diff(groups[a].date))
+  return sorted.map((key) => {
+    return {
+      date: groups[key].date,
+      relativeTime: groups[key].date.fromNow(),
+      followers: groups[key].followers,
+    }
+  })
+}
