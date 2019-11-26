@@ -1,5 +1,6 @@
 import React from "react"
 import { Image, Text, View } from "react-native"
+import { styles, Units } from "constants"
 
 interface HeaderTitleProps {
   title?: string
@@ -17,14 +18,20 @@ export class HeaderTitle extends React.Component<HeaderTitleProps> {
   render() {
     const { align, offset, size, title } = this.props
 
-    let alignment: "flex-start" | "flex-end" | "center" =
+    const alignment: "flex-start" | "flex-end" | "center" =
       align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center"
-    let padding = offset === "left" ? { left: -40 } : offset === "right" ? { left: 40 } : {}
+    const padding = offset === "left" ? { left: -40 } : offset === "right" ? { left: 40 } : {}
+    const textClass = size === "large" ? styles.H1 : styles.H2
+
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: alignment, ...padding }}>
         {this.props.title && (
-          <Text style={{ color: "#fff", fontSize: 24, paddingLeft: 10, paddingRight: 10 }}>
-            {this.props.title}
+          <Text
+            style={[
+              textClass,
+              { color: "#fff", paddingLeft: Units.margin, paddingRight: Units.margin },
+            ]}>
+            {title}
           </Text>
         )}
       </View>

@@ -10,6 +10,7 @@ import { HomeFeedScreen } from "./HomeFeed"
 import { MessagesScreen } from "./MessagesScreen"
 import { NewMessageScreen } from "./NewMessageScreen"
 import { ViewThreadScreen } from "./ViewThreadScreen"
+import { styles } from "constants"
 
 interface HomeSectionProps extends NavigationTabScreenProps {}
 
@@ -29,13 +30,7 @@ const HomeNavigator = createStackNavigator(
   {
     initialRouteName: "HomeFeed",
     defaultNavigationOptions: {
-      headerStyle: {
-        backgroundColor: "#343997",
-      },
-      headerTintColor: "#fff",
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
+      headerStyle: styles.Header
     },
   }
 )

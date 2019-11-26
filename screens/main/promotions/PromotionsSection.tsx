@@ -7,6 +7,7 @@ import { PromotionsCampaignListScreen } from "./PromotionsCampaignListScreen"
 import { PromotionsCampaignScreen } from "./PromotionsCampaignScreen"
 import { PromotionsCampaignTemplatesScreen } from "./PromotionsCampaignTemplateScreen"
 import { PromotionsScreen } from "./PromotionsScreen"
+import { styles } from "constants"
 
 interface PromotionsSectionProps extends NavigationTabScreenProps {}
 
@@ -21,13 +22,7 @@ const PromotionsNavigator = createStackNavigator(
   {
     initialRouteName: "Promotions",
     defaultNavigationOptions: {
-      headerStyle: {
-        backgroundColor: "#343997",
-      },
-      headerTintColor: "#fff",
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
+      headerStyle: styles.Header,
     },
   }
 )

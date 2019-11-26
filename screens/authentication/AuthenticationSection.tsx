@@ -6,6 +6,7 @@ import { AuthenticationResetPasswordScreen } from "./AuthenticationResetPassword
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
+import { styles } from "constants"
 
 const AuthenticationNavigator = createStackNavigator(
   {
@@ -16,13 +17,7 @@ const AuthenticationNavigator = createStackNavigator(
   {
     initialRouteName: "AuthenticationLogin",
     defaultNavigationOptions: {
-      headerStyle: {
-        backgroundColor: "#343997",
-      },
-      headerTintColor: "#fff",
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
+      headerStyle: styles.Header,
     },
   }
 )

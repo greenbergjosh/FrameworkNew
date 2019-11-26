@@ -5,6 +5,7 @@ import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navi
 import { ExploreCampaignScreen } from "./ExploreCampaign"
 import { ExploreFeedScreen } from "./ExploreFeedScreen"
 import { ExploreUserFeedScreen } from "./ExploreUserFeedScreen"
+import { styles } from "constants"
 
 interface ExploreSectionProps extends NavigationTabScreenProps {}
 
@@ -17,13 +18,7 @@ const ExploreNavigator = createStackNavigator(
   {
     initialRouteName: "ExploreFeed",
     defaultNavigationOptions: {
-      headerStyle: {
-        backgroundColor: "#343997",
-      },
-      headerTintColor: "#fff",
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
+      headerStyle: styles.Header
     },
   }
 )

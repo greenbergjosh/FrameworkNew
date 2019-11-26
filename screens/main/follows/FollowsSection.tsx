@@ -4,6 +4,7 @@ import { createStackNavigator } from "react-navigation-stack"
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowersList } from "./FollowersList"
 import { FollowsScreen } from "./FollowsScreen"
+import { styles } from "constants"
 
 interface FollowsSectionProps extends NavigationTabScreenProps {}
 
@@ -15,13 +16,7 @@ const FollowsNavigator = createStackNavigator(
   {
     initialRouteName: "Follows",
     defaultNavigationOptions: {
-      headerStyle: {
-        backgroundColor: "#343997",
-      },
-      headerTintColor: "#fff",
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
+      headerStyle: styles.Header
     },
   }
 )
