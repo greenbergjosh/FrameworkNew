@@ -9,6 +9,15 @@ import JSON5 from "json5"
 import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
+import { Space } from "../../../../../components/space"
+import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager"
+import { fromStrToJSONRec } from "../../../../../data/JSON"
+import { None, Some } from "../../../../../data/Option"
+import { useRematch, useStatePlus } from "../../../../../hooks"
+import { determineLayoutComponents } from "../../../../../lib/determine-layout-components"
+import { isWhitespace } from "../../../../../lib/string"
+import { WithRouteProps } from "../../../../../state/navigation"
+import { store } from "../../../../../state/store"
 import {
   CodeEditor,
   EditorLangCodec,
@@ -16,16 +25,6 @@ import {
   getDefaultsFromComponentDefinitions,
   UserInterface,
 } from "@opg/interface-builder"
-import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager"
-import { Space } from "../../../../../components/space"
-import { fromStrToJSONRec } from "../../../../../data/JSON"
-import { None, Some } from "../../../../../data/Option"
-import { useRematch } from "../../../../../hooks/use-rematch"
-import { useStatePlus } from "../../../../../hooks/use-state-plus"
-import { determineLayoutComponents } from "../../../../../lib/determine-layout-components"
-import { isWhitespace } from "../../../../../lib/string"
-import { WithRouteProps } from "../../../../../state/navigation"
-import { store } from "../../../../../state/store"
 import {
   Alert,
   Button,
@@ -114,18 +113,35 @@ export function CreateGlobalConfig({
     },
   }
 
-  const initialFormState = React.useMemo(
-    () =>
-      Object.assign(
-        {
-          config: '{"lang":"json"}',
-          name: "",
-          type: "",
-        },
-        queryString.parse(window.location.search)
-      ),
-    [window.location.search]
-  )
+  const initialFormState = React.useMemo(() => {
+    const formState = {
+      config: '{"lang":"json"}',
+      name: "",
+      type: "",
+      ...queryString.parse(window.location.search),
+    }
+
+    const countConfigLines = formState.config.split("\n").length
+
+    if (formState.type && countConfigLines <= 3) {
+      // When changing the type, if there are 3 or fewer lines of config
+      // then it's pretty safe to assume that the config has not been edited
+      // So, set the form to its defaults
+      formState.config = determineConfigDefaults(
+        formState.type,
+        fromStore.entityTypes,
+        fromStore.configsByType,
+        fromStore.configsById
+      )
+    }
+
+    return formState
+  }, [
+    window.location.search,
+    fromStore.entityTypes,
+    fromStore.configsByType,
+    fromStore.configsById,
+  ])
 
   const [previewData, setPreviewData] = React.useState({})
 
@@ -269,33 +285,13 @@ export function CreateGlobalConfig({
                           // When changing the type, if there are 3 or fewer lines of config
                           // then it's pretty safe to assume that the config has not been edited
                           // So, set the form to its defaults
-                          const newEntityTypeConfig = record.lookup(val, fromStore.entityTypes)
-
-                          const newComponents = determineLayoutComponents(
-                            fromStore.configsById,
+                          const configDefaults = determineConfigDefaults(
+                            val,
+                            fromStore.entityTypes,
                             fromStore.configsByType,
-                            newEntityTypeConfig
+                            fromStore.configsById
                           )
-                          if (newComponents) {
-                            const configDefaults = JSON.stringify(
-                              getDefaultsFromComponentDefinitions(newComponents)
-                            )
-                            console.log("create", "update type", { configDefaults, newComponents })
-                            form.setFieldValue("config", configDefaults)
-                          } else {
-                            const lang = newEntityTypeConfig
-                              .chain(({ config }) =>
-                                config.chain((cfg) =>
-                                  tryCatch(() => JSON5.parse(cfg).lang as string)
-                                )
-                              )
-                              .getOrElse("json")
-
-                            const configDefaults =
-                              lang === "json" ? JSON.stringify({ lang: "json" }) : ""
-                            console.log("create", "update type", { configDefaults, newComponents })
-                            form.setFieldValue("config", configDefaults)
-                          }
+                          form.setFieldValue("config", configDefaults)
                         }
                       }}>
                       {entityTypeNames.map((type) => (
@@ -622,6 +618,21 @@ const formItemLayout = {
     md: { span: 20 },
     lg: { span: 22 },
   },
+}
+
+const determineConfigDefaults = (selectedType: string, entityTypes, configsById, configsByType) => {
+  const newEntityTypeConfig = record.lookup(selectedType, entityTypes)
+
+  const newComponents = determineLayoutComponents(configsById, configsByType, newEntityTypeConfig)
+
+  return newComponents
+    ? JSON.stringify(getDefaultsFromComponentDefinitions(newComponents))
+    : newEntityTypeConfig
+        .chain(({ config }) =>
+          config.chain((cfg) => tryCatch(() => JSON5.parse(cfg).lang as string))
+        )
+        .chain((lang) => (lang === "json" ? JSON.stringify({ lang: "json" }) : ""))
+        .getOrElse("")
 }
 
 export default CreateGlobalConfig
