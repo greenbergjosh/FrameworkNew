@@ -1,4 +1,5 @@
-import { getgotRequest, GetGotSuccessResponse } from "./index"
+import { GetGotSuccessResponse, getgotRequest } from "./index"
+
 import { ImageUris } from "constants"
 import { InfluencerTokens } from "../screens/main/promotions/PromotionsCampaignScreen"
 import { Interest } from "./catalog-services"
@@ -20,7 +21,7 @@ export const sendCode = async (contact: string) => {
 }
 
 export const submitCode = async (contact: string, code: string) => {
-  return await getgotRequest<SubmitCodeResponse>("submitcode", { u: contact, code })
+  return await getgotRequest<SubmitCodeResponse>("submitcnfmcode", { u: contact, code })
 }
 
 export const createUser = async (
