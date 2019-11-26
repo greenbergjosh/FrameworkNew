@@ -1,17 +1,23 @@
 import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
-import { Alert, Button, Card, Empty, Form, Icon, Skeleton, Tabs, Tag, Tree, Typography } from "antd"
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Icon,
+  Skeleton,
+  Tabs,
+  Tag,
+  Tree,
+  Typography
+  } from "antd"
 import { fromEither, none, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
-import {
-  CodeEditor,
-  ComponentDefinition,
-  EditorLangCodec,
-  UserInterface,
-} from "@opg/interface-builder"
 import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager"
 import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
@@ -19,6 +25,12 @@ import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
+import {
+  CodeEditor,
+  ComponentDefinition,
+  EditorLangCodec,
+  UserInterface,
+} from "@opg/interface-builder"
 
 interface Props {
   configId: string
@@ -119,7 +131,6 @@ export function ShowGlobalConfig({
 
         // Were there any LayoutMapping assignments for this item?
         if (collectedLayoutOverrides) {
-          console.log("GlobalConfig.edit", collectedLayoutOverrides)
           if (collectedLayoutOverrides.byConfigId.length) {
             // TODO: Eventually merge these layouts, perhaps?
             const layout = record
@@ -167,9 +178,7 @@ export function ShowGlobalConfig({
               <Alert
                 banner
                 closable
-                description={`No config of type "EntityType" could be found for configs of type "${
-                  config.type
-                }." For the best experience, please create an EntityType config for ${config.type}`}
+                description={`No config of type "EntityType" could be found for configs of type "${config.type}." For the best experience, please create an EntityType config for ${config.type}`}
                 message={`No EntityType exists for ${config.type}`}
                 type="warning"
               />
@@ -189,6 +198,21 @@ export function ShowGlobalConfig({
                       </Reach.Link>
                     </Button>
                   ))}
+                  <Button size="small">
+                    <Reach.Link
+                      to={`../create?type=${encodeURIComponent(
+                        config.type
+                      )}&name=${encodeURIComponent(
+                        fromStore.configNames
+                          ? generateUniqueCopyName(config.name, fromStore.configNames)
+                          : config.name
+                      )}&config=${tryCatch(() =>
+                        encodeURIComponent(config.config.getOrElse("{}"))
+                      ).getOrElse("")}`}>
+                      <Icon type="copy" /> Copy to New
+                    </Reach.Link>
+                  </Button>
+
                   <Button type="primary" size="small">
                     <Reach.Link to="./edit">
                       <Icon type="edit" /> Edit
@@ -335,6 +359,23 @@ const formItemLayout = {
     md: { span: 20 },
     lg: { span: 22 },
   },
+}
+
+/**
+ * Determines a unique name by appending Copy, Copy 1, Copy 2, Copy 3, etc until a unique name is found
+ * @param baseName The starting name to use
+ * @param existingNames The list of names from the store
+ */
+function generateUniqueCopyName(baseName: string, existingNames: string[] = []) {
+  const nameSet = new Set(existingNames.map((str) => str.toLowerCase()))
+
+  let resultingName = `${baseName} Copy`
+  let copyIndex = 1
+  while (nameSet.has(resultingName.toLowerCase())) {
+    resultingName = `${baseName} Copy ${copyIndex++}`
+  }
+
+  return resultingName
 }
 
 export default ShowGlobalConfig
