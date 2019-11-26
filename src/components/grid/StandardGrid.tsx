@@ -1,16 +1,16 @@
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { Dialog } from "@syncfusion/ej2-popups"
 import { Spin } from "antd"
+import { tryCatch } from "fp-ts/lib/Either"
 import jsonLogic from "json-logic-js"
 import { cloneDeep, merge, sortBy } from "lodash/fp"
 import moment from "moment"
 import React from "react"
-import { tryCatch } from "fp-ts/lib/Either"
 import { JSONRecord } from "../interface-builder/@types/JSONTypes"
+import { shallowPropCheck } from "../interface-builder/dnd/util"
 import { deepDiff } from "../interface-builder/lib/deep-diff"
 import { evalExpression } from "../interface-builder/lib/eval-expression"
 import { sanitizeText } from "../interface-builder/lib/sanitize-text"
-import { shallowPropCheck } from "../interface-builder/dnd/util"
 import { average, count, flattenDataItems } from "./grid-aggregate"
 import { EnrichedColumnDefinition } from "./grid-types"
 
@@ -165,6 +165,7 @@ export interface StandardGridComponentProps {
   detailTemplate?: string | Function | any
   loading?: boolean
   sortSettings?: SortSettingsModel
+  groupSettings?: GroupSettingsModel
   //   editSettingsTemplate?: string | Function | any
   //   groupSettingsCaptionTemplate?: string | Function | any
   //   onToolbarClick: (args?: ClickEventArgs) => void
@@ -183,6 +184,7 @@ export const StandardGrid = React.forwardRef(
       contextData,
       data,
       detailTemplate,
+      groupSettings,
       loading,
       sortSettings,
     }: StandardGridComponentProps,
@@ -425,6 +427,7 @@ export const StandardGrid = React.forwardRef(
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
+          groupSettings={groupSettings}
           sortSettings={sortSettings}
           toolbarClick={handleToolbarClick}>
           <Inject services={gridComponentServices} />

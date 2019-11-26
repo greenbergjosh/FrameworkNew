@@ -1,16 +1,22 @@
-import { ColumnModel, SortDescriptor, SortDescriptorModel } from "@syncfusion/ej2-react-grids"
 import { Typography } from "antd"
 import { get, set, sortBy } from "lodash/fp"
 import React from "react"
-import { DataPathContext } from "../../../util/DataPathContext"
 import { StandardGrid } from "../../../../grid/StandardGrid"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
+import { DataPathContext } from "../../../util/DataPathContext"
 import { tableAdvancedForm } from "./table-column-form-section-advanced"
 import { tableAggregateForm } from "./table-column-form-section-aggregate"
 import { tableSortForm } from "./table-column-form-section-sort"
 import { tableDataTypes } from "./table-data-types-form"
 import { tableManageForm } from "./table-manage-form"
+import {
+  ColumnModel,
+  SortDescriptor,
+  SortDescriptorModel,
+  GroupSettingsModel,
+  SortSettingsModel,
+} from "@syncfusion/ej2-react-grids"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -18,11 +24,17 @@ import {
 } from "../../base/BaseInterfaceComponent"
 
 interface ColumnSortOptions {
+  allowSorting?: boolean
   sortDirection?: "Ascending" | "Descending"
   sortOrder?: number
 }
 
-type ColumnConfig = ColumnModel & ColumnSortOptions
+interface ColumnGroupOptions {
+  allowGrouping?: boolean
+  groupOrder?: number
+}
+
+type ColumnConfig = ColumnModel & ColumnSortOptions & ColumnGroupOptions
 
 interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
@@ -178,7 +190,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
               }
               case "display": {
                 const dataArray = get(valueKey, userInterfaceData) || [userInterfaceData]
-                const sortSettings = {
+                const sortSettings: SortSettingsModel = {
                   columns: sortBy("sortOrder", columns).reduce(
                     (acc, column) => {
                       if (column.sortDirection && column.field) {
@@ -187,6 +199,18 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                       return acc
                     },
                     [] as SortDescriptorModel[]
+                  ),
+                }
+
+                const groupSettings: GroupSettingsModel = {
+                  columns: sortBy("groupOrder", columns).reduce(
+                    (acc, column) => {
+                      if (column.field) {
+                        acc.push(column.field)
+                      }
+                      return acc
+                    },
+                    [] as string[]
                   ),
                 }
 
@@ -203,6 +227,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     contextData={userInterfaceData}
                     data={dataArray}
                     sortSettings={sortSettings}
+                    groupSettings={groupSettings}
                     detailTemplate={
                       rowDetails && rowDetails.length
                         ? (parentData: any) => {
