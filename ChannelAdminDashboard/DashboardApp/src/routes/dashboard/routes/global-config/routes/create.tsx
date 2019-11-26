@@ -18,6 +18,7 @@ import { determineLayoutComponents } from "../../../../../lib/determine-layout-c
 import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
+import { AppSelectors } from "../../../../../state/store.types"
 import {
   CodeEditor,
   EditorLangCodec,
@@ -620,7 +621,12 @@ const formItemLayout = {
   },
 }
 
-const determineConfigDefaults = (selectedType: string, entityTypes, configsById, configsByType) => {
+const determineConfigDefaults = (
+  selectedType: string,
+  entityTypes: ReturnType<AppSelectors["globalConfig"]["entityTypeConfigs"]>,
+  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>,
+  configsByType: ReturnType<AppSelectors["globalConfig"]["configsByType"]>
+) => {
   const newEntityTypeConfig = record.lookup(selectedType, entityTypes)
 
   const newComponents = determineLayoutComponents(configsById, configsByType, newEntityTypeConfig)
@@ -631,7 +637,7 @@ const determineConfigDefaults = (selectedType: string, entityTypes, configsById,
         .chain(({ config }) =>
           config.chain((cfg) => tryCatch(() => JSON5.parse(cfg).lang as string))
         )
-        .chain((lang) => (lang === "json" ? JSON.stringify({ lang: "json" }) : ""))
+        .map((lang) => (lang === "json" ? JSON.stringify({ lang: "json" }) : ""))
         .getOrElse("")
 }
 
