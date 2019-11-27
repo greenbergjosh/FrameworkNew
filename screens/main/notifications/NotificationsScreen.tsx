@@ -3,6 +3,7 @@ import React from "react"
 import { Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
+import { Colors } from "constants"
 
 interface NotificationsScreenProps extends NavigationTabScreenProps {}
 
@@ -12,7 +13,7 @@ export class NotificationsScreen extends React.Component<NotificationsScreenProp
       headerLeft: () => (
         <Button
           onPress={() => navigation.navigate("HomeFeed")}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ color: "#fff" }}>Cancel</Text>
         </Button>
       ),
@@ -20,7 +21,7 @@ export class NotificationsScreen extends React.Component<NotificationsScreenProp
       headerRight: () => (
         <Button
           onPress={() => navigation.navigate("HomeFeed")}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
         </Button>
       ),

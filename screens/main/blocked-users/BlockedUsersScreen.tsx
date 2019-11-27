@@ -4,6 +4,7 @@ import { Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 interface BlockedUsersScreenProps extends NavigationTabScreenProps {}
+import { Colors } from "constants"
 
 export class BlockedUsersScreen extends React.Component<BlockedUsersScreenProps> {
   static navigationOptions = ({ navigation }) => {
@@ -11,7 +12,7 @@ export class BlockedUsersScreen extends React.Component<BlockedUsersScreenProps>
       headerLeft: () => (
         <Button
           onPress={() => navigation.navigate("HomeFeed")}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ color: "#fff" }}>Cancel</Text>
         </Button>
       ),
@@ -19,7 +20,7 @@ export class BlockedUsersScreen extends React.Component<BlockedUsersScreenProps>
       headerRight: () => (
         <Button
           onPress={() => navigation.navigate("HomeFeed")}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
         </Button>
       ),

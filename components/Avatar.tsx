@@ -9,25 +9,35 @@ interface AvatarProps {
 }
 
 export const Avatar = ({ size, source = ImageUris.placeholder, onPress }: AvatarProps) => {
+  /*
+  NOTE: We use a negative margin to compensate for the 40x40px touch area
+  when the touch area is larger than the icon itself. Otherwise, the icon
+  will have too much space around it.
+   */
+
   let avatarStyle
+  let margin = 0
   if (size === "sm") {
     avatarStyle = styles.AvatarSM
+    margin = -6
   } else if (size === "lg") {
     avatarStyle = styles.AvatarLG
   } else {
     avatarStyle = styles.AvatarMD
+    margin = -6
   }
 
   return (
     <TouchableOpacity
       onPress={onPress && onPress}
+      disabled={!onPress}
       style={{
         minHeight: 40,
         minWidth: 40,
-        marginLeft: -6,
-        marginRight: -6,
-        marginTop: -6,
-        marginBottom: -6,
+        marginLeft: margin,
+        marginRight: margin,
+        marginTop: margin,
+        marginBottom: margin,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

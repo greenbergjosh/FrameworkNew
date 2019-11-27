@@ -1,6 +1,6 @@
 import React from "react"
-import { Grid, SearchBar } from "@ant-design/react-native"
-import { FlatList, Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { SearchBar } from "@ant-design/react-native"
+import { FlatList, Image, ScrollView, TouchableOpacity, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, ImageUris, routes } from "constants"
@@ -80,7 +80,7 @@ export class ExploreFeedScreen extends React.Component<ExploreFeedScreenProps> {
               <FeedImage
                 src={item.src}
                 id={item.id}
-                onPress={() => navigate(routes.Explore.UserFeed, { id: item.id })}
+                onPress={() => navigate(routes.Explore.FeedDetails, { id: item.id })}
               />
             )}
             numColumns={3}

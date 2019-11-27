@@ -15,6 +15,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
+import { Colors } from "constants"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -254,7 +255,7 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
       : () => (
           <Button
             onPress={() => navigation.navigate("Promotions")}
-            style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+            style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
             <Icon name="arrow-left" />
           </Button>
         ),
@@ -271,7 +272,7 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
               template,
             })
           }}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ fontWeight: "bold", color: "#fff" }}>Next</Text>
         </Button>
       ) : null,

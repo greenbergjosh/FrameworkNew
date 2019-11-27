@@ -16,6 +16,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
+import { Colors } from "constants"
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
@@ -128,7 +129,7 @@ PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) =>
       (() => (
         <Button
           onPress={() => navigation.goBack("PromotionsCampaignList")}
-          style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ color: "#fff" }}>Cancel</Text>
         </Button>
       )),
@@ -218,7 +219,7 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
             }
           )
         }}
-        style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
         <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
       </Button>
     </>

@@ -4,31 +4,22 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Avatar } from "components/Avatar"
 import { HeaderTitle } from "components/HeaderTitle"
 import { TouchIcon } from "components/TouchIcon"
-import { Colors, FontWeights, ImageUris, styles, Units } from "constants"
-import { Flex, List, Icon } from "@ant-design/react-native"
+import { styles, Units } from "constants"
+import { Flex, List } from "@ant-design/react-native"
+import SocialButtons from "./SocialButtons"
+import { USER_FEED_DATA } from "./mockData"
 
 interface ExploreUserFeedScreenProps extends NavigationTabScreenProps {}
 
-const USER_FEED_DATA = {
-  user: {
-    handle: "loren",
-    avatarUri: ImageUris.placeholder,
-  },
-  feed: [
-    {
-      id: 1,
-      uri: ImageUris.placeholder,
-    },
-    {
-      id: 2,
-      uri: ImageUris.placeholder,
-    },
-    {
-      id: 3,
-      uri: ImageUris.placeholder,
-    },
-  ],
-}
+const UserInfo = ({ user }) => (
+  <Flex direction="row" style={{ margin: Units.margin }} justify="between">
+    <Flex>
+      <Avatar source={user.avatarUri} size="lg" />
+      <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
+    </Flex>
+    <TouchIcon name="ellipsis" size="lg" onPress={() => alert("Feature to come!")} />
+  </Flex>
+)
 
 export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreenProps> {
   static navigationOptions = ({ navigation }) => {
@@ -42,42 +33,19 @@ export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreen
 
     return (
       <View>
-        <Flex direction="row" style={{ margin: Units.margin }} justify="between">
-          <Flex>
-            <Avatar source={user.avatarUri} size="sm" onPress={() => alert("Feature to come!")} />
-            <Text
-              style={[styles.H4, { marginLeft: Units.margin / 2 }]}
-              onPress={() => alert("Feature to come!")}>
-              {user.handle}
-            </Text>
-          </Flex>
-          <TouchIcon name="ellipsis" size="lg" onPress={() => alert("Feature to come!")} />
-        </Flex>
+        <UserInfo user={user} />
         <ScrollView>
           <List>
             {feed.map((item) => (
               <View key={item.id}>
-                <Image key={item.id} source={{ uri: item.uri }} style={{ flex: 1, height: 435 }} />
-                <Flex justify="end" style={{ marginRight: 10 }}>
-                  <TouchIcon
-                    name="question"
-                    size="lg"
-                    style={{ marginLeft: 10 }}
-                    onPress={() => alert("Feature to come!")}
+                <TouchableOpacity onPress={() => alert("Feature to come!")}>
+                  <Image
+                    key={item.id}
+                    source={{ uri: item.uri }}
+                    style={{ flex: 1, height: item.height }}
                   />
-                  <TouchIcon
-                    name="share-alt"
-                    size="lg"
-                    style={{ marginLeft: 10 }}
-                    onPress={() => alert("Feature to come!")}
-                  />
-                  <TouchIcon
-                    name="heart"
-                    size="lg"
-                    style={{ marginLeft: 10 }}
-                    onPress={() => alert("Feature to come!")}
-                  />
-                </Flex>
+                </TouchableOpacity>
+                <SocialButtons />
               </View>
             ))}
           </List>

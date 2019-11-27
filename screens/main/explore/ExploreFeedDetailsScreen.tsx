@@ -3,62 +3,54 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Avatar } from "components/Avatar"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, FontWeights, ImageUris, styles, Units } from "constants"
-import { Flex, List, Icon } from "@ant-design/react-native"
+import { TouchIcon } from "components/TouchIcon"
+import { styles, Units, routes } from "constants"
+import { Flex, List } from "@ant-design/react-native"
+import SocialButtons from "./SocialButtons"
+import { FEED_DATA } from "./mockData"
 
 interface ExploreFeedDetailsScreenProps extends NavigationTabScreenProps {}
 
-const USER_FEED_DATA = {
-  user: {
-    handle: "loren",
-    avatarUri: ImageUris.placeholder,
-  },
-  feed: [
-    {
-      id: 1,
-      uri: ImageUris.placeholder,
-    },
-    {
-      id: 2,
-      uri: ImageUris.placeholder,
-    },
-  ],
-}
+const UserInfo = ({ user, navigate }) => (
+  <Flex direction="row" style={{ margin: Units.margin }} justify="between">
+    <Flex>
+      <Avatar
+        source={user.avatarUri}
+        size="sm"
+        onPress={() => navigate(routes.Explore.UserFeed, { userId: user.userId })}
+      />
+      <TouchableOpacity onPress={() => navigate(routes.Explore.UserFeed, { userId: user.userId })}>
+        <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
+      </TouchableOpacity>
+    </Flex>
+    <TouchIcon name="ellipsis" size="lg" onPress={() => alert("Feature to come!")} />
+  </Flex>
+)
 
 export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetailsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="Explore" offset="left" />,
-      headerStyle: {
-        height: 20
-      }
+      headerTitle: () => <HeaderTitle title="Explore" offset="none" />,
     }
   }
   render() {
     const { navigate } = this.props.navigation
-    const { user, feed } = USER_FEED_DATA
+    const { feed } = FEED_DATA
 
     return (
       <View>
-        <Flex direction="row" style={{ margin: Units.margin }} justify="between">
-          <Flex>
-            <Avatar source={user.avatarUri} size="sm" />
-            <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
-          </Flex>
-          <TouchableOpacity onPress={() => alert("Feature to come!")}>
-            <Icon name="ellipsis" size="lg" style={{ color: Colors.black }} />
-          </TouchableOpacity>
-        </Flex>
         <ScrollView>
           <List>
             {feed.map((item) => (
-              <TouchableOpacity onPress={() => alert("Feature to come!")}>
+              <View key={item.id}>
+                <UserInfo user={item.user} navigate={navigate} />
                 <Image
                   key={item.id}
                   source={{ uri: item.uri }}
-                  style={{ flex: 1, height: 435, marginBottom: 16 }}
+                  style={{ flex: 1, height: item.height }}
                 />
-              </TouchableOpacity>
+                <SocialButtons />
+              </View>
             ))}
           </List>
         </ScrollView>
