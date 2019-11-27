@@ -6,11 +6,11 @@ import { AnalyticsScreen } from "../analytics/AnalyticsScreen"
 import { BlockedUsersScreen } from "../blocked-users/BlockedUsersScreen"
 import { NotificationsScreen } from "../notifications/NotificationsScreen"
 import { PrivacyOptionsScreen } from "../privacy-options/PrivacyOptionsScreen"
-import { HomeFeedScreen } from "./HomeFeed"
+import { HomeFeedScreen } from "./HomeFeed/HomeFeedScreen"
 import { MessagesScreen } from "./MessagesScreen"
 import { NewMessageScreen } from "./NewMessageScreen"
 import { ViewThreadScreen } from "./ViewThreadScreen"
-import { styles } from "constants"
+import { styles, Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
 
 interface HomeSectionProps extends NavigationTabScreenProps {}
 
@@ -28,10 +28,8 @@ const HomeNavigator = createStackNavigator(
     // Tour: { screen: TourScreen },
   },
   {
-    initialRouteName: "HomeFeed",
-    defaultNavigationOptions: {
-      headerStyle: styles.Header
-    },
+    initialRouteName: routes.Home.HomeFeed,
+    defaultNavigationOptions,
   }
 )
 
@@ -39,9 +37,7 @@ export class HomeSection extends React.Component<HomeSectionProps> {
   static router = HomeNavigator.router
   static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
     return {
-      tabBarIcon: ({ focused, horizontal, tintColor }) => {
-        return <Icon name="home" color={focused ? "#343977" : "#999999"} />
-      },
+      tabBarIcon: tabBarIcon("home"),
     }
   }
   render() {

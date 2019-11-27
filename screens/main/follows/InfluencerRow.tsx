@@ -6,6 +6,7 @@ import { Influencer, follows } from "api/follows-services"
 import { FollowsScreenProps } from "./FollowsScreen"
 import { styles } from "constants"
 import moment from "moment"
+import { Avatar } from "components/Avatar"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
@@ -24,9 +25,7 @@ export const InfluencerRow = ({ influencer }: InfluencerRowProps) => {
         {/**************************/}
         {/* Avatar */}
         <Flex direction="column" align="start" style={{ marginRight: 10 }}>
-          <TouchableOpacity onPress={influencerPressHandler}>
-            <Image source={{ uri: avatarUri }} style={styles.AvatarSM} />
-          </TouchableOpacity>
+          <Avatar source={avatarUri} size="sm" onPress={influencerPressHandler} />
         </Flex>
 
         <Flex.Item>

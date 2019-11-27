@@ -4,6 +4,7 @@ import { Button, Flex, List } from "@ant-design/react-native"
 import { Follower } from "api/follows-services"
 import { FollowsScreenProps } from "./FollowsScreen"
 import { styles, Colors } from "constants"
+import { Avatar } from "components/Avatar"
 
 export interface FollowerRowProps {
   follower?: Follower
@@ -43,7 +44,7 @@ export const FollowerRow = ({ follower, followRequest }: FollowerRowProps) => {
         {/**************************/}
         {/* Avatar */}
         <Flex direction="column" align="start" style={{ marginRight: 10 }}>
-          <Image source={{ uri: avatarUri }} style={styles.AvatarSM} />
+          <Avatar source={avatarUri} size="sm"/>
         </Flex>
 
         <Flex.Item>
@@ -51,7 +52,7 @@ export const FollowerRow = ({ follower, followRequest }: FollowerRowProps) => {
           {/* Follower Name */}
           <Flex direction="column" align="start" wrap="wrap">
             <Text style={{ fontWeight: "bold" }}>{handle}</Text>
-            <Text style={{ color: Colors.grey }}>{name}</Text>
+            <Text style={{ color: Colors.darkgrey }}>{name}</Text>
           </Flex>
         </Flex.Item>
 

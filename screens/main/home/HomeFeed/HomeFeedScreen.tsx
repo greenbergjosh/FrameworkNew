@@ -9,13 +9,14 @@ import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import { SettingsDrawerContext } from "../../settings/SettingsDrawer"
 import DevTempNav from "./DevTempNav"
 import SuggestedFollows from "./SuggestedFollows"
+import { Colors } from "../../../../constants/unit.constants"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
 export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const feed = useFeedContext()
-  const { suggestedFollows, loadSuggestedFollows} = useOnBoardingContext()
+  const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
 
   React.useMemo(() => {
     loadSuggestedFollows()
@@ -38,7 +39,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
         theme={props.theme}
       />
       <ScrollView>
-        <SuggestedFollows value={suggestedFollows} />
+        <SuggestedFollows value={suggestedFollows} navigate={navigate} />
       </ScrollView>
     </>
   )
@@ -49,7 +50,7 @@ HomeFeedScreen.navigationOptions = ({ navigation }) => {
     headerLeft: () => (
       <SettingsDrawerContext.Consumer>
         {({ open, toggle }) => (
-          <Button onPress={() => toggle()} style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+          <Button onPress={() => toggle()} style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
             <Icon name="menu" size="md" color="#fff" />
           </Button>
         )}
@@ -59,7 +60,7 @@ HomeFeedScreen.navigationOptions = ({ navigation }) => {
     headerRight: () => (
       <Button
         onPress={() => navigation.navigate("Messages")}
-        style={{ backgroundColor: "#343997", borderWidth: 0 }}>
+        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
         <Icon name="mail" color="#fff" size="md" />
       </Button>
     ),

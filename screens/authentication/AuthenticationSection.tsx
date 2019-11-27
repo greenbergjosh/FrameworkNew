@@ -1,12 +1,12 @@
 import React, { useContext } from "react"
-
 import { AuthenticationBannedScreen } from "./AuthenticationBannedScreen"
 import { AuthenticationLoginScreen } from "./AuthenticationLoginScreen"
 import { AuthenticationResetPasswordScreen } from "./AuthenticationResetPasswordScreen"
 import { HeaderLogo } from "../../components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
-import { styles } from "constants"
+import { Colors, defaultNavigationOptions, routes } from "constants"
+
 
 const AuthenticationNavigator = createStackNavigator(
   {
@@ -16,9 +16,7 @@ const AuthenticationNavigator = createStackNavigator(
   },
   {
     initialRouteName: "AuthenticationLogin",
-    defaultNavigationOptions: {
-      headerStyle: styles.Header,
-    },
+    defaultNavigationOptions,
   }
 )
 

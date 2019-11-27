@@ -2,15 +2,18 @@ import React from "react"
 import { Button, Carousel, Flex, Icon, WhiteSpace } from "@ant-design/react-native"
 import { Image, Text, View } from "react-native"
 import { Influencer } from "api/onboarding-services"
-import { styles } from "constants"
+import { routes, styles } from "constants"
 import { carouselStyles } from "./styles"
+import { Avatar } from "components/Avatar"
+import { FollowsScreenProps } from "../../follows/FollowsScreen"
 
 interface SuggestedFollowsProps {
   value: Influencer[]
+  navigate: FollowsScreenProps["navigation"]["navigate"]
 }
 
 export default (props: SuggestedFollowsProps) => {
-  const { value } = props
+  const { value, navigate } = props
   if (!value) {
     return null
   }
@@ -27,7 +30,11 @@ export default (props: SuggestedFollowsProps) => {
         {value.map((influencer) => (
           <View style={carouselStyles.carouselHorizontal} key={influencer.userId}>
             <Flex direction="column" align="center">
-              <Image source={{ uri: influencer.avatar }} style={styles.AvatarLG} />
+              <Avatar
+                source={influencer.avatar}
+                size="lg"
+                onPress={() => navigate(routes.Explore.UserFeed, { id: influencer.userId })}
+              />
               <Text style={styles.H2}>{influencer.name}</Text>
               <WhiteSpace size="sm" />
               <Text style={styles.Body}>{influencer.description}</Text>

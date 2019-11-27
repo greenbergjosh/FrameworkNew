@@ -20,14 +20,21 @@ const TextStyles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 22,
     fontWeight: FontWeights.regular,
-    color: Colors.grey,
+    color: Colors.darkgrey,
+  },
+
+  H4: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: FontWeights.bold,
+    color: Colors.black,
   },
 
   Body: {
     fontSize: 14,
     lineHeight: 18,
     fontWeight: FontWeights.regular,
-    color: Colors.grey,
+    color: Colors.darkgrey,
   },
 
   LinkText: {
@@ -61,7 +68,7 @@ const TextStyles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     fontWeight: FontWeights.regular,
-    color: Colors.grey,
+    color: Colors.darkgrey,
   },
 })
 

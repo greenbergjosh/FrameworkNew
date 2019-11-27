@@ -1,7 +1,7 @@
 import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { Button, Flex, Toast } from "@ant-design/react-native"
-import { styles } from "constants"
+import { styles, routes } from "constants"
 
 interface DevTempNavProps extends NavigationStackScreenProps {}
 
@@ -15,14 +15,11 @@ export default (props: DevTempNavProps) => {
 
   return (
     <Flex direction="row" justify="around" style={styles.View}>
-      <Button size="small" onPress={() => navigate("ExploreUserFeed", { name: "Loren" })}>
+      <Button size="small" onPress={() => navigate(routes.Explore.UserFeed, { name: "Loren" })}>
         Jump To User
       </Button>
-      <Button size="small" onPress={() => navigate("ExploreCampaign", { name: "Loren" })}>
+      <Button size="small" onPress={() => navigate(routes.Explore.Campaign, { name: "Loren" })}>
         Jump To Campaign
-      </Button>
-      <Button size="small" onPress={() => Toast.info("This is a Home screen toast")}>
-        Show Home
       </Button>
     </Flex>
   )

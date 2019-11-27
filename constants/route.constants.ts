@@ -1,10 +1,11 @@
-export enum Authentication {
+enum Authentication {
   default = "AuthenticationLogin",
   AuthenticationBanned = "AuthenticationBanned",
   AuthenticationLogin = "AuthenticationLogin",
   AuthenticationResetPassword = "AuthenticationResetPassword",
 }
-export enum Home {
+
+enum Home {
   default = "HomeFeed",
   Analytics = "Analytics",
   BlockedUsers = "BlockedUsers",
@@ -16,7 +17,8 @@ export enum Home {
   Tour = "Tour",
   ViewThread = "ViewThread",
 }
-export enum OnBoarding {
+
+enum OnBoarding {
   default = "OnBoardingCreateAccount",
   CodeEntry = "OnBoardingCodeEntry",
   CreateAccount = "OnBoardingCreateAccount",
@@ -25,13 +27,19 @@ export enum OnBoarding {
   SetPassword = "OnBoardingSetPassword",
   SyncContacts = "OnBoardingSyncContacts",
 }
-export enum Follows {
-  Following = "FollowsFollowing",
-  Follows = "FollowsFollows",
+
+enum Explore {
+  Feed = "Explore.Feed",
+  FeedDetails = "Explore.FeedDetails",
+  UserFeed = "Explore.UserFeed",
+  UserFeedDetails = "Explore.UserFeedDetails",
+  Campaign = "Explore.Campaign",
 }
+const Follows = "Follows"
 
 export const routes = {
   Authentication,
+  Explore,
   Follows,
   Home,
   OnBoarding,

@@ -1,15 +1,14 @@
 import { Button, Icon, Toast } from "@ant-design/react-native"
 import React from "react"
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
+import { tabBarIcon } from "constants"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
 export class ProfileScreen extends React.Component<ProfileScreenProps> {
   static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
     return {
-      tabBarIcon: ({ focused, horizontal, tintColor }) => {
-        return <Icon name="user" color={focused ? "#343977" : "#999999"} />
-      },
+      tabBarIcon: tabBarIcon("user"),
     }
   }
   render() {

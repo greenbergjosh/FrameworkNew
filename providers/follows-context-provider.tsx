@@ -2,14 +2,12 @@ import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 import {
-  Influencer,
-  InfluencersResponse,
-  loadInfluencers,
   Followers,
   FollowersResponse,
   loadFollowers,
   Follower,
-} from "api/follows-services"
+} from "api/follows-services/followers"
+import { Influencer, InfluencersResponse, loadInfluencers } from "api/follows-services/influencers"
 import moment from "moment"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {

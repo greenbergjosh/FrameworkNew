@@ -3,7 +3,7 @@ import { Colors, Units } from "./unit.constants"
 
 const mixins = StyleSheet.create({
   avatar: {
-    borderColor: Colors.medgrey,
+    borderColor: Colors.grey,
     borderWidth: 1,
   },
 })
@@ -31,9 +31,9 @@ const ImageStyles = StyleSheet.create({
   },
 
   ThumbnailSM: {
-    width: Units.thumbnailSM,
-    height: Units.thumbnailSM,
-    borderColor: Colors.medgrey,
+    width: Units.thumbnailSmall,
+    height: Units.thumbnailSmall,
+    borderColor: Colors.grey,
     borderWidth: 1,
   },
 })

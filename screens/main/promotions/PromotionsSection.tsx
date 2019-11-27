@@ -7,7 +7,7 @@ import { PromotionsCampaignListScreen } from "./PromotionsCampaignListScreen"
 import { PromotionsCampaignScreen } from "./PromotionsCampaignScreen"
 import { PromotionsCampaignTemplatesScreen } from "./PromotionsCampaignTemplateScreen"
 import { PromotionsScreen } from "./PromotionsScreen"
-import { styles } from "constants"
+import { styles, Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
 
 interface PromotionsSectionProps extends NavigationTabScreenProps {}
 
@@ -21,9 +21,7 @@ const PromotionsNavigator = createStackNavigator(
   },
   {
     initialRouteName: "Promotions",
-    defaultNavigationOptions: {
-      headerStyle: styles.Header,
-    },
+    defaultNavigationOptions,
   }
 )
 
@@ -31,9 +29,7 @@ export class PromotionsSection extends React.Component<PromotionsSectionProps> {
   static router = PromotionsNavigator.router
   static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
     return {
-      tabBarIcon: ({ focused, horizontal, tintColor }) => {
-        return <Icon name="shopping" color={focused ? "#343977" : "#999999"} />
-      },
+      tabBarIcon: tabBarIcon("shopping"),
     }
   }
   render() {

@@ -1,7 +1,8 @@
 export enum Units {
   margin = 17,
   padding = 10,
-  thumbnailSM = 40,
+  thumbnailSmall = 40,
+  thumbnailLarge = 120,
   avatarLG = 80,
   avatarMD = 64,
   avatarSM = 32,
@@ -12,9 +13,12 @@ export enum FontWeights {
   bold = "600",
 }
 export enum Colors {
+  white = "#FFFFFF",
   lightgrey = "#F8F8F8",
-  medgrey = "#D6D4CD",
-  grey = "#707070",
+  grey = "#D6D4CD",
+  mediumgrey = "#999999",
+  darkgrey = "#707070",
+  black = "#000000",
   blue = "#007AFF",
   navy = "#343997",
 }
