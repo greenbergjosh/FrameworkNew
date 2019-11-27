@@ -1,16 +1,12 @@
 import { Button, Icon, Toast } from "@ant-design/react-native"
 import React from "react"
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
-import { tabBarIcon } from "constants"
+import { getNavigationOptions } from "components/NavigationOptions"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
 export class ProfileScreen extends React.Component<ProfileScreenProps> {
-  static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
-    return {
-      tabBarIcon: tabBarIcon("user"),
-    }
-  }
+  static navigationOptions = getNavigationOptions("Profile", "user")
   render() {
     const { navigate } = this.props.navigation
     return (

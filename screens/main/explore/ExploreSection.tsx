@@ -6,7 +6,8 @@ import { ExploreCampaignScreen } from "./ExploreCampaign"
 import { ExploreFeedDetailsScreen } from "./ExploreFeedDetailsScreen"
 import { ExploreFeedScreen } from "./ExploreFeedScreen"
 import { ExploreUserFeedScreen } from "./ExploreUserFeedScreen"
-import { Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
+import { Colors, defaultNavigationOptions, routes } from "constants"
+import { getNavigationOptions } from "components/NavigationOptions"
 
 interface ExploreSectionProps extends NavigationTabScreenProps {}
 
@@ -25,11 +26,7 @@ const ExploreNavigator = createStackNavigator(
 
 export class ExploreSection extends React.Component<ExploreSectionProps> {
   static router = ExploreNavigator.router
-  static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
-    return {
-      tabBarIcon: tabBarIcon("search"),
-    }
-  }
+  static navigationOptions = getNavigationOptions("Explore", "search")
   render() {
     return <ExploreNavigator navigation={this.props.navigation} />
   }

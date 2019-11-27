@@ -1,5 +1,6 @@
-import { Icon } from "@ant-design/react-native"
 import React from "react"
+import { Text } from "react-native"
+import { Icon } from "@ant-design/react-native"
 import { createStackNavigator } from "react-navigation-stack"
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
 import { AnalyticsScreen } from "../analytics/AnalyticsScreen"
@@ -11,6 +12,7 @@ import { MessagesScreen } from "./MessagesScreen"
 import { NewMessageScreen } from "./NewMessageScreen"
 import { ViewThreadScreen } from "./ViewThreadScreen"
 import { styles, Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
+import { getNavigationOptions } from "components/NavigationOptions"
 
 interface HomeSectionProps extends NavigationTabScreenProps {}
 
@@ -35,11 +37,7 @@ const HomeNavigator = createStackNavigator(
 
 export class HomeSection extends React.Component<HomeSectionProps> {
   static router = HomeNavigator.router
-  static navigationOptions = ({ navigation }): NavigationBottomTabOptions => {
-    return {
-      tabBarIcon: tabBarIcon("home"),
-    }
-  }
+  static navigationOptions = getNavigationOptions("Home", "home")
   render() {
     return <HomeNavigator navigation={this.props.navigation} />
   }
