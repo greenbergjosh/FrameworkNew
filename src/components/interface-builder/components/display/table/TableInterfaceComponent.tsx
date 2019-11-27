@@ -191,27 +191,21 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
               case "display": {
                 const dataArray = get(valueKey, userInterfaceData) || [userInterfaceData]
                 const sortSettings: SortSettingsModel = {
-                  columns: sortBy("sortOrder", columns).reduce(
-                    (acc, column) => {
-                      if (column.sortDirection && column.field) {
-                        acc.push({ field: column.field, direction: column.sortDirection })
-                      }
-                      return acc
-                    },
-                    [] as SortDescriptorModel[]
-                  ),
+                  columns: sortBy("sortOrder", columns).reduce((acc, column) => {
+                    if (column.sortDirection && column.field) {
+                      acc.push({ field: column.field, direction: column.sortDirection })
+                    }
+                    return acc
+                  }, [] as SortDescriptorModel[]),
                 }
 
                 const groupSettings: GroupSettingsModel = {
-                  columns: sortBy("groupOrder", columns).reduce(
-                    (acc, column) => {
-                      if (column.field) {
-                        acc.push(column.field)
-                      }
-                      return acc
-                    },
-                    [] as string[]
-                  ),
+                  columns: sortBy("groupOrder", columns).reduce((acc, column) => {
+                    if (column.field && typeof column.groupOrder !== "undefined") {
+                      acc.push(column.field)
+                    }
+                    return acc
+                  }, [] as string[]),
                 }
 
                 // console.log("TableInterfaceComponent.render", "Display", this.props, {

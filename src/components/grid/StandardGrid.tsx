@@ -365,38 +365,35 @@ export const StandardGrid = React.forwardRef(
     const aggregates = React.useMemo(() => {
       return [
         {
-          columns: usableColumns.reduce(
-            (acc, col) => {
-              const column = col as EnrichedColumnDefinition
-              const { aggregationFunction } = column
-              if (aggregationFunction) {
-                const isCustom = aggregationFunction.startsWith("Custom")
-                const format = [
-                  "Count",
-                  "TrueCount",
-                  "FalseCount",
-                  "CustomValueCount",
-                  "CustomNullCount",
-                ].includes(aggregationFunction)
-                  ? "N0"
-                  : column.format
+          columns: usableColumns.reduce((acc, col) => {
+            const column = col as EnrichedColumnDefinition
+            const { aggregationFunction } = column
+            if (aggregationFunction) {
+              const isCustom = aggregationFunction.startsWith("Custom")
+              const format = [
+                "Count",
+                "TrueCount",
+                "FalseCount",
+                "CustomValueCount",
+                "CustomNullCount",
+              ].includes(aggregationFunction)
+                ? "N0"
+                : column.format
 
-                const template = `<span title='${sanitizeText(aggregationFunction)}'>\${${
-                  isCustom ? "Custom" : aggregationFunction
-                }}</span>`
-                acc.push({
-                  field: column.field,
-                  type: [isCustom ? "Custom" : aggregationFunction],
-                  format,
-                  customAggregate: customAggregateFunctions[aggregationFunction],
-                  footerTemplate: template,
-                  groupCaptionTemplate: template,
-                })
-              }
-              return acc
-            },
-            [] as AggregateColumnModel[]
-          ),
+              const template = `<span title='${sanitizeText(aggregationFunction)}'>\${${
+                isCustom ? "Custom" : aggregationFunction
+              }}</span>`
+              acc.push({
+                field: column.field,
+                type: [isCustom ? "Custom" : aggregationFunction],
+                format,
+                customAggregate: customAggregateFunctions[aggregationFunction],
+                footerTemplate: template,
+                groupCaptionTemplate: template,
+              })
+            }
+            return acc
+          }, [] as AggregateColumnModel[]),
         },
       ] as AggregateRowModel[]
     }, [usableColumns])
@@ -418,7 +415,9 @@ export const StandardGrid = React.forwardRef(
         <PureGridComponent
           ref={ref}
           {...commonGridOptions}
-          allowGrouping={false}
+          allowGrouping={
+            groupSettings && groupSettings.columns ? groupSettings.columns.length > 0 : false
+          }
           toolbar={[...editingToolbarItems, ...commonGridOptions.toolbar]}
           actionComplete={actionComplete}
           aggregates={aggregates}
@@ -427,7 +426,7 @@ export const StandardGrid = React.forwardRef(
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
-          groupSettings={groupSettings}
+          groupSettings={{ ...commonGridOptions.groupSettings, ...groupSettings }}
           sortSettings={sortSettings}
           toolbarClick={handleToolbarClick}>
           <Inject services={gridComponentServices} />
