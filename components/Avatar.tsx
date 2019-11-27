@@ -1,7 +1,6 @@
 import React from "react"
 import { Image, TouchableOpacity } from "react-native"
-import { Colors, ImageUris, styles } from "constants"
-import { Units } from "../constants/unit.constants"
+import { Colors, ImageUris, styles, Units } from "constants"
 
 interface AvatarProps {
   size?: "xs" | "sm" | "md" | "lg"

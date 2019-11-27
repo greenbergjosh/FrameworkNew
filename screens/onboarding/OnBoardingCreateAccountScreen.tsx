@@ -70,7 +70,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
           type="ghost"
           size="large"
           style={styles.LinkButton}
-          onPress={() => navigate("Authentication")}>
+          onPress={() => navigate(routes.Authentication.default)}>
           Log In
         </Button>
       </Flex>

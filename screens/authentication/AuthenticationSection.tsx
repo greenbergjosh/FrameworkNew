@@ -10,12 +10,12 @@ import { Colors, defaultNavigationOptions, routes } from "constants"
 
 const AuthenticationNavigator = createStackNavigator(
   {
-    AuthenticationLogin: { screen: AuthenticationLoginScreen },
-    AuthenticationBanned: { screen: AuthenticationBannedScreen },
-    AuthenticationResetPassword: { screen: AuthenticationResetPasswordScreen },
+    [routes.Authentication.Login]: { screen: AuthenticationLoginScreen },
+    [routes.Authentication.Banned]: { screen: AuthenticationBannedScreen },
+    [routes.Authentication.ResetPassword]: { screen: AuthenticationResetPasswordScreen },
   },
   {
-    initialRouteName: "AuthenticationLogin",
+    initialRouteName: routes.Authentication.Login,
     defaultNavigationOptions,
   }
 )

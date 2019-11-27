@@ -27,7 +27,7 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
       setLoading(false)
       if (response.r === 0) {
         auth.handleLogin(response)
-        navigate("Main")
+        navigate(routes.Main)
       } else {
         setError(response.error)
       }
@@ -67,10 +67,10 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
           type="ghost"
           size="large"
           style={styles.LinkButton}
-          onPress={() => navigate(routes.Authentication.AuthenticationResetPassword)}>
+          onPress={() => navigate(routes.Authentication.ResetPassword)}>
           Forgot password?
         </Button>
-        <Button size="small" disabled={loading} onPress={() => navigate("AuthenticationBanned")}>
+        <Button size="small" disabled={loading} onPress={() => navigate(routes.Authentication.Banned)}>
           Login (Banned)
         </Button>
       </Flex>
@@ -92,7 +92,7 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
           size="large"
           style={styles.LinkButton}
           disabled={loading}
-          onPress={() => navigate("OnBoarding")}>
+          onPress={() => navigate(routes.OnBoarding.default)}>
           Sign Up
         </Button>
       </Flex>

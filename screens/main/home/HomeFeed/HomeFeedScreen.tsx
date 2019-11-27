@@ -9,7 +9,7 @@ import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import { SettingsDrawerContext } from "../../settings/SettingsDrawer"
 import DevTempNav from "./DevTempNav"
 import SuggestedFollows from "./SuggestedFollows"
-import { Colors } from "constants"
+import { Colors, routes } from "constants"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
@@ -59,7 +59,7 @@ HomeFeedScreen.navigationOptions = ({ navigation }) => {
     headerTitle: () => <HeaderLogo />,
     headerRight: () => (
       <Button
-        onPress={() => navigation.navigate("Messages")}
+        onPress={() => navigation.navigate(routes.Messages.default)}
         style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
         <Icon name="mail" color="#fff" size="md" />
       </Button>

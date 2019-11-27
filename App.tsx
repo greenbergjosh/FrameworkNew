@@ -13,6 +13,8 @@ import { Provider } from "@ant-design/react-native"
 import { Transition } from "react-native-reanimated"
 import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
 import { createAppContainer } from "react-navigation"
+import { DevMenuScreen } from "./screens/DevMenuScreen"
+import { routes } from "./constants/route.constants"
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -20,9 +22,11 @@ const sectionNavigator = createAnimatedSwitchNavigator(
     OnBoarding: { screen: OnBoardingSection },
     Authentication: { screen: AuthenticationSection },
     Main: { screen: MainSection },
+    DevMenu: { screen: DevMenuScreen }
   },
   {
-    initialRouteName: "Landing",
+    // initialRouteName: routes.Landing,
+    initialRouteName: routes.DevMenu,
     defaultNavigationOptions: {
       headerStyle: {
         backgroundColor: "#343997",

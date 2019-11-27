@@ -6,13 +6,7 @@ import React from "react"
 import { ScrollView, Text, View } from "react-native"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
 import { AuthContextType, useAuthContext } from "providers/auth-context-provider"
-import { Colors } from "constants"
-
-interface NavigationItem {
-  title: string
-  route: string
-  icon?: IconProps["name"]
-}
+import { Colors, routes } from "constants"
 
 export const SettingsDrawerContext = React.createContext({
   open: false,
@@ -38,7 +32,7 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
   const logout = () => {
     auth.handleLogout()
     rootDataContext.reset()
-    navigate("Authentication")
+    navigate(routes.Authentication.default)
   }
 
   return (
@@ -62,33 +56,6 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
     </SettingsDrawerContext.Consumer>
   )
 }
-
-const settingsRoutes: NavigationItem[] = [
-  {
-    title: "Analytics",
-    route: "Analytics",
-    icon: "line-chart",
-  },
-  {
-    title: "Privacy Options",
-    route: "PrivacyOptions",
-    icon: "lock",
-  },
-  {
-    title: "Notifications",
-    route: "Notifications",
-    icon: "bell",
-  },
-  {
-    title: "Blocked Users",
-    route: "BlockedUsers",
-    icon: "stop",
-  },
-  {
-    title: "Quick Tour",
-    route: "Tour",
-  },
-]
 
 const renderSettingsDrawerContents = (
   auth: AuthContextType,
@@ -117,7 +84,7 @@ const renderSettingsDrawerContents = (
               </Button>
             </View>
           </List.Item>
-          <>{settingsRoutes.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
+          <>{routes.Settings.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
           <List.Item
             multipleLine
             style={{ backgroundColor: Colors.navy, borderWidth: 0 }}

@@ -41,7 +41,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
       if (response.r !== 0) {
         setError(response.error)
       } else {
-        navigate(routes.Home.HomeFeed)
+        navigate(routes.Home.Feed)
       }
     } catch (ex) {
       setWaiting(false)
@@ -71,7 +71,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           type="ghost"
           size="large"
           style={styles.LinkButton}
-          onPress={() => navigate(routes.Home.HomeFeed)}
+          onPress={() => navigate(routes.Home.Feed)}
           disabled={isWaiting}>
           Not Now
         </Button>

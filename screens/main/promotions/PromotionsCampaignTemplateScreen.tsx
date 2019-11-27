@@ -5,6 +5,7 @@ import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
+import { routes } from "constants"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
   promotionId: GUID
@@ -49,7 +50,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
           {
             text: "Select Template",
             onPress: () => {
-              navigate("PromotionsCampaign", {
+              navigate(routes.Promotions.Campaign, {
                 draft: true,
                 promotionId,
                 template: pressedTemplate,
@@ -64,7 +65,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   const onPressImage = React.useCallback(
     ({ id }) => {
       const pressedTemplate = campaignTemplatesById[id]
-      navigate("PromotionsCampaign", { draft: true, promotionId, template: pressedTemplate })
+      navigate(routes.Promotions.Campaign, { draft: true, promotionId, template: pressedTemplate })
     },
     [campaignTemplatesById, navigate]
   )

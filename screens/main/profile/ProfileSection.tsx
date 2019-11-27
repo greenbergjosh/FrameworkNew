@@ -6,7 +6,7 @@ import { ProfileScreen } from "./ProfileScreen"
 
 const ProfileNavigator = createStackNavigator(
   {
-    Profile: { screen: ProfileScreen },
+    [routes.Profile]: { screen: ProfileScreen },
   },
   {
     initialRouteName: routes.Profile,

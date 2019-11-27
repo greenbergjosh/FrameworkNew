@@ -16,7 +16,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { Colors } from "constants"
+import { Colors, routes } from "constants"
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
@@ -101,7 +101,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
             paddingLeft: 0,
             paddingRight: 0,
           }}
-          onPress={() => navigate("PromotionsCampaign", params)}>
+          onPress={() => navigate(routes.Promotions.Campaign, params)}>
           <Icon name="left" color="#888888" size="lg" />
         </Button>
         <View style={{ paddingLeft: -80 }}>
@@ -188,7 +188,7 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
                         text: "Later",
                         style: "cancel",
                         onPress: () => {
-                          navigation.navigate("PromotionsCampaignList", { promotionId })
+                          navigation.navigate(routes.Promotions.CampaignList, { promotionId })
                         },
                       },
 
@@ -201,7 +201,7 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
                               {
                                 text: "OK",
                                 onPress: () => {
-                                  navigation.navigate("PromotionsCampaignList", { promotionId })
+                                  navigation.navigate(routes.Promotions.CampaignList, { promotionId })
                                 },
                               },
                             ])

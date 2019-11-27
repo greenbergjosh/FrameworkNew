@@ -3,7 +3,7 @@ import { Text } from "react-native"
 import { Button, Toast } from "@ant-design/react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors } from "constants"
+import { Colors, routes } from "constants"
 
 interface NewMessageScreenProps extends NavigationStackScreenProps {}
 
@@ -12,7 +12,7 @@ export class NewMessageScreen extends React.Component<NewMessageScreenProps> {
     return {
       headerLeft: () => (
         <Button
-          onPress={() => navigation.navigate("Messages")}
+          onPress={() => navigation.navigate(routes.Messages.default)}
           style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ color: "#fff" }}>Cancel</Text>
         </Button>
@@ -20,7 +20,7 @@ export class NewMessageScreen extends React.Component<NewMessageScreenProps> {
       headerTitle: () => <HeaderTitle title="New Message" />,
       headerRight: () => (
         <Button
-          onPress={() => navigation.navigate("Messages")}
+          onPress={() => navigation.navigate(routes.Messages.default)}
           style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
           <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
         </Button>

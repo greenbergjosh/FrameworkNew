@@ -15,12 +15,12 @@ interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 
 const OnBoardingNavigator = createStackNavigator(
   {
-    OnBoardingCreateAccount: { screen: OnBoardingCreateAccountScreen },
-    OnBoardingCodeEntry: { screen: OnBoardingCodeEntryScreen },
-    OnBoardingResendCode: { screen: OnBoardingResendCodeScreen },
-    OnBoardingSetPassword: { screen: OnBoardingSetPasswordScreen },
-    OnBoardingSelectInterests: { screen: OnBoardingSelectInterestsScreen },
-    OnBoardingSyncContacts: { screen: OnBoardingSyncContactsScreen },
+    [routes.OnBoarding.CreateAccount]: { screen: OnBoardingCreateAccountScreen },
+    [routes.OnBoarding.CodeEntry]: { screen: OnBoardingCodeEntryScreen },
+    [routes.OnBoarding.ResendCode]: { screen: OnBoardingResendCodeScreen },
+    [routes.OnBoarding.SetPassword]: { screen: OnBoardingSetPasswordScreen },
+    [routes.OnBoarding.SelectInterests]: { screen: OnBoardingSelectInterestsScreen },
+    [routes.OnBoarding.SyncContacts]: { screen: OnBoardingSyncContactsScreen },
   },
   {
     initialRouteName: routes.OnBoarding.CreateAccount,

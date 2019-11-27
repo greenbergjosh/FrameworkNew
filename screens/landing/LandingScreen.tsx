@@ -8,12 +8,11 @@ import { useAuthContext } from "providers/auth-context-provider"
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
 
 export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) => {
-  // navigate(routes.OnBoarding.SyncContacts)
   // TODO: Does this really belong here or in App.tsx?
   const { authenticated, isAuthenticating } = useAuthContext()
   if (authenticated) {
     // Next tick. Offload from UI thread
-    setTimeout(() => navigate("Main"), 0)
+    setTimeout(() => navigate(routes.Main), 0)
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   } else if (isAuthenticating) {
     return <ActivityIndicator animating toast size="large" text="Loading..." />

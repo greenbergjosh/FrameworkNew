@@ -1,18 +1,11 @@
-import { Button, Icon, WhiteSpace } from "@ant-design/react-native"
+import { WhiteSpace } from "@ant-design/react-native"
 import Item from "@ant-design/react-native/lib/list/ListItem"
 import moment from "moment"
 import React from "react"
-import {
-  Image,
-  Text,
-  TouchableOpacity,
-  View
-  } from "react-native"
-import Collapsible from "react-native-collapsible"
-import { TouchableHighlight } from "react-native-gesture-handler"
+import { Image, Text, TouchableOpacity, View } from "react-native"
 import { Campaign, Promotion } from "api/promotions-services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
-import { Empty } from "../../../../components/Empty"
+import { routes } from "constants"
 
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
 
@@ -24,7 +17,7 @@ export interface CampaignRowProps {
 
 export const CampaignRow = ({ navigate, promotion, campaign }: CampaignRowProps) => {
   const navigateToCampaign = React.useCallback(
-    () => navigate("PromotionsCampaign", { promotionId: promotion.id, campaignId: campaign.id }),
+    () => navigate(routes.Promotions.Campaign, { promotionId: promotion.id, campaignId: campaign.id }),
     [promotion.id]
   )
   return (

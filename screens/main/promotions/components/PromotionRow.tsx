@@ -1,13 +1,13 @@
 import React from "react"
 import { Image, Text, TouchableOpacity, View } from "react-native"
 import Collapsible from "react-native-collapsible"
-import { ScrollView, TouchableHighlight } from "react-native-gesture-handler"
 import { ActivityIndicator, Button, Icon, WhiteSpace } from "@ant-design/react-native"
 import Item from "@ant-design/react-native/lib/list/ListItem"
 import { Campaign, Promotion } from "api/promotions-services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { CampaignRow } from "./CampaignRow"
-import { Empty } from "../../../../components/Empty"
+import { Empty } from "components/Empty"
+import { routes } from "constants"
 
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
 const EXPANDED_CAMPAIGN_THRESHOLD = 3
@@ -31,7 +31,7 @@ export const PromotionRow = ({
 }: PromotionRowProps) => {
   const [isCollapsed, setCollapsed] = React.useState(true)
   const navigateToCreateCampaign = React.useCallback(
-    () => navigate("PromotionsCampaignTemplates", { promotionId: promotion.id }),
+    () => navigate(routes.Promotions.CampaignTemplates, { promotionId: promotion.id }),
     [promotion.id]
   )
 
@@ -120,7 +120,7 @@ export const PromotionRow = ({
                   <TouchableOpacity
                     disabled={alwaysExpanded}
                     onPress={() => {
-                      navigate("PromotionsCampaignList", { promotionId: promotion.id })
+                      navigate(routes.Promotions.CampaignList, { promotionId: promotion.id })
                     }}>
                     <View
                       style={{
