@@ -1,10 +1,9 @@
 import { Text, View } from "react-native"
-import { styles, Units } from "constants"
+import { styles, Units, routes } from "constants"
 import { Flex, WhiteSpace } from "@ant-design/react-native"
 import { Avatar } from "components/Avatar"
 import { TouchIcon } from "components/TouchIcon"
 import React from "react"
-import { routes } from "../../../constants/route.constants"
 
 export default function Comments({ navigate }) {
   const handleUserPress = () => navigate(routes.Explore.UserFeed, { userId: 1 })
@@ -36,7 +35,7 @@ export default function Comments({ navigate }) {
           <Text style={styles.Body}> Cutie😍😍</Text>
         </Flex>
         <View style={{ flexGrow: 0, flexShrink: 1, flexBasis: "auto", alignSelf: "auto" }}>
-          <TouchIcon name="heart" size="xs" onPress={() => alert("Feature to come!")} />
+          <TouchIcon name="heart" size="xs" onPress={() => alert("Like action\nFeature to come!")} />
         </View>
       </Flex>
       <Flex justify="between" align="stretch">
@@ -44,10 +43,11 @@ export default function Comments({ navigate }) {
           <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>jupiterdollies</Text>
           <Text style={styles.Body}> @agafrica254 thank you💓</Text>
         </Flex>
-        <TouchIcon name="heart" size="xs" onPress={() => alert("Feature to come!")} />
+        <TouchIcon name="heart" size="xs" onPress={() => alert("Navigate to Campaign\nFeature to come!")} />
       </Flex>
       <WhiteSpace size="md" />
       <Text style={styles.SmallCopy}>1 DAY AGO</Text>
+      <WhiteSpace size="lg" />
     </View>
   )
 }

@@ -10,19 +10,19 @@ export default function SocialButtons() {
         name="question"
         size="md"
         style={{ marginLeft: Units.margin, fontSize: Units.iconLG }}
-        onPress={() => alert("Feature to come!")}
+        onPress={() => alert("Send action\nFeature to come!")}
       />
       <TouchIcon
         name="share-alt"
         size="md"
         style={{ marginLeft: Units.margin, fontSize: Units.iconLG }}
-        onPress={() => alert("Feature to come!")}
+        onPress={() => alert("Share action\nFeature to come!")}
       />
       <TouchIcon
         name="heart"
         size="md"
         style={{ marginLeft: Units.margin, fontSize: Units.iconLG }}
-        onPress={() => alert("Feature to come!")}
+        onPress={() => alert("Like action\nFeature to come!")}
       />
     </Flex>
   )

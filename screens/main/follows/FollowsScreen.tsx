@@ -2,8 +2,8 @@ import React from "react"
 import { Tabs } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FollowersList } from "./FollowersList"
-import { InfluencersList } from "./InfluencersList"
+import { FollowersList } from "./components/FollowersList"
+import { InfluencersList } from "./components/InfluencersList"
 
 export interface FollowsScreenProps extends NavigationTabScreenProps {}
 

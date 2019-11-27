@@ -2,7 +2,7 @@ import React from "react"
 import { Text } from "react-native"
 import { Button, Flex, List } from "@ant-design/react-native"
 import { Follower } from "api/follows-services/followers"
-import { FollowsScreenProps } from "./FollowsScreen"
+import { FollowsScreenProps } from "../FollowsScreen"
 import { Colors } from "constants"
 import { Avatar } from "components/Avatar"
 
