@@ -1,5 +1,6 @@
 import React from "react"
 import { StyleProp, TextStyle } from "react-native"
+// @ts-ignore
 import AwardSvg from "./award.svg"
 
 export type IconProps = {

@@ -3,7 +3,7 @@ import { View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { USER_FEED_DATA } from "./components/mockData"
-import FeedList from "./components/FeedList"
+import FeedGrid from "./components/FeedGrid"
 import UserInfo from "./components/UserInfo"
 import { routes } from "constants"
 
@@ -22,7 +22,7 @@ export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreen
     return (
       <View>
         <UserInfo user={user} navigate={navigate} showFullDetails={true} />
-        <FeedList
+        <FeedGrid
           feed={feed}
           onPress={(id) => navigate(routes.Explore.UserFeedDetails, { id })}
         />

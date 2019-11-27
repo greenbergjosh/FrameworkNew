@@ -1,7 +1,7 @@
-import { Flex, Icon, WhiteSpace } from "@ant-design/react-native"
-import { routes, styles, Units, FontWeights } from "constants"
+import { ActionSheet, Flex, WhiteSpace } from "@ant-design/react-native"
+import { FontWeights, routes, styles, Units } from "constants"
 import { Avatar } from "components/Avatar"
-import { Image, Text, TouchableOpacity, View } from "react-native"
+import { Text, TouchableOpacity, View } from "react-native"
 import { TouchIcon } from "components/TouchIcon"
 import React from "react"
 import { AwardIcon } from "assets/icons"
@@ -11,6 +11,20 @@ export default function UserInfo({ user, navigate, showFullDetails }) {
     return <UserInfoFull user={user} navigate={navigate} />
   }
   return <UserInfoSmall user={user} navigate={navigate} />
+}
+
+function UserActionsButton() {
+  const showActionSheet = () => {
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options: ["Report User", "Block This User", "Cancel"],
+        cancelButtonIndex: 2,
+      },
+      (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
+    )
+  }
+
+  return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
 }
 
 export const UserInfoSmall = ({ user, navigate }) => (
@@ -25,11 +39,7 @@ export const UserInfoSmall = ({ user, navigate }) => (
         <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
       </TouchableOpacity>
     </Flex>
-    <TouchIcon
-      name="ellipsis"
-      size="lg"
-      onPress={() => alert("User actions menu\nFeature to come!")}
-    />
+    <UserActionsButton />
   </Flex>
 )
 
@@ -64,11 +74,7 @@ export const UserInfoFull = ({ user, navigate }) => (
             <Text style={[styles.H1, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
             <AwardIcon style={{ marginLeft: 5 }} />
           </Flex>
-          <TouchIcon
-            name="ellipsis"
-            size="lg"
-            onPress={() => alert("User actions menu\nFeature to come!")}
-          />
+          <UserActionsButton />
         </Flex>
         <Flex
           direction="row"

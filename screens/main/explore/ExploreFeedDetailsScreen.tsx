@@ -1,5 +1,5 @@
 import React from "react"
-import { Image, ScrollView, View } from "react-native"
+import { Image, ScrollView, TouchableOpacity, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { List } from "@ant-design/react-native"
@@ -7,6 +7,7 @@ import SocialButtons from "./components/SocialButtons"
 import { FEED_DETAILS_DATA } from "./components/mockData"
 import Comments from "./components/Comments"
 import { UserInfoSmall } from "./components/UserInfo"
+import FeedItem from "./components/FeedItem"
 
 interface ExploreFeedDetailsScreenProps extends NavigationTabScreenProps {}
 
@@ -27,13 +28,7 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
             {feed.map((item) => (
               <View key={item.id}>
                 <UserInfoSmall user={item.user} navigate={navigate} />
-                <Image
-                  key={item.id}
-                  source={{ uri: item.uri }}
-                  style={{ flex: 1, height: item.height }}
-                />
-                <SocialButtons />
-                <Comments navigate={navigate} />
+                <FeedItem item={item} navigate={navigate} />
               </View>
             ))}
           </List>

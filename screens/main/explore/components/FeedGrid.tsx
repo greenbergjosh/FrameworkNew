@@ -19,7 +19,7 @@ export function FeedImage({ src, id, onPress }) {
   )
 }
 
-export default function FeedList({ feed, onPress }) {
+export default function FeedGrid({ feed, onPress }) {
   return (
     <ScrollView>
       <FlatList

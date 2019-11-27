@@ -3,7 +3,7 @@ import { SearchBar } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { FEED_DATA } from "./components/mockData"
-import FeedList from "./components/FeedList"
+import FeedGrid from "./components/FeedGrid"
 import { routes } from "constants"
 
 interface ExploreFeedScreenProps extends NavigationTabScreenProps {}
@@ -25,7 +25,7 @@ export class ExploreFeedScreen extends React.Component<ExploreFeedScreenProps> {
           showCancelButton={false}
           onSubmit={() => alert("Search\n Feature to come!")}
         />
-        <FeedList
+        <FeedGrid
           feed={feed}
           onPress={(id) => navigate(routes.Explore.FeedDetails, { id })}
         />
