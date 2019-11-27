@@ -1,7 +1,7 @@
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
-import { HeaderLogo } from "../../components/HeaderLogo"
+import { HeaderLogo } from "components/HeaderLogo"
 import { OnBoardingCodeEntryScreen } from "./OnBoardingCodeEntryScreen"
 import { OnBoardingResendCodeScreen } from "./OnBoardingResendCodeScreen"
 import { OnBoardingSelectInterestsScreen } from "./OnBoardingSelectInterestsScreen"

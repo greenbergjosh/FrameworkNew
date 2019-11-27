@@ -9,7 +9,7 @@ import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import { SettingsDrawerContext } from "../../settings/SettingsDrawer"
 import DevTempNav from "./DevTempNav"
 import SuggestedFollows from "./SuggestedFollows"
-import { Colors } from "../../../../constants/unit.constants"
+import { Colors } from "constants/unit.constants"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 

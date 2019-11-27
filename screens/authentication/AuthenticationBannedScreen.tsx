@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 
 import { Button } from "@ant-design/react-native"
-import { HeaderLogo } from "../../components/HeaderLogo"
+import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 
 export const AuthenticationBannedScreen = () => {
@@ -15,6 +15,6 @@ export const AuthenticationBannedScreen = () => {
 
 AuthenticationBannedScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

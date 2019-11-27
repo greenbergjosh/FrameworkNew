@@ -7,7 +7,7 @@ import { routes, styles } from "constants"
 import { useProfileContext } from "providers/profile-context-provider"
 import * as Contacts from "expo-contacts"
 import * as Permissions from "expo-permissions"
-import { ExpoContactsToContacts } from "../../providers/model-translations/contacts"
+import { ExpoContactsToContacts } from "providers/model-translations/contacts"
 
 interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
@@ -88,6 +88,6 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
 
 OnBoardingSyncContactsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

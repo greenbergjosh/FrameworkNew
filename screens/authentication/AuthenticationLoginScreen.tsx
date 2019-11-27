@@ -1,11 +1,11 @@
 import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 
-import { HeaderLogo } from "../../components/HeaderLogo"
+import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import React from "react"
 import { Text, View } from "react-native"
-import { getgotLogin } from "../../api/auth-services"
-import { useAuthContext } from "../../providers/auth-context-provider"
+import { getgotLogin } from "api/auth-services"
+import { useAuthContext } from "providers/auth-context-provider"
 import { routes, styles } from "constants"
 
 interface AuthenticationLoginScreenProps extends NavigationSwitchScreenProps {}
@@ -102,6 +102,6 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
 
 AuthenticationLoginScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

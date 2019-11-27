@@ -4,9 +4,7 @@ import { createStackNavigator } from "react-navigation-stack"
 import { NavigationBottomTabOptions, NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowsScreen } from "./FollowsScreen"
 import { styles, Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
-import { getNavigationOptions } from "components/NavigationOptions"
-
-interface FollowsSectionProps extends NavigationTabScreenProps {}
+import SectionNavigator from "components/NavigationOptions"
 
 const FollowsNavigator = createStackNavigator(
   {
@@ -18,10 +16,4 @@ const FollowsNavigator = createStackNavigator(
   }
 )
 
-export class FollowsSection extends React.Component<FollowsSectionProps> {
-  static router = FollowsNavigator.router
-  static navigationOptions = getNavigationOptions("Follows", "heart")
-  render() {
-    return <FollowsNavigator navigation={this.props.navigation} />
-  }
-}
+export const FollowsSection = SectionNavigator(FollowsNavigator, "Follows", "heart")

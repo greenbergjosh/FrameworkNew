@@ -2,7 +2,7 @@ import { Button, Toast } from "@ant-design/react-native"
 import React from "react"
 import { Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { HeaderTitle } from "../../../components/HeaderTitle"
+import { HeaderTitle } from "components/HeaderTitle"
 
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}
 

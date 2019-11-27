@@ -11,7 +11,7 @@ import { useGetGotRootDataContext } from "providers/getgot-root-data-context-pro
 import React from "react"
 import { ScrollView, Text, View } from "react-native"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
-import { AuthContextType, useAuthContext } from "../../../providers/auth-context-provider"
+import { AuthContextType, useAuthContext } from "providers/auth-context-provider"
 
 interface NavigationItem {
   title: string

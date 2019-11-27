@@ -12,9 +12,7 @@ import { MessagesScreen } from "./MessagesScreen"
 import { NewMessageScreen } from "./NewMessageScreen"
 import { ViewThreadScreen } from "./ViewThreadScreen"
 import { styles, Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
-import { getNavigationOptions } from "components/NavigationOptions"
-
-interface HomeSectionProps extends NavigationTabScreenProps {}
+import SectionNavigator from "components/NavigationOptions"
 
 const HomeNavigator = createStackNavigator(
   {
@@ -35,10 +33,4 @@ const HomeNavigator = createStackNavigator(
   }
 )
 
-export class HomeSection extends React.Component<HomeSectionProps> {
-  static router = HomeNavigator.router
-  static navigationOptions = getNavigationOptions("Home", "home")
-  render() {
-    return <HomeNavigator navigation={this.props.navigation} />
-  }
-}
+export const HomeSection = SectionNavigator(HomeNavigator, "Home", "home")

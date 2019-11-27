@@ -9,15 +9,15 @@ import React from "react"
 import { Clipboard, Text, View } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { CampaignTemplate, createCampaign } from "../../../api/promotions-services"
-import { HeaderTitle } from "../../../components/HeaderTitle"
+import { CampaignTemplate, createCampaign } from "api/promotions-services"
+import { HeaderTitle } from "components/HeaderTitle"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
-} from "../../../hooks/useActionSheetTakeSelectPhoto"
+} from "hooks/useActionSheetTakeSelectPhoto"
 
-const placeholderImage = require("../../../assets/add-photo-placeholder.png")
+const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
   draft: boolean
   images?: string[]

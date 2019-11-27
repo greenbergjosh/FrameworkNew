@@ -105,7 +105,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
 
 OnBoardingCreateAccountScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }
 

@@ -23,3 +23,12 @@ export const getNavigationOptions = (title, icon) => ({
   tabBarIcon: ({ focused }) => TabBarIcon({ icon, focused }),
   tabBarLabel: ({ focused }) => TabBarLabel({ title, focused }),
 })
+
+const SectionNavigator = (Navigator, title, icon) => {
+  const nav = ({ navigation }) => <Navigator navigation={navigation} />
+  nav.router = Navigator.router
+  nav.navigationOptions = getNavigationOptions(title, icon)
+  return nav
+}
+
+export default SectionNavigator

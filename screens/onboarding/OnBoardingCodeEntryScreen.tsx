@@ -77,6 +77,6 @@ export const OnBoardingCodeEntryScreen = (props: OnBoardingCodeEntryScreenProps)
 
 OnBoardingCodeEntryScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

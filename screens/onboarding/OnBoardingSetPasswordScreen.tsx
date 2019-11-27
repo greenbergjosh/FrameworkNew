@@ -5,7 +5,7 @@ import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { HeaderLogo } from "../../components/HeaderLogo"
+import { HeaderLogo } from "components/HeaderLogo"
 
 interface OnBoardingSetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
@@ -71,6 +71,6 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
 
 OnBoardingSetPasswordScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

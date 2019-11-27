@@ -35,7 +35,9 @@ enum Explore {
   UserFeedDetails = "Explore.UserFeedDetails",
   Campaign = "Explore.Campaign",
 }
+
 const Follows = "Follows"
+const Profile = "Profile"
 
 export const routes = {
   Authentication,
@@ -43,4 +45,5 @@ export const routes = {
   Follows,
   Home,
   OnBoarding,
+  Profile,
 }

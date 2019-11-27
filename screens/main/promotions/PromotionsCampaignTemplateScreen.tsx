@@ -3,8 +3,8 @@ import React from "react"
 import { Text, View } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { HeaderTitle } from "../../../components/HeaderTitle"
-import { usePromotionsContext } from "../../../providers/promotions-context-provider"
+import { HeaderTitle } from "components/HeaderTitle"
+import { usePromotionsContext } from "providers/promotions-context-provider"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
   promotionId: GUID

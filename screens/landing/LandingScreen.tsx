@@ -3,7 +3,7 @@ import { Text, View } from "react-native"
 import { ActivityIndicator, Button, Flex, WhiteSpace } from "@ant-design/react-native"
 import { routes, styles } from "constants"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { useAuthContext } from "../../providers/auth-context-provider"
+import { useAuthContext } from "providers/auth-context-provider"
 
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
 

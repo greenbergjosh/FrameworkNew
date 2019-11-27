@@ -11,7 +11,7 @@ import React from "react"
 import { Image, Text, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { HeaderTitle } from "../../../components/HeaderTitle"
+import { HeaderTitle } from "components/HeaderTitle"
 
 interface PromotionsCampaignListParams {
   promotionId: GUID

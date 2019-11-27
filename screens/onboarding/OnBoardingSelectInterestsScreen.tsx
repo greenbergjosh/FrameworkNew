@@ -10,12 +10,12 @@ import {
   WhiteSpace,
 } from "@ant-design/react-native"
 import Fuse from "fuse.js"
-import { HeaderLogo } from "../../components/HeaderLogo"
+import { HeaderLogo } from "components/HeaderLogo"
 import { ScrollView, Text, View } from "react-native"
 import { FontWeights, routes, styles } from "constants"
 import { useCatalogContext } from "providers/catalog-context-provider"
 import { useProfileContext } from "providers/profile-context-provider"
-import { Interest, InterestGroup } from "../../api/catalog-services"
+import { Interest, InterestGroup } from "api/catalog-services"
 
 interface OnBoardingSelectInterestsScreenProps extends NavigationSwitchScreenProps {}
 
@@ -185,6 +185,6 @@ export const OnBoardingSelectInterestsScreen = (props: OnBoardingSelectInterests
 
 OnBoardingSelectInterestsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

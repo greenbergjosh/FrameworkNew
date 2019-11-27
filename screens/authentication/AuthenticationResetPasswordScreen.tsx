@@ -5,7 +5,7 @@ import { useAuthContext } from "providers/auth-context-provider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { HeaderLogo } from "../../components/HeaderLogo"
+import { HeaderLogo } from "components/HeaderLogo"
 
 interface AuthenticationResetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
@@ -52,6 +52,6 @@ export const AuthenticationResetPasswordScreen = (
 
 AuthenticationResetPasswordScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

@@ -8,13 +8,13 @@ import React from "react"
 import { Text } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { CampaignTemplate } from "../../../api/promotions-services"
-import { HeaderTitle } from "../../../components/HeaderTitle"
-import { TextAreaModal } from "../../../components/TextAreaModal"
+import { CampaignTemplate } from "api/promotions-services"
+import { HeaderTitle } from "components/HeaderTitle"
+import { TextAreaModal } from "components/TextAreaModal"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
-} from "../../../hooks/useActionSheetTakeSelectPhoto"
+} from "hooks/useActionSheetTakeSelectPhoto"
 
 export interface InfluencerTokens {
   [key: string]: unknown

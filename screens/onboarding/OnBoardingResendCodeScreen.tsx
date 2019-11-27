@@ -49,6 +49,6 @@ export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProp
 
 OnBoardingResendCodeScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderLogo title={navigation.state.routeName} />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

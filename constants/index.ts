@@ -9,7 +9,7 @@ import * as navigationConstants from "./navigation.constants"
 
 export const { FontWeights, ImageUris, Units, Colors } = unitConstants
 export const { routes } = routeConstants
-export const { defaultNavigationOptions, tabBarIcon } = navigationConstants
+export const { defaultNavigationOptions } = navigationConstants
 export const styles = StyleSheet.create({
   ...TextStyles,
   ...FormStyles,

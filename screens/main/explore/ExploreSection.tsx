@@ -7,9 +7,7 @@ import { ExploreFeedDetailsScreen } from "./ExploreFeedDetailsScreen"
 import { ExploreFeedScreen } from "./ExploreFeedScreen"
 import { ExploreUserFeedScreen } from "./ExploreUserFeedScreen"
 import { Colors, defaultNavigationOptions, routes } from "constants"
-import { getNavigationOptions } from "components/NavigationOptions"
-
-interface ExploreSectionProps extends NavigationTabScreenProps {}
+import SectionNavigator from "components/NavigationOptions"
 
 const ExploreNavigator = createStackNavigator(
   {
@@ -24,10 +22,4 @@ const ExploreNavigator = createStackNavigator(
   }
 )
 
-export class ExploreSection extends React.Component<ExploreSectionProps> {
-  static router = ExploreNavigator.router
-  static navigationOptions = getNavigationOptions("Explore", "search")
-  render() {
-    return <ExploreNavigator navigation={this.props.navigation} />
-  }
-}
+export const ExploreSection = SectionNavigator(ExploreNavigator, "Explore", "search")

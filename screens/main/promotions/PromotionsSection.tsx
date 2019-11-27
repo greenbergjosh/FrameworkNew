@@ -8,9 +8,7 @@ import { PromotionsCampaignScreen } from "./PromotionsCampaignScreen"
 import { PromotionsCampaignTemplatesScreen } from "./PromotionsCampaignTemplateScreen"
 import { PromotionsScreen } from "./PromotionsScreen"
 import { styles, Colors, defaultNavigationOptions, routes, tabBarIcon } from "constants"
-import { getNavigationOptions } from "components/NavigationOptions"
-
-interface PromotionsSectionProps extends NavigationTabScreenProps {}
+import SectionNavigator from "components/NavigationOptions"
 
 const PromotionsNavigator = createStackNavigator(
   {
@@ -26,10 +24,4 @@ const PromotionsNavigator = createStackNavigator(
   }
 )
 
-export class PromotionsSection extends React.Component<PromotionsSectionProps> {
-  static router = PromotionsNavigator.router
-  static navigationOptions = getNavigationOptions("Promotions", "shopping")
-  render() {
-    return <PromotionsNavigator navigation={this.props.navigation} />
-  }
-}
+export const PromotionsSection = SectionNavigator(PromotionsNavigator, "Promotions", "shopping")

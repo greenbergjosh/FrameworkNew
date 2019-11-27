@@ -10,8 +10,8 @@ import {
   } from "react-native"
 import Collapsible from "react-native-collapsible"
 import { TouchableHighlight } from "react-native-gesture-handler"
-import { Campaign, Promotion } from "../../api/promotions-services"
-import { PromotionsScreenProps } from "../../screens/main/promotions/PromotionsScreen"
+import { Campaign, Promotion } from "api/promotions-services"
+import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { Empty } from "../Empty"
 
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
