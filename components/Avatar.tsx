@@ -1,9 +1,10 @@
 import React from "react"
 import { Image, TouchableOpacity } from "react-native"
 import { Colors, ImageUris, styles } from "constants"
+import { Units } from "../constants/unit.constants"
 
 interface AvatarProps {
-  size?: "sm" | "md" | "lg"
+  size?: "xs" | "sm" | "md" | "lg"
   source?: string
   onPress?: () => void
 }
@@ -17,14 +18,22 @@ export const Avatar = ({ size, source = ImageUris.placeholder, onPress }: Avatar
 
   let avatarStyle
   let margin = 0
-  if (size === "sm") {
-    avatarStyle = styles.AvatarSM
-    margin = -6
-  } else if (size === "lg") {
-    avatarStyle = styles.AvatarLG
-  } else {
-    avatarStyle = styles.AvatarMD
-    margin = -6
+  switch(size) {
+    case "xs":
+      avatarStyle = styles.AvatarXS
+      margin = (Units.avatarXS - Units.minTouchArea) / 2
+      break
+    case "sm":
+      avatarStyle = styles.AvatarSM
+      margin = (Units.avatarSM - Units.minTouchArea) / 2
+      break
+    case "md":
+      avatarStyle = styles.AvatarMD
+      margin = (Units.avatarMD - Units.minTouchArea) / 2
+      break
+    case "lg":
+      avatarStyle = styles.AvatarLG
+      break
   }
 
   return (
@@ -32,8 +41,8 @@ export const Avatar = ({ size, source = ImageUris.placeholder, onPress }: Avatar
       onPress={onPress && onPress}
       disabled={!onPress}
       style={{
-        minHeight: 40,
-        minWidth: 40,
+        minHeight: Units.minTouchArea,
+        minWidth: Units.minTouchArea,
         marginLeft: margin,
         marginRight: margin,
         marginTop: margin,

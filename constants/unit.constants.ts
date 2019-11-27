@@ -6,6 +6,9 @@ export enum Units {
   avatarLG = 80,
   avatarMD = 64,
   avatarSM = 32,
+  avatarXS = 20,
+  minTouchArea = 40,
+  iconLG = 24,
 }
 export enum FontWeights {
   light = "300",

@@ -5,9 +5,10 @@ import { Avatar } from "components/Avatar"
 import { HeaderTitle } from "components/HeaderTitle"
 import { TouchIcon } from "components/TouchIcon"
 import { styles, Units, routes } from "constants"
-import { Flex, List } from "@ant-design/react-native"
+import { Flex, List, WhiteSpace } from "@ant-design/react-native"
 import SocialButtons from "./SocialButtons"
 import { FEED_DATA } from "./mockData"
+import Comments from "./Comments"
 
 interface ExploreFeedDetailsScreenProps extends NavigationTabScreenProps {}
 
@@ -50,6 +51,7 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
                   style={{ flex: 1, height: item.height }}
                 />
                 <SocialButtons />
+                <Comments navigate={navigate} />
               </View>
             ))}
           </List>

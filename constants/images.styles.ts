@@ -30,6 +30,13 @@ const ImageStyles = StyleSheet.create({
     borderRadius: Units.avatarSM / 2,
   },
 
+  AvatarXS: {
+    ...mixins.avatar,
+    width: Units.avatarXS,
+    height: Units.avatarXS,
+    borderRadius: Units.avatarXS / 2,
+  },
+
   ThumbnailSM: {
     width: Units.thumbnailSmall,
     height: Units.thumbnailSmall,

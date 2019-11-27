@@ -8,6 +8,7 @@ import { styles, Units } from "constants"
 import { Flex, List } from "@ant-design/react-native"
 import SocialButtons from "./SocialButtons"
 import { USER_FEED_DATA } from "./mockData"
+import Comments from "./Comments"
 
 interface ExploreUserFeedScreenProps extends NavigationTabScreenProps {}
 
@@ -46,6 +47,7 @@ export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreen
                   />
                 </TouchableOpacity>
                 <SocialButtons />
+                <Comments navigate={navigate} />
               </View>
             ))}
           </List>
