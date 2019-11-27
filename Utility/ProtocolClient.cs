@@ -102,7 +102,7 @@ namespace Utility
                         {
                             using (var sr = new StreamReader(entry.Open()))
                             {
-                                responseBody = sr.ReadToEnd();
+                                responseBody = await sr.ReadToEndAsync();
                                 var tr = await zipEntryTester(responseBody);
                                 var pr = await zipEntryProcessors[tr](responseBody);
                                 rs[tr] = pr;
@@ -872,18 +872,24 @@ namespace Utility
             http.ContentType = mediaType;
             http.Method = "POST";
             http.Timeout = timeoutSeconds * 1000;
+            http.ContentLength = bytes.Length;
 
-            var encoding = new ASCIIEncoding();
-            var bytes = encoding.GetBytes(content);
+            using (var newStream = await http.GetRequestStreamAsync())
+            {
+                await newStream.WriteAsync(bytes, 0, bytes.Length);
+                await newStream.FlushAsync();
+            }
 
-            var newStream = await http.GetRequestStreamAsync();
-            await newStream.WriteAsync(bytes, 0, bytes.Length);
-            newStream.Close();
-
-            var response = await http.GetResponseAsync();
-            var stream = response.GetResponseStream();
-            var sr = new StreamReader(stream);
-            return await sr.ReadToEndAsync();
+            using (var response = await http.GetResponseAsync())
+            {
+                using (var stream = response.GetResponseStream())
+                {
+                    using (var sr = new StreamReader(stream))
+                    {
+                        return await sr.ReadToEndAsync();
+                    }
+                }
+            }
         }
 
         public static async Task<IGenericEntity> HttpGetAsync(FrameworkWrapper fw, IGenericEntity ge)
