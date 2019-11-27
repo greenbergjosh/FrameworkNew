@@ -219,19 +219,23 @@ namespace Utility.OpgAuth
 
         public static async Task<bool> HasPermission(string token, string securable)
         {
-            var res = await Data.CallFn(ConnName, "MergePermissions", Jw.Serialize(new { t = token }));
+            var res = await Data.CallFn(ConnName, "AllUserPermissions", Jw.Serialize(new { t = token }));
             var err = res.GetS("err");
 
             if (!err.IsNullOrWhitespace()) throw new AuthException($"Failed to get user permission details: Token: {token} Securable: {securable} Error: {err}");
 
-            if (res.GetB(GOD_USER)) return true;
+            JObject final = new JObject();
+            res.GetL("").ForEach(perm => { final.Merge(JObject.Parse(perm.GetS(""))); });
+            IGenericEntity mergedPermissions = Jw.JsonToGenericEntity(final.ToString());
+
+            if (mergedPermissions.GetB(GOD_USER)) return true;
 
             var steps = securable.Split('.');
 
             for (int i = 1; i < steps.Length + 1; i++)
             {
                 var path = steps.Take(i).Join("/");
-                var val = res.GetS(path);
+                var val = mergedPermissions.GetS(path);
 
                 if (val == null) return false;
 

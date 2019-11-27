@@ -83,6 +83,19 @@ namespace Utility
             return gp;
         }
 
+        public static async Task<IGenericEntity> JsonToGenericEntityAsync(TextReader textReader, RoslynWrapper rw = null, object config = null)
+        {
+            using (var jsonReader = new JsonTextReader(textReader))
+            {
+                var gpstate = await JObject.LoadAsync(jsonReader);
+                // process JSON
+                //var gpstate = JsonConvert.DeserializeObject(json);
+                var gp = new GenericEntityJson();
+                gp.InitializeEntity(rw, config, gpstate);
+                return gp;
+            }
+        }
+
         public static (string path, string propName) GetPropertyPathParts(string fullPath)
         {
             if (fullPath.IsNullOrWhitespace()) return (null, null);
