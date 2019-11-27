@@ -1,5 +1,5 @@
+import { StandardGrid, UserInterface } from "@opg/interface-builder"
 import * as Reach from "@reach/router"
-import { ColumnModel, GridComponent, SortDescriptorModel } from "@syncfusion/ej2-react-grids"
 import { Button, PageHeader } from "antd"
 import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
 import { none, Option, some } from "fp-ts/lib/Option"
@@ -11,9 +11,15 @@ import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
 import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../lib/json"
-import { UserInterface, StandardGrid } from "@opg/interface-builder"
 import { QueryForm } from "./QueryForm"
 import { Report } from "./Report"
+import {
+  ColumnModel,
+  GridComponent,
+  SortDescriptorModel,
+  GroupSettingsModel,
+  SortSettingsModel,
+} from "@syncfusion/ej2-react-grids"
 import {
   DataMappingItem,
   GlobalConfigReference,
@@ -122,16 +128,21 @@ export const ReportBody = React.memo(
       [parameterValues, reportConfig.details]
     )
 
-    const sortSettings = {
-      columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce(
-        (acc, column) => {
-          if (column.sortDirection && column.field) {
-            acc.push({ field: column.field, direction: column.sortDirection })
-          }
-          return acc
-        },
-        [] as SortDescriptorModel[]
-      ),
+    const sortSettings: SortSettingsModel = {
+      columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce((acc, column) => {
+        if (column.sortDirection && column.field) {
+          acc.push({ field: column.field, direction: column.sortDirection })
+        }
+        return acc
+      }, [] as SortDescriptorModel[]),
+    }
+    const groupSettings: GroupSettingsModel = {
+      columns: sortBy("groupOrder", reportConfig.columns as any[]).reduce((acc, column) => {
+        if (column.field && typeof column.groupOrder !== "undefined") {
+          acc.push(column.field)
+        }
+        return acc
+      }, [] as string[]),
     }
 
     const contextData = React.useMemo(
@@ -186,6 +197,7 @@ export const ReportBody = React.memo(
             detailTemplate={createDetailTemplate}
             loading={fromStore.isExecutingQuery}
             sortSettings={sortSettings}
+            groupSettings={groupSettings}
           />
         </div>
       </>
@@ -203,10 +215,8 @@ const reportDetailsToComponent = (
   if (resolved) {
     const dataResolver =
       typeof details === "object" &&
-      ((details.type === "report" ||
-        details.type === "layout" ||
-        details.type === "ReportConfig") &&
-        !!details.dataMapping)
+      (details.type === "report" || details.type === "layout" || details.type === "ReportConfig") &&
+      !!details.dataMapping
         ? performDataMapping.bind(null, details.dataMapping)
         : (rowData: JSONRecord) => ({ ...(parentData || record.empty), ...rowData })
 
