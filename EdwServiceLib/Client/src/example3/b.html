@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PageB</title>
+</head>
+<body>
+  <div id="app">
+      <h1>Page B</h1>
+      <a class="link" href="a.html">Page A</a>
+      <br/>
+      <a class="link" href="b.html">Page B</a>
+      <br/>
+      <a class="link" href="c.html">Page C</a>
+      <br/>
+      <a class="link" href="smartPath.html">SmartPath</a>
+  </div>
+<script type="text/javascript">
+  window.onload = function() {
+    var config = {
+      rs: {
+        reachedAbandonned: {
+          configId: '9CC89491-9EB7-4899-BDEC-5213E01AFAFE',
+          type: 'Immediate',
+          data: {
+            domain: edw.getUrlParameter('domain')
+          }
+        }
+      },
+      st: {
+        session: {},
+        grp1: {
+          pageOrder: 'page+',
+          page: document.title,
+          onPop: [
+            {
+              whenSessionTimeout: false,
+              key: ['event'],
+              data: {
+                event: 'reached',
+                pageOrder: '{oldStack.grp1.pageOrder}'
+              }
+            },
+            {
+              whenSessionTimeout: true,
+              key: ['event'],
+              data: {
+                event: 'sessionTimeout',
+                pageOrder: '{oldStack.grp1.pageOrder}'
+              }
+            }
+          ]
+        },
+        pageB: {
+          onPush: [
+            {
+              key: ['event'],
+              whenDuplicate: {
+                duplicate: true
+              },
+              data: {
+                event: 'impression',
+                page: '{page}',
+                pageOrder: '{pageOrder}'
+              }
+            }
+          ]
+        }
+      }
+    };
+    edw.reportToEdw(config);
+
+    Array.from(document.getElementsByClassName("link")).forEach(element => {
+      edw.forwardUrlParams(element);
+      element.addEventListener("click", function(event){
+        event.preventDefault();
+        
+        edw.ev([
+            {
+              key: ['event'],
+              whenDuplicate: {
+                duplicate: true
+              },
+              data: {
+                event: 'click',
+                page: '{page}',
+                pageOrder: '{pageOrder}'
+              }
+            }
+          ], function() {
+          window.location = element.getAttribute('href');
+        });
+      });
+    });
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // Using the DSL syntax, you can setup an accumulator into which data will be aggregated each time the accumulator instruction 
+    // is interpreted by the server. Appending a 'l' character to the accumulator syntax enables the last entry option.
+    
+    var config = {
+      rs: {/*...*/},
+      st: {
+        root: {
+          page: 'page1',
+          navigationHistory: 'page+5dl'// The first time the server reads the '{varName}+{number}dl' syntax on a property,
+                                       // a cached accumulator array is created on the server, for that specific stackframe property.
+                                       // Data is pushed in the accumulator array everytime the server hit the accumulator property,
+                                       // on the condition that value is not already contained in the accumulator array.
+                                       // If array lenght equals limit, the first element is removed.
+        }
+      }
+    };
+
+    // Let's imagine we have page1 to page6 configured the same way. If they were navigated from page 1 to 6
+    // On first visit, the generated data will look like: {navigationHistory: ['page1']}
+    // On fifth visit, the generated data will look like: {navigationHistory: ['page1', 'page2', 'page3', 'page4', 'page5']}
+    // On sixth visit, the generated data will look like: {navigationHistory: ['page2', 'page3', 'page4', 'page5', 'page6']}
+    // Revisiting page 2 would produce: {navigationHistory: ['page2', 'page3', 'page4', 'page5', 'page6']}
+    // Revisiting page 1 would produce: {navigationHistory: ['page3', 'page4', 'page5', 'page6', 'page1']}
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>

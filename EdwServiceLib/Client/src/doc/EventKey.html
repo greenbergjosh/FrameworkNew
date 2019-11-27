@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    var config = {
+      rs: {
+        r1: {
+          configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
+          type: 'Immediate',
+          data: {}
+        }
+      },
+      st: {
+        root: {
+          myData: 'custom data here'
+        }
+      },
+      ev: [
+        {
+          key: ['event'],   // Every event must specify a list of data members that are used to generate a unique event key.
+                            // The event key is saved at the stackframe level. if an event  was already published on a stackframe, 
+                            // subsequent events with the same key, on the same stackframe, will be ignored.
+                            // For this example, the current stackframe is 'root'. The current stackframe is always the last stackframe
+                            // specified in the ss property of the config object.
+
+          whenDuplicate: {      // A duplicate object spec can be added to the event config. If present, events bearing the same 
+                            // key will all be published, with the difference that duplicate events will include the duplicate spec properties
+                            // inside their event data.
+            duplicate: true
+          },
+
+          data: {
+            event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+            reason: 'pageView'
+          }
+        }
+      ]
+    };
+
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>
