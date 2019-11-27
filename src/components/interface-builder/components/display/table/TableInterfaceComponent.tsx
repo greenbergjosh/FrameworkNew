@@ -7,20 +7,20 @@ import { UserInterfaceProps } from "../../../UserInterface"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { tableAdvancedForm } from "./table-column-form-section-advanced"
 import { tableAggregateForm } from "./table-column-form-section-aggregate"
+import { tableGroupForm } from "./table-column-form-section-group"
 import { tableSortForm } from "./table-column-form-section-sort"
 import { tableDataTypes } from "./table-data-types-form"
 import { tableManageForm } from "./table-manage-form"
 import {
   ColumnModel,
-  SortDescriptor,
-  SortDescriptorModel,
   GroupSettingsModel,
+  SortDescriptorModel,
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 interface ColumnSortOptions {
@@ -334,7 +334,7 @@ const editComponents: ComponentDefinition[] = [
             key: "details",
             valueKey: "",
             component: "collapse",
-            sections: [tableSortForm, tableAggregateForm, tableAdvancedForm],
+            sections: [tableSortForm, tableGroupForm, tableAggregateForm, tableAdvancedForm],
           },
         ],
       },

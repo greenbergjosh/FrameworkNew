@@ -1,10 +1,10 @@
 import { Form } from "antd"
 import { ColProps } from "antd/lib/grid"
-import { merge } from "lodash/fp"
+import { merge, set } from "lodash/fp"
 import React from "react"
-import { DataPathContext } from "../../util/DataPathContext"
 import { ComponentRenderer } from "../../ComponentRenderer"
 import { UserInterfaceProps } from "../../UserInterface"
+import { DataPathContext } from "../../util/DataPathContext"
 import { formManageForm } from "./form-manage-form"
 import {
   BaseInterfaceComponent,
@@ -32,7 +32,7 @@ const defaultFormLayout: FormColumnLayout = {
   },
 }
 
-export interface FormInterfaceComponentProps extends ComponentDefinitionNamedProps {
+interface IFormInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "form"
   components?: ComponentDefinition[]
   formColumnLayout?: FormColumnLayout
@@ -40,6 +40,20 @@ export interface FormInterfaceComponentProps extends ComponentDefinitionNamedPro
   orientation: "inline" | "horizontal" | "vertical"
   userInterfaceData?: UserInterfaceProps["data"]
 }
+
+interface FormInterfaceComponentDisplayModeProps extends IFormInterfaceComponentProps {
+  mode: "display"
+}
+
+interface FormInterfaceComponentEditModeProps extends IFormInterfaceComponentProps {
+  mode: "edit"
+  onChangeSchema?: (newSchema: ComponentDefinition) => void
+  userInterfaceSchema?: ComponentDefinition
+}
+
+export type FormInterfaceComponentProps =
+  | FormInterfaceComponentDisplayModeProps
+  | FormInterfaceComponentEditModeProps
 
 export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterfaceComponentProps> {
   static getLayoutDefinition() {
@@ -79,11 +93,17 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
             data={userInterfaceData}
             onChangeData={onChangeData}
             onChangeSchema={(newSchema) => {
-              console.warn(
-                "FormInterfaceComponent.render",
-                "TODO: Cannot alter schema inside ComponentRenderer in Form",
-                { newSchema }
-              )
+              if (this.props.mode === "edit") {
+                const { onChangeSchema, userInterfaceSchema } = this.props
+                console.warn("FormInterfaceComponent.render", {
+                  newSchema,
+                  onChangeSchema: this.props.onChangeSchema,
+                  userInterfaceSchema: this.props.userInterfaceSchema,
+                })
+                onChangeSchema &&
+                  userInterfaceSchema &&
+                  onChangeSchema(set("components", newSchema, userInterfaceSchema))
+              }
             }}
           />
         </DataPathContext>

@@ -16,7 +16,7 @@ export const tableGroupForm: SectionDefinition = {
       key: "groupOrder",
       valueKey: "groupOrder",
       label: "Order",
-      help: "The lowest Order is the first column sorted, followed by the next lowest, and so on",
+      help: "The lowest Order is the first column grouped, followed by the next lowest, and so on",
       component: "number-input",
     },
   ],
