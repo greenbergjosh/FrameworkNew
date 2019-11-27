@@ -547,7 +547,7 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Retrieved file url for {networkName} campaign {campaignId}");
 
-                        if (!String.IsNullOrEmpty(uri))
+                        if (!string.IsNullOrEmpty(uri))
                         {
                             if (uris.ContainsKey(uri)) uris[uri].Add(c);
                             else uris.TryAdd(uri, new List<IGenericEntity>() { c });
@@ -1649,12 +1649,13 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
             {
-                new UnsubFileProviders.UnsubCentral(_fw),
+                //new UnsubFileProviders.UnsubCentral(_fw),
                 new UnsubFileProviders.UnsubCentralV2(_fw),
-                new UnsubFileProviders.Ezepo(_fw,SeleniumChromeDriverPath),
+                new UnsubFileProviders.Ezepo(_fw),
                 new UnsubFileProviders.Optizmo(_fw),
                 new UnsubFileProviders.MidEnity(_fw),
-                new UnsubFileProviders.W4(_fw) 
+                new UnsubFileProviders.W4(_fw),
+                new UnsubFileProviders.Unsubly(_fw)
             };
 
             try
@@ -1667,6 +1668,7 @@ namespace UnsubLib
 
                     if (providers.Any())
                     {
+
                         uri = providers.Select(p => p.GetFileUrl(network, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                         if (uri.IsNullOrWhitespace())
@@ -1705,15 +1707,39 @@ namespace UnsubLib
             var uri = new Uri(unsubUrl);
             var authString = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
-            dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
-                new Dictionary<string, Func<FileInfo, Task<object>>>()
+            if (unsubUrl.Contains("unsubly.com"))
+            {
+                var parts = unsubUrl.Split('|');
+                var ge = JsonWrapper.ToGenericEntity(JsonWrapper.TryParse(parts[1]));
+                var headers = new Dictionary<string, string>()
                 {
-                    { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
-                    { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
-                    { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
-                    { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
-                },
-                ClientWorkingDirectory, 30 * 60, parallelism);
+                    ["nid"] = ge.GetS("nid"),
+                    ["aid"] = ge.GetS("aid"),
+                    ["fid"] = ge.GetS("fid"),
+                    ["md5but"] = "Download Suppression List in MD5 format"
+                };
+                var csv = await ProtocolClient.HttpPostAsync(parts[0], headers, 30 * 60);
+                var fileName = Guid.NewGuid();
+
+                await File.WriteAllTextAsync($"{ClientWorkingDirectory}\\{fileName}.txt", csv);
+                dr = new Dictionary<string, object>
+                {
+                    [MD5HANDLER] = fileName
+                };
+            }
+            else
+            {
+                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
+                    new Dictionary<string, Func<FileInfo, Task<object>>>()
+                    {
+                        { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
+                        { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
+                        { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
+                        { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
+                    },
+                    ClientWorkingDirectory, 30 * 60, parallelism);
+            }
+            
 
             if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
 
@@ -1730,51 +1756,93 @@ namespace UnsubLib
                 return UNKNOWNHANDLER;
             }
 
+            string[] lines;
             using (var sr = f.OpenText())
             {
                 var buffer = new char[400];
                 await sr.ReadAsync(buffer, 0, 400);
                 theText = new string(buffer);
 
-                var lines = theText.Split(
+                lines = theText.Split(
                     new[] { "\r\n", "\r", "\n" },
                     StringSplitOptions.None);
+            }
 
-                var allMd5 = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            var allMd5 = true;
+            var firstLineHeader = false;
+            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            {
+                if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
                 {
-                    if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
+                    if (l == 0)
+                    {
+                        firstLineHeader = true;
+                        continue;
+                    }
+                    else
                     {
                         allMd5 = false;
                         break;
                     }
                 }
-                if (allMd5) return MD5HANDLER;
+            }
 
-                var allPlain = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            if (firstLineHeader && lines.Length > 1 && allMd5)
+            {
+                // Remove the header
+                // sed -i '1d' "emails.txt"
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+            else if (firstLineHeader)
+            {
+                allMd5 = false;
+            }
+
+            if (allMd5) return MD5HANDLER;
+
+            var allPlain = true;
+            firstLineHeader = false;
+            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            {
+                if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
                 {
-                    if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
+                    if (l == 0)
+                    {
+                        firstLineHeader = true;
+                        continue;
+                    }
+                    else
                     {
                         allPlain = false;
                         break;
-                    }
+                    } 
                 }
-                if (allPlain) return PLAINTEXTHANDLER;
-
-                var allDom = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (lines[l].Length == 0) continue;
-                    if (!lines[l].Contains("."))
-                    {
-                        allDom = false;
-                        break;
-                    }
-                }
-                if (allDom) return DOMAINHANDLER;
-
             }
+
+            if (firstLineHeader && lines.Length > 1 && allPlain)
+            {
+                // Remove the header
+                // sed -i '1d' "emails.txt"
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+            else if (firstLineHeader)
+            {
+                allPlain = false;
+            }
+
+            if (allPlain) return PLAINTEXTHANDLER;
+
+            var allDom = true;
+            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            {
+                if (lines[l].Length == 0) continue;
+                if (!lines[l].Contains("."))
+                {
+                    allDom = false;
+                    break;
+                }
+            }
+            if (allDom) return DOMAINHANDLER;
 
             await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}::{theText}");
             return UNKNOWNHANDLER;

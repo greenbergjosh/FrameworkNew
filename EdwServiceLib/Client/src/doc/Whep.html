@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // The WHEP is a special collection that contains the event ids that were published on a specific stackframe.
+    // By default, it is disabled. If you would like your new published event id to be added to the WHEP,
+    // you must add an addToWhep: true property on your event definition.
+    // The WHEP can also be included in published events. When  includeWhep: true is specified on the event definition,
+    // the WHEP ids saved at each level of the stack will be included in new published events.
+    var config = {
+      rs: {
+        r1: {
+          configId: '1C35091A-8504-4D8D-80F8-59A9C546656B',
+          type: 'Immediate',
+          data: {}
+        }
+      },
+      st: {
+        root: {
+          myData: 'custom data here'
+        }
+      },
+      ev: [
+        {
+          key: ['event'],
+          addToWhep: true,      // Add new event id to the current stackframe WHEP collection.
+          includeWhep: true,    // Include WHEP collections of every stackframe of the stack in new publisehd events.
+          data: {
+            event: '294C1DE8-03A7-4DC9-B7C2-74DB8480D803',
+            reason: 'pageView',
+            
+          }
+        }
+      ]
+    };
+
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>

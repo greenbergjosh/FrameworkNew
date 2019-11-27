@@ -9,7 +9,7 @@ namespace UnsubLib.UnsubFileProviders
     public class W4 : IUnsubLocationProvider
     {
         private readonly FrameworkWrapper _fw;
-        private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(UnsubCentral)}";
+        private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(W4)}";
 
         public W4(FrameworkWrapper fw)
         {

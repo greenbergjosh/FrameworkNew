@@ -165,7 +165,7 @@ namespace Utility.DataLayer
 
                     JObject mergeConfig = null;
 
-                    if (c["using"] is JArray usng)
+                    if (c != null && c["using"] is JArray usng)
                     {
 
                         TraceLog(nameof(GetConfigs), $"Resolving usings for {key}\r\n{usng}");

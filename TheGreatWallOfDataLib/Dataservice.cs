@@ -85,6 +85,7 @@ namespace TheGreatWallOfDataLib
                     try
                     {
                         fResult = await Routing.Routing.GetFunc(scope, funcName)(scope, funcName, args, identity, context);
+                        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                     }
                     catch (Exception e)
                     {

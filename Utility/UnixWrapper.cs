@@ -99,6 +99,41 @@ namespace Utility
             pProcess.Close();
         }
 
+        public static string exeSed = @"C:\Program Files\Git\usr\bin\sed";
+
+        public static async Task RemoveFirstLine(string sourcePath, string inputFile, int timeout = 1000 * 60 * 5)
+        {
+            // This version is too slow
+            //using (var inf = new FileStream(sourcePath + "\\" + inputFile, FileMode.Open))
+            //{
+            //    using (var outf = File.CreateText(sourcePath + "\\" + outputFile))
+            //    {
+            //          var exitCode = await ProcessWrapper.StartProcess(
+            //            exeTr,
+            //            $"-cd '\\11\\12\\15\\40-\\176'",
+            //            sourcePath,
+            //            timeout,
+            //            outf,
+            //            null,
+            //            inf).ConfigureAwait(continueOnCapturedContext: false);
+            //    }
+            //}
+
+            var inf = sourcePath + "\\" + inputFile;
+            var pProcess = new Process();
+            pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
+            pProcess.StartInfo.Verb = "runas";
+            pProcess.StartInfo.Arguments = "/c " +
+                Fs.QuotePathParts(exeSed) + $" -i '1d' " +
+                Fs.QuotePathParts(inf);
+            pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            pProcess.StartInfo.UseShellExecute = true;
+            pProcess.StartInfo.WorkingDirectory = @"C:\Windows\System32";
+            pProcess.Start();
+            await pProcess.WaitForExitAsync();
+            pProcess.Close();
+        }
+
         public static string exeGrep = @"C:\Program Files\Git\usr\bin\grep";
 
         public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile,

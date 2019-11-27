@@ -7,11 +7,25 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
-using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Amazon.S3.Transfer;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using HtmlAgilityPack;
+using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Renci.SshNet.Async;
+using TurnerSoftware.SitemapTools;
+using TurnerSoftware.SitemapTools.Parser;
+using Utility.EDW.Queueing;
 using Utility.GenericEntity;
 using Fs = Utility.FileSystem;
 
@@ -26,8 +40,9 @@ namespace Utility
             using (var wc = new WebClient())
             {
                 await wc.DownloadFileTaskAsync(new Uri(downloadLink), tmpLocation)
-                                .ConfigureAwait(continueOnCapturedContext: false);
+                    .ConfigureAwait(continueOnCapturedContext: false);
             }
+
             File.Move(tmpLocation, $@"{destinationDirectoryName}\{destinationFileName}");
             _ = Task.Factory.StartNew(() => File.Delete(tmpLocation), TaskCreationOptions.LongRunning);
         }
@@ -63,6 +78,7 @@ namespace Utility
                 };
                 client = new HttpClient(handler);
             }
+
             client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
             if (basicAuthString != null)
@@ -93,6 +109,7 @@ namespace Utility
                             }
                         }
                     }
+
                     resp = rs;
                 }
                 else
@@ -145,13 +162,15 @@ namespace Utility
                 //client.BaseAddress = new Uri(Url);
                 using (var response = await client.GetStreamAsync(QueryString))
                 {
-                    using (var fs = new FileStream(workingDirectory + "\\" + fileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    using (var fs = new FileStream(workingDirectory + "\\" + fileName, FileMode.Create,
+                        FileAccess.Write, FileShare.None))
                     {
                         await response.CopyToAsync(fs);
                     }
                 }
 
-                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
+                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory,
+                    workingDirectory);
             }
             catch (Exception)
             {
@@ -202,9 +221,10 @@ namespace Utility
             return rs;
         }
 
-        public static async Task UploadStream(string fileName, Stream stream, string host, string userName, string password, bool enableSsl = false)
+        public static async Task UploadStream(string fileName, Stream stream, string host, string userName,
+            string password, bool enableSsl = false)
         {
-            var ftpReq = (FtpWebRequest)WebRequest.Create("ftp://" + host + "/" + fileName);
+            var ftpReq = (FtpWebRequest) WebRequest.Create("ftp://" + host + "/" + fileName);
             ftpReq.UseBinary = true;
             ftpReq.Method = WebRequestMethods.Ftp.UploadFile;
             ftpReq.Credentials = new NetworkCredential(userName, password);
@@ -232,7 +252,8 @@ namespace Utility
             await ftpReq.GetResponseAsync();
         }
 
-        public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName, string password, bool enableSsl = false)
+        public static async Task UploadFile(string sourceFile, string targetFile, string host, string userName,
+            string password, bool enableSsl = false)
         {
             using (var f = File.OpenRead(sourceFile))
             {
@@ -240,17 +261,18 @@ namespace Utility
             }
         }
 
-        public static async Task DeleteFileFromFtpServer(string remoteFile, string host, int port, string userName, string password, bool enableSsl = false)
+        public static async Task DeleteFileFromFtpServer(string remoteFile, string host, int port, string userName,
+            string password, bool enableSsl = false)
         {
             FtpWebResponse response = null;
 
             try
             {
-                var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"//" + remoteFile));
+                var request = (FtpWebRequest) WebRequest.Create(new Uri(@"ftp://" + host + @"//" + remoteFile));
                 request.Method = WebRequestMethods.Ftp.DeleteFile;
                 request.Credentials = new NetworkCredential(userName, password);
                 request.EnableSsl = enableSsl;
-                response = (FtpWebResponse)(await request.GetResponseAsync());
+                response = (FtpWebResponse) (await request.GetResponseAsync());
                 response.Close();
             }
             finally
@@ -261,35 +283,19 @@ namespace Utility
                 }
             }
         }
-        public static async Task<Stream> GetSFtpFileStreamWithPassword(string sourceFile, string host, int? port, string userName, string password)
+
+        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName, string keyFilePath = null, string password = null)
         {
-            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, password) : new SftpClient(host, userName, password))
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
             {
-                try
-                {
-                    client.Connect();
-                    var ms = new MemoryStream();
-
-                    await Task.Factory.FromAsync(client.BeginDownloadFile(sourceFile, ms), client.EndDownloadFile);
-
-                    ms.Position = 0;
-
-                    return ms;
-                }
-                finally
-                {
-                    client.Disconnect();
-                }
+                throw new ArgumentException($"{nameof(GetSFtpFileStream)} requires either key file or password, both were null.");
             }
-        }
-
-        public static async Task<Stream> GetSFtpFileStreamWithKeyFile(string sourceFile, string host, int? port, string userName, string keyFilePath)
-        {
-            var pk = new PrivateKeyFile(keyFilePath);
 
             if (!sourceFile.StartsWith("/")) sourceFile = $"/{sourceFile}";
 
-            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, pk) : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -309,13 +315,18 @@ namespace Utility
             }
         }
 
-        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port, string userName, string keyFilePath)
+        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port, string userName, string keyFilePath = null, string password = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(UploadSFtpStream)} requires either key file or password, both were null.");
+            }
 
             if (!destinationPath.StartsWith("/")) destinationPath = $"/{destinationPath}";
 
-            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, pk) : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -332,15 +343,22 @@ namespace Utility
 
         public delegate bool EnumerateDirectoryFunc(int depth, string parent, string name);
 
-        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host, int? port, string userName, string keyFilePath, EnumerateDirectoryFunc enumerateDirectory = null)
+        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host, int? port, string userName, string keyFilePath = null, string password = null, EnumerateDirectoryFunc enumerateDirectory = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(SFtpGetFiles)} requires either key file or password, both were null.");
+            }
+
             var result = new List<(string directory, string file)>();
 
             if (dirName.IsNullOrWhitespace()) dirName = "";
             else if (!dirName.StartsWith("/")) dirName = $"/{dirName}";
 
-            using (var client = port.HasValue ? new SftpClient(host, port.Value, userName, pk) : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -354,10 +372,12 @@ namespace Utility
                         {
                             if (item.IsDirectory)
                             {
-                                if (enumerateDirectory?.Invoke(0, basePath, item.Name) == true) await getFiles(item.FullName);
+                                if (enumerateDirectory?.Invoke(0, basePath, item.Name) == true)
+                                    await getFiles(item.FullName);
                             }
                             else result.Add((directory: item.FullName.Replace(item.Name, ""), file: item.Name));
                         }
+
                         depth--;
                     }
 
@@ -412,15 +432,16 @@ namespace Utility
             }
         }
 
-        public static async Task<long> FtpGetFileSize(string fileName, string host, string userName, string password, bool enableSsl = false)
+        public static async Task<long> FtpGetFileSize(string fileName, string host, string userName, string password,
+            bool enableSsl = false)
         {
             long fileSize = 0;
 
-            var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/" + fileName));
+            var request = (FtpWebRequest) WebRequest.Create(new Uri(@"ftp://" + host + @"/" + fileName));
             request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
             request.Credentials = new NetworkCredential(userName, password);
             request.EnableSsl = enableSsl;
-            var response = (FtpWebResponse)(await request.GetResponseAsync());
+            var response = (FtpWebResponse) (await request.GetResponseAsync());
             var responseStream = response.GetResponseStream();
             var reader = new StreamReader(responseStream);
 
@@ -428,30 +449,31 @@ namespace Utility
             if (!string.IsNullOrEmpty(line))
             {
                 var regex =
-                        @"^" +                          //# Start of line
-                        @"(?<dir>[\-ld])" +             //# File size          
-                        @"(?<permission>[\-rwx]{9})" +  //# Whitespace          \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<filecode>\d+)" +
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<owner>\w+)" +
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<group>\w+)" +
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<size>\d+)" +
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<month>\w{3})" +            //# Month (3 letters)   \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<day>\d{1,2})" +            //# Day (1 or 2 digits) \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<timeyear>[\d:]{4,5})" +    //# Time or year        \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<filename>(.*))" +          //# Filename            \n
-                        @"$";                           //# End of line
+                    @"^" + //# Start of line
+                    @"(?<dir>[\-ld])" + //# File size          
+                    @"(?<permission>[\-rwx]{9})" + //# Whitespace          \n
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<filecode>\d+)" +
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<owner>\w+)" +
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<group>\w+)" +
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<size>\d+)" +
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<month>\w{3})" + //# Month (3 letters)   \n
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<day>\d{1,2})" + //# Day (1 or 2 digits) \n
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<timeyear>[\d:]{4,5})" + //# Time or year        \n
+                    @"\s+" + //# Whitespace          \n
+                    @"(?<filename>(.*))" + //# Filename            \n
+                    @"$"; //# End of line
 
                 var split = new Regex(regex).Match(line);
                 fileSize = long.Parse(split.Groups["size"].ToString());
             }
+
             return fileSize;
         }
 
@@ -465,11 +487,13 @@ namespace Utility
 
             try
             {
-                var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/"));
-                request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;  // WebRequestMethods.Ftp.ListDirectory would be more efficient here
+                var request = (FtpWebRequest) WebRequest.Create(new Uri(@"ftp://" + host + @"/"));
+                request.Method =
+                    WebRequestMethods.Ftp
+                        .ListDirectoryDetails; // WebRequestMethods.Ftp.ListDirectory would be more efficient here
                 request.Credentials = new NetworkCredential(userName, password);
                 request.EnableSsl = enableSsl;
-                response = (FtpWebResponse)(await request.GetResponseAsync());
+                response = (FtpWebResponse) (await request.GetResponseAsync());
                 var responseStream = response.GetResponseStream();
                 reader = new StreamReader(responseStream);
 
@@ -479,31 +503,32 @@ namespace Utility
                 while (!string.IsNullOrEmpty(line))
                 {
                     var regex =
-                        @"^" +                          //# Start of line
-                        @"(?<dir>[\-ld])" +             //# File size          
-                        @"(?<permission>[\-rwx]{9})" +  //# Whitespace          \n
-                        @"\s+" +                        //# Whitespace          \n
+                        @"^" + //# Start of line
+                        @"(?<dir>[\-ld])" + //# File size          
+                        @"(?<permission>[\-rwx]{9})" + //# Whitespace          \n
+                        @"\s+" + //# Whitespace          \n
                         @"(?<filecode>\d+)" +
-                        @"\s+" +                        //# Whitespace          \n
+                        @"\s+" + //# Whitespace          \n
                         @"(?<owner>\w+)" +
-                        @"\s+" +                        //# Whitespace          \n
+                        @"\s+" + //# Whitespace          \n
                         @"(?<group>\w+)" +
-                        @"\s+" +                        //# Whitespace          \n
+                        @"\s+" + //# Whitespace          \n
                         @"(?<size>\d+)" +
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<month>\w{3})" +            //# Month (3 letters)   \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<day>\d{1,2})" +            //# Day (1 or 2 digits) \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<timeyear>[\d:]{4,5})" +    //# Time or year        \n
-                        @"\s+" +                        //# Whitespace          \n
-                        @"(?<filename>(.*))" +          //# Filename            \n
-                        @"$";                           //# End of line
+                        @"\s+" + //# Whitespace          \n
+                        @"(?<month>\w{3})" + //# Month (3 letters)   \n
+                        @"\s+" + //# Whitespace          \n
+                        @"(?<day>\d{1,2})" + //# Day (1 or 2 digits) \n
+                        @"\s+" + //# Whitespace          \n
+                        @"(?<timeyear>[\d:]{4,5})" + //# Time or year        \n
+                        @"\s+" + //# Whitespace          \n
+                        @"(?<filename>(.*))" + //# Filename            \n
+                        @"$"; //# End of line
 
                     var split = new Regex(regex).Match(line);
                     var dir = split.Groups["dir"].ToString();
                     var filename = split.Groups["filename"].ToString();
-                    var isDirectory = !string.IsNullOrWhiteSpace(dir) && dir.Equals("d", StringComparison.OrdinalIgnoreCase);
+                    var isDirectory = !string.IsNullOrWhiteSpace(dir) &&
+                                      dir.Equals("d", StringComparison.OrdinalIgnoreCase);
                     files.Add(filename);
                     line = await reader.ReadLineAsync();
                 }
@@ -541,7 +566,8 @@ namespace Utility
             return fileNames;
         }
 
-        public static async Task DownloadFileFtp(string baseDir, string sourceFile, string destinationFile, string host, string userName, string password, bool enableSsl = false)
+        public static async Task DownloadFileFtp(string baseDir, string sourceFile, string destinationFile, string host,
+            string userName, string password, bool enableSsl = false)
         {
             using (var f = File.OpenWrite(baseDir + @"\" + destinationFile))
             {
@@ -549,7 +575,8 @@ namespace Utility
             }
         }
 
-        public static async Task DownloadFilesFtp(string destRoot, string sourceRoot, string userName, string password, IEnumerable<string> fileNames)
+        public static async Task DownloadFilesFtp(string destRoot, string sourceRoot, string userName, string password,
+            IEnumerable<string> fileNames)
         {
             using (var c = new WebClient())
             {
@@ -570,9 +597,10 @@ namespace Utility
             }
         }
 
-        public static async Task<Stream> GetFtpFileStream(string sourceFile, string host, string userName, string password, bool enableSsl = false)
+        public static async Task<Stream> GetFtpFileStream(string sourceFile, string host, string userName,
+            string password, bool enableSsl = false)
         {
-            var request = (FtpWebRequest)WebRequest.Create(new Uri(@"ftp://" + host + @"/" + sourceFile));
+            var request = (FtpWebRequest) WebRequest.Create(new Uri(@"ftp://" + host + @"/" + sourceFile));
 
             request.ServicePoint.ConnectionLimit = 10;
             request.Method = WebRequestMethods.Ftp.DownloadFile;
@@ -580,12 +608,13 @@ namespace Utility
             request.UseBinary = true;
             request.EnableSsl = enableSsl;
 
-            var response = (FtpWebResponse)(await request.GetResponseAsync());
+            var response = (FtpWebResponse) (await request.GetResponseAsync());
 
             return response.GetResponseStream();
         }
 
-        public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName, string password, bool enableSsl = false)
+        public static async Task DownloadFileFtp(Stream writeStream, string sourceFile, string host, string userName,
+            string password, bool enableSsl = false)
         {
             using (var stream = await GetFtpFileStream(sourceFile, host, userName, password, enableSsl))
             {
@@ -593,7 +622,8 @@ namespace Utility
             }
         }
 
-        public static async Task DeleteDirectoriesFromFtpServer(string connectionString, string host, int port, string userName,
+        public static async Task DeleteDirectoriesFromFtpServer(string connectionString, string host, int port,
+            string userName,
             string password, List<string> dirs, bool enableSsl = false)
         {
             FtpWebResponse response = null;
@@ -601,11 +631,11 @@ namespace Utility
             {
                 try
                 {
-                    var request = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dir}"));
+                    var request = (FtpWebRequest) WebRequest.Create(new Uri($@"ftp://{host}/{dir}"));
                     request.Method = WebRequestMethods.Ftp.RemoveDirectory;
                     request.Credentials = new NetworkCredential(userName, password);
                     request.EnableSsl = enableSsl;
-                    response = (FtpWebResponse)(await request.GetResponseAsync());
+                    response = (FtpWebResponse) (await request.GetResponseAsync());
                     response.Close();
                 }
                 catch (Exception)
@@ -621,7 +651,8 @@ namespace Utility
             }
         }
 
-        public static void DeleteFileFromSftpServer(string remoteFile, string host, int port, string userName, string password)
+        public static void DeleteFileFromSftpServer(string remoteFile, string host, int port, string userName,
+            string password)
         {
             SftpClient client;
             using (client = new SftpClient(host, port, userName, password))
@@ -640,11 +671,13 @@ namespace Utility
 
             try
             {
-                var request = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/"));
+                var request = (FtpWebRequest) WebRequest.Create(new Uri($@"ftp://{host}/"));
                 request.Method = WebRequestMethods.Ftp.ListDirectory;
                 request.Credentials = new NetworkCredential(userName, password);
                 request.EnableSsl = enableSsl;
-                using (var response = (FtpWebResponse)(await request.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false)))
+                using (var response =
+                    (FtpWebResponse) (await request.GetResponseAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false)))
                 {
                     using (var responseStream = response.GetResponseStream())
                     {
@@ -664,17 +697,19 @@ namespace Utility
                             foreach (var dir in dirs)
                             {
                                 listFiles[dir] = new List<string>();
-                                var fileRequest = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dir}/"));
+                                var fileRequest = (FtpWebRequest) WebRequest.Create(new Uri($@"ftp://{host}/{dir}/"));
                                 fileRequest.Method = WebRequestMethods.Ftp.ListDirectory;
                                 fileRequest.Credentials = new NetworkCredential(userName, password);
                                 fileRequest.EnableSsl = enableSsl;
-                                using (var fileResponse = (FtpWebResponse)(await fileRequest.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false)))
+                                using (var fileResponse = (FtpWebResponse) (await fileRequest.GetResponseAsync()
+                                    .ConfigureAwait(continueOnCapturedContext: false)))
                                 {
                                     using (var fileResponseStream = fileResponse.GetResponseStream())
                                     {
                                         using (var fileReader = new StreamReader(fileResponseStream))
                                         {
-                                            var fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
+                                            var fileLine = await fileReader.ReadLineAsync()
+                                                .ConfigureAwait(continueOnCapturedContext: false);
                                             while (!string.IsNullOrEmpty(fileLine))
                                             {
                                                 if (fileLine != "." && fileLine != "..")
@@ -682,7 +717,8 @@ namespace Utility
                                                     listFiles[dir].Add(fileLine);
                                                 }
 
-                                                fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
+                                                fileLine = await fileReader.ReadLineAsync()
+                                                    .ConfigureAwait(continueOnCapturedContext: false);
                                             }
                                         }
                                     }
@@ -707,23 +743,26 @@ namespace Utility
             FtpWebRequest fileRequest;
             if (dirName != null && dirName.Length > 0)
             {
-                fileRequest = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/{dirName}/"));
+                fileRequest = (FtpWebRequest) WebRequest.Create(new Uri($@"ftp://{host}/{dirName}/"));
             }
             else
             {
-                fileRequest = (FtpWebRequest)WebRequest.Create(new Uri($@"ftp://{host}/"));
+                fileRequest = (FtpWebRequest) WebRequest.Create(new Uri($@"ftp://{host}/"));
             }
 
             fileRequest.Method = WebRequestMethods.Ftp.ListDirectory;
             fileRequest.Credentials = new NetworkCredential(userName, password);
             fileRequest.EnableSsl = enableSsl;
-            using (var fileResponse = (FtpWebResponse)(await fileRequest.GetResponseAsync().ConfigureAwait(continueOnCapturedContext: false)))
+            using (var fileResponse =
+                (FtpWebResponse) (await fileRequest.GetResponseAsync()
+                    .ConfigureAwait(continueOnCapturedContext: false)))
             {
                 using (var fileResponseStream = fileResponse.GetResponseStream())
                 {
                     using (var fileReader = new StreamReader(fileResponseStream))
                     {
-                        var fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
+                        var fileLine = await fileReader.ReadLineAsync()
+                            .ConfigureAwait(continueOnCapturedContext: false);
                         while (!string.IsNullOrEmpty(fileLine))
                         {
                             if (fileLine != "." && fileLine != "..")
@@ -731,7 +770,8 @@ namespace Utility
                                 files.Add(fileLine);
                             }
 
-                            fileLine = await fileReader.ReadLineAsync().ConfigureAwait(continueOnCapturedContext: false);
+                            fileLine = await fileReader.ReadLineAsync()
+                                .ConfigureAwait(continueOnCapturedContext: false);
                         }
                     }
                 }
@@ -751,25 +791,42 @@ namespace Utility
             var resp = await HttpPostAsync(ge.GetS("uri"), parms,
                 !string.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60,
                 ge.GetS("mediaType") ?? "");
-            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { result = resp }));
+            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new {result = resp}));
         }
 
         public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms,
-            double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5, IEnumerable<(string key, string value)> headers = null)
+            double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5,
+            IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
+        {
+            var result = await HttpPostGetHeadersAsync(uri, parms, timeoutSeconds, mediaType, maxConnections, headers, doThrow);
+            return result.body;
+        }
+
+        public static async Task<(string body, IDictionary<string, IEnumerable<string>> headers)>
+            HttpPostGetHeadersAsync(string uri, IDictionary<string, string> parms,
+                double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5,
+                IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
         {
             string responseBody = null;
 
-            HttpContent httpContent;
+            HttpContent httpContent = null;
             if (parms.Count == 1 && parms[""] != null)
             {
                 httpContent = new StringContent(parms[""].ToString(), Encoding.UTF8, mediaType);
             }
-            else
+            else if (parms.Any())
             {
                 httpContent = new FormUrlEncodedContent(parms);
             }
 
-            var handler = new HttpClientHandler() { MaxConnectionsPerServer = maxConnections };
+            var cookies = new CookieContainer();
+            var handler = new HttpClientHandler
+            {
+                MaxConnectionsPerServer = maxConnections,
+                CookieContainer = cookies
+            };
+
+            IDictionary<string, IEnumerable<string>> responseHeaders = null;
             using (var client = new HttpClient(handler))
             {
                 headers?.ForEach(h => client.DefaultRequestHeaders.Add(h.key, h.value));
@@ -777,17 +834,40 @@ namespace Utility
                 var response = await client.PostAsync(uri, httpContent);
                 if (response.IsSuccessStatusCode)
                 {
+                    responseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+                    var setCookies = cookies.GetCookies(new Uri(uri));
+                    if (setCookies.Count > 0 && !responseHeaders.ContainsKey("Set-Cookie"))
+                    {
+                        var strList = setCookies.Cast<Cookie>().Select(c => c.ToString()).ToList();
+                        var cookiesStr = string.Join(';', strList);
+                        responseHeaders.Add("Set-Cookie", new[] {cookiesStr});
+                    }
+
                     responseBody = await response.Content.ReadAsStringAsync();
+                }
+                else if (doThrow)
+                {
+                    try
+                    {
+                        responseBody = await response.Content.ReadAsStringAsync();
+                    }
+                    catch
+                    {
+
+                    }
+
+                    throw new InvalidOperationException($"HttpPostGetHeadersAsync Failed. code: {response.StatusCode} reason: {response.ReasonPhrase} body: {responseBody}");
                 }
             }
 
-            return responseBody;
+            return (responseBody, responseHeaders);
         }
 
         // "application/json"
-        public static async Task<string> HttpPostAsync(string uri, string content, string mediaType, int timeoutSeconds = 60)
+        public static async Task<string> HttpPostAsync(string uri, string content, string mediaType,
+            int timeoutSeconds = 60)
         {
-            var http = (HttpWebRequest)WebRequest.Create(new Uri(uri));
+            var http = (HttpWebRequest) WebRequest.Create(new Uri(uri));
             http.Accept = mediaType;
             http.ContentType = mediaType;
             http.Method = "POST";
@@ -808,11 +888,21 @@ namespace Utility
 
         public static async Task<IGenericEntity> HttpGetAsync(FrameworkWrapper fw, IGenericEntity ge)
         {
-            var (success, body) = await HttpGetAsync(ge.GetS("uri"), null, !string.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);
-            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new { success, result = body }));
+            var (success, body) = await HttpGetAsync(ge.GetS("uri"), null,
+                !string.IsNullOrEmpty(ge.GetS("timeout")) ? double.Parse(ge.GetS("timeout")) : 60);
+            return JsonWrapper.JsonToGenericEntity(JsonWrapper.Json(new {success, result = body}));
         }
 
-        public static async Task<(bool success, string body)> HttpGetAsync(string path, IEnumerable<(string key, string value)> headers = null, double timeoutSeconds = 60)
+        public static async Task<(bool success, string body)> HttpGetAsync(string path,
+            IEnumerable<(string key, string value)> headers = null, double timeoutSeconds = 60)
+        {
+            var result = await HttpGetHeadersAsync(path, headers, timeoutSeconds);
+            return (result.success, result.body);
+        }
+
+        public static async Task<(bool success, string body, IDictionary<string, IEnumerable<string>> headers)>
+            HttpGetHeadersAsync(string path,
+                IEnumerable<(string key, string value)> headers = null, double timeoutSeconds = 60)
         {
             using (var client = new HttpClient())
             {
@@ -822,7 +912,9 @@ namespace Utility
 
                 using (var response = await client.GetAsync(path))
                 {
-                    return (success: response.IsSuccessStatusCode, body: await response.Content.ReadAsStringAsync());
+                    var responseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+                    return (success: response.IsSuccessStatusCode, body: await response.Content.ReadAsStringAsync(),
+                        headers: responseHeaders);
                 }
             }
         }
@@ -836,7 +928,8 @@ namespace Utility
             }
         }
 
-        public static IEnumerable<(T reference, Exception ex)> SendMail<T>(string smtpRelay, int smtpPort, IEnumerable<(T reference, MailMessage msg)> messages, bool useSsl = false)
+        public static IEnumerable<(T reference, Exception ex)> SendMail<T>(string smtpRelay, int smtpPort,
+            IEnumerable<(T reference, MailMessage msg)> messages, bool useSsl = false)
         {
             using (var smtp = new SmtpClient(smtpRelay, smtpPort))
             {
@@ -860,14 +953,16 @@ namespace Utility
             }
         }
 
-        public static void SendMail(string smtpRelay, int smtpPort, string from, string to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
+        public static void SendMail(string smtpRelay, int smtpPort, string from, string to, string subject, string body,
+            bool bodyIsHtml = true, bool useSsl = false)
         {
-            var msg = new MailMessage(from, to, subject, body) { IsBodyHtml = bodyIsHtml };
+            var msg = new MailMessage(from, to, subject, body) {IsBodyHtml = bodyIsHtml};
 
             SendMail(smtpRelay, smtpPort, msg, useSsl);
         }
 
-        public static void SendMail(string smtpRelay, int smtpPort, string from, IEnumerable<string> to, string subject, string body, bool bodyIsHtml = true, bool useSsl = false)
+        public static void SendMail(string smtpRelay, int smtpPort, string from, IEnumerable<string> to, string subject,
+            string body, bool bodyIsHtml = true, bool useSsl = false)
         {
             var msg = new MailMessage()
             {
@@ -880,6 +975,92 @@ namespace Utility
             to.ForEach(t => msg.To.Add(t));
 
             SendMail(smtpRelay, smtpPort, msg, useSsl);
+        }
+
+        public static async Task DownloadFilesFromS3Bucket(string accessKeyId, string secretAccessKey,
+            string bucketName, IEnumerable<string> files, int parallelism, Func<string, string, Task> action)
+        {
+            using (var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1))
+            {
+                using (var t = new TransferUtility(client))
+                {
+                    await files.ForEachAsync(parallelism, async s =>
+                    {
+                        using (var stream = await t.OpenStreamAsync(bucketName, s))
+                        using (var reader = new StreamReader(stream))
+                        {
+                            var content = reader.ReadToEnd();
+                            await action(s, content);
+                        }
+                    });
+                }
+            }
+        }
+
+        public static async Task<List<string>> ListFilesFromS3Bucket(string accessKeyId, string secretAccessKey,
+            string bucketName, string path, string pattern)
+        {
+            var regex = new Regex(pattern);
+            using (var client = new AmazonS3Client(accessKeyId, secretAccessKey, RegionEndpoint.USEast1))
+            {
+                var request = new ListObjectsRequest
+                {
+                    BucketName = bucketName,
+                    Prefix = path
+                };
+                var response = await client.ListObjectsAsync(request);
+                var files = response.S3Objects
+                    .Where(o => regex.IsMatch(o.Key.Replace(path, string.Empty)))
+                    .Select(o => o.Key)
+                    .ToList();
+                return files;
+            }
+        }
+
+        public static async Task<bool> CompareHttpContent(string remoteContentLocation, string contentToCompare)
+        {
+            var r = await HttpGetAsync(remoteContentLocation);
+            return r.success && r.body == contentToCompare;
+        }
+
+        public static async Task<List<Uri>> SitemapURIs(string domain, string sitemapFileName)
+        {
+            var siteMapQuery = new SitemapQuery();
+            IEnumerable<SitemapFile> siteMaps = await siteMapQuery.GetAllSitemapsForDomain(domain);
+            var uris = new List<Uri>();
+            foreach (var siteMapFile in siteMaps)
+            {
+                if (!siteMapFile.Location.ToString().EndsWith(sitemapFileName)) continue;
+
+                uris.AddRange(siteMapFile.Urls
+                    .Where(u => u.Location != null)
+                    .Select(u => u.Location)
+                    .ToList());
+            }
+            return uris;
+        }
+
+        public static bool DomElementExists(string uri, string xpath, Stack<(string attr, string attrVal)> attrVals)
+        {
+            var web = new HtmlWeb();
+            var doc = web.Load(uri);
+            var nodes = doc.DocumentNode.SelectNodes(xpath);
+
+            bool SearchNodes(Stack<(string attr, string attrVal)> recAttrVals)
+            {
+                (string attribute, string attributeVal) = recAttrVals.Pop();
+                var found = nodes.Select(attr => new { attr, attrValue = attr.GetAttributeValue(attribute, string.Empty) })
+                            .Where(x => x.attrValue == attributeVal)
+                            .Select(x => x.attrValue).Any();
+
+                if (!found) { return false; }
+                if (recAttrVals.Count > 0) { return SearchNodes(recAttrVals); }
+                else { return true; }
+
+            }
+            // if no attributes were specified, rely only on XPath
+            // if attributes were specified, rely on both
+            return attrVals == null || attrVals.Count == 0 ? nodes.Count > 0 : SearchNodes(attrVals);
         }
     }
 }

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Choose a survey</title>
+</head>
+<body>
+  <h1>Choose a survey</h1>
+  <a class="link" href="full.html?survey=American">American</a>
+  <br />
+  <a class="link" href="full.html?survey=Canadian">Canadian</a>
+  <script type="text/javascript">
+    window.onload = function() {
+      Array.from(document.getElementsByClassName("link")).forEach(element => {
+        edw.forwardUrlParams(element);
+      });
+    };
+  </script>
+</body>
+</html>
