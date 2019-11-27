@@ -5,7 +5,7 @@ import {
   List,
   WhiteSpace
   } from "@ant-design/react-native"
-import { PromotionRow } from "components/promotions/PromotionRow"
+import { PromotionRow } from "screens/main/promotions/components/PromotionRow"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
 import { Image, Text, View } from "react-native"

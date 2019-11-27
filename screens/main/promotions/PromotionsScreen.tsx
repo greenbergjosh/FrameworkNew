@@ -3,7 +3,7 @@ import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { ActivityIndicator, Button, List, Toast } from "@ant-design/react-native"
 import { HeaderTitle } from "components/HeaderTitle"
-import { PromotionRow } from "components/promotions/PromotionRow"
+import { PromotionRow } from "screens/main/promotions/components/PromotionRow"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 
 export interface PromotionsScreenProps extends NavigationTabScreenProps {}

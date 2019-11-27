@@ -6,8 +6,8 @@ import { ActivityIndicator, Button, Icon, WhiteSpace } from "@ant-design/react-n
 import Item from "@ant-design/react-native/lib/list/ListItem"
 import { Campaign, Promotion } from "api/promotions-services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
-import { CampaignRow } from "../campaigns/CampaignRow"
-import { Empty } from "../Empty"
+import { CampaignRow } from "./CampaignRow"
+import { Empty } from "../../../../components/Empty"
 
 const DEFAULT_IMAGE = "https://facebook.github.io/react-native/img/tiny_logo.png"
 const EXPANDED_CAMPAIGN_THRESHOLD = 3
