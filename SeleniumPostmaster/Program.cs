@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Utility;
 using Utility.DataLayer;
+using Utility.EDW.Queueing;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
@@ -59,6 +61,8 @@ namespace SeleniumPostmaster
 
             foreach (var ps in postmasterAccts.GetL(""))
             {
+                bool foundSpam = false,
+                     foundComplaint = false;
                 if (ps.GetS("Config/Enabled").IsNullOrWhitespace() || ps.GetS("Config/Enabled").ToLower() == "false")
                 {
                     continue;
@@ -86,24 +90,55 @@ namespace SeleniumPostmaster
 
                 if (type == "Hotmail" && (ArgsProvider.IsNullOrWhitespace() || ArgsProvider == "Hotmail"))
                 {
-                    await DoHotmail(pmAcctId, username, password, HotmailPostmasterUrl, ps.GetS("Config/ApiKey"), proxyHostAndPort);
+#if DEBUG
+                    proxyHostAndPort = null;
+#endif
+                    (foundSpam, foundComplaint) = await DoHotmail(pmAcctId, username, password, HotmailPostmasterUrl, ps.GetS("Config/ApiKey"), proxyHostAndPort);
                 }
                 else if (type == "Gmail" && (ArgsProvider.IsNullOrWhitespace() || ArgsProvider == "Gmail"))
                 {
                     var chromeOptions = new ChromeOptions();
+#if !DEBUG
                     if (! proxyHostAndPort.IsNullOrWhitespace())
                     {
                         chromeOptions.AddArgument($"--proxy-server={proxyHostAndPort}");
                     }
+#endif
 
                     IWebDriver driver =  new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"),chromeOptions);
-                    await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
+                    (foundSpam, foundComplaint) = await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
                     driver.Close();
+
+                }
+                if (foundSpam|| foundComplaint)
+                {
+                    await Fw.Trace(nameof(Main), $"Will send a spam/complaint notification for {type} on account {username}");
+#if !DEBUG
+                    await SendNotification
+                    (
+                        from: Fw.StartupConfiguration.GetS("Config/ListingFromEmailAddress"),
+                        subject: $"{type} Postmaster spam or complaint entries detected",
+                        body: $"The Postmaster application has found spam or FBL entries for {type} account {username}. Please see the postmaster report for details: {Fw.StartupConfiguration.GetS(type == "Gmail" ? "Config/GoogleListingReportUrl" : "Config/HotmailListingReportUrl")}",
+                        to: Fw.StartupConfiguration.GetS("Config/ListingEmailAddresses")
+                    );
+#endif
                 }
             }
         }
 
-        public static async Task DoHotmail(string pmAcctId, string username, string password,
+        public static async Task SendNotification (string subject, string body, string from, string to )
+        {
+            var payload = PL.O(new
+            {
+                from_address = from,
+                subject,
+                body
+            }) ;
+            payload.Add(PL.O(new { email_addresses = to }, new bool[] { false }));
+            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SendEmail", DateTime.Now,payload.ToString() ));
+        }
+
+        public static async Task<(bool foundTrap, bool foundComplaint)> DoHotmail(string pmAcctId, string username, string password,
             string url, string apiKey, string proxyHostAndPort)
         {
             // Get standard data - go back to prior days and update
@@ -112,6 +147,8 @@ namespace SeleniumPostmaster
             string dataLayerFn = "";
             IGenericEntity result = null;
             bool dateRangeContainsData = false;
+            bool foundTrap = false;
+            bool foundComplaint = false;
             for (int i = 0; i < 14; i++)
             {
                 try
@@ -123,13 +160,21 @@ namespace SeleniumPostmaster
                     if (!string.IsNullOrEmpty(ret1))
                     {
                         dateRangeContainsData = true;
-                        string retj1 = Utility.JsonWrapper.ConvertCsvToJson(ret1,
+                        var retj1ge = Jw.JsonToGenericEntity(Utility.JsonWrapper.ConvertCsvToJson(ret1,
                         new List<string> { "ip", "sap", "eap", "rcpt", "data", "mrc", "fr", "cr",
-                                        "tmps", "tmpe", "thc", "helo", "from", "cmnt"});
+                                        "tmps", "tmpe", "thc", "helo", "from", "cmnt"}));
 
-                        
+                        JArray ja = new JArray();
+                        foreach(var line in retj1ge.GetL(""))
+                        {
+                            string reverse = Utility.Dns.ReverseLookupIp(line.GetS("ip"));
+                            JObject jo = JObject.Parse(line.GetS(""));
+                            jo.Add("rih", reverse);
+                            ja.Add(jo);
+                        }
+
                         dataLayerFn = "InsertHotmailData";
-                        result = await Data.CallFn( ConnectionName, dataLayerFn, Jw.Json(new { PostmasterAccountId = pmAcctId }), retj1);
+                        result = await Data.CallFn( ConnectionName, dataLayerFn, Jw.Json(new { PostmasterAccountId = pmAcctId }), ja.ToString());
                         if (result.GetS("Result") != "Success")
                         {
                             await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
@@ -145,7 +190,6 @@ namespace SeleniumPostmaster
                 if (!dateRangeContainsData)
                 {
                     await Fw.Log(nameof(DoHotmail), $"No IP data for specified date range on account id {pmAcctId}, with user {username}, password {password}, at {finalDataUrl}");
-                    return;
                 }
             }
 
@@ -173,7 +217,10 @@ namespace SeleniumPostmaster
                         }
                         catch (Exception ex)
                         {
-                            await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP blacklist for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
+                            if (ex.InnerException.Message != "BadRequest")
+                            {
+                                await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP blacklist for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
+                            }
                             continue;
                         }
 
@@ -181,6 +228,7 @@ namespace SeleniumPostmaster
                         if (!string.IsNullOrEmpty(ret3))
                         {
                             var trapEmail = ParseEmail(ret3);
+                            foundTrap = true;
 
                             result = await Data.CallFn(ConnectionName, dataLayerFn,
                                 Jw.Json(new
@@ -203,6 +251,7 @@ namespace SeleniumPostmaster
                         if (!string.IsNullOrEmpty(ret4))
                         {
                             var compEmail = ParseEmail(ret4);
+                            foundComplaint = true;
 
                             result = await Data.CallFn(ConnectionName, dataLayerFn,
                                 Jw.Json(new
@@ -256,6 +305,7 @@ namespace SeleniumPostmaster
                 await Fw.Error(nameof(DoHotmail), $"Caught exception processing Hotmail IP status for account id {pmAcctId}, with user {username}, password {password}, at {url}: {ex.UnwrapForLog()}");
             }
 
+            return (foundTrap, foundComplaint);
         }
 
         public static Tuple<string, string> ParseEmail(string message)
@@ -288,8 +338,10 @@ namespace SeleniumPostmaster
             return new Tuple<string, string>(toemail, oremail);
         }
 
-        public static async Task DoGmail(IWebDriver driver, string pmAcctId, string username, string pswd, string phone, string url)
+        public static async Task<(bool foundSpamRate, bool foundFbl)> DoGmail(IWebDriver driver, string pmAcctId, string username, string pswd, string phone, string url)
         {
+            bool foundSpamRate = false;
+            bool foundFbl = false;
             try
             {
                 // Log in
@@ -374,6 +426,7 @@ namespace SeleniumPostmaster
 
                         if (!driver.PageSource.Contains("No data to display at this time"))
                         {
+                            foundSpamRate = true;
                             IList<IWebElement> dateCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-date')]"));
                             IList<IWebElement> numberCells = driver.FindElements(By.XPath("//td[starts-with(@class,'google-visualization-table-type-number')]"));
 
@@ -413,29 +466,72 @@ namespace SeleniumPostmaster
                         if (!driver.PageSource.Contains("No data to display at this time"))
                         {
                             IWebElement chart = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
-                            IList<IWebElement> bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @fill='#f2a600']"));
+                            IList<IWebElement> bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @height!='0.5' and (@fill='#a52714' or @fill='#db4437' or @fill='#f2a600' or @fill='#0f9d58')]"));
 
                             List<Tuple<string, string, DateTime, string>> domIpRep
                                         = new List<Tuple<string, string, DateTime, string>>();
-                            foreach (var bar in bars)
+                            DateTime previousDate = new DateTime();
+                            for (int i = 0; i < bars.Count; i++)
                             {
-                                Actions actions = new Actions(driver);
-                                actions.MoveToElement(bar).Click().Build().Perform();
-                                Wait(driver, 500, 500);
+                                var bar = bars[i];
+                                await Fw.Trace(nameof(DoGmail), $"Found {bars.Count} IP reputation bars, about to click bar {i+1}");
+                                new Actions(driver).Click(bar).Perform();
 
-                                IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
-                                string[] hdrParts = ipHdr.Text.Split(' ');
-                                string reputation = hdrParts[0];
-                                DateTime repDate = ParseDateFromHeader(hdrParts);
+
+                                // Google unpredictably buries the bar from above one level deeper, and when we "click" the bar
+                                // nothing actually shows up in terms of IPs.  If this happens, look for this nesting, and drop into
+                                // it.  There should only be one "bar" in there, click it, and proceed as before.
+                                if (driver.FindElements(By.XPath("//tr[@class='google-visualization-table-tr-head']/th")).Count == 0 )
+                                {
+                                    await Fw.Trace(nameof(DoGmail), $"Found no IP table for bar {i+1}, descent into possibly deeper bar collection, finding, and clicking");
+                                    bar = ReturnHiddenBar();
+                                    new Actions(driver).Click(bar).Perform();
+                                    Wait(driver, 500, 500);
+                                }
+
+                                // by now we know that *a* bar has been selected, however, it may be the bar from the previous date
+                                (string reputation, DateTime repDate) = SelectedReputationParts();
+                                await Fw.Trace(nameof(DoGmail), $"Just assigned reputation {reputation}, and date: {repDate}");
+
+                                if (previousDate != DateTime.MinValue && i > 0 && previousDate == repDate)
+                                {
+                                    await Fw.Trace(nameof(DoGmail), $"Previous date current date match: previous date: {previousDate}, current parsed date: {repDate}, about to find and click hidden bar");
+                                    bar = ReturnHiddenBar();
+                                    new Actions(driver).Click(bar).Perform();
+                                    Wait(driver, 500, 500);
+                                    (reputation, repDate) = SelectedReputationParts();
+                                    await Fw.Trace(nameof(DoGmail), $"After assigning to current values, reputation is {reputation} and reputation date is: {repDate}");
+                                }
+
+                                IWebElement ReturnHiddenBar()
+                                {
+                                    IList<IWebElement> innerBars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='g']/*[name()='rect' and @height!='0.5' and (@fill='#a52714' or @fill='#db4437' or @fill='#f2a600' or @fill='#0f9d58')]"));
+
+                                    // there's only one
+                                    Fw.Trace(nameof(ReturnHiddenBar), $"Found {innerBars.Count} hidden bars now returning right-most").GetAwaiter().GetResult();
+                                    return innerBars[innerBars.Count-1];
+                                }
+                                
+                                (string reputation, DateTime repDate) SelectedReputationParts ()
+                                {
+                                    IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
+                                    string[] hdrParts = ipHdr.Text.Split(' ');
+                                    return (reputation : hdrParts[0], repDate : ParseDateFromHeader(hdrParts));
+                                }
 
                                 IList<IWebElement> ips = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr/td"));
                                 foreach (var ip in ips)
                                 {
                                     string ipaddr = ip.Text;
+                                    await Fw.Trace(nameof(DoGmail), $"Before adding to database-bound list: IP is {ipaddr}, bar count is {bars.Count}, current bar is {i+1}, ips count is: {ips.Count}, for date: {repDate}, reputation: {reputation}");
+
                                     domIpRep.Add(new Tuple<string, string, DateTime, string>
                                         (domId, ipaddr, repDate, reputation));
                                 }
+                                previousDate = repDate;
 
+                                //chart = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
+                                //bars = chart.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect' and @height!='0.5' and (@fill='#a52714' or @fill='#db4437' or @fill='#f2a600' or @fill='#0f9d58')]"));
                             }
 
                             string jsIpRep = Utility.JsonWrapper.JsonTuple<Tuple<string, string, DateTime, string>>
@@ -506,6 +602,7 @@ namespace SeleniumPostmaster
 
                         if (!driver.PageSource.Contains("No data to display at this time"))
                         {
+                            foundFbl = true;
                             IWebElement chart2 = driver.FindElement(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]"));
                             IList<IWebElement> bars2 = chart2.FindElements(By.XPath("(./*[name()='g'])[2]/*[name()='rect']"));
 
@@ -725,6 +822,8 @@ namespace SeleniumPostmaster
             {
                 await Fw.Error(nameof(DoGmail), $"Caught unhandled (for now) exception: {ex.UnwrapForLog()}");
             }
+
+            return (foundSpamRate, foundFbl);
         }
 
         public static DateTime ParseDateFromHeader(string[] hdrParts)

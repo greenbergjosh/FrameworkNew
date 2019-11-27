@@ -119,7 +119,7 @@ namespace Utility
             }
             else
             {
-                throw new Exception("HttpResponseMessage.IsSuccessStatusCode was false.");
+                throw new Exception("HttpResponseMessage.IsSuccessStatusCode was false.", new Exception(response.StatusCode.ToString()));
             }
 
             return resp;
@@ -284,16 +284,18 @@ namespace Utility
             }
         }
 
-        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName,
-            string keyFilePath)
+        public static async Task<Stream> GetSFtpFileStream(string sourceFile, string host, int? port, string userName, string keyFilePath = null, string password = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(GetSFtpFileStream)} requires either key file or password, both were null.");
+            }
 
             if (!sourceFile.StartsWith("/")) sourceFile = $"/{sourceFile}";
 
-            using (var client = port.HasValue
-                ? new SftpClient(host, port.Value, userName, pk)
-                : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -313,16 +315,18 @@ namespace Utility
             }
         }
 
-        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port,
-            string userName, string keyFilePath)
+        public static async Task UploadSFtpStream(string destinationPath, Stream stream, string host, int? port, string userName, string keyFilePath = null, string password = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(UploadSFtpStream)} requires either key file or password, both were null.");
+            }
 
             if (!destinationPath.StartsWith("/")) destinationPath = $"/{destinationPath}";
 
-            using (var client = port.HasValue
-                ? new SftpClient(host, port.Value, userName, pk)
-                : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -339,18 +343,22 @@ namespace Utility
 
         public delegate bool EnumerateDirectoryFunc(int depth, string parent, string name);
 
-        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host,
-            int? port, string userName, string keyFilePath, EnumerateDirectoryFunc enumerateDirectory = null)
+        public static async Task<List<(string directory, string file)>> SFtpGetFiles(string dirName, string host, int? port, string userName, string keyFilePath = null, string password = null, EnumerateDirectoryFunc enumerateDirectory = null)
         {
-            var pk = new PrivateKeyFile(keyFilePath);
+
+            if (keyFilePath.IsNullOrWhitespace() && password.IsNullOrWhitespace())
+            {
+                throw new ArgumentException($"{nameof(SFtpGetFiles)} requires either key file or password, both were null.");
+            }
+
             var result = new List<(string directory, string file)>();
 
             if (dirName.IsNullOrWhitespace()) dirName = "";
             else if (!dirName.StartsWith("/")) dirName = $"/{dirName}";
 
-            using (var client = port.HasValue
-                ? new SftpClient(host, port.Value, userName, pk)
-                : new SftpClient(host, userName, pk))
+            using (var client = keyFilePath.IsNullOrWhitespace() ?
+                 new SftpClient(host, port ?? 22, userName, password) :
+                 new SftpClient(host, port ?? 22, userName, new PrivateKeyFile(keyFilePath)))
             {
                 try
                 {
@@ -788,16 +796,16 @@ namespace Utility
 
         public static async Task<string> HttpPostAsync(string uri, IDictionary<string, string> parms,
             double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5,
-            IEnumerable<(string key, string value)> headers = null)
+            IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
         {
-            var result = await HttpPostGetHeadersAsync(uri, parms, timeoutSeconds, mediaType, maxConnections, headers);
+            var result = await HttpPostGetHeadersAsync(uri, parms, timeoutSeconds, mediaType, maxConnections, headers, doThrow);
             return result.body;
         }
 
         public static async Task<(string body, IDictionary<string, IEnumerable<string>> headers)>
             HttpPostGetHeadersAsync(string uri, IDictionary<string, string> parms,
                 double timeoutSeconds = 60, string mediaType = "", int maxConnections = 5,
-                IEnumerable<(string key, string value)> headers = null)
+                IEnumerable<(string key, string value)> headers = null, bool doThrow = false)
         {
             string responseBody = null;
 
@@ -837,6 +845,19 @@ namespace Utility
 
                     responseBody = await response.Content.ReadAsStringAsync();
                 }
+                else if (doThrow)
+                {
+                    try
+                    {
+                        responseBody = await response.Content.ReadAsStringAsync();
+                    }
+                    catch
+                    {
+
+                    }
+
+                    throw new InvalidOperationException($"HttpPostGetHeadersAsync Failed. code: {response.StatusCode} reason: {response.ReasonPhrase} body: {responseBody}");
+                }
             }
 
             return (responseBody, responseHeaders);
@@ -846,9 +867,7 @@ namespace Utility
         public static async Task<string> HttpPostAsync(string uri, string content, string mediaType,
             int timeoutSeconds = 60)
         {
-            var bytes = Encoding.UTF8.GetBytes(content);
-
-            var http = (HttpWebRequest)WebRequest.Create(new Uri(uri));
+            var http = (HttpWebRequest) WebRequest.Create(new Uri(uri));
             http.Accept = mediaType;
             http.ContentType = mediaType;
             http.Method = "POST";
@@ -976,7 +995,7 @@ namespace Utility
                         using (var stream = await t.OpenStreamAsync(bucketName, s))
                         using (var reader = new StreamReader(stream))
                         {
-                            var content = await reader.ReadToEndAsync();
+                            var content = reader.ReadToEnd();
                             await action(s, content);
                         }
                     });
@@ -1045,7 +1064,9 @@ namespace Utility
                 else { return true; }
 
             }
-            return SearchNodes(attrVals);
+            // if no attributes were specified, rely only on XPath
+            // if attributes were specified, rely on both
+            return attrVals == null || attrVals.Count == 0 ? nodes.Count > 0 : SearchNodes(attrVals);
         }
     }
 }
