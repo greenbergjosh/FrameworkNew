@@ -1,5 +1,5 @@
 import React from "react"
-import { StyleProp, TextStyle, TouchableOpacity } from "react-native"
+import { StyleProp, TextStyle, TouchableOpacity, ViewStyle } from "react-native"
 import { Icon } from "@ant-design/react-native"
 import { IconNames, IconProps } from "@ant-design/react-native/lib/icon"
 import { Colors, styles, Units } from "constants"
@@ -8,10 +8,17 @@ interface TouchIconProps {
   size?: IconProps["size"]
   name: IconNames
   onPress?: () => void
-  style?: StyleProp<TextStyle>
+  style?: StyleProp<ViewStyle>
+  iconStyle?: StyleProp<TextStyle>
 }
 
-export const TouchIcon = ({ size = "md", name = "question", onPress, style }: TouchIconProps) => {
+export const TouchIcon = ({
+  size = "md",
+  name = "question",
+  onPress,
+  style,
+  iconStyle,
+}: TouchIconProps) => {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
   when the touch area is larger than the icon itself. Otherwise, the icon
@@ -30,21 +37,24 @@ export const TouchIcon = ({ size = "md", name = "question", onPress, style }: To
   return (
     <TouchableOpacity
       onPress={onPress && onPress}
-      style={{
-        minHeight: Units.minTouchArea,
-        minWidth: Units.minTouchArea,
-        marginLeft: margin,
-        marginRight: margin,
-        marginTop: margin,
-        marginBottom: margin,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}>
+      style={[
+        {
+          minHeight: Units.minTouchArea,
+          minWidth: Units.minTouchArea,
+          marginLeft: margin,
+          marginRight: margin,
+          marginTop: margin,
+          marginBottom: margin,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        style,
+      ]}>
       <Icon
         name={name}
         size={size}
-        style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, style]}
+        style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, iconStyle]}
       />
     </TouchableOpacity>
   )

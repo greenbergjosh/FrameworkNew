@@ -15,7 +15,7 @@ interface ExploreUserFeedDetailsScreenProps extends NavigationTabScreenProps {}
 const UserInfo = ({ user }) => (
   <Flex direction="row" style={{ margin: Units.margin }} justify="between">
     <Flex>
-      <Avatar source={user.avatarUri} size="lg" />
+      <Avatar source={user.avatarUri} size="sm" />
       <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
     </Flex>
     <TouchIcon name="ellipsis" size="lg" onPress={() => alert("Feature to come!")} />
