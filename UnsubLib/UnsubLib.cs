@@ -1204,7 +1204,7 @@ namespace UnsubLib
 
                     if (!fi.Exists)
                     {
-                        await _fw.Trace($"{nameof(GetFileSize)}", $"File not found {fileName}");
+                        await _fw.Trace($"{nameof(GetFileSize)}", $"File not found {FileCacheDirectory}\\{fileName}");
                         return null;
                     }
 
@@ -1226,6 +1226,28 @@ namespace UnsubLib
             catch (Exception fileSizeException)
             {
                 await _fw.Error(nameof(GetFileSize), fileName + "::" + fileSizeException.ToString());
+                return null;
+            }
+        }
+
+        public async Task<long?> GetFileSize2(string fileName)
+        {
+            try
+            {
+                var fi = new FileInfo(fileName);
+
+                if (!fi.Exists)
+                {
+                    await _fw.Trace($"{nameof(GetFileSize2)}", $"File not found {fileName}");
+                    return null;
+                }
+
+                return fi.Length;
+                
+            }
+            catch (Exception fileSizeException)
+            {
+                await _fw.Error(nameof(GetFileSize2), fileName + "::" + fileSizeException.ToString());
                 return null;
             }
         }
@@ -1746,6 +1768,79 @@ namespace UnsubLib
             return dr;
         }
 
+        private static string Match(string s)
+        {
+            if (Regex.IsMatch(s, "^[0-9a-fA-F]{32}$"))
+                return MD5HANDLER;
+            if (!string.IsNullOrEmpty(s) && !(!s.Contains("@") || (s[0] == '*') || (s[0] == '@')))
+                return PLAINTEXTHANDLER;
+            if (!string.IsNullOrEmpty(s) && s.Contains("."))
+                return DOMAINHANDLER;
+            return null;
+        }
+
+        private static (string firstMatch, string restMatch) MatchM(string[] lines)
+        {
+            var firstLineType = Match(lines[0]);
+            string restLineType = null;
+            foreach (var line in lines.Skip(1))
+            {
+                var restLineTypeTemp = Match(line);
+                if (restLineTypeTemp == null)
+                {
+                    restLineType = null;
+                    break;
+                }
+                if (restLineType == null)
+                    restLineType = restLineTypeTemp;
+                else if (restLineType != restLineTypeTemp)
+                {
+                    restLineType = null;
+                    break;
+                }
+            }
+            return (firstLineType, restLineType);
+        }
+
+        private async Task<string> MatchFile(string[] lines, FileInfo f)
+        {
+            if (lines.Length == 1 || (lines.Length == 2 && string.IsNullOrEmpty(lines[1])))
+            {
+                await _fw.Trace("LOU", $"SingleLine Match");
+                return Match(lines[0]);
+            }
+            
+            var maxLines = lines.Length == 2 ? 2 : lines.Length - 1;
+            var (firstMatch, restMatch) = MatchM(lines.Take(maxLines).ToArray());
+            if ((restMatch != null) && (firstMatch != restMatch))
+            {
+                await _fw.Trace("LOU", $"Removing header");
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+
+            return restMatch; // which may be null - in which case we did not match a type
+        }
+
+        private async Task<string> MatchFile2(string[] lines, FileInfo f)
+        {
+            string fileType = null;
+            if (lines.Length > 2 || lines.Last().Length == 0)
+                lines = lines.Take(lines.Length - 1).ToArray();
+            var tlines = lines.Select((line, idx) => new Tuple<string, int>(line, idx));
+            var grps = tlines.GroupBy(line => Match(line.Item1));
+            if (grps.Count() == 1) { fileType = grps.First().Key; }
+            else if (grps.Count() == 2)
+            {
+                if (grps.First().Count() == 1 && grps.First().ToArray()[0].Item2 == 0)
+                {
+                    await _fw.Trace("LOU", $"Removing header");
+                    await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+                }
+                fileType = grps.First().ToArray()[0].Item1;
+            }
+            return fileType;
+        }
+
         public async Task<string> ZipTester(FileInfo f)
         {
             var theText = "";
@@ -1756,83 +1851,27 @@ namespace UnsubLib
                 return UNKNOWNHANDLER;
             }
 
-            string[] lines;
-            using (var sr = f.OpenText())
-            {
-                var buffer = new char[400];
-                await sr.ReadAsync(buffer, 0, 400);
-                theText = new string(buffer);
+            await _fw.Trace("LOU", "File lenght before zipTester: " + f.Length);
 
-                lines = theText.Split(
-                    new[] { "\r\n", "\r", "\n" },
-                    StringSplitOptions.None);
+            if (f.Length < 100)
+            {
+                File.Copy(f.FullName, "c:\\workspace\\wrongmd5.txt", true);
             }
 
-            var allMd5 = true;
-            var firstLineHeader = false;
-            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-            {
-                if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
-                {
-                    if (l == 0)
-                    {
-                        firstLineHeader = true;
-                        continue;
-                    }
-                    else
-                    {
-                        allMd5 = false;
-                        break;
-                    }
-                }
-            }
+            var lines = await FileSystem.ReadLines(f.FullName, 400);
 
-            if (firstLineHeader && lines.Length > 1 && allMd5)
-            {
-                // Remove the header
-                // sed -i '1d' "emails.txt"
-                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
-            }
-            else if (firstLineHeader)
-            {
-                allMd5 = false;
-            }
+            await _fw.Trace("LOU", "Number of lines: " + lines.Length);
 
-            if (allMd5) return MD5HANDLER;
-
-            var allPlain = true;
-            firstLineHeader = false;
-            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
+            var handler = await MatchFile(lines, f);
+            if (handler != null)
             {
-                if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
-                {
-                    if (l == 0)
-                    {
-                        firstLineHeader = true;
-                        continue;
-                    }
-                    else
-                    {
-                        allPlain = false;
-                        break;
-                    } 
-                }
+                await _fw.Trace("LOU", $"MatchFile {handler}");
+                var flen = await GetFileSize2(f.FullName);
+                await _fw.Trace("LOU", $"File lenght after zipTester {f.FullName}: {flen}");
+                return handler;
             }
-
-            if (firstLineHeader && lines.Length > 1 && allPlain)
-            {
-                // Remove the header
-                // sed -i '1d' "emails.txt"
-                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
-            }
-            else if (firstLineHeader)
-            {
-                allPlain = false;
-            }
-
-            if (allPlain) return PLAINTEXTHANDLER;
-
-            var allDom = true;
+            
+            /*var allDom = true;
             for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
             {
                 if (lines[l].Length == 0) continue;
@@ -1842,7 +1881,14 @@ namespace UnsubLib
                     break;
                 }
             }
-            if (allDom) return DOMAINHANDLER;
+            if (allDom)
+            {
+                var flen = await GetFileSize2(f.FullName);
+                await _fw.Trace("LOU", $"DOM File lenght after zipTester {f.FullName}: {flen}");
+                return DOMAINHANDLER;
+            }
+
+            await _fw.Trace("LOU", "NotAllDom");*/
 
             await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}::{theText}");
             return UNKNOWNHANDLER;

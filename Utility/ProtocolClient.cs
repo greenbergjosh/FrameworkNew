@@ -867,6 +867,10 @@ namespace Utility
         public static async Task<string> HttpPostAsync(string uri, string content, string mediaType,
             int timeoutSeconds = 60)
         {
+            var bytes = string.IsNullOrEmpty(content) 
+                ? new byte[0] 
+                : Encoding.UTF8.GetBytes(content);
+
             var http = (HttpWebRequest) WebRequest.Create(new Uri(uri));
             http.Accept = mediaType;
             http.ContentType = mediaType;
