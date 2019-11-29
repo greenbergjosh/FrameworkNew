@@ -8,8 +8,7 @@ import { OnBoardingSelectInterestsScreen } from "./OnBoardingSelectInterestsScre
 import { OnBoardingSetPasswordScreen } from "./OnBoardingSetPasswordScreen"
 import { OnBoardingCreateAccountScreen } from "./OnBoardingCreateAccountScreen"
 import { OnBoardingSyncContactsScreen } from "./OnBoardingSyncContactsScreen"
-import { styles, Colors, defaultNavigationOptions, routes } from "constants"
-
+import { defaultNavigationOptions, routes } from "constants"
 
 interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 
@@ -21,9 +20,10 @@ const OnBoardingNavigator = createStackNavigator(
     [routes.OnBoarding.SetPassword]: { screen: OnBoardingSetPasswordScreen },
     [routes.OnBoarding.SelectInterests]: { screen: OnBoardingSelectInterestsScreen },
     [routes.OnBoarding.SyncContacts]: { screen: OnBoardingSyncContactsScreen },
+    // [routes.OnBoarding.Tour]: { screen: TourScreen },
   },
   {
-    initialRouteName: routes.OnBoarding.CreateAccount,
+    initialRouteName: routes.OnBoarding.default,
     defaultNavigationOptions,
   }
 )

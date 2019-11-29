@@ -84,7 +84,7 @@ const renderSettingsDrawerContents = (
               </Button>
             </View>
           </List.Item>
-          <>{routes.Settings.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
+          <>{routes.SettingsNav.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
           <List.Item
             multipleLine
             style={{ backgroundColor: Colors.navy, borderWidth: 0 }}

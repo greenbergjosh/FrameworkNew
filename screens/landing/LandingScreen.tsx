@@ -12,7 +12,7 @@ export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) 
   const { authenticated, isAuthenticating } = useAuthContext()
   if (authenticated) {
     // Next tick. Offload from UI thread
-    setTimeout(() => navigate(routes.Main), 0)
+    setTimeout(() => navigate(routes.Main.default), 0)
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   } else if (isAuthenticating) {
     return <ActivityIndicator animating toast size="large" text="Loading..." />

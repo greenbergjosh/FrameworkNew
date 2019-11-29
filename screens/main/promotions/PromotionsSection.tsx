@@ -19,7 +19,7 @@ const PromotionsNavigator = createStackNavigator(
     [routes.Promotions.CampaignTemplates]: { screen: PromotionsCampaignTemplatesScreen },
   },
   {
-    initialRouteName: routes.Promotions.Promotions,
+    initialRouteName: routes.Promotions.default,
     defaultNavigationOptions,
   }
 )

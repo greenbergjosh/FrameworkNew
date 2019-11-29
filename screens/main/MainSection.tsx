@@ -8,6 +8,7 @@ import { HomeSection } from "./home/HomeSection"
 import { ProfileSection } from "./profile/ProfileSection"
 import { PromotionsSection } from "./promotions/PromotionsSection"
 import { SettingsDrawer, SettingsDrawerContext } from "./settings/SettingsDrawer"
+import { routes } from "constants"
 
 interface MainSectionProps extends NavigationSwitchScreenProps {}
 interface MainSectionState {
@@ -16,14 +17,14 @@ interface MainSectionState {
 
 const MainNavigator = createBottomTabNavigator(
   {
-    Home: { screen: HomeSection },
-    Explore: { screen: ExploreSection },
-    Promotions: { screen: PromotionsSection },
-    Follows: { screen: FollowsSection },
-    Profile: { screen: ProfileSection },
+    [routes.Main.Home]: { screen: HomeSection },
+    [routes.Main.Explore]: { screen: ExploreSection },
+    [routes.Main.Promotions]: { screen: PromotionsSection },
+    [routes.Main.Follows]: { screen: FollowsSection },
+    [routes.Main.Profile]: { screen: ProfileSection },
   },
   {
-    initialRouteName: "Home",
+    initialRouteName: routes.Main.default,
     defaultNavigationOptions: {},
   }
 )

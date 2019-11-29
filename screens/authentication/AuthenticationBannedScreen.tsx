@@ -8,7 +8,7 @@ export const AuthenticationBannedScreen = () => {
   const {navigate} = useContext(NavigationContext);
   return (
     <>
-      <Button onPress={() => navigate(routes.Landing)}>Sign Out</Button>
+      <Button onPress={() => navigate(routes.Landing.default)}>Sign Out</Button>
     </>
   )
 }

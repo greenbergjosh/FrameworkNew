@@ -6,10 +6,10 @@ import SectionNavigator from "components/NavigationOptions"
 
 const FollowsNavigator = createStackNavigator(
   {
-    [routes.Follows]: { screen: FollowsScreen },
+    [routes.Follows.Follows]: { screen: FollowsScreen },
   },
   {
-    initialRouteName: routes.Follows,
+    initialRouteName: routes.Follows.default,
     defaultNavigationOptions,
   }
 )

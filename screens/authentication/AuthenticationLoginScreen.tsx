@@ -27,7 +27,7 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
       setLoading(false)
       if (response.r === 0) {
         auth.handleLogin(response)
-        navigate(routes.Main)
+        navigate(routes.Main.default)
       } else {
         setError(response.error)
       }

@@ -7,16 +7,28 @@ import { routes, styles } from "constants"
 
 interface DevMenuScreenProps extends NavigationTabScreenProps {}
 
-function NavItem({ route, navigate }) {
+function NavItem({ keyName, route, navigate }) {
   const getTitle = (str) => (str.includes(".") ? str.split(".")[1] : str)
   return (
     <List.Item>
       <Flex>
         <Icon name="file" />
-        <Text style={styles.LinkText} onPress={() => navigate(route)}>
-          {" "}
-          {getTitle(route)}
-        </Text>
+        {keyName === "default" ? (
+          <>
+            <Text style={styles.LinkText} onPress={() => navigate(route)}>
+              {" Default "}
+            </Text>
+            <Text style={styles.SmallCopy}>({getTitle(route)})</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.LinkText} onPress={() => navigate(route)}>
+              {" "}
+              {getTitle(route)}
+            </Text>
+            <Text style={styles.SmallCopy}>{keyName === "default" ? " (default)" : null}</Text>
+          </>
+        )}
       </Flex>
     </List.Item>
   )
@@ -31,10 +43,15 @@ function Section({ section, navigate }) {
       <List renderHeader={section}>
         <>
           {typeof sectionRoutes === "string" ? (
-            <NavItem route={sectionRoutes} navigate={navigate} />
+            <NavItem
+              key={sectionRoutes}
+              keyName={sectionRoutes}
+              route={sectionRoutes}
+              navigate={navigate}
+            />
           ) : (
             Object.keys(sectionRoutes).map((key) => (
-              <NavItem key={key} route={sectionRoutes[key]} navigate={navigate} />
+              <NavItem key={key} keyName={key} route={sectionRoutes[key]} navigate={navigate} />
             ))
           )}
         </>
@@ -56,18 +73,21 @@ export class DevMenuScreen extends React.Component<DevMenuScreenProps> {
         <Text style={styles.H2}>Dev Menu</Text>
         <WhiteSpace size="xl" />
         <ScrollView>
-          <Section section="Authentication" navigate={navigate} />
-          <Section section="DevMenu" navigate={navigate} />
-          <Section section="Explore" navigate={navigate} />
-          <Section section="Follows" navigate={navigate} />
-          <Section section="Home" navigate={navigate} />
+          {/* ROOT SECTIONS */}
           <Section section="Landing" navigate={navigate} />
-          <Section section="Main" navigate={navigate} />
-          <Section section="Messages" navigate={navigate} />
+          <Section section="Authentication" navigate={navigate} />
           <Section section="OnBoarding" navigate={navigate} />
-          <Section section="Profile" navigate={navigate} />
+          <Section section="Main" navigate={navigate} />
+
+          {/* MAIN SECTION */}
+          <Section section="Home" navigate={navigate} />
+          <Section section="Explore" navigate={navigate} />
           <Section section="Promotions" navigate={navigate} />
-          {/*<Section section="Settings" navigate={navigate} />*/}
+          <Section section="Follows" navigate={navigate} />
+          <Section section="Profile" navigate={navigate} />
+          <Section section="Messages" navigate={navigate} />
+          <Section section="Settings" navigate={navigate} />
+
           <WhiteSpace size="xl" />
         </ScrollView>
       </View>

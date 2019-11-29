@@ -1,6 +1,6 @@
 import { IconProps } from "@ant-design/react-native/lib/icon"
 
-interface NavigationItem {
+export interface NavigationItem {
   title: string
   route: string
   icon?: IconProps["name"]
@@ -14,6 +14,7 @@ enum Authentication {
 }
 
 enum Promotions {
+  default = "Promotions.Promotions",
   Campaign = "Promotions.Campaign",
   CampaignAdditionalImages = "Promotions.CampaignAdditionalImages",
   CampaignList = "Promotions.CampaignList",
@@ -23,15 +24,7 @@ enum Promotions {
 
 enum Home {
   default = "Home.Feed",
-  Analytics = "Home.Analytics",
-  BlockedUsers = "Home.BlockedUsers",
   Feed = "Home.Feed",
-  Messages = "Home.Messages",
-  NewMessage = "Home.NewMessage",
-  Notifications = "Home.Notifications",
-  PrivacyOptions = "Home.PrivacyOptions",
-  Tour = "Home.Tour",
-  ViewThread = "Home.ViewThread",
 }
 
 enum OnBoarding {
@@ -42,9 +35,11 @@ enum OnBoarding {
   SelectInterests = "OnBoarding.SelectInterests",
   SetPassword = "OnBoarding.SetPassword",
   SyncContacts = "OnBoarding.SyncContacts",
+  Tour = "OnBoarding.Tour",
 }
 
 enum Explore {
+  default = "Explore.Feed",
   Campaign = "Explore.Campaign",
   Feed = "Explore.Feed",
   FeedDetails = "Explore.FeedDetails",
@@ -54,11 +49,46 @@ enum Explore {
 
 enum Messages {
   default = "Messages",
+  Messages = "Home.Messages",
   NewMessage = "NewMessage",
   ViewThread = "ViewThread",
 }
 
-const Settings: NavigationItem[] = [
+enum Settings {
+  default = "Settings.Notifications",
+  Analytics = "Settings.Analytics",
+  BlockedUsers = "Settings.BlockedUsers",
+  Notifications = "Settings.Notifications",
+  PrivacyOptions = "Settings.PrivacyOptions",
+}
+
+enum Profile {
+  default = "Profile.Profile",
+  Profile = "Profile.Profile",
+  EditProfile = "Profile.EditProfile",
+  PostDetails = "Profile.PostDetails",
+}
+
+enum Follows {
+  default = "Follows.Follows",
+  Follows = "Follows.Follows",
+}
+
+enum Landing {
+  default = "Landing.Landing",
+  Landing = "Landing.Landing",
+}
+
+enum Main {
+  default = "Main.Home",
+  Home = "Main.Home",
+  Explore = "Main.Explore",
+  Promotions = "Main.Promotions",
+  Follows = "Main.Follows",
+  Profile = "Main.Profile",
+}
+
+const SettingsNav: NavigationItem[] = [
   {
     title: "Analytics",
     route: "Analytics",
@@ -86,10 +116,6 @@ const Settings: NavigationItem[] = [
 ]
 
 const DevMenu = "DevMenu"
-const Follows = "Follows"
-const Landing = "Landing"
-const Main = "Main"
-const Profile = "Profile"
 
 export const routes = {
   Authentication,
@@ -104,4 +130,5 @@ export const routes = {
   Profile,
   Promotions,
   Settings,
+  SettingsNav,
 }

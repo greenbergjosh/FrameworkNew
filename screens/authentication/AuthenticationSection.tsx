@@ -15,7 +15,7 @@ const AuthenticationNavigator = createStackNavigator(
     [routes.Authentication.ResetPassword]: { screen: AuthenticationResetPasswordScreen },
   },
   {
-    initialRouteName: routes.Authentication.Login,
+    initialRouteName: routes.Authentication.default,
     defaultNavigationOptions,
   }
 )
