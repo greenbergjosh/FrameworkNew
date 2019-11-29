@@ -27,6 +27,20 @@ function UserActionsButton() {
   return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
 }
 
+function PostActionsButton() {
+  const showActionSheet = () => {
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options: ["Report Inappropriate", "Add To My Promotions", "Copy Link", "Cancel"],
+        cancelButtonIndex: 3,
+      },
+      (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
+    )
+  }
+
+  return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
+}
+
 export const UserInfoSmall = ({ user, navigate }) => (
   <Flex direction="row" style={{ margin: Units.margin }} justify="between">
     <Flex>
@@ -39,7 +53,7 @@ export const UserInfoSmall = ({ user, navigate }) => (
         <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
       </TouchableOpacity>
     </Flex>
-    <UserActionsButton />
+    <PostActionsButton />
   </Flex>
 )
 

@@ -2,9 +2,9 @@ import React from "react"
 import { View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { USER_FEED_DATA } from "./components/mockData"
-import FeedGrid from "./components/FeedGrid"
-import UserInfo from "./components/UserInfo"
+import { USER_FEED_DATA } from "../../../components/feed/mockData"
+import FeedGrid from "../../../components/feed/FeedGrid"
+import UserInfo from "../../../components/feed/UserInfo"
 import { routes } from "constants"
 
 interface ExploreUserFeedScreenProps extends NavigationTabScreenProps {}

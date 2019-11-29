@@ -3,11 +3,11 @@ import { Image, ScrollView, TouchableOpacity, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { List } from "@ant-design/react-native"
-import SocialButtons from "./components/SocialButtons"
-import { FEED_DETAILS_DATA } from "./components/mockData"
-import Comments from "./components/Comments"
-import { UserInfoSmall } from "./components/UserInfo"
-import FeedItem from "./components/FeedItem"
+import SocialButtons from "../../../components/feed/SocialButtons"
+import { FEED_DETAILS_DATA } from "../../../components/feed/mockData"
+import Comments from "../../../components/feed/Comments"
+import { UserInfoSmall } from "../../../components/feed/UserInfo"
+import FeedItem from "../../../components/feed/FeedItem"
 
 interface ExploreFeedDetailsScreenProps extends NavigationTabScreenProps {}
 

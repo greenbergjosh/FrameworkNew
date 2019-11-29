@@ -2,8 +2,8 @@ import React from "react"
 import { SearchBar } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FEED_DATA } from "./components/mockData"
-import FeedGrid from "./components/FeedGrid"
+import { FEED_DATA } from "components/feed/mockData"
+import FeedGrid from "components/feed/FeedGrid"
 import { routes } from "constants"
 
 interface ExploreFeedScreenProps extends NavigationTabScreenProps {}

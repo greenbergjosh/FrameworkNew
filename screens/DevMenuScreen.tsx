@@ -34,7 +34,7 @@ function Section({ section, navigate }) {
             <NavItem route={sectionRoutes} navigate={navigate} />
           ) : (
             Object.keys(sectionRoutes).map((key) => (
-              <NavItem route={sectionRoutes[key]} navigate={navigate} />
+              <NavItem key={key} route={sectionRoutes[key]} navigate={navigate} />
             ))
           )}
         </>
