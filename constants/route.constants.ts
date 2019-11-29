@@ -91,27 +91,28 @@ enum Main {
 const SettingsNav: NavigationItem[] = [
   {
     title: "Analytics",
-    route: "Analytics",
+    route: Settings.Analytics,
     icon: "line-chart",
   },
   {
     title: "Privacy Options",
-    route: "PrivacyOptions",
+    route: Settings.PrivacyOptions,
     icon: "lock",
   },
   {
     title: "Notifications",
-    route: "Notifications",
+    route: Settings.Notifications,
     icon: "bell",
   },
   {
     title: "Blocked Users",
-    route: "BlockedUsers",
+    route: Settings.BlockedUsers,
     icon: "stop",
   },
   {
     title: "Quick Tour",
-    route: "Tour",
+    route: OnBoarding.Tour,
+    icon: "compass",
   },
 ]
 

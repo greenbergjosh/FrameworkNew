@@ -1,22 +1,16 @@
-import { Button, Drawer, Icon, List, WhiteSpace } from "@ant-design/react-native"
-import { IconProps } from "@ant-design/react-native/lib/icon"
+import { Drawer } from "@ant-design/react-native"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
 import { useGetGotRootDataContext } from "providers/getgot-root-data-context-provider"
 import React from "react"
-import { ScrollView, Text, View } from "react-native"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
-import { AuthContextType, useAuthContext } from "providers/auth-context-provider"
+import { useAuthContext } from "providers/auth-context-provider"
 import { Colors, routes } from "constants"
+import SettingsDrawerContents from "./components/SettingsDrawerContents"
 
 export const SettingsDrawerContext = React.createContext({
   open: false,
   toggle: (state?: boolean) => {},
 })
-
-export interface SettingsDrawerChildProps {
-  open?: () => void
-  close?: () => void
-}
 
 export interface SettingsDrawerProps extends React.PropsWithChildren<unknown> {
   open: boolean
@@ -39,12 +33,14 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
     <SettingsDrawerContext.Consumer>
       {({ open, toggle }) => (
         <Drawer
-          sidebar={renderSettingsDrawerContents(
-            auth,
-            navigate,
-            drawerRef && drawerRef.current && drawerRef.current.closeDrawer,
-            logout
-          )}
+          sidebar={
+            <SettingsDrawerContents
+              auth={auth}
+              navigate={navigate}
+              closeDrawer={drawerRef && drawerRef.current && drawerRef.current.closeDrawer}
+              logout={logout}
+            />
+          }
           position="left"
           open={props.open || open}
           drawerRef={(ref) => (drawerRef.current = ref)}
@@ -54,96 +50,5 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
         </Drawer>
       )}
     </SettingsDrawerContext.Consumer>
-  )
-}
-
-const renderSettingsDrawerContents = (
-  auth: AuthContextType,
-  navigate: SettingsDrawerProps["navigation"]["navigate"],
-  closeDrawer: DrawerLayout["closeDrawer"],
-  logout: () => void
-) => {
-  return (
-    <>
-      <ScrollView style={{ flex: 1 }}>
-        <WhiteSpace />
-        <List>
-          <List.Item thumb={auth.imageurl} style={{ backgroundColor: Colors.navy }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}>
-              <Text style={{ color: "#fff" }}>{auth.handle}</Text>
-              <Button
-                size="small"
-                style={{ backgroundColor: Colors.navy, borderWidth: 0 }}
-                onPress={() => closeDrawer()}>
-                <Icon name="left" color="#fff" />
-              </Button>
-            </View>
-          </List.Item>
-          <>{routes.SettingsNav.map((item) => renderDrawerItem(item, navigate, closeDrawer))}</>
-          <List.Item
-            multipleLine
-            style={{ backgroundColor: Colors.navy, borderWidth: 0 }}
-            onPress={() => {
-              closeDrawer()
-              logout()
-            }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                borderWidth: 0,
-                borderBottomColor: "red",
-                borderTopColor: "green",
-              }}>
-              <Text style={{ color: "#fff" }}>Log out</Text>
-            </View>
-          </List.Item>
-        </List>
-      </ScrollView>
-    </>
-  )
-}
-
-const renderDrawerItem = (
-  {
-    title,
-    route,
-    icon,
-  }: {
-    title: string
-    route: string
-    icon?: IconProps["name"]
-  },
-  navigate,
-  closeDrawer
-) => {
-  return (
-    <List.Item
-      key={title}
-      multipleLine
-      style={{ backgroundColor: Colors.navy, borderWidth: 0 }}
-      thumb={icon && <Icon name={icon} />}
-      onPress={() => {
-        navigate(route)
-        closeDrawer()
-      }}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderWidth: 0,
-          borderBottomColor: "red",
-          borderTopColor: "green",
-        }}>
-        <Text style={{ color: "#fff" }}>{title}</Text>
-      </View>
-    </List.Item>
   )
 }

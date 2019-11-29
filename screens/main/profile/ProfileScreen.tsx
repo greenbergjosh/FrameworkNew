@@ -1,9 +1,12 @@
 import React from "react"
-import { Text } from "react-native"
+import { ScrollView, View } from "react-native"
+import { Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Flex } from "@ant-design/react-native"
-import { styles } from "constants"
+import { routes, styles } from "constants"
+import UserInfo from "components/feed/UserInfo"
+import { USER_FEED_DETAILS_DATA } from "components/feed/mockData"
+import FeedGrid from "../../../components/feed/FeedGrid"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
@@ -15,10 +18,18 @@ export class ProfileScreen extends React.Component<ProfileScreenProps> {
   }
   render() {
     const { navigate } = this.props.navigation
+    const { user, feed } = USER_FEED_DETAILS_DATA
+
     return (
-      <Flex justify="center" align="center" direction="column" style={{ flexGrow: 1 }}>
-        <Text style={styles.Body}>Profile screen to come.</Text>
-      </Flex>
+      <ScrollView>
+        <UserInfo user={user} showFullDetails={true} navigate={navigate} />
+        <View style={styles.View}>
+          <Button size="large" type="primary" onPress={() => navigate(routes.Profile.EditProfile)}>
+            Edit Profile
+          </Button>
+        </View>
+        <FeedGrid feed={feed} onPress={(id) => navigate(routes.Profile.PostDetails, { id })} />
+      </ScrollView>
     )
   }
 }

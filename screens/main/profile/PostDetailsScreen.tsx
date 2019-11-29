@@ -1,24 +1,35 @@
 import React from "react"
-import { Text } from "react-native"
+import { ScrollView, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Flex } from "@ant-design/react-native"
-import { styles } from "constants"
+import { List } from "@ant-design/react-native"
+import { UserInfoSmall } from "components/feed/UserInfo"
+import FeedItem from "components/feed/FeedItem"
+import { FEED_DETAILS_DATA } from "components/feed/mockData"
 
 interface PostDetailsScreenProps extends NavigationTabScreenProps {}
 
 export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="Post Details" align="left" size="large" />,
+      headerTitle: () => <HeaderTitle title="Posts" offset="none" />,
     }
   }
   render() {
     const { navigate } = this.props.navigation
+    const { feed } = FEED_DETAILS_DATA
+
     return (
-      <Flex justify="center" align="center" direction="column" style={{ flexGrow: 1 }}>
-        <Text style={styles.Body}>Post Details screen to come.</Text>
-      </Flex>
+      <ScrollView>
+        <List>
+          {feed.map((item) => (
+            <View key={item.id}>
+              <UserInfoSmall user={item.user} navigate={navigate} />
+              <FeedItem item={item} navigate={navigate} />
+            </View>
+          ))}
+        </List>
+      </ScrollView>
     )
   }
 }

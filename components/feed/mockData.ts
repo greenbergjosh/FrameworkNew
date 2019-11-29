@@ -139,5 +139,50 @@ export const USER_FEED_DETAILS_DATA: { user: UserInfo, feed: FeedItem[] } = {
       uri: ImageUris.placeholder,
       height: 435,
     },
+    {
+      id: 4,
+      uri: ImageUris.placeholder,
+      height: 435,
+    },
+    {
+      id: 5,
+      uri: ImageUris.placeholder,
+      height: 300,
+    },
+    {
+      id: 6,
+      uri: ImageUris.placeholder,
+      height: 435,
+    },
+    {
+      id: 7,
+      uri: ImageUris.placeholder,
+      height: 435,
+    },
+    {
+      id: 8,
+      uri: ImageUris.placeholder,
+      height: 300,
+    },
+    {
+      id: 9,
+      uri: ImageUris.placeholder,
+      height: 435,
+    },
+    {
+      id: 10,
+      uri: ImageUris.placeholder,
+      height: 435,
+    },
+    {
+      id: 11,
+      uri: ImageUris.placeholder,
+      height: 300,
+    },
+    {
+      id: 12,
+      uri: ImageUris.placeholder,
+      height: 435,
+    },
   ],
 }
