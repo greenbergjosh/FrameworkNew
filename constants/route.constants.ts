@@ -48,10 +48,10 @@ enum Explore {
 }
 
 enum Messages {
-  default = "Messages",
-  Messages = "Home.Messages",
-  NewMessage = "NewMessage",
-  ViewThread = "ViewThread",
+  default = "Messages.Messages",
+  Messages = "Messages.Messages",
+  NewMessage = "Messages.NewMessage",
+  ViewThread = "Messages.ViewThread",
 }
 
 enum Settings {
@@ -86,6 +86,8 @@ enum Main {
   Promotions = "Main.Promotions",
   Follows = "Main.Follows",
   Profile = "Main.Profile",
+  Messages = "Main.Messages",
+  Settings = "Main.Settings",
 }
 
 const SettingsNav: NavigationItem[] = [

@@ -7,6 +7,8 @@ import { FollowsSection } from "./follows/FollowsSection"
 import { HomeSection } from "./home/HomeSection"
 import { ProfileSection } from "./profile/ProfileSection"
 import { PromotionsSection } from "./promotions/PromotionsSection"
+import { MessagesSection } from "./messages/MessagesSection"
+import { SettingsSection } from "./settings/SettingsSection"
 import { SettingsDrawer, SettingsDrawerContext } from "./settings/SettingsDrawer"
 import { routes } from "constants"
 
@@ -22,6 +24,8 @@ const MainNavigator = createBottomTabNavigator(
     [routes.Main.Promotions]: { screen: PromotionsSection },
     [routes.Main.Follows]: { screen: FollowsSection },
     [routes.Main.Profile]: { screen: ProfileSection },
+    [routes.Main.Messages]: { screen: MessagesSection },
+    [routes.Main.Settings]: { screen: SettingsSection },
   },
   {
     initialRouteName: routes.Main.default,
