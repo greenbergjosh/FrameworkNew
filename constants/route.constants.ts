@@ -25,6 +25,8 @@ enum Promotions {
 enum Home {
   default = "Home.Feed",
   Feed = "Home.Feed",
+  Messages = "Home.Messages",
+  Settings = "Home.Settings",
 }
 
 enum OnBoarding {
@@ -86,8 +88,6 @@ enum Main {
   Promotions = "Main.Promotions",
   Follows = "Main.Follows",
   Profile = "Main.Profile",
-  Messages = "Main.Messages",
-  Settings = "Main.Settings",
 }
 
 const SettingsNav: NavigationItem[] = [

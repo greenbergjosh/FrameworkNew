@@ -9,8 +9,8 @@ import { HomeFeedScreen } from "./HomeFeedScreen"
 const HomeNavigator = createStackNavigator(
   {
     [routes.Home.Feed]: { screen: HomeFeedScreen },
-    [routes.Main.Messages]: { screen: MessagesSection },
-    [routes.Main.Settings]: { screen: SettingsSection },
+    [routes.Home.Messages]: { screen: MessagesSection },
+    [routes.Home.Settings]: { screen: SettingsSection },
   },
   {
     initialRouteName: routes.Home.Feed,

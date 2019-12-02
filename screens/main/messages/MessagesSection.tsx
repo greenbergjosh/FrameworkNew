@@ -32,7 +32,7 @@ MessagesSection.navigationOptions = ({ navigation }) => {
     // headerTitle: () => <HeaderLogo />,
     // headerRight: () => (
     //   <Button
-    //     onPress={() => navigation.navigate(routes.Main.Messages)}
+    //     onPress={() => navigation.navigate(routes.Home.Messages)}
     //     style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
     //     <Icon name="mail" color="#fff" size="md" />
     //   </Button>
