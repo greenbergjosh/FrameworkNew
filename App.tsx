@@ -1,20 +1,18 @@
-import * as Font from "expo-font"
-
-import React, { useEffect } from "react"
-
+import { Provider } from "@ant-design/react-native"
 import { ActionSheetProvider } from "@expo/react-native-action-sheet"
 import { AppLoading } from "expo"
-import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
+import * as Font from "expo-font"
+import React, { useEffect } from "react"
+import { Transition } from "react-native-reanimated"
+import { createAppContainer } from "react-navigation"
+import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
+import { routes } from "./constants/route.constants"
 import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
+import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
+import { DevMenuScreen } from "./screens/DevMenuScreen"
 import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
-import { Provider } from "@ant-design/react-native"
-import { Transition } from "react-native-reanimated"
-import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
-import { createAppContainer } from "react-navigation"
-import { DevMenuScreen } from "./screens/DevMenuScreen"
-import { routes } from "./constants/route.constants"
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -22,11 +20,10 @@ const sectionNavigator = createAnimatedSwitchNavigator(
     OnBoarding: { screen: OnBoardingSection },
     Authentication: { screen: AuthenticationSection },
     Main: { screen: MainSection },
-    DevMenu: { screen: DevMenuScreen }
+    DevMenu: { screen: DevMenuScreen },
   },
   {
-    // initialRouteName: routes.Landing,
-    initialRouteName: routes.DevMenu,
+    initialRouteName: "Landing",
     defaultNavigationOptions: {
       headerStyle: {
         backgroundColor: "#343997",

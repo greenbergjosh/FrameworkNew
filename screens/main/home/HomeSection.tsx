@@ -1,12 +1,16 @@
+import TabBarSectionNavigator from "components/NavigationOptions"
+import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { createStackNavigator } from "react-navigation-stack"
+import { MessagesSection } from "../messages/MessagesSection"
+import { SettingsSection } from "../settings/SettingsSection"
 import { HomeFeedScreen } from "./HomeFeedScreen"
-import { defaultNavigationOptions, routes } from "constants"
-import SectionNavigator from "components/NavigationOptions"
 
 const HomeNavigator = createStackNavigator(
   {
     [routes.Home.Feed]: { screen: HomeFeedScreen },
+    [routes.Main.Messages]: { screen: MessagesSection },
+    [routes.Main.Settings]: { screen: SettingsSection },
   },
   {
     initialRouteName: routes.Home.Feed,
@@ -14,4 +18,4 @@ const HomeNavigator = createStackNavigator(
   }
 )
 
-export const HomeSection = SectionNavigator(HomeNavigator, "Home", "home")
+export const HomeSection = TabBarSectionNavigator(HomeNavigator, "Home", "home")

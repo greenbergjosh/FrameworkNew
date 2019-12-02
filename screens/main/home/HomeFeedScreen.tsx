@@ -1,19 +1,24 @@
+import {
+  Button,
+  Icon,
+  List,
+  SearchBar
+  } from "@ant-design/react-native"
+import FeedGrid from "components/feed/FeedGrid"
+import { FEED_DETAILS_DATA } from "components/feed/mockData"
+import { HeaderLogo } from "components/HeaderLogo"
+import { Colors, routes } from "constants"
 import moment from "moment"
-import React from "react"
-import { NavigationStackScreenProps } from "react-navigation-stack"
-import { Button, Icon, List, SearchBar } from "@ant-design/react-native"
-import { ScrollView, Text, View } from "react-native"
 import { useFeedContext } from "providers/feed-context-provider"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { HeaderLogo } from "components/HeaderLogo"
-import FeedGrid from "components/feed/FeedGrid"
+import React from "react"
+import { ScrollView, Text, View } from "react-native"
+import { NavigationStackScreenProps } from "react-navigation-stack"
+import FeedItem from "../../../components/feed/FeedItem"
+import { UserInfoSmall } from "../../../components/feed/UserInfo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
-import { Colors, routes } from "constants"
-import { FEED_DETAILS_DATA } from "components/feed/mockData"
-import { UserInfoSmall } from "../../../components/feed/UserInfo"
-import FeedItem from "../../../components/feed/FeedItem"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
@@ -76,7 +81,7 @@ HomeFeedScreen.navigationOptions = ({ navigation }) => {
     headerTitle: () => <HeaderLogo />,
     headerRight: () => (
       <Button
-        onPress={() => navigation.navigate(routes.Messages.default)}
+        onPress={() => navigation.navigate(routes.Main.Messages)}
         style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
         <Icon name="mail" color="#fff" size="md" />
       </Button>
