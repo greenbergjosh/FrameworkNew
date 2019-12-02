@@ -1,9 +1,14 @@
+import {
+  ActivityIndicator,
+  Button,
+  Flex,
+  WhiteSpace
+  } from "@ant-design/react-native"
+import { routes, styles } from "constants"
+import { useAuthContext } from "providers/auth-context-provider"
 import React from "react"
 import { Text, View } from "react-native"
-import { ActivityIndicator, Button, Flex, WhiteSpace } from "@ant-design/react-native"
-import { routes, styles } from "constants"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { useAuthContext } from "providers/auth-context-provider"
 
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
 
@@ -20,10 +25,12 @@ export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) 
   }
 
   return (
-    <View style={[styles.ViewContainer, { marginTop: 300 }]}>
-      <Flex justify="center" direction="column">
+    <View style={[styles.ViewContainer, { flex: 1 }]}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text style={[styles.H3, { marginBottom: 20 }]}>[ Large GetGot Logo ]</Text>
-        <Text style={[styles.Body, { fontStyle: "italic", marginBottom: 200 }]}>Our value proposition to you!</Text>
+        <Text style={[styles.Body, { fontStyle: "italic" }]}>Our value proposition to you!</Text>
+      </View>
+      <View style={{ height: 150 }}>
         <Button
           type="primary"
           size="large"
@@ -40,7 +47,7 @@ export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) 
           onPress={() => navigate(routes.Authentication.default)}>
           Log In
         </Button>
-      </Flex>
+      </View>
     </View>
   )
 }

@@ -20,4 +20,13 @@ const SettingsNavigator = createStackNavigator(
   }
 )
 
-export const SettingsSection = TabBarSectionNavigator(SettingsNavigator, "Settings", "setting")
+export const SettingsSection = SettingsNavigator
+
+SettingsSection.router = SettingsNavigator.router
+SettingsSection.navigationOptions = ({ navigation }) => {
+  return {
+    // TODO: There appears to be a double layer header with this section and its children. This is a quick fix to hide it, but probably needs more thought
+    headerLeft: null,
+    headerStyle: { height: 0 },
+  }
+}
