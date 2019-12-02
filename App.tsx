@@ -3,6 +3,7 @@ import { ActionSheetProvider } from "@expo/react-native-action-sheet"
 import { AppLoading } from "expo"
 import * as Font from "expo-font"
 import React, { useEffect } from "react"
+import { StatusBar } from "react-native"
 import { Transition } from "react-native-reanimated"
 import { createAppContainer } from "react-navigation"
 import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
@@ -77,26 +78,29 @@ const App = () => {
   }
 
   return (
-    <GetGotRootDataContextProvider>
-      <Provider theme={theme}>
-        <ActionSheetProvider>
-          <RootNavigator
-            screenProps={{ changeTheme, currentTheme }}
-            onNavigationStateChange={(prevState, currentState, action) => {
-              const currentRouteName = getActiveRouteName(currentState)
-              const previousRouteName = getActiveRouteName(prevState)
+    <>
+      <StatusBar barStyle="light-content" />
+      <GetGotRootDataContextProvider>
+        <Provider theme={theme}>
+          <ActionSheetProvider>
+            <RootNavigator
+              screenProps={{ changeTheme, currentTheme }}
+              onNavigationStateChange={(prevState, currentState, action) => {
+                const currentRouteName = getActiveRouteName(currentState)
+                const previousRouteName = getActiveRouteName(prevState)
 
-              if (previousRouteName !== currentRouteName) {
-                // TODO Event and Analytics tracking
-                // the line below uses the @react-native-firebase/analytics tracker
-                // change the tracker here to use other Mobile analytics SDK.
-                // analytics().setCurrentScreen(currentRouteName, currentRouteName)
-              }
-            }}
-          />
-        </ActionSheetProvider>
-      </Provider>
-    </GetGotRootDataContextProvider>
+                if (previousRouteName !== currentRouteName) {
+                  // TODO Event and Analytics tracking
+                  // the line below uses the @react-native-firebase/analytics tracker
+                  // change the tracker here to use other Mobile analytics SDK.
+                  // analytics().setCurrentScreen(currentRouteName, currentRouteName)
+                }
+              }}
+            />
+          </ActionSheetProvider>
+        </Provider>
+      </GetGotRootDataContextProvider>
+    </>
   )
 }
 
