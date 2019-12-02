@@ -1,5 +1,5 @@
 import React from "react"
-import { StyleProp, TextStyle, TouchableOpacity, ViewStyle } from "react-native"
+import { StyleProp, TextStyle, TouchableOpacity, ViewStyle, View } from "react-native"
 import { Icon } from "@ant-design/react-native"
 import { IconNames, IconProps } from "@ant-design/react-native/lib/icon"
 import { Colors, styles, Units } from "constants"
@@ -35,27 +35,53 @@ export const TouchIcon = ({
   }
 
   return (
-    <TouchableOpacity
-      onPress={onPress && onPress}
-      style={[
-        {
-          minHeight: Units.minTouchArea,
-          minWidth: Units.minTouchArea,
-          marginLeft: margin,
-          marginRight: margin,
-          marginTop: margin,
-          marginBottom: margin,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        },
-        style,
-      ]}>
-      <Icon
-        name={name}
-        size={size}
-        style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, iconStyle]}
-      />
-    </TouchableOpacity>
+    <>
+      {onPress ? (
+        <TouchableOpacity
+          onPress={onPress && onPress}
+          style={[
+            {
+              minHeight: Units.minTouchArea,
+              minWidth: Units.minTouchArea,
+              marginLeft: margin,
+              marginRight: margin,
+              marginTop: margin,
+              marginBottom: margin,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+            style,
+          ]}>
+          <Icon
+            name={name}
+            size={size}
+            style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, iconStyle]}
+          />
+        </TouchableOpacity>
+      ) : (
+        <View
+          style={[
+            {
+              minHeight: Units.minTouchArea,
+              minWidth: Units.minTouchArea,
+              marginLeft: margin,
+              marginRight: margin,
+              marginTop: margin,
+              marginBottom: margin,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+            style,
+          ]}>
+          <Icon
+            name={name}
+            size={size}
+            style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, iconStyle]}
+          />
+        </View>
+      )}
+    </>
   )
 }
