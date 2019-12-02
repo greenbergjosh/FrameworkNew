@@ -8,6 +8,7 @@ import { ProfileContextProvider, useProfileContext } from "./profile-context-pro
 import { PromotionsContextProvider, usePromotionsContext } from "./promotions-context-provider"
 import { CatalogContextProvider, useCatalogContext } from "./catalog-context-provider"
 import { FollowsContextProvider, useFollowsContext } from "./follows-context-provider"
+import { MessagesContextProvider, useMessagesContext } from "./messages-context-provider"
 
 const providers: {
   [key: string]: { provider: ReactComponentLike; hook: () => GetGotContextType }
@@ -19,6 +20,7 @@ const providers: {
   ProfileContextProvider: { provider: ProfileContextProvider, hook: useProfileContext },
   CatalogContextProvider: { provider: CatalogContextProvider, hook: useCatalogContext },
   FollowsContextProvider: { provider: FollowsContextProvider, hook: useFollowsContext },
+  MessagesContextProvider: { provider: MessagesContextProvider, hook: useMessagesContext },
 }
 
 const initialContext: GetGotRootDataContextType = {

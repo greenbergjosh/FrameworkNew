@@ -1,5 +1,5 @@
 import React from "react"
-import { Image, TouchableOpacity } from "react-native"
+import { Image, TouchableOpacity, View } from "react-native"
 import { Colors, ImageUris, styles, Units } from "constants"
 
 interface AvatarProps {
@@ -17,7 +17,7 @@ export const Avatar = ({ size, source = ImageUris.placeholder, onPress }: Avatar
 
   let avatarStyle
   let margin = 0
-  switch(size) {
+  switch (size) {
     case "xs":
       avatarStyle = styles.AvatarXS
       margin = (Units.avatarXS - Units.minTouchArea) / 2
@@ -36,21 +36,40 @@ export const Avatar = ({ size, source = ImageUris.placeholder, onPress }: Avatar
   }
 
   return (
-    <TouchableOpacity
-      onPress={onPress && onPress}
-      disabled={!onPress}
-      style={{
-        minHeight: Units.minTouchArea,
-        minWidth: Units.minTouchArea,
-        marginLeft: margin,
-        marginRight: margin,
-        marginTop: margin,
-        marginBottom: margin,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}>
-      <Image source={{ uri: source }} style={[avatarStyle, { flex: 0, alignSelf: "auto" }]} />
-    </TouchableOpacity>
+    <>
+      {onPress ? (
+        <TouchableOpacity
+          onPress={onPress && onPress}
+          disabled={!onPress}
+          style={{
+            minHeight: Units.minTouchArea,
+            minWidth: Units.minTouchArea,
+            marginLeft: margin,
+            marginRight: margin,
+            marginTop: margin,
+            marginBottom: margin,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+          <Image source={{ uri: source }} style={[avatarStyle, { flex: 0, alignSelf: "auto" }]} />
+        </TouchableOpacity>
+      ) : (
+        <View
+          style={{
+            minHeight: Units.minTouchArea,
+            minWidth: Units.minTouchArea,
+            marginLeft: margin,
+            marginRight: margin,
+            marginTop: margin,
+            marginBottom: margin,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}>
+          <Image source={{ uri: source }} style={[avatarStyle, { flex: 0, alignSelf: "auto" }]} />
+        </View>
+      )}
+    </>
   )
 }

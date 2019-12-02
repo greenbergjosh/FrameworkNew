@@ -1,42 +1,62 @@
-import { Button, Icon } from "@ant-design/react-native"
+import React from "react"
+import { ActivityIndicator, Button, Icon, SearchBar } from "@ant-design/react-native"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes } from "constants"
-import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
+import { useMessagesContext } from "providers/messages-context-provider"
+import { MessagesList } from "./components/MessagesList"
 
-interface MessagesScreenProps extends NavigationStackScreenProps {}
+export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
-export class MessagesScreen extends React.Component<MessagesScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: () => (
-        <Button
-          onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
-          <Icon name="arrow-left" color="#fff" size="lg" />
-        </Button>
-      ),
-      headerTitle: () => <HeaderTitle title="Messages" />,
-      headerRight: () => (
-        <Button
-          onPress={() => navigation.navigate(routes.Messages.NewMessage)}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
-          <Icon name="plus" color="#fff" size="lg" />
-        </Button>
-      ),
-    }
+export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
+  const messagesContext = useMessagesContext()
+  if (
+    !messagesContext.lastLoadMessages &&
+    !messagesContext.loading.loadMessages[JSON.stringify([])]
+  ) {
+    messagesContext.loadMessages()
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
-  render() {
-    const { navigate } = this.props.navigation
-    return (
-      <>
-        <Button
-          onPress={() =>
-            navigate(routes.Messages.ViewThread, { threadId: "abcde-fgh-ijkl-mnopqrst" })
-          }>
-          Navigate to Single Thread
-        </Button>
-      </>
-    )
+  const { messages } = messagesContext
+  const { navigate } = navigation
+
+  return (
+    <>
+      <SearchBar
+        placeholder="Search"
+        cancelText="Cancel"
+        showCancelButton={false}
+        onSubmit={() => alert("Search\n Feature to come!")}
+      />
+      <MessagesList navigate={navigate} messages={messages} />
+      <Button
+        style={{ backgroundColor: Colors.lightgrey }}
+        onPress={() =>
+          alert(
+            "Create message by taking a photo or selecting a photo from library.\nFeature to come!"
+          )
+        }>
+        <Icon name="camera" size="lg" />
+      </Button>
+    </>
+  )
+}
+MessagesScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: () => (
+      <Button
+        onPress={() => navigation.navigate(routes.Home.Feed)}
+        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+        <Icon name="left" color="#fff" size="lg" />
+      </Button>
+    ),
+    headerTitle: () => <HeaderTitle title="Messages" />,
+    headerRight: () => (
+      <Button
+        onPress={() => navigation.navigate(routes.Messages.NewMessage)}
+        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+        <Icon name="plus" color="#fff" size="lg" />
+      </Button>
+    ),
   }
 }

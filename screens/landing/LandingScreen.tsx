@@ -8,6 +8,7 @@ import { useAuthContext } from "providers/auth-context-provider"
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
 
 export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) => {
+  navigate(routes.DevMenu)
   // TODO: Does this really belong here or in App.tsx?
   const { authenticated, isAuthenticating } = useAuthContext()
   if (authenticated) {
