@@ -18,7 +18,10 @@ export const resultCodes = {
   109: "Contact not found",
   110: "Name already used in context",
   111: "Invalid promotion payload",
+  500: "GetGot is currently under maintenance. Please try again in a few minutes.",
 }
+
+export const templateHost = "http://ec2-35-170-186-135.compute-1.amazonaws.com/"
 
 // export let baseAddress = "https://getgotapp.com"
 export let baseAddress = "http://142.44.215.16/getgot"
@@ -85,7 +88,22 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
   })
   console.debug("api/index.ts", `getgotRequest fn: ${name} | Waiting on JSON`)
 
-  const json = await response.json()
+  let json
+  try {
+    json = await response.clone().json()
+  } catch (ex) {
+    try {
+      console.error(
+        "api/index.ts",
+        `getgotRequest fn: ${name} | ERROR result:`,
+        await response.text()
+      )
+    } catch (ex) {}
+    return {
+      error: resultCodes[500],
+      r: 500,
+    }
+  }
   console.debug("api/index.ts", `getgotRequest fn: ${name} | result:`, json)
 
   // This is an error at the network/request level
