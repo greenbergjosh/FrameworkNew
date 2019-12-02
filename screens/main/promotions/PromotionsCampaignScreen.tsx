@@ -1,5 +1,9 @@
 import { Button, Icon } from "@ant-design/react-native"
 import { ActionSheetProps, connectActionSheet } from "@expo/react-native-action-sheet"
+import { CampaignTemplate } from "api/promotions-services"
+import { HeaderTitle } from "components/HeaderTitle"
+import { TextAreaModal } from "components/TextAreaModal"
+import { Colors, routes } from "constants"
 import Constants from "expo-constants"
 import * as ImagePicker from "expo-image-picker"
 import * as Permissions from "expo-permissions"
@@ -8,14 +12,10 @@ import React from "react"
 import { Text } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { CampaignTemplate } from "api/promotions-services"
-import { HeaderTitle } from "components/HeaderTitle"
-import { TextAreaModal } from "components/TextAreaModal"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { Colors, routes } from "constants"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -77,13 +77,13 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
       // If we have the template already loaded in cache, use that one
       if (loadedTemplate) {
         template = loadedTemplate
-      } else {
+      } else if (!promotionsContext.loading.loadCampaignTemplates[JSON.stringify([])]) {
         // If we didn't already have that campaign loaded, then we need to load them
         // TODO: Might be nice to have a call to load a single campaign template
         // This is asynchronous, so we need to let the view finish loading after this
         promotionsContext.loadCampaignTemplates()
       }
-    } else {
+    } else if (!promotionsContext.loading.loadPromotionCampaigns[JSON.stringify([promotionId])]) {
       // If the campaign wasn't loaded, we need to load the campaigns for this promotion
       // TODO: Might be nice to have a call to load a single campaign
       // This is asynchronous, so we need to let the view finish loading after this
@@ -184,6 +184,14 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
     ),
     [template]
   )
+
+  React.useEffect(() => {
+    if (campaignId && getgotWebView.current && template && templateParts)
+      getgotWebView.current.injectJavaScript(`
+      window.setTokenValues(${JSON.stringify(templateParts)})
+      true;
+    `)
+  }, [campaignId, getgotWebView.current, template, templateParts])
 
   return (
     <>
