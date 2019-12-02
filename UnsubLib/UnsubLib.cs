@@ -55,7 +55,10 @@ namespace UnsubLib
         public const string MD5HANDLER = "Md5Handler";
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
+        public const string SHA512HANDLER = "Sha512Handler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
+        public const int ZipFileMinBytes = 100;
+        public const int ZipFileReadBytes = 400;
         private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
         private const string Conn = "Unsub";
 
@@ -623,6 +626,7 @@ namespace UnsubLib
                                     { MD5HANDLER, f => Md5ZipHandler(f, logCtx) },
                                     { PLAINTEXTHANDLER, f => PlainTextHandler(f, logCtx) },
                                     { DOMAINHANDLER, f => DomainZipHandler(f, logCtx) },
+                                    { SHA512HANDLER, f => KnownTypeHandler(f, logCtx) },
                                     { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
@@ -1757,6 +1761,7 @@ namespace UnsubLib
                         { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
                         { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
                         { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
+                        { SHA512HANDLER, f => KnownTypeHandler(f, logContext) },
                         { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
                     },
                     ClientWorkingDirectory, 30 * 60, parallelism);
@@ -1768,31 +1773,39 @@ namespace UnsubLib
             return dr;
         }
 
-        private static string Match(string s)
+        private static string LineHandler(string s)
         {
-            if (Regex.IsMatch(s, "^[0-9a-fA-F]{32}$"))
+            if (Hashing.MD5StringRegex().IsMatch(s))
                 return MD5HANDLER;
             if (!string.IsNullOrEmpty(s) && !(!s.Contains("@") || (s[0] == '*') || (s[0] == '@')))
                 return PLAINTEXTHANDLER;
             if (!string.IsNullOrEmpty(s) && s.Contains("."))
                 return DOMAINHANDLER;
+            if (Hashing.SHA512StringRegex().IsMatch(s))
+                return SHA512HANDLER;
             return null;
         }
 
-        private static (string firstMatch, string restMatch) MatchM(string[] lines)
+        private static (string firstMatch, string restMatch) LinesHandler(string[] lines)
         {
-            var firstLineType = Match(lines[0]);
+            // first line
+            var firstLineType = LineHandler(lines[0]);
             string restLineType = null;
+            // every other line but the first
             foreach (var line in lines.Skip(1))
             {
-                var restLineTypeTemp = Match(line);
+                // line status
+                var restLineTypeTemp = LineHandler(line);
+                // if we don't know, bust out
                 if (restLineTypeTemp == null)
                 {
                     restLineType = null;
                     break;
                 }
+                // did we find a type? set the type
                 if (restLineType == null)
                     restLineType = restLineTypeTemp;
+                // if we found a type, but some next line is different, error, and bust out
                 else if (restLineType != restLineTypeTemp)
                 {
                     restLineType = null;
@@ -1802,19 +1815,22 @@ namespace UnsubLib
             return (firstLineType, restLineType);
         }
 
-        private async Task<string> MatchFile(string[] lines, FileInfo f)
+        private async Task<string> HandlerType(string[] lines, FileInfo f)
         {
+            // if number of lines is 1 OR if number of lines is 2, and the second is empty
+            // test the first line only
             if (lines.Length == 1 || (lines.Length == 2 && string.IsNullOrEmpty(lines[1])))
             {
                 await _fw.Trace("LOU", $"SingleLine Match");
-                return Match(lines[0]);
+                return LineHandler(lines[0]);
             }
             
+            // if the number of lines is 2 : 2, otherwise number of lines - 1 (don't test last possibly-partial line)
             var maxLines = lines.Length == 2 ? 2 : lines.Length - 1;
-            var (firstMatch, restMatch) = MatchM(lines.Take(maxLines).ToArray());
+            var (firstMatch, restMatch) = LinesHandler(lines.Take(maxLines).ToArray());
             if ((restMatch != null) && (firstMatch != restMatch))
             {
-                await _fw.Trace("LOU", $"Removing header");
+                await _fw.Trace(nameof(HandlerType), $"Removing header");
                 await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
             }
 
@@ -1827,7 +1843,7 @@ namespace UnsubLib
             if (lines.Length > 2 || lines.Last().Length == 0)
                 lines = lines.Take(lines.Length - 1).ToArray();
             var tlines = lines.Select((line, idx) => new Tuple<string, int>(line, idx));
-            var grps = tlines.GroupBy(line => Match(line.Item1));
+            var grps = tlines.GroupBy(line => LineHandler(line.Item1));
             if (grps.Count() == 1) { fileType = grps.First().Key; }
             else if (grps.Count() == 2)
             {
@@ -1843,55 +1859,28 @@ namespace UnsubLib
 
         public async Task<string> ZipTester(FileInfo f)
         {
-            var theText = "";
-
             if (f.Length == 0)
             {
-                await _fw.Error(nameof(ZipTester), f.FullName);
+                await _fw.Error(nameof(ZipTester), $"Zero-length file: {f.FullName}");
                 return UNKNOWNHANDLER;
             }
 
-            await _fw.Trace("LOU", "File lenght before zipTester: " + f.Length);
+            await _fw.Trace(nameof(ZipTester), $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
 
-            if (f.Length < 100)
-            {
-                File.Copy(f.FullName, "c:\\workspace\\wrongmd5.txt", true);
-            }
+            if (f.Length < ZipFileMinBytes)
+                await _fw.Trace(nameof(ZipTester), $"File length {f.Length} less than {ZipFileMinBytes} bytes");
 
-            var lines = await FileSystem.ReadLines(f.FullName, 400);
+            // We read in xxx bytes, and ignore the last line, to avoid truncation
+            var lines = await FileSystem.ReadLines(f.FullName, ZipFileReadBytes);
 
-            await _fw.Trace("LOU", "Number of lines: " + lines.Length);
+            await _fw.Trace(nameof(ZipTester), $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
 
-            var handler = await MatchFile(lines, f);
-            if (handler != null)
-            {
-                await _fw.Trace("LOU", $"MatchFile {handler}");
-                var flen = await GetFileSize2(f.FullName);
-                await _fw.Trace("LOU", $"File lenght after zipTester {f.FullName}: {flen}");
-                return handler;
-            }
-            
-            /*var allDom = true;
-            for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-            {
-                if (lines[l].Length == 0) continue;
-                if (!lines[l].Contains("."))
-                {
-                    allDom = false;
-                    break;
-                }
-            }
-            if (allDom)
-            {
-                var flen = await GetFileSize2(f.FullName);
-                await _fw.Trace("LOU", $"DOM File lenght after zipTester {f.FullName}: {flen}");
-                return DOMAINHANDLER;
-            }
+            var handler = await HandlerType(lines, f);
+            if (handler == null)
+                await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
 
-            await _fw.Trace("LOU", "NotAllDom");*/
-
-            await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}::{theText}");
-            return UNKNOWNHANDLER;
+            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
+            return handler ?? UNKNOWNHANDLER;
         }
 
         public async Task<object> Md5ZipHandler(FileInfo f, string logContext)
@@ -1909,6 +1898,13 @@ namespace UnsubLib
         }
 
         public async Task<object> DomainZipHandler(FileInfo f, string logContext)
+        {
+            var fileName = Guid.NewGuid();
+            f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
+            return fileName;
+        }
+
+        public async Task<object> KnownTypeHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
