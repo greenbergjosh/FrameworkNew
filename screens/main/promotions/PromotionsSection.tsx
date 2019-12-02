@@ -1,3 +1,5 @@
+import TabBarSectionNavigator from "components/NavigationOptions"
+import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { createStackNavigator } from "react-navigation-stack"
 import { PromotionsCampaignAdditionalImagesScreen } from "./PromotionsCampaignAdditionalImagesScreen"
@@ -5,8 +7,6 @@ import { PromotionsCampaignListScreen } from "./PromotionsCampaignListScreen"
 import { PromotionsCampaignScreen } from "./PromotionsCampaignScreen"
 import { PromotionsCampaignTemplatesScreen } from "./PromotionsCampaignTemplateScreen"
 import { PromotionsScreen } from "./PromotionsScreen"
-import { defaultNavigationOptions, routes } from "constants"
-import SectionNavigator from "components/NavigationOptions"
 
 const PromotionsNavigator = createStackNavigator(
   {
@@ -24,4 +24,8 @@ const PromotionsNavigator = createStackNavigator(
   }
 )
 
-export const PromotionsSection = SectionNavigator(PromotionsNavigator, "Promotions", "shopping")
+export const PromotionsSection = TabBarSectionNavigator(
+  PromotionsNavigator,
+  "Promotions",
+  "shopping"
+)

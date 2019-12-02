@@ -1,11 +1,11 @@
+import TabBarSectionNavigator from "components/NavigationOptions"
+import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { createStackNavigator } from "react-navigation-stack"
 import { AnalyticsScreen } from "./AnalyticsScreen"
 import { BlockedUsersScreen } from "./BlockedUsersScreen"
 import { NotificationsScreen } from "./NotificationsScreen"
 import { PrivacyOptionsScreen } from "./PrivacyOptionsScreen"
-import { defaultNavigationOptions, routes } from "constants"
-import SectionNavigator from "components/NavigationOptions"
 
 const SettingsNavigator = createStackNavigator(
   {
@@ -20,5 +20,4 @@ const SettingsNavigator = createStackNavigator(
   }
 )
 
-
-export const SettingsSection = SectionNavigator(SettingsNavigator, "Settings", "setting")
+export const SettingsSection = TabBarSectionNavigator(SettingsNavigator, "Settings", "setting")

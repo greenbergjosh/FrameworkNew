@@ -1,13 +1,18 @@
 import { Flex, List } from "@ant-design/react-native"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
+import { Avatar } from "components/Avatar"
+import { TouchIcon } from "components/TouchIcon"
+import {
+  Colors,
+  routes,
+  styles,
+  Units
+  } from "constants"
+import { AuthContextType } from "providers/auth-context-provider"
 import React from "react"
 import { Text, View } from "react-native"
-import { AuthContextType } from "providers/auth-context-provider"
-import { Colors, routes, styles, Units } from "constants"
-import { Avatar } from "components/Avatar"
-import SettingLink from "./SettingLink"
-import { TouchIcon } from "components/TouchIcon"
 import { SettingsDrawerProps } from "../SettingsDrawer"
+import SettingLink from "./SettingLink"
 
 export interface SettingsDrawerContentsProps {
   auth: AuthContextType
@@ -29,9 +34,9 @@ export default function SettingsDrawerContents({
         justify="between"
         style={{ margin: Units.margin / 2, marginLeft: Units.margin }}>
         <Flex>
-          <Avatar size="sm" />
+          <Avatar size="sm" source={auth.imageurl} />
           <Text style={[styles.H4, { marginLeft: Units.margin / 2, color: Colors.white }]}>
-            sarah.p
+            {auth.handle}
           </Text>
         </Flex>
         <TouchIcon name="left" onPress={() => closeDrawer()} iconStyle={{ color: Colors.white }} />

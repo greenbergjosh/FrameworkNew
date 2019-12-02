@@ -20,7 +20,8 @@ export const resultCodes = {
   111: "Invalid promotion payload",
 }
 
-let baseAddress = "https://getgotapp.com"
+// export let baseAddress = "https://getgotapp.com"
+export let baseAddress = "http://142.44.215.16/getgot"
 export const setBaseAddress = (address: string) => {
   baseAddress = address
 }

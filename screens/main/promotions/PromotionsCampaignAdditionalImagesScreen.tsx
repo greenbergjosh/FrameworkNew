@@ -5,18 +5,19 @@ import {
   Modal
   } from "@ant-design/react-native"
 import { useActionSheet } from "@expo/react-native-action-sheet"
+import { baseAddress } from "api"
+import { CampaignTemplate, createCampaign } from "api/promotions-services"
+import { HeaderTitle } from "components/HeaderTitle"
+import { Colors, routes } from "constants"
 import React from "react"
 import { Clipboard, Text, View } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { CampaignTemplate, createCampaign } from "api/promotions-services"
-import { HeaderTitle } from "components/HeaderTitle"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { Colors, routes } from "constants"
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
@@ -195,13 +196,15 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
                       {
                         text: "Copy",
                         onPress: () => {
-                          Clipboard.setString(`https://getgotapp.com/c/${publishResult.result.id}`)
+                          Clipboard.setString(`${baseAddress}/c/${publishResult.result.id}`)
                           setTimeout(() => {
                             Modal.alert("Link Copied!", null, [
                               {
                                 text: "OK",
                                 onPress: () => {
-                                  navigation.navigate(routes.Promotions.CampaignList, { promotionId })
+                                  navigation.navigate(routes.Promotions.CampaignList, {
+                                    promotionId,
+                                  })
                                 },
                               },
                             ])
