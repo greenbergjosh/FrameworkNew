@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Choose a survey</title>
+</head>
+<body>
+  <h1>Choose a survey question</h1>
+  
+  <div>
+    <h2>American</h2>
+    <a class="link" href="q1.html?survey=American">Question 1</a>
+    <br />
+    <a class="link" href="q2.html?survey=American">Question 2</a>
+    <br />
+    <a class="link" href="q3.html?survey=American">Question 3</a>
+    <br />
+    <a class="link" href="q4.html?survey=American">Question 4</a>
+    <br />
+    <a href="smartPath.html">SmartPath</a>
+    <br />
+  </div>
+
+  <div>
+    <h2>Canadian</h2>
+    <a class="link" href="q1.html?survey=Canadian">Question 1</a>
+    <br />
+    <a class="link" href="q2.html?survey=Canadian">Question 2</a>
+    <br />
+    <a class="link" href="q3.html?survey=Canadian">Question 3</a>
+    <br />
+    <a class="link" href="q4.html?survey=Canadian">Question 4</a>
+    <br />
+    <a href="smartPath.html">SmartPath</a>
+    <br />
+  </div>
+  
+  <script type="text/javascript">
+    window.onload = function() {
+      Array.from(document.getElementsByClassName("link")).forEach(element => {
+        edw.forwardUrlParams(element);
+      });
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Question2</title>
+</head>
+<body>
+  <form>
+    <h1>Question 2</h1>
+    <h3>How many children do you have?</h3>
+    <input type="number" name="nbChildren" min="1" max="5">
+    <button class="q2" data-question="2" type="button">Submit</button>
+  </form>
+  <div>
+    <h2>Browse</h2>
+    <a class="link" href="q1.html">Question 1</a>
+    <br />
+    <a class="link" href="q2.html">Question 2</a>
+    <br />
+    <a class="link" href="q3.html">Question 3</a>
+    <br />
+    <a class="link" href="q4.html">Question 4</a>
+    <br />
+    <a href="smartPath.html">SmartPath</a>
+    <br />
+  </div>
+<script type="text/javascript">
+  window.onload = function() {
+    var survey = edw.getUrlParameter('survey');
+    var domain = edw.getUrlParameter('domain');
+
+    var reportAnswer = function(element, answerId) {
+      var questionId = element.getAttribute('data-question');
+      edw.ev([
+        {
+          rs: ['clicks'],
+          onPop: true,
+          key: ['event'],
+          data: {
+            event: 'submit',
+            lastPage: '{oldStack.grp1.page}',
+            pageOrder: '{oldStack.grp1.pageOrder}',
+            surveyId: survey,
+            questionId: questionId,
+            answerId: answerId
+          }
+        }
+      ]);
+    };
+
+    var config = {
+      rs: {
+        clicks: {
+          configId: 'A0465746-CC44-4F66-B9FB-66EDE6619B47',
+          type: 'Immediate',
+          data: {
+            domain: domain
+          }
+        }
+      },
+      st: {
+        session: {},
+        grp1: {
+          pageOrder: 'page+',
+          page: document.title,
+        }
+      }
+    };
+
+    config.st[survey] = {
+      surveyId: survey,
+      onPush: [
+        {
+          rs: ['clicks'],
+          key: ['event'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}'
+          }
+        }
+      ]
+    };
+
+    config.st.question2 = {
+      questionId: 2,
+      onPush: [
+        {
+          rs: ['clicks'],
+          key: ['event'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}'
+          }
+        }
+      ]
+    };
+
+    edw.reportToEdw(config);
+
+    Array.from(document.getElementsByClassName("q2")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, document.getElementsByName('nbChildren')[0].value);
+      });
+    });
+
+    Array.from(document.getElementsByClassName("link")).forEach(element => {
+      edw.forwardUrlParams(element);
+    });
+  };
+</script>
+</body>
+</html>

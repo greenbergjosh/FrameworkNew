@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,6 +81,20 @@ namespace Utility
             {
                 return await fs.ReadToEndAsync();
             }
+        }
+
+        public static async Task<string[]> ReadLines(string path, int limit)
+        {
+            string[] lines;
+            using (var sr = File.OpenText(path))
+            {
+                var buffer = new char[limit];
+                var len = await sr.ReadAsync(buffer, 0, limit);
+                string theText = new string(buffer, 0, len);
+
+                lines = theText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            }
+            return lines;
         }
 
         public static string QuotePathParts(string path)

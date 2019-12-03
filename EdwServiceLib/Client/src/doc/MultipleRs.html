@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Multiple RS</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    var config = {
+      rs: {
+        rs1: {
+          type: edw.rsTypes.Immediate,
+          configId: '5BF665B1-7744-4A16-B9C9-91F9B390247E',
+          data: {
+            name: 'First report sequence',
+            timestamp: Date.now()
+          }
+        },
+        rs2: {
+          type: 'Checked',
+          configId: '60EDCE19-7CDD-4211-B4EA-3DF405566DE0',
+          data: {
+            name: 'Second report sequence',
+            timestamp: Date.now()
+          }
+        }
+      }
+    };
+
+    // Report an immediate and a Checked rs. 
+    edw.reportToEdw(config,
+      function () {
+        // Nothing to configure dynamically before sending the checked rs
+      },  
+      function () {
+        // Then report a CheckedDetail rs with additional data.
+        // The immediate rs will be ignored, as it already exist.
+        edw.reportToEdw(
+          config,
+          function(cf) {
+            // Add new data before sending the config.
+            cf.rs.rs2.data.newValue = true;
+          }
+        );
+      }
+    );
+  };
+</script>
+</body>
+</html>
