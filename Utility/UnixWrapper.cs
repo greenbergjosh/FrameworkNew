@@ -136,8 +136,8 @@ namespace Utility
 
         public static string exeGrep = @"C:\Program Files\Git\usr\bin\grep";
 
-        public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile,
-            string outputFile, int timeout = 1000 * 60 * 5)
+        public static async Task RemoveNonPatternLinesFromFile(string sourcePath, string inputFile,
+            string outputFile, string pattern, int timeout = 1000 * 60 * 5)
         {
             try
             {
@@ -147,7 +147,7 @@ namespace Utility
                 pProcess.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
                 pProcess.StartInfo.Verb = "runas";
                 pProcess.StartInfo.Arguments = "/c " +
-                    Fs.QuotePathParts(exeGrep) + " -P -i '[0-9a-f]{32}' " + Fs.QuotePathParts(inf) +
+                    Fs.QuotePathParts(exeGrep) + string.Format(" -P -i '{0}' ", pattern) + Fs.QuotePathParts(inf) +
                     " > " + Fs.QuotePathParts(outf);
                 pProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 pProcess.StartInfo.UseShellExecute = true;
@@ -161,6 +161,9 @@ namespace Utility
                 throw;
             }
         }
+
+        public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "[0-9a-f]{32}");
+        public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile, int timeout = 1000 * 60 * 5) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "0x?[0-9a-f]{128}");
 
         private static void OutputRedirection(object sendingProcess,
                               DataReceivedEventArgs outLine)
@@ -231,6 +234,66 @@ namespace Utility
 
                     if (f) found.Add(md5);
                     else notFound.Add(md5);
+                }
+            }
+
+            return (found, notFound);
+        }
+
+        public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedSha512File(string filePath, List<string> keys)
+        {
+            var notFound = new List<string>();
+            var found = new List<string>();
+            var unsubFile = new FileInfo(filePath);
+
+            using (var fs = unsubFile.OpenRead())
+            {
+                var lineLength = 0;
+                var buffer = new byte[130];
+                var end = fs.Length;
+
+                await fs.ReadAsync(buffer, 0, 130);
+
+                if (buffer[128] == 10) lineLength = 129;
+                else if (buffer[128] == 13 && buffer[129] == 10) lineLength = 130;
+                else throw new Exception("Unexpected line termination character");
+
+                var lineCount = end / (decimal)lineLength;
+
+                if (lineCount != Math.Ceiling(lineCount)) throw new Exception("Inconsistent line length in file");
+
+                var fLength = unsubFile.Length;
+
+                buffer = new byte[128];
+
+                foreach (var sha512 in keys)
+                {
+                    var numRec = fLength / lineLength;
+                    var bottom = 0L;
+                    var top = numRec - 1;
+                    var f = false;
+
+                    while (bottom <= top)
+                    {
+                        var cur = (top + bottom) / 2;
+
+                        fs.Seek(lineLength * cur, SeekOrigin.Begin);
+
+                        await fs.ReadAsync(buffer, 0, 128);
+
+                        var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(sha512.ToLower());
+
+                        if (cmp < 0) bottom = cur + 1;
+                        else if (cmp > 0) top = cur - 1;
+                        else
+                        {
+                            f = true;
+                            break;
+                        }
+                    }
+
+                    if (f) found.Add(sha512);
+                    else notFound.Add(sha512);
                 }
             }
 
@@ -423,6 +486,47 @@ namespace Utility
 
             return false;
         }
+
+        public static async Task<bool> BinarySearchSortedSha512File(string sourcePath, string file, string key)
+        {
+            var lkey = key.ToLower();
+            var fPath = sourcePath + "\\" + file;
+
+            var fLength = new System.IO.FileInfo(fPath).Length;
+
+            if (fLength < 129) return false;
+
+            using (var fsSource = new FileStream(fPath, FileMode.Open, FileAccess.Read))
+            {
+                var lLength = 0;
+                var bytes = new byte[130];
+                var n = await fsSource.ReadAsync(bytes, 0, 130);
+
+                if (bytes[128] == 10) lLength = 129;
+                else if (bytes[128] == 13 && bytes[129] == 10) lLength = 130;
+                else throw new System.Exception("Unexpected line termination character");
+
+                var numRec = fLength / lLength;
+
+                long bottom = 0;
+                var top = numRec - 1;
+                while (bottom <= top)
+                {
+                    var cur = (top + bottom) / 2;
+                    fsSource.Seek(lLength * cur, SeekOrigin.Begin);
+                    var nextBytes = new byte[128];
+                    var ct = await fsSource.ReadAsync(nextBytes, 0, 128);
+                    var cmp = Encoding.UTF8.GetString(nextBytes, 0, nextBytes.Length)
+                        .ToLower().CompareTo(lkey);
+                    if (cmp < 0) bottom = cur + 1;
+                    else if (cmp > 0) top = cur - 1;
+                    else return true;
+                }
+            }
+
+            return false;
+        }
+
 
         public static string exeDiff = @"C:\Program Files\Git\usr\bin\diff";
 
