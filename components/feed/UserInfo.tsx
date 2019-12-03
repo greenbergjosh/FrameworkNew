@@ -106,13 +106,13 @@ export const UserInfoFull = ({ user, navigate }) => (
           </Flex>
           <TouchableOpacity
             style={{ alignItems: "center", flexDirection: "column" }}
-            onPress={() => alert("Navigate to user's follow\nFeature to come!")}>
+            onPress={() => navigate(routes.Follows.Followers)}>
             <Text style={[styles.LinkText, { fontWeight: FontWeights.bold }]}>17.4m</Text>
             <Text style={[styles.LinkText]}>followers</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={{ alignItems: "center", flexDirection: "column" }}
-            onPress={() => alert("Navigate to user's follow\nFeature to come!")}>
+            onPress={() => navigate(routes.Follows.Influencers)}>
             <Text style={[styles.LinkText, { fontWeight: FontWeights.bold }]}>225</Text>
             <Text style={[styles.LinkText]}>following</Text>
           </TouchableOpacity>

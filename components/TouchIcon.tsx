@@ -10,6 +10,11 @@ interface TouchIconProps {
   onPress?: () => void
   style?: StyleProp<ViewStyle>
   iconStyle?: StyleProp<TextStyle>
+  reverse?: boolean
+}
+
+function getMargin(iconSize) {
+  return ((Units.minTouchArea - iconSize) / 2) * -1
 }
 
 export default function TouchIcon({
@@ -18,6 +23,7 @@ export default function TouchIcon({
   onPress,
   style,
   iconStyle,
+  reverse,
 }: TouchIconProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
@@ -27,67 +33,50 @@ export default function TouchIcon({
   let margin = 0
   switch (size) {
     case "xs":
-      margin = ((Units.minTouchArea - AntIconSizes.xs) / 2) * -1
+      margin = getMargin(AntIconSizes.xs)
       break
     case "sm":
-      margin = ((Units.minTouchArea - AntIconSizes.sm) / 2) * -1
+      margin = getMargin(AntIconSizes.sm)
       break
     case "md":
-      margin = ((Units.minTouchArea - AntIconSizes.md) / 2) * -1
+      margin = getMargin(AntIconSizes.md)
       break
     case "lg":
-      margin = ((Units.minTouchArea - AntIconSizes.lg) / 2) * -1
+      margin = getMargin(AntIconSizes.lg)
       break
     default:
-      if (typeof size === "number") margin = ((Units.minTouchArea - size) / 2) * -1
+      if (typeof size === "number") margin = getMargin(size)
+  }
+
+  let wrapperStyles: StyleProp<ViewStyle> = {
+    minHeight: Units.minTouchArea,
+    minWidth: Units.minTouchArea,
+    marginLeft: margin,
+    marginRight: margin,
+    marginTop: margin,
+    marginBottom: margin,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  }
+  let conditionalIconStyles: StyleProp<TextStyle> = {
+    color: Colors.black,
+    flex: 0,
+    alignSelf: "auto",
+  }
+  if (reverse) {
+    conditionalIconStyles.color = Colors.white
   }
 
   return (
     <>
       {onPress ? (
-        <TouchableOpacity
-          onPress={onPress && onPress}
-          style={[
-            {
-              minHeight: Units.minTouchArea,
-              minWidth: Units.minTouchArea,
-              marginLeft: margin,
-              marginRight: margin,
-              marginTop: margin,
-              marginBottom: margin,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            },
-            style,
-          ]}>
-          <Icon
-            name={name}
-            size={size}
-            style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, iconStyle]}
-          />
+        <TouchableOpacity onPress={onPress && onPress} style={[wrapperStyles, style]}>
+          <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
         </TouchableOpacity>
       ) : (
-        <View
-          style={[
-            {
-              minHeight: Units.minTouchArea,
-              minWidth: Units.minTouchArea,
-              marginLeft: margin,
-              marginRight: margin,
-              marginTop: margin,
-              marginBottom: margin,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            },
-            style,
-          ]}>
-          <Icon
-            name={name}
-            size={size}
-            style={[{ color: Colors.black, flex: 0, alignSelf: "auto" }, iconStyle]}
-          />
+        <View style={[wrapperStyles, style]}>
+          <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
         </View>
       )}
     </>

@@ -7,6 +7,7 @@ import { FollowsScreenProps } from "../FollowsScreen"
 import { styles } from "constants"
 import moment from "moment"
 import Avatar from "components/Avatar"
+import { routes } from "../../../../constants/route.constants"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
@@ -14,10 +15,8 @@ export interface InfluencerRowProps {
 }
 
 const initialCase = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
-const influencerPressHandler = () => alert("Feature to come: navigate to influencer's feed")
-const feedPressHandler = () => alert("Feature to come: navigate to influencer's post")
 
-export const InfluencerRow = ({ influencer }: InfluencerRowProps) => {
+export const InfluencerRow = ({ influencer, navigate }: InfluencerRowProps) => {
   const { avatarUri, statusPhrase, feedImagesSmall, handle, id, lastActivity, userId } = influencer
   return (
     <List.Item>
@@ -25,14 +24,27 @@ export const InfluencerRow = ({ influencer }: InfluencerRowProps) => {
         {/**************************/}
         {/* Avatar */}
         <Flex direction="column" align="start" style={{ marginRight: 10 }}>
-          <Avatar source={avatarUri} size="sm" onPress={influencerPressHandler} />
+          <Avatar
+            source={avatarUri}
+            size="sm"
+            onPress={() =>
+              navigate(routes.Explore.UserFeed, {
+                userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
+              })
+            }
+          />
         </Flex>
 
         <Flex.Item>
           {/**************************/}
           {/* Status Message */}
           <Flex direction="row" wrap="wrap" style={{ marginTop: 5 }}>
-            <TouchableOpacity onPress={influencerPressHandler}>
+            <TouchableOpacity
+              onPress={() =>
+                navigate(routes.Explore.UserFeed, {
+                  userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
+                })
+              }>
               <Text style={[styles.LinkText, { fontWeight: "bold" }]}>{handle} </Text>
             </TouchableOpacity>
             <Text>{pupa(statusPhrase.template, statusPhrase.data || [])} </Text>
@@ -45,7 +57,13 @@ export const InfluencerRow = ({ influencer }: InfluencerRowProps) => {
           {/* Feed Images */}
           <Flex direction="row" wrap="wrap" align="start" style={{ marginTop: 8 }}>
             {feedImagesSmall.map((feedImage, index) => (
-              <TouchableOpacity onPress={feedPressHandler} key={index}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigate(routes.Explore.UserFeedDetails, {
+                    postId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
+                  })
+                }
+                key={index}>
                 <Image
                   source={{ uri: feedImage }}
                   style={[styles.ThumbnailSM, { marginRight: 4, marginBottom: 4 }]}

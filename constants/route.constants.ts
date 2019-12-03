@@ -72,8 +72,9 @@ enum Profile {
 }
 
 enum Follows {
-  default = "Follows.Follows",
-  Follows = "Follows.Follows",
+  default = "Follows",
+  Followers = "Follows.Followers",
+  Influencers = "Follows.Influencers",
 }
 
 enum Landing {

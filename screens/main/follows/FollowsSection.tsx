@@ -6,7 +6,9 @@ import { FollowsScreen } from "./FollowsScreen"
 
 const FollowsNavigator = createStackNavigator(
   {
-    [routes.Follows.Follows]: { screen: FollowsScreen },
+    [routes.Follows.default]: { screen: FollowsScreen },
+    [routes.Follows.Followers]: { screen: FollowsScreen },
+    [routes.Follows.Influencers]: { screen: FollowsScreen },
   },
   {
     initialRouteName: routes.Follows.default,

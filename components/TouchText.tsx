@@ -28,7 +28,6 @@ export default function TouchText({
   when the touch area is larger than the icon itself. Otherwise, the icon
   will have too much space around it.
    */
-  let margin = 0
   let fontStyle: StyleProp<TextStyle> = styles.LinkText
   switch (size) {
     case "sm":
@@ -41,55 +40,34 @@ export default function TouchText({
       fontStyle = styles.H3
       break
   }
-  let addStyles = {}
+
+  let wrapperStyles: StyleProp<ViewStyle> = {
+    minHeight: Units.minTouchArea,
+    minWidth: Units.minTouchArea,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  }
+  let conditionalLabelStyles: StyleProp<TextStyle> = { flex: 0, alignSelf: "auto" }
   if (reverse) {
-    addStyles = { ...addStyles, color: Colors.white }
+    conditionalLabelStyles.color = Colors.white
   }
   if (type === "primary") {
-    addStyles = { ...addStyles, fontWeight: FontWeights.bold }
+    conditionalLabelStyles.fontWeight = FontWeights.bold
   }
   if (type === "warning") {
-    addStyles = { ...addStyles, color: Colors.red }
+    conditionalLabelStyles.color = Colors.red
   }
 
   return (
     <>
       {onPress ? (
-        <TouchableOpacity
-          onPress={onPress && onPress}
-          style={[
-            {
-              minHeight: Units.minTouchArea,
-              minWidth: Units.minTouchArea,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            },
-            style,
-          ]}>
-          <Text style={[fontStyle, { flex: 0, alignSelf: "auto" }, addStyles, labelStyle]}>
-            {children}
-          </Text>
+        <TouchableOpacity onPress={onPress && onPress} style={[wrapperStyles, style]}>
+          <Text style={[fontStyle, conditionalLabelStyles, labelStyle]}>{children}</Text>
         </TouchableOpacity>
       ) : (
-        <View
-          style={[
-            {
-              minHeight: Units.minTouchArea,
-              minWidth: Units.minTouchArea,
-              marginLeft: margin,
-              marginRight: margin,
-              marginTop: margin,
-              marginBottom: margin,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            },
-            style,
-          ]}>
-          <Text style={[fontStyle, { flex: 0, alignSelf: "auto" }, addStyles, labelStyle]}>
-            {children}
-          </Text>
+        <View style={[wrapperStyles, style]}>
+          <Text style={[fontStyle, conditionalLabelStyles, labelStyle]}>{children}</Text>
         </View>
       )}
     </>
