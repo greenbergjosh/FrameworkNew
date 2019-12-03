@@ -401,6 +401,7 @@ namespace UnsubLib
             // Generate diff list
             var campaignsWithNegativeDelta = new List<string>();
             var diffs = new HashSet<Tuple<string, string>>();
+            var sha512s = new Dictionary<string, string>();
 
             await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Downloads for {cse.Count()} campaigns complete");
 
@@ -440,6 +441,11 @@ namespace UnsubLib
                             diffs.Add(new Tuple<string, string>(oldFileId, newFileId));
                         }
 
+                        if (c.GetS("SuppressionDigestType") == "sha512")
+                        {
+                            sha512s.Add(c.GetS("id"),newFileId);
+                        }
+
                         if (newFileSize.Value < oldFileSize.Value)
                         {
                             campaignsWithNegativeDelta.Add(c.GetS("Id"));
@@ -476,6 +482,10 @@ namespace UnsubLib
                 }
 
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Campaigns with Positive Delta: {campaignsWithPositiveDelta.Count}");
+
+                var res512 = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles512", "", Jw.Json("Id", "FId", sha512s));
+
+                if (res512?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update Sha512 status for campaigns. Response: {res512?.GetS("") ?? "[null]"}");
 
                 var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
 
