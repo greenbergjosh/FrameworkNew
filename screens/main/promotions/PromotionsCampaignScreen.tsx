@@ -1,12 +1,9 @@
 import { Button, Icon } from "@ant-design/react-native"
-import { ActionSheetProps, connectActionSheet } from "@expo/react-native-action-sheet"
+import { templateHost } from "api"
 import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
 import { TextAreaModal } from "components/TextAreaModal"
 import { Colors, routes } from "constants"
-import Constants from "expo-constants"
-import * as ImagePicker from "expo-image-picker"
-import * as Permissions from "expo-permissions"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
 import { Text } from "react-native"
@@ -172,9 +169,9 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
         source={{
           uri:
             template.id &&
-            `http://ec2-35-170-186-135.compute-1.amazonaws.com/?&templateId=${
-              template.id
-            }&randomSeed=${Math.round(Math.random() * 4000)}`,
+            `${templateHost}?&templateId=${template.id}&randomSeed=${Math.round(
+              Math.random() * 4000
+            )}`,
         }}
         onMessage={(event) => {
           const message: ActionMessage = JSON.parse(event.nativeEvent.data)
