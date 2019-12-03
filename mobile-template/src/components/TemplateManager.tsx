@@ -6,6 +6,7 @@ import {
   Popover
   } from "antd"
 import classNames from "classnames"
+import qs from "query-string"
 import React from "react"
 import ReactDOM from "react-dom"
 import ReactPlayer from "react-player"
@@ -13,35 +14,30 @@ import validURL from "valid-url"
 import { GetGotService } from "../services/getgot-service"
 const DEFAULT_TEMPLATE = require("../mock-data/default.template.html")
 
+interface QueryParameters {
+  debugMode?: string
+  editable?: string
+  templateId?: string
+  randomSeed?: string
+}
+
 interface TemplateManagerProps {
   getgotService: typeof GetGotService
 }
 
 export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
+  const queryParameters = (qs.parse(window.location.search) || {}) as QueryParameters
+  const debugMode = queryParameters.debugMode === "true"
+  const editable = queryParameters.editable !== "false"
+
   const [template, setTemplate] = React.useState(DEFAULT_TEMPLATE)
-  React.useEffect(() => {
-    // @ts-ignore We're going to forcibly set this onto the window
-    window.setTemplate = setTemplate
-  }, [setTemplate])
+
   const [dataState, setDataState] = React.useState({} as {
     [key: string]: string
   })
   const wrapperRef = React.useRef() as React.RefObject<HTMLDivElement>
 
-  const onClickHTMLPhotoElement = React.useCallback((e: Event) => {
-    let element = e.target as HTMLElement
-
-    while (element.parentElement && !element.getAttribute("data-value-key")) {
-      element = element.parentElement
-    }
-    const dataValueKey = element.getAttribute("data-value-key")
-
-    console.log("Click Photo Spot", dataValueKey, element)
-    getgotService && getgotService.selectPhoto(dataValueKey)
-  }, [])
-
   const onClickPhotoSpot = React.useCallback((dataValueKey) => {
-    console.log("Click Photo Spot", dataValueKey)
     getgotService && getgotService.selectPhoto(dataValueKey)
   }, [])
 
@@ -54,7 +50,6 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
       }
       const dataValueKey = element.getAttribute("data-value-key")
 
-      console.log("Click Text Spot", dataValueKey, element)
       getgotService && getgotService.editText(dataValueKey)
     },
     [getgotService]
@@ -62,7 +57,6 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
 
   const loadedPhoto = React.useCallback(
     (photoBase64: string, key: string = "photo") => {
-      console.debug("Callback: loadedPhoto", { photoBase64, key })
       setDataState({ ...dataState, [key]: photoBase64 })
     },
     [dataState]
@@ -70,25 +64,29 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
 
   const editedText = React.useCallback(
     (text: string, key: string = "message") => {
-      console.debug("Callback: editedText", { text, key })
-      console.debug("Spreading existing dataState", dataState, "and adding", { [key]: text })
       setDataState({ ...dataState, [key]: text })
     },
     [dataState]
   )
 
+  const setTokenValues = React.useCallback(
+    (tokenValues: { [key: string]: string }) => {
+      setDataState({ ...dataState, ...tokenValues })
+    },
+    [dataState]
+  )
+
   React.useEffect(() => {
-    window.loadedPhoto = loadedPhoto
     window.editedText = editedText
-  }, [loadedPhoto, editedText])
+    window.loadedPhoto = loadedPhoto
+    window.setTemplate = setTemplate
+    window.setTokenValues = setTokenValues
+  }, [editedText, loadedPhoto, setTemplate, setTokenValues])
 
   React.useEffect(() => {
     if (wrapperRef && wrapperRef.current) {
       const photoElements = wrapperRef.current.getElementsByClassName("add-photo")
-      console.log("Photo Spots", photoElements)
       Array.from(photoElements).forEach((element: Element) => {
-        console.log("Photo Spot", element)
-
         // Clean out the add button and any existing images
         const photoIcons = element.getElementsByClassName("add-photo-icon")
         const loadedImages = element.getElementsByClassName("loaded-image-wrapper")
@@ -119,127 +117,124 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
               validURL.isWebUri(elementValue) ? (
                 <ReactPlayer url={elementValue} light controls />
               ) : (
-                <img className="loaded-image" src={`data:image/png;base64, ${elementValue}`} />
+                <img className="loaded-image" src={fixDataImageEncoding(elementValue)} />
               )}
-              <Popover
-                content={
-                  <div className="loaded-video">
-                    <a
-                      className="leftLink"
-                      onClick={() => {
-                        onClickPhotoSpot(elementValueKey)
-                      }}>
-                      Different Photo
-                    </a>
-                    <SelectVideoPopover
-                      url={elementValue}
-                      linkText="Different Video"
-                      onSelectVideo={(url) => {
-                        if (elementValueKey) {
-                          setDataState({ ...dataState, [elementValueKey]: url })
-                        }
+              {editable && (
+                <Popover
+                  content={
+                    <div className="loaded-video">
+                      <a
+                        className="leftLink"
+                        onClick={() => {
+                          onClickPhotoSpot(elementValueKey)
+                        }}>
+                        Different Photo
+                      </a>
+                      <SelectVideoPopover
+                        url={elementValue}
+                        linkText="Different Video"
+                        onSelectVideo={(url) => {
+                          if (elementValueKey) {
+                            setDataState({ ...dataState, [elementValueKey]: url })
+                          }
 
-                        getgotService.selectVideo(elementValueKey || "video", url)
-                      }}
-                    />
-                    <a
-                      className="rightLink ant-btn-danger ant-btn-background-ghost"
-                      onClick={() => {
-                        elementValueKey && setDataState({ ...dataState, [elementValueKey]: "" })
-                      }}>
-                      Remove
-                    </a>
-                  </div>
-                }
-                title="Replace Photo or Video, or Clear Selection"
-                trigger="click">
-                <a className="change-link">Change or Remove</a>
-              </Popover>
+                          getgotService.selectVideo(elementValueKey || "video", url)
+                        }}
+                      />
+                      <a
+                        className="rightLink ant-btn-danger ant-btn-background-ghost"
+                        onClick={() => {
+                          elementValueKey && setDataState({ ...dataState, [elementValueKey]: "" })
+                        }}>
+                        Remove
+                      </a>
+                    </div>
+                  }
+                  title="Replace Photo or Video, or Clear Selection"
+                  trigger="click">
+                  <a className="change-link">Change or Remove</a>
+                </Popover>
+              )}
             </>,
             loadedImageWrapper
           )
         } else {
           // Else if there is no loaded image for this spot
           const iconDiv = document.createElement("div")
-          iconDiv.className = "add-photo-icon"
+          iconDiv.className = "add-photo-icon -blank"
           element.appendChild(iconDiv)
-          ReactDOM.render(
-            <Popover
-              content={
-                <>
-                  <a
-                    className="leftLink"
-                    onClick={() => {
-                      onClickPhotoSpot(elementValueKey)
-                    }}>
-                    Select or Take Photo
-                  </a>
-                  <SelectVideoPopover
-                    url={elementValue}
-                    onSelectVideo={(url) => {
-                      if (elementValueKey) {
-                        setDataState({ ...dataState, [elementValueKey]: url })
-                      }
-                      getgotService.selectVideo(elementValueKey || "video", url)
-                    }}
-                  />
-                </>
-              }
-              title="Choose a Photo or Link a Video"
-              trigger="click">
-              <div className="add-photo-icon-inner">
-                <Icon type="camera" theme="filled" /> <span>Add Photo or Video</span>
-              </div>
-            </Popover>,
-            iconDiv
-          )
+          if (editable) {
+            ReactDOM.render(
+              <Popover
+                content={
+                  <>
+                    <a
+                      className="leftLink"
+                      onClick={() => {
+                        onClickPhotoSpot(elementValueKey)
+                      }}>
+                      Select or Take Photo
+                    </a>
+                    <SelectVideoPopover
+                      url={elementValue}
+                      onSelectVideo={(url) => {
+                        if (elementValueKey) {
+                          setDataState({ ...dataState, [elementValueKey]: url })
+                        }
+                        getgotService.selectVideo(elementValueKey || "video", url)
+                      }}
+                    />
+                  </>
+                }
+                title="Choose a Photo or Link a Video"
+                trigger="click">
+                <div className="add-photo-icon-inner">
+                  <Icon type="camera" theme="filled" /> <span>Add Photo or Video</span>
+                </div>
+              </Popover>,
+              iconDiv
+            )
+          } else {
+            iconDiv.className += " -unfilled"
+          }
         }
       })
-    }
-
-    return () => {
-      if (wrapperRef && wrapperRef.current) {
-        const photoElements = wrapperRef.current.getElementsByClassName("add-photo")
-        console.debug("Photo Spots (Remove)", photoElements)
-        Array.from(photoElements).forEach((element: Element) => {
-          element.removeEventListener("click", onClickHTMLPhotoElement)
-        })
-      }
     }
   }, [wrapperRef, dataState, template])
 
   React.useEffect(() => {
     if (wrapperRef && wrapperRef.current) {
       const textElements = wrapperRef.current.getElementsByClassName("add-text")
-      console.debug("Text Spots", textElements)
       Array.from(textElements).forEach((element: Element) => {
         const elementValueKey = element.getAttribute("data-value-key")
         const elementValue = elementValueKey && dataState[elementValueKey]
-        console.debug("Text Spot", element, "Value: ", elementValue)
 
-        element.addEventListener("click", onClickHTMLTextElement)
         const addMessageDiv = document.createElement("div")
         addMessageDiv.className = classNames("add-text-inner", { "-blank": !elementValue })
         element.appendChild(addMessageDiv)
-        ReactDOM.render(
-          <span>
-            {elementValue ? (
-              <>
-                <Icon type="edit" /> {elementValue}
-              </>
-            ) : (
-              "Add Message"
-            )}
-          </span>,
-          addMessageDiv
-        )
+        if (editable) {
+          element.addEventListener("click", onClickHTMLTextElement)
+          ReactDOM.render(
+            <span>
+              {elementValue ? (
+                <>
+                  <Icon type="edit" /> {elementValue}
+                </>
+              ) : (
+                "Add Message"
+              )}
+            </span>,
+            addMessageDiv
+          )
+        } else {
+          addMessageDiv.className += " -unfilled"
+        }
       })
     }
 
     return () => {
       if (wrapperRef && wrapperRef.current) {
         const textElements = wrapperRef.current.getElementsByClassName("add-text")
-        console.log("Text Spots (Remove)", textElements)
         Array.from(textElements).forEach((element: Element) => {
           element.removeEventListener("click", onClickHTMLTextElement)
 
@@ -253,9 +248,32 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
   }, [wrapperRef, dataState, template])
 
   return (
-    <div ref={wrapperRef}>
-      <div dangerouslySetInnerHTML={{ __html: template }} />
-    </div>
+    <>
+      <div ref={wrapperRef}>
+        <div dangerouslySetInnerHTML={{ __html: template }} />
+      </div>
+      {debugMode && (
+        <pre>
+          Raw Query Parameters:
+          {JSON.stringify(queryParameters, null, 2)}
+          {`
+          
+          `}
+          Data State:
+          {JSON.stringify(
+            dataState,
+            (k, v) => {
+              if (typeof v === "string" && v.length > 1000) {
+                return v.substr(0, 1000) + "...(value truncated to 1000 characters"
+              }
+
+              return v
+            },
+            2
+          )}
+        </pre>
+      )}
+    </>
   )
 }
 
@@ -339,3 +357,15 @@ const SelectVideoPopover = ({
     </Popover>
   )
 }
+
+// If something has damaged the encoding, we can try to fix it
+const fixDataImageEncoding = (base64Image: string) =>
+  base64Image.startsWith("data:image")
+    ? base64Image
+    : base64Image[0] === "i"
+    ? `data:image/png;base64,${base64Image}`
+    : base64Image[0] === "R"
+    ? `data:image/gif;base64,${base64Image}`
+    : base64Image[0] === "/"
+    ? `data:image/jpg;base64,${base64Image}`
+    : base64Image

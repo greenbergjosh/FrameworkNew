@@ -16,6 +16,8 @@ declare interface Window {
   }
   loadedPhoto: (photoBase64: string, key: string) => void
   editedText: (text: string, key: string) => void
+  setTemplate: (template: string) => void
+  setTokenValues: (tokenValues: { [key: string]: string }) => void
 }
 
 interface WebkitCommnication<T> {
