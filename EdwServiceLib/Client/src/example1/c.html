@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PageC</title>
+</head>
+<body>
+  <div id="app">
+      <h1>Page C</h1>
+      <a class="link" href="a.html">Page A</a>
+      <br/>
+      <a class="link" href="b.html">Page B</a>
+      <br/>
+      <a class="link" href="c.html">Page C</a>
+  </div>
+<script type="text/javascript">
+  window.onload = function() {
+    var config = {
+      rs: {
+        impressionsAndClicks: {
+          configId: '46D13674-95C8-4CD0-A21A-2EFA513FB8B4',
+          type: 'Immediate',
+          data: {
+            domain: edw.getUrlParameter('domain')
+          }
+        }
+      },
+      st: {
+        session: {},
+        grp1: {
+          pageOrder: 'page+',
+          page: document.title
+        },
+        pageC: {
+          onPush: [
+            {
+              rs: ['impressionsAndClicks'],
+              key: ['event'],
+              data: {
+                event: 'impression',
+                page: '{page}',
+                pageOrder: '{pageOrder}'
+              }
+            }
+          ]
+        }
+      }
+    };
+    edw.reportToEdw(config);
+
+    Array.from(document.getElementsByClassName("link")).forEach(element => {
+      edw.forwardUrlParams(element);
+      element.addEventListener("click", function(event){
+        event.preventDefault();
+        
+        edw.ev([
+            {
+              rs: ['impressionsAndClicks'],
+              onPop: true,
+              key: ['event'],
+              data: {
+                event: 'click',
+                page: '{oldStack.grp1.page}',
+                pageOrder: '{oldStack.grp1.pageOrder}'
+              }
+            }
+          ], function() {
+          window.location = element.getAttribute('href');
+        });
+      });
+    });
+  };
+</script>
+</body>
+</html>

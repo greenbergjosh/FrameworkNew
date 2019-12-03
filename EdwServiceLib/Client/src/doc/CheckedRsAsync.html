@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Checked RS with async/await.</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = async function() {
+    var config = {
+      rs: {
+        rs2: {
+          type: 'Checked',
+          configId: '60EDCE19-7CDD-4211-B4EA-3DF405566DE0',
+          data: {
+            name: 'test data',
+            timestamp: Date.now()
+          }
+        }
+      }
+    };
+
+    // Report a Checked rs. 
+    await edw.cf(config);
+    // Add new data before sending the config.
+    config.rs.rs2.data.newValue = true;
+    // Report a CheckedDetail rs with additional data
+    await  edw.cf(config);
+  };
+</script>
+</body>
+</html>

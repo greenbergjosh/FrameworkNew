@@ -55,7 +55,10 @@ namespace UnsubLib
         public const string MD5HANDLER = "Md5Handler";
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
+        public const string SHA512HANDLER = "Sha512Handler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
+        public const int ZipFileMinBytes = 100;
+        public const int ZipFileReadBytes = 400;
         private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
         private const string Conn = "Unsub";
 
@@ -431,7 +434,8 @@ namespace UnsubLib
                             continue;
                         }
 
-                        if (c.GetS("MostRecentUnsubFileId").Length == 36 && newFileSize.Value > oldFileSize.Value)
+                        // avoid diffs on sha512 unsub files fow now
+                        if (c.GetS("SuppressionDigestType") != "sha512" && c.GetS("MostRecentUnsubFileId").Length == 36 && newFileSize.Value > oldFileSize.Value)
                         {
                             diffs.Add(new Tuple<string, string>(oldFileId, newFileId));
                         }
@@ -547,7 +551,7 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Retrieved file url for {networkName} campaign {campaignId}");
 
-                        if (!String.IsNullOrEmpty(uri))
+                        if (!string.IsNullOrEmpty(uri))
                         {
                             if (uris.ContainsKey(uri)) uris[uri].Add(c);
                             else uris.TryAdd(uri, new List<IGenericEntity>() { c });
@@ -623,6 +627,7 @@ namespace UnsubLib
                                     { MD5HANDLER, f => Md5ZipHandler(f, logCtx) },
                                     { PLAINTEXTHANDLER, f => PlainTextHandler(f, logCtx) },
                                     { DOMAINHANDLER, f => DomainZipHandler(f, logCtx) },
+                                    { SHA512HANDLER, f => KnownTypeHandler(f, logCtx) },
                                     { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
@@ -631,40 +636,45 @@ namespace UnsubLib
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UnzipUnbuffered({networkName}):: for url {uri.Key}");
                     }
 
-                    if (cf.ContainsKey(MD5HANDLER) || cf.ContainsKey(PLAINTEXTHANDLER))
+                    if (cf.ContainsKey(MD5HANDLER) ||
+                        cf.ContainsKey(SHA512HANDLER) ||
+                        cf.ContainsKey(PLAINTEXTHANDLER))
                     {
-                        string fmd5;
+                        string fdest;
                         long fileSize;
 
-                        if (cf.ContainsKey(MD5HANDLER))
+                        if (cf.ContainsKey(MD5HANDLER) || cf.ContainsKey(SHA512HANDLER))
                         {
-                            fmd5 = cf[MD5HANDLER].ToString().ToLower();
+                            string handler = cf.ContainsKey(MD5HANDLER) ? MD5HANDLER : SHA512HANDLER;
+                            fdest = cf[handler].ToString().ToLower();
 
-                            fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt").Length;
+                            fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fdest + ".txt").Length;
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonAsciiFromFile({networkName}):: for file {fmd5}({fileSize})");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonAsciiFromFile({networkName}):: for file {fdest}({fileSize})");
 
-                            await UnixWrapper.RemoveNonAsciiFromFile(ClientWorkingDirectory, fmd5 + ".txt", fmd5 + ".txt.cln");
+                            await UnixWrapper.RemoveNonAsciiFromFile(ClientWorkingDirectory, fdest + ".txt", fdest + ".txt.cln");
 
-                            fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.cln").Length;
+                            fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fdest + ".txt.cln").Length;
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonMD5LinesFromFile({networkName}):: for file {fmd5}({fileSize})");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonMD5LinesFromFile({networkName}):: for file {fdest}({fileSize})");
 
-                            await UnixWrapper.RemoveNonMD5LinesFromFile(ClientWorkingDirectory, fmd5 + ".txt.cln", fmd5 + ".txt.cl2");
-
+                            if (cf.ContainsKey(MD5HANDLER))
+                                await UnixWrapper.RemoveNonMD5LinesFromFile(ClientWorkingDirectory, fdest + ".txt.cln", fdest + ".txt.cl2");
+                            else
+                                await UnixWrapper.RemoveNonSHA512LinesFromFile(ClientWorkingDirectory, fdest + ".txt.cln", fdest + ".txt.cl2");
                         }
                         else
                         {
                             var plainTextFile = new FileInfo(Path.Combine(ClientWorkingDirectory, cf[PLAINTEXTHANDLER].ToString().ToLower() + ".txt"));
                             var fmd5G = Guid.NewGuid();
-                            fmd5 = fmd5G.ToString();
+                            fdest = fmd5G.ToString();
 
                             fileSize = plainTextFile.Length;
 
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"MD5 plain text file {plainTextFile.Name}({fileSize})");
 
                             using (var fs = plainTextFile.OpenText())
-                            using (var ws = File.CreateText(Path.Combine(ClientWorkingDirectory, $"{fmd5}.txt.cl2")))
+                            using (var ws = File.CreateText(Path.Combine(ClientWorkingDirectory, $"{fdest}.txt.cl2")))
                             {
                                 string line;
 
@@ -686,45 +696,45 @@ namespace UnsubLib
                             }
                         }
 
-                        fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.cl2").Length;
+                        fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fdest + ".txt.cl2").Length;
 
-                        await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"SortFile({networkName}):: for file {fmd5}({fileSize})");
+                        await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"SortFile({networkName}):: for file {fdest}({fileSize})");
 
-                        await UnixWrapper.SortFile(ClientWorkingDirectory, fmd5 + ".txt.cl2", fmd5 + ".txt.srt", false, true, 300000, 4, SortBufferSize);
+                        await UnixWrapper.SortFile(ClientWorkingDirectory, fdest + ".txt.cl2", fdest + ".txt.srt", false, true, 300000, 4, SortBufferSize);
 
-                        fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fmd5 + ".txt.srt").Length;
+                        fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fdest + ".txt.srt").Length;
 
-                        await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed Cleaning({networkName}):: for file {fmd5}({fileSize})");
+                        await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed Cleaning({networkName}):: for file {fdest}({fileSize})");
 
                         if (!String.IsNullOrEmpty(FileCacheDirectory))
                         {
-                            var src = Path.Combine(ClientWorkingDirectory, fmd5 + ".txt.srt");
-                            var dest = Path.Combine(FileCacheDirectory, fmd5 + ".txt.srt");
+                            var src = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
+                            var dest = Path.Combine(FileCacheDirectory, fdest + ".txt.srt");
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for MD5 Handler file {fmd5} {src} -> {dest} Exists: {File.Exists(src)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for MD5 Handler file {fdest} {src} -> {dest} Exists: {File.Exists(src)}");
 
                             new FileInfo(src).MoveTo(dest);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for MD5 Handler file {fmd5} {src} -> {dest} Exists: {File.Exists(dest)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for MD5 Handler file {fdest} {src} -> {dest} Exists: {File.Exists(dest)}");
                             destinations.Add(dest);
                         }
                         else if (!String.IsNullOrEmpty(FileCacheFtpServer))
                         {
-                            var src = Path.Combine(ClientWorkingDirectory, fmd5 + ".txt.srt");
-                            var dest = FileCacheFtpServerPath + "/" + fmd5 + ".txt.srt";
+                            var src = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
+                            var dest = FileCacheFtpServerPath + "/" + fdest + ".txt.srt";
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for MD5 Handler file {fmd5}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for MD5 Handler file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
 
                             await ProtocolClient.UploadFile(src, dest, FileCacheFtpServer, FileCacheFtpUser, FileCacheFtpPassword);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for MD5 Handler file {fmd5}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for MD5 Handler file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
 
-                            Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fmd5 + ".txt.srt"}");
+                            Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest + ".txt.srt"}");
                         }
 
-                        Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fmd5}.txt");
-                        Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fmd5}.txt.cln");
-                        Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fmd5}.txt.cl2");
+                        Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest}.txt");
+                        Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest}.txt.cln");
+                        Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest}.txt.cl2");
                     }
 
                     if (cf.ContainsKey(DOMAINHANDLER))
@@ -765,13 +775,14 @@ namespace UnsubLib
 
                     foreach (var c in uri.Value)
                     {
-                        if (cf.ContainsKey(MD5HANDLER))
+                        if (cf.ContainsKey(MD5HANDLER) || cf.ContainsKey(SHA512HANDLER))
                         {
-                            var fmd5 = cf[MD5HANDLER].ToString();
+                            string handler = cf.ContainsKey(MD5HANDLER) ? MD5HANDLER : SHA512HANDLER;
+                            var fdest = cf[handler].ToString();
 
-                            if (!ncf.TryAdd(c.GetS("Id"), fmd5.ToLower()))
+                            if (!ncf.TryAdd(c.GetS("Id"), fdest.ToLower()))
                             {
-                                await _fw.Error($"{nameof(DownloadUnsubFiles)}-{networkName}", $"ncf.TryAdd failed {uri.Key}::{c.GetS("Id")}::{fmd5.ToLower()}");
+                                await _fw.Error($"{nameof(DownloadUnsubFiles)}-{networkName}", $"ncf.TryAdd failed {uri.Key}::{c.GetS("Id")}::{fdest.ToLower()}");
                             }
                         }
 
@@ -1204,7 +1215,7 @@ namespace UnsubLib
 
                     if (!fi.Exists)
                     {
-                        await _fw.Trace($"{nameof(GetFileSize)}", $"File not found {fileName}");
+                        await _fw.Trace($"{nameof(GetFileSize)}", $"File not found {FileCacheDirectory}\\{fileName}");
                         return null;
                     }
 
@@ -1226,6 +1237,28 @@ namespace UnsubLib
             catch (Exception fileSizeException)
             {
                 await _fw.Error(nameof(GetFileSize), fileName + "::" + fileSizeException.ToString());
+                return null;
+            }
+        }
+
+        public async Task<long?> GetFileSize2(string fileName)
+        {
+            try
+            {
+                var fi = new FileInfo(fileName);
+
+                if (!fi.Exists)
+                {
+                    await _fw.Trace($"{nameof(GetFileSize2)}", $"File not found {fileName}");
+                    return null;
+                }
+
+                return fi.Length;
+                
+            }
+            catch (Exception fileSizeException)
+            {
+                await _fw.Error(nameof(GetFileSize2), fileName + "::" + fileSizeException.ToString());
                 return null;
             }
         }
@@ -1463,7 +1496,7 @@ namespace UnsubLib
             await tcs.Task;
         }
 
-        public async Task<string> GetFileFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
+        public async Task<(string fileId, string type)> GetFileAndTypeFromCampaignId(string campaignId, string ext, string destDir, long cacheSize)
         {
             var args = Jw.Json(new { CId = campaignId });
 
@@ -1471,18 +1504,19 @@ namespace UnsubLib
             {
                 var c = await Data.CallFn(Conn, "SelectNetworkCampaign", args);
                 var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
+                var type = c.GetS("SuppressionDigestType");
 
                 if (fileId == null)
                 {
-                    await _fw.Trace(nameof(GetFileFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
-                    return null;
+                    await _fw.Trace(nameof(GetFileAndTypeFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
+                    return (fileId: null, type);
                 }
 
-                return await GetFileFromFileId(fileId, ext, destDir, cacheSize);
+                return (fileId: await GetFileFromFileId(fileId, ext, destDir, cacheSize), type);
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(GetFileFromCampaignId), $"Failed to retrieve file id: {args} {e.UnwrapForLog()}");
+                await _fw.Error(nameof(GetFileAndTypeFromCampaignId), $"Failed to retrieve file id: {args} {e.UnwrapForLog()}");
                 throw;
             }
         }
@@ -1496,21 +1530,22 @@ namespace UnsubLib
         public async Task<string> IsUnsub(IGenericEntity dtve)
         {
             var campaignId = dtve.GetS("CampaignId");
-            var md5 = dtve.GetS("EmailMd5");
+            var digest = dtve.GetS("EmailMd5");
             var email = dtve.GetS("Email");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
             var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
 
             try
             {
-                if (!email.IsNullOrWhitespace()) md5 = Hashing.CalculateMD5Hash(email.ToLower());
-                else if (md5?.Contains("@") == true)
+                (var fileName, var type) = await GetFileAndTypeFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
+
+                if (!email.IsNullOrWhitespace()) digest = Hashing.CalculateMD5Hash(email.ToLower());
+                else if (digest?.Contains("@") == true)
                 {
-                    email = md5;
-                    md5 = Hashing.CalculateMD5Hash(md5.ToLower());
+                    email = digest;
+                    digest = type == null || type == "md5" ? Hashing.CalculateMD5Hash(digest.ToLower()) : Hashing.CalculateSHA512Hash(digest.ToLower());
                 }
 
-                var fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
 
                 if (fileName.IsNullOrWhitespace())
                 {
@@ -1518,11 +1553,13 @@ namespace UnsubLib
                     return Jw.Json(new { Result = false, Error = "Missing unsub file" });
                 }
 
-                var isUnsub = await UnixWrapper.BinarySearchSortedMd5File(SearchDirectory, fileName, md5);
+                var isUnsub = type == null || type == "md5" ?
+                    await UnixWrapper.BinarySearchSortedMd5File(SearchDirectory, fileName, digest) :
+                    await UnixWrapper.BinarySearchSortedSha512File(SearchDirectory, fileName, digest) :;
 
                 if (!isUnsub && globalSupp)
                 {
-                    var res = await Data.CallFn("Signal", "inSignalGroups", Jw.Serialize(new { group = globalSuppGroup, emailMd5 = email.IfNullOrWhitespace(md5) }));
+                    var res = await Data.CallFn("Signal", "inSignalGroups", Jw.Serialize(new { group = globalSuppGroup, emailMd5 = email.IfNullOrWhitespace(digest) }));
 
                     isUnsub = res?.GetL("in").Any() ?? true;
                 }
@@ -1531,7 +1568,7 @@ namespace UnsubLib
             }
             catch (Exception ex)
             {
-                await _fw.Error(nameof(IsUnsub), $"Search failed: {campaignId}::{md5}::{ex}");
+                await _fw.Error(nameof(IsUnsub), $"Search failed: {campaignId}::{digest}::{ex}");
                 throw new Exception("Search failed.");
             }
         }
@@ -1561,8 +1598,8 @@ namespace UnsubLib
 
         public async Task<string> IsUnsubList(IGenericEntity dtve)
         {
-            var md5s = new List<string>();
-            var requestMd5s = new List<string>();
+            var digests = new List<string>();
+            var requestDigests = new List<string>();
             var requestemails = new Dictionary<string, string>();
             var campaignId = dtve.GetS("CampaignId");
             var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
@@ -1572,30 +1609,31 @@ namespace UnsubLib
 
             try
             {
+                (var fileName, var type) = await GetFileAndTypeFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
+
                 foreach (var y in dtve.GetL("EmailMd5"))
                 {
-                    var md5 = y.GetS("");
+                    var digest = y.GetS("");
 
-                    if (md5.Contains("@"))
+                    if (digest.Contains("@"))
                     {
-                        var email = md5;
+                        var email = digest;
 
-                        md5 = Hashing.CalculateMD5Hash(email.ToLower());
+                        digest = Hashing.CalculateMD5Hash(email.ToLower());
 
-                        if (!requestemails.ContainsKey(md5))
+                        if (!requestemails.ContainsKey(digest))
                         {
-                            md5s.Add(md5);
-                            requestemails.Add(md5, email);
+                            digests.Add(digest);
+                            requestemails.Add(digest, email);
                         }
                     }
                     else
                     {
-                        requestMd5s.Add(md5);
-                        md5s.Add(md5);
+                        requestDigests.Add(digest);
+                        digests.Add(digest);
                     }
                 }
 
-                var fileName = await GetFileFromCampaignId(campaignId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
 
                 if (fileName.IsNullOrWhitespace())
                 {
@@ -1604,7 +1642,9 @@ namespace UnsubLib
                     return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
                 }
 
-                binarySearchResults = await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), md5s);
+                binarySearchResults = type == null || type == "md5" ?
+                    await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), digests) :
+                    await UnixWrapper.BinarySearchSortedSha512File(Path.Combine(SearchDirectory, fileName), digests);
             }
             catch (Exception ex)
             {
@@ -1613,7 +1653,7 @@ namespace UnsubLib
             }
 
             var emailsNotFound = requestemails.Where(kvp => binarySearchResults.notFound.Contains(kvp.Key)).Select(kvp => kvp.Value).ToList();
-            emailsNotFound.AddRange(requestMd5s.Where(m => binarySearchResults.notFound.Contains(m.ToLower())).Select(m => m).ToList());
+            emailsNotFound.AddRange(requestDigests.Where(m => binarySearchResults.notFound.Contains(m.ToLower())).Select(m => m).ToList());
 
             if (globalSupp)
             {
@@ -1649,12 +1689,13 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
             {
-                new UnsubFileProviders.UnsubCentral(_fw),
+                //new UnsubFileProviders.UnsubCentral(_fw),
                 new UnsubFileProviders.UnsubCentralV2(_fw),
-                new UnsubFileProviders.Ezepo(_fw,SeleniumChromeDriverPath),
+                new UnsubFileProviders.Ezepo(_fw),
                 new UnsubFileProviders.Optizmo(_fw),
                 new UnsubFileProviders.MidEnity(_fw),
-                new UnsubFileProviders.W4(_fw) 
+                new UnsubFileProviders.W4(_fw),
+                new UnsubFileProviders.Unsubly(_fw)
             };
 
             try
@@ -1667,6 +1708,7 @@ namespace UnsubLib
 
                     if (providers.Any())
                     {
+
                         uri = providers.Select(p => p.GetFileUrl(network, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                         if (uri.IsNullOrWhitespace())
@@ -1705,79 +1747,154 @@ namespace UnsubLib
             var uri = new Uri(unsubUrl);
             var authString = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
-            dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
-                new Dictionary<string, Func<FileInfo, Task<object>>>()
+            if (unsubUrl.Contains("unsubly.com"))
+            {
+                var parts = unsubUrl.Split('|');
+                var ge = JsonWrapper.ToGenericEntity(JsonWrapper.TryParse(parts[1]));
+                var headers = new Dictionary<string, string>()
                 {
-                    { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
-                    { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
-                    { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
-                    { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
-                },
-                ClientWorkingDirectory, 30 * 60, parallelism);
+                    ["nid"] = ge.GetS("nid"),
+                    ["aid"] = ge.GetS("aid"),
+                    ["fid"] = ge.GetS("fid"),
+                    ["md5but"] = "Download Suppression List in MD5 format"
+                };
+                var csv = await ProtocolClient.HttpPostAsync(parts[0], headers, 30 * 60);
+                var fileName = Guid.NewGuid();
+
+                await File.WriteAllTextAsync($"{ClientWorkingDirectory}\\{fileName}.txt", csv);
+                dr = new Dictionary<string, object>
+                {
+                    [MD5HANDLER] = fileName
+                };
+            }
+            else
+            {
+                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
+                    new Dictionary<string, Func<FileInfo, Task<object>>>()
+                    {
+                        { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
+                        { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
+                        { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
+                        { SHA512HANDLER, f => KnownTypeHandler(f, logContext) },
+                        { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
+                    },
+                    ClientWorkingDirectory, 30 * 60, parallelism);
+            }
+            
 
             if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
 
             return dr;
         }
 
+        private static string LineHandler(string s)
+        {
+            if (Hashing.MD5StringRegex().IsMatch(s))
+                return MD5HANDLER;
+            if (!string.IsNullOrEmpty(s) && !(!s.Contains("@") || (s[0] == '*') || (s[0] == '@')))
+                return PLAINTEXTHANDLER;
+            if (!string.IsNullOrEmpty(s) && s.Contains("."))
+                return DOMAINHANDLER;
+            if (Hashing.SHA512StringRegex().IsMatch(s))
+                return SHA512HANDLER;
+            return null;
+        }
+
+        private static (string firstMatch, string restMatch) LinesHandler(string[] lines)
+        {
+            // first line
+            var firstLineType = LineHandler(lines[0]);
+            string restLineType = null;
+            // every other line but the first
+            foreach (var line in lines.Skip(1))
+            {
+                // line status
+                var restLineTypeTemp = LineHandler(line);
+                // if we don't know, bust out
+                if (restLineTypeTemp == null)
+                {
+                    restLineType = null;
+                    break;
+                }
+                // did we find a type? set the type
+                if (restLineType == null)
+                    restLineType = restLineTypeTemp;
+                // if we found a type, but some next line is different, error, and bust out
+                else if (restLineType != restLineTypeTemp)
+                {
+                    restLineType = null;
+                    break;
+                }
+            }
+            return (firstLineType, restLineType);
+        }
+
+        private async Task<string> HandlerType(string[] lines, FileInfo f)
+        {
+            // if number of lines is 1 OR if number of lines is 2, and the second is empty
+            // test the first line only
+            if (lines.Length == 1 || (lines.Length == 2 && string.IsNullOrEmpty(lines[1])))
+            {
+                await _fw.Trace("LOU", $"SingleLine Match");
+                return LineHandler(lines[0]);
+            }
+            
+            // if the number of lines is 2 : 2, otherwise number of lines - 1 (don't test last possibly-partial line)
+            var maxLines = lines.Length == 2 ? 2 : lines.Length - 1;
+            var (firstMatch, restMatch) = LinesHandler(lines.Take(maxLines).ToArray());
+            if ((restMatch != null) && (firstMatch != restMatch))
+            {
+                await _fw.Trace(nameof(HandlerType), $"Removing header");
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+
+            return restMatch; // which may be null - in which case we did not match a type
+        }
+
+        private async Task<string> MatchFile2(string[] lines, FileInfo f)
+        {
+            string fileType = null;
+            if (lines.Length > 2 || lines.Last().Length == 0)
+                lines = lines.Take(lines.Length - 1).ToArray();
+            var tlines = lines.Select((line, idx) => new Tuple<string, int>(line, idx));
+            var grps = tlines.GroupBy(line => LineHandler(line.Item1));
+            if (grps.Count() == 1) { fileType = grps.First().Key; }
+            else if (grps.Count() == 2)
+            {
+                if (grps.First().Count() == 1 && grps.First().ToArray()[0].Item2 == 0)
+                {
+                    await _fw.Trace("LOU", $"Removing header");
+                    await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+                }
+                fileType = grps.First().ToArray()[0].Item1;
+            }
+            return fileType;
+        }
+
         public async Task<string> ZipTester(FileInfo f)
         {
-            var theText = "";
-
             if (f.Length == 0)
             {
-                await _fw.Error(nameof(ZipTester), f.FullName);
+                await _fw.Error(nameof(ZipTester), $"Zero-length file: {f.FullName}");
                 return UNKNOWNHANDLER;
             }
 
-            using (var sr = f.OpenText())
-            {
-                var buffer = new char[400];
-                await sr.ReadAsync(buffer, 0, 400);
-                theText = new string(buffer);
+            await _fw.Trace(nameof(ZipTester), $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
 
-                var lines = theText.Split(
-                    new[] { "\r\n", "\r", "\n" },
-                    StringSplitOptions.None);
+            if (f.Length < ZipFileMinBytes)
+                await _fw.Trace(nameof(ZipTester), $"File length {f.Length} less than {ZipFileMinBytes} bytes");
 
-                var allMd5 = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
-                    {
-                        allMd5 = false;
-                        break;
-                    }
-                }
-                if (allMd5) return MD5HANDLER;
+            // We read in xxx bytes, and ignore the last line, to avoid truncation
+            var lines = await FileSystem.ReadLines(f.FullName, ZipFileReadBytes);
 
-                var allPlain = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
-                    {
-                        allPlain = false;
-                        break;
-                    }
-                }
-                if (allPlain) return PLAINTEXTHANDLER;
+            await _fw.Trace(nameof(ZipTester), $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
 
-                var allDom = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (lines[l].Length == 0) continue;
-                    if (!lines[l].Contains("."))
-                    {
-                        allDom = false;
-                        break;
-                    }
-                }
-                if (allDom) return DOMAINHANDLER;
+            var handler = await HandlerType(lines, f);
+            if (handler == null)
+                await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
 
-            }
-
-            await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}::{theText}");
-            return UNKNOWNHANDLER;
+            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
+            return handler ?? UNKNOWNHANDLER;
         }
 
         public async Task<object> Md5ZipHandler(FileInfo f, string logContext)
@@ -1795,6 +1912,13 @@ namespace UnsubLib
         }
 
         public async Task<object> DomainZipHandler(FileInfo f, string logContext)
+        {
+            var fileName = Guid.NewGuid();
+            f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
+            return fileName;
+        }
+
+        public async Task<object> KnownTypeHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
