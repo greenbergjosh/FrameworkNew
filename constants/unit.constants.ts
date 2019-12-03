@@ -1,14 +1,24 @@
+export enum AntIconSizes {
+  // 12
+  xxs = 14,
+  xs = 16,
+  sm = 18,
+  md = 24,
+  lg = 32,
+  // 64
+}
 export enum Units {
   margin = 17,
   padding = 10,
-  thumbnailSmall = 40,
-  thumbnailLarge = 120,
-  avatarLG = 80,
-  avatarMD = 64,
-  avatarSM = 32,
-  avatarXS = 20,
   minTouchArea = 40,
-  iconLG = 24,
+  img16 = 16,
+  img20 = 20,
+  img24 = 24,
+  img32 = 32,
+  img40 = 40,
+  img64 = 64,
+  img80 = 80,
+  img128 = 128,
 }
 export enum FontWeights {
   light = "300",

@@ -5,6 +5,7 @@ import { Colors, routes } from "constants"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "providers/messages-context-provider"
 import { MessagesList } from "./components/MessagesList"
+import { TouchIcon } from "../../../components/TouchIcon"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
@@ -52,11 +53,12 @@ MessagesScreen.navigationOptions = ({ navigation }) => {
     ),
     headerTitle: () => <HeaderTitle title="Messages" />,
     headerRight: () => (
-      <Button
+      <TouchIcon
+        name="plus"
+        iconStyle={{ color: Colors.white }}
+        size="lg"
         onPress={() => navigation.navigate(routes.Messages.NewMessage)}
-        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
-        <Icon name="plus" color="#fff" size="lg" />
-      </Button>
+      />
     ),
   }
 }

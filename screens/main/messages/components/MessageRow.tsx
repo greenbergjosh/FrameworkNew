@@ -36,7 +36,7 @@ export const MessageRow = ({ message, navigate }: MessageRowProps) => {
           <Text style={[styles.SmallCopy, { margin: -(Units.margin / 4) }]}>
             {initialCase(moment.utc(messageDate).fromNow(true))}
           </Text>
-          <TouchIcon name="right" iconStyle={{ color: Colors.grey }} />
+          <TouchIcon name="right" iconStyle={{ color: Colors.grey, marginLeft: Units.margin / 2 }} />
         </Flex>
       </Flex>
     </List.Item>

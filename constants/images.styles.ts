@@ -11,35 +11,35 @@ const mixins = StyleSheet.create({
 const ImageStyles = StyleSheet.create({
   AvatarLG: {
     ...mixins.avatar,
-    width: Units.avatarLG,
-    height: Units.avatarLG,
-    borderRadius: Units.avatarLG / 2,
+    width: Units.img80,
+    height: Units.img80,
+    borderRadius: Units.img80 / 2,
   },
 
   AvatarMD: {
     ...mixins.avatar,
-    width: Units.avatarMD,
-    height: Units.avatarMD,
-    borderRadius: Units.avatarMD / 2,
+    width: Units.img64,
+    height: Units.img64,
+    borderRadius: Units.img64 / 2,
   },
 
   AvatarSM: {
     ...mixins.avatar,
-    width: Units.avatarSM,
-    height: Units.avatarSM,
-    borderRadius: Units.avatarSM / 2,
+    width: Units.img32,
+    height: Units.img32,
+    borderRadius: Units.img32 / 2,
   },
 
   AvatarXS: {
     ...mixins.avatar,
-    width: Units.avatarXS,
-    height: Units.avatarXS,
-    borderRadius: Units.avatarXS / 2,
+    width: Units.img20,
+    height: Units.img20,
+    borderRadius: Units.img20 / 2,
   },
 
   ThumbnailSM: {
-    width: Units.thumbnailSmall,
-    height: Units.thumbnailSmall,
+    width: Units.img40,
+    height: Units.img40,
     borderColor: Colors.grey,
     borderWidth: 1,
   },

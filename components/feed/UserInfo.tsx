@@ -71,7 +71,7 @@ export const UserInfoFull = ({ user, navigate }) => (
         <Avatar source={user.avatarUri} size="lg" />
         <TouchIcon
           name="plus-circle"
-          style={{ position: "absolute", bottom: -10, right: -10 }}
+          style={{ position: "absolute", bottom: 0, right: 0 }}
           iconStyle={styles.LinkText}
           onPress={() => alert("Follow user\nFeature to come!")}
         />

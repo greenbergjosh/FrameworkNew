@@ -7,7 +7,7 @@ import * as routeConstants from "./route.constants"
 import * as unitConstants from "./unit.constants"
 import * as navigationConstants from "./navigation.constants"
 
-export const { FontWeights, ImageUris, Units, Colors } = unitConstants
+export const { FontWeights, ImageUris, Units, Colors, AntIconSizes } = unitConstants
 export const { routes } = routeConstants
 export const { defaultNavigationOptions } = navigationConstants
 export const styles = StyleSheet.create({

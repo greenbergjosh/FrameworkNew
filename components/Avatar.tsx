@@ -1,6 +1,6 @@
 import React from "react"
 import { Image, TouchableOpacity, View } from "react-native"
-import { Colors, ImageUris, styles, Units } from "constants"
+import { AntIconSizes, Colors, ImageUris, styles, Units } from "constants"
 
 interface AvatarProps {
   size?: "xs" | "sm" | "md" | "lg"
@@ -20,15 +20,14 @@ export const Avatar = ({ size, source = ImageUris.placeholder, onPress }: Avatar
   switch (size) {
     case "xs":
       avatarStyle = styles.AvatarXS
-      margin = (Units.avatarXS - Units.minTouchArea) / 2
+      margin = ((Units.minTouchArea - styles.AvatarXS.height) / 2) * -1
       break
     case "sm":
       avatarStyle = styles.AvatarSM
-      margin = (Units.avatarSM - Units.minTouchArea) / 2
+      margin = ((Units.minTouchArea - styles.AvatarSM.height) / 2) * -1
       break
     case "md":
       avatarStyle = styles.AvatarMD
-      margin = (Units.avatarMD - Units.minTouchArea) / 2
       break
     case "lg":
       avatarStyle = styles.AvatarLG

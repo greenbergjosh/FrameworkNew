@@ -1,8 +1,8 @@
 import React from "react"
-import { StyleProp, TextStyle, TouchableOpacity, ViewStyle, View } from "react-native"
+import { StyleProp, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native"
 import { Icon } from "@ant-design/react-native"
 import { IconNames, IconProps } from "@ant-design/react-native/lib/icon"
-import { Colors, styles, Units } from "constants"
+import { AntIconSizes, Colors, Units } from "constants"
 
 interface TouchIconProps {
   size?: IconProps["size"]
@@ -27,10 +27,16 @@ export const TouchIcon = ({
   let margin = 0
   switch (size) {
     case "xs":
-      margin = (Units.avatarXS - Units.minTouchArea) / 2
+      margin = ((Units.minTouchArea - AntIconSizes.xs) / 2) * -1
       break
     case "sm":
-      margin = (Units.avatarSM - Units.minTouchArea) / 2
+      margin = ((Units.minTouchArea - AntIconSizes.sm) / 2) * -1
+      break
+    case "md":
+      margin = ((Units.minTouchArea - AntIconSizes.md) / 2) * -1
+      break
+    case "lg":
+      margin = ((Units.minTouchArea - AntIconSizes.lg) / 2) * -1
       break
   }
 
