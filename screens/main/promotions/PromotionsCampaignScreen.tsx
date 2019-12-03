@@ -163,7 +163,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
   
   setTimeout(() => {
     window.setTemplate(\`${template.template && template.template.html}\`)
-    window.setTokenValues(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
+    window.setTokenValues(${campaignId ? templateParts : influencerTokens})
     // alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
   }, 10); `}
         source={{
@@ -171,7 +171,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
             template.id &&
             `${templateHost}?&templateId=${template.id}&randomSeed=${Math.round(
               Math.random() * 4000
-            )}`,
+            )}&editable=${!campaignId}&debugMode=false`,
         }}
         onMessage={(event) => {
           const message: ActionMessage = JSON.parse(event.nativeEvent.data)
@@ -185,7 +185,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
   React.useEffect(() => {
     if (campaignId && getgotWebView.current && template && templateParts)
       getgotWebView.current.injectJavaScript(`
-      window.setTokenValues(${JSON.stringify(templateParts)})
+      window.setTokenValues(${templateParts})
       true;
     `)
   }, [campaignId, getgotWebView.current, template, templateParts])
