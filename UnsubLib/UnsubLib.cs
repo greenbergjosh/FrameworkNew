@@ -627,7 +627,7 @@ namespace UnsubLib
                                     { MD5HANDLER, f => Md5ZipHandler(f, logCtx) },
                                     { PLAINTEXTHANDLER, f => PlainTextHandler(f, logCtx) },
                                     { DOMAINHANDLER, f => DomainZipHandler(f, logCtx) },
-                                    { SHA512HANDLER, f => KnownTypeHandler(f, logCtx) },
+                                    { SHA512HANDLER, f => Sha512ZipHandler(f, logCtx) },
                                     { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
@@ -1555,7 +1555,7 @@ namespace UnsubLib
 
                 var isUnsub = type == null || type == "md5" ?
                     await UnixWrapper.BinarySearchSortedMd5File(SearchDirectory, fileName, digest) :
-                    await UnixWrapper.BinarySearchSortedSha512File(SearchDirectory, fileName, digest) :;
+                    await UnixWrapper.BinarySearchSortedSha512File(SearchDirectory, fileName, digest);
 
                 if (!isUnsub && globalSupp)
                 {
@@ -1775,7 +1775,7 @@ namespace UnsubLib
                         { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
                         { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
                         { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
-                        { SHA512HANDLER, f => KnownTypeHandler(f, logContext) },
+                        { SHA512HANDLER, f => Sha512ZipHandler(f, logContext) },
                         { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
                     },
                     ClientWorkingDirectory, 30 * 60, parallelism);
@@ -1918,7 +1918,7 @@ namespace UnsubLib
             return fileName;
         }
 
-        public async Task<object> KnownTypeHandler(FileInfo f, string logContext)
+        public async Task<object> Sha512ZipHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
