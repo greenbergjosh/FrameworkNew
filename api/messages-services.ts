@@ -5,12 +5,16 @@ import { GetGotSuccessResponse } from "api"
  * Messages
  */
 
-export type Message = {
-  id: number
+export type User = {
   userId: GUID
   avatarUri: string
   handle: string
+}
+
+export type Message = {
+  id: number
   name: string
+  users: User[]
   messageDate: ISO8601String
   content: string
 }
@@ -21,30 +25,50 @@ export const messages: MessagesResponse = {
   results: [
     {
       id: 1,
-      userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-      avatarUri: ImageUris.placeholder,
-      handle: "erynearly",
       name: "Message Name",
+      users: [
+        {
+          userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
+          avatarUri: ImageUris.placeholder,
+          handle: "erynearly",
+        },
+      ],
       messageDate: "2019-11-25T07:00:00+12:00",
-      content: "This is the message. This is the message. This is the message. This is the message. ",
+      content:
+        "This is the message. This is the message. This is the message. This is the message. ",
     },
     {
       id: 2,
-      userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-      avatarUri: ImageUris.placeholder,
-      handle: "itsdyasia",
       name: "Message Name",
+      users: [
+        {
+          userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
+          avatarUri: ImageUris.placeholder,
+          handle: "itsdyasia",
+        },
+        {
+          userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
+          avatarUri: ImageUris.placeholder,
+          handle: "itsdyasia",
+        },
+      ],
       messageDate: "2019-11-24T07:00:00+12:00",
-      content: "This is the message. This is the message. This is the message. This is the message. ",
+      content:
+        "This is the message. This is the message. This is the message. This is the message. ",
     },
     {
       id: 3,
-      userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
-      avatarUri: ImageUris.placeholder,
-      handle: "idk_just_stan_bts",
       name: "Message Name",
+      users: [
+        {
+          userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
+          avatarUri: ImageUris.placeholder,
+          handle: "idk_just_stan_bts",
+        },
+      ],
       messageDate: "2019-11-11T07:00:00+12:00",
-      content: "This is the message. This is the message. This is the message. This is the message. ",
+      content:
+        "This is the message. This is the message. This is the message. This is the message. ",
     },
   ],
 }
@@ -86,7 +110,8 @@ export const contacts: ContactsResponse = {
       handle: "erynearly",
       name: "Contact Name",
       contactDate: "2019-11-25T07:00:00+12:00",
-      content: "This is the contact. This is the contact. This is the contact. This is the contact. ",
+      content:
+        "This is the contact. This is the contact. This is the contact. This is the contact. ",
     },
     {
       id: 2,
@@ -95,7 +120,8 @@ export const contacts: ContactsResponse = {
       handle: "itsdyasia",
       name: "Contact Name",
       contactDate: "2019-11-24T07:00:00+12:00",
-      content: "This is the contact. This is the contact. This is the contact. This is the contact. ",
+      content:
+        "This is the contact. This is the contact. This is the contact. This is the contact. ",
     },
     {
       id: 3,
@@ -104,7 +130,8 @@ export const contacts: ContactsResponse = {
       handle: "idk_just_stan_bts",
       name: "Contact Name",
       contactDate: "2019-11-11T07:00:00+12:00",
-      content: "This is the contact. This is the contact. This is the contact. This is the contact. ",
+      content:
+        "This is the contact. This is the contact. This is the contact. This is the contact. ",
     },
   ],
 }

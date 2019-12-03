@@ -1,11 +1,11 @@
 import React from "react"
 import { ActivityIndicator, Button, Icon, SearchBar } from "@ant-design/react-native"
-import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes } from "constants"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "providers/messages-context-provider"
+import { Colors, routes, Units } from "constants"
+import { HeaderTitle } from "components/HeaderTitle"
+import { TouchIcon } from "components/TouchIcon"
 import { MessagesList } from "./components/MessagesList"
-import { TouchIcon } from "../../../components/TouchIcon"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
@@ -45,16 +45,19 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
 MessagesScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: () => (
-      <Button
-        onPress={() => navigation.navigate(routes.Home.Feed)}
-        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
-        <Icon name="left" color="#fff" size="lg" />
-      </Button>
+      <TouchIcon
+        name="left"
+        style={{ marginLeft:  Units.margin - 10 }}
+        iconStyle={{ color: Colors.white }}
+        size="lg"
+        onPress={() => navigation.navigate(routes.Home.default)}
+      />
     ),
     headerTitle: () => <HeaderTitle title="Messages" />,
     headerRight: () => (
       <TouchIcon
         name="plus"
+        style={{ marginRight: Units.margin - 10 }}
         iconStyle={{ color: Colors.white }}
         size="lg"
         onPress={() => navigation.navigate(routes.Messages.NewMessage)}

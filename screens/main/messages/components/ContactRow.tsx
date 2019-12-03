@@ -24,7 +24,7 @@ export const ContactRow = ({ contact, navigate }: ContactRowProps) => {
           <Text style={styles.Body}>{name}</Text>
         </Flex>
         <Flex direction="row" justify="end" align="center" wrap="wrap" style={{ flexGrow: 1 }}>
-          <Checkbox defaultChecked={false} onChange={(e) => alert("Checked!" + e)} />
+          <Checkbox defaultChecked={false} onChange={(e) => {}} />
         </Flex>
       </Flex>
     </List.Item>

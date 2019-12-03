@@ -38,6 +38,8 @@ export const TouchIcon = ({
     case "lg":
       margin = ((Units.minTouchArea - AntIconSizes.lg) / 2) * -1
       break
+    default:
+      if (typeof size === "number") margin = ((Units.minTouchArea - size) / 2) * -1
   }
 
   return (
