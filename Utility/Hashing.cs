@@ -79,6 +79,19 @@ namespace Utility
             return hash;
         }
 
+        public static string CalculateSHA512Hash(string input)
+        {
+            String hash;
+
+            using (var sha512 = System.Security.Cryptography.SHA512.Create())
+            {
+                hash = String.Concat(sha512.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input))
+                  .Select(x => x.ToString("x2")));
+            }
+
+            return hash;
+        }
+
         public static byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
