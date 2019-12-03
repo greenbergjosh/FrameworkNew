@@ -4,7 +4,7 @@ import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "providers/messages-context-provider"
 import { Colors, routes, Units } from "constants"
 import { HeaderTitle } from "components/HeaderTitle"
-import { TouchIcon } from "components/TouchIcon"
+import TouchIcon from "components/TouchIcon"
 import { MessagesList } from "./components/MessagesList"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}

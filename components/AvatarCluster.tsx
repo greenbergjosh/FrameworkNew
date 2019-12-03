@@ -1,6 +1,6 @@
 import React from "react"
 import { User } from "api/messages-services"
-import { Avatar } from "components/Avatar"
+import Avatar from "components/Avatar"
 import { TouchableOpacity } from "react-native"
 
 interface AvatarClusterProps {

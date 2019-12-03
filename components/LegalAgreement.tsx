@@ -1,7 +1,7 @@
 import { Flex } from "@ant-design/react-native"
 import React, { FunctionComponent } from "react"
 import { Text } from "react-native"
-import { styles, combineStyles } from "constants"
+import { styles } from "constants"
 
 export const LegalAgreement: FunctionComponent<{}> = () => {
   return (

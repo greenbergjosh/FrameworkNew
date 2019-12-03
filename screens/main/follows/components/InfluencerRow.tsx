@@ -6,7 +6,7 @@ import { Influencer } from "api/follows-services/influencers"
 import { FollowsScreenProps } from "../FollowsScreen"
 import { styles } from "constants"
 import moment from "moment"
-import { Avatar } from "components/Avatar"
+import Avatar from "components/Avatar"
 
 export interface InfluencerRowProps {
   influencer?: Influencer

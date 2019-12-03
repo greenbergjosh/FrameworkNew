@@ -4,7 +4,7 @@ import { Checkbox, Flex, List } from "@ant-design/react-native"
 import { Contact } from "api/messages-services"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { styles, Units } from "constants"
-import { Avatar } from "components/Avatar"
+import Avatar from "components/Avatar"
 
 export interface ContactRowProps {
   contact?: Contact

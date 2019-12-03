@@ -10,10 +10,10 @@ import {
 } from "@ant-design/react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
+import TouchText from "components/TouchText"
 import { Colors, routes, Units, styles } from "constants"
 import { useMessagesContext } from "providers/messages-context-provider"
 import { ContactsList } from "./components/ContactsList"
-import { TouchText } from "../../../components/TouchText"
 
 interface NewMessageScreenProps extends NavigationStackScreenProps {}
 

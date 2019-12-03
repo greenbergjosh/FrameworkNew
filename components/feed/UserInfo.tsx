@@ -1,8 +1,8 @@
 import { ActionSheet, Flex, WhiteSpace } from "@ant-design/react-native"
 import { FontWeights, routes, styles, Units } from "constants"
-import { Avatar } from "components/Avatar"
+import Avatar from "components/Avatar"
 import { Text, TouchableOpacity, View } from "react-native"
-import { TouchIcon } from "components/TouchIcon"
+import TouchIcon from "components/TouchIcon"
 import React from "react"
 import { AwardIcon } from "assets/icons"
 

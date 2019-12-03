@@ -1,8 +1,8 @@
 import { Text, View } from "react-native"
 import { styles, Units, routes } from "constants"
 import { Flex, WhiteSpace } from "@ant-design/react-native"
-import { Avatar } from "components/Avatar"
-import { TouchIcon } from "components/TouchIcon"
+import Avatar from "components/Avatar"
+import TouchIcon from "components/TouchIcon"
 import React from "react"
 
 export default function Comments({ navigate }) {

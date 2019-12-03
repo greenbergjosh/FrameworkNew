@@ -1,7 +1,7 @@
 import { Flex, List } from "@ant-design/react-native"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
-import { Avatar } from "components/Avatar"
-import { TouchIcon } from "components/TouchIcon"
+import Avatar from "components/Avatar"
+import TouchIcon from "components/TouchIcon"
 import {
   Colors,
   routes,

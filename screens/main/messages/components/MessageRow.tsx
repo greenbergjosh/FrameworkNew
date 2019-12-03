@@ -5,8 +5,8 @@ import { Flex, List } from "@ant-design/react-native"
 import { Message } from "api/messages-services"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { Colors, routes, styles, Units } from "constants"
-import { TouchIcon } from "components/TouchIcon"
-import AvatarCluster from "./AvatarCluster"
+import TouchIcon from "components/TouchIcon"
+import AvatarCluster from "components/AvatarCluster"
 
 export interface MessageRowProps {
   message?: Message

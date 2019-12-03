@@ -12,13 +12,13 @@ interface TouchIconProps {
   iconStyle?: StyleProp<TextStyle>
 }
 
-export const TouchIcon = ({
+export default function TouchIcon({
   size = "md",
   name = "question",
   onPress,
   style,
   iconStyle,
-}: TouchIconProps) => {
+}: TouchIconProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
   when the touch area is larger than the icon itself. Otherwise, the icon

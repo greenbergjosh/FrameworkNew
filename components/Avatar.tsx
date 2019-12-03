@@ -9,7 +9,12 @@ interface AvatarProps {
   style?: StyleProp<ViewStyle>
 }
 
-export const Avatar = ({ size, source = ImageUris.placeholder, onPress, style }: AvatarProps) => {
+export default function Avatar({
+  size,
+  source = ImageUris.placeholder,
+  onPress,
+  style,
+}: AvatarProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
   when the touch area is larger than the icon itself. Otherwise, the icon

@@ -4,7 +4,7 @@ import { Image, Text, View } from "react-native"
 import { Influencer } from "api/onboarding-services"
 import { routes, styles } from "constants"
 import { carouselStyles } from "./styles"
-import { Avatar } from "components/Avatar"
+import Avatar from "components/Avatar"
 import { FollowsScreenProps } from "../../follows/FollowsScreen"
 
 interface SuggestedFollowsProps {
