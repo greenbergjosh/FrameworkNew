@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Question1</title>
+</head>
+<body>
+  <form>
+    <h1>Question 1</h1>
+    <h3>What is your favorite salad dressing?</h3>
+    <button class="q1" data-question="1" data-answer="1" type="button">Ranch</button>
+    <button class="q1" data-question="1" data-answer="2" type="button">Italian</button>
+    <button class="q1" data-question="1" data-answer="3" type="button">Cesar</button>
+    <button class="q1" data-question="1" data-answer="4" type="button">Garlic</button>
+  </form>
+  <div>
+    <h2>Browse</h2>
+    <a class="link" href="q1.html">Question 1</a>
+    <br />
+    <a class="link" href="q2.html">Question 2</a>
+    <br />
+    <a class="link" href="q3.html">Question 3</a>
+    <br />
+    <a class="link" href="q4.html">Question 4</a>
+    <br />
+    <a href="smartPath.html">SmartPath</a>
+    <br />
+  </div>
+<script type="text/javascript">
+  window.onload = function() {
+    var survey = edw.getUrlParameter('survey');
+    var domain = edw.getUrlParameter('domain');
+
+    var reportAnswer = function(element, answerId) {
+      var questionId = element.getAttribute('data-question');
+      edw.ev([
+        {
+          rs: ['clicks'],
+          onPop: true,
+          key: ['event'],
+          data: {
+            event: 'submit',
+            lastPage: '{oldStack.grp1.page}',
+            pageOrder: '{oldStack.grp1.pageOrder}',
+            surveyId: survey,
+            questionId: questionId,
+            answerId: answerId
+          }
+        }
+      ]);
+    };
+
+    var config = {
+      st: {
+        session: {},
+        grp1: {
+          pageOrder: 'page+',
+          page: document.title,
+        }
+      }
+    };
+
+    config.st[survey] = {};
+
+    config.st.question1 = {
+      questionId: 1,
+      onPush: [
+        {
+          rs: ['clicks'],
+          key: ['event'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}'
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}',
+            answerId: 1
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}',
+            answerId: 2
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}',
+            answerId: 3
+          }
+        },
+        {
+          rs: ['clicks'],
+          key: ['event','answerId'],
+          data: {
+            event: 'impression',
+            page: '{page}',
+            pageOrder: '{pageOrder}',
+            surveyId: '{surveyId}',
+            questionId: '{questionId}',
+            answerId: 4
+          }
+        }
+      ]
+    };
+
+    edw.reportToEdw(config);
+
+    Array.from(document.getElementsByClassName("q1")).forEach(element => {
+      element.addEventListener("click", function(event) {
+        reportAnswer(element, element.getAttribute('data-answer'));
+      });
+    });
+
+    Array.from(document.getElementsByClassName("link")).forEach(element => {
+      edw.forwardUrlParams(element);
+    });
+  };
+</script>
+</body>
+</html>

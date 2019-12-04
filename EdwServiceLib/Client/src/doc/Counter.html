@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>edw.reportToEdw</title>
+</head>
+<body>
+<script type="text/javascript">
+  window.onload = function() {
+    // Using the DSL syntax, you  can setup a counter that will be incremented each time the counter instruction 
+    // is interpreted by the server. Counter data is cached at the stackframe level. That is, each stackframe has 
+    // a different counter cache. This is usefull to generate statistics for page hierarchy navigation.
+    
+    var config = {
+      rs: {/*...*/},
+      st: {
+        root: {
+          counter: '0+'       // The first time the server reads the '0+' syntax on a property,
+                              // a cached counter is created on the server, for that specific stackframe property.
+                              // The counter is incremented each time the server hit the same property.
+        }
+      }
+    };
+
+    edw.reportToEdw(config);
+  };
+</script>
+</body>
+</html>

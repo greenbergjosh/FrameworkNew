@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CsvHelper.Configuration;
 using Newtonsoft.Json.Linq;
 using Utility.GenericEntity;
 
@@ -80,6 +81,19 @@ namespace Utility
 
             gp.InitializeEntity(rw, config, gpstate);
             return gp;
+        }
+
+        public static async Task<IGenericEntity> JsonToGenericEntityAsync(TextReader textReader, RoslynWrapper rw = null, object config = null)
+        {
+            using (var jsonReader = new JsonTextReader(textReader))
+            {
+                var gpstate = await JObject.LoadAsync(jsonReader);
+                // process JSON
+                //var gpstate = JsonConvert.DeserializeObject(json);
+                var gp = new GenericEntityJson();
+                gp.InitializeEntity(rw, config, gpstate);
+                return gp;
+            }
         }
 
         public static (string path, string propName) GetPropertyPathParts(string fullPath)
@@ -222,25 +236,35 @@ namespace Utility
             return sb.ToString();
         }
 
-        public static string ConvertCsvToJson(string csv, IList<string> names)
+        public static string ConvertCsvToJson(string csv, IList<string> names, bool excludeHeader = false)
         {
-            StringBuilder sb = new StringBuilder("[");
-            using (StringReader reader = new StringReader(csv))
+            var jArray = new JArray();
+
+            using (var reader = new StringReader(csv))
             {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                using (var csvReader = new CsvHelper.CsvReader(reader))
                 {
-                    string[] cols = line.Split(',');
-                    sb.Append("{");
-                    for (int i = 0; i < names.Count; i++)
-                        sb.Append("\"" + names[i] + "\": \"" + cols[i] + "\",");
-                    sb.Remove(sb.Length - 1, 1);
-                    sb.Append("},");
+                    while (csvReader.Read())
+                    {
+                        if (excludeHeader)
+                        {
+                            excludeHeader = false;
+                            continue;
+                        }
+
+                        var jObject = new JObject();
+
+                        for (var i = 0; i < names.Count; i++)
+                        {
+                            if (csvReader.TryGetField(i, out string value))
+                                jObject.Add(names[i], value);
+                        }
+
+                        jArray.Add(jObject);
+                    }
                 }
-                if (sb.Length > 1) sb.Remove(sb.Length - 1, 1);
-                sb.Append("]");
             }
-            return sb.ToString();
+            return Serialize(jArray);
         }
     }
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Linq;
 using Utility.GenericEntity;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Utility
 {
@@ -85,8 +86,19 @@ namespace Utility
             if (encoding == null)
                 encoding = Encoding.UTF8;
 
-            using (StreamReader reader = new StreamReader(ctx.Request.Body, encoding))
+            using (var reader = new StreamReader(ctx.Request.Body, encoding))
                 return await reader.ReadToEndAsync();
+        }
+
+        public static async Task<IGenericEntity> GetGenericEntityAsync(this HttpContext ctx, Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            
+            using (var reader = new HttpRequestStreamReader(ctx.Request.Body, encoding))
+            {
+                return await JsonWrapper.JsonToGenericEntityAsync(reader);
+            }
         }
 
         public static async Task<byte[]> GetRawBodyBytesAsync(this HttpContext ctx)
