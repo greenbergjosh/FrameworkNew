@@ -1,9 +1,8 @@
-// import { init } from "@rematch/core"
 import { some } from "fp-ts/lib/Option"
 import { get, set } from "lodash/fp"
 import React from "react"
-import { CodeEditor } from "./code-editor"
 import { UserInterfaceProps } from "../../../UserInterface"
+import { CodeEditor } from "./code-editor"
 import { codeEditorManageForm } from "./code-editor-manage-form"
 import {
   ComponentDefinitionNamedProps,
@@ -56,7 +55,7 @@ export class CodeEditorInterfaceComponent extends BaseInterfaceComponent<
     const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
     const value = get(valueKey, userInterfaceData) || defaultValue
     if ((newValue || "") !== (value || "")) {
-      onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
+      onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
     }
   }
 

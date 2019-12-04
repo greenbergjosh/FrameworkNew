@@ -50,6 +50,14 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
             label: "Code",
             key: "code",
             components: [
+              // {
+              //   key: "allowDiffView",
+              //   valueKey: "allowDiffView",
+              //   component: "checkbox",
+              //   defaultValue: true,
+              //   help: "Let's the user open a side-by-side comparison of the old and new values",
+              //   label: "Allow Diff Viewer Option",
+              // },
               {
                 key: "defaultLanguage",
                 valueKey: "defaultLanguage",
@@ -63,11 +71,11 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
               // {
-              //   key: "showLangSelect",
-              //   valueKey: "showLangSelect",
+              //   key: "allowLangSelect",
+              //   valueKey: "allowLangSelect",
               //   component: "checkbox",
               //   defaultValue: true,
-              //   label: "Show Language Selection",
+              //   label: "Allow Language Selection",
               // },
               {
                 key: "defaultTheme",
@@ -82,11 +90,11 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
               // {
-              //   key: "showThemeSelect",
-              //   valueKey: "showThemeSelect",
+              //   key: "allowThemeSelect",
+              //   valueKey: "allowThemeSelect",
               //   component: "checkbox",
               //   defaultValue: true,
-              //   label: "Show Theme Selection",
+              //   label: "Allow Theme Selection",
               // },
             ],
           },
