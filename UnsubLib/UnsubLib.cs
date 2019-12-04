@@ -55,7 +55,10 @@ namespace UnsubLib
         public const string MD5HANDLER = "Md5Handler";
         public const string PLAINTEXTHANDLER = "PlainTextHandler";
         public const string DOMAINHANDLER = "DomainZipHandler";
+        public const string SHA512HANDLER = "Sha512Handler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
+        public const int ZipFileMinBytes = 100;
+        public const int ZipFileReadBytes = 400;
         private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
         private const string Conn = "Unsub";
 
@@ -547,7 +550,7 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Retrieved file url for {networkName} campaign {campaignId}");
 
-                        if (!String.IsNullOrEmpty(uri))
+                        if (!string.IsNullOrEmpty(uri))
                         {
                             if (uris.ContainsKey(uri)) uris[uri].Add(c);
                             else uris.TryAdd(uri, new List<IGenericEntity>() { c });
@@ -623,6 +626,7 @@ namespace UnsubLib
                                     { MD5HANDLER, f => Md5ZipHandler(f, logCtx) },
                                     { PLAINTEXTHANDLER, f => PlainTextHandler(f, logCtx) },
                                     { DOMAINHANDLER, f => DomainZipHandler(f, logCtx) },
+                                    { SHA512HANDLER, f => KnownTypeHandler(f, logCtx) },
                                     { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
@@ -1204,7 +1208,7 @@ namespace UnsubLib
 
                     if (!fi.Exists)
                     {
-                        await _fw.Trace($"{nameof(GetFileSize)}", $"File not found {fileName}");
+                        await _fw.Trace($"{nameof(GetFileSize)}", $"File not found {FileCacheDirectory}\\{fileName}");
                         return null;
                     }
 
@@ -1226,6 +1230,28 @@ namespace UnsubLib
             catch (Exception fileSizeException)
             {
                 await _fw.Error(nameof(GetFileSize), fileName + "::" + fileSizeException.ToString());
+                return null;
+            }
+        }
+
+        public async Task<long?> GetFileSize2(string fileName)
+        {
+            try
+            {
+                var fi = new FileInfo(fileName);
+
+                if (!fi.Exists)
+                {
+                    await _fw.Trace($"{nameof(GetFileSize2)}", $"File not found {fileName}");
+                    return null;
+                }
+
+                return fi.Length;
+                
+            }
+            catch (Exception fileSizeException)
+            {
+                await _fw.Error(nameof(GetFileSize2), fileName + "::" + fileSizeException.ToString());
                 return null;
             }
         }
@@ -1649,12 +1675,13 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
             {
-                new UnsubFileProviders.UnsubCentral(_fw),
+                //new UnsubFileProviders.UnsubCentral(_fw),
                 new UnsubFileProviders.UnsubCentralV2(_fw),
-                new UnsubFileProviders.Ezepo(_fw,SeleniumChromeDriverPath),
+                new UnsubFileProviders.Ezepo(_fw),
                 new UnsubFileProviders.Optizmo(_fw),
                 new UnsubFileProviders.MidEnity(_fw),
-                new UnsubFileProviders.W4(_fw) 
+                new UnsubFileProviders.W4(_fw),
+                new UnsubFileProviders.Unsubly(_fw)
             };
 
             try
@@ -1667,6 +1694,7 @@ namespace UnsubLib
 
                     if (providers.Any())
                     {
+
                         uri = providers.Select(p => p.GetFileUrl(network, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                         if (uri.IsNullOrWhitespace())
@@ -1705,79 +1733,154 @@ namespace UnsubLib
             var uri = new Uri(unsubUrl);
             var authString = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, uri.Host, StringComparison.CurrentCultureIgnoreCase))?.Item2;
 
-            dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
-                new Dictionary<string, Func<FileInfo, Task<object>>>()
+            if (unsubUrl.Contains("unsubly.com"))
+            {
+                var parts = unsubUrl.Split('|');
+                var ge = JsonWrapper.ToGenericEntity(JsonWrapper.TryParse(parts[1]));
+                var headers = new Dictionary<string, string>()
                 {
-                    { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
-                    { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
-                    { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
-                    { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
-                },
-                ClientWorkingDirectory, 30 * 60, parallelism);
+                    ["nid"] = ge.GetS("nid"),
+                    ["aid"] = ge.GetS("aid"),
+                    ["fid"] = ge.GetS("fid"),
+                    ["md5but"] = "Download Suppression List in MD5 format"
+                };
+                var csv = await ProtocolClient.HttpPostAsync(parts[0], headers, 30 * 60);
+                var fileName = Guid.NewGuid();
+
+                await File.WriteAllTextAsync($"{ClientWorkingDirectory}\\{fileName}.txt", csv);
+                dr = new Dictionary<string, object>
+                {
+                    [MD5HANDLER] = fileName
+                };
+            }
+            else
+            {
+                dr = await ProtocolClient.DownloadUnzipUnbuffered(unsubUrl, authString, ZipTester,
+                    new Dictionary<string, Func<FileInfo, Task<object>>>()
+                    {
+                        { MD5HANDLER, f =>  Md5ZipHandler(f,logContext) },
+                        { PLAINTEXTHANDLER, f =>  PlainTextHandler(f,logContext) },
+                        { DOMAINHANDLER, f =>  DomainZipHandler(f,logContext) },
+                        { SHA512HANDLER, f => KnownTypeHandler(f, logContext) },
+                        { UNKNOWNHANDLER, f => UnknownTypeHandler(f,logContext) }
+                    },
+                    ClientWorkingDirectory, 30 * 60, parallelism);
+            }
+            
 
             if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
 
             return dr;
         }
 
+        private static string LineHandler(string s)
+        {
+            if (Hashing.MD5StringRegex().IsMatch(s))
+                return MD5HANDLER;
+            if (!string.IsNullOrEmpty(s) && !(!s.Contains("@") || (s[0] == '*') || (s[0] == '@')))
+                return PLAINTEXTHANDLER;
+            if (!string.IsNullOrEmpty(s) && s.Contains("."))
+                return DOMAINHANDLER;
+            if (Hashing.SHA512StringRegex().IsMatch(s))
+                return SHA512HANDLER;
+            return null;
+        }
+
+        private static (string firstMatch, string restMatch) LinesHandler(string[] lines)
+        {
+            // first line
+            var firstLineType = LineHandler(lines[0]);
+            string restLineType = null;
+            // every other line but the first
+            foreach (var line in lines.Skip(1))
+            {
+                // line status
+                var restLineTypeTemp = LineHandler(line);
+                // if we don't know, bust out
+                if (restLineTypeTemp == null)
+                {
+                    restLineType = null;
+                    break;
+                }
+                // did we find a type? set the type
+                if (restLineType == null)
+                    restLineType = restLineTypeTemp;
+                // if we found a type, but some next line is different, error, and bust out
+                else if (restLineType != restLineTypeTemp)
+                {
+                    restLineType = null;
+                    break;
+                }
+            }
+            return (firstLineType, restLineType);
+        }
+
+        private async Task<string> HandlerType(string[] lines, FileInfo f)
+        {
+            // if number of lines is 1 OR if number of lines is 2, and the second is empty
+            // test the first line only
+            if (lines.Length == 1 || (lines.Length == 2 && string.IsNullOrEmpty(lines[1])))
+            {
+                await _fw.Trace("LOU", $"SingleLine Match");
+                return LineHandler(lines[0]);
+            }
+            
+            // if the number of lines is 2 : 2, otherwise number of lines - 1 (don't test last possibly-partial line)
+            var maxLines = lines.Length == 2 ? 2 : lines.Length - 1;
+            var (firstMatch, restMatch) = LinesHandler(lines.Take(maxLines).ToArray());
+            if ((restMatch != null) && (firstMatch != restMatch))
+            {
+                await _fw.Trace(nameof(HandlerType), $"Removing header");
+                await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+            }
+
+            return restMatch; // which may be null - in which case we did not match a type
+        }
+
+        private async Task<string> MatchFile2(string[] lines, FileInfo f)
+        {
+            string fileType = null;
+            if (lines.Length > 2 || lines.Last().Length == 0)
+                lines = lines.Take(lines.Length - 1).ToArray();
+            var tlines = lines.Select((line, idx) => new Tuple<string, int>(line, idx));
+            var grps = tlines.GroupBy(line => LineHandler(line.Item1));
+            if (grps.Count() == 1) { fileType = grps.First().Key; }
+            else if (grps.Count() == 2)
+            {
+                if (grps.First().Count() == 1 && grps.First().ToArray()[0].Item2 == 0)
+                {
+                    await _fw.Trace("LOU", $"Removing header");
+                    await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
+                }
+                fileType = grps.First().ToArray()[0].Item1;
+            }
+            return fileType;
+        }
+
         public async Task<string> ZipTester(FileInfo f)
         {
-            var theText = "";
-
             if (f.Length == 0)
             {
-                await _fw.Error(nameof(ZipTester), f.FullName);
+                await _fw.Error(nameof(ZipTester), $"Zero-length file: {f.FullName}");
                 return UNKNOWNHANDLER;
             }
 
-            using (var sr = f.OpenText())
-            {
-                var buffer = new char[400];
-                await sr.ReadAsync(buffer, 0, 400);
-                theText = new string(buffer);
+            await _fw.Trace(nameof(ZipTester), $"File size before running {nameof(ZipTester)}: {f.Length} bytes");
 
-                var lines = theText.Split(
-                    new[] { "\r\n", "\r", "\n" },
-                    StringSplitOptions.None);
+            if (f.Length < ZipFileMinBytes)
+                await _fw.Trace(nameof(ZipTester), $"File length {f.Length} less than {ZipFileMinBytes} bytes");
 
-                var allMd5 = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (!Regex.IsMatch(lines[l], "^[0-9a-fA-F]{32}$"))
-                    {
-                        allMd5 = false;
-                        break;
-                    }
-                }
-                if (allMd5) return MD5HANDLER;
+            // We read in xxx bytes, and ignore the last line, to avoid truncation
+            var lines = await FileSystem.ReadLines(f.FullName, ZipFileReadBytes);
 
-                var allPlain = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (!lines[l].Contains("@") || (lines[l][0] == '*') || (lines[l][0] == '@'))
-                    {
-                        allPlain = false;
-                        break;
-                    }
-                }
-                if (allPlain) return PLAINTEXTHANDLER;
+            await _fw.Trace(nameof(ZipTester), $"Lines in file: {f.Length}, capped to {ZipFileReadBytes} bytes");
 
-                var allDom = true;
-                for (var l = 0; l < (lines.Length == 1 ? 1 : lines.Length - 1); l++)
-                {
-                    if (lines[l].Length == 0) continue;
-                    if (!lines[l].Contains("."))
-                    {
-                        allDom = false;
-                        break;
-                    }
-                }
-                if (allDom) return DOMAINHANDLER;
+            var handler = await HandlerType(lines, f);
+            if (handler == null)
+                await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
 
-            }
-
-            await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}::{theText}");
-            return UNKNOWNHANDLER;
+            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
+            return handler ?? UNKNOWNHANDLER;
         }
 
         public async Task<object> Md5ZipHandler(FileInfo f, string logContext)
@@ -1795,6 +1898,13 @@ namespace UnsubLib
         }
 
         public async Task<object> DomainZipHandler(FileInfo f, string logContext)
+        {
+            var fileName = Guid.NewGuid();
+            f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
+            return fileName;
+        }
+
+        public async Task<object> KnownTypeHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");

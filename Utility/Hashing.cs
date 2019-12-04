@@ -3,11 +3,17 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Utility
 {
     public static class Hashing
     {
+
+        public static Regex SHA512StringRegex() => new Regex("^(?:0[xX])?(?:[0-9a-fA-F]{128})$");
+
+        public static Regex MD5StringRegex() => new Regex("^[0-9a-fA-F]{32}$");
+
         public static byte[] AsciiMD5HashAsByteArray(string input)
         {
             // step 1, calculate MD5 hash from input

@@ -26,6 +26,20 @@ namespace UnsubJob
 
             IEnumerable<IGenericEntity> networks = null;
 
+            /*var other = new Factory.Other(Fw);
+            var network = (await nw.GetNetworks("Amobee")).GetL("").First();
+
+            await ProtocolClient.DownloadEzepo();
+            var campaigns = await other.GetCampaigns(network);
+
+            var uri = await other.GetSuppressionLocationUrl(network, "2402");
+            
+            var l = new UnsubLib.UnsubFileProviders.Unsubly(Fw);
+            var canHandle = l.CanHandle(network, uri);
+            var uri2 = await l.GetFileUrl(network, uri);
+
+            await nw.DownloadSuppressionFiles(network, uri2, "test");*/
+                    
             try
             {
                 await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
@@ -74,6 +88,40 @@ namespace UnsubJob
             catch (Exception exGetNetworks)
             {
                 await Fw.Error(nameof(Main), $"GetNetworksAndCreateLockFiles: {exGetNetworks}");
+                return;
+            }
+
+            if (args.Any(a => string.Equals(a, "gsl", StringComparison.CurrentCultureIgnoreCase)))
+            {
+                var campaigns = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).ToList();
+
+                try
+                {
+                    foreach (var n in networks)
+                    {
+                        var np = Factory.GetInstance(Fw, n);
+
+                        foreach (var c in campaigns)
+                        {
+                            try
+                            {
+                                await nw.ScheduledUnsubJob(n, c);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+                finally
+                {
+                    
+                }
                 return;
             }
 

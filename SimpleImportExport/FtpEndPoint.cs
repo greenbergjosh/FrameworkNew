@@ -23,7 +23,7 @@ namespace SimpleImportExport
             MaxDepth = ge.GetS("MaxDepth").ParseInt() ?? 0;
             _isSFtp = ge.GetB("isSftp");
 
-            if (Password.IsNullOrWhitespace() || ! _isSFtp ) // in case we haven't explicitly set it up top, check implicitly
+            if (Password.IsNullOrWhitespace())
             {
                 if (KeyPath.IsNullOrWhitespace() || !File.Exists(KeyPath)) throw new Exception($"Invalid FTP config, if Password not set SFTP KeyPath must point to existing file");
 
@@ -48,8 +48,8 @@ namespace SimpleImportExport
             if (_isSFtp)
             {
                 return Password.IsNullOrWhitespace() ?
-                    await ProtocolClient.GetSFtpFileStreamWithKeyFile(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, KeyPath) :
-                    await ProtocolClient.GetSFtpFileStreamWithPassword(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, Password);
+                    await ProtocolClient.GetSFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, keyFilePath: KeyPath) :
+                    await ProtocolClient.GetSFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, password: Password);
             }
 
             return await ProtocolClient.GetFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, User, Password);
@@ -67,7 +67,14 @@ namespace SimpleImportExport
 
                 ms.Position = 0;
 
-                if (_isSFtp) await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, KeyPath);
+                if (_isSFtp && Password.IsNullOrWhitespace())
+                {
+                    await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, keyFilePath: KeyPath);
+                }
+                else if (_isSFtp && !Password.IsNullOrWhitespace())
+                {
+                    await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, password: Password);
+                }
                 else await ProtocolClient.UploadStream(destPath, ms, Host, User, Password);
 
                 return (size: ms.Length, records: null, destinationDirectoryPath);
@@ -81,7 +88,9 @@ namespace SimpleImportExport
 
             if (_isSFtp)
             {
-                dirFiles = (await ProtocolClient.SFtpGetFiles(BasePath, Host, Port, User, KeyPath, (depth, parent, name) => depth < MaxDepth));
+                dirFiles = Password.IsNullOrWhitespace() ?
+                    (await ProtocolClient.SFtpGetFiles(BasePath, Host, Port, User, keyFilePath: KeyPath, enumerateDirectory: (depth, parent, name) => depth < MaxDepth)) :
+                    (await ProtocolClient.SFtpGetFiles(BasePath, Host, Port, User, password: Password, enumerateDirectory: (depth, parent, name) => depth < MaxDepth));
             }
             else
             {
