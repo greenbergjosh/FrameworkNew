@@ -1,9 +1,9 @@
 import { FlatList, Image, ScrollView, TouchableOpacity, View } from "react-native"
-import { FeedItem } from "./mockData"
-import { Colors, routes } from "constants"
+import { FeedItemType } from "./mockData"
+import { Colors } from "constants"
 import React from "react"
 
-export function FeedImage({ src, id, onPress }) {
+function FeedImage({ src, id, onPress }) {
   return (
     <View
       style={{
@@ -19,12 +19,12 @@ export function FeedImage({ src, id, onPress }) {
   )
 }
 
-export default function FeedGrid({ feed, onPress }) {
+export function FeedGrid({ feed, onPress }) {
   return (
     <ScrollView>
       <FlatList
         data={feed}
-        keyExtractor={(item: FeedItem) => item.id.toString()}
+        keyExtractor={(item: FeedItemType) => item.id.toString()}
         renderItem={({ item }) => (
           <FeedImage src={item.uri} id={item.id} onPress={() => onPress(item.id)} />
         )}

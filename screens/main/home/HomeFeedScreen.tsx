@@ -4,14 +4,13 @@ import { ScrollView, View } from "react-native"
 import { routes, Units } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { FEED_DETAILS_DATA } from "components/feed/mockData"
+import { mockData, FeedItem, UserInfo } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
 import TouchIcon from "components/TouchIcon"
-import FeedItem from "components/feed/FeedItem"
-import { UserInfoSmall } from "components/feed/UserInfo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
+import { influencerFeedRoutes } from "../feedRoutes"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
@@ -19,7 +18,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
   // const feed = useFeedContext()
-  const { feed } = FEED_DETAILS_DATA
+  const { feed } = mockData.FEED_DETAILS_DATA
   const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
 
   React.useMemo(() => {
@@ -41,7 +40,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
 
   return (
     <>
-      <DevTempNav onPress={handlePress} />
+      <DevTempNav onPress={handlePress} mode={mode} />
       <ScrollView>
         {mode === "onboarding" ? (
           <SuggestedFollows value={suggestedFollows} navigate={navigate} />
@@ -49,8 +48,8 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           <List>
             {feed.map((item) => (
               <View key={item.id}>
-                <UserInfoSmall user={item.user} navigate={navigate} />
-                <FeedItem item={item} navigate={navigate} />
+                <UserInfo user={item.user} navigate={navigate} routes={influencerFeedRoutes} />
+                <FeedItem item={item} navigate={navigate} routes={influencerFeedRoutes} />
               </View>
             ))}
           </List>

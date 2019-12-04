@@ -3,9 +3,8 @@ import { ScrollView, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { List } from "@ant-design/react-native"
-import { UserInfoSmall } from "components/feed/UserInfo"
-import FeedItem from "components/feed/FeedItem"
-import { FEED_DETAILS_DATA } from "components/feed/mockData"
+import { ProfileInfo, FeedItem, mockData } from "components/feed"
+import { profileFeedRoutes } from "../feedRoutes"
 
 interface PostDetailsScreenProps extends NavigationTabScreenProps {}
 
@@ -17,15 +16,20 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
   }
   render() {
     const { navigate } = this.props.navigation
-    const { feed } = FEED_DETAILS_DATA
+    const { feed } = mockData.FEED_DETAILS_DATA
 
     return (
       <ScrollView>
         <List>
           {feed.map((item) => (
             <View key={item.id}>
-              <UserInfoSmall user={item.user} navigate={navigate} />
-              <FeedItem item={item} navigate={navigate} />
+              <ProfileInfo user={item.user} navigate={navigate} routes={profileFeedRoutes} />
+              <FeedItem
+                item={item}
+                navigate={navigate}
+                routes={profileFeedRoutes}
+                isCurrentUser={true}
+              />
             </View>
           ))}
         </List>

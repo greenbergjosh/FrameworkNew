@@ -1,17 +1,24 @@
-import { Image, TouchableOpacity, View } from "react-native"
 import React from "react"
-import SocialButtons from "./SocialButtons"
-import Comments from "./Comments"
-import { routes } from "constants"
+import { Image, TouchableOpacity } from "react-native"
+import { SocialButtons } from "./SocialButtons"
+import { Comments } from "./Comments"
+import { WhiteSpace } from "@ant-design/react-native"
 
-export default function FeedItem({ item, navigate }) {
+interface FeedItemProps {
+  item
+  navigate
+  routes: FeedRoutes
+  isCurrentUser?: boolean
+}
+
+export function FeedItem({ item, navigate, routes, isCurrentUser = false }: FeedItemProps) {
   return (
     <>
-      <TouchableOpacity onPress={() => navigate(routes.Explore.Campaign)}>
+      <TouchableOpacity onPress={() => navigate(routes.Campaign)}>
         <Image key={item.id} source={{ uri: item.uri }} style={{ flex: 1, height: item.height }} />
       </TouchableOpacity>
-      <SocialButtons />
-      <Comments navigate={navigate} />
+      {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons />}
+      <Comments navigate={navigate} routes={routes} />
     </>
   )
 }

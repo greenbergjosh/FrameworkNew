@@ -1,15 +1,15 @@
 import React from "react"
-import { NavigationTabProp } from "react-navigation-tabs"
 import { ScrollView, View } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { FollowerRow } from "./FollowerRow"
 import { sortFollowersByDate, useFollowsContext } from "providers/follows-context-provider"
 
 interface FollowsScreenProps {
-  navigation: NavigationTabProp
+  navigate
+  routes: FeedRoutes
 }
 
-export const FollowersList = (props: FollowsScreenProps) => {
+export const FollowersList = ({ routes, navigate }: FollowsScreenProps) => {
   const followsContext = useFollowsContext()
 
   if (
@@ -21,7 +21,6 @@ export const FollowersList = (props: FollowsScreenProps) => {
   }
 
   const followers = followsContext.followers
-  const { navigate } = props.navigation
   const followersByDate = sortFollowersByDate(followers.followers)
 
   return (
@@ -34,16 +33,22 @@ export const FollowersList = (props: FollowsScreenProps) => {
           {followers.followRequests.map((follower) => (
             <FollowerRow
               key={follower.id}
-              navigate={navigate}
               follower={follower}
               followRequest={true}
+              navigate={navigate}
+              routes={routes}
             />
           ))}
         </List>
         {followersByDate.map((group) => (
           <List key={group.date.format("YYYYMMDD")} renderHeader={group.relativeTime}>
             {group.followers.map((follower) => (
-              <FollowerRow key={follower.id} navigate={navigate} follower={follower} />
+              <FollowerRow
+                key={follower.id}
+                follower={follower}
+                navigate={navigate}
+                routes={routes}
+              />
             ))}
           </List>
         ))}

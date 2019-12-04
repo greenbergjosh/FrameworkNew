@@ -3,20 +3,20 @@ import { Image, Text, TouchableOpacity } from "react-native"
 import { Flex, List } from "@ant-design/react-native"
 import pupa from "pupa"
 import { Influencer } from "api/follows-services/influencers"
-import { FollowsScreenProps } from "../FollowsScreen"
 import { styles } from "constants"
 import moment from "moment"
 import Avatar from "components/Avatar"
-import { routes } from "../../../../constants/route.constants"
+import TouchText from "../TouchText"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
-  navigate: FollowsScreenProps["navigation"]["navigate"]
+  navigate
+  routes: FeedRoutes
 }
 
 const initialCase = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
-export const InfluencerRow = ({ influencer, navigate }: InfluencerRowProps) => {
+export const InfluencerRow = ({ influencer, navigate, routes }: InfluencerRowProps) => {
   const { avatarUri, statusPhrase, feedImagesSmall, handle, id, lastActivity, userId } = influencer
   return (
     <List.Item>
@@ -28,7 +28,7 @@ export const InfluencerRow = ({ influencer, navigate }: InfluencerRowProps) => {
             source={avatarUri}
             size="sm"
             onPress={() =>
-              navigate(routes.Explore.UserFeed, {
+              navigate(routes.Feed, {
                 userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
               })
             }
@@ -39,14 +39,16 @@ export const InfluencerRow = ({ influencer, navigate }: InfluencerRowProps) => {
           {/**************************/}
           {/* Status Message */}
           <Flex direction="row" wrap="wrap" style={{ marginTop: 5 }}>
-            <TouchableOpacity
+            <TouchText
               onPress={() =>
-                navigate(routes.Explore.UserFeed, {
+                navigate(routes.Feed, {
                   userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
                 })
-              }>
-              <Text style={[styles.LinkText, { fontWeight: "bold" }]}>{handle} </Text>
-            </TouchableOpacity>
+              }
+              inline
+              labelStyle={{ fontWeight: "bold" }}>
+              {handle + " "}
+            </TouchText>
             <Text>{pupa(statusPhrase.template, statusPhrase.data || [])} </Text>
             <Text style={styles.SmallCopy}>
               {initialCase(moment.utc(lastActivity).fromNow(true))}
@@ -59,7 +61,7 @@ export const InfluencerRow = ({ influencer, navigate }: InfluencerRowProps) => {
             {feedImagesSmall.map((feedImage, index) => (
               <TouchableOpacity
                 onPress={() =>
-                  navigate(routes.Explore.UserFeedDetails, {
+                  navigate(routes.FeedDetails, {
                     postId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
                   })
                 }

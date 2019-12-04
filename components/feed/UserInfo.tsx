@@ -1,16 +1,33 @@
-import { ActionSheet, Flex, WhiteSpace } from "@ant-design/react-native"
-import { FontWeights, routes, styles, Units } from "constants"
-import Avatar from "components/Avatar"
-import { Text, TouchableOpacity, View } from "react-native"
-import TouchIcon from "components/TouchIcon"
 import React from "react"
+import { ActionSheet, Flex, WhiteSpace } from "@ant-design/react-native"
+import { FontWeights, styles, Units } from "constants"
+import { Text, TouchableOpacity, View } from "react-native"
+import Avatar from "components/Avatar"
+import TouchIcon from "components/TouchIcon"
 import { AwardIcon } from "assets/icons"
 
-export default function UserInfo({ user, navigate, showFullDetails }) {
+interface UserInfoProps {
+  navigate
+  routes: FeedRoutes
+  user
+  showFullDetails?: boolean
+}
+interface UserInfoChildProps extends UserInfoProps {
+  isCurrentUser?: boolean
+}
+
+export function UserInfo({ user, navigate, showFullDetails, routes }: UserInfoProps) {
   if (showFullDetails) {
-    return <UserInfoFull user={user} navigate={navigate} />
+    return <UserInfoFull user={user} navigate={navigate} routes={routes} />
   }
-  return <UserInfoSmall user={user} navigate={navigate} />
+  return <UserInfoSmall user={user} navigate={navigate} routes={routes} />
+}
+
+export function ProfileInfo({ user, navigate, showFullDetails, routes }: UserInfoProps) {
+  if (showFullDetails) {
+    return <UserInfoFull user={user} navigate={navigate} routes={routes} isCurrentUser={true} />
+  }
+  return <UserInfoSmall user={user} navigate={navigate} routes={routes} isCurrentUser={true} />
 }
 
 function UserActionsButton() {
@@ -41,23 +58,23 @@ function PostActionsButton() {
   return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
 }
 
-export const UserInfoSmall = ({ user, navigate }) => (
+export const UserInfoSmall = ({ user, navigate, routes, isCurrentUser }: UserInfoChildProps) => (
   <Flex direction="row" style={{ margin: Units.margin }} justify="between">
     <Flex>
       <Avatar
         source={user.avatarUri}
         size="sm"
-        onPress={() => navigate(routes.Explore.UserFeed, { userId: user.userId })}
+        onPress={() => navigate(routes.Feed, { userId: user.userId })}
       />
-      <TouchableOpacity onPress={() => navigate(routes.Explore.UserFeed, { userId: user.userId })}>
+      <TouchableOpacity onPress={() => navigate(routes.Feed, { userId: user.userId })}>
         <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
       </TouchableOpacity>
     </Flex>
-    <PostActionsButton />
+    {isCurrentUser ? null : <PostActionsButton />}
   </Flex>
 )
 
-export const UserInfoFull = ({ user, navigate }) => (
+export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfoChildProps) => (
   <View>
     <Flex
       direction="row"
@@ -69,12 +86,14 @@ export const UserInfoFull = ({ user, navigate }) => (
       }}>
       <Flex>
         <Avatar source={user.avatarUri} size="lg" />
-        <TouchIcon
-          name="plus-circle"
-          style={{ position: "absolute", bottom: 0, right: 0 }}
-          iconStyle={styles.LinkText}
-          onPress={() => alert("Follow user\nFeature to come!")}
-        />
+        {isCurrentUser ? null : (
+          <TouchIcon
+            name="plus-circle"
+            style={{ position: "absolute", bottom: 0, right: 0 }}
+            iconStyle={styles.LinkText}
+            onPress={() => alert("Follow user\nFeature to come!")}
+          />
+        )}
       </Flex>
       <Flex
         direction="column"
@@ -88,7 +107,7 @@ export const UserInfoFull = ({ user, navigate }) => (
             <Text style={[styles.H1, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
             <AwardIcon style={{ marginLeft: 5 }} />
           </Flex>
-          <UserActionsButton />
+          {isCurrentUser ? null : <UserActionsButton />}
         </Flex>
         <Flex
           direction="row"
@@ -106,25 +125,29 @@ export const UserInfoFull = ({ user, navigate }) => (
           </Flex>
           <TouchableOpacity
             style={{ alignItems: "center", flexDirection: "column" }}
-            onPress={() => navigate(routes.Follows.Followers)}>
+            onPress={() => navigate(routes.Followers)}>
             <Text style={[styles.LinkText, { fontWeight: FontWeights.bold }]}>17.4m</Text>
             <Text style={[styles.LinkText]}>followers</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={{ alignItems: "center", flexDirection: "column" }}
-            onPress={() => navigate(routes.Follows.Influencers)}>
+            onPress={() => navigate(routes.Influencers)}>
             <Text style={[styles.LinkText, { fontWeight: FontWeights.bold }]}>225</Text>
             <Text style={[styles.LinkText]}>following</Text>
           </TouchableOpacity>
         </Flex>
       </Flex>
     </Flex>
-    <WhiteSpace size="md" />
-    <Flex justify="center">
-      <Text style={styles.SmallCopy}>
-        Followed by agplace, agpretzels, brookeeelizbeth + 3 more
-      </Text>
-    </Flex>
+    {isCurrentUser ? null : (
+      <>
+        <WhiteSpace size="md" />
+        <Flex justify="center">
+          <Text style={styles.SmallCopy}>
+            Followed by agplace, agpretzels, brookeeelizbeth + 3 more
+          </Text>
+        </Flex>
+      </>
+    )}
     <WhiteSpace size="lg" />
     <Flex
       direction="column"

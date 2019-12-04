@@ -2,9 +2,9 @@ import React from "react"
 import { Tabs } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FollowersList } from "./components/FollowersList"
-import { InfluencersList } from "./components/InfluencersList"
+import { FollowersList, InfluencersList } from "components/follows"
 import { routes } from "constants"
+import { influencerFeedRoutes } from "../feedRoutes"
 
 export interface FollowsScreenProps extends NavigationTabScreenProps {}
 
@@ -15,6 +15,7 @@ export class FollowsScreen extends React.Component<FollowsScreenProps> {
     }
   }
   render() {
+    const { navigate } = this.props.navigation
     let initialPage = 0
     switch (this.props.navigation.state.routeName) {
       case routes.Follows.Followers:
@@ -26,9 +27,11 @@ export class FollowsScreen extends React.Component<FollowsScreenProps> {
     }
     return (
       <>
-        <Tabs tabs={[{ title: "You Follow" }, { title: "Following You" }]} initialPage={initialPage}>
-          <InfluencersList navigation={this.props.navigation} />
-          <FollowersList navigation={this.props.navigation} />
+        <Tabs
+          tabs={[{ title: "You Follow" }, { title: "Following You" }]}
+          initialPage={initialPage}>
+          <InfluencersList routes={influencerFeedRoutes} navigate={navigate} />
+          <FollowersList routes={influencerFeedRoutes} navigate={navigate} />
         </Tabs>
       </>
     )

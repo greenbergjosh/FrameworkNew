@@ -47,6 +47,10 @@ enum Explore {
   FeedDetails = "Explore.FeedDetails",
   UserFeed = "Explore.UserFeed",
   UserFeedDetails = "Explore.UserFeedDetails",
+  UserFollows = "Explore.UserFollows",
+  UserFollowsMutual = "Explore.UserFollows.Mutual",
+  UserFollowsFollowers = "Explore.UserFollows.Followers",
+  UserFollowsInfluencers = "Explore.UserFollows.Influencers",
 }
 
 enum Messages {

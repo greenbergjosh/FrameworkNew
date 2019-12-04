@@ -7,6 +7,7 @@ import { ExploreFeedDetailsScreen } from "./ExploreFeedDetailsScreen"
 import { ExploreFeedScreen } from "./ExploreFeedScreen"
 import { ExploreUserFeedDetailsScreen } from "./ExploreUserFeedDetailsScreen"
 import { ExploreUserFeedScreen } from "./ExploreUserFeedScreen"
+import { ExploreUserFollowsScreen } from "./ExploreUserFollowsScreen"
 
 const ExploreNavigator = createStackNavigator(
   {
@@ -14,6 +15,10 @@ const ExploreNavigator = createStackNavigator(
     [routes.Explore.FeedDetails]: { screen: ExploreFeedDetailsScreen },
     [routes.Explore.UserFeed]: { screen: ExploreUserFeedScreen },
     [routes.Explore.UserFeedDetails]: { screen: ExploreUserFeedDetailsScreen },
+    [routes.Explore.UserFollows]: { screen: ExploreUserFollowsScreen },
+    [routes.Explore.UserFollowsMutual]: { screen: ExploreUserFollowsScreen },
+    [routes.Explore.UserFollowsFollowers]: { screen: ExploreUserFollowsScreen },
+    [routes.Explore.UserFollowsInfluencers]: { screen: ExploreUserFollowsScreen },
     [routes.Explore.Campaign]: { screen: ExploreCampaignScreen },
   },
   {

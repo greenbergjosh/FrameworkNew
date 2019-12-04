@@ -1,15 +1,15 @@
 import React from "react"
-import { NavigationTabProp } from "react-navigation-tabs"
 import { ScrollView } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { InfluencerRow } from "./InfluencerRow"
 import { useFollowsContext } from "providers/follows-context-provider"
 
 interface FollowsScreenProps {
-  navigation: NavigationTabProp
+  navigate
+  routes: FeedRoutes
 }
 
-export const InfluencersList = (props: FollowsScreenProps) => {
+export const InfluencersList = ({ navigate, routes }: FollowsScreenProps) => {
   const followsContext = useFollowsContext()
 
   if (
@@ -21,7 +21,6 @@ export const InfluencersList = (props: FollowsScreenProps) => {
   }
 
   const influencers = followsContext.influencers
-  const { navigate } = props.navigation
 
   return (
     <ScrollView
@@ -31,7 +30,12 @@ export const InfluencersList = (props: FollowsScreenProps) => {
       showsVerticalScrollIndicator={false}>
       <List>
         {influencers.map((influencer) => (
-          <InfluencerRow key={influencer.id} navigate={navigate} influencer={influencer} />
+          <InfluencerRow
+            key={influencer.id}
+            navigate={navigate}
+            influencer={influencer}
+            routes={routes}
+          />
         ))}
       </List>
     </ScrollView>

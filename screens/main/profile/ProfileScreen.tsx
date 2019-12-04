@@ -4,9 +4,8 @@ import { Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { routes, styles } from "constants"
-import UserInfo from "components/feed/UserInfo"
-import { USER_FEED_DETAILS_DATA } from "components/feed/mockData"
-import FeedGrid from "../../../components/feed/FeedGrid"
+import { FeedGrid, mockData, ProfileInfo } from "components/feed"
+import { profileFeedRoutes } from "../feedRoutes"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
@@ -18,11 +17,16 @@ export class ProfileScreen extends React.Component<ProfileScreenProps> {
   }
   render() {
     const { navigate } = this.props.navigation
-    const { user, feed } = USER_FEED_DETAILS_DATA
+    const { user, feed } = mockData.USER_FEED_DETAILS_DATA
 
     return (
       <ScrollView>
-        <UserInfo user={user} showFullDetails={true} navigate={navigate} />
+        <ProfileInfo
+          user={user}
+          showFullDetails={true}
+          navigate={navigate}
+          routes={profileFeedRoutes}
+        />
         <View style={styles.View}>
           <Button size="large" type="primary" onPress={() => navigate(routes.Profile.EditProfile)}>
             Edit Profile

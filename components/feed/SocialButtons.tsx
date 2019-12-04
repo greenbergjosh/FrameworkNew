@@ -3,25 +3,30 @@ import { Flex } from "@ant-design/react-native"
 import TouchIcon from "components/TouchIcon"
 import { Units } from "constants"
 
-export default function SocialButtons() {
+export function SocialButtons() {
   return (
-    <Flex justify="end" style={{ marginRight: 10 }}>
+    <Flex
+      justify="end"
+      style={{
+        marginRight: Units.margin,
+        marginTop: Units.margin / 2,
+        marginBottom: Units.margin / 2,
+      }}>
       <TouchIcon
         name="question"
         size="md"
-        iconStyle={{ marginLeft: Units.margin }}
         onPress={() => alert("Send action\nFeature to come!")}
       />
       <TouchIcon
         name="share-alt"
         size="md"
-        iconStyle={{ marginLeft: Units.margin }}
+        style={{ marginLeft: Units.margin / 4 }}
         onPress={() => alert("Share action\nFeature to come!")}
       />
       <TouchIcon
         name="heart"
         size="md"
-        iconStyle={{ marginLeft: Units.margin }}
+        style={{ marginLeft: Units.margin / 4 }}
         onPress={() => alert("Like action\nFeature to come!")}
       />
     </Flex>

@@ -12,6 +12,7 @@ interface TouchTextProps {
   children?: string
   reverse?: boolean
   type?: "primary" | "warning"
+  inline?: boolean
 }
 
 export default function TouchText({
@@ -22,6 +23,7 @@ export default function TouchText({
   children,
   reverse,
   type,
+  inline,
 }: TouchTextProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
@@ -42,8 +44,6 @@ export default function TouchText({
   }
 
   let wrapperStyles: StyleProp<ViewStyle> = {
-    minHeight: Units.minTouchArea,
-    minWidth: Units.minTouchArea,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -57,6 +57,10 @@ export default function TouchText({
   }
   if (type === "warning") {
     conditionalLabelStyles.color = Colors.red
+  }
+  if (!inline) {
+    conditionalLabelStyles.minHeight = Units.minTouchArea
+    conditionalLabelStyles.minWidth = Units.minTouchArea
   }
 
   return (

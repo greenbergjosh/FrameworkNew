@@ -1,12 +1,18 @@
+import React, { ReactPropTypes } from "react"
 import { Text, View } from "react-native"
-import { styles, Units, routes } from "constants"
+import { styles, Units } from "constants"
 import { Flex, WhiteSpace } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
-import React from "react"
 
-export default function Comments({ navigate }) {
-  const handleUserPress = () => navigate(routes.Explore.UserFeed, { userId: 1 })
+interface CommentsProps {
+  navigate
+  routes: FeedRoutes
+}
+
+export function Comments({ navigate, routes }: CommentsProps) {
+  const handleUserPress = () =>
+    navigate(routes.Feed, { userId: "69368e0c-5383-471e-b075-3272b4922750" })
 
   return (
     <View style={{ marginLeft: Units.margin, marginRight: Units.margin }}>
@@ -22,7 +28,9 @@ export default function Comments({ navigate }) {
       </Flex>
       <WhiteSpace size="md" />
       <Flex>
-        <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>jupiterdollies</Text>
+        <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>
+          jupiterdollies
+        </Text>
         <Text style={styles.Body}> margo🦋… </Text>
         <Text style={styles.LinkText}>more</Text>
       </Flex>
@@ -31,19 +39,27 @@ export default function Comments({ navigate }) {
       <WhiteSpace size="md" />
       <Flex justify="between" align="stretch">
         <Flex>
-          <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>agafrica254</Text>
+          <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>
+            agafrica254
+          </Text>
           <Text style={styles.Body}> Cutie😍😍</Text>
         </Flex>
         <View style={{ flexGrow: 0, flexShrink: 1, flexBasis: "auto", alignSelf: "auto" }}>
-          <TouchIcon name="heart" size="xs" onPress={() => alert("Like action\nFeature to come!")} />
+          <TouchIcon
+            name="heart"
+            size="xs"
+            onPress={() => alert("Like comment\nFeature to come!")}
+          />
         </View>
       </Flex>
       <Flex justify="between" align="stretch">
         <Flex>
-          <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>jupiterdollies</Text>
+          <Text style={[{ fontWeight: "bold" }]} onPress={handleUserPress}>
+            jupiterdollies
+          </Text>
           <Text style={styles.Body}> @agafrica254 thank you💓</Text>
         </Flex>
-        <TouchIcon name="heart" size="xs" onPress={() => alert("Navigate to Campaign\nFeature to come!")} />
+        <TouchIcon name="heart" size="xs" onPress={() => alert("Like comment\nFeature to come!")} />
       </Flex>
       <WhiteSpace size="md" />
       <Text style={styles.SmallCopy}>1 DAY AGO</Text>

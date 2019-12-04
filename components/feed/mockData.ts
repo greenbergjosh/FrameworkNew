@@ -1,19 +1,19 @@
 import { ImageUris } from "constants"
 
-export type FeedItem = {
+export type FeedItemType = {
   uri: string
   id: number
   height?: number
-  user?: UserInfo
+  user?: UserInfoType
 }
 
-export type UserInfo = {
+export type UserInfoType = {
   userId: number
   handle: string
   avatarUri: string
 }
 
-export const FEED_DATA: { feed: FeedItem[] } = {
+export const FEED_DATA: { feed: FeedItemType[] } = {
   feed: [
     { uri: ImageUris.placeholder, id: 1 },
     { uri: ImageUris.placeholder, id: 2 },
@@ -45,7 +45,7 @@ export const FEED_DATA: { feed: FeedItem[] } = {
   ],
 }
 
-export const FEED_DETAILS_DATA: { feed: FeedItem[] } = {
+export const FEED_DETAILS_DATA: { feed: FeedItemType[] } = {
   feed: [
     {
       id: 1,
@@ -80,7 +80,7 @@ export const FEED_DETAILS_DATA: { feed: FeedItem[] } = {
   ],
 }
 
-export const USER_FEED_DATA: { user: UserInfo, feed: FeedItem[] } = {
+export const USER_FEED_DATA: { user: UserInfoType, feed: FeedItemType[] } = {
   user: {
     userId: 1,
     handle: "loren",
@@ -117,7 +117,7 @@ export const USER_FEED_DATA: { user: UserInfo, feed: FeedItem[] } = {
   ],
 }
 
-export const USER_FEED_DETAILS_DATA: { user: UserInfo, feed: FeedItem[] } = {
+export const USER_FEED_DETAILS_DATA: { user: UserInfoType, feed: FeedItemType[] } = {
   user: {
     userId: 1,
     handle: "loren",
