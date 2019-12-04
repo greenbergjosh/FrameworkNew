@@ -4,6 +4,7 @@ import JSON5 from "json5"
 import { get, set } from "lodash/fp"
 import React from "react"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { remoteComponentManageForm } from "./remote-component-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
@@ -11,7 +12,6 @@ import {
   UserInterfaceContext,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { remoteComponentManageForm } from "./remote-component-manage-form"
 
 export interface RemoteComponentInterfaceComponentProps extends ComponentDefinitionNamedProps {
   collapsible?: boolean
@@ -22,7 +22,7 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   onChangeData: UserInterfaceProps["onChangeData"]
   startCollapsed?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
-  valueKey: string
+  valueKey?: string
 }
 
 export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
@@ -30,7 +30,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
 > {
   static defaultProps = {
     userInterfaceData: {},
-    valueKey: "value",
+    valueKey: "values",
   }
 
   static getLayoutDefinition() {
@@ -52,7 +52,15 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
 
   handleChange = (newData: any) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
+    if (onChangeData) {
+      // If there's a valueKey, nest the data
+      if (valueKey) {
+        onChangeData(set(valueKey, newData, userInterfaceData))
+      } else {
+        // If there's not a valueKey, merge the data at the top level
+        onChangeData({ ...userInterfaceData, ...newData })
+      }
+    }
   }
 
   render(): JSX.Element {
@@ -67,7 +75,8 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
     } = this.props
     if (this.context) {
       const { loadById } = this.context
-      const data = get(valueKey, userInterfaceData) || {}
+      // If there is a valueKey, pull from the nested data
+      const data = (valueKey ? get(valueKey, userInterfaceData) : userInterfaceData) || {}
       const remoteConfig = loadById(remoteId)
       if (remoteConfig) {
         const layout = tryCatch(

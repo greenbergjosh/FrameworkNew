@@ -64,6 +64,7 @@ export const ReportBody = React.memo(
 
     const [queryResultUri, setQueryResultUri] = React.useState(none as Option<string>)
     const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
+    const [automaticQueryErrorState, setAutomaticQueryErrorState] = React.useState<any>(null)
 
     const queryResultData = React.useMemo(
       () =>
@@ -103,17 +104,55 @@ export const ReportBody = React.memo(
 
     React.useEffect(() => {
       if (
+        !automaticQueryErrorState &&
         !fromStore.isExecutingQuery &&
         queryResultData.isNone() &&
         (!unsatisfiedByParentParams.length || withoutHeader)
       ) {
-        dispatch.reports.executeQuery({
-          resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
-          query: queryConfig.query,
-          params: satisfiedByParentParams,
-        })
+        if (queryConfig.format === "HTTPRequest") {
+          dispatch.reports
+            .executeHTTPRequestQuery({
+              resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+              query: queryConfig,
+              params: satisfiedByParentParams,
+            })
+            .catch((ex) => {
+              console.error(
+                "ReportBody.tsx",
+                "Server failure executing query",
+                {
+                  resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+                  query: queryConfig.query,
+                  params: satisfiedByParentParams,
+                },
+                ex
+              )
+              setAutomaticQueryErrorState(typeof ex === "function" ? () => ex : ex)
+            })
+        } else {
+          dispatch.reports
+            .executeQuery({
+              resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+              query: queryConfig.query,
+              params: satisfiedByParentParams,
+            })
+            .catch((ex) => {
+              console.error(
+                "ReportBody.tsx",
+                "Server failure executing query",
+                {
+                  resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+                  query: queryConfig.query,
+                  params: satisfiedByParentParams,
+                },
+                ex
+              )
+              setAutomaticQueryErrorState(ex)
+            })
+        }
       }
     }, [
+      automaticQueryErrorState,
       dispatch,
       unsatisfiedByParentParams.length,
       queryResultData.isNone(),

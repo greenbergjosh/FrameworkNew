@@ -2,12 +2,18 @@ import { array } from "fp-ts/lib/Array"
 import { identity, tuple } from "fp-ts/lib/function"
 import * as record from "fp-ts/lib/Record"
 import { JSONFromString } from "io-ts-types"
+import json5 from "json5"
 import { Left, Right } from "../data/Either"
 import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { None, Some } from "../data/Option"
-import { QueryConfig, QueryConfigCodec, ReportConfigCodec } from "../data/Report"
 import * as Store from "./store.types"
+import {
+  QueryConfig,
+  QueryConfigCodec,
+  ReportConfigCodec,
+  HTTPRequestQueryConfig,
+} from "../data/Report"
 
 declare module "./store.types" {
   interface AppModels {
@@ -32,7 +38,13 @@ export interface Reducers {
 export interface Effects {
   executeQuery(payload: {
     resultURI: string
-    query: Pick<QueryConfig, "query">["query"]
+    query: QueryConfig["query"]
+    params: JSONRecord | JSONArray
+  }): Promise<any>
+
+  executeHTTPRequestQuery(payload: {
+    resultURI: string
+    query: HTTPRequestQueryConfig
     params: JSONRecord | JSONArray
   }): Promise<any>
 }
@@ -65,6 +77,52 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
       return dispatch.remoteDataClient
         .reportQueryGet({
           query,
+          params,
+        })
+        .then((x) =>
+          x.fold(
+            Left((error) => {
+              dispatch.remoteDataClient.defaultHttpErrorHandler(error)
+              throw error
+            }),
+            Right((ApiResponse) =>
+              ApiResponse({
+                OK(payload) {
+                  dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
+                },
+                Unauthorized() {
+                  dispatch.logger.logError("unauthed")
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
+                    message: `You do not have permission to run this report`,
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
+                },
+                ServerException(err) {
+                  dispatch.logger.logError(err.reason)
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
+                    message: `An error occurred while running this report: ${err.reason}`,
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
+                },
+              })
+            )
+          )
+        )
+    },
+    executeHTTPRequestQuery({ resultURI: lookupKey, query, params }) {
+      return dispatch.remoteDataClient
+        .httpRequest({
+          uri: query.query,
+          method: query.method,
+          body:
+            query.body.format === "raw"
+              ? prepareQueryBody(query.body.lang, query.body.raw)
+              : new URLSearchParams(query.body.content),
+          headers: query.headers,
           params,
         })
         .then((x) =>
@@ -155,3 +213,6 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
     },
   }),
 }
+
+const prepareQueryBody = (lang: "json" | string, body: string) =>
+  body && lang === "json" ? json5.parse(body) : body

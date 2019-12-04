@@ -6,7 +6,7 @@ import * as AdminApi from "../data/AdminApi"
 import { CompleteLocalDraft, PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { QueryConfig } from "../data/Report"
-import { HttpError, request } from "../lib/http"
+import { HttpError, Method, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
 
@@ -77,8 +77,16 @@ export interface Effects {
   ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
 
   reportQueryGet(payload: {
-    query: Pick<QueryConfig, "query">["query"]
+    query: QueryConfig["query"]
     params: JSONRecord | JSONArray
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
+
+  httpRequest(payload: {
+    uri: string
+    method: string
+    headers: { [header: string]: string }
+    params: JSONRecord | JSONArray
+    body: string | JSONRecord | JSONArray | URLSearchParams
   }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
 }
 
@@ -410,6 +418,24 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
           (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
             const p = payload[query]
             return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+          }
+        )
+      )
+    },
+
+    async httpRequest({ uri, method, headers, params, body }, { remoteDataClient }) {
+      return request({
+        body,
+        expect: AdminApi.genericArrayPayloadCodec,
+        headers,
+        method: (method as Method) || "GET",
+        timeout: none,
+        url: uri,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+            return payload ? AdminApi.OK(payload) : AdminApi.mkAdminApiError(1)
           }
         )
       )

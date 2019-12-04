@@ -101,6 +101,8 @@ export const reportResponsePayloadCodecs = {
     }),
 }
 
+export const genericArrayPayloadCodec = iots.array(JSONRecordCodec)
+
 export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): ApiResponse<T> {
   switch (r) {
     case 1: return ServerException({reason: adminApiErrors[1]})

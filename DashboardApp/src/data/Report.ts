@@ -1,8 +1,9 @@
+import { ComponentDefinition } from "@opg/interface-builder"
 import { none, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
-import { ComponentDefinition } from "@opg/interface-builder"
-import { JSONRecord } from "./JSON"
+import { string } from "prop-types"
+import { JSONRecord, JSONRecordCodec } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({
@@ -162,6 +163,29 @@ export const ParameterItemCodec = iots.taggedUnion("type", [
   SelectParameterItemCodec,
 ])
 
+export type HTTPRequestQueryConfig = iots.TypeOf<typeof HTTPRequestQueryConfigCodec>
+export const HTTPRequestQueryConfigCodec = iots.type({
+  format: iots.literal("HTTPRequest"),
+  layout: iots.array(iots.UnknownRecord),
+
+  body: iots.taggedUnion("format", [
+    iots.type({
+      format: iots.literal("raw"),
+      lang: iots.string,
+      raw: iots.string,
+    }),
+
+    iots.type({
+      format: iots.literal("form-encoded"),
+      content: iots.record(iots.string, iots.string),
+    }),
+  ]),
+  headers: iots.record(iots.string, iots.string),
+  method: iots.string,
+  parameters: iots.array(ParameterItemCodec),
+  query: iots.string,
+})
+
 export type SQLQueryConfig = iots.TypeOf<typeof SQLQueryConfigCodec>
 export const SQLQueryConfigCodec = iots.type({
   format: iots.literal("SQL"),
@@ -181,6 +205,7 @@ export const StoredProcQueryConfigCodec = iots.type({
 export type QueryLayoutItem = JSONRecord
 export type QueryConfig = iots.TypeOf<typeof QueryConfigCodec>
 export const QueryConfigCodec = iots.taggedUnion("format", [
+  HTTPRequestQueryConfigCodec,
   SQLQueryConfigCodec,
   StoredProcQueryConfigCodec,
 ])
