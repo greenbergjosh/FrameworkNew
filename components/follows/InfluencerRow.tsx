@@ -45,7 +45,6 @@ export const InfluencerRow = ({ influencer, navigate, routes }: InfluencerRowPro
                   userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
                 })
               }
-              inline
               labelStyle={{ fontWeight: "bold" }}>
               {handle + " "}
             </TouchText>

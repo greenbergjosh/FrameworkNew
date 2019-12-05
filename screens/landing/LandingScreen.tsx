@@ -13,7 +13,7 @@ import { NavigationSwitchScreenProps } from "react-navigation"
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
 
 export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) => {
-  navigate(routes.DevMenu)
+  // navigate(routes.DevMenu)
   // TODO: Does this really belong here or in App.tsx?
   const { authenticated, isAuthenticating } = useAuthContext()
   if (authenticated) {

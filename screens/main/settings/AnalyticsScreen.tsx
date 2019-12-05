@@ -1,9 +1,9 @@
-import { Button, Toast } from "@ant-design/react-native"
+import { Button, List, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
-import { Text } from "react-native"
+import { Text, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes } from "constants"
+import { Colors, routes, styles, Units } from "constants"
 
 interface AnalyticsScreenProps extends NavigationTabScreenProps {}
 
@@ -31,9 +31,34 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
     const { navigate } = this.props.navigation
     return (
       <>
-        <Button onPress={() => Toast.info("This is an Analytics toast")}>
-          Show Analytics Toast
-        </Button>
+        <View style={styles.ViewContainer}>
+          <Text style={[styles.H3, { color: Colors.black }]}>
+            Your Reach (depth of followers): 139
+          </Text>
+        </View>
+        <List renderHeader={"ACTIVITY THIS MONTH"}>
+          <List.Item>
+            <Text style={styles.H3}>
+              Impressions <Text style={{ fontWeight: "bold", color: Colors.black }}>2,526</Text>
+            </Text>
+          </List.Item>
+          <List.Item>
+            <Text style={styles.H3}>
+              Click Throughs <Text style={{ fontWeight: "bold", color: Colors.black }}>396</Text>
+            </Text>
+          </List.Item>
+          <List.Item>
+            <Text style={styles.H3}>
+              Items Sold <Text style={{ fontWeight: "bold", color: Colors.black }}>52</Text>
+            </Text>
+          </List.Item>
+          <List.Item>
+            <Text style={styles.H3}>
+              Commissions Earned{" "}
+              <Text style={{ fontWeight: "bold", color: Colors.black }}>$126</Text>
+            </Text>
+          </List.Item>
+        </List>
       </>
     )
   }

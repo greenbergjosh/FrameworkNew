@@ -8,6 +8,11 @@ import {
   Follower,
 } from "api/follows-services/followers"
 import { Influencer, InfluencersResponse, loadInfluencers } from "api/follows-services/influencers"
+import {
+  BlockedUser,
+  BlockedUsersResponse,
+  loadBlockedUsers,
+} from "api/follows-services/blockedUsers"
 import moment from "moment"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {
@@ -15,20 +20,24 @@ export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType>
   influencers: Influencer[]
   lastLoadFollowers: ISO8601String | null
   followers: Followers
+  lastLoadBlockedUsers: ISO8601String | null
+  blockedUsers: BlockedUser[]
 }
 
 export interface FollowsActionCreatorType extends GetGotContextType {
   // Action Creators
   loadInfluencers: () => Promise<void>
   loadFollowers: () => Promise<void>
+  loadBlockedUsers: () => Promise<void>
 }
 
 export interface FollowsContextType extends FollowsActionCreatorType, FollowsState {}
 
 type LoadInfluencersAction = FSA<"loadInfluencers", InfluencersResponse>
 type LoadFollowersAction = FSA<"loadFollowers", FollowersResponse>
+type LoadBlockedUsersAction = FSA<"loadBlockedUsers", BlockedUsersResponse>
 
-type FollowsAction = LoadInfluencersAction | LoadFollowersAction
+type FollowsAction = LoadInfluencersAction | LoadFollowersAction | LoadBlockedUsersAction
 
 const reducer = loadifyReducer((state: FollowsState, action: FollowsAction | GetGotResetAction) => {
   switch (action.type) {
@@ -46,6 +55,13 @@ const reducer = loadifyReducer((state: FollowsState, action: FollowsAction | Get
         followers: { ...action.payload.result },
         lastLoadFollowers: new Date().toISOString(),
       }
+    case "loadBlockedUsers":
+      return {
+        ...state,
+        ...action.payload,
+        blockedUsers: [...action.payload.results],
+        lastLoadBlockedUsers: new Date().toISOString(),
+      }
     case "reset":
       return initialState
     default:
@@ -58,9 +74,12 @@ const initialState: FollowsState = {
   influencers: [],
   lastLoadFollowers: null,
   followers: { followers: [], followRequests: [] },
+  lastLoadBlockedUsers: null,
+  blockedUsers: [],
   loading: {
     loadInfluencers: {},
     loadFollowers: {},
+    loadBlockedUsers: {},
     reset: {},
   },
 }
@@ -69,6 +88,7 @@ const initialContext: FollowsContextType = {
   ...initialState,
   loadInfluencers: async () => {},
   loadFollowers: async () => {},
+  loadBlockedUsers: async () => {},
   reset: () => {},
 }
 
@@ -96,11 +116,19 @@ export const FollowsContextProvider = ({ ...props }) => {
             console.error("Error loading Followers", { response })
           }
         },
+        loadBlockedUsers: async () => {
+          const response = await loadBlockedUsers()
+          if (response.r === 0) {
+            dispatch({ type: "loadBlockedUsers", payload: response })
+          } else {
+            console.error("Error loading Blocked Users", { response })
+          }
+        },
         reset: () => {
           dispatch(getgotResetAction)
         },
       }),
-    [dispatch, getgotResetAction, loadInfluencers]
+    [dispatch, getgotResetAction, loadInfluencers, loadFollowers, loadBlockedUsers]
   )
 
   const contextValue = React.useMemo(() => ({ ...state, ...loadifiedActionCreators }), [
@@ -113,15 +141,12 @@ export const FollowsContextProvider = ({ ...props }) => {
 
 export const useFollowsContext = () => useContext(FollowsContext)
 
-/************************************************************************************
+/**********************
  * UTILITY FUNCTIONS
  */
 
 type FollowersByDate = { date: moment.Moment; relativeTime: string; followers: Follower[] }[]
-/**
- *
- * @param followers
- */
+
 export function sortFollowersByDate(followers: Follower[]): FollowersByDate {
   // Create object with dates as keys
   const groups = followers.reduce((groups, follower) => {

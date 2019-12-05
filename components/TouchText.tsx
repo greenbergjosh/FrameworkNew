@@ -1,7 +1,6 @@
 import React from "react"
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native"
-import { IconProps } from "@ant-design/react-native/lib/icon"
-import { AntIconSizes, Colors, styles, Units } from "constants"
+import { Colors, styles } from "constants"
 import { FontWeights } from "../constants/unit.constants"
 
 interface TouchTextProps {
@@ -12,7 +11,6 @@ interface TouchTextProps {
   children?: string
   reverse?: boolean
   type?: "primary" | "warning"
-  inline?: boolean
 }
 
 export default function TouchText({
@@ -23,7 +21,6 @@ export default function TouchText({
   children,
   reverse,
   type,
-  inline,
 }: TouchTextProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
@@ -57,10 +54,6 @@ export default function TouchText({
   }
   if (type === "warning") {
     conditionalLabelStyles.color = Colors.red
-  }
-  if (!inline) {
-    conditionalLabelStyles.minHeight = Units.minTouchArea
-    conditionalLabelStyles.minWidth = Units.minTouchArea
   }
 
   return (

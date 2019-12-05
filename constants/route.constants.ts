@@ -61,7 +61,7 @@ enum Messages {
 }
 
 enum Settings {
-  default = "Settings.Notifications",
+  default = "Settings.Analytics",
   Analytics = "Settings.Analytics",
   BlockedUsers = "Settings.BlockedUsers",
   Notifications = "Settings.Notifications",

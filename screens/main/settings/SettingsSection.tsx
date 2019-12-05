@@ -1,6 +1,5 @@
-import TabBarSectionNavigator from "components/NavigationOptions"
-import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
+import { defaultNavigationOptions, routes } from "constants"
 import { createStackNavigator } from "react-navigation-stack"
 import { AnalyticsScreen } from "./AnalyticsScreen"
 import { BlockedUsersScreen } from "./BlockedUsersScreen"

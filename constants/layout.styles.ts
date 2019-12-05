@@ -34,6 +34,20 @@ const LayoutStyles = StyleSheet.create({
     // ...mixins.header,
     // height: 30,
   },
+
+  ListHeader: {
+    backgroundColor: Colors.lightgrey,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.grey,
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    alignContent: "stretch",
+    padding: Units.margin,
+    paddingBottom: Units.padding
+  },
 })
 
 export default LayoutStyles

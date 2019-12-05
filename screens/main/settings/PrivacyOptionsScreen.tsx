@@ -1,40 +1,42 @@
-import { Button, Toast } from "@ant-design/react-native"
 import React from "react"
-import { Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes } from "constants"
+import { routes, styles, Units } from "constants"
+import TouchText from "components/TouchText"
+import { SettingsList } from "./components/SettingsList"
+import { PRIVACYOPTIONS_DATA, SettingType } from "./components/mockData"
 
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}
 
-export class PrivacyOptionsScreen extends React.Component<PrivacyOptionsScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: () => (
-        <Button
-          onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
-          <Text style={{ color: "#fff" }}>Cancel</Text>
-        </Button>
-      ),
-      headerTitle: () => <HeaderTitle title="Privacy Options" />,
-      headerRight: () => (
-        <Button
-          onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
-          <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
-        </Button>
-      ),
-    }
+export const PrivacyOptionsScreen = ({ navigation }: PrivacyOptionsScreenProps) => {
+  const [settings, setSettings] = React.useState<SettingType[]>(PRIVACYOPTIONS_DATA)
+  function handleSettingChange(setting, isChecked) {
+    setSettings([...settings, setting])
   }
-  render() {
-    const { navigate } = this.props.navigation
-    return (
-      <>
-        <Button onPress={() => Toast.info("This is an PrivacyOptions toast")}>
-          Show PrivacyOptions Toast
-        </Button>
-      </>
-    )
+  return <SettingsList values={settings} style={styles.ViewContainer} />
+}
+
+PrivacyOptionsScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: () => (
+      <TouchText
+        onPress={() => navigation.navigate(routes.Home.Feed)}
+        reverse
+        size="lg"
+        style={{ marginLeft: Units.margin }}>
+        Cancel
+      </TouchText>
+    ),
+    headerTitle: () => <HeaderTitle title="Privacy Options" />,
+    headerRight: () => (
+      <TouchText
+        onPress={() => navigation.navigate(routes.Home.Feed)}
+        reverse
+        size="lg"
+        type="primary"
+        style={{ marginRight: Units.margin }}>
+        Done
+      </TouchText>
+    ),
   }
 }

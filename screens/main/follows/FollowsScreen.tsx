@@ -26,14 +26,10 @@ export class FollowsScreen extends React.Component<FollowsScreenProps> {
         break
     }
     return (
-      <>
-        <Tabs
-          tabs={[{ title: "You Follow" }, { title: "Following You" }]}
-          initialPage={initialPage}>
-          <InfluencersList routes={influencerFeedRoutes} navigate={navigate} />
-          <FollowersList routes={influencerFeedRoutes} navigate={navigate} />
-        </Tabs>
-      </>
+      <Tabs tabs={[{ title: "You Follow" }, { title: "Following You" }]} initialPage={initialPage}>
+        <InfluencersList routes={influencerFeedRoutes} navigate={navigate} />
+        <FollowersList routes={influencerFeedRoutes} navigate={navigate} />
+      </Tabs>
     )
   }
 }
