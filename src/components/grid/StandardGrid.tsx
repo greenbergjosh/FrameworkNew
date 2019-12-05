@@ -237,6 +237,9 @@ export const StandardGrid = React.forwardRef(
               : undefined
         }
 
+        // SyncFusion seems to read the customFormat, even though it's not documented
+        delete col.customFormat
+
         return col
       })
     }, [])
