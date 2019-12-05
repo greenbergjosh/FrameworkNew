@@ -13,6 +13,13 @@ enum Authentication {
   ResetPassword = "Authentication.ResetPassword",
 }
 
+enum Legal {
+  default = "Legal.TermsOfService",
+  TermsOfService = "Legal.TermsOfService",
+  PrivacyPolicy = "Legal.PrivacyPolicy",
+  UserAgreement = "Legal.UserAgreement",
+}
+
 enum Promotions {
   default = "Promotions.Promotions",
   Campaign = "Promotions.Campaign",
@@ -132,6 +139,7 @@ export const routes = {
   Follows,
   Home,
   Landing,
+  Legal,
   Main,
   Messages,
   OnBoarding,

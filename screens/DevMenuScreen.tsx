@@ -1,5 +1,5 @@
-import { Flex, Icon, List, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
+import { Flex, Icon, List, WhiteSpace } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { ScrollView, Text, View } from "react-native"
@@ -78,6 +78,7 @@ export class DevMenuScreen extends React.Component<DevMenuScreenProps> {
           <Section section="Authentication" navigate={navigate} />
           <Section section="OnBoarding" navigate={navigate} />
           <Section section="Main" navigate={navigate} />
+          <Section section="Legal" navigate={navigate} />
 
           {/* MAIN SECTION */}
           <Section section="Home" navigate={navigate} />

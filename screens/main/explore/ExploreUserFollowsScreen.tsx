@@ -12,7 +12,7 @@ export interface ExploreUserFollowsScreenProps extends NavigationTabScreenProps 
 export class ExploreUserFollowsScreen extends React.Component<ExploreUserFollowsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="ExploreUserFollows" align="left" size="large" />,
+      headerTitle: () => <HeaderTitle title="loren" />,
     }
   }
   render() {

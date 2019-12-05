@@ -13,6 +13,7 @@ import { AuthenticationSection } from "./screens/authentication/AuthenticationSe
 import { DevMenuScreen } from "./screens/DevMenuScreen"
 import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
+import { LegalSection } from "./screens/legal/LegalSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
 
 const sectionNavigator = createAnimatedSwitchNavigator(
@@ -21,6 +22,7 @@ const sectionNavigator = createAnimatedSwitchNavigator(
     OnBoarding: { screen: OnBoardingSection },
     Authentication: { screen: AuthenticationSection },
     Main: { screen: MainSection },
+    Legal: { screen: LegalSection },
     DevMenu: { screen: DevMenuScreen },
   },
   {
