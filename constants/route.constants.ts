@@ -17,6 +17,7 @@ enum Legal {
   default = "Legal.TermsOfService",
   TermsOfService = "Legal.TermsOfService",
   PrivacyPolicy = "Legal.PrivacyPolicy",
+  CookiePolicy = "Legal.CookiePolicy",
   UserAgreement = "Legal.UserAgreement",
 }
 

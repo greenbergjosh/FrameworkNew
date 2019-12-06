@@ -11,6 +11,7 @@ interface TouchIconProps {
   style?: StyleProp<ViewStyle>
   iconStyle?: StyleProp<TextStyle>
   reverse?: boolean
+  children?: React.ReactElement<any> | React.ReactElement<any>[]
 }
 
 function getMargin(iconSize) {
@@ -24,6 +25,7 @@ export default function TouchIcon({
   style,
   iconStyle,
   reverse,
+  children,
 }: TouchIconProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
@@ -72,11 +74,19 @@ export default function TouchIcon({
     <>
       {onPress ? (
         <TouchableOpacity onPress={onPress && onPress} style={[wrapperStyles, style]}>
-          <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
+          {children ? (
+            children
+          ) : (
+            <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
+          )}
         </TouchableOpacity>
       ) : (
         <View style={[wrapperStyles, style]}>
-          <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
+          {children ? (
+            children
+          ) : (
+            <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
+          )}
         </View>
       )}
     </>

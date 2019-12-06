@@ -14,20 +14,51 @@ interface UserInfoProps {
 }
 interface UserInfoChildProps extends UserInfoProps {
   isCurrentUser?: boolean
+  onPostActionsPress?: () => void
 }
 
 export function UserInfo({ user, navigate, showFullDetails, routes }: UserInfoProps) {
   if (showFullDetails) {
-    return <UserInfoFull user={user} navigate={navigate} routes={routes} />
+    return (
+      <UserInfoFull
+        user={user}
+        navigate={navigate}
+        routes={routes}
+        onPostActionsPress={onInfluencerPostButtonPress}
+      />
+    )
   }
-  return <UserInfoSmall user={user} navigate={navigate} routes={routes} />
+  return (
+    <UserInfoSmall
+      user={user}
+      navigate={navigate}
+      routes={routes}
+      onPostActionsPress={onInfluencerPostButtonPress}
+    />
+  )
 }
 
 export function ProfileInfo({ user, navigate, showFullDetails, routes }: UserInfoProps) {
   if (showFullDetails) {
-    return <UserInfoFull user={user} navigate={navigate} routes={routes} isCurrentUser={true} />
+    return (
+      <UserInfoFull
+        user={user}
+        navigate={navigate}
+        routes={routes}
+        isCurrentUser={true}
+        onPostActionsPress={onProfilePostButtonPress}
+      />
+    )
   }
-  return <UserInfoSmall user={user} navigate={navigate} routes={routes} isCurrentUser={true} />
+  return (
+    <UserInfoSmall
+      user={user}
+      navigate={navigate}
+      routes={routes}
+      isCurrentUser={true}
+      onPostActionsPress={onProfilePostButtonPress}
+    />
+  )
 }
 
 function UserActionsButton() {
@@ -40,25 +71,40 @@ function UserActionsButton() {
       (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
     )
   }
-
   return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
 }
 
-function PostActionsButton() {
-  const showActionSheet = () => {
-    ActionSheet.showActionSheetWithOptions(
-      {
-        options: ["Report Inappropriate", "Add To My Promotions", "Copy Link", "Cancel"],
-        cancelButtonIndex: 3,
-      },
-      (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
-    )
-  }
-
-  return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
+function PostActionsButton({ onPress }) {
+  return <TouchIcon name="ellipsis" size="lg" onPress={onPress} />
 }
 
-export const UserInfoSmall = ({ user, navigate, routes, isCurrentUser }: UserInfoChildProps) => (
+export const onInfluencerPostButtonPress = () => {
+  ActionSheet.showActionSheetWithOptions(
+    {
+      options: ["Report Inappropriate", "Add To My Promotions", "Copy Link", "Cancel"],
+      cancelButtonIndex: 3,
+    },
+    (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
+  )
+}
+
+export const onProfilePostButtonPress = () => {
+  ActionSheet.showActionSheetWithOptions(
+    {
+      options: ["Archive", "Turn Off Commenting", "Copy Link", "Cancel"],
+      cancelButtonIndex: 3,
+    },
+    (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
+  )
+}
+
+export const UserInfoSmall = ({
+  user,
+  navigate,
+  routes,
+  isCurrentUser,
+  onPostActionsPress,
+}: UserInfoChildProps) => (
   <Flex direction="row" style={{ margin: Units.margin }} justify="between">
     <Flex>
       <Avatar
@@ -70,7 +116,7 @@ export const UserInfoSmall = ({ user, navigate, routes, isCurrentUser }: UserInf
         <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
       </TouchableOpacity>
     </Flex>
-    {isCurrentUser ? null : <PostActionsButton />}
+    <PostActionsButton onPress={onPostActionsPress} />
   </Flex>
 )
 

@@ -6,19 +6,7 @@ import { NavigationContext } from "react-navigation"
 import { Colors, routes, styles, Units, FontWeights } from "constants"
 import { useAuthContext } from "providers/auth-context-provider"
 import { useGetGotRootDataContext } from "providers/getgot-root-data-context-provider"
-
-const P = ({ children }) => (
-  <Text style={[styles.Body, { marginBottom: Units.margin }]}>{children}</Text>
-)
-const STRONG = ({ children }) => (
-  <Text style={[styles.Body, { fontWeight: FontWeights.bold }]}>{children}</Text>
-)
-const BR = () => <Text>{"\n"}</Text>
-const A = ({ children, onPress }) => (
-  <Text style={styles.LinkText} onPress={onPress}>
-    {children}
-  </Text>
-)
+import { P, A, BR, H2, STRONG } from "components/Markup"
 
 export const AuthenticationBannedScreen = () => {
   const auth = useAuthContext()
@@ -38,7 +26,7 @@ export const AuthenticationBannedScreen = () => {
             size="lg"
             style={{ color: Colors.red, marginRight: Units.padding }}
           />
-          <Text style={styles.H2}>Account Banned</Text>
+          <H2>Account Banned</H2>
         </Flex>
         <View style={styles.ViewContainer}>
           <P>

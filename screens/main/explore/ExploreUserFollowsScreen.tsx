@@ -2,8 +2,7 @@ import React from "react"
 import { Tabs } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FollowersList, InfluencersList } from "components/follows"
-import { MutualList } from "./components/MutualList"
+import { InfluencersList, FollowsList } from "components/follows"
 import { routes } from "constants"
 import { influencerFeedRoutes } from "../feedRoutes"
 
@@ -31,10 +30,12 @@ export class ExploreUserFollowsScreen extends React.Component<ExploreUserFollows
     }
     return (
       <>
-        <Tabs tabs={[{ title: "Mutual" }, { title: "Followers" }, { title: "Following" }]} initialPage={initialPage}>
-          <MutualList navigate={navigate} />
+        <Tabs
+          tabs={[{ title: "Mutual" }, { title: "Followers" }, { title: "Following" }]}
+          initialPage={initialPage}>
           <InfluencersList navigate={navigate} routes={influencerFeedRoutes} />
-          <FollowersList navigate={navigate} routes={influencerFeedRoutes} />
+          <FollowsList navigate={navigate} />
+          <FollowsList navigate={navigate} />
         </Tabs>
       </>
     )
