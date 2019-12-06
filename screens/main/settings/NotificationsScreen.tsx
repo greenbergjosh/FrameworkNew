@@ -33,7 +33,7 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
       </View>
       <SettingsList values={settings} style={styles.View}>
         {({ value }) => (
-          <View style={{ borderBottomWidth: 1, borderColor: Colors.grey, marginBottom: Units.margin }}>
+          <View style={{ borderBottomWidth: 1, borderColor: Colors.greyLight, marginBottom: Units.margin }}>
             <SettingRow value={value} style={{ marginBottom: Units.margin / 2 }}/>
             <SettingRow
               value={{

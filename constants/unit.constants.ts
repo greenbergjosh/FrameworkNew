@@ -19,6 +19,7 @@ export enum Units {
   img64 = 64,
   img80 = 80,
   img128 = 128,
+  thumb90 = 90,
 }
 export enum FontWeights {
   light = "300",
@@ -27,10 +28,10 @@ export enum FontWeights {
 }
 export enum Colors {
   white = "#FFFFFF",
-  lightgrey = "#F8F8F8",
-  grey = "#D6D4CD",
-  mediumgrey = "#999999",
-  darkgrey = "#707070",
+  greyExtraLight = "#F8F8F8",
+  greyLight = "#D6D4CD",
+  greyMediumLight = "#999999",
+  greyMedium = "#707070",
   black = "#000000",
   blue = "#007AFF",
   navy = "#343997",

@@ -36,9 +36,9 @@ const LayoutStyles = StyleSheet.create({
   },
 
   ListHeader: {
-    backgroundColor: Colors.lightgrey,
+    backgroundColor: Colors.greyExtraLight,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.grey,
+    borderBottomColor: Colors.greyLight,
     display: "flex",
     flexDirection: "row",
     flexWrap: "nowrap",

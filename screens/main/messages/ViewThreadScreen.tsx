@@ -61,7 +61,7 @@ export class ViewThreadScreen extends React.Component<
           justify="start"
           style={{
             borderBottomWidth: 1,
-            borderColor: Colors.grey,
+            borderColor: Colors.greyLight,
             paddingLeft: Units.margin,
             paddingRight: Units.margin,
           }}>
