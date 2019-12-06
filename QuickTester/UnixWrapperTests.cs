@@ -26,8 +26,9 @@ namespace QuickTester
                             $"{cwd}{Path.DirectorySeparatorChar}{searchListF}");
 
                         watch.Restart();
-                        var result = await UnixWrapper.BinarySearchSortedMd5File(
+                        var result = await UnixWrapper.BinarySearchSortedFile(
                             $"{cwd}{Path.DirectorySeparatorChar}{ args[1]}",
+                            Hashing.Md5StringLength,
                             searchList.ToList());
                         watch.Stop();
 
