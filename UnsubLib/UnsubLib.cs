@@ -483,7 +483,10 @@ namespace UnsubLib
 
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Campaigns with Positive Delta: {campaignsWithPositiveDelta.Count}");
 
+                var js = Jw.Json("Id", "FId", sha512s);
+                await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Trying to call UnsubFiles512 with : {js}");
                 var res512 = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles512", "", Jw.Json("Id", "FId", sha512s));
+
 
                 if (res512?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update Sha512 status for campaigns. Response: {res512?.GetS("") ?? "[null]"}");
 
@@ -681,7 +684,7 @@ namespace UnsubLib
 
                             fileSize = plainTextFile.Length;
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"MD5 plain text file {plainTextFile.Name}({fileSize})");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Plain email text file {plainTextFile.Name}({fileSize})");
 
                             using (var fs = plainTextFile.OpenText())
                             using (var ws = File.CreateText(Path.Combine(ClientWorkingDirectory, $"{fdest}.txt.cl2")))
@@ -1553,7 +1556,7 @@ namespace UnsubLib
                 else if (digest?.Contains("@") == true)
                 {
                     email = digest;
-                    digest = type == null || type == "md5" ? Hashing.CalculateMD5Hash(digest.ToLower()) : Hashing.CalculateSHA512Hash(digest.ToLower());
+                    digest = type.IsNullOrWhitespace() || type == "md5" ? Hashing.CalculateMD5Hash(digest.ToLower()) : Hashing.CalculateSHA512Hash(digest.ToLower());
                 }
 
 
@@ -1563,9 +1566,14 @@ namespace UnsubLib
                     return Jw.Json(new { Result = false, Error = "Missing unsub file" });
                 }
 
+                /*
                 var isUnsub = type == null || type == "md5" ?
                     await UnixWrapper.BinarySearchSortedMd5File(SearchDirectory, fileName, digest) :
                     await UnixWrapper.BinarySearchSortedSha512File(SearchDirectory, fileName, digest);
+                */
+
+                await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
+                var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.SHA512StringLength ), digest);
 
                 if (!isUnsub && globalSupp)
                 {
@@ -1652,9 +1660,15 @@ namespace UnsubLib
                     return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
                 }
 
+                /*
                 binarySearchResults = type == null || type == "md5" ?
                     await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), digests) :
                     await UnixWrapper.BinarySearchSortedSha512File(Path.Combine(SearchDirectory, fileName), digests);
+                */
+
+                await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
+                binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.SHA512StringLength ), digests);
+
             }
             catch (Exception ex)
             {
