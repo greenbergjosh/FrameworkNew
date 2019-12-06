@@ -10,9 +10,12 @@ namespace Utility
     public static class Hashing
     {
 
-        public static Regex SHA512StringRegex() => new Regex("^(?:0[xX])?(?:[0-9a-fA-F]{128})$");
+        public const int SHA512StringLength = 128;
+        public const int Md5StringLength = 32;
 
-        public static Regex MD5StringRegex() => new Regex("^[0-9a-fA-F]{32}$");
+        public static Regex SHA512StringRegex() => new Regex("^(?:0[xX])?(?:[0-9a-fA-F]{" + SHA512StringLength.ToString() + "})$");
+
+        public static Regex MD5StringRegex() => new Regex("^[0-9a-fA-F]{" + Md5StringLength.ToString()  +"}$");
 
         public static byte[] AsciiMD5HashAsByteArray(string input)
         {
