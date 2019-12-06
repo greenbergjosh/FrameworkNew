@@ -7,6 +7,7 @@ import { styles } from "constants"
 import moment from "moment"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
+import { SMALL } from "components/Markup"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
@@ -49,9 +50,9 @@ export const InfluencerRow = ({ influencer, navigate, routes }: InfluencerRowPro
               {handle + " "}
             </TouchText>
             <Text>{pupa(statusPhrase.template, statusPhrase.data || [])} </Text>
-            <Text style={styles.SmallCopy}>
+            <SMALL>
               {initialCase(moment.utc(lastActivity).fromNow(true))}
-            </Text>
+            </SMALL>
           </Flex>
 
           {/**************************/}

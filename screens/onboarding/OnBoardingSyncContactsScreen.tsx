@@ -2,6 +2,7 @@ import React from "react"
 import { Button, Flex, WhiteSpace } from "@ant-design/react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
+import { H2, P, SMALL, A } from "components/Markup"
 import { Text, View } from "react-native"
 import { routes, styles } from "constants"
 import { useProfileContext } from "providers/profile-context-provider"
@@ -51,7 +52,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
   return (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
-      <Text style={styles.H2}>Connect your address book to find people you may know on GetGot</Text>
+      <H2>Connect your address book to find people you may know on GetGot</H2>
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
@@ -77,11 +78,11 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
         </Button>
       </Flex>
       <WhiteSpace size="xl" />
-      <Text style={styles.SmallCopy}>
+      <SMALL>
         Contacts from your address book will be uploaded to GetGot on an ongoing basis. You can turn
         of syncing and remove previously uploaded contacts in your settings.
-        <Text style={styles.LinkText}>Learn More</Text>.
-      </Text>
+        <A onPress={() => alert("Redirect to learn more\nFeature to come!")}>Learn More</A>.
+      </SMALL>
     </View>
   )
 }

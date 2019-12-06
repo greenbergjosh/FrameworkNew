@@ -5,6 +5,7 @@ import { Influencer } from "api/onboarding-services"
 import { routes, styles } from "constants"
 import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"
+import { H2, H3, P, SMALL } from "components/Markup"
 import { FollowsScreenProps } from "../../follows/FollowsScreen"
 
 interface SuggestedFollowsProps {
@@ -19,11 +20,11 @@ export default (props: SuggestedFollowsProps) => {
   }
   return (
     <View style={styles.View}>
-      <Text style={styles.H2}>Welcome to GetGot</Text>
+      <H2>Welcome to GetGot</H2>
       <WhiteSpace size="lg" />
-      <Text style={[styles.H3, { textAlign: "center" }]}>
+      <H3 style={[{ textAlign: "center" }]}>
         When you follow people, you&rsquo;ll see the products and services that they recommend.
-      </Text>
+      </H3>
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
       <Carousel afterChange={this.onHorizontalSelectedIndexChange}>
@@ -35,7 +36,7 @@ export default (props: SuggestedFollowsProps) => {
                 size="lg"
                 onPress={() => navigate(routes.Explore.UserFeed, { id: influencer.userId })}
               />
-              <Text style={styles.H2}>{influencer.name}</Text>
+              <H2>{influencer.name}</H2>
               <WhiteSpace size="sm" />
               <Text style={styles.Body}>{influencer.description}</Text>
               <WhiteSpace size="xl" />
@@ -43,7 +44,7 @@ export default (props: SuggestedFollowsProps) => {
                 <Icon name="plus" size="md" color="#fff" /> Follow
               </Button>
               <WhiteSpace size="xl" />
-              <Text style={styles.SmallCopy}>{influencer.source}</Text>
+              <SMALL>{influencer.source}</SMALL>
               <WhiteSpace size="lg" />
               <Flex direction={"row"} justify={"between"} style={{ width: 226 }}>
                 {influencer.feedImages.map((imgUri, index, ary) => (

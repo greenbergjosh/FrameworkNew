@@ -13,6 +13,7 @@ import React from "react"
 import { Text, View } from "react-native"
 import { SettingsDrawerProps } from "../SettingsDrawer"
 import SettingLink from "./SettingLink"
+import { H2, H4, P } from "components/Markup"
 
 export interface SettingsDrawerContentsProps {
   auth: AuthContextType
@@ -35,9 +36,9 @@ export default function SettingsDrawerContents({
         style={{ margin: Units.margin / 2, marginLeft: Units.margin }}>
         <Flex>
           <Avatar size="sm" source={auth.imageurl} />
-          <Text style={[styles.H4, { marginLeft: Units.margin / 2, color: Colors.white }]}>
+          <H4 style={{ marginLeft: Units.margin / 2, color: Colors.white }}>
             {auth.handle}
-          </Text>
+          </H4>
         </Flex>
         <TouchIcon name="left" onPress={() => closeDrawer()} iconStyle={{ color: Colors.white }} />
       </Flex>

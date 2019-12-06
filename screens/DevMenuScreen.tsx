@@ -2,6 +2,7 @@ import React from "react"
 import { Flex, Icon, List, WhiteSpace } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
+import { H2, P, A, SMALL } from "components/Markup"
 import { ScrollView, Text, View } from "react-native"
 import { routes, styles } from "constants"
 
@@ -15,18 +16,18 @@ function NavItem({ keyName, route, navigate }) {
         <Icon name="file" />
         {keyName === "default" ? (
           <>
-            <Text style={styles.LinkText} onPress={() => navigate(route)}>
+            <A onPress={() => navigate(route)}>
               {" Default "}
-            </Text>
-            <Text style={styles.SmallCopy}>({getTitle(route)})</Text>
+            </A>
+            <SMALL>({getTitle(route)})</SMALL>
           </>
         ) : (
           <>
-            <Text style={styles.LinkText} onPress={() => navigate(route)}>
+            <A onPress={() => navigate(route)}>
               {" "}
               {getTitle(route)}
-            </Text>
-            <Text style={styles.SmallCopy}>{keyName === "default" ? " (default)" : null}</Text>
+            </A>
+            <SMALL>{keyName === "default" ? " (default)" : null}</SMALL>
           </>
         )}
       </Flex>
@@ -70,7 +71,7 @@ export class DevMenuScreen extends React.Component<DevMenuScreenProps> {
     const { navigate } = this.props.navigation
     return (
       <View style={{ padding: 32, paddingTop: 80, paddingBottom: 80 }}>
-        <Text style={styles.H2}>Dev Menu</Text>
+        <H2>Dev Menu</H2>
         <WhiteSpace size="xl" />
         <ScrollView>
           {/* ROOT SECTIONS */}

@@ -6,6 +6,7 @@ import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
+import { H2, P } from "components/Markup"
 
 interface AuthenticationResetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
@@ -24,7 +25,7 @@ export const AuthenticationResetPasswordScreen = (
   ) : (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
-      <Text style={styles.H2}>Reset your password</Text>
+      <H2>Reset your password</H2>
       <WhiteSpace size="lg" />
       <InputItem
         type="text"
@@ -35,7 +36,7 @@ export const AuthenticationResetPasswordScreen = (
       />
       {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
       <WhiteSpace size="lg" />
-      <LegalAgreement />
+      <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />
       <Flex justify="center">
         <Button

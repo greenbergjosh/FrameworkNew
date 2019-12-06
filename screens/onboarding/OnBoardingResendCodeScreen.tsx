@@ -5,6 +5,7 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { Text, View } from "react-native"
 import { styles, routes } from "constants"
 import { LegalAgreement } from "components/LegalAgreement"
+import { H2, P } from "components/Markup"
 
 interface OnBoardingResendCodeScreenProps extends NavigationSwitchScreenProps {}
 
@@ -20,7 +21,7 @@ export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProp
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
-        <Text style={styles.H2}>Resend verification code</Text>
+        <H2>Resend verification code</H2>
       </Flex>
       <WhiteSpace size="lg" />
       <InputItem
@@ -32,7 +33,7 @@ export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProp
         clearButtonMode="always"
       />
       <WhiteSpace size="lg" />
-      <LegalAgreement />
+      <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />
       <Flex justify="center">
         <Button

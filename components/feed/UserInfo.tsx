@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
 import { AwardIcon } from "assets/icons"
+import { H1, H4, A, SMALL } from "components/Markup"
 
 interface UserInfoProps {
   navigate
@@ -12,6 +13,7 @@ interface UserInfoProps {
   user
   showFullDetails?: boolean
 }
+
 interface UserInfoChildProps extends UserInfoProps {
   isCurrentUser?: boolean
   onPostActionsPress?: () => void
@@ -113,7 +115,7 @@ export const UserInfoSmall = ({
         onPress={() => navigate(routes.Feed, { userId: user.userId })}
       />
       <TouchableOpacity onPress={() => navigate(routes.Feed, { userId: user.userId })}>
-        <Text style={[styles.H4, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
+        <H4 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H4>
       </TouchableOpacity>
     </Flex>
     <PostActionsButton onPress={onPostActionsPress} />
@@ -150,7 +152,7 @@ export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfo
         }}>
         <Flex direction="row" justify="between" style={{ flexGrow: 1 }}>
           <Flex>
-            <Text style={[styles.H1, { marginLeft: Units.margin / 2 }]}>{user.handle}</Text>
+            <H1 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H1>
             <AwardIcon style={{ marginLeft: 5 }} />
           </Flex>
           {isCurrentUser ? null : <UserActionsButton />}
@@ -172,14 +174,14 @@ export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfo
           <TouchableOpacity
             style={{ alignItems: "center", flexDirection: "column" }}
             onPress={() => navigate(routes.Followers)}>
-            <Text style={[styles.LinkText, { fontWeight: FontWeights.bold }]}>17.4m</Text>
-            <Text style={[styles.LinkText]}>followers</Text>
+            <A style={{ fontWeight: FontWeights.bold }}>17.4m</A>
+            <A>followers</A>
           </TouchableOpacity>
           <TouchableOpacity
             style={{ alignItems: "center", flexDirection: "column" }}
             onPress={() => navigate(routes.Influencers)}>
-            <Text style={[styles.LinkText, { fontWeight: FontWeights.bold }]}>225</Text>
-            <Text style={[styles.LinkText]}>following</Text>
+            <A style={{ fontWeight: FontWeights.bold }}>225</A>
+            <A>following</A>
           </TouchableOpacity>
         </Flex>
       </Flex>
@@ -188,9 +190,7 @@ export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfo
       <>
         <WhiteSpace size="md" />
         <Flex justify="center">
-          <Text style={styles.SmallCopy}>
-            Followed by agplace, agpretzels, brookeeelizbeth + 3 more
-          </Text>
+          <SMALL>Followed by agplace, agpretzels, brookeeelizbeth + 3 more</SMALL>
         </Flex>
       </>
     )}
@@ -201,11 +201,11 @@ export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfo
       style={{ marginLeft: Units.margin * 2, marginRight: Units.margin * 2 }}>
       <Text style={styles.Body}>✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧</Text>
       <WhiteSpace size="sm" />
-      <Text
-        style={[styles.LinkText, { fontWeight: FontWeights.bold }]}
+      <A
+        style={{ fontWeight: FontWeights.bold }}
         onPress={() => alert("Open web link\n Feature to come!")}>
         youtu.be/Emkxvx11nz4
-      </Text>
+      </A>
     </Flex>
     <WhiteSpace size="lg" />
   </View>

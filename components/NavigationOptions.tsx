@@ -1,9 +1,8 @@
 import { Icon } from "@ant-design/react-native"
-import { styles } from "constants"
 import React from "react"
-import { Text } from "react-native"
 import { NavigationBottomTabOptions } from "react-navigation-tabs"
 import { Colors } from "../constants/unit.constants"
+import { SMALL } from "components/Markup"
 
 export const TabBarIcon = ({ icon, focused }) => {
   const color = focused ? Colors.navy : Colors.mediumgrey
@@ -14,7 +13,7 @@ export const TabBarIcon = ({ icon, focused }) => {
 export const TabBarLabel = ({ title, focused }) => {
   const color = focused ? Colors.navy : Colors.mediumgrey
 
-  return <Text style={[styles.SmallCopy, { color: color }]}>{title}</Text>
+  return <SMALL style={{ color: color }}>{title}</SMALL>
 }
 
 export const getNavigationOptions = (title, icon) => ({

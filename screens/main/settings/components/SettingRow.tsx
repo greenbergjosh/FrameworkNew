@@ -3,6 +3,7 @@ import { Colors, styles, Units } from "constants"
 import { StyleProp, Text, TextStyle, ViewStyle } from "react-native"
 import React from "react"
 import { SettingType } from "./mockData"
+import { H3, P } from "components/Markup"
 
 export interface SettingRowProps {
   value: SettingType
@@ -22,7 +23,7 @@ export const SettingRow = ({ value = defaultValue, style, titleStyle }: SettingR
   return (
     <Flex direction="row" align="start" style={[{ marginBottom: Units.margin }, style]}>
       <Flex direction="column" align="start" style={{ flexGrow: 0, flexShrink: 1 }}>
-        <Text style={[styles.H3, { color: Colors.black }, titleStyle]}>{title}</Text>
+        <H3 style={[{ color: Colors.black }, titleStyle]}>{title}</H3>
         <Text style={styles.Body}>{description}</Text>
       </Flex>
       <Flex justify="end" style={{ marginLeft: Units.margin, flexGrow: 1, flexShrink: 0 }}>

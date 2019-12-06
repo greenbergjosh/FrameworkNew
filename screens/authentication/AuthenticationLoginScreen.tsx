@@ -1,6 +1,6 @@
 import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
-
 import { HeaderLogo } from "components/HeaderLogo"
+import { H2, P } from "components/Markup"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import React from "react"
 import { Text, View } from "react-native"
@@ -41,7 +41,7 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
     <View style={styles.ViewContainer}>
       <ActivityIndicator animating={loading} toast size="large" text="Signing In..." />
       <WhiteSpace size="lg" />
-      <Text style={styles.H2}>Log in to GetGot</Text>
+      <H2>Log in to GetGot</H2>
       <WhiteSpace size="lg" />
       <InputItem
         type="email-address"

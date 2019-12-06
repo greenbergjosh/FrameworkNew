@@ -9,6 +9,7 @@ import { useAuthContext } from "providers/auth-context-provider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
+import { H3, P } from "components/Markup"
 
 interface LandingScreenProps extends NavigationSwitchScreenProps {}
 
@@ -27,7 +28,7 @@ export const LandingScreen = ({ navigation: { navigate } }: LandingScreenProps) 
   return (
     <View style={[styles.ViewContainer, { flex: 1 }]}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={[styles.H3, { marginBottom: 20 }]}>[ Large GetGot Logo ]</Text>
+        <H3 style={{ marginBottom: 20 }}>[ Large GetGot Logo ]</H3>
         <Text style={[styles.Body, { fontStyle: "italic" }]}>Our value proposition to you!</Text>
       </View>
       <View style={{ height: 150 }}>

@@ -5,6 +5,7 @@ import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
+import { H2, P } from "components/Markup"
 import {
   Button,
   Flex,
@@ -32,7 +33,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center">
-        <Text style={styles.H2}>Create your account</Text>
+        <H2>Create your account</H2>
       </Flex>
       <WhiteSpace size="lg" />
       <InputItem
@@ -53,7 +54,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
         clearButtonMode="always"
       />
       <WhiteSpace size="lg" />
-      <LegalAgreement />
+      <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />
       <Flex justify="center" direction="column">
         <Button

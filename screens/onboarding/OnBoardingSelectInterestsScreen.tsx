@@ -11,6 +11,7 @@ import {
 } from "@ant-design/react-native"
 import Fuse from "fuse.js"
 import { HeaderLogo } from "components/HeaderLogo"
+import { H2, H3, P } from "components/Markup"
 import { ScrollView, Text, View } from "react-native"
 import { FontWeights, routes, styles } from "constants"
 import { useCatalogContext } from "providers/catalog-context-provider"
@@ -32,7 +33,7 @@ const InterestGroups = (props: InterestGroupsProps) => {
         value.map((group) => (
           <Card key={group.id} full style={{ borderTopWidth: 0 }}>
             <WhiteSpace size="sm" />
-            <Text style={[styles.H3, { fontWeight: FontWeights.bold }]}>{group.name}</Text>
+            <H3 style={[{ fontWeight: FontWeights.bold }]}>{group.name}</H3>
             <WhiteSpace size="lg" />
             <Flex direction="row" wrap="wrap">
               {group.interests.map((interest) => (
@@ -146,9 +147,9 @@ export const OnBoardingSelectInterestsScreen = (props: OnBoardingSelectInterests
       {!lastLoadInterests ? null : (
         <>
           <View style={styles.ViewContainer}>
-            <Text style={styles.H2}>
+            <H2>
               Pick your favorite interests to find people discussing them.
-            </Text>
+            </H2>
             <WhiteSpace size="lg" />
             <SearchBar
               placeholder="Search for interests"

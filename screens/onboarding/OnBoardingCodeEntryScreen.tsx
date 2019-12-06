@@ -1,5 +1,6 @@
 import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { HeaderLogo } from "components/HeaderLogo"
+import { H2, H3, P } from "components/Markup"
 import { routes, styles } from "constants"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import React from "react"
@@ -23,10 +24,10 @@ export const OnBoardingCodeEntryScreen = (props: OnBoardingCodeEntryScreenProps)
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center" direction="column">
-        <Text style={styles.H2}>We sent you a code</Text>
+        <H2>We sent you a code</H2>
         <WhiteSpace size="lg" />
-        <Text style={styles.H3}>Enter it below to verify</Text>
-        <Text style={styles.H3}>{onBoardingContext.contact}</Text>
+        <H3>Enter it below to verify</H3>
+        <H3>{onBoardingContext.contact}</H3>
       </Flex>
       <WhiteSpace size="lg" />
       <CodeInput

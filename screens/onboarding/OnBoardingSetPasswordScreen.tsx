@@ -6,6 +6,7 @@ import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
+import { H2, H3, P } from "components/Markup"
 
 interface OnBoardingSetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
@@ -23,9 +24,9 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
       <Flex justify="center" direction="column">
-        <Text style={styles.H2}>Set your password</Text>
+        <H2>Set your password</H2>
         <WhiteSpace size="lg" />
-        <Text style={styles.H3}>Make sure it&rsquo;s 6 characters or more.</Text>
+        <H3>Make sure it&rsquo;s 6 characters or more.</H3>
       </Flex>
       <WhiteSpace size="lg" />
       <InputItem
@@ -41,7 +42,7 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
       />
       {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
       <WhiteSpace size="lg" />
-      <LegalAgreement />
+      <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />
       <Flex justify="center">
         <Button
