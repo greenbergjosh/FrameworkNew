@@ -12,6 +12,14 @@ import UndoSvg from "./undo.svg"
 import ChatBubbleSvg from "./chat-bubble.svg"
 // @ts-ignore
 import SendSvg from "./send.svg"
+// @ts-ignore
+import DeleteSvg from "./delete.svg"
+// @ts-ignore
+import ArchiveSvg from "./archive.svg"
+// @ts-ignore
+import ArrowUpSvg from "./arrow-up.svg"
+// @ts-ignore
+import ArrowDownSvg from "./arrow-down.svg"
 
 export type IconProps = {
   key?: string | number
@@ -43,4 +51,20 @@ export const ChatBubbleIcon = ({ key, style, width = 25, height = 22, scale = 1 
 
 export const SendIcon = ({ key, style, width = 16, height = 24, scale = 1 }: IconProps) => (
   <SendSvg width={width * scale} height={height * scale} key={key} style={style} />
+)
+
+export const DeleteIcon = ({ key, style, width = 20, height = 26, scale = 1 }: IconProps) => (
+  <DeleteSvg width={width * scale} height={height * scale} key={key} style={style} />
+)
+
+export const ArchiveIcon = ({ key, style, width = 20, height = 19, scale = 1 }: IconProps) => (
+  <ArchiveSvg width={width * scale} height={height * scale} key={key} style={style} />
+)
+
+export const ArrowUpIcon = ({ key, style, width = 13, height = 8, scale = 1 }: IconProps) => (
+  <ArrowUpSvg width={width * scale} height={height * scale} key={key} style={style} />
+)
+
+export const ArrowDownIcon = ({ key, style, width = 12, height = 8, scale = 1 }: IconProps) => (
+  <ArrowDownSvg width={width * scale} height={height * scale} key={key} style={style} />
 )
