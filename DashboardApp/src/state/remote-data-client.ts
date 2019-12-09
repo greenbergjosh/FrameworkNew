@@ -433,7 +433,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
           : uri
 
       return request({
-        body: body && params && typeof body === "object" ? { ...body, ...params } : body || params,
+        body:
+          body && params && typeof body === "object" && method && method.toLowerCase() !== "get"
+            ? { ...body, ...params }
+            : body || (params && Object.keys(params).length ? params : null),
         expect: AdminApi.genericArrayPayloadCodec,
         headers,
         method: (method as Method) || "GET",
