@@ -57,6 +57,8 @@ namespace UnsubLib
         public const string DOMAINHANDLER = "DomainZipHandler";
         public const string SHA512HANDLER = "Sha512Handler";
         public const string UNKNOWNHANDLER = "UnknownTypeHandler";
+        public const string MD5HANDLER_ID = "1";
+        public const string SHA512HANDLER_ID = "2";
         public const int ZipFileMinBytes = 100;
         public const int ZipFileReadBytes = 400;
         private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
@@ -401,7 +403,7 @@ namespace UnsubLib
             // Generate diff list
             var campaignsWithNegativeDelta = new List<string>();
             var diffs = new HashSet<Tuple<string, string>>();
-            var sha512s = new Dictionary<string, string>();
+            var digestTypes = new Dictionary<string, string>();
 
             await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Downloads for {cse.Count()} campaigns complete");
 
@@ -442,11 +444,6 @@ namespace UnsubLib
                             diffs.Add(new Tuple<string, string>(oldFileId, newFileId));
                         }
 
-                        if (c.GetS("SuppressionDigestType") == "sha512")
-                        {
-                            sha512s.Add(c.GetS("id"),newFileId);
-                        }
-
                         if (newFileSize.Value < oldFileSize.Value)
                         {
                             campaignsWithNegativeDelta.Add(campId);
@@ -469,6 +466,11 @@ namespace UnsubLib
                         }
                     }
                 }
+
+                if (unsubFiles.Item3.ContainsKey(campId))
+                {
+                    digestTypes.Add(campId, unsubFiles.Item3[campId] == SHA512HANDLER ? SHA512HANDLER_ID : MD5HANDLER_ID);
+                }
             }
 
             // Update campaigns with new unsub files
@@ -482,15 +484,10 @@ namespace UnsubLib
                         campaignsWithPositiveDelta.Add(cmp.Key, cmp.Value);
                 }
 
+                var resDigest = await Data.CallFn(Conn, "UpdateNetworkCampaignsDigestType", "", Jw.Json("Id", "DtId", digestTypes));
+                if (resDigest?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update digest type for campaigns. Response: {resDigest?.GetS("") ?? "[null]"}");
+
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Campaigns with Positive Delta: {campaignsWithPositiveDelta.Count}");
-
-                var js = Jw.Json("Id", "FId", sha512s);
-                await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Trying to call UnsubFiles512 with : {js}");
-                var res512 = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles512", "", Jw.Json("Id", "FId", sha512s));
-
-
-                if (res512?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update Sha512 status for campaigns. Response: {res512?.GetS("") ?? "[null]"}");
-
                 var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
 
                 if (res?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files. Response: {res?.GetS("") ?? "[null]"}");
@@ -597,7 +594,7 @@ namespace UnsubLib
             return uris;
         }
 
-        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, bool isManual)
+        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, bool isManual)
         {
             var networkName = network.GetS("Name");
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
@@ -607,8 +604,12 @@ namespace UnsubLib
 
             await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting file downloads for {networkName}");
 
+            // network campaign file (?)
             var ncf = new ConcurrentDictionary<string, string>();
+            // network domain file (?)
             var ndf = new ConcurrentDictionary<string, string>();
+            // network campaign type
+            var nct = new ConcurrentDictionary<string, string>();
 
             var destinations = new ConcurrentBag<string>();
 
@@ -670,7 +671,7 @@ namespace UnsubLib
 
                             fileSize = new FileInfo(ClientWorkingDirectory + "\\" + fdest + ".txt.cln").Length;
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNonMD5LinesFromFile({networkName}):: for file {fdest}({fileSize})");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"RemoveNon(MD5|SHA512)LinesFromFile({networkName}):: for file {fdest}({fileSize})");
 
                             if (cf.ContainsKey(MD5HANDLER))
                                 await UnixWrapper.RemoveNonMD5LinesFromFile(ClientWorkingDirectory, fdest + ".txt.cln", fdest + ".txt.cl2");
@@ -725,11 +726,11 @@ namespace UnsubLib
                             var src = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
                             var dest = Path.Combine(FileCacheDirectory, fdest + ".txt.srt");
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for MD5 Handler file {fdest} {src} -> {dest} Exists: {File.Exists(src)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for Digest file {fdest} {src} -> {dest} Exists: {File.Exists(src)}");
 
                             new FileInfo(src).MoveTo(dest);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for MD5 Handler file {fdest} {src} -> {dest} Exists: {File.Exists(dest)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for Digest file {fdest} {src} -> {dest} Exists: {File.Exists(dest)}");
                             destinations.Add(dest);
                         }
                         else if (!String.IsNullOrEmpty(FileCacheFtpServer))
@@ -737,11 +738,11 @@ namespace UnsubLib
                             var src = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
                             var dest = FileCacheFtpServerPath + "/" + fdest + ".txt.srt";
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for MD5 Handler file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for Digest file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
 
                             await ProtocolClient.UploadFile(src, dest, FileCacheFtpServer, FileCacheFtpUser, FileCacheFtpPassword);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for MD5 Handler file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for Digest file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
 
                             Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest + ".txt.srt"}");
                         }
@@ -760,11 +761,11 @@ namespace UnsubLib
                             var src = Path.Combine(ClientWorkingDirectory, fdom + ".txt");
                             var dest = Path.Combine(FileCacheDirectory, fdom + ".txt");
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for Domain Handler file {fdom} {src} -> {dest} Exists: {File.Exists(src)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for Domain file {fdom} {src} -> {dest} Exists: {File.Exists(src)}");
 
                             new FileInfo(src).MoveTo(dest);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for Domain Handler file {fdom} {src} -> {dest} Exists: {File.Exists(dest)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for Domain file {fdom} {src} -> {dest} Exists: {File.Exists(dest)}");
                             destinations.Add(dest);
                         }
                         else if (!String.IsNullOrEmpty(FileCacheFtpServer))
@@ -772,7 +773,7 @@ namespace UnsubLib
                             var src = Path.Combine(ClientWorkingDirectory, fdom + ".txt");
                             var dest = FileCacheFtpServerPath + "/" + fdom + ".txt";
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for Domain Handler file {fdom}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for Domain file {fdom}  {src} -> Host: {FileCacheFtpServer} {dest}");
 
                             await ProtocolClient.UploadFile(
                                     src,
@@ -781,7 +782,7 @@ namespace UnsubLib
                                     FileCacheFtpUser,
                                     FileCacheFtpPassword);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed Upload for Domain Handler file {fdom}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed Upload for Domain file {fdom}  {src} -> Host: {FileCacheFtpServer} {dest}");
 
                             Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdom}.txt");
                         }
@@ -797,6 +798,11 @@ namespace UnsubLib
                             if (!ncf.TryAdd(c.GetS("Id"), fdest.ToLower()))
                             {
                                 await _fw.Error($"{nameof(DownloadUnsubFiles)}-{networkName}", $"ncf.TryAdd failed {uri.Key}::{c.GetS("Id")}::{fdest.ToLower()}");
+                            }
+
+                            if (!nct.TryAdd(c.GetS("Id"), handler))
+                            {
+                                await _fw.Error($"{nameof(DownloadUnsubFiles)}-{networkName}", $"nct.TryAdd failed {uri.Key}::{c.GetS("Id")}::{handler}");
                             }
                         }
 
@@ -819,7 +825,7 @@ namespace UnsubLib
             await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Finished file downloads for {networkName}");
             await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", Jw.Serialize(destinations.Select(d => new { path = d, exists = File.Exists(d) }).ToArray()));
 
-            return new Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>(ncf, ndf);
+            return new Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>(ncf, ndf, nct);
         }
 
         public async Task SignalUnsubServerService(IGenericEntity network, HashSet<Tuple<string, string>> diffs, IDictionary<string, string> ndf)
@@ -1567,14 +1573,8 @@ namespace UnsubLib
                     return Jw.Json(new { Result = false, Error = "Missing unsub file" });
                 }
 
-                /*
-                var isUnsub = type == null || type == "md5" ?
-                    await UnixWrapper.BinarySearchSortedMd5File(SearchDirectory, fileName, digest) :
-                    await UnixWrapper.BinarySearchSortedSha512File(SearchDirectory, fileName, digest);
-                */
-
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
-                var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.SHA512StringLength ), digest);
+                var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength ), digest);
 
                 if (!isUnsub && globalSupp)
                 {
@@ -1661,14 +1661,9 @@ namespace UnsubLib
                     return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
                 }
 
-                /*
-                binarySearchResults = type == null || type == "md5" ?
-                    await UnixWrapper.BinarySearchSortedMd5File(Path.Combine(SearchDirectory, fileName), digests) :
-                    await UnixWrapper.BinarySearchSortedSha512File(Path.Combine(SearchDirectory, fileName), digests);
-                */
-
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
-                binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.SHA512StringLength ), digests);
+                // SHA512 unsub files currently have a "0x" prefix.  Better handling needed if that's optional in the future
+                binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digests);
 
             }
             catch (Exception ex)
