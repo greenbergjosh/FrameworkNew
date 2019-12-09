@@ -408,11 +408,12 @@ namespace UnsubLib
             foreach (var c in cse)
             {
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Processing campaign: {c.GetS("") ?? "null"}");
+                var campId = c.GetS("Id");
 
-                if (unsubFiles.Item1.ContainsKey(c.GetS("Id")))
+                if (unsubFiles.Item1.ContainsKey(campId))
                 {
-                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Checking size of {unsubFiles.Item1[c.GetS("Id")]}");
-                    var newFileId = unsubFiles.Item1[c.GetS("Id")].ToLower();
+                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Checking size of {unsubFiles.Item1[campId]}");
+                    var newFileId = unsubFiles.Item1[campId].ToLower();
                     var newFileName = newFileId + ".txt.srt";
                     await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"File exists? {File.Exists(newFileName)} {newFileName}");
                     var newFileSize = await GetFileSize(newFileName);
@@ -448,7 +449,7 @@ namespace UnsubLib
 
                         if (newFileSize.Value < oldFileSize.Value)
                         {
-                            campaignsWithNegativeDelta.Add(c.GetS("Id"));
+                            campaignsWithNegativeDelta.Add(campId);
 
                             Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + newFileName);
 
