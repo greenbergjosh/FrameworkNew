@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Utility;
 
 namespace QuickTester
 {
@@ -25,10 +26,14 @@ namespace QuickTester
             //    "QuickTester.DataFlowTester+Msg",
             //    Guid.NewGuid(), 2, 3, false);
 
+            var fw = new FrameworkWrapper(null);
+            
+
             dynamic x = DynamicBlockCreator(
                 "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
                 "QuickTester.DataFlowTester+Msg",
                 "QuickTester.DataFlowTester+Msg",
+                fw,
                 Guid.NewGuid(), 2, DataflowBlockOptions.Unbounded, false);
             x.LinkTo(DataflowBlock.NullTarget<Msg>(), new DataflowLinkOptions
             {
@@ -102,7 +107,7 @@ namespace QuickTester
             }
         }
 
-        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, Guid lbm, int maxParallelism, int boundedCapacity, bool ensureOrdered)
+        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, FrameworkWrapper fw, Guid lbmId, int maxParallelism, int boundedCapacity, bool ensureOrdered)
         {
             try
             {
@@ -117,10 +122,14 @@ namespace QuickTester
                     {
                         // Maybe call the LBM and cast its result
                         Console.WriteLine("aBlockBehavior: before delay");
-                        Console.WriteLine("lbm" + lbm.ToString());
+                        Console.WriteLine("lbm" + lbmId.ToString());
+                        var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
+                        var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
+                            new { msg, err = fw.Err }, new StateWrapper());
                         await Task.Delay(100);
                         Console.WriteLine("aBlockBehavior: after delay");
-                        return new Msg { x = 1, HasError = false };
+                        return Convert.ChangeType(lbmResult, Type.GetType(destType));
+                        //return new Msg { x = 1, HasError = false };
                     }
                     catch (Exception ex)
                     {
