@@ -11,6 +11,7 @@ namespace Utility
     {
 
         public const int SHA512StringLength = 128;
+        public const int HexSHA512StringLength = 130;
         public const int Md5StringLength = 32;
 
         public static Regex SHA512StringRegex() => new Regex("^(?:0[xX])?(?:[0-9a-fA-F]{" + SHA512StringLength.ToString() + "})$");
