@@ -2,9 +2,9 @@ import { Button, Empty } from "antd"
 import classNames from "classnames"
 import { get, set } from "lodash/fp"
 import React from "react"
-import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
+import { DataPathContext } from "../../../util/DataPathContext"
 import { listManageForm } from "./list-manage-form"
 import {
   BaseInterfaceComponent,
@@ -15,6 +15,8 @@ import {
 
 export interface ListInterfaceComponentProps extends ComponentDefinitionNamedProps {
   addItemLabel: string
+  allowDelete: boolean
+  allowReorder: boolean
   component: "list"
   emptyText?: string
   orientation?: "horizontal" | "vertical"
@@ -36,6 +38,8 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
   static defaultProps = {
     addItemLabel: "Add Item",
+    allowDelete: true,
+    allowReorder: true,
     orientation: "vertical",
     interleave: "none",
     unwrapped: false,
@@ -124,21 +128,60 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                       "ui-list-vertical": orientation === "vertical",
                     })}>
                     {finalComponents.length ? (
-                      finalComponents.map((iteratedComponent, index) => (
+                      <>
+                        {finalComponents.map((iteratedComponent, index) => (
+                          <ComponentRenderer
+                            key={index}
+                            components={[iteratedComponent]}
+                            componentLimit={interleave === "none" ? 1 : 0}
+                            data={
+                              data[index]
+                                ? unwrapped
+                                  ? {
+                                      // @ts-ignore
+                                      [iteratedComponent.valueKey]: data[index],
+                                    }
+                                  : data[index]
+                                : {}
+                            }
+                            onChangeData={(newData) =>
+                              (console.log("ListInterfaceComponent.render", "onChangeData", {
+                                data,
+                                newData,
+                              }),
+                              0) ||
+                              (onChangeData &&
+                                onChangeData(
+                                  set(
+                                    `${valueKey}.${index}`,
+                                    unwrapped ? Object.values(newData)[0] : newData,
+                                    userInterfaceData
+                                  )
+                                ))
+                            }
+                            onChangeSchema={(newSchema) => {
+                              console.warn(
+                                "ListInterfaceComponent.render",
+                                "TODO: Cannot alter schema inside ComponentRenderer in List.",
+                                { newSchema }
+                              )
+                            }}
+                          />
+                        ))}
+                        <br />
                         <ComponentRenderer
-                          key={index}
-                          components={[iteratedComponent]}
+                          components={finalComponents}
                           componentLimit={interleave === "none" ? 1 : 0}
-                          data={
-                            data[index]
+                          data={data.map((item: any, index: number) =>
+                            item
                               ? unwrapped
                                 ? {
-                                    // @ts-ignore
-                                    [iteratedComponent.valueKey]: data[index],
+                                    // @ts-ignore (valueKey doesn't technically exist on the props)
+                                    [finalComponents[index].valueKey]: item,
                                   }
-                                : data[index]
+                                : item
                               : {}
-                          }
+                          )}
                           onChangeData={(newData) =>
                             (console.log("ListInterfaceComponent.render", "onChangeData", {
                               data,
@@ -148,8 +191,10 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                             (onChangeData &&
                               onChangeData(
                                 set(
-                                  `${valueKey}.${index}`,
-                                  unwrapped ? Object.values(newData)[0] : newData,
+                                  valueKey,
+                                  unwrapped
+                                    ? newData.map((item: any) => Object.values(item)[0])
+                                    : newData,
                                   userInterfaceData
                                 )
                               ))
@@ -162,7 +207,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                             )
                           }}
                         />
-                      ))
+                      </>
                     ) : (
                       <Empty description={emptyText} />
                     )}
