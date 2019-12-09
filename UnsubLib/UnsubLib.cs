@@ -1859,7 +1859,7 @@ namespace UnsubLib
             // test the first line only
             if (lines.Length == 1 || (lines.Length == 2 && string.IsNullOrEmpty(lines[1])))
             {
-                await _fw.Trace("LOU", $"SingleLine Match");
+                await _fw.Trace(nameof(HandlerType), $"SingleLine Match");
                 return LineHandler(lines[0]);
             }
             
@@ -1873,26 +1873,6 @@ namespace UnsubLib
             }
 
             return restMatch; // which may be null - in which case we did not match a type
-        }
-
-        private async Task<string> MatchFile2(string[] lines, FileInfo f)
-        {
-            string fileType = null;
-            if (lines.Length > 2 || lines.Last().Length == 0)
-                lines = lines.Take(lines.Length - 1).ToArray();
-            var tlines = lines.Select((line, idx) => new Tuple<string, int>(line, idx));
-            var grps = tlines.GroupBy(line => LineHandler(line.Item1));
-            if (grps.Count() == 1) { fileType = grps.First().Key; }
-            else if (grps.Count() == 2)
-            {
-                if (grps.First().Count() == 1 && grps.First().ToArray()[0].Item2 == 0)
-                {
-                    await _fw.Trace("LOU", $"Removing header");
-                    await UnixWrapper.RemoveFirstLine(f.DirectoryName, f.Name);
-                }
-                fileType = grps.First().ToArray()[0].Item1;
-            }
-            return fileType;
         }
 
         public async Task<string> ZipTester(FileInfo f)
