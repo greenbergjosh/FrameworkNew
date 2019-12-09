@@ -78,7 +78,14 @@ namespace SchedulerServiceLib
                 }));
                 var cron = cronGe.GetS("instruction");
 #if DEBUG
-                if (job.GetS("Id") != "dda498aa-1f75-4f37-a1de-7ae9d6e52cf0") continue;
+                //https://admin.techopg.com/dashboard/global-config/f89c1120-4caf-4111-9f52-a72466228de9
+                //https://admin.techopg.com/dashboard/global-config/45ab1ed9-903b-4bd9-97ba-db5a7e466aa9
+                //https://admin.techopg.com/dashboard/global-config/c99ddaa7-8ac0-40cd-8dde-013c6ab76290
+                //https://admin.techopg.com/dashboard/global-config/34c1e7d4-e30b-490d-845c-ab1acc95df63
+                //https://admin.techopg.com/dashboard/global-config/6dc69493-3bd0-49ad-a1a1-a5950dbf0be8
+                //dda498aa-1f75-4f37-a1de-7ae9d6e52cf0
+                //6dc69493-3bd0-49ad-a1a1-a5950dbf0be8
+                if (job.GetS("Id") != "6dc69493-3bd0-49ad-a1a1-a5950dbf0be8") continue;
                 cron = "*/10 * * * * ?";
 #endif
 
@@ -256,7 +263,7 @@ namespace SchedulerServiceLib
                     var source = code.GetS("Config");
                     var sd = new ScriptDescriptor(lbmId, lbmId.ToString(), source, debug, debugDir);
                     _fw.RoslynWrapper.CompileAndCache(sd);
-
+                    
                     await _fw.RoslynWrapper.RunFunction(lbmId.ToString(), parameters, null);
 
                     await _fw.Log($"{nameof(LmbJob)}.{nameof(Execute)}", $"Finished {context.JobDetail.Key.Name}");
