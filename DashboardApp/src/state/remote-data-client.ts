@@ -1,6 +1,7 @@
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
 import JSON5 from "json5"
+import qs from "query-string"
 import { Overwrite } from "utility-types"
 import * as AdminApi from "../data/AdminApi"
 import { CompleteLocalDraft, PersistedConfig } from "../data/GlobalConfig.Config"
@@ -424,13 +425,20 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     },
 
     async httpRequest({ uri, method, headers, params, body }, { remoteDataClient }) {
+      const url =
+        params && (!method || method.toLowerCase() === "get")
+          ? qs.parseUrl(uri).url +
+            "?" +
+            qs.stringify({ ...(qs.parseUrl(uri).query || {}), ...(params || {}) })
+          : uri
+
       return request({
-        body,
+        body: body && params && typeof body === "object" ? { ...body, ...params } : body || params,
         expect: AdminApi.genericArrayPayloadCodec,
         headers,
         method: (method as Method) || "GET",
         timeout: none,
-        url: uri,
+        url,
         withCredentials: false,
       }).then((result) =>
         result.map(
