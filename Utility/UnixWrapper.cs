@@ -163,7 +163,11 @@ namespace Utility
         }
 
         public static async Task RemoveNonMD5LinesFromFile(string sourcePath, string inputFile, string outputFile) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "[0-9a-f]{32}");
-        public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile, int timeout = 1000 * 60 * 5) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "0x?[0-9a-f]{128}");
+        // regex is tightened up from the one above (not sure if it would break existing checks, so leaving it alone)
+        // 1. check from the beginning of the line to the end
+        // 2. allow possible "0x" (case-insensitive) leading string in front of hex digest string
+        // 3. include possible carriage return & linefeed as line termination characters
+        public static async Task RemoveNonSHA512LinesFromFile(string sourcePath, string inputFile, string outputFile, int timeout = 1000 * 60 * 5) => await RemoveNonPatternLinesFromFile(sourcePath, inputFile, outputFile, "^(?:0[xX])?[0-9a-f]{128}[\\r\\n]?$");
 
         private static void OutputRedirection(object sendingProcess,
                               DataReceivedEventArgs outLine)
@@ -183,16 +187,16 @@ namespace Utility
 
         public static async Task<bool> BinarySearchSortedFile(string filePath, int baseLineLength, string key)
         {
-            var keys = new List<string>() { key };
-            var result = await BinarySearchSortedFile(filePath, baseLineLength, keys);
-
-            return result.found.Count > 0;
+            return (await BinarySearchSortedFile(filePath, baseLineLength, new List<string>() { key })).found.Count > 0;
         }
 
         public static async Task<(List<string> found, List<string> notFound)> BinarySearchSortedFile(string filePath, int baseLineLength, List<string> keys)
         {
             int minLineLength = baseLineLength + 1;
             int maxLineLength = baseLineLength + 2;
+
+            const int LF = 10;
+            const int CR = 13;
 
             var notFound = new List<string>();
             var found = new List<string>();
@@ -206,8 +210,8 @@ namespace Utility
 
                 await fs.ReadAsync(buffer, 0, maxLineLength);
 
-                if (buffer[baseLineLength] == 10) lineLength = minLineLength;
-                else if (buffer[baseLineLength] == 13 && buffer[minLineLength] == 10) lineLength = maxLineLength;
+                if (buffer[baseLineLength] == LF) lineLength = minLineLength;
+                else if (buffer[baseLineLength] == CR && buffer[minLineLength] == LF) lineLength = maxLineLength;
                 else throw new Exception($"Unexpected line termination character on line with expected length of: {baseLineLength} with data: {Encoding.UTF8.GetString(buffer, 0, buffer.Length)}");
 
                 var lineCount = end / (decimal)lineLength;
