@@ -29,6 +29,7 @@ enum Promotions {
   CampaignList = "Promotions.CampaignList",
   CampaignTemplates = "Promotions.CampaignTemplates",
   Promotions = "Promotions.Promotions",
+  PromotionsArchived = "Promotions.PromotionsArchived",
 }
 
 enum Home {

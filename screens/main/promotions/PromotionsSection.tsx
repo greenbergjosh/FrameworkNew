@@ -12,6 +12,7 @@ import { PromotionsScreen } from "./PromotionsScreen"
 const PromotionsNavigator = createStackNavigator(
   {
     [routes.Promotions.Promotions]: { screen: PromotionsScreen },
+    [routes.Promotions.PromotionsArchived]: { screen: PromotionsScreen },
     [routes.Promotions.CampaignList]: { screen: PromotionsCampaignListScreen },
     [routes.Promotions.Campaign]: { screen: PromotionsCampaignScreen },
     [routes.Promotions.CampaignView]: { screen: PromotionsCampaignViewScreen },
