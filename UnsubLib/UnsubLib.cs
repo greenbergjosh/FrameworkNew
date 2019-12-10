@@ -1638,7 +1638,7 @@ namespace UnsubLib
                     {
                         var email = digest;
 
-                        digest = Hashing.CalculateMD5Hash(email.ToLower());
+                        digest = type == "sha512" ? ("0x" + Hashing.CalculateSHA512Hash(email.ToLower())) : Hashing.CalculateMD5Hash(email.ToLower());
 
                         if (!requestemails.ContainsKey(digest))
                         {
