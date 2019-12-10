@@ -1,9 +1,4 @@
-import {
-  ActivityIndicator,
-  Button,
-  Icon,
-  Modal
-  } from "@ant-design/react-native"
+import { ActivityIndicator, Button, Icon, Modal } from "@ant-design/react-native"
 import { useActionSheet } from "@expo/react-native-action-sheet"
 import { baseAddress } from "api"
 import { CampaignTemplate, createCampaign } from "api/promotions-services"
@@ -130,7 +125,7 @@ PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) =>
       (() => (
         <Button
           onPress={() => navigation.goBack("PromotionsCampaignList")}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
           <Text style={{ color: "#fff" }}>Cancel</Text>
         </Button>
       )),
@@ -164,11 +159,12 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
             },
             async (buttonIndex) => {
               if (buttonIndex === 0) {
+                alert("Save draft\nFeature to come!")
                 // Save Draft
               } else if (buttonIndex === 1) {
                 setWorkingText("Publishing...")
                 // Publish Campaign
-                const publishResult = await createCampaign({
+                const newCampaign = {
                   promotionId,
                   feedImage: images[0],
                   templateParts: influencerTokens,
@@ -177,7 +173,8 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
                   messageBodyTemplateUrl: "",
                   approvedByAdvertiser: "0",
                   subject: "Campaign",
-                })
+                }
+                const publishResult = await createCampaign(newCampaign)
                 setWorkingText(null)
 
                 if (publishResult.r === 0) {
@@ -222,7 +219,7 @@ const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
             }
           )
         }}
-        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+        style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
         <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
       </Button>
     </>

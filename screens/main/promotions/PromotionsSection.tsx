@@ -5,6 +5,7 @@ import { createStackNavigator } from "react-navigation-stack"
 import { PromotionsCampaignAdditionalImagesScreen } from "./PromotionsCampaignAdditionalImagesScreen"
 import { PromotionsCampaignListScreen } from "./PromotionsCampaignListScreen"
 import { PromotionsCampaignScreen } from "./PromotionsCampaignScreen"
+import { PromotionsCampaignViewScreen } from "./PromotionsCampaignViewScreen"
 import { PromotionsCampaignTemplatesScreen } from "./PromotionsCampaignTemplateScreen"
 import { PromotionsScreen } from "./PromotionsScreen"
 
@@ -13,6 +14,7 @@ const PromotionsNavigator = createStackNavigator(
     [routes.Promotions.Promotions]: { screen: PromotionsScreen },
     [routes.Promotions.CampaignList]: { screen: PromotionsCampaignListScreen },
     [routes.Promotions.Campaign]: { screen: PromotionsCampaignScreen },
+    [routes.Promotions.CampaignView]: { screen: PromotionsCampaignViewScreen },
     [routes.Promotions.CampaignAdditionalImages]: {
       screen: PromotionsCampaignAdditionalImagesScreen,
     },

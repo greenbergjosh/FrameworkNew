@@ -5,18 +5,20 @@ export interface PromotionDiscount {
   value: number
 }
 
+export type Promotional = {
+  sku?: string
+  url: string
+  name: string
+  images: string | string[]
+  discount?: PromotionDiscount
+}
+
 export interface Promotion {
   created: ISO8601String
   expires: ISO8601String | null
   fromCampaignId: GUID | null
   id: GUID
-  payload: {
-    sku?: string
-    url: string
-    name: string
-    images: string | string[]
-    discount?: PromotionDiscount
-  }
+  payload: Promotional
   publisherUserId: string
 }
 

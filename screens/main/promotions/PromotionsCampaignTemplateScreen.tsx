@@ -5,7 +5,7 @@ import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
-import { routes } from "constants"
+import { ImageUris, routes } from "constants"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
   promotionId: GUID
@@ -75,7 +75,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
       campaignTemplatesBySearchKey[searchText]
         ? campaignTemplatesBySearchKey[searchText].map(({ id, template: { previewImage } }) => ({
             id,
-            uri: previewImage,
+            uri: previewImage || ImageUris.placeholder,
           }))
         : [],
     [campaignTemplatesBySearchKey[searchText]]

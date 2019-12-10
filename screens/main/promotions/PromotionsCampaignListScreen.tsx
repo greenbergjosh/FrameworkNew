@@ -1,15 +1,7 @@
-import {
-  ActivityIndicator,
-  Button,
-  Icon,
-  List,
-  WhiteSpace
-  } from "@ant-design/react-native"
-import { PromotionRow } from "screens/main/promotions/components/PromotionRow"
+import { ActivityIndicator } from "@ant-design/react-native"
+import { PromotionExpander } from "screens/main/promotions/components/PromotionExpander"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
-import { Image, Text, View } from "react-native"
-import { ScrollView } from "react-native-gesture-handler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 
@@ -36,22 +28,8 @@ export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreen
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
 
-  const campaigns = promotionsContext.campaignsByPromotion[promotionId]
-
-  React.useEffect(() => {
-    if (!campaigns) {
-      promotionsContext.loadPromotionCampaigns(promotionId)
-    }
-  }, [campaigns])
-
   return (
-    <PromotionRow
-      key={promotionId}
-      alwaysExpanded
-      campaigns={campaigns || []}
-      navigate={navigate}
-      promotion={promotion}
-    />
+    <PromotionExpander key={promotionId} alwaysExpanded navigate={navigate} promotion={promotion} />
   )
 }
 

@@ -34,9 +34,9 @@ interface PromotionsCampaignNavigationParams {
   promotionId: GUID
 }
 
-interface PromotionsCampaignScreenProps
+interface PromotionsCampaignViewScreenProps
   extends NavigationTabScreenProps<PromotionsCampaignNavigationParams> {}
-export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) => {
+export const PromotionsCampaignViewScreen = (props: PromotionsCampaignViewScreenProps) => {
   const getgotWebView: React.RefObject<WebView> = React.useRef(null)
   const [showMessageModal, setShowMessageModal] = React.useState(false)
   const [promptKey, setPromptKey] = React.useState<string>(null)
@@ -192,6 +192,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
 
   return (
     <>
+      <Text>PromotionsCampaignViewSceen</Text>
       <TextAreaModal
         initialValue={influencerTokens[promptKey] as string}
         onCancel={() => setShowMessageModal(false)}
@@ -251,7 +252,7 @@ function initializeGetGotInterface() {
   console.info("GetGotInterface has been initialized!")
 }
 
-PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
+PromotionsCampaignViewScreen.navigationOptions = ({ navigation }) => {
   const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
   return {

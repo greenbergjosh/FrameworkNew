@@ -199,3 +199,20 @@ export const PromotionsContextProvider = ({ ...props }) => {
 }
 
 export const usePromotionsContext = () => useContext(PromotionsContext)
+
+
+/****************************
+ * Utility Functions
+ */
+
+// If something has damaged the encoding, we can try to fix it
+export const fixDataImageEncoding = (base64Image: string) =>
+  base64Image.startsWith("data:image")
+    ? base64Image
+    : base64Image[0] === "i"
+    ? `data:image/png;base64,${base64Image}`
+    : base64Image[0] === "R"
+      ? `data:image/gif;base64,${base64Image}`
+      : base64Image[0] === "/"
+        ? `data:image/jpg;base64,${base64Image}`
+        : base64Image

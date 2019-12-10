@@ -24,6 +24,7 @@ enum Legal {
 enum Promotions {
   default = "Promotions.Promotions",
   Campaign = "Promotions.Campaign",
+  CampaignView = "Promotions.CampaignView",
   CampaignAdditionalImages = "Promotions.CampaignAdditionalImages",
   CampaignList = "Promotions.CampaignList",
   CampaignTemplates = "Promotions.CampaignTemplates",

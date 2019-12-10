@@ -1,16 +1,16 @@
 import React from "react"
-import { ScrollView } from "react-native"
+import { FlatList, ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { ActivityIndicator, List } from "@ant-design/react-native"
+import { ActivityIndicator } from "@ant-design/react-native"
 import { HeaderTitle } from "components/HeaderTitle"
-import { PromotionRow } from "screens/main/promotions/components/PromotionRow"
+import { PromotionExpander } from "screens/main/promotions/components/PromotionExpander"
 import { usePromotionsContext } from "providers/promotions-context-provider"
+import { Colors } from "constants"
 
 export interface PromotionsScreenProps extends NavigationTabScreenProps {}
 
 export const PromotionsScreen = (props: PromotionsScreenProps) => {
   const promotionsContext = usePromotionsContext()
-
   if (
     !promotionsContext.lastLoadPromotions &&
     !promotionsContext.loading.loadPromotions[JSON.stringify([])]
@@ -18,37 +18,17 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
     promotionsContext.loadPromotions()
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
-
   const promotions = promotionsContext.results
-
   const { navigate } = props.navigation
+
   return (
-    <>
-      <ScrollView
-        style={{ flex: 1, backgroundColor: "#f5f5f9" }}
-        automaticallyAdjustContentInsets={false}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}>
-        <List>
-          {promotions.map((promotion) => (
-            <PromotionRow
-              key={promotion.id}
-              campaigns={promotionsContext.campaignsByPromotion[promotion.id]}
-              navigate={navigate}
-              loading={promotionsContext.loading.loadPromotionCampaigns[promotion.id]}
-              onExpand={async () => {
-                // If there's no data
-                if (!promotionsContext.campaignsByPromotion[promotion.id]) {
-                  // Load the campaigns for this promotion
-                  await promotionsContext.loadPromotionCampaigns(promotion.id)
-                }
-              }}
-              promotion={promotion}
-            />
-          ))}
-        </List>
-      </ScrollView>
-    </>
+    <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+      <FlatList
+        data={promotions}
+        renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
+        keyExtractor={(promotion) => promotion.id}
+      />
+    </ScrollView>
   )
 }
 
