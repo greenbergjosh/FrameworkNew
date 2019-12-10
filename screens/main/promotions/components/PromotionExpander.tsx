@@ -1,6 +1,6 @@
 import React from "react"
 import Collapsible from "react-native-collapsible"
-import { ActivityIndicator, Flex } from "@ant-design/react-native"
+import { ActionSheet, ActivityIndicator, Flex } from "@ant-design/react-native"
 import { Promotion } from "api/promotions-services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { routes, Units } from "constants"
@@ -24,10 +24,6 @@ export const PromotionExpander = ({
   const promotionsContext = usePromotionsContext()
   const [isCollapsed, setCollapsed] = React.useState(true)
   const [isLoading, setLoading] = React.useState(false)
-  const createCampaignHandler = React.useCallback(
-    () => navigate(routes.Promotions.CampaignTemplates, { promotionId: promotion.id }),
-    [promotion.id]
-  )
   const loading = promotionsContext.loading.loadPromotionCampaigns[promotion.id]
   const campaigns = promotionsContext.campaignsByPromotion[promotion.id]
 
@@ -44,6 +40,18 @@ export const PromotionExpander = ({
     }
   }
 
+  const showCreateCampaignActionSheet = (promotionId: GUID) => {
+    ActionSheet.showActionSheetWithOptions(
+      {
+        title: "Is this campaign to get a gift or to sell?",
+        options: ["For You", "For Me", "Cancel"],
+        cancelButtonIndex: 2,
+      },
+      (buttonIndex) =>
+        buttonIndex < 2 ? navigate(routes.Promotions.CampaignTemplates, { promotionId }) : null
+    )
+  }
+
   return (
     <>
       <Flex direction="column" style={{ position: "relative" }}>
@@ -51,7 +59,7 @@ export const PromotionExpander = ({
           onShowCampaigns={showCampaignsHandler()}
           promotional={promotion.payload}
           expires={promotion.expires}
-          onCreateCampaign={createCampaignHandler}
+          onCreateCampaign={() => showCreateCampaignActionSheet(promotion.id)}
         />
         {!alwaysExpanded && <ExpanderIcon collapsed={isCollapsed} />}
       </Flex>
@@ -70,7 +78,9 @@ export const PromotionExpander = ({
             navigate={navigate}
           />
         ) : (
-          <CampaignsListEmpty onCreateCampaign={createCampaignHandler} />
+          <CampaignsListEmpty
+            onCreateCampaign={() => showCreateCampaignActionSheet(promotion.id)}
+          />
         )}
       </Collapsible>
     </>

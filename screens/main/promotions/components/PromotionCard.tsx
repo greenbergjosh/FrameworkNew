@@ -1,7 +1,7 @@
 import { Text, View } from "react-native"
 import { ImageThumbnail } from "components/ImageThumbnail"
-import { Flex, Icon, SwipeAction } from "@ant-design/react-native"
-import { Colors, devBorder, styles, Units } from "constants"
+import { ActionSheet, Flex, Icon, SwipeAction } from "@ant-design/react-native"
+import { Colors, devBorder, styles, Units, routes } from "constants"
 import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
@@ -9,17 +9,12 @@ import { Promotional } from "api/promotions-services"
 
 interface PromotionCardProps {
   onShowCampaigns: () => void
-  onCreateCampaign: () => any
+  onCreateCampaign: () => void
   promotional: Promotional
   expires: ISO8601String | null
 }
 
-export function PromotionCard({
-  onShowCampaigns,
-  promotional,
-  expires,
-  onCreateCampaign,
-}: PromotionCardProps) {
+export function PromotionCard({ onShowCampaigns, onCreateCampaign, expires, promotional }: PromotionCardProps) {
   const swipeMenu = [
     {
       text: (
