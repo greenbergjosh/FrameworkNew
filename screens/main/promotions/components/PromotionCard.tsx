@@ -1,7 +1,7 @@
 import { Text, View } from "react-native"
 import { ImageThumbnail } from "components/ImageThumbnail"
-import { Flex } from "@ant-design/react-native"
-import { Colors, styles, Units } from "constants"
+import { Flex, Icon, SwipeAction } from "@ant-design/react-native"
+import { Colors, devBorder, styles, Units } from "constants"
 import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
@@ -20,98 +20,113 @@ export function PromotionCard({
   expires,
   onCreateCampaign,
 }: PromotionCardProps) {
+  const swipeMenu = [
+    {
+      text: (
+        <>
+          <Icon name="delete" color={Colors.reverse} />
+          <Text style={[styles.Body, { color: Colors.reverse }]}>Archive</Text>
+        </>
+      ),
+      onPress: () => alert("Archive Promotion\nFeature to come!"),
+      style: { backgroundColor: Colors.archived, color: "white" },
+    },
+  ]
+
   return (
-    <Flex
-      direction="row"
-      align="start"
-      onPress={onShowCampaigns}
-      style={{
-        paddingLeft: Units.margin,
-        paddingRight: Units.margin,
-        paddingTop: Units.margin / 2,
-        paddingBottom: Units.margin / 2,
-        borderBottomWidth: 1,
-        borderColor: Colors.border,
-        backgroundColor: Colors.reverse,
-      }}>
-      {/*******************************
-       * Thumbnail
-       */}
+    <SwipeAction style={{ backgroundColor: "transparent", width: "100%" }} right={swipeMenu}>
       <Flex
-        direction="column"
-        justify="start"
-        style={{
-          paddingRight: Units.margin,
-        }}>
-        <ImageThumbnail image={promotional.images} />
-      </Flex>
-
-      {/*******************************
-       * Promo Info
-       */}
-      <Flex
-        direction="column"
+        direction="row"
         align="start"
+        onPress={onShowCampaigns}
         style={{
-          flexGrow: 1,
-          flexShrink: 1,
+          paddingLeft: Units.margin,
+          paddingRight: Units.margin,
+          paddingTop: Units.margin / 2,
+          paddingBottom: Units.margin / 2,
+          borderBottomWidth: 1,
+          borderColor: Colors.border,
+          backgroundColor: Colors.reverse,
         }}>
         {/*******************************
-         * Retailer Name and Expiration
-         */}
-        <Flex direction="row" justify="between" align="start">
-          <Flex.Item>
-            <H3 style={{ color: Colors.bodyTextEmphasis }}>Retailer Name</H3>
-          </Flex.Item>
-          {!expires ? (
-            <Flex direction="column" align="end" style={{ paddingLeft: Units.padding }}>
-              <Text style={styles.TinyCopy}>Promotion Expires</Text>
-              <Text style={styles.TinyCopy}>MM-DD-YYYY</Text>
-            </Flex>
-          ) : null}
-        </Flex>
-
-        {/*******************************
-         * Product Name and Campaign Count
+         * Thumbnail
          */}
         <Flex
-          direction="row"
-          align="stretch"
+          direction="column"
+          justify="start"
+          style={{
+            paddingRight: Units.margin,
+          }}>
+          <ImageThumbnail image={promotional.images} />
+        </Flex>
+
+        {/*******************************
+         * Promo Info
+         */}
+        <Flex
+          direction="column"
+          align="start"
           style={{
             flexGrow: 1,
+            flexShrink: 1,
           }}>
+          {/*******************************
+           * Retailer Name and Expiration
+           */}
+          <Flex direction="row" justify="between" align="start">
+            <Flex.Item>
+              <H3 style={{ color: Colors.bodyTextEmphasis }}>Retailer Name</H3>
+            </Flex.Item>
+            {!expires ? (
+              <Flex direction="column" align="end" style={{ paddingLeft: Units.padding }}>
+                <Text style={styles.TinyCopy}>Promotion Expires</Text>
+                <Text style={styles.TinyCopy}>MM-DD-YYYY</Text>
+              </Flex>
+            ) : null}
+          </Flex>
+
+          {/*******************************
+           * Product Name and Campaign Count
+           */}
           <Flex
-            direction="column"
-            align="start"
+            direction="row"
+            align="stretch"
             style={{
               flexGrow: 1,
-              flexShrink: 1,
             }}>
-            <View>
-              <Text style={styles.Body}>{promotional.name}</Text>
-            </View>
-            <View>
-              <SMALL>
-                <Text style={{ color: Colors.bodyTextEmphasis }}>#</Text> active campaign(s)
-              </SMALL>
-            </View>
-          </Flex>
-          <Flex
-            direction="column"
-            justify="end"
-            style={{
-              right: -Units.padding,
-              bottom: -4,
-            }}>
-            <TouchIcon
-              name="plus"
-              onPress={onCreateCampaign}
-              size="lg"
-              iconStyle={{ color: Colors.link }}
-            />
+            <Flex
+              direction="column"
+              align="start"
+              style={{
+                flexGrow: 1,
+                flexShrink: 1,
+              }}>
+              <View>
+                <Text style={styles.Body}>{promotional.name}</Text>
+              </View>
+              <View>
+                <SMALL>
+                  <Text style={{ color: Colors.bodyTextEmphasis }}>#</Text> active campaign(s)
+                </SMALL>
+              </View>
+            </Flex>
+            <Flex
+              direction="column"
+              justify="end"
+              style={{
+                right: -Units.padding,
+                bottom: -4,
+              }}>
+              <TouchIcon
+                name="plus"
+                onPress={onCreateCampaign}
+                size="lg"
+                iconStyle={{ color: Colors.link }}
+              />
+            </Flex>
           </Flex>
         </Flex>
       </Flex>
-    </Flex>
+    </SwipeAction>
   )
 }
