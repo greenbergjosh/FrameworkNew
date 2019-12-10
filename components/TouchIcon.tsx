@@ -62,12 +62,12 @@ export default function TouchIcon({
     alignItems: "center",
   }
   let conditionalIconStyles: StyleProp<TextStyle> = {
-    color: Colors.black,
+    color: Colors.bodyTextEmphasis,
     flex: 0,
     alignSelf: "auto",
   }
   if (reverse) {
-    conditionalIconStyles.color = Colors.white
+    conditionalIconStyles.color = Colors.reverse
   }
 
   return (

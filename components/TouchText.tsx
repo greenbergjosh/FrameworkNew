@@ -47,13 +47,13 @@ export default function TouchText({
   }
   let conditionalLabelStyles: StyleProp<TextStyle> = { flex: 0, alignSelf: "auto" }
   if (reverse) {
-    conditionalLabelStyles.color = Colors.white
+    conditionalLabelStyles.color = Colors.reverse
   }
   if (type === "primary") {
     conditionalLabelStyles.fontWeight = FontWeights.bold
   }
   if (type === "warning") {
-    conditionalLabelStyles.color = Colors.red
+    conditionalLabelStyles.color = Colors.warning
   }
 
   return (

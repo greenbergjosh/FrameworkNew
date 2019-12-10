@@ -48,7 +48,7 @@ MessagesScreen.navigationOptions = ({ navigation }) => {
       <TouchIcon
         name="left"
         style={{ marginLeft:  Units.margin - 10 }}
-        iconStyle={{ color: Colors.white }}
+        iconStyle={{ color: Colors.reverse }}
         size="lg"
         onPress={() => navigation.navigate(routes.Home.default)}
       />
@@ -58,7 +58,7 @@ MessagesScreen.navigationOptions = ({ navigation }) => {
       <TouchIcon
         name="plus"
         style={{ marginRight: Units.margin - 10 }}
-        iconStyle={{ color: Colors.white }}
+        iconStyle={{ color: Colors.reverse }}
         size="lg"
         onPress={() => navigation.navigate(routes.Messages.NewMessage)}
       />

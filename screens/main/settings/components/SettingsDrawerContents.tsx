@@ -36,11 +36,11 @@ export default function SettingsDrawerContents({
         style={{ margin: Units.margin / 2, marginLeft: Units.margin }}>
         <Flex>
           <Avatar size="sm" source={auth.imageurl} />
-          <H4 style={{ marginLeft: Units.margin / 2, color: Colors.white }}>
+          <H4 style={{ marginLeft: Units.margin / 2, color: Colors.reverse }}>
             {auth.handle}
           </H4>
         </Flex>
-        <TouchIcon name="left" onPress={() => closeDrawer()} iconStyle={{ color: Colors.white }} />
+        <TouchIcon name="left" onPress={() => closeDrawer()} iconStyle={{ color: Colors.reverse }} />
       </Flex>
       <List>
         <>

@@ -27,7 +27,7 @@ export class ViewThreadScreen extends React.Component<
         <TouchIcon
           name="left"
           style={{ marginLeft: Units.margin - 10 }}
-          iconStyle={{ color: Colors.white }}
+          iconStyle={{ color: Colors.reverse }}
           size="lg"
           onPress={() => navigation.navigate(routes.Messages.default)}
         />
@@ -61,7 +61,7 @@ export class ViewThreadScreen extends React.Component<
           justify="start"
           style={{
             borderBottomWidth: 1,
-            borderColor: Colors.greyLight,
+            borderColor: Colors.border,
             paddingLeft: Units.margin,
             paddingRight: Units.margin,
           }}>

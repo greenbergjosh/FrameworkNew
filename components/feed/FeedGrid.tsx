@@ -8,7 +8,7 @@ function FeedImage({ src, id, onPress }) {
     <View
       style={{
         margin: 3,
-        borderColor: Colors.greyLight,
+        borderColor: Colors.border,
         borderWidth: 1,
         flex: 1,
       }}>

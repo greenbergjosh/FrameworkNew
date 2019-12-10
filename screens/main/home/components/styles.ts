@@ -4,7 +4,7 @@ import { Colors } from "constants"
 export const carouselStyles = StyleSheet.create({
   carouselHorizontal: {
     borderWidth: 1,
-    borderColor: Colors.greyLight,
+    borderColor: Colors.border,
     padding: 16,
     paddingBottom: 3,
     marginBottom: 32,

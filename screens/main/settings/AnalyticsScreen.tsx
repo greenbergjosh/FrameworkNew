@@ -14,7 +14,7 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
       headerLeft: () => (
         <Button
           onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
           <Text style={{ color: "#fff" }}>Cancel</Text>
         </Button>
       ),
@@ -22,7 +22,7 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
       headerRight: () => (
         <Button
           onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
           <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
         </Button>
       ),
@@ -33,28 +33,28 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
     return (
       <>
         <View style={styles.ViewContainer}>
-          <H3 style={{ color: Colors.black }}>Your Reach (depth of followers): 139</H3>
+          <H3 style={{ color: Colors.bodyTextEmphasis }}>Your Reach (depth of followers): 139</H3>
         </View>
         <List renderHeader={"ACTIVITY THIS MONTH"}>
           <List.Item>
             <H3>
-              Impressions <Text style={{ fontWeight: "bold", color: Colors.black }}>2,526</Text>
+              Impressions <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>2,526</Text>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
-              Click Throughs <Text style={{ fontWeight: "bold", color: Colors.black }}>396</Text>
+              Click Throughs <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>396</Text>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
-              Items Sold <Text style={{ fontWeight: "bold", color: Colors.black }}>52</Text>
+              Items Sold <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>52</Text>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
               Commissions Earned{" "}
-              <Text style={{ fontWeight: "bold", color: Colors.black }}>$126</Text>
+              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>$126</Text>
             </H3>
           </List.Item>
         </List>

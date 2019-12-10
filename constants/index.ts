@@ -16,3 +16,10 @@ export const styles = StyleSheet.create({
   ...LayoutStyles,
   ...ImageStyles,
 })
+
+export function devBorder(color) {
+  return {
+    borderWidth: 1,
+    borderColor: color,
+  }
+}

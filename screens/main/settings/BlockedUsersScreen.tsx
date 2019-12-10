@@ -48,7 +48,7 @@ BlockedUsersScreen.navigationOptions = ({ navigation }) => {
     headerLeft: () => (
       <Button
         onPress={() => navigation.navigate(routes.Home.Feed)}
-        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+        style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
         <Text style={{ color: "#fff" }}>Cancel</Text>
       </Button>
     ),
@@ -56,7 +56,7 @@ BlockedUsersScreen.navigationOptions = ({ navigation }) => {
     headerRight: () => (
       <Button
         onPress={() => navigation.navigate(routes.Home.Feed)}
-        style={{ backgroundColor: Colors.navy, borderWidth: 0 }}>
+        style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
         <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
       </Button>
     ),

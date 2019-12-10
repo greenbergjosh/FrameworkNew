@@ -23,7 +23,7 @@ export const SettingRow = ({ value = defaultValue, style, titleStyle }: SettingR
   return (
     <Flex direction="row" align="start" style={[{ marginBottom: Units.margin }, style]}>
       <Flex direction="column" align="start" style={{ flexGrow: 0, flexShrink: 1 }}>
-        <H3 style={[{ color: Colors.black }, titleStyle]}>{title}</H3>
+        <H3 style={[{ color: Colors.bodyTextEmphasis }, titleStyle]}>{title}</H3>
         <Text style={styles.Body}>{description}</Text>
       </Flex>
       <Flex justify="end" style={{ marginLeft: Units.margin, flexGrow: 1, flexShrink: 0 }}>

@@ -30,7 +30,7 @@ export class HeaderTitle extends React.Component<HeaderTitleProps> {
           viewClass,
           { flex: 1, justifyContent: "center", alignItems: alignment, ...padding },
         ]}>
-        {title && <Text style={[textClass, { color: Colors.white }]}>{title}</Text>}
+        {title && <Text style={[textClass, { color: Colors.reverse }]}>{title}</Text>}
       </View>
     )
   }

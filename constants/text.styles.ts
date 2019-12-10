@@ -20,25 +20,25 @@ const TextStyles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 22,
     fontWeight: FontWeights.regular,
-    color: Colors.greyMedium,
+    color: Colors.bodyText,
   },
 
   H4: {
     fontSize: 14,
     lineHeight: 18,
     fontWeight: FontWeights.bold,
-    color: Colors.black,
+    color: Colors.bodyTextEmphasis,
   },
 
   Body: {
     fontSize: 14,
     lineHeight: 18,
     fontWeight: FontWeights.regular,
-    color: Colors.greyMedium,
+    color: Colors.bodyText,
   },
 
   LinkText: {
-    color: Colors.blue,
+    color: Colors.link,
   },
 
   ErrorText: {
@@ -68,7 +68,14 @@ const TextStyles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     fontWeight: FontWeights.regular,
-    color: Colors.greyMedium,
+    color: Colors.bodyText,
+  },
+
+  TinyCopy: {
+    fontSize: 8,
+    lineHeight: 11,
+    fontWeight: FontWeights.regular,
+    color: Colors.bodyText,
   },
 })
 

@@ -13,7 +13,7 @@ const FormStyles = StyleSheet.create({
   BottomButtonBar: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: Colors.greyExtraLight,
+    backgroundColor: Colors.navBarBackground,
   },
 })
 

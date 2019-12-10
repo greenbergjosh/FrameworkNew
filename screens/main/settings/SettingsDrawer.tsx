@@ -44,7 +44,7 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
           position="left"
           open={props.open || open}
           drawerRef={(ref) => (drawerRef.current = ref)}
-          drawerBackgroundColor={Colors.navy}
+          drawerBackgroundColor={Colors.ggNavy}
           onOpenChange={(value) => toggle(value)}>
           {props.children}
         </Drawer>

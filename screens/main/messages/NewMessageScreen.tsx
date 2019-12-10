@@ -36,7 +36,7 @@ export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
         justify="start"
         style={{
           borderBottomWidth: 1,
-          borderColor: Colors.greyLight,
+          borderColor: Colors.border,
           paddingLeft: Units.margin,
           paddingRight: Units.margin,
         }}>

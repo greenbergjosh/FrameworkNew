@@ -12,10 +12,10 @@ interface DrawerItemProps extends ListItemProps {
 
 export default function SettingLink({ title, icon, onPress }: DrawerItemProps) {
   return (
-    <List.Item key={title} style={{ backgroundColor: Colors.navy }} onPress={onPress}>
+    <List.Item key={title} style={{ backgroundColor: Colors.ggNavy }} onPress={onPress}>
       <Flex>
         {!icon ? null : <Icon style={{ marginRight: Units.margin }} name={icon} />}
-        <Text style={{ color: Colors.white }}>{title}</Text>
+        <Text style={{ color: Colors.reverse }}>{title}</Text>
       </Flex>
     </List.Item>
   )

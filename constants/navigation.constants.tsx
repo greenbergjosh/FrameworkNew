@@ -3,8 +3,8 @@ import { Colors } from "./unit.constants"
 
 export const defaultNavigationOptions = {
   headerStyle: {
-    color: Colors.white,
-    backgroundColor: Colors.navy,
+    color: Colors.reverse,
+    backgroundColor: Colors.ggNavy,
     height: 60,
   },
 }

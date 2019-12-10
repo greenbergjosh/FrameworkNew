@@ -38,7 +38,7 @@ export const MessageRow = ({ message, navigate }: MessageRowProps) => {
           </Text>
           <TouchIcon
             name="right"
-            iconStyle={{ color: Colors.greyLight, marginLeft: Units.margin / 2 }}
+            iconStyle={{ color: Colors.border, marginLeft: Units.margin / 2 }}
           />
         </Flex>
       </Flex>

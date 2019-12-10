@@ -5,13 +5,13 @@ import { Colors } from "../constants/unit.constants"
 import { SMALL } from "components/Markup"
 
 export const TabBarIcon = ({ icon, focused }) => {
-  const color = focused ? Colors.navy : Colors.greyMediumLight
+  const color = focused ? Colors.ggNavy : Colors.navBarText
 
   return <Icon name={icon} color={color} />
 }
 
 export const TabBarLabel = ({ title, focused }) => {
-  const color = focused ? Colors.navy : Colors.greyMediumLight
+  const color = focused ? Colors.ggNavy : Colors.navBarText
 
   return <SMALL style={{ color: color }}>{title}</SMALL>
 }

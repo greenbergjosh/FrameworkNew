@@ -25,8 +25,8 @@ function UserIdentity(props: { onPress: () => void }) {
               left: 0,
               right: 0,
               textAlign: "center",
-              backgroundColor: Colors.black,
-              color: Colors.white,
+              backgroundColor: Colors.bodyTextEmphasis,
+              color: Colors.reverse,
               fontSize: styles.SmallCopy.fontSize,
             },
           ]}>

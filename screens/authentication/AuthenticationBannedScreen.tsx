@@ -24,7 +24,7 @@ export const AuthenticationBannedScreen = () => {
           <Icon
             name="exclamation-circle"
             size="lg"
-            style={{ color: Colors.red, marginRight: Units.padding }}
+            style={{ color: Colors.warning, marginRight: Units.padding }}
           />
           <H2>Account Banned</H2>
         </Flex>

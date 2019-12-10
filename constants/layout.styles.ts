@@ -3,8 +3,8 @@ import { Colors, Units } from "./unit.constants"
 
 const mixins = StyleSheet.create({
   // header: {
-  //   color: Colors.white,
-  //   backgroundColor: Colors.navy,
+  //   color: Colors.reverse,
+  //   backgroundColor: Colors.ggNavy,
   //   height: 60,
   // }
 })
@@ -36,9 +36,9 @@ const LayoutStyles = StyleSheet.create({
   },
 
   ListHeader: {
-    backgroundColor: Colors.greyExtraLight,
+    backgroundColor: Colors.navBarBackground,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.greyLight,
+    borderBottomColor: Colors.border,
     display: "flex",
     flexDirection: "row",
     flexWrap: "nowrap",
