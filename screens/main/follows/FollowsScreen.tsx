@@ -11,7 +11,8 @@ export interface FollowsScreenProps extends NavigationTabScreenProps {}
 export class FollowsScreen extends React.Component<FollowsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="Follows" align="left" size="large" />,
+      headerLeft: null,
+      headerTitle: <HeaderTitle title="Follows" align="left" size="large" />,
     }
   }
   render() {

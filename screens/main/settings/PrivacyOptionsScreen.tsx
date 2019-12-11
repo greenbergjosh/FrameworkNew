@@ -1,10 +1,10 @@
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { routes, styles, Units } from "constants"
-import TouchText from "components/TouchText"
+import { routes, styles } from "constants"
 import { SettingsList } from "./components/SettingsList"
 import { PRIVACYOPTIONS_DATA, SettingType } from "./components/mockData"
+import NavButton from "components/NavButton"
 
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}
 
@@ -18,25 +18,19 @@ export const PrivacyOptionsScreen = ({ navigation }: PrivacyOptionsScreenProps) 
 
 PrivacyOptionsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: () => (
-      <TouchText
-        onPress={() => navigation.navigate(routes.Home.Feed)}
-        reverse
-        size="lg"
-        style={{ marginLeft: Units.margin }}>
+    headerLeft: (
+      <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
         Cancel
-      </TouchText>
+      </NavButton>
     ),
-    headerTitle: () => <HeaderTitle title="Privacy Options" />,
-    headerRight: () => (
-      <TouchText
+    headerTitle: <HeaderTitle title="Privacy Options" />,
+    headerRight: (
+      <NavButton
         onPress={() => navigation.navigate(routes.Home.Feed)}
-        reverse
-        size="lg"
         type="primary"
-        style={{ marginRight: Units.margin }}>
+        position="right">
         Done
-      </TouchText>
+      </NavButton>
     ),
   }
 }

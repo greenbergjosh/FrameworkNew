@@ -2,16 +2,18 @@ import React from "react"
 import { Tabs } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { InfluencersList, FollowsList } from "components/follows"
+import { FollowsList, InfluencersList } from "components/follows"
 import { routes } from "constants"
 import { influencerFeedRoutes } from "../feedRoutes"
+import NavButton from "components/NavButton"
 
 export interface ExploreUserFollowsScreenProps extends NavigationTabScreenProps {}
 
 export class ExploreUserFollowsScreen extends React.Component<ExploreUserFollowsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="loren" />,
+      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+      headerTitle: <HeaderTitle title="loren" />,
     }
   }
   render() {

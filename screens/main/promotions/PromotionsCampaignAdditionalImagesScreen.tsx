@@ -1,13 +1,11 @@
-import { ActivityIndicator, Button, Modal } from "@ant-design/react-native"
-import { useActionSheet } from "@expo/react-native-action-sheet"
-import { baseAddress } from "api"
-import { CampaignTemplate, createCampaign } from "api/promotions-services"
+import { Modal } from "@ant-design/react-native"
+import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
 import { P } from "components/Markup"
 import { SubHeader } from "components/SubHeader"
-import { Colors, routes, Units } from "constants"
+import { routes, Units } from "constants"
 import React from "react"
-import { Clipboard, Text } from "react-native"
+import { Text, Alert } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
@@ -15,6 +13,8 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
+import { HeaderRightDoneButton } from "./components/HeaderRightDoneButton"
+import NavButton from "components/NavButton"
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
@@ -98,107 +98,27 @@ export const PromotionsCampaignAdditionalImagesScreen = (
 }
 
 PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) => {
+  const { navigate } = navigation
   const { draft, influencerTokens } = navigation.state
     .params as PromotionsCampaignAdditionalImagesScreenNavigationParams
+  const cancelHandler = () => {
+    Alert.alert("Are you sure you want to lose your changes and cancel?", null, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      { text: "OK", onPress: () => navigate(routes.Promotions.Promotions) },
+    ])
+  }
   return {
-    headerLeft:
+    headerLeft: () =>
       draft &&
       (() => (
-        <Button
-          onPress={() => navigation.goBack("PromotionsCampaignList")}
-          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-          <Text style={{ color: "#fff" }}>Cancel</Text>
-        </Button>
+        <NavButton onPress={cancelHandler} position="left">
+          Cancel
+        </NavButton>
       )),
-    headerTitle: () => <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
-    headerRight: () => <HeaderRightDoneButton navigation={navigation} />,
+    headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
+    headerRight: <HeaderRightDoneButton navigation={navigation} />,
   }
-}
-
-interface HeaderRightDoneButtonProps {
-  navigation: PromotionsCampaignAdditionalImagesScreenProps["navigation"]
-}
-
-const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
-  const { showActionSheetWithOptions } = useActionSheet()
-  const [workingText, setWorkingText] = React.useState<string | null>(null)
-  const { images, influencerTokens, promotionId, template } = navigation.state.params
-  const options = ["Save Draft", "Publish", "Cancel"]
-  const cancelButtonIndex = 2
-
-  const pressDoneHandler = () => {
-    showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex,
-      },
-      async (buttonIndex) => {
-        if (buttonIndex === 0) {
-          alert("Save draft\nFeature to come!")
-          // Save Draft
-        } else if (buttonIndex === 1) {
-          setWorkingText("Publishing...")
-          // Publish Campaign
-          const newCampaign = {
-            promotionId,
-            feedImage: images[0],
-            templateParts: influencerTokens,
-            messageBodyTemplateId: template.id,
-            messageBodyTemplateName: "",
-            messageBodyTemplateUrl: "",
-            approvedByAdvertiser: "0",
-            subject: "Campaign",
-          }
-          const publishResult = await createCampaign(newCampaign)
-          setWorkingText(null)
-
-          if (publishResult.r === 0) {
-            Modal.alert(
-              "Campaign Created",
-              <Text>The campaign was successfully created! Copy the sharing link?</Text>,
-              [
-                {
-                  text: "Later",
-                  style: "cancel",
-                  onPress: () => {
-                    navigation.navigate(routes.Promotions.CampaignList, { promotionId })
-                  },
-                },
-
-                {
-                  text: "Copy",
-                  onPress: () => {
-                    Clipboard.setString(`${baseAddress}/c/${publishResult.result.id}`)
-                    setTimeout(() => {
-                      Modal.alert("Link Copied!", null, [
-                        {
-                          text: "OK",
-                          onPress: () => {
-                            navigation.navigate(routes.Promotions.CampaignList, {
-                              promotionId,
-                            })
-                          },
-                        },
-                      ])
-                    }, 1000)
-                  },
-                },
-              ]
-            )
-          } else {
-            alert(`Failed to publish campaign (Code ${publishResult.r}): ${publishResult.error}`)
-          }
-        }
-      }
-    )
-  }
-
-  return (
-    <>
-      <ActivityIndicator animating={!!workingText} toast size="large" text={workingText} />
-      <Button onPress={pressDoneHandler} style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-        <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
-      </Button>
-    </>
-  )
 }

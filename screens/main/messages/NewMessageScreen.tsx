@@ -1,19 +1,12 @@
 import React from "react"
-import { Text, View } from "react-native"
-import {
-  ActivityIndicator,
-  Button,
-  Flex,
-  InputItem,
-  Toast,
-  WhiteSpace,
-} from "@ant-design/react-native"
+import { Text } from "react-native"
+import { ActivityIndicator, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
-import TouchText from "components/TouchText"
-import { Colors, routes, Units, styles } from "constants"
+import { Colors, routes, styles, Units } from "constants"
 import { useMessagesContext } from "providers/messages-context-provider"
 import { ContactsList } from "./components/ContactsList"
+import NavButton from "components/NavButton"
 
 interface NewMessageScreenProps extends NavigationStackScreenProps {}
 
@@ -56,25 +49,19 @@ export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
 }
 NewMessageScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: () => (
-      <TouchText
-        size="lg"
-        onPress={() => navigation.navigate(routes.Messages.default)}
-        style={{ marginLeft: Units.margin }}
-        reverse>
+    headerLeft: (
+      <NavButton onPress={() => navigation.navigate(routes.Messages.default)} position="left">
         Cancel
-      </TouchText>
+      </NavButton>
     ),
-    headerTitle: () => <HeaderTitle title="New Message" />,
-    headerRight: () => (
-      <TouchText
-        size="lg"
+    headerTitle: <HeaderTitle title="New Message" />,
+    headerRight: (
+      <NavButton
         type="primary"
         onPress={() => navigation.navigate(routes.Messages.ViewThread)}
-        style={{ marginRight: Units.margin }}
-        reverse>
+        position="right">
         Done
-      </TouchText>
+      </NavButton>
     ),
   }
 }

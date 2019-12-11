@@ -1,19 +1,19 @@
-import { Button, Icon } from "@ant-design/react-native"
 import { templateHost } from "api"
 import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
 import { TextAreaModal } from "components/TextAreaModal"
-import { Colors, routes } from "constants"
+import { routes } from "constants"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
-import { Text } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { SubHeader } from "../../../components/SubHeader"
+import { SubHeader } from "components/SubHeader"
+import NavButton from "components/NavButton"
+import { Alert } from "react-native"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -164,7 +164,7 @@ export const PromotionsCampaignViewScreen = (props: PromotionsCampaignViewScreen
   
   setTimeout(() => {
     window.setTemplate(\`${template.template && template.template.html}\`)
-    window.setTokenValues(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
+    window.setTokenValues(${campaignId ? templateParts : influencerTokens})
     // alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
   }, 10); `}
         source={{
@@ -172,7 +172,7 @@ export const PromotionsCampaignViewScreen = (props: PromotionsCampaignViewScreen
             template.id &&
             `${templateHost}?&templateId=${template.id}&randomSeed=${Math.round(
               Math.random() * 4000
-            )}`,
+            )}&editable=${!campaignId}&debugMode=false`,
         }}
         onMessage={(event) => {
           const message: ActionMessage = JSON.parse(event.nativeEvent.data)
@@ -186,14 +186,14 @@ export const PromotionsCampaignViewScreen = (props: PromotionsCampaignViewScreen
   React.useEffect(() => {
     if (campaignId && getgotWebView.current && template && templateParts)
       getgotWebView.current.injectJavaScript(`
-      window.setTokenValues(${JSON.stringify(templateParts)})
+      window.setTokenValues(${templateParts})
       true;
     `)
   }, [campaignId, getgotWebView.current, template, templateParts])
 
   return (
     <>
-      <SubHeader title="PromotionsCampaignViewSceen" />
+      <SubHeader title="Campaign Preview" />
       <TextAreaModal
         initialValue={influencerTokens[promptKey] as string}
         onCancel={() => setShowMessageModal(false)}
@@ -254,23 +254,35 @@ function initializeGetGotInterface() {
 }
 
 PromotionsCampaignViewScreen.navigationOptions = ({ navigation }) => {
+  const { navigate } = navigation
   const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
+  const cancelHandler = () => {
+    Alert.alert("Are you sure you want to lose your changes and cancel?", null, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      { text: "OK", onPress: () => navigate(routes.Promotions.Promotions) },
+    ])
+  }
+
   return {
-    headerLeft: draft
-      ? undefined
-      : () => (
-          <Button
-            onPress={() => navigation.navigate(routes.Promotions.Promotions)}
-            style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-            <Icon name="arrow-left" />
-          </Button>
-        ),
-    headerTitle: () => <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
+    headerLeft: (
+      <NavButton
+        disabled={!requiredTokens.every((token) => token in influencerTokens)}
+        position="left"
+        onPress={cancelHandler}>
+        Cancel
+      </NavButton>
+    ),
+    headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
     headerRight: () =>
       draft ? (
-        <Button
+        <NavButton
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
+          type="primary"
+          position="right"
           onPress={() => {
             navigation.navigate(routes.Promotions.CampaignAdditionalImages, {
               draft,
@@ -278,10 +290,9 @@ PromotionsCampaignViewScreen.navigationOptions = ({ navigation }) => {
               promotionId,
               template,
             })
-          }}
-          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-          <Text style={{ fontWeight: "bold", color: "#fff" }}>Next</Text>
-        </Button>
+          }}>
+          Next
+        </NavButton>
       ) : null,
   }
 }

@@ -2,10 +2,10 @@ import { Flex, Icon, InputItem } from "@ant-design/react-native"
 import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
-import TouchIcon from "components/TouchIcon"
 import { Colors, routes, Units } from "constants"
 import { GiftedChat } from "react-native-gifted-chat"
 import mockMessages from "./mockMessages"
+import NavButton from "components/NavButton"
 
 interface ViewThreadScreenProps extends NavigationStackScreenProps {}
 interface ViewThreadScreenState {
@@ -23,16 +23,14 @@ export class ViewThreadScreen extends React.Component<
 > {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerLeft: () => (
-        <TouchIcon
-          name="left"
-          style={{ marginLeft: Units.margin - 10 }}
-          iconStyle={{ color: Colors.reverse }}
-          size="lg"
+      headerLeft: (
+        <NavButton
+          iconName="left"
           onPress={() => navigation.navigate(routes.Messages.default)}
+          position="left"
         />
       ),
-      headerTitle: () => <HeaderTitle title="<Group Name, or Contact Name>" />,
+      headerTitle: <HeaderTitle title="<Group Name, or Contact Name>" />,
     }
   }
 

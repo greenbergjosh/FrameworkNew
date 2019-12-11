@@ -4,15 +4,15 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import Avatar from "components/Avatar"
 import { Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
-import { routes, styles, Units, Colors } from "constants"
-import TouchText from "components/TouchText"
-import { P, A, BR, H2, H3, H4, STRONG, SMALL } from "components/Markup"
+import { Colors, routes, styles, Units } from "constants"
+import { H2, H3, H4 } from "components/Markup"
+import NavButton from "components/NavButton"
 
 interface EditProfileScreenProps extends React.FunctionComponent, NavigationTabScreenProps {}
 
 function UserIdentity(props: { onPress: () => void }) {
   return (
-    <Flex direction="column" style={{ padding: Units.margin, backgroundColor: Colors.lightgrey }}>
+    <Flex direction="column" style={{ padding: Units.margin, backgroundColor: Colors.navBarBackground }}>
       <Avatar
         size="lg"
         style={{ marginBottom: Units.padding, position: "relative", overflow: "hidden" }}
@@ -132,25 +132,19 @@ export const EditProfileScreen = ({ navigation }: EditProfileScreenProps) => {
 }
 EditProfileScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderTitle title="Edit Profile" align="center" size="normal" />,
-    headerLeft: () => (
-      <TouchText
-        onPress={() => navigation.navigate(routes.Profile.default)}
-        reverse
-        size="lg"
-        style={{ marginLeft: Units.margin }}>
+    headerTitle: <HeaderTitle title="Edit Profile" align="center" size="normal" />,
+    headerLeft: (
+      <NavButton onPress={() => navigation.navigate(routes.Profile.default)} position="left">
         Cancel
-      </TouchText>
+      </NavButton>
     ),
-    headerRight: () => (
-      <TouchText
+    headerRight: (
+      <NavButton
         onPress={() => navigation.navigate(routes.Profile.default)}
-        reverse
-        size="lg"
         type="primary"
-        style={{ marginRight: Units.margin }}>
+        position="right">
         Done
-      </TouchText>
+      </NavButton>
     ),
   }
 }

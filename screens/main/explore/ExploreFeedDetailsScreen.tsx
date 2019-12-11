@@ -5,13 +5,15 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { List } from "@ant-design/react-native"
 import { mockData, FeedItem, UserInfo } from "components/feed"
 import { influencerFeedRoutes } from "../feedRoutes"
+import NavButton from "components/NavButton"
 
 interface ExploreFeedDetailsScreenProps extends NavigationTabScreenProps {}
 
 export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetailsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="Explore" offset="none" />,
+      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+      headerTitle: <HeaderTitle title="Explore" offset="none" />,
     }
   }
   render() {

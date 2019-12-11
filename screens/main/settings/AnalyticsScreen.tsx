@@ -1,30 +1,30 @@
-import { Button, List, WhiteSpace } from "@ant-design/react-native"
+import { List } from "@ant-design/react-native"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes, styles, Units } from "constants"
-import { H2, H3, P } from "components/Markup"
+import { Colors, routes, styles } from "constants"
+import { H3 } from "components/Markup"
+import NavButton from "components/NavButton"
 
 interface AnalyticsScreenProps extends NavigationTabScreenProps {}
 
 export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerLeft: () => (
-        <Button
-          onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-          <Text style={{ color: "#fff" }}>Cancel</Text>
-        </Button>
+      headerLeft: (
+        <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
+          Cancel
+        </NavButton>
       ),
-      headerTitle: () => <HeaderTitle title="Analytics" />,
-      headerRight: () => (
-        <Button
+      headerTitle: <HeaderTitle title="Analytics" />,
+      headerRight: (
+        <NavButton
           onPress={() => navigation.navigate(routes.Home.Feed)}
-          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-          <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
-        </Button>
+          type="primary"
+          position="right">
+          Done
+        </NavButton>
       ),
     }
   }
@@ -38,17 +38,20 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
         <List renderHeader={"ACTIVITY THIS MONTH"}>
           <List.Item>
             <H3>
-              Impressions <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>2,526</Text>
+              Impressions{" "}
+              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>2,526</Text>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
-              Click Throughs <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>396</Text>
+              Click Throughs{" "}
+              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>396</Text>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
-              Items Sold <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>52</Text>
+              Items Sold{" "}
+              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>52</Text>
             </H3>
           </List.Item>
           <List.Item>

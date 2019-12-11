@@ -5,13 +5,15 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { FeedGrid, mockData, UserInfo } from "components/feed"
 import { routes } from "constants"
 import { influencerFeedRoutes } from "../feedRoutes"
+import NavButton from "components/NavButton"
 
 interface ExploreUserFeedScreenProps extends NavigationTabScreenProps {}
 
 export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title={mockData.USER_FEED_DATA.user.handle} offset="none" />,
+      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+      headerTitle: <HeaderTitle title={mockData.USER_FEED_DATA.user.handle} offset="none" />,
     }
   }
   render() {

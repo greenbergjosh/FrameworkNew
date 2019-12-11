@@ -12,7 +12,7 @@ export type User = {
 }
 
 export type Message = {
-  id: number
+  id: GUID
   name: string
   users: User[]
   messageDate: ISO8601String
@@ -24,7 +24,7 @@ export const messages: MessagesResponse = {
   r: 0,
   results: [
     {
-      id: 1,
+      id: "e07001e5-39a6-47a4-8232-d8b1b81b4a5a",
       name: "Message Name",
       users: [
         {
@@ -38,7 +38,7 @@ export const messages: MessagesResponse = {
         "This is the message. This is the message. This is the message. This is the message. ",
     },
     {
-      id: 2,
+      id: "fd73f05a-4f64-4743-9eec-856ca36f550c",
       name: "Message Name",
       users: [
         {
@@ -57,7 +57,7 @@ export const messages: MessagesResponse = {
         "This is the message. This is the message. This is the message. This is the message. ",
     },
     {
-      id: 3,
+      id: "1cf44754-f0f1-499b-90ee-ca3d414992a7",
       name: "Message Name",
       users: [
         {

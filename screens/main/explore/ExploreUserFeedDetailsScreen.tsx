@@ -5,6 +5,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { FeedItem, mockData, UserInfo } from "components/feed"
 import { influencerFeedRoutes } from "../feedRoutes"
+import NavButton from "components/NavButton"
 
 interface ExploreUserFeedDetailsScreenProps extends NavigationTabScreenProps {}
 
@@ -13,8 +14,12 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
 > {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => (
-        <HeaderTitle title={`${mockData.USER_FEED_DETAILS_DATA.user.handle}'s Posts`} offset="none" />
+      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+      headerTitle: (
+        <HeaderTitle
+          title={`${mockData.USER_FEED_DETAILS_DATA.user.handle}'s Posts`}
+          offset="none"
+        />
       ),
     }
   }
@@ -24,12 +29,17 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
 
     return (
       <View>
-        <UserInfo user={user} showFullDetails={false} navigate={navigate} routes={ influencerFeedRoutes } />
+        <UserInfo
+          user={user}
+          showFullDetails={false}
+          navigate={navigate}
+          routes={influencerFeedRoutes}
+        />
         <ScrollView>
           <List>
             {feed.map((item) => (
               <View key={item.id}>
-                <FeedItem item={item} navigate={navigate} routes={ influencerFeedRoutes } />
+                <FeedItem item={item} navigate={navigate} routes={influencerFeedRoutes} />
               </View>
             ))}
           </List>

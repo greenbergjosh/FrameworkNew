@@ -24,7 +24,7 @@ export default function TouchIcon({
   onPress,
   style,
   iconStyle,
-  reverse,
+  reverse = false,
   children,
 }: TouchIconProps) {
   /*
@@ -50,7 +50,7 @@ export default function TouchIcon({
       if (typeof size === "number") margin = getMargin(size)
   }
 
-  let wrapperStyles: StyleProp<ViewStyle> = {
+  const wrapperStyles: StyleProp<ViewStyle> = {
     minHeight: Units.minTouchArea,
     minWidth: Units.minTouchArea,
     marginLeft: margin,
@@ -61,13 +61,11 @@ export default function TouchIcon({
     justifyContent: "center",
     alignItems: "center",
   }
-  let conditionalIconStyles: StyleProp<TextStyle> = {
-    color: Colors.bodyTextEmphasis,
+
+  const defaultIconStyle: StyleProp<TextStyle> = {
+    color: reverse ? Colors.reverse : Colors.bodyTextEmphasis,
     flex: 0,
     alignSelf: "auto",
-  }
-  if (reverse) {
-    conditionalIconStyles.color = Colors.reverse
   }
 
   return (
@@ -77,7 +75,7 @@ export default function TouchIcon({
           {children ? (
             children
           ) : (
-            <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
+            <Icon name={name} size={size} style={[defaultIconStyle, iconStyle]} />
           )}
         </TouchableOpacity>
       ) : (
@@ -85,7 +83,7 @@ export default function TouchIcon({
           {children ? (
             children
           ) : (
-            <Icon name={name} size={size} style={[conditionalIconStyles, iconStyle]} />
+            <Icon name={name} size={size} style={[defaultIconStyle, iconStyle]} />
           )}
         </View>
       )}

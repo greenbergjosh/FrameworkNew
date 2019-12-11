@@ -1,12 +1,10 @@
-import { Button, Icon } from "@ant-design/react-native"
 import { templateHost } from "api"
 import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
 import { TextAreaModal } from "components/TextAreaModal"
-import { Colors, routes } from "constants"
+import { routes } from "constants"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
-import { Text } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import {
@@ -14,6 +12,8 @@ import {
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { SubHeader } from "components/SubHeader"
+import NavButton from "components/NavButton"
+import { Alert } from "react-native"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -254,23 +254,35 @@ function initializeGetGotInterface() {
 }
 
 PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
+  const { navigate } = navigation
   const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
+  const cancelHandler = () => {
+    Alert.alert("Are you sure you want to lose your changes and cancel?", null, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      { text: "OK", onPress: () => navigate(routes.Promotions.Promotions) },
+    ])
+  }
+
   return {
-    headerLeft: draft
-      ? undefined
-      : () => (
-          <Button
-            onPress={() => navigation.navigate(routes.Promotions.Promotions)}
-            style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-            <Icon name="arrow-left" />
-          </Button>
-        ),
-    headerTitle: () => <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
+    headerLeft: (
+      <NavButton
+        disabled={!requiredTokens.every((token) => token in influencerTokens)}
+        position="left"
+        onPress={cancelHandler}>
+        Cancel
+      </NavButton>
+    ),
+    headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
     headerRight: () =>
       draft ? (
-        <Button
+        <NavButton
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
+          type="primary"
+          position="right"
           onPress={() => {
             navigation.navigate(routes.Promotions.CampaignAdditionalImages, {
               draft,
@@ -278,10 +290,9 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
               promotionId,
               template,
             })
-          }}
-          style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-          <Text style={{ fontWeight: "bold", color: "#fff" }}>Next</Text>
-        </Button>
+          }}>
+          Next
+        </NavButton>
       ) : null,
   }
 }

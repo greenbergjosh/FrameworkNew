@@ -4,12 +4,14 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { FeedItem, mockData, ProfileInfo } from "components/feed"
 import { profileFeedRoutes } from "../feedRoutes"
+import NavButton from "components/NavButton"
 
 interface PostDetailsScreenProps extends NavigationTabScreenProps {}
 
 export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
+      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
       headerTitle: () => <HeaderTitle title="Posts" offset="none" />,
     }
   }

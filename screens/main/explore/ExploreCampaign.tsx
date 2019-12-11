@@ -1,8 +1,9 @@
-import { Button, Flex, Toast } from "@ant-design/react-native"
+import { Flex } from "@ant-design/react-native"
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Text, View } from "react-native"
+import NavButton from "components/NavButton"
 
 interface ExploreCampaignScreenProps extends NavigationTabScreenProps {}
 
@@ -10,7 +11,8 @@ interface ExploreCampaignScreenProps extends NavigationTabScreenProps {}
 export class ExploreCampaignScreen extends React.Component<ExploreCampaignScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="DSW" />,
+      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+      headerTitle: <HeaderTitle title="DSW" />,
     }
   }
   render() {

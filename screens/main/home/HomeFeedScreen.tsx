@@ -11,6 +11,7 @@ import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
 import { influencerFeedRoutes } from "../feedRoutes"
+import NavButton from "components/NavButton"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
@@ -61,27 +62,19 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
 
 HomeFeedScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: () => (
+    headerLeft: (
       <SettingsDrawerContext.Consumer>
         {({ open, toggle }) => (
-          <TouchIcon
-            name="menu"
-            reverse
-            size="md"
-            onPress={() => toggle()}
-            style={{ marginLeft: Units.margin / 2 }}
-          />
+          <NavButton iconName="menu" onPress={() => toggle()} position="left" />
         )}
       </SettingsDrawerContext.Consumer>
     ),
-    headerTitle: () => <HeaderLogo />,
-    headerRight: () => (
-      <TouchIcon
-        name="mail"
-        reverse
-        size="md"
+    headerTitle: <HeaderLogo />,
+    headerRight: (
+      <NavButton
+        iconName="mail"
         onPress={() => navigation.navigate(routes.Home.Messages)}
-        style={{ marginRight: Units.margin / 2 }}
+        position="right"
       />
     ),
   }

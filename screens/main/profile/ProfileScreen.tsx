@@ -12,7 +12,8 @@ interface ProfileScreenProps extends NavigationTabScreenProps {}
 export class ProfileScreen extends React.Component<ProfileScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
-      headerTitle: () => <HeaderTitle title="Profile" align="left" size="large" />,
+      headerLeft: null,
+      headerTitle: <HeaderTitle title="Profile" align="left" size="large" />,
     }
   }
   render() {

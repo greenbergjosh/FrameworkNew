@@ -2,10 +2,10 @@ import React from "react"
 import { ActivityIndicator, Button, Icon, SearchBar } from "@ant-design/react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "providers/messages-context-provider"
-import { Colors, routes, Units } from "constants"
+import { Colors, routes } from "constants"
 import { HeaderTitle } from "components/HeaderTitle"
-import TouchIcon from "components/TouchIcon"
 import { MessagesList } from "./components/MessagesList"
+import NavButton from "components/NavButton"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
@@ -31,7 +31,7 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
       />
       <MessagesList navigate={navigate} messages={messages} />
       <Button
-        style={{ backgroundColor: Colors.lightgrey }}
+        style={{ backgroundColor: Colors.navBarBackground }}
         onPress={() =>
           alert(
             "Create message by taking a photo or selecting a photo from library.\nFeature to come!"
@@ -44,23 +44,19 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
 }
 MessagesScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: () => (
-      <TouchIcon
-        name="left"
-        style={{ marginLeft:  Units.margin - 10 }}
-        iconStyle={{ color: Colors.reverse }}
-        size="lg"
+    headerLeft: (
+      <NavButton
+        iconName="left"
         onPress={() => navigation.navigate(routes.Home.default)}
+        position="left"
       />
     ),
-    headerTitle: () => <HeaderTitle title="Messages" />,
-    headerRight: () => (
-      <TouchIcon
-        name="plus"
-        style={{ marginRight: Units.margin - 10 }}
-        iconStyle={{ color: Colors.reverse }}
-        size="lg"
+    headerTitle: <HeaderTitle title="Messages" />,
+    headerRight: (
+      <NavButton
+        iconName="plus"
         onPress={() => navigation.navigate(routes.Messages.NewMessage)}
+        position="right"
       />
     ),
   }

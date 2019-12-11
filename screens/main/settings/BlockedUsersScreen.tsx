@@ -1,11 +1,12 @@
 import React from "react"
-import { ActivityIndicator, Button, Flex } from "@ant-design/react-native"
+import { ActivityIndicator, Flex } from "@ant-design/react-native"
 import { ScrollView, Text, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes, styles } from "constants"
+import { routes, styles } from "constants"
 import { useFollowsContext } from "providers/follows-context-provider"
 import { BlockedUserRow } from "./components/BlockedUserRow"
+import NavButton from "components/NavButton"
 
 interface BlockedUsersScreenProps extends NavigationTabScreenProps {}
 
@@ -45,20 +46,16 @@ export const BlockedUsersScreen = ({ navigation }: BlockedUsersScreenProps) => {
 
 BlockedUsersScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: () => (
-      <Button
-        onPress={() => navigation.navigate(routes.Home.Feed)}
-        style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-        <Text style={{ color: "#fff" }}>Cancel</Text>
-      </Button>
+    headerLeft: (
+      <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
+        Cancel
+      </NavButton>
     ),
-    headerTitle: () => <HeaderTitle title="Blocked Users" />,
-    headerRight: () => (
-      <Button
-        onPress={() => navigation.navigate(routes.Home.Feed)}
-        style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
-        <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
-      </Button>
+    headerTitle: <HeaderTitle title="Blocked Users" />,
+    headerRight: (
+      <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="right" type="primary">
+        Done
+      </NavButton>
     ),
   }
 }

@@ -20,6 +20,7 @@ export enum Units {
   img80 = 80,
   img128 = 128,
   thumb90 = 90,
+  disabledOpacity = 0.3,
 }
 export enum FontWeights {
   light = "300",

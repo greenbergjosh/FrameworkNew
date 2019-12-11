@@ -1,13 +1,12 @@
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { routes, styles, Units } from "constants"
-import TouchText from "components/TouchText"
+import { Colors, routes, styles, Units } from "constants"
 import { SettingsList } from "./components/SettingsList"
-import { SettingRow, SettingRowProps } from "./components/SettingRow"
+import { SettingRow } from "./components/SettingRow"
 import { NOTIFICATIONS_DATA, SettingType } from "./components/mockData"
 import { Text, View } from "react-native"
-import { Colors } from "../../../constants/unit.constants"
+import NavButton from "components/NavButton"
 
 interface NotificationsScreenProps extends NavigationTabScreenProps {}
 
@@ -33,8 +32,13 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
       </View>
       <SettingsList values={settings} style={styles.View}>
         {({ value }) => (
-          <View style={{ borderBottomWidth: 1, borderColor: Colors.border, marginBottom: Units.margin }}>
-            <SettingRow value={value} style={{ marginBottom: Units.margin / 2 }}/>
+          <View
+            style={{
+              borderBottomWidth: 1,
+              borderColor: Colors.border,
+              marginBottom: Units.margin,
+            }}>
+            <SettingRow value={value} style={{ marginBottom: Units.margin / 2 }} />
             <SettingRow
               value={{
                 id: "bd7acbea-c1b1-46c2-aed5-3ad53abb2001",
@@ -54,25 +58,19 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
 
 NotificationsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: () => (
-      <TouchText
-        onPress={() => navigation.navigate(routes.Home.Feed)}
-        reverse
-        size="lg"
-        style={{ marginLeft: Units.margin }}>
+    headerLeft: (
+      <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
         Cancel
-      </TouchText>
+      </NavButton>
     ),
-    headerTitle: () => <HeaderTitle title="Privacy Options" />,
-    headerRight: () => (
-      <TouchText
+    headerTitle: <HeaderTitle title="Privacy Options" />,
+    headerRight: (
+      <NavButton
         onPress={() => navigation.navigate(routes.Home.Feed)}
-        reverse
-        size="lg"
         type="primary"
-        style={{ marginRight: Units.margin }}>
+        position="right">
         Done
-      </TouchText>
+      </NavButton>
     ),
   }
 }

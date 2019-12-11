@@ -1,7 +1,7 @@
 import React from "react"
 import { User } from "api/messages-services"
 import Avatar from "components/Avatar"
-import { TouchableOpacity } from "react-native"
+import { TouchableOpacity, View } from "react-native"
 
 interface AvatarClusterProps {
   users: User[]
@@ -15,16 +15,15 @@ export default function AvatarCluster({ users, onPress }: AvatarClusterProps) {
         idx === 0 ? (
           <Avatar key={user.userId + idx} source={user.avatarUri} size="sm" />
         ) : (
-          <Avatar
+          <View
             key={user.userId + idx}
-            source={user.avatarUri}
-            size="sm"
             style={{
               position: "absolute",
               top: 3,
               left: 7,
-            }}
-          />
+            }}>
+            <Avatar source={user.avatarUri} size="sm" />
+          </View>
         )
       )}
     </TouchableOpacity>

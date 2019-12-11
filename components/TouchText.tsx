@@ -1,7 +1,6 @@
 import React from "react"
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native"
-import { Colors, styles } from "constants"
-import { FontWeights } from "../constants/unit.constants"
+import { Colors, styles, FontWeights, devBorder, Units } from "constants"
 
 interface TouchTextProps {
   size?: "sm" | "md" | "lg"
@@ -10,7 +9,8 @@ interface TouchTextProps {
   labelStyle?: StyleProp<TextStyle>
   children?: string
   reverse?: boolean
-  type?: "primary" | "warning"
+  type?: "primary" | "warning" | "normal"
+  disabled?: boolean
 }
 
 export default function TouchText({
@@ -19,8 +19,9 @@ export default function TouchText({
   style,
   labelStyle,
   children,
-  reverse,
   type,
+  reverse = false,
+  disabled = false,
 }: TouchTextProps) {
   /*
   NOTE: We use a negative margin to compensate for the 40x40px touch area
@@ -44,27 +45,34 @@ export default function TouchText({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    opacity: disabled ? Units.disabledOpacity : 1,
   }
-  let conditionalLabelStyles: StyleProp<TextStyle> = { flex: 0, alignSelf: "auto" }
+  let defaultLabelStyle: StyleProp<TextStyle> = { flex: 0, alignSelf: "auto" }
   if (reverse) {
-    conditionalLabelStyles.color = Colors.reverse
+    defaultLabelStyle.color = Colors.reverse
   }
   if (type === "primary") {
-    conditionalLabelStyles.fontWeight = FontWeights.bold
+    defaultLabelStyle.fontWeight = FontWeights.bold
   }
   if (type === "warning") {
-    conditionalLabelStyles.color = Colors.warning
+    defaultLabelStyle.color = Colors.warning
   }
 
   return (
     <>
-      {onPress ? (
-        <TouchableOpacity onPress={onPress && onPress} style={[wrapperStyles, style]}>
-          <Text style={[fontStyle, conditionalLabelStyles, labelStyle]}>{children}</Text>
+      {disabled ? (
+        <View style={[wrapperStyles, style]}>
+          <Text style={[fontStyle, defaultLabelStyle, labelStyle]}>{children}</Text>
+        </View>
+      ) : onPress ? (
+        <TouchableOpacity
+          onPress={onPress && onPress}
+          style={[wrapperStyles, style]}>
+          <Text style={[fontStyle, defaultLabelStyle, labelStyle]}>{children}</Text>
         </TouchableOpacity>
       ) : (
         <View style={[wrapperStyles, style]}>
-          <Text style={[fontStyle, conditionalLabelStyles, labelStyle]}>{children}</Text>
+          <Text style={[fontStyle, defaultLabelStyle, labelStyle]}>{children}</Text>
         </View>
       )}
     </>

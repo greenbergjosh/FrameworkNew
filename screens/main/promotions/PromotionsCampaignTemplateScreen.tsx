@@ -6,6 +6,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import { ImageUris, routes } from "constants"
+import NavButton from "components/NavButton"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
   promotionId: GUID
@@ -102,6 +103,14 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
 
 PromotionsCampaignTemplatesScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderTitle title="Choose a Template" />,
+    headerLeft: null,
+    headerTitle: <HeaderTitle title="Choose a Template" />,
+    headerRight: (
+      <NavButton
+        position="right"
+        onPress={() => navigation.navigate(routes.Promotions.Promotions)}>
+        Cancel
+      </NavButton>
+    ),
   }
 }
