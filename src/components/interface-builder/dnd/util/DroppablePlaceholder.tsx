@@ -4,6 +4,7 @@ import React from "react"
 export interface DroppablePlaceholderProps {
   className?: string
   emptyContainer?: boolean
+  horizontal?: boolean
   text?: string
   width: number | string
   x: number
@@ -11,11 +12,13 @@ export interface DroppablePlaceholderProps {
 }
 
 export const DroppablePlaceholder = React.memo(
-  ({ className, emptyContainer, text, width, x, y }: DroppablePlaceholderProps) => (
+  ({ className, emptyContainer, horizontal, text, width, x, y }: DroppablePlaceholderProps) => (
     <div
       data-droppable-placeholder
       className={classNames("droppable-placeholder", className, {
         "empty-container": emptyContainer,
+        vertical: !horizontal,
+        horizontal: horizontal,
       })}
       style={
         emptyContainer

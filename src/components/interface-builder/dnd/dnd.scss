@@ -1,4 +1,5 @@
 .dnd-droppable {
+  display: inherit;
   position: relative;
   border: 1px solid transparent;
   padding: 5px 5px 15px 5px;
@@ -17,12 +18,20 @@
     > .dnd-draggable.placeholder-above > * {
       transform: translateY(75px);
     }
+    > .dnd-draggable.placeholder-beside-left > * {
+      transform: translateX(75px);
+    }
   }
 
   .droppable-placeholder {
     &:not(.empty-container) {
       position: absolute;
     }
+
+    &.horizontal {
+      transform: rotate(270deg);
+    }
+
     height: 65px;
     background-color: #f2f4f5;
     border: none;

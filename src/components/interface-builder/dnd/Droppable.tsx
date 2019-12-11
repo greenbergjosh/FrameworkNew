@@ -1,6 +1,11 @@
 import classNames from "classnames"
 import React from "react"
-import { ConnectDropTarget, DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd"
+import {
+  ConnectDropTarget,
+  DropTarget,
+  DropTargetConnector,
+  DropTargetMonitor
+  } from "react-dnd"
 import { DraggableInnerProps } from "./Draggable"
 import {
   DraggedItemProps,
@@ -247,6 +252,8 @@ export interface DroppableInnerProps {
   innerRef: React.RefObject<HTMLDivElement>
   isOver: boolean
   onDrop?: DroppableProps["onDrop"]
+  orientation?: DroppableContextType["orientation"]
+  placeholderText?: DroppableProps["placeholderText"]
   placeholder: DroppablePlaceholderState | null
   setPlaceholder: (placeholder: DroppablePlaceholderState | null) => void
   type: DroppableProps["type"]
@@ -260,19 +267,24 @@ function DroppableInner({
   droppableId,
   innerRef,
   isOver,
+  orientation = "vertical",
   placeholder,
+  placeholderText,
   setPlaceholder,
 }: DroppableInnerProps) {
   const childrenResult = children({ isOver })
   const childCount = Array.isArray(childrenResult) ? childrenResult.length : 1
   const emptyContainer = childCount === 0
   // console.log("DroppableInner.render", { childrenResult, childCount })
+  const horizontal = orientation === "horizontal"
   return connectDropTarget(
     <div
       data-droppable-component
       className={classNames("dnd-droppable", {
         "accept-drop": canDrop && isOver && allowDrop,
         "has-placeholder": !!placeholder && canDrop && isOver && allowDrop,
+        vertical: !horizontal,
+        horizontal: horizontal,
       })}
       ref={innerRef}>
       {/* Id {droppableId} | Placeholder at{" "}
@@ -282,6 +294,8 @@ function DroppableInner({
       {allowDrop && ((placeholder && isOver) || emptyContainer) && (
         <DroppablePlaceholder
           emptyContainer={emptyContainer}
+          horizontal={horizontal}
+          text={placeholderText}
           x={(placeholder || { x: 5 }).x}
           y={(placeholder || { y: 5 }).y}
           width={(placeholder || { width: "95%" }).width}
@@ -302,13 +316,24 @@ export interface DroppableProps {
   disabled?: boolean
   droppableId: string
   onDrop?: DroppableContextType["onDrop"]
+  orientation?: DroppableContextType["orientation"]
+  placeholderText?: string
   type: string | symbol
 }
 
 const DroppableComponent = DropTarget(({ type }) => type, dropHandlers, collect)(DroppableInner)
 
 export const Droppable = React.memo(
-  ({ allowDrop = true, children, disabled, droppableId, onDrop, type }: DroppableProps) => {
+  ({
+    allowDrop = true,
+    children,
+    disabled,
+    droppableId,
+    onDrop,
+    orientation,
+    placeholderText,
+    type,
+  }: DroppableProps) => {
     const innerRef = React.useRef(null)
 
     console.log("Droppable.memo.render")
@@ -320,15 +345,18 @@ export const Droppable = React.memo(
       onDrop || (parentDroppableContext ? parentDroppableContext.onDrop : void 0)
 
     return (
-      <DroppableContext.Provider value={{ droppableId, onDrop: finalDropHandler, placeholder }}>
+      <DroppableContext.Provider
+        value={{ droppableId, onDrop: finalDropHandler, orientation, placeholder }}>
         <DroppableComponent
           allowDrop={allowDrop}
           disabled={disabled}
           droppableId={droppableId}
           innerRef={innerRef}
           onDrop={finalDropHandler}
+          orientation={orientation}
           placeholder={placeholder}
           setPlaceholder={setPlaceholder}
+          placeholderText={placeholderText}
           type={type}>
           {children}
         </DroppableComponent>

@@ -3,6 +3,9 @@ import React from "react"
 import { ConfirmableDeleteButton } from "../../../button/confirmable-delete"
 
 export interface DraggableEditButtonsProps {
+  canCopy?: boolean
+  canDelete?: boolean
+  canEdit?: boolean
   canPaste?: boolean
   onCopy?: () => void
   onDelete?: () => void
@@ -12,6 +15,9 @@ export interface DraggableEditButtonsProps {
 }
 
 export const DraggableEditButtons = ({
+  canCopy = true,
+  canDelete = true,
+  canEdit = true,
   canPaste = false,
   onCopy,
   onDelete,
@@ -19,14 +25,25 @@ export const DraggableEditButtons = ({
   onPaste,
   title,
 }: DraggableEditButtonsProps) => {
+  console.log("DraggableEditButton.render", {
+    canCopy,
+    canDelete,
+    canEdit,
+    canPaste,
+    onCopy,
+    onDelete,
+    onEdit,
+    onPaste,
+    title,
+  })
   return (
     <div className="dnd-draggable-edit-buttons">
       {title && <span className="dnd-draggable-edit-title">{title}</span>}
       <Button.Group>
-        {onEdit && <Button icon="edit" onClick={onEdit} />}
+        {onEdit && canEdit && <Button icon="edit" onClick={onEdit} />}
         {onPaste && canPaste && <Button icon="snippets" onClick={onPaste} disabled />}
-        {onCopy && <Button icon="copy" onClick={onCopy} disabled />}
-        {onDelete && (
+        {onCopy && canCopy && <Button icon="copy" onClick={onCopy} disabled />}
+        {onDelete && canDelete && (
           <ConfirmableDeleteButton
             confirmationMessage={`Are you sure want to delete this ${title || "item"}?`}
             confirmationTitle={`Confirm Delete`}

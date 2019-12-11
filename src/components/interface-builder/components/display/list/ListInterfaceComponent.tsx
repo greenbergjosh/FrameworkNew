@@ -2,7 +2,14 @@ import { Button, Empty } from "antd"
 import classNames from "classnames"
 import { get, set } from "lodash/fp"
 import React from "react"
+import uuid from "uuid/v4"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
+import {
+  Draggable,
+  DraggedItemProps,
+  Droppable,
+  DroppableTargetProps
+  } from "../../../dnd"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { listManageForm } from "./list-manage-form"
@@ -96,6 +103,88 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       )
   }
 
+  handleDeleteClick = ({ index }: { index: number }) => {
+    const { onChangeData, userInterfaceData, valueKey } = this.props
+
+    const existingData = get(valueKey, userInterfaceData) || []
+
+    onChangeData &&
+      onChangeData(
+        set(
+          valueKey,
+          [...existingData.slice(0, index), ...existingData.slice(index + 1)],
+          userInterfaceData
+        )
+      )
+  }
+
+  handleItemRearrange = (draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps) => {
+    console.log("ListInterfaceComponent.onDrop", {
+      draggedItem,
+      dropTarget,
+    })
+
+    const { onChangeData, userInterfaceData, valueKey } = this.props
+
+    const minIndex = Math.min(draggedItem.index, dropTarget.dropIndex)
+    const maxIndex = Math.max(draggedItem.index, dropTarget.dropIndex)
+
+    const existingData = get(valueKey, userInterfaceData) || []
+
+    if (onChangeData) {
+      if (draggedItem.index < dropTarget.dropIndex) {
+        onChangeData(
+          set(
+            valueKey,
+            [
+              ...existingData.slice(0, draggedItem.index),
+              ...existingData.slice(draggedItem.index + 1, dropTarget.dropIndex),
+              existingData[draggedItem.index],
+              ...existingData.slice(dropTarget.dropIndex),
+            ],
+            userInterfaceData
+          )
+        )
+      } else if (draggedItem.index > dropTarget.dropIndex) {
+        onChangeData(
+          set(
+            valueKey,
+            [
+              ...existingData.slice(0, dropTarget.dropIndex),
+              existingData[draggedItem.index],
+              ...existingData.slice(dropTarget.dropIndex, draggedItem.index),
+              ...existingData.slice(draggedItem.index + 1),
+            ],
+            userInterfaceData
+          )
+        )
+      }
+    }
+  }
+
+  handleChangeData = (index: number) => (newData: object) => {
+    const { onChangeData, unwrapped, userInterfaceData, valueKey } = this.props
+    const data = get(valueKey, userInterfaceData) || []
+
+    console.log("ListInterfaceComponent.handleChangeData", {
+      data,
+      newData,
+    })
+
+    return (
+      onChangeData &&
+      onChangeData(
+        set(
+          `${valueKey}.${index}`,
+          unwrapped ? Object.values(newData)[0] : newData,
+          userInterfaceData
+        )
+      )
+    )
+  }
+
+  listId = uuid()
+
   render() {
     const {
       addItemLabel,
@@ -129,49 +218,59 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                     })}>
                     {finalComponents.length ? (
                       <>
-                        {finalComponents.map((iteratedComponent, index) => (
-                          <ComponentRenderer
-                            key={index}
-                            components={[iteratedComponent]}
-                            componentLimit={interleave === "none" ? 1 : 0}
-                            data={
-                              data[index]
-                                ? unwrapped
-                                  ? {
-                                      // @ts-ignore
-                                      [iteratedComponent.valueKey]: data[index],
+                        <Droppable
+                          data={finalComponents}
+                          allowDrop
+                          droppableId={`LIST_${this.listId}`}
+                          onDrop={this.handleItemRearrange}
+                          orientation={orientation}
+                          type={`LIST_${this.listId}_ITEM`}>
+                          {() =>
+                            finalComponents.map((iteratedComponent, index) => (
+                              <Draggable
+                                canCopy={false}
+                                canEdit={false}
+                                canPaste={false}
+                                data={data[index]}
+                                draggableId={`LIST_${this.listId}_ITEM_${index}`}
+                                editable={true}
+                                onDelete={this.handleDeleteClick}
+                                index={index}
+                                title=""
+                                type={`LIST_${this.listId}_ITEM`}>
+                                {() => (
+                                  <ComponentRenderer
+                                    key={index}
+                                    components={[iteratedComponent]}
+                                    componentLimit={interleave === "none" ? 1 : 0}
+                                    data={
+                                      data[index]
+                                        ? unwrapped
+                                          ? {
+                                              // @ts-ignore
+                                              [iteratedComponent.valueKey]: data[index],
+                                            }
+                                          : data[index]
+                                        : {}
                                     }
-                                  : data[index]
-                                : {}
-                            }
-                            onChangeData={(newData) =>
-                              (console.log("ListInterfaceComponent.render", "onChangeData", {
-                                data,
-                                newData,
-                              }),
-                              0) ||
-                              (onChangeData &&
-                                onChangeData(
-                                  set(
-                                    `${valueKey}.${index}`,
-                                    unwrapped ? Object.values(newData)[0] : newData,
-                                    userInterfaceData
-                                  )
-                                ))
-                            }
-                            onChangeSchema={(newSchema) => {
-                              console.warn(
-                                "ListInterfaceComponent.render",
-                                "TODO: Cannot alter schema inside ComponentRenderer in List.",
-                                { newSchema }
-                              )
-                            }}
-                          />
-                        ))}
-                        <br />
+                                    onChangeData={this.handleChangeData(index)}
+                                    onChangeSchema={(newSchema) => {
+                                      console.warn(
+                                        "ListInterfaceComponent.render",
+                                        "TODO: Cannot alter schema inside ComponentRenderer in List.",
+                                        { newSchema }
+                                      )
+                                    }}
+                                  />
+                                )}
+                              </Draggable>
+                            ))
+                          }
+                        </Droppable>
+                        {/* <br />
                         <ComponentRenderer
                           components={finalComponents}
-                          componentLimit={interleave === "none" ? 1 : 0}
+                          mode="edit"
                           data={data.map((item: any, index: number) =>
                             item
                               ? unwrapped
@@ -206,7 +305,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                               { newSchema }
                             )
                           }}
-                        />
+                        /> */}
                       </>
                     ) : (
                       <Empty description={emptyText} />

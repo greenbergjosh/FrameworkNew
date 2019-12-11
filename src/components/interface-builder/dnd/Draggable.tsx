@@ -7,6 +7,8 @@ import {
   DraggedItemProps,
   DroppableContext,
   shallowPropCheck,
+  DroppableContextType,
+  DraggableContextProps,
 } from "./util"
 
 const dragHandlers = {
@@ -28,7 +30,7 @@ function collect(connect: any, monitor: any) {
   }
 }
 
-export interface DraggableInnerProps {
+export interface DraggableInnerProps extends DraggableContextProps {
   children: (props: DraggableChildProps) => JSX.Element
   connectDragSource: ConnectDragSource
   data: unknown
@@ -39,18 +41,16 @@ export interface DraggableInnerProps {
   innerRef: React.RefObject<HTMLDivElement>
   isDragging: boolean
   makeRoomForPlaceholder: boolean
+  orientation?: DroppableContextType["orientation"]
   parentDroppableId: string | null
   title: string
   type: string | symbol
-
-  // DraggableContextProps
-  canPaste?: boolean
-  onCopy?: (draggableItem: DraggedItemProps) => void
-  onDelete?: (draggableItem: DraggedItemProps) => void
-  onEdit?: (draggableItem: DraggedItemProps) => void
-  onPaste?: (draggableItem: DraggedItemProps) => void
 }
+
 function DraggableInner({
+  canCopy,
+  canDelete,
+  canEdit,
   canPaste,
   children,
   connectDragSource,
@@ -64,16 +64,23 @@ function DraggableInner({
   onDelete,
   onEdit,
   onPaste,
+  orientation,
   title,
 }: DraggableInnerProps) {
   return connectDragSource(
     <div
       data-draggable-component={true}
       ref={innerRef}
-      className={classNames("dnd-draggable", { "placeholder-above": makeRoomForPlaceholder })}>
+      className={classNames("dnd-draggable", {
+        "placeholder-above": makeRoomForPlaceholder && orientation !== "horizontal",
+        "placeholder-beside-left": makeRoomForPlaceholder && orientation === "horizontal",
+      })}>
       {children({ data, isDragging })}
       {editable && (
         <DraggableEditButtons
+          canCopy={canCopy}
+          canDelete={canDelete}
+          canEdit={canEdit}
           canPaste={canPaste}
           onCopy={onCopy && (() => onCopy(draggableItem))}
           onDelete={onDelete && (() => onDelete(draggableItem))}
@@ -91,7 +98,7 @@ export interface DraggableChildProps {
   isDragging: boolean
 }
 
-export interface DraggableProps {
+export interface DraggableProps extends DraggableContextProps {
   children: (props: DraggableChildProps) => JSX.Element
   data: unknown
   draggableId: string
@@ -99,18 +106,15 @@ export interface DraggableProps {
   index: number
   title: string
   type: string | symbol
-
-  canPaste?: boolean
-  onCopy?: (draggedItem: DraggedItemProps) => void
-  onDelete?: (draggedItem: DraggedItemProps) => void
-  onEdit?: (draggedItem: DraggedItemProps) => void
-  onPaste?: (draggedItem: DraggedItemProps) => void
 }
 
 const DraggableComponent = DragSource(({ type }) => type, dragHandlers, collect)(DraggableInner)
 
 export const Draggable = React.memo(
   ({
+    canCopy,
+    canDelete,
+    canEdit,
     canPaste,
     children,
     data,
@@ -128,6 +132,24 @@ export const Draggable = React.memo(
     const droppableContext = React.useContext(DroppableContext)
     const draggableContext = React.useContext(DraggableContext)
 
+    const finalCanCopy =
+      typeof canCopy !== "undefined"
+        ? canCopy
+        : draggableContext
+        ? draggableContext.canCopy
+        : void 0
+    const finalCanDelete =
+      typeof canDelete !== "undefined"
+        ? canDelete
+        : draggableContext
+        ? draggableContext.canDelete
+        : void 0
+    const finalCanEdit =
+      typeof canEdit !== "undefined"
+        ? canEdit
+        : draggableContext
+        ? draggableContext.canEdit
+        : void 0
     const finalCanPaste =
       typeof canPaste !== "undefined"
         ? canPaste
@@ -161,6 +183,9 @@ export const Draggable = React.memo(
 
     return (
       <DraggableComponent
+        canCopy={finalCanCopy}
+        canDelete={finalCanDelete}
+        canEdit={finalCanEdit}
         canPaste={finalCanPaste}
         data={data}
         draggableId={draggableId}
@@ -177,6 +202,7 @@ export const Draggable = React.memo(
         onDelete={finalOnDelete}
         onEdit={finalOnEdit}
         onPaste={finalOnPaste}
+        orientation={(droppableContext && droppableContext.orientation) || "vertical"}
         parentDroppableId={droppableContext && droppableContext.droppableId}
         title={title}
         type={type}>

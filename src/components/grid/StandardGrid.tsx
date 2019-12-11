@@ -82,6 +82,12 @@ const commonGridOptions = {
     "Print",
     { text: "Group", tooltipText: "Group", prefixIcon: "e-group", id: "group" },
     {
+      text: "Fit Columns",
+      tooltipText: "Widen all columns to fit the contents of their widest cells",
+      prefixIcon: "e-expand",
+      id: "autofit",
+    },
+    {
       text: "Expand All",
       tooltipText: "Expand All Rows",
       prefixIcon: "e-expand",
@@ -126,6 +132,8 @@ const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
       grid.current.csvExport()
     } else if (id.endsWith("_pdfexport")) {
       grid.current.pdfExport()
+    } else if (id === "autofit") {
+      grid.current.autoFitColumns()
     } else if (id === "group") {
       grid.current.allowGrouping = !grid.current.allowGrouping
     } else if (id === "expand") {

@@ -25,6 +25,7 @@ export interface DroppableTargetProps {
 export interface DroppableContextType {
   droppableId: string
   onDrop?: (draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps) => void
+  orientation?: "vertical" | "horizontal"
   placeholder: DroppablePlaceholderState | null
 }
 export const DroppableContext = React.createContext<DroppableContextType | null>(null)
