@@ -9,7 +9,7 @@ interface FollowsScreenProps {
   routes: FeedRoutes
 }
 
-export const FollowersList = ({ routes, navigate }: FollowsScreenProps) => {
+export const FollowersList = React.memo(({ routes, navigate }: FollowsScreenProps) => {
   const followsContext = useFollowsContext()
 
   if (
@@ -55,4 +55,4 @@ export const FollowersList = ({ routes, navigate }: FollowsScreenProps) => {
       </View>
     </ScrollView>
   )
-}
+})
