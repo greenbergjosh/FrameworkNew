@@ -38,7 +38,7 @@ export interface Reducers {
 export interface Effects {
   executeQuery(payload: {
     resultURI: string
-    query: QueryConfig["query"]
+    query: QueryConfig
     params: JSONRecord | JSONArray
   }): Promise<any>
 
@@ -74,44 +74,52 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
   effects: (dispatch) => ({
     executeQuery({ resultURI: lookupKey, query, params }) {
-      return dispatch.remoteDataClient
-        .reportQueryGet({
+      if (query.format === "HTTPRequest") {
+        return dispatch.reports.executeHTTPRequestQuery({
+          resultURI: lookupKey,
           query,
           params,
         })
-        .then((x) =>
-          x.fold(
-            Left((error) => {
-              dispatch.remoteDataClient.defaultHttpErrorHandler(error)
-              throw error
-            }),
-            Right((ApiResponse) =>
-              ApiResponse({
-                OK(payload) {
-                  dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
-                },
-                Unauthorized() {
-                  dispatch.logger.logError("unauthed")
-                  const error = {
-                    type: "error" as "error" | "success" | "info" | "warning",
-                    message: `You do not have permission to run this report`,
-                  }
-                  dispatch.feedback.notify(error)
-                  throw new Error(error.message)
-                },
-                ServerException(err) {
-                  dispatch.logger.logError(err.reason)
-                  const error = {
-                    type: "error" as "error" | "success" | "info" | "warning",
-                    message: `An error occurred while running this report: ${err.reason}`,
-                  }
-                  dispatch.feedback.notify(error)
-                  throw new Error(error.message)
-                },
-              })
+      } else {
+        return dispatch.remoteDataClient
+          .reportQueryGet({
+            query: query.query,
+            params,
+          })
+          .then((x) =>
+            x.fold(
+              Left((error) => {
+                dispatch.remoteDataClient.defaultHttpErrorHandler(error)
+                throw error
+              }),
+              Right((ApiResponse) =>
+                ApiResponse({
+                  OK(payload) {
+                    dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
+                  },
+                  Unauthorized() {
+                    dispatch.logger.logError("unauthed")
+                    const error = {
+                      type: "error" as "error" | "success" | "info" | "warning",
+                      message: `You do not have permission to run this report`,
+                    }
+                    dispatch.feedback.notify(error)
+                    throw new Error(error.message)
+                  },
+                  ServerException(err) {
+                    dispatch.logger.logError(err.reason)
+                    const error = {
+                      type: "error" as "error" | "success" | "info" | "warning",
+                      message: `An error occurred while running this report: ${err.reason}`,
+                    }
+                    dispatch.feedback.notify(error)
+                    throw new Error(error.message)
+                  },
+                })
+              )
             )
           )
-        )
+      }
     },
     executeHTTPRequestQuery({ resultURI: lookupKey, query, params }) {
       return dispatch.remoteDataClient

@@ -1,3 +1,4 @@
+import { shallowPropCheck, UserInterfaceContext } from "@opg/interface-builder"
 import { Alert, Spin } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
@@ -6,14 +7,13 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
 import React from "react"
+import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager"
 import { Right } from "../../data/Either"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../data/JSON"
 import { QueryConfig, QueryConfigCodec } from "../../data/Report"
 import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../lib/json"
-import { shallowPropCheck, UserInterfaceContext } from "@opg/interface-builder"
-import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager"
 import { QueryForm } from "../report/QueryForm"
 
 export interface QueryChildProps<T = any> {
@@ -395,7 +395,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       this.setState((state) => ({ ...state, loadStatus: "loading" }))
       return executeQuery({
         resultURI: queryResultURI,
-        query: queryConfig.query,
+        query: queryConfig,
         params: satisfiedParams,
       })
         .then(() => {

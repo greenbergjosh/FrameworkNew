@@ -4,8 +4,19 @@ import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
-import { get, intersectionWith, isEqual, set } from "lodash/fp"
+import {
+  get,
+  intersectionWith,
+  isEqual,
+  set
+  } from "lodash/fp"
 import React from "react"
+import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager"
+import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
+import { QueryConfigCodec } from "../../../../data/Report"
+import { SelectableOption, SelectableState } from "./Selectable.interfaces"
+import { RemoteDataHandlerType, SelectableProps } from "./Selectable.types"
+import { SelectableChildProps } from "./SelectableChild.interfaces"
 import {
   BaseInterfaceComponent,
   cheapHash,
@@ -13,12 +24,6 @@ import {
   Right,
   UserInterfaceContext,
 } from "@opg/interface-builder"
-import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
-import { QueryConfigCodec } from "../../../../data/Report"
-import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager"
-import { SelectableOption, SelectableState } from "./Selectable.interfaces"
-import { RemoteDataHandlerType, SelectableProps } from "./Selectable.types"
-import { SelectableChildProps } from "./SelectableChild.interfaces"
 
 // import { selectManageForm } from "../../select/select-manage-form"
 
@@ -250,7 +255,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
                       this.setState({ loadStatus: "loading" })
                       executeQuery({
                         resultURI: queryResultURI,
-                        query: queryConfig.query,
+                        query: queryConfig,
                         params: parameterValues,
                       })
                         .then(() => {

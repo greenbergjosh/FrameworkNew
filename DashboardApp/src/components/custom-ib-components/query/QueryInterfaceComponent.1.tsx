@@ -6,20 +6,20 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
 import React from "react"
+import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager"
 import { Right } from "../../../data/Either"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { QueryConfig, QueryConfigCodec } from "../../../data/Report"
 import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../../lib/json"
 import { QueryForm } from "../../report/QueryForm"
+import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
   UserInterfaceContext,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager"
-import { queryManageForm } from "./query-manage-form"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
@@ -145,7 +145,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
     const { hidden, remoteDataFilter, userInterfaceData } = this.props
     const { parameterValues } = this.state
     if (this.context) {
-      const { executeQuery, loadById, loadByFilter, reportDataByQuery } = this.context as AdminUserInterfaceContextManager
+      const { executeQuery, loadById, loadByFilter, reportDataByQuery } = this
+        .context as AdminUserInterfaceContextManager
 
       if (this.props.queryType === "remote-config") {
         if (this.props.remoteConfigType) {
@@ -234,15 +235,17 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
                         this.setState((state) => ({ ...state, loadStatus: "loading" }))
                         executeQuery({
                           resultURI: queryResultURI,
-                          query: queryConfig.query,
+                          query: queryConfig,
                           params: satisfiedParams,
-                        }).then(() => {
-                          console.log("QueryInterfaceComponent.render", "Clear loading state")
-                          this.setState((state) => ({ ...state, loadStatus: "none" }))
-                        }).catch((e: Error) => {
-                          console.log("QueryInterfaceComponent.render", "Set error loading state")
-                          this.setState({ loadStatus: "error", loadError: e.message })
                         })
+                          .then(() => {
+                            console.log("QueryInterfaceComponent.render", "Clear loading state")
+                            this.setState((state) => ({ ...state, loadStatus: "none" }))
+                          })
+                          .catch((e: Error) => {
+                            console.log("QueryInterfaceComponent.render", "Set error loading state")
+                            this.setState({ loadStatus: "error", loadError: e.message })
+                          })
                       },
                       (resultValues) => {
                         console.log("QueryInterfaceComponent.render", "Loaded, no remote")

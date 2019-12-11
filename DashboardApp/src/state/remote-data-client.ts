@@ -425,6 +425,14 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
     },
 
     async httpRequest({ uri, method, headers, params, body }, { remoteDataClient }) {
+      // console.debug(`${method || "GET"} ${uri}
+      // Headers:
+      // ${prettyPrintJSON(headers)}
+      // Params:
+      // ${prettyPrintJSON(params)}
+      // Body:
+      // ${typeof body === "object" ? prettyPrintJSON(body) : JSON.stringify(body)}
+      // `)
       const url =
         params && (!method || method.toLowerCase() === "get")
           ? qs.parseUrl(uri).url +
@@ -455,3 +463,9 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
 
   selectors: () => ({}),
 }
+
+// function prettyPrintJSON(object: object) {
+//   return `${Object.entries(object)
+//     .map(([key, value]) => `•${key}: ${value}`)
+//     .join("\n")}`
+// }
