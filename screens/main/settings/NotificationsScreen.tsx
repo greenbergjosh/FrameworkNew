@@ -28,7 +28,7 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
         }}
         style={{ margin: Units.margin }}
       />
-      <View style={styles.ListHeader}>
+      <View style={styles.SubHeader}>
         <Text style={styles.Body}>POSTS AND COMMENTS</Text>
       </View>
       <SettingsList values={settings} style={styles.View}>

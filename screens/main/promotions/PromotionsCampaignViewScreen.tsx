@@ -13,6 +13,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
+import { SubHeader } from "../../../components/SubHeader"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -192,7 +193,7 @@ export const PromotionsCampaignViewScreen = (props: PromotionsCampaignViewScreen
 
   return (
     <>
-      <Text>PromotionsCampaignViewSceen</Text>
+      <SubHeader title="PromotionsCampaignViewSceen" />
       <TextAreaModal
         initialValue={influencerTokens[promptKey] as string}
         onCancel={() => setShowMessageModal(false)}

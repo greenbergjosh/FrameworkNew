@@ -65,7 +65,7 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
       <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
         <FlatList
           data={promotions}
-          renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
+          renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} isArchived />}
           keyExtractor={(promotion) => promotion.id}
         />
       </ScrollView>

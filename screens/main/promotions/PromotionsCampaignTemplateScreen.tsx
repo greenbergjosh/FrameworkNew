@@ -102,6 +102,6 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
 
 PromotionsCampaignTemplatesScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: () => <HeaderTitle title="Choose a Template" offset="left" />,
+    headerTitle: () => <HeaderTitle title="Choose a Template" />,
   }
 }

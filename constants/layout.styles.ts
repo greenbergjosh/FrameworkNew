@@ -2,11 +2,7 @@ import { StyleSheet } from "react-native"
 import { Colors, Units } from "./unit.constants"
 
 const mixins = StyleSheet.create({
-  // header: {
-  //   color: Colors.reverse,
-  //   backgroundColor: Colors.ggNavy,
-  //   height: 60,
-  // }
+  // className: {}
 })
 
 const LayoutStyles = StyleSheet.create({
@@ -22,20 +18,13 @@ const LayoutStyles = StyleSheet.create({
   Header: {
     paddingLeft: Units.margin,
     paddingRight: Units.margin,
-    // ...mixins.header,
-  },
-
-  HeaderLg: {
-    // ...mixins.header,
-    // height: 60,
   },
 
   HeaderSm: {
-    // ...mixins.header,
     // height: 30,
   },
 
-  ListHeader: {
+  SubHeader: {
     backgroundColor: Colors.navBarBackground,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,

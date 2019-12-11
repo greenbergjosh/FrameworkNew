@@ -1,11 +1,13 @@
-import { ActivityIndicator, Button, Icon, Modal } from "@ant-design/react-native"
+import { ActivityIndicator, Button, Modal } from "@ant-design/react-native"
 import { useActionSheet } from "@expo/react-native-action-sheet"
 import { baseAddress } from "api"
 import { CampaignTemplate, createCampaign } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes } from "constants"
+import { P } from "components/Markup"
+import { SubHeader } from "components/SubHeader"
+import { Colors, routes, Units } from "constants"
 import React from "react"
-import { Clipboard, Text, View } from "react-native"
+import { Clipboard, Text } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
@@ -81,36 +83,15 @@ export const PromotionsCampaignAdditionalImagesScreen = (
 
   return (
     <>
-      <View
-        style={{
-          height: 45,
-          backgroundColor: "#F8F8F8",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}>
-        <Button
-          style={{
-            marginLeft: 16,
-            backgroundColor: "#F8F8F8",
-            borderWidth: 0,
-            paddingLeft: 0,
-            paddingRight: 0,
-          }}
-          onPress={() => navigate(routes.Promotions.Campaign, params)}>
-          <Icon name="left" color="#888888" size="lg" />
-        </Button>
-        <View style={{ paddingLeft: -80 }}>
-          <Text style={{ color: "#000", fontSize: 19, fontWeight: "700" }}>Add Feed Photos</Text>
-        </View>
-        <Text></Text>
-      </View>
-      <View>
-        <Text style={{ color: "#707070", fontSize: 16, padding: 16, paddingBottom: 12 }}>
-          These images will appear in other people’s feeds. But if you don’t provide any, we’ll use
-          the campaign photo.
-        </Text>
-      </View>
+      <SubHeader
+        title="Add Feed Photos"
+        onLeftPress={() => navigate(routes.Promotions.Campaign, params)}
+        leftIconName="left"
+      />
+      <P style={{ margin: Units.margin }}>
+        These images will appear in other people&rsquo;s feeds. But if you don&rsquo;t provide any,
+        we&rsquo;ll use the campaign photo.
+      </P>
       <MasonryList images={images} columns={3} onPressImage={onPressImage} rerender />
     </>
   )
@@ -141,85 +122,81 @@ interface HeaderRightDoneButtonProps {
 const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {
   const { showActionSheetWithOptions } = useActionSheet()
   const [workingText, setWorkingText] = React.useState<string | null>(null)
-
   const { images, influencerTokens, promotionId, template } = navigation.state.params
-
   const options = ["Save Draft", "Publish", "Cancel"]
   const cancelButtonIndex = 2
+
+  const pressDoneHandler = () => {
+    showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex === 0) {
+          alert("Save draft\nFeature to come!")
+          // Save Draft
+        } else if (buttonIndex === 1) {
+          setWorkingText("Publishing...")
+          // Publish Campaign
+          const newCampaign = {
+            promotionId,
+            feedImage: images[0],
+            templateParts: influencerTokens,
+            messageBodyTemplateId: template.id,
+            messageBodyTemplateName: "",
+            messageBodyTemplateUrl: "",
+            approvedByAdvertiser: "0",
+            subject: "Campaign",
+          }
+          const publishResult = await createCampaign(newCampaign)
+          setWorkingText(null)
+
+          if (publishResult.r === 0) {
+            Modal.alert(
+              "Campaign Created",
+              <Text>The campaign was successfully created! Copy the sharing link?</Text>,
+              [
+                {
+                  text: "Later",
+                  style: "cancel",
+                  onPress: () => {
+                    navigation.navigate(routes.Promotions.CampaignList, { promotionId })
+                  },
+                },
+
+                {
+                  text: "Copy",
+                  onPress: () => {
+                    Clipboard.setString(`${baseAddress}/c/${publishResult.result.id}`)
+                    setTimeout(() => {
+                      Modal.alert("Link Copied!", null, [
+                        {
+                          text: "OK",
+                          onPress: () => {
+                            navigation.navigate(routes.Promotions.CampaignList, {
+                              promotionId,
+                            })
+                          },
+                        },
+                      ])
+                    }, 1000)
+                  },
+                },
+              ]
+            )
+          } else {
+            alert(`Failed to publish campaign (Code ${publishResult.r}): ${publishResult.error}`)
+          }
+        }
+      }
+    )
+  }
 
   return (
     <>
       <ActivityIndicator animating={!!workingText} toast size="large" text={workingText} />
-      <Button
-        onPress={() => {
-          showActionSheetWithOptions(
-            {
-              options,
-              cancelButtonIndex,
-            },
-            async (buttonIndex) => {
-              if (buttonIndex === 0) {
-                alert("Save draft\nFeature to come!")
-                // Save Draft
-              } else if (buttonIndex === 1) {
-                setWorkingText("Publishing...")
-                // Publish Campaign
-                const newCampaign = {
-                  promotionId,
-                  feedImage: images[0],
-                  templateParts: influencerTokens,
-                  messageBodyTemplateId: template.id,
-                  messageBodyTemplateName: "",
-                  messageBodyTemplateUrl: "",
-                  approvedByAdvertiser: "0",
-                  subject: "Campaign",
-                }
-                const publishResult = await createCampaign(newCampaign)
-                setWorkingText(null)
-
-                if (publishResult.r === 0) {
-                  Modal.alert(
-                    "Campaign Created",
-                    <Text>The campaign was successfully created! Copy the sharing link?</Text>,
-                    [
-                      {
-                        text: "Later",
-                        style: "cancel",
-                        onPress: () => {
-                          navigation.navigate(routes.Promotions.CampaignList, { promotionId })
-                        },
-                      },
-
-                      {
-                        text: "Copy",
-                        onPress: () => {
-                          Clipboard.setString(`${baseAddress}/c/${publishResult.result.id}`)
-                          setTimeout(() => {
-                            Modal.alert("Link Copied!", null, [
-                              {
-                                text: "OK",
-                                onPress: () => {
-                                  navigation.navigate(routes.Promotions.CampaignList, {
-                                    promotionId,
-                                  })
-                                },
-                              },
-                            ])
-                          }, 1000)
-                        },
-                      },
-                    ]
-                  )
-                } else {
-                  alert(
-                    `Failed to publish campaign (Code ${publishResult.r}): ${publishResult.error}`
-                  )
-                }
-              }
-            }
-          )
-        }}
-        style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
+      <Button onPress={pressDoneHandler} style={{ backgroundColor: Colors.ggNavy, borderWidth: 0 }}>
         <Text style={{ fontWeight: "bold", color: "#fff" }}>Done</Text>
       </Button>
     </>

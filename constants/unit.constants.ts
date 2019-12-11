@@ -38,6 +38,7 @@ export enum Colors {
   navBarBackground = "#F8F8F8",
   navBarText = "#999999",
   warning = "#FE3C32",
+  success = "#4CD964",
   reverse = "#FFFFFF",
   archived = "#3D71A3",
 }

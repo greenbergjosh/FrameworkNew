@@ -14,12 +14,14 @@ export interface PromotionExpanderProps {
   alwaysExpanded?: boolean
   navigate: PromotionsScreenProps["navigation"]["navigate"]
   promotion: Promotion
+  isArchived?: boolean
 }
 
 export const PromotionExpander = ({
   navigate,
   promotion,
   alwaysExpanded = false,
+  isArchived = false,
 }: PromotionExpanderProps) => {
   const promotionsContext = usePromotionsContext()
   const [isCollapsed, setCollapsed] = React.useState(true)
@@ -60,6 +62,7 @@ export const PromotionExpander = ({
           promotional={promotion.payload}
           expires={promotion.expires}
           onCreateCampaign={() => showCreateCampaignActionSheet(promotion.id)}
+          isArchived={isArchived}
         />
         {!alwaysExpanded && <ExpanderIcon collapsed={isCollapsed} />}
       </Flex>

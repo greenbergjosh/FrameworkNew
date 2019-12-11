@@ -6,16 +6,24 @@ import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
 import { Promotional } from "api/promotions-services"
+import { UndoIcon } from "../../../../assets/icons"
 
 interface PromotionCardProps {
   onShowCampaigns: () => void
   onCreateCampaign: () => void
   promotional: Promotional
   expires: ISO8601String | null
+  isArchived: boolean
 }
 
-export function PromotionCard({ onShowCampaigns, onCreateCampaign, expires, promotional }: PromotionCardProps) {
-  const swipeMenu = [
+export function PromotionCard({
+  onShowCampaigns,
+  onCreateCampaign,
+  expires,
+  promotional,
+  isArchived,
+}: PromotionCardProps) {
+  const swipeMenuArchive = [
     {
       text: (
         <>
@@ -27,6 +35,19 @@ export function PromotionCard({ onShowCampaigns, onCreateCampaign, expires, prom
       style: { backgroundColor: Colors.archived, color: "white" },
     },
   ]
+  const swipeMenuUnarchive = [
+    {
+      text: (
+        <>
+          <UndoIcon style={{ color: Colors.reverse }} />
+          <Text style={[styles.Body, { color: Colors.reverse }]}>Unarchive</Text>
+        </>
+      ),
+      onPress: () => alert("Unarchive Promotion\nFeature to come!"),
+      style: { backgroundColor: Colors.success, color: "white" },
+    },
+  ]
+  const swipeMenu = isArchived ? swipeMenuUnarchive : swipeMenuArchive
 
   return (
     <SwipeAction style={{ backgroundColor: "transparent", width: "100%" }} right={swipeMenu}>
