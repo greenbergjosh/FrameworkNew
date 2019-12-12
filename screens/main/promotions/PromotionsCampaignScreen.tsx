@@ -1,19 +1,19 @@
 import { templateHost } from "api"
 import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
+import NavButton from "components/NavButton"
+import { SubHeader } from "components/SubHeader"
 import { TextAreaModal } from "components/TextAreaModal"
 import { routes } from "constants"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
+import { Alert, Text } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { SubHeader } from "components/SubHeader"
-import NavButton from "components/NavButton"
-import { Alert } from "react-native"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -160,13 +160,30 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
     () => (
       <WebView
         ref={getgotWebView}
-        injectedJavaScript={`${initializeGetGotInterface.toString()}; initializeGetGotInterface(); 
-  
-  setTimeout(() => {
-    window.setTemplate(\`${template.template && template.template.html}\`)
-    window.setTokenValues(${campaignId ? templateParts : influencerTokens})
-    // alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)})
-  }, 10); `}
+        injectedJavaScript={`
+          ${initializeGetGotInterface.toString()}
+          initializeGetGotInterface(); 
+
+          function loadTemplateAndTokens() {
+            if (typeof window.setTemplate === "function" && typeof window.setTokenValues === "function") {
+              try {
+                window.setTemplate(\`${template.template && template.template.html}\`);
+                window.setTokenValues(${JSON.stringify(
+                  campaignId ? templateParts : influencerTokens
+                )});
+                // alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)});
+              }
+              catch(ex) {
+                alert("Sorry, this template didn't load correctly! Please try again. Err: 031 - " + ex.message);
+              }
+            }
+            else {
+              setTimeout(loadTemplateAndTokens, 100); 
+            }
+          }
+      
+          setTimeout(loadTemplateAndTokens, 10); 
+        `}
         source={{
           uri:
             template.id &&
