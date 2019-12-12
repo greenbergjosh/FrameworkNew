@@ -26,6 +26,9 @@ export default ({ onPress, mode }: DevTempNavProps) => {
           Show Home Feed
         </Button>
       )}
+      <Button type="ghost" size="small" onPress={() => onPress("startcampaign")}>
+        Show Start Campaign Dialog
+      </Button>
     </Flex>
   )
 }

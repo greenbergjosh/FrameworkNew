@@ -258,7 +258,7 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
   const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
   const cancelHandler = () => {
-    Alert.alert("Are you sure you want to lose your changes and cancel?", null, [
+    Alert.alert("Cancel Changes?", "Are you sure you want to cancel and lose your changes?", [
       {
         text: "Cancel",
         style: "cancel",

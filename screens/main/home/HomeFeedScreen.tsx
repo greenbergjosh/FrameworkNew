@@ -1,6 +1,6 @@
 import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
-import { ScrollView, View } from "react-native"
+import { Alert, ScrollView, View } from "react-native"
 import { routes, Units } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
@@ -35,8 +35,29 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   //   }
   // }, [feed.lastLoadHomeFeed])
 
+  const cancelHandler = () => {
+    Alert.alert(
+      "Start a Campaign?",
+      "You recently added a new item to promote. Do you want to start a campaign?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () =>
+            navigate(routes.Promotions.CampaignTemplates, {
+              promotionId: "606891fe-a0c1-436c-8cb8-ddcdcb3f4268",
+            }),
+        },
+      ]
+    )
+  }
+
   const handlePress = (newMode) => {
     newMode === "onboarding" ? setMode("onboarding") : setMode("homefeed")
+    newMode === "startcampaign" ? cancelHandler() : null
   }
 
   return (
