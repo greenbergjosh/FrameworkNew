@@ -84,7 +84,7 @@ const commonGridOptions = {
     {
       text: "Fit Columns",
       tooltipText: "Widen all columns to fit the contents of their widest cells",
-      prefixIcon: "e-expand",
+      prefixIcon: "e-replace",
       id: "autofit",
     },
     {

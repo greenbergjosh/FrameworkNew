@@ -1792,6 +1792,10 @@
 }
 
 /*!componenticons*/
+.e-toolbar-items .e-replace::before {
+  content: "\e80d";
+}
+
 .e-toolbar-items .e-collapse::before {
   content: "\e70c";
 }
