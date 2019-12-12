@@ -95,7 +95,6 @@ export function Tabs({ stateRouteName, swipeEnabled = true, children }: TabsProp
   const customTabBar = (props) => (
     <TabBar
       {...props}
-      swipeEnabled
       style={{ backgroundColor: Colors.navBarBackground }}
       indicatorStyle={{ backgroundColor: Colors.link }}
       renderLabel={TabLabel}
@@ -106,6 +105,7 @@ export function Tabs({ stateRouteName, swipeEnabled = true, children }: TabsProp
   return (
     <TabView
       navigationState={currentTab}
+      swipeEnabled={swipeEnabled}
       renderScene={React.useMemo(() => getActiveTabLayout(children), [children])}
       renderTabBar={React.useMemo(() => customTabBar, [])}
       onIndexChange={(index) => setCurrentTab({ ...currentTab, index })}
