@@ -1,13 +1,14 @@
 import React from "react"
-import { FlatList, ScrollView, Text } from "react-native"
+import { FlatList, ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { ActivityIndicator, Tabs } from "@ant-design/react-native"
+import { ActivityIndicator } from "@ant-design/react-native"
 import { HeaderTitle } from "components/HeaderTitle"
 import { PromotionExpander } from "screens/main/promotions/components/PromotionExpander"
 import { usePromotionsContext } from "providers/promotions-context-provider"
-import { Colors, routes, styles, Units, FontWeights } from "constants"
+import { Colors, FontWeights, routes, styles, Units } from "constants"
 import { Badge } from "components/Badge"
 import { H4 } from "components/Markup"
+import { Tab, Tabs } from "components/Tabs"
 
 export interface PromotionsScreenProps extends NavigationTabScreenProps {}
 
@@ -35,40 +36,28 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
   const promotions = promotionsContext.results
   const { navigate } = props.navigation
 
-  let initialPage = 0
-  switch (props.navigation.state.routeName) {
-    case routes.Promotions.Promotions:
-      initialPage = 0
-      break
-    case routes.Promotions.PromotionsArchived:
-      initialPage = 1
-      break
-  }
-
   return (
-    <Tabs
-      initialPage={initialPage}
-      swipeable={false}
-      tabs={[
-        {
-          title: <TabTitle title="Current" count={promotions.length} />,
-        },
-        { title: <TabTitle title="Archived" count={promotions.length} /> },
-      ]}>
-      <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
-        <FlatList
-          data={promotions}
-          renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
-          keyExtractor={(promotion) => promotion.id}
-        />
-      </ScrollView>
-      <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
-        <FlatList
-          data={promotions}
-          renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} isArchived />}
-          keyExtractor={(promotion) => promotion.id}
-        />
-      </ScrollView>
+    <Tabs stateRouteName={props.navigation.state.routeName} swipeEnabled={false}>
+      <Tab title="Current" route={routes.Promotions.Promotions} badge={promotions.length}>
+        <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+          <FlatList
+            data={promotions}
+            renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
+            keyExtractor={(promotion) => promotion.id}
+          />
+        </ScrollView>
+      </Tab>
+      <Tab title="Archived" route={routes.Promotions.PromotionsArchived} badge={promotions.length}>
+        <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+          <FlatList
+            data={promotions}
+            renderItem={({ item }) => (
+              <PromotionExpander navigate={navigate} promotion={item} isArchived />
+            )}
+            keyExtractor={(promotion) => promotion.id}
+          />
+        </ScrollView>
+      </Tab>
     </Tabs>
   )
 }
