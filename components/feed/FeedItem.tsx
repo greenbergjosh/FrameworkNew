@@ -14,7 +14,10 @@ interface FeedItemProps {
 export function FeedItem({ item, navigate, routes, isCurrentUser = false }: FeedItemProps) {
   return (
     <>
-      <TouchableOpacity onPress={() => navigate(routes.Campaign)}>
+      <TouchableOpacity
+        onPress={() =>
+          navigate(routes.Campaign, { promotionId: "bcd991fb-916b-4630-878a-3a313b9db177" })
+        }>
         <Image key={item.id} source={{ uri: item.uri }} style={{ flex: 1, height: item.height }} />
       </TouchableOpacity>
       {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons />}

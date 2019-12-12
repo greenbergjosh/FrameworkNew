@@ -1,25 +1,22 @@
-import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
-import { LegalAgreement } from "components/LegalAgreement"
-import { routes, styles } from "constants"
-import { useAuthContext } from "providers/auth-context-provider"
+import { Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
-import { Alert, Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
+import { Alert, Text, View } from "react-native"
+import { styles, routes } from "constants"
+import { LegalAgreement } from "components/LegalAgreement"
 import { H2, P } from "components/Markup"
 import NavButton from "components/NavButton"
 
-interface AuthenticationResetPasswordScreenProps extends NavigationSwitchScreenProps {}
+interface AuthenticationResendCodeScreenProps extends NavigationSwitchScreenProps {}
 
-export const AuthenticationResetPasswordScreen = (
-  props: AuthenticationResetPasswordScreenProps
-) => {
-  const [contact, setContact] = React.useState("")
-  const [error, setError] = React.useState()
-  const [isWaiting, setWaiting] = React.useState(false)
+export const AuthenticationResendCodeScreen = (props: AuthenticationResendCodeScreenProps) => {
+  const [email, setEmail] = React.useState("")
 
   const { navigate } = props.navigation
-  const authContext = useAuthContext()
+
+  // TODO: replace with data
+  React.useMemo(() => setEmail("sample@domain.com"), [])
 
   const pressHandler = (email) => {
     Alert.alert("Verify Email", `We’ll email your verification code to ${email}`, [
@@ -27,21 +24,21 @@ export const AuthenticationResetPasswordScreen = (
     ])
   }
 
-  return isWaiting ? (
-    <ActivityIndicator animating toast size="large" text="Loading..." />
-  ) : (
+  return (
     <View style={styles.ViewContainer}>
       <WhiteSpace size="lg" />
-      <H2>Reset your GetGot password</H2>
+      <Flex justify="center">
+        <H2>Resend verification code</H2>
+      </Flex>
       <WhiteSpace size="lg" />
       <InputItem
-        type="text"
-        name="contact"
-        value={contact}
-        placeholder="Phone number, email or username"
+        type="email-address"
+        name="email"
+        value={email}
+        placeholder="Phone or email"
+        onChange={(e) => setEmail(e)}
         clearButtonMode="always"
       />
-      {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
       <WhiteSpace size="lg" />
       <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />
@@ -51,14 +48,14 @@ export const AuthenticationResetPasswordScreen = (
           size="large"
           style={styles.Button}
           onPress={() => pressHandler("sampleuser@domain.com")}>
-          Next
+          Send
         </Button>
       </Flex>
     </View>
   )
 }
 
-AuthenticationResetPasswordScreen.navigationOptions = ({ navigation }) => {
+AuthenticationResendCodeScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: <HeaderLogo />,

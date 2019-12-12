@@ -6,7 +6,7 @@ import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
 import { Promotional } from "api/promotions-services"
-import { UndoIcon } from "../../../../assets/icons"
+import { UndoIcon } from "assets/icons"
 
 interface PromotionCardProps {
   onShowCampaigns: () => void

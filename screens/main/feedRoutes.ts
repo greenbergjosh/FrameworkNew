@@ -5,7 +5,7 @@ const influencerFeedRoutes: FeedRoutes = {
   FeedDetails: routes.Explore.UserFeedDetails,
   Followers: routes.Explore.UserFollowsFollowers,
   Influencers: routes.Explore.UserFollowsInfluencers,
-  Campaign: routes.Explore.Campaign,
+  Campaign: routes.Promotions.Campaign,
 }
 
 const profileFeedRoutes: FeedRoutes = {
@@ -13,7 +13,7 @@ const profileFeedRoutes: FeedRoutes = {
   FeedDetails: routes.Profile.PostDetails,
   Followers: routes.Follows.Followers,
   Influencers: routes.Follows.Influencers,
-  Campaign: routes.Profile.PostDetails,
+  Campaign: routes.Promotions.Campaign,
 }
 
 export {

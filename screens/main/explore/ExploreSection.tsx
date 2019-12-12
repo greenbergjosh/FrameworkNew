@@ -2,7 +2,6 @@ import TabBarSectionNavigator from "components/NavigationOptions"
 import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { createStackNavigator } from "react-navigation-stack"
-import { ExploreCampaignScreen } from "./ExploreCampaign"
 import { ExploreFeedDetailsScreen } from "./ExploreFeedDetailsScreen"
 import { ExploreFeedScreen } from "./ExploreFeedScreen"
 import { ExploreUserFeedDetailsScreen } from "./ExploreUserFeedDetailsScreen"
@@ -19,7 +18,6 @@ const ExploreNavigator = createStackNavigator(
     [routes.Explore.UserFollowsMutual]: { screen: ExploreUserFollowsScreen },
     [routes.Explore.UserFollowsFollowers]: { screen: ExploreUserFollowsScreen },
     [routes.Explore.UserFollowsInfluencers]: { screen: ExploreUserFollowsScreen },
-    [routes.Explore.Campaign]: { screen: ExploreCampaignScreen },
   },
   {
     initialRouteName: routes.Explore.Feed,

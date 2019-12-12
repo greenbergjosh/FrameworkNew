@@ -11,6 +11,8 @@ enum Authentication {
   Banned = "Authentication.Banned",
   Login = "Authentication.Login",
   ResetPassword = "Authentication.ResetPassword",
+  NewPassword = "Authentication.NewPassword",
+  ResendCode = "Authentication.ResendCode",
 }
 
 enum Legal {
@@ -51,7 +53,6 @@ enum OnBoarding {
 
 enum Explore {
   default = "Explore.Feed",
-  Campaign = "Explore.Campaign",
   Feed = "Explore.Feed",
   FeedDetails = "Explore.FeedDetails",
   UserFeed = "Explore.UserFeed",
