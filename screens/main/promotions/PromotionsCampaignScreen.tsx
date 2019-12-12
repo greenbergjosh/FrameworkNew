@@ -268,14 +268,22 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
   }
 
   return {
-    headerLeft: (
-      <NavButton
-        disabled={!requiredTokens.every((token) => token in influencerTokens)}
-        position="left"
-        onPress={cancelHandler}>
-        Cancel
-      </NavButton>
-    ),
+    headerLeft: () =>
+      draft ? (
+        <NavButton
+          disabled={!requiredTokens.every((token) => token in influencerTokens)}
+          position="left"
+          onPress={cancelHandler}>
+          Cancel
+        </NavButton>
+      ) : (
+        <NavButton
+          disabled={!requiredTokens.every((token) => token in influencerTokens)}
+          iconName="left"
+          position="left"
+          onPress={() => navigate(routes.Promotions.Promotions)}
+        />
+      ),
     headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
     headerRight: () =>
       draft ? (

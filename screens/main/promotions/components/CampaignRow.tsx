@@ -18,7 +18,7 @@ export interface CampaignRowProps {
 export const CampaignRow = ({ navigate, campaign }: CampaignRowProps) => {
   const navigateToCampaign = React.useCallback(
     () =>
-      navigate(routes.Promotions.CampaignView, {
+      navigate(routes.Promotions.Campaign, {
         promotionId: campaign.promotionId,
         campaignId: campaign.id,
         editable: isDraft,
