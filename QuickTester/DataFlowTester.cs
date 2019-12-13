@@ -26,7 +26,7 @@ namespace QuickTester
             //    "QuickTester.DataFlowTester+Msg",
             //    Guid.NewGuid(), 2, 3, false);
 
-            var fw = new FrameworkWrapper(null);
+            FrameworkWrapper fw = null; //new FrameworkWrapper(null);
             
 
             dynamic x = DynamicBlockCreator(
@@ -111,6 +111,9 @@ namespace QuickTester
         {
             try
             {
+                Type genericTypeTest = Type.GetType(blockType);
+                int count = genericTypeTest.GetGenericArguments().Length;
+
                 Type genericType = Type.GetType(blockType).MakeGenericType(new Type[]{ Type.GetType(srcType), Type.GetType(destType) });
                 Type genericFuncType = typeof(Func<,>).MakeGenericType(
                     new Type[]{ Type.GetType(srcType), typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
