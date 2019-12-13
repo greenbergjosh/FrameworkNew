@@ -16,16 +16,16 @@ export interface CampaignRowProps {
 }
 
 export const CampaignRow = ({ navigate, campaign }: CampaignRowProps) => {
+  const isDraft = React.useMemo(() => !campaign.send_date, [campaign.send_date])
   const navigateToCampaign = React.useCallback(
     () =>
       navigate(routes.Promotions.Campaign, {
         promotionId: campaign.promotionId,
         campaignId: campaign.id,
-        editable: isDraft,
+        isDraft,
       }),
     [campaign.promotionId]
   )
-  const isDraft = React.useMemo(() => !campaign.send_date, [campaign.send_date])
 
   return (
     <TouchableOpacity

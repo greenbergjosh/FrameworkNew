@@ -52,7 +52,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
             text: "Select Template",
             onPress: () => {
               navigate(routes.Promotions.Campaign, {
-                draft: true,
+                isDraft: true,
                 promotionId,
                 template: pressedTemplate,
               })
@@ -66,7 +66,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   const onPressImage = React.useCallback(
     ({ id }) => {
       const pressedTemplate = campaignTemplatesById[id]
-      navigate(routes.Promotions.Campaign, { draft: true, promotionId, template: pressedTemplate })
+      navigate(routes.Promotions.Campaign, { isDraft: true, promotionId, template: pressedTemplate })
     },
     [campaignTemplatesById, navigate]
   )

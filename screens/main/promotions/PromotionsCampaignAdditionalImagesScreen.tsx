@@ -18,7 +18,7 @@ import {
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
-  draft: boolean
+  isDraft: boolean
   images?: string[]
   influencerTokens: InfluencerTokens
   promotionId: GUID
@@ -99,7 +99,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
 
 PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
-  const { draft, influencerTokens } = navigation.state
+  const { isDraft, influencerTokens } = navigation.state
     .params as PromotionsCampaignAdditionalImagesScreenNavigationParams
   const cancelHandler = () => {
     Alert.alert("Are you sure you want to lose your changes and cancel?", null, [
@@ -112,12 +112,12 @@ PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) =>
   }
   return {
     headerLeft: () =>
-      draft && (
+      isDraft && (
         <NavButton onPress={cancelHandler} position="left">
           Cancel
         </NavButton>
       ),
-    headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
+    headerTitle: <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,
     headerRight: <HeaderRightDoneButton navigation={navigation} />,
   }
 }

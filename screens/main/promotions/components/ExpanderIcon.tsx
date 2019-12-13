@@ -11,7 +11,7 @@ export function ExpanderIcon(props: { collapsed: boolean }) {
         size={AntIconSizes.xxs}
         style={{
           position: "absolute",
-          bottom: props.collapsed ? -11 : -8,
+          bottom: -8,
           borderRadius: 11,
           height: 22,
           width: 22,

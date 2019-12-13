@@ -14,6 +14,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
+import { WhiteSpace } from "@ant-design/react-native"
 
 export interface InfluencerTokens {
   [key: string]: unknown
@@ -25,7 +26,7 @@ interface ActionMessage {
 }
 
 interface PromotionsCampaignNavigationParams {
-  draft: boolean
+  isDraft: boolean
   template: CampaignTemplate
 
   influencerTokens: InfluencerTokens
@@ -46,7 +47,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
 
   const {
     campaignId,
-    draft,
+    isDraft,
     influencerTokens = {},
     promotionId,
     template: paramsTemplate,
@@ -189,7 +190,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
             template.id &&
             `${templateHost}?&templateId=${template.id}&randomSeed=${Math.round(
               Math.random() * 4000
-            )}&editable=${!campaignId}&debugMode=false`,
+            )}&editable=${isDraft}&debugMode=false`,
         }}
         onMessage={(event) => {
           const message: ActionMessage = JSON.parse(event.nativeEvent.data)
@@ -211,6 +212,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
   return (
     <>
       <SubHeader title="Customize Your Campaign" />
+      <WhiteSpace size="xl"/>
       <TextAreaModal
         initialValue={influencerTokens[promptKey] as string}
         onCancel={() => setShowMessageModal(false)}
@@ -272,21 +274,31 @@ function initializeGetGotInterface() {
 
 PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
-  const { draft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
+  const { isDraft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
   const cancelHandler = () => {
     Alert.alert("Cancel Changes?", "Are you sure you want to cancel and lose your changes?", [
       {
-        text: "Cancel",
+        text: "No",
         style: "cancel",
       },
-      { text: "OK", onPress: () => navigate(routes.Promotions.Promotions) },
+      {
+        text: "Yes",
+        onPress: () => navigate(routes.Promotions.Promotions),
+      },
     ])
+  }
+  const copyHandler = () => {
+    Alert.alert(
+      "Link copied to clipboard!",
+      "This campaign has been saved. You can paste this link in any of your social media applications.",
+      [{ text: "OK" }]
+    )
   }
 
   return {
     headerLeft: () =>
-      draft ? (
+      isDraft ? (
         <NavButton
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
           position="left"
@@ -301,16 +313,16 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
           onPress={() => navigate(routes.Promotions.Promotions)}
         />
       ),
-    headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
+    headerTitle: <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,
     headerRight: () =>
-      draft ? (
+      isDraft ? (
         <NavButton
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
           type="primary"
           position="right"
           onPress={() => {
             navigation.navigate(routes.Promotions.CampaignAdditionalImages, {
-              draft,
+              isDraft,
               influencerTokens,
               promotionId,
               template,
@@ -318,6 +330,13 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
           }}>
           Next
         </NavButton>
-      ) : null,
+      ) : (
+        <NavButton
+          disabled={!requiredTokens.every((token) => token in influencerTokens)}
+          position="right"
+          onPress={copyHandler}>
+          Copy Link
+        </NavButton>
+      ),
   }
 }
