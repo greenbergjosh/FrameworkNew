@@ -153,7 +153,8 @@ namespace EdwServiceLib
                         var rsConfig = (JObject)value;
                         var type = rsConfig[Type].ToString();
                         var configId = Guid.Parse(rsConfig[ConfigId].ToString());
-                        var (_, jToken) = await GetOrCreateRs(context, session, oldStack, newStack, key, type, configId, rsConfig[Data]);
+                        var rsId = rsConfig.ContainsKey("id") ? rsConfig["id"].ToString() : null;
+                        var (_, jToken) = await GetOrCreateRs(context, session, oldStack, newStack, key, type, configId, rsId, rsConfig[Data]);
                         rsResults[key] = jToken;
                     }
                 }
@@ -324,7 +325,12 @@ namespace EdwServiceLib
                 : (JObject)JsonWrapper.TryParse(body);
 
             var session = GetOrCreateSession(context, json, true);
-            var response = session != null ? new { edwid = session.Id.ToString() } : null;
+            var rsListKey = $"{session.Id}:{Rs}";
+            var rsList = session.GetOrCreate(rsListKey, () => new List<(string, Guid)>());
+            var rsIds = new JObject();
+            foreach (var kv in rsList)
+                rsIds[kv.Item1] = kv.Item2.ToString();
+            var response = session != null ? new { edwid = session.Id.ToString(), rsIds } : null;
             return JsonWrapper.Serialize(response);
         }
 
@@ -426,7 +432,7 @@ namespace EdwServiceLib
 
         private async Task<(string Json, JToken Data)> GetOrCreateRs(HttpContext context,
             Session session, Stack oldStack, Stack newStack,
-            string name, string type, Guid configId, JToken data)
+            string name, string type, Guid configId, string rsId, JToken data)
         {
             var rsListKey = $"{session.Id}:{Rs}";
             var rsKey = $"{session.Id}:{Rs}:{name}";
@@ -460,7 +466,7 @@ namespace EdwServiceLib
             var edwType = Enum.Parse<EdwBulkEvent.EdwType>(type);
             var be = new EdwBulkEvent();
             var pl = PL.FromJsonString(JsonWrapper.Serialize(data));
-            var rsid = Guid.NewGuid();
+            var rsid = string.IsNullOrEmpty(rsId) ? Guid.NewGuid() : Guid.Parse(rsId);
             be.AddRS(edwType, rsid, DateTime.UtcNow, pl, configId);
 
             await _fw.EdwWriter.Write(be);

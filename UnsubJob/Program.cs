@@ -42,9 +42,16 @@ namespace UnsubJob
                     
             try
             {
-                await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
-                await nw.CleanUnusedFiles();
-                await Fw.Log(nameof(Main), "Completed CleanUnusedFiles");
+                if (args.Any(a => string.Equals(a, "skipClean", StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    await Fw.Log(nameof(Main), "Skipping CleanUnusedFiles");
+                }
+                else
+                {
+                    await Fw.Log(nameof(Main), "Starting CleanUnusedFiles");
+                    await nw.CleanUnusedFiles();
+                    await Fw.Log(nameof(Main), "Completed CleanUnusedFiles");
+                }
             }
             catch (Exception exClean)
             {
