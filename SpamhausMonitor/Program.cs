@@ -10,6 +10,9 @@ using Utility.EDW.Reporting;
 using Utility.EDW.Queueing;
 using Newtonsoft.Json;
 using System.Net.Mail;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace SpamhausMonitor
 {
@@ -17,33 +20,52 @@ namespace SpamhausMonitor
     {
 
         public static FrameworkWrapper Fw;
-        public const string ConnectionName = "SpamhausMonitor";
+        public static readonly string ConnectionName = "SpamhausMonitor";
+        public static Resolver PublicResolver;
         static async System.Threading.Tasks.Task Main(string[] args)
         {
             Fw = new FrameworkWrapper();
             await Fw.Log(nameof(Main), "Starting");
             //IGenericEntity Sp await Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "PostmasterAccount" }), "");
             string NameServer = Fw.StartupConfiguration.GetS("Config/Nameserver");
-            string BlacklistNameServer = Fw.StartupConfiguration.GetS("Config/BlacklistNameserver");
+            List<string> IgnoreResponseList = new List<string>();
+            Fw.StartupConfiguration.GetL("Config/IgnoreResponseList").ForEach(x => IgnoreResponseList.Add(x.GetS("")));
+            //string BlacklistServer = Fw.StartupConfiguration.GetS("Config/BlacklistNameserver");
+
+            IGenericEntity BlacklistDomainServerGe = Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "DnsblDomainBlacklistServer" }), "").GetAwaiter().GetResult();
+            IGenericEntity BlacklistIpServerGe = Data.CallFn("Config", "SelectConfigBody", Jw.Json(new { ConfigType = "DnsblIpBlacklistServer" }), "").GetAwaiter().GetResult();
+
             bool NotifyWhenListed = Fw.StartupConfiguration.GetB("Config/NotifyWhenListed");
+#if DEBUG
+            NotifyWhenListed = false;
+#endif
             int HoursBetweenNotifications = Convert.ToInt32(Fw.StartupConfiguration.GetS("Config/HoursBetweenNotifications") ?? "24");
 
-            Resolver PublicResolver = new Resolver(NameServer);
+            PublicResolver = new Resolver(NameServer);
 
-            Resolver BlacklistResolver = 
-                new Resolver(BlacklistNameServer) { Recursion = false, UseCache = false, TimeOut = 1000, Retries = 3, TransportType = TransportType.Udp };
-
+            BlockingCollection<string> domainResponses = new BlockingCollection<string>();
+            BlockingCollection<string> ipResponses = new BlockingCollection<string>();
+            BlockingCollection<string> domainNotifications = new BlockingCollection<string>();
+            BlockingCollection<string> postingQueuePayload = new BlockingCollection<string>();
             try { 
                 IGenericEntity DomainList = await Data.CallFn(ConnectionName, "GetActiveDomains", Jw.Json( new { fetch_type = "domain" }));
                 IGenericEntity StatusJob = await Data.CallFn(ConnectionName, "AddOrUpdateStatusJob", Jw.Empty);
 
                 var StatusJobId = StatusJob.GetS("status_job_id");
 
-                foreach (var DomainGe in DomainList.GetL(""))
+                Parallel.ForEach(DomainList.GetL(""), (DomainGe) =>
                 {
                     var ProfileId = DomainGe.GetS("notification_profile_id");
                     var PartnerId = DomainGe.GetS("partner_id");
                     var Domain = DomainGe.GetS("domain");
+#if DEBUG
+                    if (
+                    Domain != "dbltest.com" && Domain != "affboutique.net" &&
+                    Domain != "e.onlinefinancialassistance.com"
+                    ) {
+                        //return;
+                    }
+#endif
                     var Listed = new Dictionary<string, string>();
                     var LastNotified = DomainGe.GetS("last_notified");
                     bool NotificationTimeoutExpired = true;
@@ -54,93 +76,24 @@ namespace SpamhausMonitor
                         NotificationTimeoutExpired = TimeSinceLastNotification.TotalHours >= HoursBetweenNotifications;
                     }
 
-                    foreach(var phone in DomainGe.GetL("phone_numbers"))
+                    bool listedDomain = CheckDomainListing(domainResponses, IgnoreResponseList, DomainGe, BlacklistDomainServerGe, PartnerId, StatusJobId);
+                    bool listedIp = CheckDomainIpListing(ipResponses, IgnoreResponseList, DomainGe, BlacklistIpServerGe, PartnerId, StatusJobId);
+
+                    if ( (listedIp || listedDomain) && NotifyWhenListed && NotificationTimeoutExpired)
                     {
-                        var foo = phone;
+                        string ContactPhones = DomainGe.GetS("phone_numbers");
+                        string ContactEmails = DomainGe.GetS("email_addresses");
+                        var payload = PL.O(new { domain = Domain });
+                        if (!ContactPhones.IsNullOrWhitespace()) payload.Add(PL.O(new { phone_numbers = ContactPhones }, new bool[] { false }));
+                        if (!ContactEmails.IsNullOrWhitespace()) payload.Add(PL.O(new { email_addresses = ContactEmails }, new bool[] { false }));
+                        domainNotifications.Add(Jw.Json(new { domain = Domain, notification_profile = ProfileId }));
+                        postingQueuePayload.Add(payload.ToString());
                     }
-                    var Emailsge = DomainGe.GetL("email_addresses");
-                    await Fw.Trace(nameof(Main), $"Processing domain {Domain}, for Profile {ProfileId}, and Partner {PartnerId}");
-
-                    // query domain blacklist
-                    Response DblResponse = BlacklistResolver.Query(Domain + ".dbl.dnsbl", QType.A);
-                    if (DblResponse.RecordsA.Length > 0)
-                    {
-                        DblResponse.RecordsA.ForEach(
-                            async record =>
-                            {
-                                var recordVal = record.ToString();
-                                Listed.Add(Domain, recordVal);
-                                await Fw.Trace(nameof(Main), $"Domain {Domain} found in Spamhaus with with listing type {recordVal}");
-                                await Data.CallFn(ConnectionName, "AddDomainResponse",
-                                    Jw.Json(new { partner_id = PartnerId, domain = Domain, response = recordVal, status_job_id = StatusJobId }));
-                            });
-
-                    }
-                    else
-                    {
-                        await Fw.Trace(nameof(Main), $"Domain {Domain} not found in Spamhaus");
-                        await Data.CallFn(ConnectionName, "AddDomainResponse",
-                            Jw.Json(new { partner_id = PartnerId, domain = Domain, status_job_id = StatusJobId }));
-
-                    }
-
-                    // query the ip blacklists
-
-                    Response PublicDomainResponse = PublicResolver.Query(Domain, QType.A);       // use a real DNS resolver (to get real IP)
-                    foreach (var ARecord in PublicDomainResponse.RecordsA)
-                    {
-                        var Ip = ARecord.ToString();
-                        var ReversedIp = ReverseIP(Ip);
-                        string reverseDomain = "";
-                        bool inBl = false;
-                        List<string> BlLists = new List<string>() { ".sbl.dnsbl", ".wild.dnsbl" };
-                        Response ReverseLookupResponse = PublicResolver.Query(ReversedIp + ".in-addr.arpa", QType.PTR);
-                        if (ReverseLookupResponse.RecordsPTR.Length > 0)
-                        {
-                            reverseDomain = ReverseLookupResponse.RecordsPTR[0].ToString();
-                        }
-
-                        foreach (var bl in BlLists)
-                        {
-                            Response SblResponse = BlacklistResolver.Query(ReversedIp + bl, QType.A);
-                            DblResponse.RecordsA.ForEach(
-                                async record =>
-                                {
-                                    inBl = true;
-                                    var recordVal = record.ToString();
-                                    Listed.Add(ReversedIp + bl, recordVal);
-                                    await Fw.Trace(nameof(Main), $"IP {Ip} for domain {Domain} found in Spamhaus with with listing type {recordVal}");
-                                    await Data.CallFn(ConnectionName, "AddDomainIpStatusResponse",
-                                        Jw.Json(new { domain = Domain, status = 1, response = recordVal, status_job_id = StatusJobId, reverse_dns_domain = reverseDomain }));
-                                });
-                        }
-
-                        if (!inBl)
-                        {
-                            await Fw.Trace(nameof(Main), $"IP {Ip} for domain {Domain} not found in Spamhaus");
-                            await Data.CallFn(ConnectionName, "AddDomainIpStatusResponse",
-                                Jw.Json(new { domain = Domain, ip = Ip, status_job_id = StatusJobId, reverse_dns_domain = reverseDomain })); // no bl
-                        }
-
-                    }
-                    if (Listed.Count > 0 && NotifyWhenListed && NotificationTimeoutExpired)
-                    {
-                        string ListedJson = JsonConvert.SerializeObject(Listed);
-                        string ContactPhones = DomainGe.GetS("phone_numbers"); 
-                        string ContactEmails = DomainGe.GetS("email_addresses"); 
-                        var payload = PL.O(new
-                        {
-                             domain = Domain
-                        });
-                        payload.Add( PL.O(new { listed = ListedJson }, new bool[] { false }));
-                        if (! ContactPhones.IsNullOrWhitespace() ) payload.Add( PL.O(new { phone_numbers = ContactPhones }, new bool[] { false }));
-                        if (! ContactEmails.IsNullOrWhitespace() )payload.Add( PL.O(new { email_addresses = ContactEmails }, new bool[] { false }));
-
-                        await Data.CallFn(ConnectionName, "AddDomainNotification", Jw.Json(new { domain = Domain, notification_profile = ProfileId }));
-
-                        await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SpamhausBlacklistEntry", DateTime.Now, payload.ToString()));
-                    }
-                }
+                });
+                domainResponses.ForEach(async x => await Data.CallFn(ConnectionName, "AddDomainResponse", x));
+                ipResponses.ForEach(async x => await Data.CallFn(ConnectionName, "AddDomainIpStatusResponse", x));
+                domainNotifications.ForEach(async x => await Data.CallFn(ConnectionName, "AddDomainNotification", x));
+                postingQueuePayload.ForEach(async x => await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SpamhausBlacklistEntry", DateTime.Now, x)));
 
                 // mark the job finished
                 IGenericEntity FinishedStatusJob = await Data.CallFn(ConnectionName, "AddOrUpdateStatusJob", Jw.Json( new { status_job_id = StatusJobId  }));
@@ -150,14 +103,92 @@ namespace SpamhausMonitor
             {
                 await Fw.Error(nameof(Main), $"Caught exception while processing Spamhaus domains: { e.UnwrapForLog() }");
             }
+
+            Console.WriteLine($"domain count: {domainResponses.Count}, ip count : {ipResponses.Count}");
         }
 
-        private static string ReverseIP(string IP)
+        static bool CheckDomainListing(BlockingCollection<string> domainResponses, List<string> IgnoreResponseList, IGenericEntity domainGe, IGenericEntity domainServers, string partnerId, string statusJobId )
         {
-            string[] classes = IP.Trim().Split('.');
-            Array.Reverse(classes);
-            return String.Join(".", classes);
+            bool listedAnywhere = false;
+            var domain = domainGe.GetS("domain");
+            var domainNotificationProfile = domainGe.GetS("notification_profile_id");
+            Parallel.ForEach(domainServers.GetL("").Where(d => d.GetB("Config/enabled")), (server) =>
+            {
+                var configId = server.GetS("Id");
+                var configName = server.GetS("Name");
+                var serverNotificationProfile = server.GetS("Config/notification_profile_id");
+                // skip over servers where a notification profile is explicitly set, but doesn't match - this overrides inclusion
+                if( ! serverNotificationProfile.IsNullOrWhitespace() && domainNotificationProfile != serverNotificationProfile) { return; }
+                //Resolver BlacklistResolver = new Resolver(server.GetS("Config/address")) { Recursion = false, UseCache = false, TimeOut = 1000, Retries = 3, TransportType = TransportType.Udp };
+                Resolver BlacklistResolver = new Resolver(server.GetS("Config/address")) { TimeOut = 100 };
+
+                Response DblResponse = BlacklistResolver.Query(domain + "." + server.GetS("Config/append_tld"), QType.A);
+                if (DblResponse.RecordsA.Length > 0)
+                {
+                    DblResponse.RecordsA.ForEach(record =>
+                    {
+                        if (IgnoreResponseList.Contains(record.ToString())) { return; }
+                        listedAnywhere = true;
+                        Console.WriteLine($"Found listing for {domain} against DNSBL server: {configName} with status {record.ToString()}");
+                        domainResponses.Add(Jw.Json(new { partner_id = partnerId, domain, response_config_id = configId, config_name = configName, response = record.ToString(), status_job_id = statusJobId }));
+                    });
+                }
+                else
+                {
+                    Console.WriteLine($"Did not find listing for {domain} against DNSBL server: {configName}");
+                    domainResponses.Add(Jw.Json(new { partner_id = partnerId, response_config_id = configId, config_name = configName, domain, status_job_id = statusJobId }));
+                }
+            }); 
+
+            return listedAnywhere;
         }
+
+        static bool CheckDomainIpListing(BlockingCollection<string> ipResponses, List<string> IgnoreResponseList, IGenericEntity domainGe, IGenericEntity ipServers, string partnerId, string statusJobId)
+        {
+            bool listedAnywhere = false;
+
+            var domain = domainGe.GetS("domain");
+            var domainNotificationProfile = domainGe.GetS("notification_profile_id");
+            Parallel.ForEach(ipServers.GetL("").Where(i => i.GetB("Config/enabled")), (server) =>
+            {
+                var configId = server.GetS("Id");
+                var configName = server.GetS("Name");
+                Response PublicDomainResponse = PublicResolver.Query(domain, QType.A);       // use a real DNS resolver (to get real IP)
+                var serverNotificationProfile = server.GetS("Config/notification_profile_id");
+                // skip over servers where a notification profile is explicitly set, but doesn't match - this overrides inclusion
+                if( ! serverNotificationProfile.IsNullOrWhitespace() && domainNotificationProfile != serverNotificationProfile) { return; }
+
+                foreach (var ARecord in PublicDomainResponse.RecordsA)
+                {
+                    var Ip = ARecord.ToString();
+                    var ReversedIp = Dns.ReverseIp(Ip);
+                    string reverseDomain = "";
+                    Response ReverseLookupResponse = PublicResolver.Query(ReversedIp + ".in-addr.arpa", QType.PTR);
+                    if (ReverseLookupResponse.RecordsPTR.Length > 0)
+                    {
+                        reverseDomain = ReverseLookupResponse.RecordsPTR[0].ToString();
+                    }
+                    Resolver blacklistResolver = new Resolver(server.GetS("Config/address")) {TimeOut = 100 };
+                    Response blResponse = blacklistResolver.Query(ReversedIp + "." + server.GetS("Config/append_tld"), QType.A);
+                    if (blResponse.RecordsA.Length > 0)
+                    {
+                        blResponse.RecordsA.ForEach( record => {
+                            if (IgnoreResponseList.Contains(record.ToString())) { return; }
+                            listedAnywhere = true;
+                            Console.WriteLine($"Found IP {Ip} for {domain} listing in {configName} with type {record.ToString()}");
+                            ipResponses.Add(Jw.Json(new { domain, ip = Ip, response = record.ToString(), response_config_id = configId, config_name = configName, status_job_id = statusJobId, reverse_dns_domain = reverseDomain }));
+                        });
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No listing for IP {Ip} for {domain} listing in {configName}");
+                        ipResponses.Add(Jw.Json(new { domain, ip = Ip, status_job_id = statusJobId, response_config_id = configId, config_name = configName, reverse_dns_domain = reverseDomain }));
+                    }
+                }
+            });
+            return listedAnywhere;
+        }
+
 
     }
 }

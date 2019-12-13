@@ -31,8 +31,8 @@ namespace QuickTester
         {
             string fileType = null;
 
-            var aa = lines.
-                Aggregate(new Tuple<List<string>, int, int>(new List<string>(), lines.Length - 1, 0), (a, b) =>
+            var aa = lines
+                .Aggregate(new Tuple<List<string>, int, int>(new List<string>(), lines.Length - 1, 0), (a, b) =>
                 {
                     if (!((a.Item2 == a.Item3 && a.Item3 > 2) || (a.Item2 == 2 && string.IsNullOrWhiteSpace(b))))
                         a.Item1.Add(b);
