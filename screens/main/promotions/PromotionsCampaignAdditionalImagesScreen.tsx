@@ -2,19 +2,19 @@ import { Modal } from "@ant-design/react-native"
 import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
 import { P } from "components/Markup"
+import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
 import { routes, Units } from "constants"
 import React from "react"
-import { Text, Alert } from "react-native"
+import { Alert, Text } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { HeaderRightDoneButton } from "./components/HeaderRightDoneButton"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { HeaderRightDoneButton } from "./components/HeaderRightDoneButton"
-import NavButton from "components/NavButton"
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
@@ -112,12 +112,11 @@ PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) =>
   }
   return {
     headerLeft: () =>
-      draft &&
-      (() => (
+      draft && (
         <NavButton onPress={cancelHandler} position="left">
           Cancel
         </NavButton>
-      )),
+      ),
     headerTitle: <HeaderTitle title={draft ? "Create Campaign" : "Campaign"} />,
     headerRight: <HeaderRightDoneButton navigation={navigation} />,
   }
