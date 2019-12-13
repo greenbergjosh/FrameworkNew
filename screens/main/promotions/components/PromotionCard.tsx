@@ -1,4 +1,4 @@
-import { Text, View } from "react-native"
+import { Alert, Text, View } from "react-native"
 import { ImageThumbnail } from "components/ImageThumbnail"
 import { ActionSheet, Flex, Icon, SwipeAction } from "@ant-design/react-native"
 import { Colors, devBorder, styles, Units, routes } from "constants"
@@ -7,22 +7,53 @@ import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
 import { Promotional } from "api/promotions-services"
 import { UndoIcon } from "assets/icons"
+import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
 
 interface PromotionCardProps {
-  onShowCampaigns: () => void
-  onCreateCampaign: () => void
+  onPress?: () => void
   promotional: Promotional
   expires: ISO8601String | null
   isArchived: boolean
+  campaignCount: number
+  promotionId: GUID
+  navigate
 }
 
 export function PromotionCard({
-  onShowCampaigns,
-  onCreateCampaign,
+  onPress,
   expires,
   promotional,
   isArchived,
+  campaignCount,
+  promotionId,
+  navigate,
 }: PromotionCardProps) {
+  const swipeMenuDelete = [
+    {
+      text: (
+        <>
+          <Icon name="delete" color={Colors.reverse} />
+          <Text style={[styles.Body, { color: Colors.reverse }]}>Delete</Text>
+        </>
+      ),
+      onPress: () =>
+        Alert.alert(
+          "Delete this promotion?",
+          `Are you sure you want to permanently remove {Retailer Name} ${promotional.name}?`,
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "OK",
+              onPress: () => alert("Delete Promotion\nFeature to come!"),
+            },
+          ]
+        ),
+      style: { backgroundColor: Colors.warning, color: "white" },
+    },
+  ]
   const swipeMenuArchive = [
     {
       text: (
@@ -31,7 +62,22 @@ export function PromotionCard({
           <Text style={[styles.Body, { color: Colors.reverse }]}>Archive</Text>
         </>
       ),
-      onPress: () => alert("Archive Promotion\nFeature to come!"),
+      onPress: () =>
+        Alert.alert(
+          "Archive this promotion?",
+          `Are you sure you want to archive {Retailer Name} ${promotional.name}? 
+          Associated campaigns can not be published again.`,
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "OK",
+              onPress: () => alert("Archive Promotion\nFeature to come!"),
+            },
+          ]
+        ),
       style: { backgroundColor: Colors.archived, color: "white" },
     },
   ]
@@ -47,14 +93,21 @@ export function PromotionCard({
       style: { backgroundColor: Colors.success, color: "white" },
     },
   ]
-  const swipeMenu = isArchived ? swipeMenuUnarchive : swipeMenuArchive
+
+  const pluralize = (count, noun, suffix = "s") => `${noun}${count !== 1 ? suffix : ""}`
+
+  const swipeMenu = React.useMemo(() => {
+    const a = campaignCount < 1 ? swipeMenuDelete : swipeMenuArchive
+    const b = isArchived ? swipeMenuUnarchive : a
+    return b
+  }, [campaignCount, isArchived])
 
   return (
     <SwipeAction style={{ backgroundColor: "transparent", width: "100%" }} right={swipeMenu}>
       <Flex
         direction="row"
         align="start"
-        onPress={onShowCampaigns}
+        onPress={onPress}
         style={{
           paddingLeft: Units.margin,
           paddingRight: Units.margin,
@@ -122,24 +175,27 @@ export function PromotionCard({
               </View>
               <View>
                 <SMALL>
-                  <Text style={{ color: Colors.bodyTextEmphasis }}>#</Text> active campaign(s)
+                  <Text style={{ color: Colors.bodyTextEmphasis }}>{campaignCount}</Text> active{" "}
+                  {pluralize(campaignCount, "campaign")}
                 </SMALL>
               </View>
             </Flex>
-            <Flex
-              direction="column"
-              justify="end"
-              style={{
-                right: -Units.padding,
-                bottom: -4,
-              }}>
-              <TouchIcon
-                name="plus"
-                onPress={onCreateCampaign}
-                size="lg"
-                iconStyle={{ color: Colors.link }}
-              />
-            </Flex>
+            {isArchived ? null : (
+              <Flex
+                direction="column"
+                justify="end"
+                style={{
+                  right: -Units.padding,
+                  bottom: -4,
+                }}>
+                <TouchIcon
+                  name="plus"
+                  onPress={() => showCreateCampaignActionSheet(promotionId, navigate)}
+                  size="lg"
+                  iconStyle={{ color: Colors.link }}
+                />
+              </Flex>
+            )}
           </Flex>
         </Flex>
       </Flex>

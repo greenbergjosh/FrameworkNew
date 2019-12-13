@@ -1,11 +1,11 @@
-import { ActivityIndicator, Modal } from "@ant-design/react-native"
+import { ActivityIndicator, Modal, Flex } from "@ant-design/react-native"
 import React from "react"
 import { Text, View } from "react-native"
 import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
-import { ImageUris, routes } from "constants"
+import { ImageUris, routes, devBorder, Colors } from "constants"
 import NavButton from "components/NavButton"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
@@ -97,6 +97,8 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
       onLongPressImage={onLongPressImage}
       onPressImage={onPressImage}
       rerender
+      imageContainerStyle={{ borderWidth: 1, borderColor: Colors.border }}
+      listContainerStyle={{ backgroundColor: Colors.screenBackground }}
     />
   )
 }
@@ -106,9 +108,7 @@ PromotionsCampaignTemplatesScreen.navigationOptions = ({ navigation }) => {
     headerLeft: null,
     headerTitle: <HeaderTitle title="Choose a Template" />,
     headerRight: (
-      <NavButton
-        position="right"
-        onPress={() => navigation.navigate(routes.Promotions.Promotions)}>
+      <NavButton position="right" onPress={() => navigation.navigate(routes.Promotions.Promotions)}>
         Cancel
       </NavButton>
     ),

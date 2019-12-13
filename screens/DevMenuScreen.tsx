@@ -64,6 +64,7 @@ function Section({ section, navigate }) {
 export class DevMenuScreen extends React.Component<DevMenuScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
+      headerLeft: null,
       headerTitle: () => <HeaderTitle title="Dev Menu" />,
     }
   }

@@ -1,9 +1,9 @@
 import React from "react"
 import Collapsible from "react-native-collapsible"
-import { ActionSheet, ActivityIndicator, Flex } from "@ant-design/react-native"
+import { ActivityIndicator, Flex } from "@ant-design/react-native"
 import { Promotion } from "api/promotions-services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
-import { routes, Units } from "constants"
+import { Units } from "constants"
 import { PromotionCard } from "./PromotionCard"
 import { CampaignsList } from "./CampaignsList"
 import { ExpanderIcon } from "./ExpanderIcon"
@@ -42,27 +42,17 @@ export const PromotionExpander = ({
     }
   }
 
-  const showCreateCampaignActionSheet = (promotionId: GUID) => {
-    ActionSheet.showActionSheetWithOptions(
-      {
-        title: "Is this campaign to get a gift or to sell?",
-        options: ["For You", "For Me", "Cancel"],
-        cancelButtonIndex: 2,
-      },
-      (buttonIndex) =>
-        buttonIndex < 2 ? navigate(routes.Promotions.CampaignTemplates, { promotionId }) : null
-    )
-  }
-
   return (
     <>
       <Flex direction="column" style={{ position: "relative" }}>
         <PromotionCard
-          onShowCampaigns={showCampaignsHandler()}
+          onPress={showCampaignsHandler()}
           promotional={promotion.payload}
+          promotionId={promotion.id}
           expires={promotion.expires}
-          onCreateCampaign={() => showCreateCampaignActionSheet(promotion.id)}
           isArchived={isArchived}
+          campaignCount={2}
+          navigate={navigate}
         />
         {!alwaysExpanded && <ExpanderIcon collapsed={isCollapsed} />}
       </Flex>
@@ -81,9 +71,7 @@ export const PromotionExpander = ({
             navigate={navigate}
           />
         ) : (
-          <CampaignsListEmpty
-            onCreateCampaign={() => showCreateCampaignActionSheet(promotion.id)}
-          />
+          <CampaignsListEmpty promotionId={promotion.id} navigate={navigate} />
         )}
       </Collapsible>
     </>

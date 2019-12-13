@@ -64,6 +64,7 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
 
 PromotionsScreen.navigationOptions = ({ navigation }) => {
   return {
+    headerLeft: null,
     headerTitle: () => <HeaderTitle title="Promotions" align="left" size="large" />,
   }
 }

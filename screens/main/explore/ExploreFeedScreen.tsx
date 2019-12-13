@@ -10,6 +10,7 @@ export interface ExploreFeedScreenProps extends NavigationTabScreenProps {}
 export class ExploreFeedScreen extends React.Component<ExploreFeedScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
+      headerLeft: null,
       headerTitle: () => <HeaderTitle title="Explore" align="left" size="large" />,
     }
   }

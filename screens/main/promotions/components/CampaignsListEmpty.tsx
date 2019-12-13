@@ -3,12 +3,14 @@ import { Text, View } from "react-native"
 import React from "react"
 import { Colors, styles, Units } from "constants"
 import { A } from "components/Markup"
+import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
 
 interface CampaignsListEmptyProps {
-  onCreateCampaign: () => any
+  promotionId: GUID
+  navigate
 }
 
-export function CampaignsListEmpty({ onCreateCampaign }: CampaignsListEmptyProps) {
+export function CampaignsListEmpty({ promotionId, navigate }: CampaignsListEmptyProps) {
   return (
     <Empty
       iconStyle={{ color: Colors.bodyText }}
@@ -17,7 +19,7 @@ export function CampaignsListEmpty({ onCreateCampaign }: CampaignsListEmptyProps
           <Text style={[styles.Body, { marginBottom: Units.padding }]}>
             You haven't created any campaigns for this promotion
           </Text>
-          <A onPress={onCreateCampaign}>Create one now?</A>
+          <A onPress={() => showCreateCampaignActionSheet(promotionId, navigate)}>Create one now?</A>
         </View>
       }
       style={{ paddingTop: 10, paddingBottom: 10, backgroundColor: Colors.childBackground }}
