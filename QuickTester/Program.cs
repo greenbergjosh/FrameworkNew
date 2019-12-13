@@ -81,11 +81,12 @@ namespace QuickTester
         // If you're looking for something that was in here before, I moved everything into individual static classes in the project. Sorry for the convenience. - Alberto
         private static async Task Main(string[] _args)
         {
-            var f = new FileInfo("d:\\sources\\test.txt");
+            CurlThinWrapper.Run();
+            //var f = new FileInfo("d:\\sources\\test.txt");
 
-            var lines = await FileSystem.ReadLines(f.FullName, 400);
+            //var lines = await FileSystem.ReadLines(f.FullName, 400);
 
-            var r = await MatchFile2(lines, f);
+            //var r = await MatchFile2(lines, f);
 
             //try
             //{
