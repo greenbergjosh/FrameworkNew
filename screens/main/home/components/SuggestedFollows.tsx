@@ -7,6 +7,8 @@ import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"
 import { H2, H3, P, SMALL } from "components/Markup"
 import { FollowsScreenProps } from "../../follows/FollowsScreen"
+import { influencerFeedRoutes } from "../../feedRoutes"
+import { InfluencersList } from "components/follows"
 
 interface SuggestedFollowsProps {
   value: Influencer[]
@@ -41,7 +43,7 @@ export default (props: SuggestedFollowsProps) => {
               <Text style={styles.Body}>{influencer.description}</Text>
               <WhiteSpace size="xl" />
               <Button type="primary" size="small" style={{ maxWidth: 92 }}>
-                <Icon name="plus" size="md" color="#fff" /> Follow
+                <Icon name="plus" size="xs" color="#fff" /> Follow
               </Button>
               <WhiteSpace size="xl" />
               <SMALL>{influencer.source}</SMALL>
@@ -55,6 +57,7 @@ export default (props: SuggestedFollowsProps) => {
           </View>
         ))}
       </Carousel>
+      <InfluencersList navigate={navigate} routes={influencerFeedRoutes} isRecommended={true} />
     </View>
   )
 }

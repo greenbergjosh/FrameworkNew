@@ -35,7 +35,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   //   }
   // }, [feed.lastLoadHomeFeed])
 
-  const cancelHandler = () => {
+  const showStartCampaignDialog = () => {
     Alert.alert(
       "Start a Campaign?",
       "You recently added a new item to promote. Do you want to start a campaign?",
@@ -55,14 +55,9 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
     )
   }
 
-  const handlePress = (newMode) => {
-    newMode === "onboarding" ? setMode("onboarding") : setMode("homefeed")
-    newMode === "startcampaign" ? cancelHandler() : null
-  }
-
   return (
     <>
-      <DevTempNav onPress={handlePress} mode={mode} />
+      <DevTempNav mode={mode} setMode={setMode} showStartCampaignDialog={showStartCampaignDialog} />
       <ScrollView>
         {mode === "onboarding" ? (
           <SuggestedFollows value={suggestedFollows} navigate={navigate} />

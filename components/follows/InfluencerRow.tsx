@@ -1,9 +1,9 @@
 import React from "react"
 import { Image, Text, TouchableOpacity } from "react-native"
-import { Flex, List } from "@ant-design/react-native"
+import { Button, Flex, List } from "@ant-design/react-native"
 import pupa from "pupa"
 import { Influencer } from "api/follows-services/influencers"
-import { styles } from "constants"
+import { devBorder, styles, Units } from "constants"
 import moment from "moment"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
@@ -13,11 +13,17 @@ export interface InfluencerRowProps {
   influencer?: Influencer
   navigate
   routes: FeedRoutes
+  isRecommended?: boolean
 }
 
 const initialCase = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
-export const InfluencerRow = ({ influencer, navigate, routes }: InfluencerRowProps) => {
+export const InfluencerRow = ({
+  influencer,
+  navigate,
+  routes,
+  isRecommended = false,
+}: InfluencerRowProps) => {
   const { avatarUri, statusPhrase, feedImagesSmall, handle, id, lastActivity, userId } = influencer
   return (
     <List.Item>
@@ -39,20 +45,37 @@ export const InfluencerRow = ({ influencer, navigate, routes }: InfluencerRowPro
         <Flex.Item>
           {/**************************/}
           {/* Status Message */}
-          <Flex direction="row" wrap="wrap" style={{ marginTop: 5 }}>
-            <TouchText
-              onPress={() =>
-                navigate(routes.Feed, {
-                  userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
-                })
-              }
-              labelStyle={{ fontWeight: "bold" }}>
-              {handle + " "}
-            </TouchText>
-            <Text>{pupa(statusPhrase.template, statusPhrase.data || [])} </Text>
-            <SMALL>
-              {initialCase(moment.utc(lastActivity).fromNow(true))}
-            </SMALL>
+          <Flex
+            direction="row"
+            wrap="nowrap"
+            align="start"
+            justify="start"
+            style={{ marginTop: Units.padding / 2 }}>
+            <Flex direction="row" wrap="wrap" style={{ flexShrink: 1 }}>
+              <TouchText
+                onPress={() =>
+                  navigate(routes.Feed, {
+                    userId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
+                  })
+                }
+                labelStyle={{ fontWeight: "bold" }}>
+                {handle + " "}
+              </TouchText>
+              <Text>
+                {pupa(statusPhrase.template, statusPhrase.data || [])}{" "}
+                <SMALL>{initialCase(moment.utc(lastActivity).fromNow(true))}</SMALL>
+              </Text>
+            </Flex>
+            {isRecommended ? (
+              <Flex
+                direction="row"
+                justify="end"
+                style={{ flexGrow: 1, paddingLeft: Units.padding }}>
+                <Button size="small" type="primary">
+                  Follow
+                </Button>
+              </Flex>
+            ) : null}
           </Flex>
 
           {/**************************/}

@@ -4,8 +4,9 @@ import { Text } from "react-native"
 import { styles } from "constants"
 
 interface DevTempNavProps {
-  onPress,
+  showStartCampaignDialog: () => void
   mode: string
+  setMode: (mode: string) => void
 }
 
 /**
@@ -13,20 +14,20 @@ interface DevTempNavProps {
  * @param props
  * @constructor
  */
-export default ({ onPress, mode }: DevTempNavProps) => {
+export default ({ mode, setMode, showStartCampaignDialog }: DevTempNavProps) => {
   return (
     <Flex direction="row" justify="center" style={{ padding: 5, backgroundColor: "lightblue" }}>
       <Text style={styles.Body}>Dev Nav: </Text>
       {mode === "homefeed" ? (
-        <Button type="ghost" size="small" onPress={() => onPress("onboarding")}>
+        <Button type="ghost" size="small" onPress={() => setMode("onboarding")}>
           Show On-Boarding
         </Button>
       ) : (
-        <Button type="ghost" size="small" onPress={() => onPress("homefeed")}>
+        <Button type="ghost" size="small" onPress={() => setMode("homefeed")}>
           Show Home Feed
         </Button>
       )}
-      <Button type="ghost" size="small" onPress={() => onPress("startcampaign")}>
+      <Button type="ghost" size="small" onPress={() => showStartCampaignDialog()}>
         Show Start Campaign Dialog
       </Button>
     </Flex>
