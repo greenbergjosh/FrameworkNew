@@ -1,12 +1,12 @@
-import { ActivityIndicator, Modal, Flex } from "@ant-design/react-native"
+import { ActivityIndicator, Modal } from "@ant-design/react-native"
 import React from "react"
 import { Text, View } from "react-native"
-import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
-import { ImageUris, routes, devBorder, Colors } from "constants"
+import { ImageUris, routes } from "constants"
 import NavButton from "components/NavButton"
+import { ImageGrid } from "components/ImageGrid"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
   promotionId: GUID
@@ -14,11 +14,6 @@ interface PromotionsCampaignTemplateScreenNavigationParams {
 
 export interface PromotionsCampaignTemplateScreenProps
   extends NavigationTabScreenProps<PromotionsCampaignTemplateScreenNavigationParams> {}
-
-interface ImageItem {
-  id: string
-  uri: string
-}
 
 export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTemplateScreenProps) => {
   const promotionsContext = usePromotionsContext()
@@ -66,17 +61,21 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   const onPressImage = React.useCallback(
     ({ id }) => {
       const pressedTemplate = campaignTemplatesById[id]
-      navigate(routes.Promotions.Campaign, { isDraft: true, promotionId, template: pressedTemplate })
+      navigate(routes.Promotions.Campaign, {
+        isDraft: true,
+        promotionId,
+        template: pressedTemplate,
+      })
     },
     [campaignTemplatesById, navigate]
   )
 
-  const images: ImageItem[] = React.useMemo(
+  const images: ImageType[] = React.useMemo(
     () =>
       campaignTemplatesBySearchKey[searchText]
         ? campaignTemplatesBySearchKey[searchText].map(({ id, template: { previewImage } }) => ({
             id,
-            uri: previewImage || ImageUris.placeholder,
+            source: { uri: previewImage || ImageUris.placeholder },
           }))
         : [],
     [campaignTemplatesBySearchKey[searchText]]
@@ -91,16 +90,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
 
-  return (
-    <MasonryList
-      images={images}
-      onLongPressImage={onLongPressImage}
-      onPressImage={onPressImage}
-      rerender
-      imageContainerStyle={{ borderWidth: 1, borderColor: Colors.border }}
-      listContainerStyle={{ backgroundColor: Colors.screenBackground }}
-    />
-  )
+  return <ImageGrid images={images} onPress={onPressImage} cols={2} />
 }
 
 PromotionsCampaignTemplatesScreen.navigationOptions = ({ navigation }) => {

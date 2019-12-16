@@ -4,7 +4,7 @@ import { Alert, ScrollView, View } from "react-native"
 import { routes, Units } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { mockData, FeedItem, UserInfo } from "components/feed"
+import { FeedItem, UserInfo } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
 import TouchIcon from "components/TouchIcon"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
@@ -12,6 +12,7 @@ import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
 import { influencerFeedRoutes } from "../feedRoutes"
 import NavButton from "components/NavButton"
+import * as mockData from "api/feed-services.mockData"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 

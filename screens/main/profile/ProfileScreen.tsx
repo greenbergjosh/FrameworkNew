@@ -4,8 +4,10 @@ import { Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { routes, styles } from "constants"
-import { FeedGrid, mockData, ProfileInfo } from "components/feed"
+import { ProfileInfo } from "components/feed"
 import { profileFeedRoutes } from "../feedRoutes"
+import { ImageGrid } from "components/ImageGrid"
+import * as mockData from "api/feed-services.mockData"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
@@ -33,7 +35,7 @@ export class ProfileScreen extends React.Component<ProfileScreenProps> {
             Edit Profile
           </Button>
         </View>
-        <FeedGrid feed={feed} onPress={(id) => navigate(routes.Profile.PostDetails, { id })} />
+        <ImageGrid images={feed} onPress={(id) => navigate(routes.Profile.PostDetails, { id })} />
       </ScrollView>
     )
   }

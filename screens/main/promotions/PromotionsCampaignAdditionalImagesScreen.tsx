@@ -7,7 +7,6 @@ import { SubHeader } from "components/SubHeader"
 import { routes, Units } from "constants"
 import React from "react"
 import { Alert, Text } from "react-native"
-import MasonryList from "react-native-masonry-list"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderRightDoneButton } from "./components/HeaderRightDoneButton"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
@@ -15,6 +14,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
+import { ImageGrid } from "components/ImageGrid"
 
 const placeholderImage = require("assets/add-photo-placeholder.png")
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
@@ -39,13 +39,15 @@ export const PromotionsCampaignAdditionalImagesScreen = (
   const images = React.useMemo(
     () =>
       (params.images || [])
-        .map((image: string) => ({
+        .map((image: string, index) => ({
+          id: index.toString(),
           source: { uri: image },
-          dimensions: { width: 120, height: 120 },
+          dimensions: { width: Units.img128, height: Units.img128 },
         }))
         .concat({
+          id: "edf82f28-b367-4c35-9d6d-275d0084881a",
           source: placeholderImage,
-          dimensions: { width: 120, height: 120 },
+          dimensions: { width: Units.img128, height: Units.img128 },
         }),
     [params.images]
   )
@@ -92,7 +94,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
         These images will appear in other people&rsquo;s feeds. But if you don&rsquo;t provide any,
         we&rsquo;ll use the campaign photo.
       </P>
-      <MasonryList images={images} columns={3} onPressImage={onPressImage} rerender />
+      <ImageGrid images={images} onPress={onPressImage} cols={3} />
     </>
   )
 }

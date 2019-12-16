@@ -4,17 +4,14 @@
  */
 
 import * as _Comments from "./Comments"
-import * as _FeedGrid from "./FeedGrid"
 import * as _FeedItem from "./FeedItem"
 import * as _SocialButtons from "./SocialButtons"
 import * as _UserInfo from "./UserInfo"
-import * as _mockData from "./mockData"
+import * as _mockData from "api/feed-services.mockData"
 
 const { Comments } = _Comments
-const { FeedGrid } = _FeedGrid
 const { FeedItem } = _FeedItem
 const { SocialButtons } = _SocialButtons
 const { UserInfo, ProfileInfo } = _UserInfo
-const mockData = _mockData
 
-export { Comments, FeedGrid, FeedItem, SocialButtons, UserInfo, ProfileInfo, mockData }
+export { Comments, FeedItem, SocialButtons, UserInfo, ProfileInfo }

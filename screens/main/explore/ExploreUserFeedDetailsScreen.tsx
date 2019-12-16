@@ -3,9 +3,10 @@ import { ScrollView, View } from "react-native"
 import { List } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FeedItem, mockData, UserInfo } from "components/feed"
+import { FeedItem, UserInfo } from "components/feed"
 import { influencerFeedRoutes } from "../feedRoutes"
 import NavButton from "components/NavButton"
+import * as mockData from "api/feed-services.mockData"
 
 interface ExploreUserFeedDetailsScreenProps extends NavigationTabScreenProps {}
 

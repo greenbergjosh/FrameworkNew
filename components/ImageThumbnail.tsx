@@ -10,8 +10,8 @@ interface ImageThumbnailProps {
 
 export function ImageThumbnail({ image, size }: ImageThumbnailProps) {
   function getUri() {
-    const img = Array.isArray(image) ? image[0] : image
-    return img || ImageUris.placeholder
+    const uri = Array.isArray(image) ? image[0] : image
+    return uri || ImageUris.placeholder
   }
 
   let iconSize
