@@ -44,7 +44,6 @@ import {
 } from "@syncfusion/ej2-react-grids"
 
 const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
-  // @ts-ignore
   // Returns true if we should not re-render
   const simplePropEquality = shallowPropCheck(["columns", "dataSource"])(prevProps, nextProps)
   // Returns null if we should not re-render
@@ -53,7 +52,8 @@ const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
       ["children", "detailTemplate", "valueAccessor"].includes(k)
     )
 
-  return simplePropEquality && !runDeepDiff()
+  const deepDiffResult = runDeepDiff()
+  return simplePropEquality && !deepDiffResult
 })
 
 const gridComponentServices = [
@@ -267,6 +267,13 @@ export const StandardGrid = React.forwardRef(
         ref.current.refresh()
       }
     }, [contextData])
+
+    // Detail template has to be manually assigned if it changed
+    React.useEffect(() => {
+      if (typeof ref === "object" && ref && ref.current && ref.current.headerModule) {
+        ref.current.detailTemplate = detailTemplate
+      }
+    }, [detailTemplate])
 
     // Some data may have to be pre-processed in order not to cause the table to fail to render
     const usableData = React.useMemo(

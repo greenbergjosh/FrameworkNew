@@ -43,6 +43,7 @@ interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   allowEditing?: boolean
   columns: ColumnConfig[]
   component: "table"
+  loadingKey?: string
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   rowDetails?: ComponentDefinition[]
@@ -88,6 +89,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       allowDeleting,
       allowEditing,
       columns,
+      loadingKey = "loading",
       onChangeData,
       rowDetails,
       userInterfaceData,
@@ -208,6 +210,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                   }, [] as string[]),
                 }
 
+                const loading = loadingKey && get(loadingKey, userInterfaceData)
+
                 // console.log("TableInterfaceComponent.render", "Display", this.props, {
                 //   dataArray,
                 //   rowDetails,
@@ -220,6 +224,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     columns={columns}
                     contextData={userInterfaceData}
                     data={dataArray}
+                    loading={!!loading}
                     sortSettings={sortSettings}
                     groupSettings={groupSettings}
                     detailTemplate={
