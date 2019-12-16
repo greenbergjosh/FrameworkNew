@@ -11,7 +11,7 @@ import {
   set
   } from "lodash/fp"
 import React from "react"
-import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import { QueryConfigCodec } from "../../../../data/Report"
 import { SelectableOption, SelectableState } from "./Selectable.interfaces"

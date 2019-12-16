@@ -1,4 +1,4 @@
-import { StandardGrid, UserInterface } from "@opg/interface-builder"
+import { StandardGrid, UserInterface, UserInterfaceContext } from "@opg/interface-builder"
 import * as Reach from "@reach/router"
 import { Button, PageHeader } from "antd"
 import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
@@ -7,10 +7,14 @@ import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import React from "react"
 import { Helmet } from "react-helmet"
+import { AdminUserInterfaceContextManagerProvider } from "../../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
+import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../data/JSON"
 import { useRematch } from "../../hooks"
 import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../lib/json"
+import { store } from "../../state/store"
 import { QueryForm } from "./QueryForm"
 import { Report } from "./Report"
 import {
@@ -50,9 +54,11 @@ export const ReportBody = React.memo(
     withoutHeader,
   }: ReportBodyProps) => {
     const [fromStore, dispatch] = useRematch((state) => ({
-      reportDataByQuery: state.reports.reportDataByQuery,
+      configs: state.globalConfig.configs,
+      configsById: store.select.globalConfig.configsById(state),
       globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
       isExecutingQuery: state.loading.effects.reports.executeQuery,
+      reportDataByQuery: state.reports.reportDataByQuery,
     }))
 
     const grid = React.useRef<GridComponent>(null)
@@ -153,11 +159,13 @@ export const ReportBody = React.memo(
       fromStore.isExecutingQuery,
     ])
 
-    const createDetailTemplate = React.useMemo(
-      () =>
-        reportDetailsToComponent(reportConfig.details, parameterValues.toUndefined(), parentData),
-      [parameterValues, reportConfig.details]
-    )
+    const createDetailTemplate = React.useMemo(() => {
+      return reportDetailsToComponent(
+        reportConfig.details,
+        parameterValues.toUndefined(),
+        parentData
+      )
+    }, [reportConfig.details, parameterValues.toUndefined(), parentData])
 
     const sortSettings: SortSettingsModel = {
       columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce((acc, column) => {
@@ -242,7 +250,7 @@ const reportDetailsToComponent = (
   parentData?: JSONRecord
 ) => {
   const resolved = resolveDetails(details)
-  console.log("ReportBody.reportDetailsToComponent", { details, resolved })
+
   if (resolved) {
     const dataResolver =
       typeof details === "object" &&
@@ -266,15 +274,20 @@ const reportDetailsToComponent = (
       )
     } else if (resolved.type === "SimpleLayoutConfig") {
       return (rowData: JSONRecord) => (
-        <UserInterface
-          mode="display"
-          components={resolved.layout}
-          data={dataResolver({
-            ...(parentData || record.empty),
-            ...(parameterValues || record.empty),
-            ...rowData,
-          })}
-        />
+        <AdminUserInterfaceContextManagerProvider>
+          {(userInterfaceContextManager) => (
+            <UserInterface
+              mode="display"
+              contextManager={userInterfaceContextManager}
+              components={resolved.layout}
+              data={dataResolver({
+                ...(parentData || record.empty),
+                ...(parameterValues || record.empty),
+                ...rowData,
+              })}
+            />
+          )}
+        </AdminUserInterfaceContextManagerProvider>
       )
     }
   }
@@ -311,7 +324,6 @@ const resolveDetails = (
 }
 
 const performDataMapping = (dataMapping: DataMappingItem[], data: JSONRecord) => {
-  console.log("ReportBody.performDataMapping", dataMapping, data)
   if (dataMapping) {
     return dataMapping.reduce(
       (acc, { originalKey, mappedKey }) => ({ ...acc, [mappedKey]: acc[originalKey] }),

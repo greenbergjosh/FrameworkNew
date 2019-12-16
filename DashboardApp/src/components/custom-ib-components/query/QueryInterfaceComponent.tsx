@@ -2,6 +2,8 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import React from "react"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { QueryConfig } from "../../../data/Report"
+import { Query, QueryChildProps, QueryProps } from "../../query/Query"
+import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,
@@ -11,12 +13,11 @@ import {
   UserInterfaceContext,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { Query, QueryChildProps, QueryProps } from "../../query/Query"
-import { queryManageForm } from "./query-manage-form"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
   components: ComponentDefinition[]
+  loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   queryType: QueryProps["queryType"]
   userInterfaceData?: UserInterfaceProps["data"]
@@ -47,7 +48,8 @@ interface QueryRemoteConfigInterfaceComponentProps extends IQueryInterfaceCompon
 
 type QueryInterfaceComponentProps = (
   | QueryRemoteQueryInterfaceComponentProps
-  | QueryRemoteConfigInterfaceComponentProps) &
+  | QueryRemoteConfigInterfaceComponentProps
+) &
   (QueryInterfaceComponentDisplayModeProps | QueryInterfaceComponentEditModeProps)
 
 interface QueryInterfaceComponentState {
@@ -76,7 +78,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       icon: "database",
       componentDefinition: {
         component: "query",
-        label: "Query",
+        hideLabel: true,
         components: [],
       },
     }
@@ -89,6 +91,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
   render(): JSX.Element {
     const {
       components,
+      loadingKey = "loading",
+      mode,
       onChangeData,
       queryType,
       remoteDataFilter,
@@ -100,7 +104,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       <DataPathContext path="components">
         <ComponentRenderer
           components={components}
-          data={{ ...userInterfaceData, ...result[valueKey] }}
+          data={{ ...userInterfaceData, [valueKey]: result.data, [loadingKey]: result.loading }}
           onChangeData={onChangeData}
           // onChangeSchema={(newSchema) => {
           //   if (this.props.mode === "edit") {
@@ -109,8 +113,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
           // }}
           onChangeSchema={(newSchema) => {
             console.warn(
-              "ListInterfaceComponent.render",
-              "TODO: Cannot alter schema inside ComponentRenderer in List",
+              "QueryInterfaceComponent.render",
+              "TODO: Cannot alter schema inside ComponentRenderer in Query",
               { newSchema }
             )
           }}
@@ -122,6 +126,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       <Query
         dataKey={valueKey}
         inputData={userInterfaceData}
+        paused={mode === "edit"}
         queryType={this.props.queryType}
         remoteConfigType={this.props.remoteConfigType}
         remoteDataFilter={remoteDataFilter}>
@@ -131,6 +136,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       <Query
         dataKey={valueKey}
         inputData={userInterfaceData}
+        paused={mode === "edit"}
         queryType={this.props.queryType}
         remoteQuery={this.props.remoteQuery}>
         {children}

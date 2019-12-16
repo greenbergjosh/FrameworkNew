@@ -107,8 +107,6 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
   )
 
   if (layout) {
-    console.log("QueryForm.render", { layout })
-
     return (
       <>
         <UserInterface

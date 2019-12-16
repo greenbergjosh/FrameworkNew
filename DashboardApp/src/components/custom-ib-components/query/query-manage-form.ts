@@ -21,6 +21,7 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
               {
                 key: "label",
+                defaultValue: null,
                 hidden: true,
               },
               {
@@ -99,7 +100,10 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "Forfields that need property name transformations applied, describe these here",
                 component: "data-map",
                 count: 2,
-                defaultValue: [{ label: "label", value: "" }, { label: "value", value: "" }],
+                defaultValue: [
+                  { label: "label", value: "" },
+                  { label: "value", value: "" },
+                ],
                 keyComponent: {
                   label: "Property",
                   component: "input",

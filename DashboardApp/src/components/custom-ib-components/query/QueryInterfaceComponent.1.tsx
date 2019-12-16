@@ -6,7 +6,7 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
 import React from "react"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager"
+import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 import { Right } from "../../../data/Either"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { QueryConfig, QueryConfigCodec } from "../../../data/Report"
@@ -231,7 +231,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
 
                     queryResult.foldL(
                       () => {
-                        console.log("QueryInterfaceComponent.render", "Loading")
+                        // console.log("QueryInterfaceComponent.render", "Loading")
                         this.setState((state) => ({ ...state, loadStatus: "loading" }))
                         executeQuery({
                           resultURI: queryResultURI,
@@ -239,16 +239,16 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
                           params: satisfiedParams,
                         })
                           .then(() => {
-                            console.log("QueryInterfaceComponent.render", "Clear loading state")
+                            // console.log("QueryInterfaceComponent.render", "Clear loading state")
                             this.setState((state) => ({ ...state, loadStatus: "none" }))
                           })
                           .catch((e: Error) => {
-                            console.log("QueryInterfaceComponent.render", "Set error loading state")
+                            // console.log("QueryInterfaceComponent.render", "Set error loading state")
                             this.setState({ loadStatus: "error", loadError: e.message })
                           })
                       },
                       (resultValues) => {
-                        console.log("QueryInterfaceComponent.render", "Loaded, no remote")
+                        // console.log("QueryInterfaceComponent.render", "Loaded, no remote")
                         this.setState((state) => ({
                           ...state,
                           data: resultValues,
@@ -257,7 +257,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
                       }
                     )
                   } else {
-                    console.log(
+                    console.info(
                       "QueryInterfaceComponent.render",
                       "Cannot start loading due to unsatisfied parameters",
                       unsatisfiedByParentParams
@@ -294,7 +294,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
             parameters={promptParameters}
             parameterValues={parameterValues}
             onSubmit={(formProps) => {
-              console.log("Submitted Form Data", formProps)
+              console.info("Submitted Form Data", formProps)
             }}
           />
         )}
