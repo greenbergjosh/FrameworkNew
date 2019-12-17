@@ -1,5 +1,5 @@
 import React from "react"
-import { View } from "react-native"
+import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { UserInfo } from "components/feed"
@@ -23,15 +23,18 @@ export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreen
     const { user, feed } = mockData.USER_FEED_DATA
 
     return (
-      <View>
+      <ScrollView>
         <UserInfo
           user={user}
           navigate={navigate}
           showFullDetails={true}
           routes={influencerFeedRoutes}
         />
-        <ImageGrid images={feed} onPress={(id) => navigate(routes.Explore.UserFeedDetails, { id })} />
-      </View>
+        <ImageGrid
+          images={feed}
+          onPress={(id) => navigate(routes.Explore.UserFeedDetails, { id })}
+        />
+      </ScrollView>
     )
   }
 }

@@ -6,7 +6,7 @@ import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
 import { routes, Units } from "constants"
 import React from "react"
-import { Alert, Text } from "react-native"
+import { Alert, ScrollView, Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderRightDoneButton } from "./components/HeaderRightDoneButton"
 import { InfluencerTokens } from "./PromotionsCampaignScreen"
@@ -94,7 +94,9 @@ export const PromotionsCampaignAdditionalImagesScreen = (
         These images will appear in other people&rsquo;s feeds. But if you don&rsquo;t provide any,
         we&rsquo;ll use the campaign photo.
       </P>
-      <ImageGrid images={images} onPress={onPressImage} cols={3} />
+      <ScrollView>
+        <ImageGrid images={images} onPress={onPressImage} cols={3} />
+      </ScrollView>
     </>
   )
 }

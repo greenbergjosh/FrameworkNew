@@ -5,6 +5,7 @@ import { HeaderTitle } from "components/HeaderTitle"
 import * as mockData from "api/feed-services.mockData"
 import { routes } from "constants"
 import { ImageGrid } from "components/ImageGrid"
+import { ScrollView } from "react-native"
 
 export interface ExploreFeedScreenProps extends NavigationTabScreenProps {}
 
@@ -26,7 +27,9 @@ export class ExploreFeedScreen extends React.Component<ExploreFeedScreenProps> {
           showCancelButton={false}
           onSubmit={() => alert("Search\n Feature to come!")}
         />
-        <ImageGrid images={feed} onPress={(id) => navigate(routes.Explore.FeedDetails, { id })} />
+        <ScrollView>
+          <ImageGrid images={feed} onPress={(id) => navigate(routes.Explore.FeedDetails, { id })} />
+        </ScrollView>
       </>
     )
   }

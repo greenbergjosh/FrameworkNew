@@ -23,7 +23,7 @@ export class ProfileScreen extends React.Component<ProfileScreenProps> {
     const { user, feed } = mockData.USER_FEED_DETAILS_DATA
 
     return (
-      <ScrollView>
+      <View>
         <ProfileInfo
           user={user}
           showFullDetails={true}
@@ -36,7 +36,7 @@ export class ProfileScreen extends React.Component<ProfileScreenProps> {
           </Button>
         </View>
         <ImageGrid images={feed} onPress={(id) => navigate(routes.Profile.PostDetails, { id })} />
-      </ScrollView>
+      </View>
     )
   }
 }

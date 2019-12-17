@@ -58,18 +58,16 @@ export function ImageGrid({ images, onPress, cols = 3 }: ImageGridProps) {
   const hasRemainder = images.length % cols === 1
   const lastIdx = images.length - 1
   return (
-    <ScrollView>
-      <FlatList
-        data={images}
-        keyExtractor={(item: ImageType) => item.id.toString()}
-        renderItem={({ item, index }) => (
-          <>
-            <GridImage image={item} onPress={() => onPress(item.id)} />
-            {index === lastIdx && hasRemainder ? <GridShim /> : null}
-          </>
-        )}
-        numColumns={cols}
-      />
-    </ScrollView>
+    <FlatList
+      data={images}
+      keyExtractor={(item: ImageType) => item.id.toString()}
+      renderItem={({ item, index }) => (
+        <>
+          <GridImage image={item} onPress={() => onPress(item.id)} />
+          {index === lastIdx && hasRemainder ? <GridShim /> : null}
+        </>
+      )}
+      numColumns={cols}
+    />
   )
 }
