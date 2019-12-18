@@ -1,32 +1,38 @@
 import React, { useContext } from "react"
-import { loadHomeFeed } from "../api/feed-services"
+import { loadHomeFeed, FeedItemType } from "../api/feed-services"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
+import { loadifyReducer, LoadifyStateType, loadifyContext } from "./loadify"
+import { mockData } from "components/feed"
+import { P } from "components/Markup"
 
-export interface FeedState {
+export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {
   // Local Properties
+  homeFeedItems: FeedItemType[]
   lastLoadHomeFeed: ISO8601String | null
 
   // JSON Properties come from Response
 }
 
-export interface FeedContextType extends FeedState, GetGotContextType {
-  // State + Handlers
-  loadHomeFeed: (force?: boolean) => void
+export interface FeedActionCreatorType extends GetGotContextType {
+  // Action Creators
+  loadHomeFeed: (force?: boolean) => Promise<void>
 }
 
-interface LoadHomeFeedAction {
-  type: "loadHomeFeed"
-  payload: {}
-}
+export interface FeedContextType extends FeedActionCreatorType, FeedState {}
+
+type LoadHomeFeedAction = FSA<"loadHomeFeed", FeedItemType[]>
 
 type FeedAction = LoadHomeFeedAction // | FooAction | BarAction | BazAction
 
-const reducer = (state: FeedState, action: FeedAction | GetGotResetAction) => {
+const reducer = loadifyReducer((state: FeedState, action: FeedAction | GetGotResetAction) => {
   switch (action.type) {
     case "loadHomeFeed":
       return {
         ...state,
-        ...action.payload,
+        homeFeedItems:
+          action.payload ||
+          (console.warn(`Home Feed Payload was ${action.payload}. Falling back to mock`), 0) ||
+          mockData.FEED_DETAILS_DATA.feed,
         lastLoadHomeFeed: new Date().toISOString(),
       }
     case "reset":
@@ -34,32 +40,44 @@ const reducer = (state: FeedState, action: FeedAction | GetGotResetAction) => {
     default:
       return state
   }
-}
+})
 
-const initialState: FeedState = { lastLoadHomeFeed: null }
+const initialState: FeedState = {
+  homeFeedItems: [],
+  lastLoadHomeFeed: null,
+  loading: {
+    loadHomeFeed: {},
+    reset: {},
+  },
+}
 
 const initialContext: FeedContextType = {
   ...initialState,
-  loadHomeFeed: () => {},
+  loadHomeFeed: async () => {},
   reset: () => {},
 }
 
 const FeedContext = React.createContext(initialContext)
 
+// Provider is used by GetGotRootDataContextProvider
 export const FeedContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
   return (
     <FeedContext.Provider
-      value={{
+      value={loadifyContext(dispatch, {
         ...state,
         loadHomeFeed: async () => {
           const homeFeedResults = await loadHomeFeed()
-          dispatch({ type: "loadHomeFeed", payload: homeFeedResults })
+          if (homeFeedResults.r === 0) {
+            dispatch({ type: "loadHomeFeed", payload: homeFeedResults.results })
+          } else {
+            console.error("Error loading Home Feed", homeFeedResults)
+          }
         },
         reset: () => {
           dispatch(getgotResetAction)
         },
-      }}>
+      })}>
       {props.children}
     </FeedContext.Provider>
   )

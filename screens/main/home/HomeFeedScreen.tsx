@@ -1,39 +1,42 @@
 import React from "react"
+import { Text } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { Alert, ScrollView, View } from "react-native"
-import { routes, Units } from "constants"
+import { routes } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { mockData, FeedItem, UserInfo } from "components/feed"
+import { FeedItem, UserInfo } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
-import TouchIcon from "components/TouchIcon"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
 import { influencerFeedRoutes } from "../feedRoutes"
 import NavButton from "components/NavButton"
+import moment from "moment"
+import { useFeedContext } from "providers/feed-context-provider"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
 export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
-  // const feed = useFeedContext()
-  const { feed } = mockData.FEED_DETAILS_DATA
+  const feedContext = useFeedContext()
+  // const { feed } = mockData.FEED_DETAILS_DATA
   const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
 
   React.useMemo(() => {
     loadSuggestedFollows()
   }, [])
 
-  // React.useEffect(() => {
-  //   if (
-  //     !feed.lastLoadHomeFeed ||
-  //     moment(feed.lastLoadHomeFeed).isBefore(moment().subtract(5, "minutes"))
-  //   ) {
-  //     feed.loadHomeFeed()
-  //   }
-  // }, [feed.lastLoadHomeFeed])
+  React.useEffect(() => {
+    if (
+      (!feedContext.lastLoadHomeFeed ||
+        moment(feedContext.lastLoadHomeFeed).isBefore(moment().subtract(5, "minutes"))) &&
+      !feedContext.loading.loadHomeFeed[JSON.stringify([])]
+    ) {
+      feedContext.loadHomeFeed()
+    }
+  }, [feedContext.lastLoadHomeFeed])
 
   const cancelHandler = () => {
     Alert.alert(
@@ -64,11 +67,12 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
     <>
       <DevTempNav onPress={handlePress} mode={mode} />
       <ScrollView>
-        {mode === "onboarding" ? (
+        {mode === "onboarding" ||
+        !(feedContext.homeFeedItems || feedContext.homeFeedItems.length) ? (
           <SuggestedFollows value={suggestedFollows} navigate={navigate} />
         ) : (
           <List>
-            {feed.map((item) => (
+            {feedContext.homeFeedItems.map((item) => (
               <View key={item.id}>
                 <UserInfo user={item.user} navigate={navigate} routes={influencerFeedRoutes} />
                 <FeedItem item={item} navigate={navigate} routes={influencerFeedRoutes} />
