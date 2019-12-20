@@ -1,8 +1,9 @@
-import { Modal, Flex, Button, WhiteSpace } from "@ant-design/react-native"
+import { Button, Flex, Modal, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
-import { Text, View, Image } from "react-native"
-import { devBorder, routes, Colors, Units } from "constants"
+import { Image, View } from "react-native"
+import { routes } from "constants"
 import { CampaignTemplate } from "api/promotions-services"
+import { CampaignRouteParams } from "constants/routeParam.interfaces"
 
 export type TemplateSelectionType = { campaignTemplate: CampaignTemplate; promotionId: GUID }
 
@@ -22,7 +23,7 @@ const initialState: TemplateSelectionType = {
     },
     externalUrl: null,
     meta: null,
-  },
+  } as CampaignTemplate,
   promotionId: null,
 }
 
@@ -42,11 +43,12 @@ export const TemplatePreviewModal = ({ selected, navigate }: TemplatePreviewModa
   const cancelHandler = React.useCallback(() => setVisible(false), [setVisible])
 
   const chooseHandler = React.useCallback(() => {
-    navigate(routes.Promotions.Campaign, {
+    const campaignView: CampaignRouteParams = {
       isDraft: true,
       promotionId,
-      campaignTemplate: campaignTemplate,
-    })
+      template: campaignTemplate,
+    }
+    navigate(routes.Promotions.Campaign, campaignView)
     setVisible(false)
   }, [selected, navigate])
 

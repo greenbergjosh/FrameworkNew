@@ -9,6 +9,7 @@ import { useProfileContext } from "providers/profile-context-provider"
 import * as Contacts from "expo-contacts"
 import * as Permissions from "expo-permissions"
 import { ExpoContactsToContacts } from "providers/model-translations/contacts"
+import { Colors } from "../../constants/unit.constants"
 
 interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
@@ -66,7 +67,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
           loading={isWaiting}>
           Sync Contacts
         </Button>
-        {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
+        {error && <Text style={{ color: Colors.warning }}>{error}</Text>}
         <WhiteSpace size="md" />
         <Button
           type="ghost"

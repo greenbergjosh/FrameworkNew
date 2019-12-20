@@ -1,7 +1,7 @@
 import React from "react"
 import { Button, Flex, WhiteSpace } from "@ant-design/react-native"
 import { Text } from "react-native"
-import { styles } from "constants"
+import { styles, Colors } from "constants"
 
 interface DevTempNavProps {
   showStartCampaignDialog: () => void
@@ -16,7 +16,7 @@ interface DevTempNavProps {
  */
 export default ({ mode, setMode, showStartCampaignDialog }: DevTempNavProps) => {
   return (
-    <Flex direction="row" justify="center" style={{ padding: 5, backgroundColor: "lightblue" }}>
+    <Flex direction="row" justify="center" style={{ padding: 5, backgroundColor: Colors.navBarBackground }}>
       <Text style={styles.Body}>Dev Nav: </Text>
       {mode === "homefeed" ? (
         <Button type="ghost" size="small" onPress={() => setMode("onboarding")}>

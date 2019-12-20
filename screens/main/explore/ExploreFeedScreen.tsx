@@ -9,28 +9,30 @@ import { ScrollView } from "react-native"
 
 export interface ExploreFeedScreenProps extends NavigationTabScreenProps {}
 
-export class ExploreFeedScreen extends React.Component<ExploreFeedScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: null,
-      headerTitle: () => <HeaderTitle title="Explore" align="left" size="large" />,
-    }
-  }
-  render() {
-    const { navigate } = this.props.navigation
-    const { feed } = mockData.FEED_DATA
-    return (
-      <>
-        <SearchBar
-          placeholder="Search"
-          cancelText="Cancel"
-          showCancelButton={false}
-          onSubmit={() => alert("Search\n Feature to come!")}
+export const ExploreFeedScreen = (props: ExploreFeedScreenProps) => {
+  const { navigate } = props.navigation
+  const { feed } = mockData.FEED_DATA
+  const images = React.useMemo(() => feed.map((f) => f.image), [feed])
+  return (
+    <>
+      <SearchBar
+        placeholder="Search"
+        cancelText="Cancel"
+        showCancelButton={false}
+        onSubmit={() => alert("Search\n Feature to come!")}
+      />
+      <ScrollView>
+        <ImageGrid
+          images={images}
+          onItemPress={(id) => navigate(routes.Explore.FeedDetails, { id })}
         />
-        <ScrollView>
-          <ImageGrid images={feed} onPress={(id) => navigate(routes.Explore.FeedDetails, { id })} />
-        </ScrollView>
-      </>
-    )
+      </ScrollView>
+    </>
+  )
+}
+ExploreFeedScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: null,
+    headerTitle: () => <HeaderTitle title="Explore" align="left" size="large" />,
   }
 }

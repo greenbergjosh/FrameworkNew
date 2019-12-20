@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { FeedItem, ProfileInfo } from "components/feed"
-import { profileFeedRoutes } from "../feedRoutes"
+import { profileFeedRoutes } from "constants"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
 
@@ -25,7 +25,12 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
         <View key={feedItem.id}>
           <ProfileInfo user={feedItem.user} navigate={navigate} routes={profileFeedRoutes} />
           <FeedItem
-            item={feedItem}
+            image={feedItem.image}
+            campaignRouteParams={{
+              isDraft: false,
+              promotionId: feedItem.promotionId,
+              campaignId: feedItem.campaignId,
+            }}
             navigate={navigate}
             routes={profileFeedRoutes}
             isCurrentUser={true}

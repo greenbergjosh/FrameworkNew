@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "./route.constants"
 
 const influencerFeedRoutes: FeedRoutes = {
   Feed: routes.Explore.UserFeed,

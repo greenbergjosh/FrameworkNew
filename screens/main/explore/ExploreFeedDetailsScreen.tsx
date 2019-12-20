@@ -4,7 +4,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { List } from "@ant-design/react-native"
 import { FeedItem, UserInfo } from "components/feed"
-import { influencerFeedRoutes } from "../feedRoutes"
+import { influencerFeedRoutes } from "constants"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
 
@@ -25,10 +25,19 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
       <View>
         <ScrollView>
           <List>
-            {feed.map((item) => (
-              <View key={item.id}>
-                <UserInfo user={item.user} navigate={navigate} routes={influencerFeedRoutes} />
-                <FeedItem item={item} navigate={navigate} routes={influencerFeedRoutes} />
+            {feed.map((feedItem) => (
+              <View key={feedItem.id}>
+                <UserInfo user={feedItem.user} navigate={navigate} routes={influencerFeedRoutes} />
+                <FeedItem
+                  image={feedItem.image}
+                  navigate={navigate}
+                  campaignRouteParams={{
+                    isDraft: false,
+                    promotionId: feedItem.promotionId,
+                    campaignId: feedItem.campaignId,
+                  }}
+                  routes={influencerFeedRoutes}
+                />
               </View>
             ))}
           </List>

@@ -1,16 +1,14 @@
 import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { Alert, ScrollView, View } from "react-native"
-import { routes, Units } from "constants"
+import { influencerFeedRoutes, routes } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import { FeedItem, UserInfo } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
-import TouchIcon from "components/TouchIcon"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
-import { influencerFeedRoutes } from "../feedRoutes"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
 
@@ -36,7 +34,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   //   }
   // }, [feed.lastLoadHomeFeed])
 
-  const showStartCampaignDialog = () => {
+  const showStartCampaignDialog = (promotionId: GUID) => {
     Alert.alert(
       "Start a Campaign?",
       "You recently added a new item to promote. Do you want to start a campaign?",
@@ -49,7 +47,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           text: "OK",
           onPress: () =>
             navigate(routes.Promotions.CampaignTemplates, {
-              promotionId: "606891fe-a0c1-436c-8cb8-ddcdcb3f4268",
+              promotionId,
             }),
         },
       ]
@@ -58,16 +56,31 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
 
   return (
     <>
-      <DevTempNav mode={mode} setMode={setMode} showStartCampaignDialog={showStartCampaignDialog} />
+      <DevTempNav
+        mode={mode}
+        setMode={setMode}
+        showStartCampaignDialog={() =>
+          showStartCampaignDialog("606891fe-a0c1-436c-8cb8-ddcdcb3f4268")
+        }
+      />
       <ScrollView>
         {mode === "onboarding" ? (
           <SuggestedFollows value={suggestedFollows} navigate={navigate} />
         ) : (
           <List>
-            {feed.map((item) => (
-              <View key={item.id}>
-                <UserInfo user={item.user} navigate={navigate} routes={influencerFeedRoutes} />
-                <FeedItem item={item} navigate={navigate} routes={influencerFeedRoutes} />
+            {feed.map((feedItem) => (
+              <View key={feedItem.id}>
+                <UserInfo user={feedItem.user} navigate={navigate} routes={influencerFeedRoutes} />
+                <FeedItem
+                  image={feedItem.image}
+                  navigate={navigate}
+                  campaignRouteParams={{
+                    isDraft: false,
+                    promotionId: feedItem.promotionId,
+                    campaignId: feedItem.campaignId,
+                  }}
+                  routes={influencerFeedRoutes}
+                />
               </View>
             ))}
           </List>

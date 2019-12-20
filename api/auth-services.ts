@@ -1,5 +1,9 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
 
+/********************
+ * Login
+ */
+
 export interface LoginData {
   email: string
   handle: string
@@ -17,6 +21,10 @@ export const getgotLogin = async (username: string, password: string, device: st
     d: device,
   })
 }
+
+/********************
+ * Profile
+ */
 
 export interface ProfileResponse extends GetGotSuccessResponse {
   email?: string

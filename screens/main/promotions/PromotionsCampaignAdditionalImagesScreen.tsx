@@ -1,28 +1,24 @@
 import { Modal } from "@ant-design/react-native"
-import { CampaignTemplate } from "api/promotions-services"
 import { HeaderTitle } from "components/HeaderTitle"
 import { P } from "components/Markup"
 import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
-import { routes, Units } from "constants"
+import { Colors, routes, Units, ImageUris } from "constants"
 import React from "react"
 import { Alert, ScrollView, Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderRightDoneButton } from "./components/HeaderRightDoneButton"
-import { InfluencerTokens } from "./PromotionsCampaignScreen"
 import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { ImageGrid } from "components/ImageGrid"
+import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
 
-const placeholderImage = require("assets/add-photo-placeholder.png")
-interface PromotionsCampaignAdditionalImagesScreenNavigationParams {
-  isDraft: boolean
-  images?: string[]
+interface PromotionsCampaignAdditionalImagesScreenNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens
-  promotionId: GUID
-  template: CampaignTemplate
+  requiredTokens: string[]
+  images?: string[]
 }
 
 export interface PromotionsCampaignAdditionalImagesScreenProps
@@ -46,7 +42,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
         }))
         .concat({
           id: "edf82f28-b367-4c35-9d6d-275d0084881a",
-          source: placeholderImage,
+          source: { uri: ImageUris.placeholder },
           dimensions: { width: Units.img128, height: Units.img128 },
         }),
     [params.images]
@@ -70,7 +66,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
           },
           {
             text: "Remove",
-            style: { color: "#FF0000" },
+            style: { color: Colors.warning },
             onPress: () => {
               setParams({
                 images: [...params.images.slice(0, index), ...params.images.slice(index + 1)],
@@ -95,7 +91,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
         we&rsquo;ll use the campaign photo.
       </P>
       <ScrollView>
-        <ImageGrid images={images} onPress={onPressImage} cols={3} />
+        <ImageGrid images={images} onItemPress={onPressImage} cols={3} />
       </ScrollView>
     </>
   )
@@ -103,7 +99,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
 
 PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
-  const { isDraft, influencerTokens } = navigation.state
+  const { isDraft } = navigation.state
     .params as PromotionsCampaignAdditionalImagesScreenNavigationParams
   const cancelHandler = () => {
     Alert.alert("Are you sure you want to lose your changes and cancel?", null, [

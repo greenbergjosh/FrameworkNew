@@ -15,7 +15,7 @@ export function ExpanderIcon(props: { collapsed: boolean }) {
           borderRadius: 11,
           height: 22,
           width: 22,
-          backgroundColor: "white",
+          backgroundColor: Colors.reverse,
           overflow: "hidden",
           textAlign: "center",
           lineHeight: 22,

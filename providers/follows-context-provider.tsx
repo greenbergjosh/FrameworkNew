@@ -6,13 +6,13 @@ import {
   FollowersResponse,
   loadFollowers,
   Follower,
-} from "api/follows-services/followers"
-import { Influencer, InfluencersResponse, loadInfluencers } from "api/follows-services/influencers"
+} from "api/follows-services"
+import { Influencer, InfluencersResponse, loadInfluencers } from "api/follows-services"
 import {
   BlockedUser,
   BlockedUsersResponse,
   loadBlockedUsers,
-} from "api/follows-services/blockedUsers"
+} from "api/follows-services"
 import moment from "moment"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {

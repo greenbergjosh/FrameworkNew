@@ -3,25 +3,30 @@ import { Image, TouchableOpacity } from "react-native"
 import { SocialButtons } from "./SocialButtons"
 import { Comments } from "./Comments"
 import { WhiteSpace } from "@ant-design/react-native"
+import { CampaignRouteParams } from "constants/routeParam.interfaces"
 
 interface FeedItemProps {
-  item: ImageType
+  image: ImageType
+  campaignRouteParams: CampaignRouteParams
   navigate
   routes: FeedRoutes
   isCurrentUser?: boolean
 }
 
-export function FeedItem({ item, navigate, routes, isCurrentUser = false }: FeedItemProps) {
+export function FeedItem({
+  image,
+  campaignRouteParams,
+  navigate,
+  routes,
+  isCurrentUser = false,
+}: FeedItemProps) {
   return (
     <>
-      <TouchableOpacity
-        onPress={() =>
-          navigate(routes.Campaign, { promotionId: "bcd991fb-916b-4630-878a-3a313b9db177" })
-        }>
+      <TouchableOpacity onPress={() => navigate(routes.Campaign, campaignRouteParams)}>
         <Image
-          key={item.id}
-          source={{ uri: item.source.uri }}
-          style={{ flex: 1, height: item.dimensions.height }}
+          key={image.id}
+          source={{ uri: image.source.uri }}
+          style={{ flex: 1, height: image.dimensions.height }}
         />
       </TouchableOpacity>
       {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons />}

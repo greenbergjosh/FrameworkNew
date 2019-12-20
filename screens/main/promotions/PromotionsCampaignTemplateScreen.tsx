@@ -1,10 +1,10 @@
-import { ActivityIndicator } from "@ant-design/react-native"
+import { ActivityIndicator, SearchBar } from "@ant-design/react-native"
 import React from "react"
 import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
-import { Colors, ImageUris, routes } from "constants"
+import { Colors, ImageUris, routes, Units } from "constants"
 import NavButton from "components/NavButton"
 import { ImageGrid } from "components/ImageGrid"
 import { TemplatePreviewModal, TemplateSelectionType } from "./components/TemplatePreviewModal"
@@ -31,9 +31,12 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   /**
    * User Selected Template From Grid
    */
-  const imageGridPressHandler = React.useCallback(
+  const getUserSelection = React.useCallback(
     (id) => {
-      const selected: TemplateSelectionType = { campaignTemplate: campaignTemplatesById[id], promotionId }
+      const selected: TemplateSelectionType = {
+        campaignTemplate: campaignTemplatesById[id],
+        promotionId,
+      }
       setSelectedTemplate(selected)
     },
     [campaignTemplatesById, navigate]
@@ -48,6 +51,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
         ? campaignTemplatesBySearchKey[searchText].map(({ id, template: { previewImage } }) => ({
             id,
             source: { uri: previewImage || ImageUris.placeholder },
+            dimensions: { height: Units.img128 },
           }))
         : [],
     [campaignTemplatesBySearchKey[searchText]]
@@ -66,10 +70,18 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   }
 
   return (
-    <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
-      <ImageGrid images={images} onPress={imageGridPressHandler} cols={2} />
-      <TemplatePreviewModal selected={selectedTemplate} navigate={navigate} />
-    </ScrollView>
+    <>
+      <SearchBar
+        placeholder="Search"
+        cancelText="Cancel"
+        showCancelButton={false}
+        onSubmit={() => alert("Search\n Feature to come!")}
+      />
+      <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+        <ImageGrid images={images} onItemPress={getUserSelection} cols={2} />
+        <TemplatePreviewModal selected={selectedTemplate} navigate={navigate} />
+      </ScrollView>
+    </>
   )
 }
 

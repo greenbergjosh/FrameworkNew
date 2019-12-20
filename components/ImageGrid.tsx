@@ -50,20 +50,20 @@ function GridShim() {
 
 interface ImageGridProps {
   images: ImageType[]
-  onPress: (...args: any[]) => void
+  onItemPress: (...args: any[]) => void
   cols?: number
 }
 
-export function ImageGrid({ images, onPress, cols = 3 }: ImageGridProps) {
+export function ImageGrid({ images, onItemPress, cols = 3 }: ImageGridProps) {
   const hasRemainder = images.length % cols === 1
   const lastIdx = images.length - 1
   return (
     <FlatList
       data={images}
-      keyExtractor={(item: ImageType) => item.id.toString()}
+      keyExtractor={(item: ImageType) => item.id}
       renderItem={({ item, index }) => (
         <>
-          <GridImage image={item} onPress={() => onPress(item.id)} />
+          <GridImage image={item} onPress={() => onItemPress(item.id)} />
           {index === lastIdx && hasRemainder ? <GridShim /> : null}
         </>
       )}

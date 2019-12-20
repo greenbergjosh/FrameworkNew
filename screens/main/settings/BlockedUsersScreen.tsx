@@ -7,6 +7,7 @@ import { routes, styles } from "constants"
 import { useFollowsContext } from "providers/follows-context-provider"
 import { BlockedUserRow } from "./components/BlockedUserRow"
 import NavButton from "components/NavButton"
+import { Colors } from "../../../constants/unit.constants"
 
 interface BlockedUsersScreenProps extends NavigationTabScreenProps {}
 
@@ -26,10 +27,10 @@ export const BlockedUsersScreen = ({ navigation }: BlockedUsersScreenProps) => {
     <>
       {blockedUsers.length > 0 ? (
         <ScrollView
-          style={{ flex: 1, backgroundColor: "#f5f5f9" }}
+          style={{ flex: 1, backgroundColor: Colors.screenBackground }}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}>
-          <View style={{ backgroundColor: "white" }}>
+          <View style={{ backgroundColor: Colors.reverse }}>
             {blockedUsers.map((user) => (
               <BlockedUserRow key={user.id} user={user} />
             ))}

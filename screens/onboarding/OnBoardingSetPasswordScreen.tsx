@@ -7,6 +7,7 @@ import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
+import { Colors } from "../../constants/unit.constants"
 
 interface OnBoardingSetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
@@ -40,7 +41,7 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
         }}
         clearButtonMode="always"
       />
-      {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
+      {error && <Text style={{ color: Colors.warning }}>{error}</Text>}
       <WhiteSpace size="lg" />
       <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />

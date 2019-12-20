@@ -4,7 +4,7 @@ import { Text, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes, styles } from "constants"
-import { H3 } from "components/Markup"
+import { H3, STRONG } from "components/Markup"
 import NavButton from "components/NavButton"
 
 interface AnalyticsScreenProps extends NavigationTabScreenProps {}
@@ -39,25 +39,25 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
           <List.Item>
             <H3>
               Impressions{" "}
-              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>2,526</Text>
+              <STRONG style={{ color: Colors.bodyTextEmphasis }}>2,526</STRONG>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
               Click Throughs{" "}
-              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>396</Text>
+              <STRONG style={{ color: Colors.bodyTextEmphasis }}>396</STRONG>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
               Items Sold{" "}
-              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>52</Text>
+              <STRONG style={{ color: Colors.bodyTextEmphasis }}>52</STRONG>
             </H3>
           </List.Item>
           <List.Item>
             <H3>
               Commissions Earned{" "}
-              <Text style={{ fontWeight: "bold", color: Colors.bodyTextEmphasis }}>$126</Text>
+              <STRONG style={{ color: Colors.bodyTextEmphasis }}>$126</STRONG>
             </H3>
           </List.Item>
         </List>

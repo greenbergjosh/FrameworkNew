@@ -7,7 +7,7 @@ import { TextAreaModal } from "./components/TextAreaModal"
 import { routes } from "constants"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
-import { Alert, Text } from "react-native"
+import { Alert } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import {
@@ -15,25 +15,16 @@ import {
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
-
-export interface InfluencerTokens {
-  [key: string]: unknown
-}
+import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
 
 interface ActionMessage {
   action: string
   payload: any
 }
 
-interface PromotionsCampaignNavigationParams {
-  isDraft: boolean
-  template: CampaignTemplate
-
+interface PromotionsCampaignNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens
   requiredTokens: string[]
-
-  campaignId?: GUID // If campaignId is provided, pull the template from there
-  promotionId: GUID
 }
 
 interface PromotionsCampaignScreenProps
@@ -47,7 +38,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
 
   const {
     campaignId,
-    isDraft,
+    isDraft = false,
     influencerTokens = {},
     promotionId,
     template: paramsTemplate,
@@ -211,26 +202,30 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
 
   return (
     <>
-      <SubHeader title="Customize Your Campaign" />
-      <WhiteSpace size="xl"/>
-      <TextAreaModal
-        initialValue={influencerTokens[promptKey] as string}
-        onCancel={() => setShowMessageModal(false)}
-        onOK={(message) => {
-          setShowMessageModal(false)
-          setInfluencerToken(message)
+      {isDraft ? (
+        <>
+          <SubHeader title="Customize Your Campaign" />
+          <WhiteSpace size="xl" />
+          <TextAreaModal
+            initialValue={influencerTokens[promptKey] as string}
+            onCancel={() => setShowMessageModal(false)}
+            onOK={(message) => {
+              setShowMessageModal(false)
+              setInfluencerToken(message)
 
-          getgotWebView.current.injectJavaScript(
-            `
+              getgotWebView.current.injectJavaScript(
+                `
               window.editedText(\`${message}\`${promptKey ? ", `" + promptKey + "`" : ""}); 
               true;
               `
-          )
-          setPromptKey(null)
-        }}
-        title={promptKey}
-        visible={showMessageModal}
-      />
+              )
+              setPromptKey(null)
+            }}
+            title={promptKey}
+            visible={showMessageModal}
+          />
+        </>
+      ) : null}
       {renderedWebView}
     </>
   )

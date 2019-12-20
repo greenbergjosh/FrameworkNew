@@ -51,7 +51,7 @@ export function PromotionCard({
             },
           ]
         ),
-      style: { backgroundColor: Colors.warning, color: "white" },
+      style: { backgroundColor: Colors.warning, color: Colors.reverse },
     },
   ]
   const swipeMenuArchive = [
@@ -78,7 +78,7 @@ export function PromotionCard({
             },
           ]
         ),
-      style: { backgroundColor: Colors.archived, color: "white" },
+      style: { backgroundColor: Colors.archived, color: Colors.reverse },
     },
   ]
   const swipeMenuUnarchive = [
@@ -90,7 +90,7 @@ export function PromotionCard({
         </>
       ),
       onPress: () => alert("Unarchive Promotion\nFeature to come!"),
-      style: { backgroundColor: Colors.success, color: "white" },
+      style: { backgroundColor: Colors.success, color: Colors.reverse },
     },
   ]
 
