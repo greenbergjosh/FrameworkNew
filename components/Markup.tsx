@@ -15,8 +15,10 @@ export const P = ({ children, style }: MarkdownProps) => (
   <Text style={[styles.Body, { marginBottom: Units.margin }, style]}>{children}</Text>
 )
 
-export const STRONG = ({ children, style }: MarkdownProps) => (
-  <Text style={[styles.Body, { fontWeight: FontWeights.bold }, style]}>{children}</Text>
+export const STRONG = ({ children, style, onPress }: LinkableMarkdownProps) => (
+  <Text style={[styles.Body, { fontWeight: FontWeights.bold }, style]} onPress={onPress}>
+    {children}
+  </Text>
 )
 
 export const SMALL = ({ children, style }: MarkdownProps) => (

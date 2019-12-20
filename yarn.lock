@@ -5122,11 +5122,16 @@ react-native-modal-popover@^0.0.12:
     lodash.debounce "^4.0.8"
     prop-types "^15.6.2"
 
-"react-native-parsed-text@git+https://github.com/EvanBacon/react-native-parsed-text.git":
+"react-native-parsed-text@https://github.com/EvanBacon/react-native-parsed-text.git":
   version "0.0.22"
-  resolved "git+https://github.com/EvanBacon/react-native-parsed-text.git#f55c4713c62961f13a2eec99cbc1ec619615ee72"
+  resolved "https://github.com/EvanBacon/react-native-parsed-text.git#f55c4713c62961f13a2eec99cbc1ec619615ee72"
   dependencies:
     prop-types "^15.5.10"
+
+react-native-read-more-text@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-read-more-text/-/react-native-read-more-text-1.1.0.tgz#d6f02a5caff8c91297957be66ecb42287c084e96"
+  integrity sha512-xmaytGMZyZPnJZQ8z0Tkbx6ff1XNznIRmbsfhaTczEbxkZonIIcPt9RmCMgyoSxOrXAsINsKNNbUt1OopNb92Q==
 
 react-native-reanimated@1.2.0:
   version "1.2.0"

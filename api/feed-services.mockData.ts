@@ -1,5 +1,5 @@
 import { ImageUris } from "constants"
-import { FeedItemType } from "./feed-services"
+import { FeedCommentType, FeedItemType } from "./feed-services"
 
 export const FEED_DATA: { feed: FeedItemType[] } = {
   feed: [
@@ -333,4 +333,85 @@ export const USER_FEED_DATA: { user: UserInfoType; feed: FeedItemType[] } = {
     avatarUri: ImageUris.placeholder,
   },
   feed: FEED_DATA.feed,
+}
+
+export const FEED_COMMENTS: FeedCommentType = {
+  lastActivity: "2019-11-26T15:04:44.477Z",
+  likes: {
+    count: 78,
+    firstUser: {
+      userId: "69368e0c-5383-471e-b075-3272b4922750",
+      handle: "groovy.dollies",
+      avatarUri: ImageUris.placeholder,
+    },
+  },
+  comments: [
+    {
+      id: "69368e0c-5383-471e-b075-000000000001",
+      user: {
+        userId: "69368e0c-5383-471e-b075-3272b4922751",
+        handle: "jupiterdollies",
+        avatarUri: ImageUris.placeholder,
+      },
+      message: "margo🦋",
+      likes: { count: 0 },
+      comments: [
+        {
+          id: "69368e0c-5383-471e-b075-000000000002",
+          user: {
+            userId: "69368e0c-5383-471e-b075-3272b4922751",
+            handle: "userhandle1",
+            avatarUri: ImageUris.placeholder,
+          },
+          message: "Yet another comment 1",
+          likes: { count: 0 },
+          comments: [],
+        },
+        {
+          id: "69368e0c-5383-471e-b075-000000000003",
+          user: {
+            userId: "69368e0c-5383-471e-b075-3272b4922752",
+            handle: "userhandle2",
+            avatarUri: ImageUris.placeholder,
+          },
+          message: "Yet another comment 2",
+          likes: { count: 0 },
+          comments: [],
+        },
+        {
+          id: "69368e0c-5383-471e-b075-000000000004",
+          user: {
+            userId: "69368e0c-5383-471e-b075-3272b4922753",
+            handle: "userhandle3",
+            avatarUri: ImageUris.placeholder,
+          },
+          message: "Yet another comment 3",
+          likes: { count: 0 },
+          comments: [],
+        },
+      ],
+    },
+    {
+      id: "69368e0c-5383-471e-b075-000000000005",
+      user: {
+        userId: "69368e0c-5383-471e-b075-3272b4922754",
+        handle: "agafrica254",
+        avatarUri: ImageUris.placeholder,
+      },
+      message: "Cutie😍😍",
+      likes: { count: 0 },
+      comments: [],
+    },
+    {
+      id: "69368e0c-5383-471e-b075-000000000006",
+      user: {
+        userId: "69368e0c-5383-471e-b075-3272b4922751",
+        handle: "jupiterdollies",
+        avatarUri: ImageUris.placeholder,
+      },
+      message: "@agafrica254 thank you💓 for that lovely comment!",
+      likes: { count: 0 },
+      comments: [],
+    },
+  ],
 }
