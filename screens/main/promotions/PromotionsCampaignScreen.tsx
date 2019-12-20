@@ -169,9 +169,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
             if (typeof window.setTemplate === "function" && typeof window.setTokenValues === "function") {
               try {
                 window.setTemplate(\`${template.template && template.template.html}\`);
-                window.setTokenValues(${JSON.stringify(
-                  campaignId ? templateParts : influencerTokens
-                )});
+                window.setTokenValues(${campaignId ? templateParts : influencerTokens});
                 // alert(${JSON.stringify(campaignId ? templateParts : influencerTokens)});
               }
               catch(ex) {
@@ -212,7 +210,7 @@ export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) =
   return (
     <>
       <SubHeader title="Customize Your Campaign" />
-      <WhiteSpace size="xl"/>
+      <WhiteSpace size="xl" />
       <TextAreaModal
         initialValue={influencerTokens[promptKey] as string}
         onCancel={() => setShowMessageModal(false)}
