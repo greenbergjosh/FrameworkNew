@@ -7,8 +7,10 @@ import { PromotionExpander } from "screens/main/promotions/components/PromotionE
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import { Colors, FontWeights, routes, styles, Units } from "constants"
 import { Badge } from "components/Badge"
-import { H4 } from "components/Markup"
+import { H4, P } from "components/Markup"
 import { Tab, Tabs } from "components/Tabs"
+import { Empty } from "components/Empty"
+import { PromotionEducationPrompt } from "components/promotion/PromotionEducationPrompt"
 
 export interface PromotionsScreenProps extends NavigationTabScreenProps {}
 
@@ -34,29 +36,46 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
   const promotions = promotionsContext.results
+
+  const archivedPromotions = /* Todo: some real lookup */ promotions
   const { navigate } = props.navigation
 
   return (
     <Tabs stateRouteName={props.navigation.state.routeName} swipeEnabled={false}>
       <Tab title="Current" route={routes.Promotions.Promotions} badge={promotions.length}>
-        <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
-          <FlatList
-            data={promotions}
-            renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
-            keyExtractor={(promotion) => promotion.id}
-          />
-        </ScrollView>
+        {promotions && promotions.length ? (
+          <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+            <FlatList
+              data={promotions}
+              renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
+              keyExtractor={(promotion) => promotion.id}
+            />
+          </ScrollView>
+        ) : (
+          <PromotionEducationPrompt />
+        )}
       </Tab>
       <Tab title="Archived" route={routes.Promotions.PromotionsArchived} badge={promotions.length}>
-        <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
-          <FlatList
-            data={promotions}
-            renderItem={({ item }) => (
-              <PromotionExpander navigate={navigate} promotion={item} isArchived />
-            )}
-            keyExtractor={(promotion) => promotion.id}
+        {archivedPromotions && archivedPromotions.length ? (
+          <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+            <FlatList
+              data={archivedPromotions}
+              renderItem={({ item }) => (
+                <PromotionExpander navigate={navigate} promotion={item} isArchived />
+              )}
+              keyExtractor={(promotion) => promotion.id}
+            />
+          </ScrollView>
+        ) : (
+          <Empty
+            message={
+              <>
+                <P>You haven't archived any old promotions, yet.</P>
+                <P>That's okay. You don't have to!</P>
+              </>
+            }
           />
-        </ScrollView>
+        )}
       </Tab>
     </Tabs>
   )
