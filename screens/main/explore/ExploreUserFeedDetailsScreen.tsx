@@ -18,7 +18,7 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
       headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
       headerTitle: (
         <HeaderTitle
-          title={`${mockData.USER_FEED_DETAILS_DATA.user.handle}'s Posts`}
+          title={`${mockData.USER_FEED_DATA.user.handle}'s Posts`}
           offset="none"
         />
       ),
@@ -26,7 +26,7 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
   }
   render() {
     const { navigate } = this.props.navigation
-    const { user, feed } = mockData.USER_FEED_DETAILS_DATA
+    const { user, feed } = mockData.USER_FEED_DATA
 
     return (
       <View>

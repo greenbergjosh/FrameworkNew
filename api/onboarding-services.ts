@@ -1,6 +1,7 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
 import { suggestedFollows } from "./onboarding-services.mockData"
 import { SID } from "constants/appkeys"
+import { FeedItemType } from "./feed-services"
 
 /********************
  * Send Code
@@ -59,12 +60,12 @@ export const createUser = async (
  */
 
 export type Influencer = {
-  userId: number
-  name: string
-  avatar?: string | null
+  userId: string
+  handle: string
+  avatarUri?: string | null
   description?: string | null
   source?: string | null
-  feedImages: string[]
+  feed: FeedItemType[]
 }
 
 export interface SuggestedFollowsResponse extends GetGotSuccessResponse {

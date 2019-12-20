@@ -334,12 +334,3 @@ export const USER_FEED_DATA: { user: UserInfoType; feed: FeedItemType[] } = {
   },
   feed: FEED_DATA.feed,
 }
-
-export const USER_FEED_DETAILS_DATA: { user: UserInfoType; feed: FeedItemType[] } = {
-  user: {
-    userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
-    handle: "loren",
-    avatarUri: ImageUris.placeholder,
-  },
-  feed: FEED_DATA.feed
-}

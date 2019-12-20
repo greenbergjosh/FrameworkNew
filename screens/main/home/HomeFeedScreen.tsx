@@ -65,7 +65,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
       />
       <ScrollView>
         {mode === "onboarding" ? (
-          <SuggestedFollows value={suggestedFollows} navigate={navigate} />
+          <SuggestedFollows influencers={suggestedFollows} navigate={navigate} />
         ) : (
           <List>
             {feed.map((feedItem) => (

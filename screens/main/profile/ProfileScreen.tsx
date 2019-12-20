@@ -12,7 +12,7 @@ interface ProfileScreenProps extends NavigationTabScreenProps {}
 
 export const ProfileScreen = (props: ProfileScreenProps) => {
   const { navigate } = props.navigation
-  const { user, feed } = mockData.USER_FEED_DETAILS_DATA
+  const { user, feed } = mockData.USER_FEED_DATA
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
 
   return (

@@ -2,7 +2,7 @@ import React from "react"
 import { Button, Carousel, Flex, Icon, WhiteSpace } from "@ant-design/react-native"
 import { Image, Text, View } from "react-native"
 import { Influencer } from "api/onboarding-services"
-import { influencerFeedRoutes, routes, styles } from "constants"
+import { influencerFeedRoutes, routes, styles, Units } from "constants"
 import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"
 import { H2, H3, SMALL } from "components/Markup"
@@ -10,13 +10,13 @@ import { FollowsScreenProps } from "../../follows/FollowsScreen"
 import { InfluencersList } from "components/follows"
 
 interface SuggestedFollowsProps {
-  value: Influencer[]
+  influencers: Influencer[]
   navigate: FollowsScreenProps["navigation"]["navigate"]
 }
 
 export default (props: SuggestedFollowsProps) => {
-  const { value, navigate } = props
-  if (!value) {
+  const { influencers, navigate } = props
+  if (!influencers) {
     return null
   }
   return (
@@ -29,15 +29,15 @@ export default (props: SuggestedFollowsProps) => {
       <WhiteSpace size="xl" />
       <WhiteSpace size="xl" />
       <Carousel afterChange={this.onHorizontalSelectedIndexChange}>
-        {value.map((influencer) => (
+        {influencers.map((influencer) => (
           <View style={carouselStyles.carouselHorizontal} key={influencer.userId}>
             <Flex direction="column" align="center">
               <Avatar
-                source={influencer.avatar}
+                source={influencer.avatarUri}
                 size="lg"
                 onPress={() => navigate(routes.Explore.UserFeed, { id: influencer.userId })}
               />
-              <H2>{influencer.name}</H2>
+              <H2>{influencer.handle}</H2>
               <WhiteSpace size="sm" />
               <Text style={styles.Body}>{influencer.description}</Text>
               <WhiteSpace size="xl" />
@@ -47,9 +47,18 @@ export default (props: SuggestedFollowsProps) => {
               <WhiteSpace size="xl" />
               <SMALL>{influencer.source}</SMALL>
               <WhiteSpace size="lg" />
-              <Flex direction={"row"} justify={"between"} style={{ width: 226 }}>
-                {influencer.feedImages.map((imgUri, index, ary) => (
-                  <Image source={{ uri: imgUri }} style={{ width: 73, height: 73 }} key={index} />
+              <Flex direction="row" justify="center" style={{ width: "100%" }}>
+                {influencer.feed.map((feedItem, index, ary) => (
+                  <Image
+                    source={{ uri: feedItem.image.source.uri }}
+                    style={{
+                      width: Units.img64,
+                      height: Units.img64,
+                      marginLeft: 2.5,
+                      marginRight: 2.5,
+                    }}
+                    key={index}
+                  />
                 ))}
               </Flex>
             </Flex>
