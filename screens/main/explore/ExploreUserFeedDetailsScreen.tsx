@@ -4,7 +4,7 @@ import { List } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { FeedItem, UserInfo } from "components/feed"
-import { influencerFeedRoutes } from "constants"
+import { influencerFeedRoutes, Units } from "constants"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
 
@@ -17,10 +17,7 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
     return {
       headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
       headerTitle: (
-        <HeaderTitle
-          title={`${mockData.USER_FEED_DATA.user.handle}'s Posts`}
-          offset="none"
-        />
+        <HeaderTitle title={`${mockData.USER_FEED_DATA.user.handle}'s Posts`} offset="none" />
       ),
     }
   }
@@ -39,18 +36,18 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
         <ScrollView>
           <List>
             {feed.map((feedItem) => (
-              <View key={feedItem.id}>
-                <FeedItem
-                  image={feedItem.image}
-                  navigate={navigate}
-                  campaignRouteParams={{
-                    isDraft: false,
-                    promotionId: feedItem.promotionId,
-                    campaignId: feedItem.campaignId,
-                  }}
-                  routes={influencerFeedRoutes}
-                />
-              </View>
+              <FeedItem
+                key={feedItem.id}
+                image={feedItem.image}
+                navigate={navigate}
+                campaignRouteParams={{
+                  isDraft: false,
+                  promotionId: feedItem.promotionId,
+                  campaignId: feedItem.campaignId,
+                }}
+                routes={influencerFeedRoutes}
+                style={{ marginBottom: Units.margin }}
+              />
             ))}
           </List>
         </ScrollView>

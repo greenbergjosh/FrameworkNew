@@ -1,5 +1,5 @@
 import React from "react"
-import { Image, TouchableOpacity } from "react-native"
+import { Image, StyleProp, TouchableOpacity, View, ViewStyle } from "react-native"
 import { SocialButtons } from "./SocialButtons"
 import { Comments } from "./Comments"
 import { WhiteSpace } from "@ant-design/react-native"
@@ -11,6 +11,7 @@ interface FeedItemProps {
   navigate
   routes: FeedRoutes
   isCurrentUser?: boolean
+  style?: StyleProp<ViewStyle>
 }
 
 export function FeedItem({
@@ -19,9 +20,10 @@ export function FeedItem({
   navigate,
   routes,
   isCurrentUser = false,
+  style,
 }: FeedItemProps) {
   return (
-    <>
+    <View style={style}>
       <TouchableOpacity onPress={() => navigate(routes.Campaign, campaignRouteParams)}>
         <Image
           key={image.id}
@@ -31,6 +33,6 @@ export function FeedItem({
       </TouchableOpacity>
       {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons />}
       <Comments navigate={navigate} routes={routes} />
-    </>
+    </View>
   )
 }
