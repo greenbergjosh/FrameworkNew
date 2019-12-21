@@ -8,6 +8,7 @@ import Avatar from "components/Avatar"
 import { H2, H3, SMALL } from "components/Markup"
 import { FollowsScreenProps } from "../../follows/FollowsScreen"
 import { InfluencersList } from "components/follows"
+import TouchImage from "../../../../components/TouchImage"
 
 interface SuggestedFollowsProps {
   influencers: Influencer[]
@@ -49,15 +50,16 @@ export default (props: SuggestedFollowsProps) => {
               <WhiteSpace size="lg" />
               <Flex direction="row" justify="center" style={{ width: "100%" }}>
                 {influencer.feed.map((feedItem, index, ary) => (
-                  <Image
-                    source={{ uri: feedItem.image.source.uri }}
-                    style={{
-                      width: Units.img64,
-                      height: Units.img64,
-                      marginLeft: 2.5,
-                      marginRight: 2.5,
-                    }}
+                  <TouchImage
                     key={index}
+                    uri={feedItem.image.source.uri}
+                    size="img64"
+                    onPress={() =>
+                      navigate(influencerFeedRoutes.FeedDetails, {
+                        postId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
+                      })
+                    }
+                    style={{ marginLeft: 2.5, marginRight: 2.5 }}
                   />
                 ))}
               </Flex>

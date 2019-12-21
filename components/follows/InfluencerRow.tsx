@@ -1,13 +1,14 @@
 import React from "react"
-import { Image, Text, TouchableOpacity } from "react-native"
+import { Text } from "react-native"
 import { Button, Flex, List } from "@ant-design/react-native"
 import pupa from "pupa"
 import { Influencer } from "api/follows-services"
-import { devBorder, styles, Units } from "constants"
+import { Units } from "constants"
 import moment from "moment"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
 import { SMALL } from "components/Markup"
+import TouchImage from "../TouchImage"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
@@ -82,18 +83,17 @@ export const InfluencerRow = ({
           {/* Feed Images */}
           <Flex direction="row" wrap="wrap" align="start" style={{ marginTop: 8 }}>
             {feedImagesSmall.map((feedImage, index) => (
-              <TouchableOpacity
+              <TouchImage
+                key={index}
+                uri={feedImage}
+                size="img40"
                 onPress={() =>
                   navigate(routes.FeedDetails, {
                     postId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
                   })
                 }
-                key={index}>
-                <Image
-                  source={{ uri: feedImage }}
-                  style={[styles.ThumbnailSM, { marginRight: 4, marginBottom: 4 }]}
-                />
-              </TouchableOpacity>
+                style={{ marginRight: 4, marginBottom: 4 }}
+              />
             ))}
           </Flex>
         </Flex.Item>

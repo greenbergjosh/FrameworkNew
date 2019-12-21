@@ -36,13 +36,6 @@ const ImageStyles = StyleSheet.create({
     height: Units.img20,
     borderRadius: Units.img20 / 2,
   },
-
-  ThumbnailSM: {
-    width: Units.img40,
-    height: Units.img40,
-    borderColor: Colors.border,
-    borderWidth: 1,
-  },
 })
 
 export default ImageStyles
