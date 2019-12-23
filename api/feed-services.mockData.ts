@@ -288,8 +288,8 @@ export const FEED_DETAILS_DATA: { feed: FeedItemType[] } = {
         dimensions: { height: 435 },
       },
       user: {
-        userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
-        handle: "loren",
+        userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
+        handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
     },
@@ -326,12 +326,20 @@ export const FEED_DETAILS_DATA: { feed: FeedItemType[] } = {
   ],
 }
 
-export const USER_FEED_DATA: { user: UserInfoType; feed: FeedItemType[] } = {
-  user: {
-    userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
-    handle: "loren",
-    avatarUri: ImageUris.placeholder,
-  },
+export const INFLUENCER_PROFILE_DATA: UserInfoFullType = {
+  userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
+  handle: "loren",
+  avatarUri: ImageUris.placeholder,
+  postsCount: 1185,
+  followersCount: 17000000,
+  followingCount: 225,
+  bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+  bioLink: new URL("youtu.be/Emkxvx11nz4"),
+  followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
+}
+
+export const USER_FEED_DATA: { user: UserInfoFullType; feed: FeedItemType[] } = {
+  user: INFLUENCER_PROFILE_DATA,
   feed: FEED_DATA.feed,
 }
 

@@ -2,7 +2,7 @@ import React from "react"
 import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { UserInfo } from "components/feed"
+import { InfluencerInfoFull } from "components/user-info"
 import { ImageGrid } from "components/ImageGrid"
 import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
@@ -17,10 +17,9 @@ export const ExploreUserFeedScreen = (props: ExploreUserFeedScreenProps) => {
 
   return (
     <ScrollView>
-      <UserInfo
+      <InfluencerInfoFull
         user={user}
         navigate={navigate}
-        showFullDetails={true}
         routes={influencerFeedRoutes}
       />
       <ImageGrid

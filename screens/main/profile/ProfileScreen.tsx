@@ -4,22 +4,23 @@ import { Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { profileFeedRoutes, routes, styles } from "constants"
-import { ProfileInfo } from "components/feed"
+import { ProfileInfoFull } from "components/user-info"
 import { ImageGrid } from "components/ImageGrid"
-import * as mockData from "api/feed-services.mockData"
+import * as feedMockData from "api/feed-services.mockData"
+import * as profileMockData from "api/profile-services.mockData"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
 export const ProfileScreen = (props: ProfileScreenProps) => {
   const { navigate } = props.navigation
-  const { user, feed } = mockData.USER_FEED_DATA
+  const { feed } = feedMockData.USER_FEED_DATA
+  const user = profileMockData.PROFILE_DATA
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
 
   return (
     <View>
-      <ProfileInfo
+      <ProfileInfoFull
         user={user}
-        showFullDetails={true}
         navigate={navigate}
         routes={profileFeedRoutes}
       />

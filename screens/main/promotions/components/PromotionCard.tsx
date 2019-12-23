@@ -8,6 +8,7 @@ import TouchIcon from "components/TouchIcon"
 import { Promotional } from "api/promotions-services"
 import { UndoIcon } from "assets/icons"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
+import { pluralize } from "../../../../util"
 
 interface PromotionCardProps {
   onPress?: () => void
@@ -93,8 +94,6 @@ export function PromotionCard({
       style: { backgroundColor: Colors.success, color: Colors.reverse },
     },
   ]
-
-  const pluralize = (count, noun, suffix = "s") => `${noun}${count !== 1 ? suffix : ""}`
 
   const swipeMenu = React.useMemo(() => {
     const a = campaignCount < 1 ? swipeMenuDelete : swipeMenuArchive

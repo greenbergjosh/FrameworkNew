@@ -4,7 +4,8 @@ import { Alert, ScrollView, View } from "react-native"
 import { influencerFeedRoutes, routes } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { FeedItem, UserInfo } from "components/feed"
+import { FeedItem } from "components/feed"
+import { InfluencerInfoShort } from "components/user-info"
 import { HeaderLogo } from "components/HeaderLogo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
@@ -70,7 +71,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           <List>
             {feed.map((feedItem) => (
               <View key={feedItem.id}>
-                <UserInfo user={feedItem.user} navigate={navigate} routes={influencerFeedRoutes} />
+                <InfluencerInfoShort user={feedItem.user} navigate={navigate} routes={influencerFeedRoutes} />
                 <FeedItem
                   image={feedItem.image}
                   navigate={navigate}

@@ -21,6 +21,7 @@
     "expo-secure-store": "7.0.0",
     "fuse.js": "3.4.6",
     "moment": "2.24.0",
+    "numeral": "^2.0.6",
     "pupa": "2.0.1",
     "react": "16.8.3",
     "react-dom": "16.8.3",
@@ -46,6 +47,7 @@
     "react-navigation-tabs": "2.5.6"
   },
   "devDependencies": {
+    "@types/numeral": "0.0.26",
     "@types/react": "16.8.23",
     "@types/react-native": "0.57.65",
     "babel-preset-expo": "7.1.0",

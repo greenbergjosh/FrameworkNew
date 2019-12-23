@@ -5,11 +5,8 @@ import { blockedUsers, followers, follows } from "./follows-services.mockData"
  * Blocked Users
  */
 
-export type BlockedUser = {
+export type BlockedUser = UserInfoType & {
   id: number
-  userId: GUID
-  avatarUri: string
-  handle: string
   name: string
   blockedDate: ISO8601String
 }
@@ -35,11 +32,8 @@ export type Followers = {
   followers: Follower[]
 }
 
-export type Follower = {
+export type Follower = UserInfoType & {
   id: number
-  userId: GUID
-  avatarUri: string
-  handle: string
   name: string
   followedDate: ISO8601String
 }
@@ -60,11 +54,8 @@ export const loadFollowers = async () => {
  * Influencers
  */
 
-export type Influencer = {
+export type Influencer = UserInfoType & {
   id: number
-  userId: GUID
-  avatarUri: string
-  handle: string
   statusPhrase: {
     template: string
     data?: {}

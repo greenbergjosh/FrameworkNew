@@ -7,7 +7,7 @@ export const suggestedFollows: SuggestedFollowsResponse = {
   results: [
     {
       userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
-      handle: "loren",
+      handle: "boren",
       avatarUri: ImageUris.placeholder,
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",

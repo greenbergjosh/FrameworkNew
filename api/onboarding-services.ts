@@ -59,12 +59,9 @@ export const createUser = async (
  * Suggested Follows
  */
 
-export type Influencer = {
-  userId: string
-  handle: string
-  avatarUri?: string | null
-  description?: string | null
-  source?: string | null
+export type Influencer = UserInfoType & {
+  description?: string
+  source?: string
   feed: FeedItemType[]
 }
 

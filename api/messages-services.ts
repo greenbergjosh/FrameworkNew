@@ -5,16 +5,10 @@ import { contacts, messages } from "./messages-services.mockData"
  * Messages
  */
 
-export type User = {
-  userId: GUID
-  avatarUri: string
-  handle: string
-}
-
 export type Message = {
   id: GUID
   name: string
-  users: User[]
+  users: UserInfoType[]
   messageDate: ISO8601String
   content: string
 }
@@ -35,11 +29,8 @@ export const loadMessages = async () => {
  * Contacts
  */
 
-export type Contact = {
+export type Contact = UserInfoType & {
   id: number
-  userId: GUID
-  avatarUri: string
-  handle: string
   name: string
   contactDate: ISO8601String
   content: string
