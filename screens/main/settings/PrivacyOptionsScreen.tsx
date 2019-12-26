@@ -3,7 +3,8 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { routes, styles } from "constants"
 import { SettingsList } from "./components/SettingsList"
-import { PRIVACYOPTIONS_DATA, SettingType } from "./components/mockData"
+import { PRIVACYOPTIONS_DATA } from "api/profile-services.mockData"
+import { SettingType } from "api/profile-services"
 import NavButton from "components/NavButton"
 
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}

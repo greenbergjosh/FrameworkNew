@@ -4,7 +4,7 @@ import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes, Units } from "constants"
 import { GiftedChat } from "react-native-gifted-chat"
-import mockMessages from "./mockMessages"
+import * as mockData from "api/messages-services.mockData"
 import NavButton from "components/NavButton"
 
 interface ViewThreadScreenProps extends NavigationStackScreenProps {}
@@ -40,7 +40,7 @@ export class ViewThreadScreen extends React.Component<
 
   componentWillMount() {
     this.setState({
-      messages: mockMessages,
+      messages: mockData.messageThread,
     })
   }
 

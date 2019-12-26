@@ -28,3 +28,14 @@ export interface UserInterestsResponse extends GetGotSuccessResponse {}
 export const saveUserInterests = async (interestIds: number[]) => {
   return await getgotRequest<UserInterestsResponse>("followintrsts", { interests: interestIds })
 }
+
+/********************
+ * User Settings
+ */
+
+export type SettingType = {
+  id: GUID
+  title: string
+  description: string
+  checked: boolean
+}

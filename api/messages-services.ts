@@ -1,5 +1,6 @@
 import { GetGotSuccessResponse } from "api"
 import { contacts, messages } from "./messages-services.mockData"
+import { IMessage } from "react-native-gifted-chat"
 
 /********************
  * Messages
@@ -12,6 +13,8 @@ export type Message = {
   messageDate: ISO8601String
   content: string
 }
+
+export type MessageThreadItem = IMessage
 
 export interface MessagesResponse extends GetGotSuccessResponse {
   results: Message[]
@@ -31,7 +34,6 @@ export const loadMessages = async () => {
 
 export type Contact = UserInfoType & {
   id: number
-  name: string
   contactDate: ISO8601String
   content: string
 }

@@ -9,6 +9,7 @@ import { Promotional } from "api/promotions-services"
 import { UndoIcon } from "assets/icons"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
 import { pluralize } from "../../../../util"
+import moment from "moment"
 
 interface PromotionCardProps {
   onPress?: () => void
@@ -148,7 +149,7 @@ export function PromotionCard({
             {!expires ? (
               <Flex direction="column" align="end" style={{ paddingLeft: Units.padding }}>
                 <Text style={styles.TinyCopy}>Promotion Expires</Text>
-                <Text style={styles.TinyCopy}>MM-DD-YYYY</Text>
+                <Text style={styles.TinyCopy}>{moment(expires).format("MM-DD-YYYY")}</Text>
               </Flex>
             ) : null}
           </Flex>
