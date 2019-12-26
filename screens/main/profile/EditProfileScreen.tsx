@@ -22,6 +22,7 @@ function UserIdentityPanel({ user, onPress }: UserIdentityProps) {
       style={{ padding: Units.margin, backgroundColor: Colors.navBarBackground }}>
       <Avatar
         size="lg"
+        source={user.avatarUri}
         style={{ marginBottom: Units.padding, position: "relative", overflow: "hidden" }}
         onPress={onPress}>
         <Text

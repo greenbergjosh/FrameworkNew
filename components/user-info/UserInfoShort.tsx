@@ -5,7 +5,7 @@ import { TouchableOpacity } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
 import { H4 } from "components/Markup"
-import { UserInfoChildProps } from "./types"
+import { UserInfoChildProps } from "./user-info-types"
 
 export interface UserInfoShortProps extends UserInfoChildProps {
   user: UserType

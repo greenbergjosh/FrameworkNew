@@ -6,7 +6,7 @@ import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
 import { AwardIcon } from "assets/icons"
 import { A, H1, SMALL } from "components/Markup"
-import { UserInfoChildProps } from "./types"
+import { UserInfoChildProps } from "./user-info-types"
 import numeral from "numeral"
 import { pluralize } from "../../util"
 
