@@ -1,23 +1,30 @@
-import React, { useContext } from "react"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
-import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
-import {
-  Followers,
-  FollowersResponse,
-  loadFollowers,
-  Follower,
-} from "api/follows-services"
-import { Influencer, InfluencersResponse, loadInfluencers } from "api/follows-services"
+import { Toast } from "@ant-design/react-native"
 import {
   BlockedUser,
   BlockedUsersResponse,
+  Follower,
+  Followers,
+  FollowersResponse,
+  Influencer,
+  InfluencersResponse,
   loadBlockedUsers,
+  loadFollowers,
+  loadInfluencerFollowers,
+  loadInfluencers,
+  startFollowingInfluencer,
+  stopFollowingInfluencer,
 } from "api/follows-services"
+import { UserInfoType } from "api/profile-services"
 import moment from "moment"
+import React, { useContext } from "react"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {
   lastLoadInfluencers: ISO8601String | null
   influencers: Influencer[]
+  lastLoadInfluencerFollowers: { [key: string]: ISO8601String | null }
+  influencerFollowers: { [key: string]: UserInfoType[] }
   lastLoadFollowers: ISO8601String | null
   followers: Followers
   lastLoadBlockedUsers: ISO8601String | null
@@ -26,21 +33,48 @@ export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType>
 
 export interface FollowsActionCreatorType extends GetGotContextType {
   // Action Creators
+  loadInfluencerFollowers: (
+    influencerId: string,
+    search?: string,
+    pageSize?: number
+  ) => Promise<void>
   loadInfluencers: () => Promise<void>
   loadFollowers: () => Promise<void>
   loadBlockedUsers: () => Promise<void>
+  startFollowingInfluencer: (influencerHandles: string | string[]) => Promise<void>
+  stopFollowingInfluencer: (influencerHandles: string | string[]) => Promise<void>
 }
 
 export interface FollowsContextType extends FollowsActionCreatorType, FollowsState {}
 
+type LoadInfluencerFollowersAction = FSA<
+  "loadInfluencerFollowers",
+  { influencerId: string; followers: UserInfoType[] }
+>
 type LoadInfluencersAction = FSA<"loadInfluencers", InfluencersResponse>
 type LoadFollowersAction = FSA<"loadFollowers", FollowersResponse>
 type LoadBlockedUsersAction = FSA<"loadBlockedUsers", BlockedUsersResponse>
 
-type FollowsAction = LoadInfluencersAction | LoadFollowersAction | LoadBlockedUsersAction
+type FollowsAction =
+  | LoadInfluencersAction
+  | LoadFollowersAction
+  | LoadBlockedUsersAction
+  | LoadInfluencerFollowersAction
 
 const reducer = loadifyReducer((state: FollowsState, action: FollowsAction | GetGotResetAction) => {
   switch (action.type) {
+    case "loadInfluencerFollowers":
+      return {
+        ...state,
+        influencerFollowers: {
+          ...state.influencerFollowers,
+          [action.payload.influencerId]: action.payload.followers,
+        },
+        lastLoadInfluencerFollowers: {
+          ...state.lastLoadInfluencerFollowers,
+          [action.payload.influencerId]: new Date().toISOString(),
+        },
+      }
     case "loadInfluencers":
       return {
         ...state,
@@ -70,6 +104,8 @@ const reducer = loadifyReducer((state: FollowsState, action: FollowsAction | Get
 })
 
 const initialState: FollowsState = {
+  lastLoadInfluencerFollowers: {},
+  influencerFollowers: {},
   lastLoadInfluencers: null,
   influencers: [],
   lastLoadFollowers: null,
@@ -77,19 +113,25 @@ const initialState: FollowsState = {
   lastLoadBlockedUsers: null,
   blockedUsers: [],
   loading: {
+    loadInfluencerFollowers: {},
     loadInfluencers: {},
     loadFollowers: {},
     loadBlockedUsers: {},
     reset: {},
+    startFollowingInfluencer: {},
+    stopFollowingInfluencer: {},
   },
 }
 
 const initialContext: FollowsContextType = {
   ...initialState,
+  loadInfluencerFollowers: async () => {},
   loadInfluencers: async () => {},
   loadFollowers: async () => {},
   loadBlockedUsers: async () => {},
   reset: () => {},
+  startFollowingInfluencer: async () => {},
+  stopFollowingInfluencer: async () => {},
 }
 
 const FollowsContext = React.createContext(initialContext)
@@ -100,6 +142,23 @@ export const FollowsContextProvider = ({ ...props }) => {
   const loadifiedActionCreators = React.useMemo(
     () =>
       loadifyContext(dispatch, {
+        loadInfluencerFollowers: async (influencerId, search, pageSize) => {
+          const response = await loadInfluencerFollowers(influencerId, search, pageSize)
+
+          if (response.r === 0) {
+            dispatch({
+              type: "loadInfluencerFollowers",
+              payload: { influencerId, followers: response.results },
+            })
+          } else {
+            console.warn(`Error loading influencer followers for influencer id: ${influencerId}`)
+            dispatch({
+              type: "loadInfluencerFollowers",
+              payload: { influencerId, followers: [] },
+            })
+          }
+        },
+
         loadInfluencers: async () => {
           const response = await loadInfluencers()
           if (response.r === 0) {
@@ -126,6 +185,42 @@ export const FollowsContextProvider = ({ ...props }) => {
         },
         reset: () => {
           dispatch(getgotResetAction)
+        },
+        startFollowingInfluencer: async (influencerHandle) => {
+          const response = await startFollowingInfluencer(influencerHandle)
+          if (response.r === 0) {
+            Toast.success(
+              `Now following ${
+                Array.isArray(influencerHandle)
+                  ? influencerHandle.length + " new influencers!"
+                  : influencerHandle
+              }`,
+              3,
+              null,
+              false
+            )
+            loadifiedActionCreators.loadInfluencers()
+          } else {
+            console.error("Error Following Influencer(s)", { influencerHandle, response })
+          }
+        },
+        stopFollowingInfluencer: async (influencerHandle) => {
+          const response = await stopFollowingInfluencer(influencerHandle)
+          if (response.r === 0) {
+            Toast.success(
+              `No longer following ${
+                Array.isArray(influencerHandle)
+                  ? influencerHandle.length + " influencers"
+                  : influencerHandle
+              }`,
+              3,
+              null,
+              false
+            )
+            loadifiedActionCreators.loadInfluencers()
+          } else {
+            console.error("Error Unfollowing Influencer(s)", { influencerHandle, response })
+          }
         },
       }),
     [dispatch, getgotResetAction, loadInfluencers, loadFollowers, loadBlockedUsers]

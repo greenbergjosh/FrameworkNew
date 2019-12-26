@@ -3,20 +3,23 @@ import { ScrollView, View } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { FollowerRow } from "./FollowerRow"
 import { sortFollowersByDate, useFollowsContext } from "providers/follows-context-provider"
+import { useAuthContext } from "providers/auth-context-provider"
+import { FollowsScreenProps } from "screens/main/follows/FollowsScreen"
 
-interface FollowsScreenProps {
-  navigate
+interface FollowersListProps {
+  navigate: FollowsScreenProps["navigation"]["navigate"]
   routes: FeedRoutes
+  userId: string
 }
 
-export const FollowersList = React.memo(({ routes, navigate }: FollowsScreenProps) => {
+export const FollowersList = React.memo(({ routes, navigate, userId }: FollowersListProps) => {
   const followsContext = useFollowsContext()
 
   if (
-    !followsContext.lastLoadFollowers &&
-    !followsContext.loading.loadFollowers[JSON.stringify([])]
+    !followsContext.lastLoadInfluencerFollowers[userId] &&
+    !followsContext.loading.loadInfluencerFollowers[JSON.stringify([userId])]
   ) {
-    followsContext.loadFollowers()
+    followsContext.loadInfluencerFollowers(userId)
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
 

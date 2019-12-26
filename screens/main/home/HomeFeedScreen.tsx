@@ -1,4 +1,5 @@
 import React from "react"
+import { Text } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { Alert, ScrollView, View } from "react-native"
 import { influencerFeedRoutes, routes } from "constants"
@@ -11,6 +12,8 @@ import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
 import NavButton from "components/NavButton"
+import moment from "moment"
+import { useFeedContext } from "providers/feed-context-provider"
 import * as mockData from "api/feed-services.mockData"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
@@ -18,7 +21,7 @@ interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
-  // const feed = useFeedContext()
+  const feedContext = useFeedContext()
   const { feed } = mockData.FEED_DATA
   const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
 
@@ -26,14 +29,15 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
     loadSuggestedFollows()
   }, [])
 
-  // React.useEffect(() => {
-  //   if (
-  //     !feed.lastLoadHomeFeed ||
-  //     moment(feed.lastLoadHomeFeed).isBefore(moment().subtract(5, "minutes"))
-  //   ) {
-  //     feed.loadHomeFeed()
-  //   }
-  // }, [feed.lastLoadHomeFeed])
+  React.useEffect(() => {
+    if (
+      (!feedContext.lastLoadHomeFeed ||
+        moment(feedContext.lastLoadHomeFeed).isBefore(moment().subtract(5, "minutes"))) &&
+      !feedContext.loading.loadHomeFeed[JSON.stringify([])]
+    ) {
+      feedContext.loadHomeFeed()
+    }
+  }, [feedContext.lastLoadHomeFeed])
 
   const showStartCampaignDialog = (promotionId: GUID) => {
     Alert.alert(
@@ -71,7 +75,11 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           <List>
             {feed.map((feedItem) => (
               <View key={feedItem.id}>
-                <InfluencerInfoShort user={feedItem.user} navigate={navigate} routes={influencerFeedRoutes} />
+                <InfluencerInfoShort
+                  user={feedItem.user}
+                  navigate={navigate}
+                  routes={influencerFeedRoutes}
+                />
                 <FeedItem
                   image={feedItem.image}
                   navigate={navigate}

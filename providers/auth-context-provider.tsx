@@ -87,6 +87,7 @@ export const AuthContextProvider = ({ ...props }) => {
             if (profile.r === 0) {
               const loginPayload: LoginResponse = {
                 r: profile.r,
+                id: profile.id,
                 email: "",
                 handle: profile.handle,
                 imageurl: profile.profile_image_url,

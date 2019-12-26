@@ -28,7 +28,11 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
           <List>
             {feed.map((feedItem) => (
               <View key={feedItem.id}>
-                <InfluencerInfoShort user={feedItem.user} navigate={navigate} routes={influencerFeedRoutes} />
+                <InfluencerInfoShort
+                  user={feedItem.user}
+                  navigate={navigate}
+                  routes={influencerFeedRoutes}
+                />
                 <FeedItem
                   image={feedItem.image}
                   navigate={navigate}

@@ -26,8 +26,8 @@ export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreen
   } = props.navigation
   const promotionsContext = usePromotionsContext()
   const promotion = promotionsContext.promotionsById[promotionId]
-  const campaigns = promotionsContext.campaignsByPromotion[promotion.id]
-  if (!promotion) {
+  const campaigns = promotionsContext.campaignsByPromotion[promotion.id] || []
+  if (!promotion && !promotionsContext.loading.loadPromotions[JSON.stringify([])]) {
     // TODO: Should probably have a single promotion load service
     promotionsContext.loadPromotions()
     promotionsContext.loadPromotionCampaigns(promotion.id)

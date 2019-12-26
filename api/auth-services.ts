@@ -5,6 +5,7 @@ import { getgotRequest, GetGotSuccessResponse } from "./index"
  */
 
 export interface LoginData {
+  id?: string
   email: string
   handle: string
   imageurl: string
@@ -27,6 +28,7 @@ export const getgotLogin = async (username: string, password: string, device: st
  */
 
 export interface ProfileResponse extends GetGotSuccessResponse {
+  id: string
   email?: string
   handle: string
   profile_image_url: string

@@ -19,11 +19,7 @@ export const ProfileScreen = (props: ProfileScreenProps) => {
 
   return (
     <View>
-      <ProfileInfoFull
-        user={user}
-        navigate={navigate}
-        routes={profileFeedRoutes}
-      />
+      <ProfileInfoFull user={user} navigate={navigate} routes={profileFeedRoutes} />
       <View style={styles.View}>
         <Button size="large" type="primary" onPress={() => navigate(routes.Profile.EditProfile)}>
           Edit Profile

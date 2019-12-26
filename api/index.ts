@@ -50,7 +50,6 @@ export const getgotRequest = async <T extends GetGotSuccessResponse>(
   token?: string,
   sid?: string
 ): Promise<T | GetGotErrorResponse> => {
-  let storedToken: string
   if (!sid && !token) {
     token = await getgotStorage.get("authToken")
   }
