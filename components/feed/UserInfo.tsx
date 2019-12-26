@@ -7,19 +7,39 @@ import TouchIcon from "components/TouchIcon"
 import { AwardIcon } from "assets/icons"
 import { H1, H4, A, SMALL } from "components/Markup"
 
-interface UserInfoProps {
+interface ProfileInfoProps {
   navigate
   routes: FeedRoutes
   user
   showFullDetails?: boolean
 }
+interface UserInfoProps extends ProfileInfoProps {
+  onStartFollowing: (influencerHandle: string) => void
+  onStopFollowing: (influencerHandle: string) => void
+}
 
-interface UserInfoChildProps extends UserInfoProps {
-  isCurrentUser?: boolean
+interface CurrentUserInfoChildProps extends UserInfoProps {
+  isCurrentUser: true
+}
+
+interface OtherUserInfoChildProps extends UserInfoProps {
+  isCurrentUser?: false | undefined
+  onStartFollowing: (influencerHandle: string) => void
+  onStopFollowing: (influencerHandle: string) => void
+}
+
+type UserInfoChildProps = (CurrentUserInfoChildProps | OtherUserInfoChildProps) & {
   onPostActionsPress?: () => void
 }
 
-export function UserInfo({ user, navigate, showFullDetails, routes }: UserInfoProps) {
+export function UserInfo({
+  user,
+  navigate,
+  onStartFollowing,
+  onStopFollowing,
+  showFullDetails,
+  routes,
+}: UserInfoProps) {
   if (showFullDetails) {
     return (
       <UserInfoFull
@@ -27,6 +47,8 @@ export function UserInfo({ user, navigate, showFullDetails, routes }: UserInfoPr
         navigate={navigate}
         routes={routes}
         onPostActionsPress={onInfluencerPostButtonPress}
+        onStartFollowing={onStartFollowing}
+        onStopFollowing={onStopFollowing}
       />
     )
   }
@@ -36,11 +58,13 @@ export function UserInfo({ user, navigate, showFullDetails, routes }: UserInfoPr
       navigate={navigate}
       routes={routes}
       onPostActionsPress={onInfluencerPostButtonPress}
+      onStartFollowing={onStartFollowing}
+      onStopFollowing={onStopFollowing}
     />
   )
 }
 
-export function ProfileInfo({ user, navigate, showFullDetails, routes }: UserInfoProps) {
+export function ProfileInfo({ user, navigate, showFullDetails, routes }: ProfileInfoProps) {
   if (showFullDetails) {
     return (
       <UserInfoFull
@@ -106,6 +130,8 @@ export const UserInfoSmall = ({
   routes,
   isCurrentUser,
   onPostActionsPress,
+  onStartFollowing,
+  onStopFollowing,
 }: UserInfoChildProps) => (
   <Flex direction="row" style={{ margin: Units.margin }} justify="between">
     <Flex>
@@ -122,7 +148,14 @@ export const UserInfoSmall = ({
   </Flex>
 )
 
-export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfoChildProps) => (
+export const UserInfoFull = ({
+  user,
+  navigate,
+  onStartFollowing,
+  onStopFollowing,
+  routes,
+  isCurrentUser,
+}: UserInfoChildProps) => (
   <View>
     <Flex
       direction="row"
@@ -191,6 +224,11 @@ export const UserInfoFull = ({ user, navigate, routes, isCurrentUser }: UserInfo
         <WhiteSpace size="md" />
         <Flex justify="center">
           <SMALL>Followed by agplace, agpretzels, brookeeelizbeth + 3 more</SMALL>
+        </Flex>
+        <Flex justify="center">
+          <TouchableOpacity onPress={() => onStartFollowing(user.handle)}>
+            <A style={{ fontWeight: FontWeights.bold }}>Start Following</A>
+          </TouchableOpacity>
         </Flex>
       </>
     )}

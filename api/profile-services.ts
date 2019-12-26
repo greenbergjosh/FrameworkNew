@@ -16,7 +16,7 @@ export const syncContacts = async (
     gender: null
   }[]
 ) => {
-  return await getgotRequest<SyncContactsResponse>("synccontacts", { contacts })
+  return await getgotRequest<SyncContactsResponse>("syncContacts", { contacts })
 }
 
 /********************
@@ -26,5 +26,23 @@ export const syncContacts = async (
 export interface UserInterestsResponse extends GetGotSuccessResponse {}
 
 export const saveUserInterests = async (interestIds: number[]) => {
-  return await getgotRequest<UserInterestsResponse>("followintrsts", { interests: interestIds })
+  return await getgotRequest<UserInterestsResponse>("followInterests", { interests: interestIds })
+}
+
+/********************
+ * User Profile
+ */
+
+export type UserInfoType = {
+  userId: number
+  handle: string
+  avatarUri: string
+}
+
+export interface UserProfileResponse extends GetGotSuccessResponse {
+  result: UserInfoType
+}
+
+export const loadProfile = async (profileId?: number | string) => {
+  return await getgotRequest<UserProfileResponse>("get_user_profile", { id: profileId })
 }

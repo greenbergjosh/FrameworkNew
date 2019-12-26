@@ -1,5 +1,6 @@
 import { ImageUris } from "constants"
-import { GetGotSuccessResponse } from "api"
+import { GetGotSuccessResponse, getgotRequest } from "api"
+import { UserInfoType } from "api/profile-services"
 
 /************************************************************
  * Followers
@@ -71,5 +72,32 @@ export const loadFollowers = async () => {
   // return await getgotRequest<FollowsResponse>("getfollowers", {})
   return new Promise<FollowersResponse>((resolve) => {
     setTimeout(resolve, 100, followers)
+  })
+}
+
+export interface UserProfileListResponse extends GetGotSuccessResponse {
+  results: UserInfoType[]
+}
+
+export const loadInfluencerFollowers = async (
+  influencerUserId: string,
+  search?: string,
+  pageSize?: number
+) => {
+  return await getgotRequest<UserProfileListResponse>("getInfluencerFollowers", {
+    influencerUserId,
+    search,
+    pageSize,
+  })
+}
+
+export const startFollowingInfluencer = async (influencerHandles: string | string[]) => {
+  return await getgotRequest<GetGotSuccessResponse>("addSubscriptions", {
+    handles: Array.isArray(influencerHandles) ? influencerHandles : [influencerHandles],
+  })
+}
+export const stopFollowingInfluencer = async (influencerHandles: string | string[]) => {
+  return await getgotRequest<GetGotSuccessResponse>("removeSubscriptions", {
+    handles: Array.isArray(influencerHandles) ? influencerHandles : [influencerHandles],
   })
 }

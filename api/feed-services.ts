@@ -1,16 +1,11 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
+import { UserInfoType } from "./profile-services"
 
 export type FeedItemType = {
   uri: string
   id: number
   height?: number
   user?: UserInfoType
-}
-
-export type UserInfoType = {
-  userId: number
-  handle: string
-  avatarUri: string
 }
 
 export interface FeedResponse extends GetGotSuccessResponse {

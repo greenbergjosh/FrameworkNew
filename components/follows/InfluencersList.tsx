@@ -3,13 +3,15 @@ import { ScrollView } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { InfluencerRow } from "./InfluencerRow"
 import { useFollowsContext } from "providers/follows-context-provider"
+import { FollowsScreenProps } from "screens/main/follows/FollowsScreen"
 
-interface FollowsScreenProps {
-  navigate
+interface InfluenecersListProps {
+  navigate: FollowsScreenProps["navigation"]["navigate"]
   routes: FeedRoutes
+  userId: string
 }
 
-export const InfluencersList = React.memo(({ navigate, routes }: FollowsScreenProps) => {
+export const InfluencersList = React.memo(({ navigate, routes, userId }: InfluenecersListProps) => {
   const followsContext = useFollowsContext()
 
   if (
