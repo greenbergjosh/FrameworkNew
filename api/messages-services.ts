@@ -9,7 +9,7 @@ import { IMessage } from "react-native-gifted-chat"
 export type Message = {
   id: GUID
   name: string
-  users: UserInfoType[]
+  users: UserType[]
   messageDate: ISO8601String
   content: string
 }
@@ -32,7 +32,7 @@ export const loadMessages = async () => {
  * Contacts
  */
 
-export type Contact = UserInfoType & {
+export type Contact = UserType & {
   id: number
   contactDate: ISO8601String
   content: string

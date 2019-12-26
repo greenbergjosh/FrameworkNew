@@ -8,7 +8,7 @@ import DateTimePicker from "react-native-modal-datetime-picker"
 
 interface EditProfileFormProps {
   style: StyleProp<ViewStyle>
-  user: UserInfoFullType
+  user: UserProfileType
 }
 
 export function EditProfileForm({ user, style }: EditProfileFormProps) {

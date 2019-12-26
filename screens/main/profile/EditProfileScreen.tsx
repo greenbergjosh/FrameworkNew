@@ -11,7 +11,7 @@ import { PROFILE_DATA } from "api/profile-services.mockData"
 import { EditProfileForm } from "./components/EditProfileForm"
 
 interface UserIdentityProps {
-  user: UserInfoType
+  user: UserType
   onPress: () => void
 }
 

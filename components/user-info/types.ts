@@ -1,7 +1,7 @@
 export interface UserInfoProps {
   navigate
   routes: FeedRoutes
-  user: UserInfoType | UserInfoFullType
+  user: UserType | UserProfileType
 }
 
 export interface UserInfoChildProps extends UserInfoProps {

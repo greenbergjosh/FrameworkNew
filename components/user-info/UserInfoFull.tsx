@@ -11,7 +11,7 @@ import numeral from "numeral"
 import { pluralize } from "../../util"
 
 export interface UserInfoFullProps extends UserInfoChildProps {
-  user: UserInfoFullType
+  user: UserProfileType
 }
 
 /**

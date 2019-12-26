@@ -8,7 +8,7 @@ import { H4 } from "components/Markup"
 import { UserInfoChildProps } from "./types"
 
 export interface UserInfoShortProps extends UserInfoChildProps {
-  user: UserInfoType
+  user: UserType
 }
 
 /**

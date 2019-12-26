@@ -18,14 +18,6 @@ export const sendCode = async (contact: string) => {
  */
 export interface SubmitCodeResponse extends GetGotSuccessResponse {}
 
-export interface CreateUserResponse extends GetGotSuccessResponse {
-  name: string
-  email: string
-  handle: string
-  imageurl: string
-  h: string
-}
-
 export const submitCode = async (contact: string, code: string) => {
   return await getgotRequest<SubmitCodeResponse>("submitcnfmcode", { u: contact, code })
 }
@@ -33,6 +25,14 @@ export const submitCode = async (contact: string, code: string) => {
 /********************
  * Create User
  */
+
+export interface CreateUserResponse extends GetGotSuccessResponse {
+  name: string
+  email: string
+  handle: string
+  imageurl: string
+  h: string
+}
 
 export const createUser = async (
   handle: string,
@@ -59,7 +59,7 @@ export const createUser = async (
  * Suggested Follows
  */
 
-export type Influencer = UserInfoType & {
+export type Influencer = UserType & {
   description?: string
   source?: string
   feed: FeedItemType[]

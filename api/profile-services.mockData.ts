@@ -1,7 +1,7 @@
 import { ImageUris } from "constants"
 import { SettingType } from "./profile-services"
 
-export const PROFILE_DATA: UserInfoFullType = {
+export const PROFILE_DATA: UserProfileType = {
   userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
   handle: "loren",
   name: "Loren Flaboren",

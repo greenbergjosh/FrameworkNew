@@ -1,11 +1,11 @@
-type UserInfoType = {
+type UserType = {
   userId: GUID
   handle: string
   avatarUri: string
   name?: string
 }
 
-type UserInfoFullType = UserInfoType & {
+type UserProfileType = UserType & {
   postsCount: number
   followersCount: number
   followingCount: number

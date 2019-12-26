@@ -4,12 +4,12 @@ export interface FeedResponse extends GetGotSuccessResponse {}
 
 export type LikesType = {
   count: number
-  firstUser?: UserInfoType
+  firstUser?: UserType
 }
 
 export type CommentType = {
   id
-  user: UserInfoType
+  user: UserType
   message: string
   likes: LikesType
   comments: CommentType[]
@@ -24,7 +24,7 @@ export type FeedCommentType = {
 export type FeedItemType = {
   id: GUID
   image: ImageType
-  user?: UserInfoType
+  user?: UserType
   promotionId: GUID
   campaignId: GUID
 }

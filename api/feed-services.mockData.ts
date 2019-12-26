@@ -326,7 +326,7 @@ export const FEED_DETAILS_DATA: { feed: FeedItemType[] } = {
   ],
 }
 
-export const INFLUENCER_PROFILE_DATA: UserInfoFullType = {
+export const INFLUENCER_PROFILE_DATA: UserProfileType = {
   userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
   handle: "loren",
   avatarUri: ImageUris.placeholder,
@@ -338,7 +338,7 @@ export const INFLUENCER_PROFILE_DATA: UserInfoFullType = {
   followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
 }
 
-export const USER_FEED_DATA: { user: UserInfoFullType; feed: FeedItemType[] } = {
+export const USER_FEED_DATA: { user: UserProfileType; feed: FeedItemType[] } = {
   user: INFLUENCER_PROFILE_DATA,
   feed: FEED_DATA.feed,
 }
