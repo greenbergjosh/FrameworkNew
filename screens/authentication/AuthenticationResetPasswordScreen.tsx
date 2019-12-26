@@ -1,6 +1,6 @@
 import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { LegalAgreement } from "components/LegalAgreement"
-import { routes, styles } from "constants"
+import { routes, styles, Colors } from "constants"
 import { useAuthContext } from "providers/auth-context-provider"
 import React from "react"
 import { Alert, Text, View } from "react-native"
@@ -41,7 +41,7 @@ export const AuthenticationResetPasswordScreen = (
         placeholder="Phone number, email or username"
         clearButtonMode="always"
       />
-      {error && <Text style={{ color: "#FF0000" }}>{error}</Text>}
+      {error && <Text style={{ color: Colors.warning }}>{error}</Text>}
       <WhiteSpace size="lg" />
       <LegalAgreement navigate={navigate} />
       <WhiteSpace size="lg" />

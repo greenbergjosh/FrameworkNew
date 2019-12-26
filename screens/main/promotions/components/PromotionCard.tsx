@@ -8,6 +8,8 @@ import TouchIcon from "components/TouchIcon"
 import { Promotional } from "api/promotions-services"
 import { UndoIcon } from "assets/icons"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
+import { pluralize } from "../../../../util"
+import moment from "moment"
 
 interface PromotionCardProps {
   onPress?: () => void
@@ -51,7 +53,7 @@ export function PromotionCard({
             },
           ]
         ),
-      style: { backgroundColor: Colors.warning, color: "white" },
+      style: { backgroundColor: Colors.warning, color: Colors.reverse },
     },
   ]
   const swipeMenuArchive = [
@@ -78,7 +80,7 @@ export function PromotionCard({
             },
           ]
         ),
-      style: { backgroundColor: Colors.archived, color: "white" },
+      style: { backgroundColor: Colors.archived, color: Colors.reverse },
     },
   ]
   const swipeMenuUnarchive = [
@@ -90,11 +92,9 @@ export function PromotionCard({
         </>
       ),
       onPress: () => alert("Unarchive Promotion\nFeature to come!"),
-      style: { backgroundColor: Colors.success, color: "white" },
+      style: { backgroundColor: Colors.success, color: Colors.reverse },
     },
   ]
-
-  const pluralize = (count, noun, suffix = "s") => `${noun}${count !== 1 ? suffix : ""}`
 
   const swipeMenu = React.useMemo(() => {
     const a = campaignCount < 1 ? swipeMenuDelete : swipeMenuArchive
@@ -149,7 +149,7 @@ export function PromotionCard({
             {!expires ? (
               <Flex direction="column" align="end" style={{ paddingLeft: Units.padding }}>
                 <Text style={styles.TinyCopy}>Promotion Expires</Text>
-                <Text style={styles.TinyCopy}>MM-DD-YYYY</Text>
+                <Text style={styles.TinyCopy}>{moment(expires).format("MM-DD-YYYY")}</Text>
               </Flex>
             ) : null}
           </Flex>

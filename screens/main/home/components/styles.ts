@@ -1,17 +1,18 @@
 import { StyleSheet } from "react-native"
 import { Colors } from "constants"
+import { Units } from "../../../../constants/unit.constants"
 
 export const carouselStyles = StyleSheet.create({
   carouselHorizontal: {
     borderWidth: 1,
     borderColor: Colors.border,
-    padding: 16,
+    padding: Units.margin,
     paddingBottom: 3,
-    marginBottom: 32,
+    marginBottom: Units.margin * 2,
     marginRight: "auto",
     marginLeft: "auto",
-    width: 235,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    width: 212,
+    borderTopLeftRadius: Units.padding * 2,
+    borderTopRightRadius: Units.padding * 2,
   },
 })

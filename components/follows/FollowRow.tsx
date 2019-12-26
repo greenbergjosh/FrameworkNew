@@ -1,7 +1,7 @@
 import React from "react"
 import { Text } from "react-native"
 import { Button, Flex, List } from "@ant-design/react-native"
-import { Follower } from "api/follows-services/followers"
+import { Follower } from "api/follows-services"
 import { Colors } from "constants"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
@@ -48,7 +48,7 @@ export const FollowRow = ({ follow, navigate, routes }: FollowRowProps) => {
               labelStyle={{ fontWeight: "bold" }}>
               {handle}
             </TouchText>
-            <Text style={{ color: Colors.darkgrey }}>{name}</Text>
+            <Text style={{ color: Colors.bodyTextEmphasis }}>{name}</Text>
           </Flex>
         </Flex.Item>
 

@@ -1,8 +1,27 @@
-export type SettingType = {
-  id: GUID
-  title: string
-  description: string
-  checked: boolean
+import { SettingType } from "./profile-services"
+
+export const PROFILE_DATA: UserProfileType = {
+  userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
+  handle: "sara.h",
+  name: "Sara Hoeckman",
+  contact: { email: "sara.h@yahoo.com", phone: "+18885551212" },
+  gender: "F",
+  dob: "1993-11-26T12:04:44.477Z",
+  avatarUri: "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
+  postsCount: 1185,
+  followersCount: 17000000,
+  followingCount: 225,
+  bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+  bioLink: new URL("youtu.be/Emkxvx11nz4"),
+  followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
+}
+
+export const ANALYTICS_DATA = {
+  impressionsCount: 2526,
+  clickThruCount: 396,
+  itemsSoldCount: 52,
+  commissionTotal: 126,
+  reach: 139,
 }
 
 export const PRIVACYOPTIONS_DATA: SettingType[] = [

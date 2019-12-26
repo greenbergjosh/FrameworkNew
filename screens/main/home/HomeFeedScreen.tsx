@@ -2,18 +2,19 @@ import React from "react"
 import { Text } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { Alert, ScrollView, View } from "react-native"
-import { routes } from "constants"
+import { influencerFeedRoutes, routes } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { FeedItem, UserInfo } from "components/feed"
+import { FeedItem } from "components/feed"
+import { InfluencerInfoShort } from "components/user-info"
 import { HeaderLogo } from "components/HeaderLogo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
 import SuggestedFollows from "./components/SuggestedFollows"
-import { influencerFeedRoutes } from "../feedRoutes"
 import NavButton from "components/NavButton"
 import moment from "moment"
 import { useFeedContext } from "providers/feed-context-provider"
+import * as mockData from "api/feed-services.mockData"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
@@ -21,7 +22,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
   const feedContext = useFeedContext()
-  // const { feed } = mockData.FEED_DETAILS_DATA
+  const { feed } = mockData.FEED_DATA
   const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
 
   React.useMemo(() => {
@@ -38,7 +39,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
     }
   }, [feedContext.lastLoadHomeFeed])
 
-  const cancelHandler = () => {
+  const showStartCampaignDialog = (promotionId: GUID) => {
     Alert.alert(
       "Start a Campaign?",
       "You recently added a new item to promote. Do you want to start a campaign?",
@@ -51,31 +52,44 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           text: "OK",
           onPress: () =>
             navigate(routes.Promotions.CampaignTemplates, {
-              promotionId: "606891fe-a0c1-436c-8cb8-ddcdcb3f4268",
+              promotionId,
             }),
         },
       ]
     )
   }
 
-  const handlePress = (newMode) => {
-    newMode === "onboarding" ? setMode("onboarding") : setMode("homefeed")
-    newMode === "startcampaign" ? cancelHandler() : null
-  }
-
   return (
     <>
-      <DevTempNav onPress={handlePress} mode={mode} />
+      <DevTempNav
+        mode={mode}
+        setMode={setMode}
+        showStartCampaignDialog={() =>
+          showStartCampaignDialog("606891fe-a0c1-436c-8cb8-ddcdcb3f4268")
+        }
+      />
       <ScrollView>
-        {mode === "onboarding" ||
-        !(feedContext.homeFeedItems || feedContext.homeFeedItems.length) ? (
-          <SuggestedFollows value={suggestedFollows} navigate={navigate} />
+        {mode === "onboarding" ? (
+          <SuggestedFollows influencers={suggestedFollows} navigate={navigate} />
         ) : (
           <List>
-            {feedContext.homeFeedItems.map((item) => (
-              <View key={item.id}>
-                <UserInfo user={item.user} navigate={navigate} routes={influencerFeedRoutes} />
-                <FeedItem item={item} navigate={navigate} routes={influencerFeedRoutes} />
+            {feed.map((feedItem) => (
+              <View key={feedItem.id}>
+                <InfluencerInfoShort
+                  user={feedItem.user}
+                  navigate={navigate}
+                  routes={influencerFeedRoutes}
+                />
+                <FeedItem
+                  image={feedItem.image}
+                  navigate={navigate}
+                  campaignRouteParams={{
+                    isDraft: false,
+                    promotionId: feedItem.promotionId,
+                    campaignId: feedItem.campaignId,
+                  }}
+                  routes={influencerFeedRoutes}
+                />
               </View>
             ))}
           </List>

@@ -1,35 +1,38 @@
 import React from "react"
-import { View } from "react-native"
+import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FeedGrid, mockData, UserInfo } from "components/feed"
-import { routes } from "constants"
-import { influencerFeedRoutes } from "../feedRoutes"
+import { InfluencerInfoFull } from "components/user-info"
+import { ImageGrid } from "components/ImageGrid"
+import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
+import * as mockData from "api/feed-services.mockData"
 
 interface ExploreUserFeedScreenProps extends NavigationTabScreenProps {}
 
-export class ExploreUserFeedScreen extends React.Component<ExploreUserFeedScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-      headerTitle: <HeaderTitle title={mockData.USER_FEED_DATA.user.handle} offset="none" />,
-    }
-  }
-  render() {
-    const { navigate } = this.props.navigation
-    const { user, feed } = mockData.USER_FEED_DATA
+export const ExploreUserFeedScreen = (props: ExploreUserFeedScreenProps) => {
+  const { navigate } = props.navigation
+  const { user, feed } = mockData.USER_FEED_DATA
+  const images = React.useMemo(() => feed.map((f) => f.image), [feed])
 
-    return (
-      <View>
-        <UserInfo
-          user={user}
-          navigate={navigate}
-          showFullDetails={true}
-          routes={influencerFeedRoutes}
-        />
-        <FeedGrid feed={feed} onPress={(id) => navigate(routes.Explore.UserFeedDetails, { id })} />
-      </View>
-    )
+  return (
+    <ScrollView>
+      <InfluencerInfoFull
+        user={user}
+        navigate={navigate}
+        routes={influencerFeedRoutes}
+      />
+      <ImageGrid
+        images={images}
+        onItemPress={(id) => navigate(routes.Explore.UserFeedDetails, { id })}
+      />
+    </ScrollView>
+  )
+}
+
+ExploreUserFeedScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: <HeaderTitle title={mockData.USER_FEED_DATA.user.handle} offset="none" />,
   }
 }

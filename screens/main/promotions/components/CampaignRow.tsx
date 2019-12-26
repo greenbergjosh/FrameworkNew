@@ -67,7 +67,7 @@ export const CampaignRow = ({ navigate, campaign }: CampaignRowProps) => {
               <A style={{ fontWeight: FontWeights.bold }}>DRAFT</A>
             ) : (
               <SMALL style={{ color: Colors.bodyTextEmphasis }}>
-                {moment(campaign.created).calendar()}
+                {moment(campaign.created).format("MM-DD-YYYY")}
               </SMALL>
             )}
             <TouchIcon

@@ -1,12 +1,13 @@
-import { ActivityIndicator, Modal, Flex } from "@ant-design/react-native"
+import { ActivityIndicator, SearchBar } from "@ant-design/react-native"
 import React from "react"
-import { Text, View } from "react-native"
-import MasonryList from "react-native-masonry-list"
+import { ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { usePromotionsContext } from "providers/promotions-context-provider"
-import { ImageUris, routes, devBorder, Colors } from "constants"
+import { Colors, ImageUris, routes, Units } from "constants"
 import NavButton from "components/NavButton"
+import { ImageGrid } from "components/ImageGrid"
+import { TemplatePreviewModal, TemplateSelectionType } from "./components/TemplatePreviewModal"
 
 interface PromotionsCampaignTemplateScreenNavigationParams {
   promotionId: GUID
@@ -15,14 +16,11 @@ interface PromotionsCampaignTemplateScreenNavigationParams {
 export interface PromotionsCampaignTemplateScreenProps
   extends NavigationTabScreenProps<PromotionsCampaignTemplateScreenNavigationParams> {}
 
-interface ImageItem {
-  id: string
-  uri: string
-}
-
 export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTemplateScreenProps) => {
   const promotionsContext = usePromotionsContext()
   const [searchText, setSearchText] = React.useState("")
+  const [selectedTemplate, setSelectedTemplate] = React.useState(null)
+  const { campaignTemplatesBySearchKey, campaignTemplatesById } = promotionsContext
   const {
     navigate,
     state: {
@@ -30,58 +28,38 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
     },
   } = props.navigation
 
-  const { campaignTemplatesBySearchKey, campaignTemplatesById } = promotionsContext
-  const onLongPressImage = React.useCallback(
-    ({ id }) => {
-      const pressedTemplate = campaignTemplatesById[id]
-      Modal.alert(
-        "Template Details",
-        <View style={{ flexDirection: "column" }}>
-          <Text>Name: {pressedTemplate.name}</Text>
-          <Text>
-            Keywords: {pressedTemplate.meta ? pressedTemplate.meta.split(" ").join(", ") : "None"}
-          </Text>
-          <Text>Created By: {pressedTemplate.advertiserUserId}</Text>
-        </View>,
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Select Template",
-            onPress: () => {
-              navigate(routes.Promotions.Campaign, {
-                isDraft: true,
-                promotionId,
-                template: pressedTemplate,
-              })
-            },
-          },
-        ]
-      )
-    },
-    [campaignTemplatesById, navigate]
-  )
-  const onPressImage = React.useCallback(
-    ({ id }) => {
-      const pressedTemplate = campaignTemplatesById[id]
-      navigate(routes.Promotions.Campaign, { isDraft: true, promotionId, template: pressedTemplate })
+  /**
+   * User Selected Template From Grid
+   */
+  const getUserSelection = React.useCallback(
+    (id) => {
+      const selected: TemplateSelectionType = {
+        campaignTemplate: campaignTemplatesById[id],
+        promotionId,
+      }
+      setSelectedTemplate(selected)
     },
     [campaignTemplatesById, navigate]
   )
 
-  const images: ImageItem[] = React.useMemo(
+  /**
+   * Search Filter
+   */
+  const images: ImageType[] = React.useMemo(
     () =>
       campaignTemplatesBySearchKey[searchText]
         ? campaignTemplatesBySearchKey[searchText].map(({ id, template: { previewImage } }) => ({
             id,
-            uri: previewImage || ImageUris.placeholder,
+            source: { uri: previewImage || ImageUris.placeholder },
+            dimensions: { height: Units.img128 },
           }))
         : [],
     [campaignTemplatesBySearchKey[searchText]]
   )
 
+  /**
+   * Load Data
+   */
   if (
     !promotionsContext.lastLoadCampaignTemplates[searchText] &&
     !promotionsContext.loading.loadCampaignTemplates[JSON.stringify([searchText])]
@@ -92,14 +70,18 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   }
 
   return (
-    <MasonryList
-      images={images}
-      onLongPressImage={onLongPressImage}
-      onPressImage={onPressImage}
-      rerender
-      imageContainerStyle={{ borderWidth: 1, borderColor: Colors.border }}
-      listContainerStyle={{ backgroundColor: Colors.screenBackground }}
-    />
+    <>
+      <SearchBar
+        placeholder="Search"
+        cancelText="Cancel"
+        showCancelButton={false}
+        onSubmit={() => alert("Search\n Feature to come!")}
+      />
+      <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+        <ImageGrid images={images} onItemPress={getUserSelection} cols={2} />
+        <TemplatePreviewModal selected={selectedTemplate} navigate={navigate} />
+      </ScrollView>
+    </>
   )
 }
 

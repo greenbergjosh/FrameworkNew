@@ -1,27 +1,37 @@
-import { GetGotSuccessResponse, getgotRequest } from "./index"
+import { getgotRequest, GetGotSuccessResponse } from "./index"
+import { suggestedFollows } from "./onboarding-services.mockData"
+import { SID } from "constants/appkeys"
+import { PostType } from "./feed-services"
 
-import { ImageUris } from "constants"
-import { InfluencerTokens } from "../screens/main/promotions/PromotionsCampaignScreen"
-import { Interest } from "./catalog-services"
+/********************
+ * Send Code
+ */
 
 export interface SendCodeResponse extends GetGotSuccessResponse {}
+
+export const sendCode = async (contact: string) => {
+  return await getgotRequest<SendCodeResponse>("sendcode", { u: contact })
+}
+
+/********************
+ * Submit Code
+ */
 export interface SubmitCodeResponse extends GetGotSuccessResponse {}
+
+export const submitCode = async (contact: string, code: string) => {
+  return await getgotRequest<SubmitCodeResponse>("submitcnfmcode", { u: contact, code })
+}
+
+/********************
+ * Create User
+ */
+
 export interface CreateUserResponse extends GetGotSuccessResponse {
   name: string
   email: string
   handle: string
   imageurl: string
   h: string
-}
-
-const sid = "62ffd1da-5bc0-480b-9d47-e63df93ade30"
-
-export const sendCode = async (contact: string) => {
-  return await getgotRequest<SendCodeResponse>("sendcode", { u: contact })
-}
-
-export const submitCode = async (contact: string, code: string) => {
-  return await getgotRequest<SubmitCodeResponse>("submitcnfmcode", { u: contact, code })
 }
 
 export const createUser = async (
@@ -41,7 +51,7 @@ export const createUser = async (
       c: code,
     },
     null,
-    sid
+    SID
   )
 }
 
@@ -49,44 +59,10 @@ export const createUser = async (
  * Suggested Follows
  */
 
-export type Influencer = {
-  userId: number
-  name: string
-  avatar?: string | null
-  description?: string | null
-  source?: string | null
-  feedImages: string[]
-}
-
-// TODO: Fetch this from the API
-export const suggestedFollows: SuggestedFollowsResponse = {
-  r: 0,
-  results: [
-    {
-      userId: 1,
-      name: "loren",
-      avatar: ImageUris.placeholder,
-      description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
-      source: "From your contacts",
-      feedImages: [ImageUris.placeholder, ImageUris.placeholder, ImageUris.placeholder],
-    },
-    {
-      userId: 2,
-      name: "snoren",
-      avatar: ImageUris.placeholder,
-      description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
-      source: "From your contacts",
-      feedImages: [ImageUris.placeholder, ImageUris.placeholder, ImageUris.placeholder],
-    },
-    {
-      userId: 3,
-      name: "boren",
-      avatar: ImageUris.placeholder,
-      description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
-      source: "From your contacts",
-      feedImages: [ImageUris.placeholder, ImageUris.placeholder, ImageUris.placeholder],
-    },
-  ],
+export type Influencer = UserType & {
+  description?: string
+  source?: string
+  feed: PostType[]
 }
 
 export interface SuggestedFollowsResponse extends GetGotSuccessResponse {

@@ -2,10 +2,9 @@ import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { FollowersList, InfluencersList } from "components/follows"
-import { routes } from "constants"
-import { influencerFeedRoutes } from "../feedRoutes"
-import { Tabs, Tab } from "components/Tabs"
 import { useAuthContext } from "providers/auth-context-provider"
+import { influencerFeedRoutes, routes } from "constants"
+import { Tab, Tabs } from "components/Tabs"
 
 export interface FollowsScreenProps extends NavigationTabScreenProps {}
 

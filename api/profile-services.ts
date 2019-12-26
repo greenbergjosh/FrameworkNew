@@ -46,3 +46,14 @@ export interface UserProfileResponse extends GetGotSuccessResponse {
 export const loadProfile = async (profileId?: number | string) => {
   return await getgotRequest<UserProfileResponse>("get_user_profile", { id: profileId })
 }
+
+/********************
+ * User Settings
+ */
+
+export type SettingType = {
+  id: GUID
+  title: string
+  description: string
+  checked: boolean
+}
