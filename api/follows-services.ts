@@ -1,6 +1,6 @@
-import { GetGotSuccessResponse } from "api"
+import { GetGotSuccessResponse, getgotRequest } from "api"
 import { blockedUsers, followers, follows } from "./follows-services.mockData"
-import { PostType } from "./feed-services"
+import { PostType, UserInfoType } from "./feed-services"
 
 /********************
  * Blocked Users
@@ -74,5 +74,32 @@ export const loadInfluencers = async () => {
   // return await getgotRequest<FollowsResponse>("getinfluencers", {})
   return new Promise<InfluencersResponse>((resolve) => {
     setTimeout(resolve, 100, follows)
+  })
+}
+
+export interface UserProfileListResponse extends GetGotSuccessResponse {
+  results: UserInfoType[]
+}
+
+export const loadInfluencerFollowers = async (
+  influencerUserId: string,
+  search?: string,
+  pageSize?: number
+) => {
+  return await getgotRequest<UserProfileListResponse>("getInfluencerFollowers", {
+    influencerUserId,
+    search,
+    pageSize,
+  })
+}
+
+export const startFollowingInfluencer = async (influencerHandles: string | string[]) => {
+  return await getgotRequest<GetGotSuccessResponse>("addSubscriptions", {
+    handles: Array.isArray(influencerHandles) ? influencerHandles : [influencerHandles],
+  })
+}
+export const stopFollowingInfluencer = async (influencerHandles: string | string[]) => {
+  return await getgotRequest<GetGotSuccessResponse>("removeSubscriptions", {
+    handles: Array.isArray(influencerHandles) ? influencerHandles : [influencerHandles],
   })
 }
