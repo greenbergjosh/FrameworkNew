@@ -6,6 +6,7 @@ type UserType = {
 }
 
 type UserProfileType = UserType & {
+  topInfluencer?: boolean
   postsCount: number
   followersCount: number
   followingCount: number

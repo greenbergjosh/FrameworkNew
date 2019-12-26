@@ -84,7 +84,7 @@ export const UserInfoFull = ({
           <Flex direction="row" justify="between" style={{ flexGrow: 1 }}>
             <Flex>
               <H1 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H1>
-              <AwardIcon style={{ marginLeft: 5 }} />
+              {user.topInfluencer ? <AwardIcon style={{ marginLeft: 5 }} /> : null}
             </Flex>
           </Flex>
 

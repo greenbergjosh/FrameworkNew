@@ -414,7 +414,8 @@ export const FEED_DATA: { feed: PostType[] } = {
 export const INFLUENCER_PROFILE_DATA: UserProfileType = {
   userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
   handle: "loren",
-  avatarUri: "https://randomuser.me/api/portraits/women/1.jpg",
+  avatarUri: "https://randomuser.me/api/portraits/women/43.jpg",
+  topInfluencer: true,
   postsCount: 1185,
   followersCount: 17000000,
   followingCount: 225,
