@@ -15,7 +15,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "loren",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
       },
     },
     {
@@ -30,7 +30,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://randomuser.me/api/portraits/women/6.jpg",
       },
     },
     {
@@ -45,7 +45,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "snoren",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://randomuser.me/api/portraits/women/7.jpg",
       },
     },
     {
@@ -414,7 +414,7 @@ export const FEED_DATA: { feed: PostType[] } = {
 export const INFLUENCER_PROFILE_DATA: UserProfileType = {
   userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
   handle: "loren",
-  avatarUri: ImageUris.placeholder,
+  avatarUri: "https://randomuser.me/api/portraits/women/1.jpg",
   postsCount: 1185,
   followersCount: 17000000,
   followingCount: 225,
@@ -435,7 +435,7 @@ export const FEED_COMMENTS: PostCommentType = {
     firstUser: {
       userId: "69368e0c-5383-471e-b075-3272b4922750",
       handle: "groovy.dollies",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/2.jpg",
     },
   },
   comments: [

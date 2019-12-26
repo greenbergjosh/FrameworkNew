@@ -1,7 +1,4 @@
-import { ImageUris } from "constants"
-import { BlockedUsersResponse } from "./follows-services"
-import { FollowersResponse } from "./follows-services"
-import { InfluencersResponse } from "./follows-services"
+import { BlockedUsersResponse, FollowersResponse, InfluencersResponse } from "./follows-services"
 import { FEED_DATA } from "./feed-services.mockData"
 
 export const blockedUsers: BlockedUsersResponse = {
@@ -10,7 +7,7 @@ export const blockedUsers: BlockedUsersResponse = {
     {
       id: 1,
       userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/9.jpg",
       handle: "erynearly",
       name: "Blocked User Name",
       blockedDate: "2019-11-25T07:00:00+12:00",
@@ -18,7 +15,7 @@ export const blockedUsers: BlockedUsersResponse = {
     {
       id: 2,
       userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/10.jpg",
       handle: "itsdyasia",
       name: "Blocked User Name",
       blockedDate: "2019-11-24T07:00:00+12:00",
@@ -26,7 +23,7 @@ export const blockedUsers: BlockedUsersResponse = {
     {
       id: 3,
       userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/11.jpg",
       handle: "idk_just_stan_bts",
       name: "Blocked User Name",
       blockedDate: "2019-11-11T07:00:00+12:00",
@@ -41,7 +38,7 @@ export const followers: FollowersResponse = {
       {
         id: 4,
         userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://randomuser.me/api/portraits/women/12.jpg",
         handle: "booberry",
         name: "Follower Name",
         followedDate: "2019-11-25T07:00:00+12:00",
@@ -51,7 +48,7 @@ export const followers: FollowersResponse = {
       {
         id: 1,
         userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://randomuser.me/api/portraits/women/13.jpg",
         handle: "erynearly",
         name: "Follower Name",
         followedDate: "2019-11-25T07:00:00+12:00",
@@ -59,7 +56,7 @@ export const followers: FollowersResponse = {
       {
         id: 2,
         userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://randomuser.me/api/portraits/women/14.jpg",
         handle: "itsdyasia",
         name: "Follower Name",
         followedDate: "2019-11-24T07:00:00+12:00",
@@ -67,7 +64,7 @@ export const followers: FollowersResponse = {
       {
         id: 3,
         userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
-        avatarUri: ImageUris.placeholder,
+        avatarUri: "https://randomuser.me/api/portraits/women/14.jpg",
         handle: "idk_just_stan_bts",
         name: "Follower Name",
         followedDate: "2019-11-11T07:00:00+12:00",
@@ -82,7 +79,7 @@ export const follows: InfluencersResponse = {
     {
       id: 2,
       userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/20.jpg",
       handle: "itsdyasia",
       statusPhrase: {
         template: "liked {user.handle}'s comment: {comment}",
@@ -97,7 +94,7 @@ export const follows: InfluencersResponse = {
     {
       id: 1,
       userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/21.jpg",
       handle: "erynearly",
       statusPhrase: {
         template: "liked 2 posts.",
@@ -108,7 +105,7 @@ export const follows: InfluencersResponse = {
     {
       id: 3,
       userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/23.jpg",
       handle: "idk_just_stan_bts",
       statusPhrase: {
         template: "liked {user.handle}'s post.",

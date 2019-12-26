@@ -1,4 +1,3 @@
-import { ImageUris } from "constants"
 import { ContactsResponse, MessagesResponse, MessageThreadItem } from "./messages-services"
 
 export const messages: MessagesResponse = {
@@ -10,7 +9,7 @@ export const messages: MessagesResponse = {
       users: [
         {
           userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-          avatarUri: ImageUris.placeholder,
+          avatarUri: "https://randomuser.me/api/portraits/women/43.jpg",
           handle: "erynearly",
         },
       ],
@@ -24,12 +23,12 @@ export const messages: MessagesResponse = {
       users: [
         {
           userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-          avatarUri: ImageUris.placeholder,
+          avatarUri: "https://randomuser.me/api/portraits/women/44.jpg",
           handle: "itsdyasia",
         },
         {
           userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-          avatarUri: ImageUris.placeholder,
+          avatarUri: "https://randomuser.me/api/portraits/women/45.jpg",
           handle: "itsdyasia",
         },
       ],
@@ -43,7 +42,7 @@ export const messages: MessagesResponse = {
       users: [
         {
           userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
-          avatarUri: ImageUris.placeholder,
+          avatarUri: "https://randomuser.me/api/portraits/women/46.jpg",
           handle: "idk_just_stan_bts",
         },
       ],
@@ -62,7 +61,7 @@ export const messageThread: MessageThreadItem[] = [
     user: {
       _id: 2,
       name: "React Native",
-      avatar: "https://placeimg.com/140/140/any",
+      avatar: "https://randomuser.me/api/portraits/women/30.jpg",
     },
   },
   {
@@ -72,7 +71,8 @@ export const messageThread: MessageThreadItem[] = [
     user: {
       _id: 1,
       name: "React Native",
-      avatar: "https://placeimg.com/140/140/any",
+      avatar:
+        "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
     },
   },
   {
@@ -82,7 +82,7 @@ export const messageThread: MessageThreadItem[] = [
     user: {
       _id: 2,
       name: "React Native",
-      avatar: "https://placeimg.com/140/140/any",
+      avatar: "https://randomuser.me/api/portraits/women/30.jpg",
     },
   },
 ]
@@ -93,7 +93,7 @@ export const contacts: ContactsResponse = {
     {
       id: 1,
       userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/40.jpg",
       handle: "erynearly",
       name: "Contact Name",
       contactDate: "2019-11-25T07:00:00+12:00",
@@ -103,7 +103,7 @@ export const contacts: ContactsResponse = {
     {
       id: 2,
       userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/41.jpg",
       handle: "itsdyasia",
       name: "Contact Name",
       contactDate: "2019-11-24T07:00:00+12:00",
@@ -113,7 +113,7 @@ export const contacts: ContactsResponse = {
     {
       id: 3,
       userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/42.jpg",
       handle: "idk_just_stan_bts",
       name: "Contact Name",
       contactDate: "2019-11-11T07:00:00+12:00",
