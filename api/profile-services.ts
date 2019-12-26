@@ -33,14 +33,8 @@ export const saveUserInterests = async (interestIds: number[]) => {
  * User Profile
  */
 
-export type UserInfoType = {
-  userId: number
-  handle: string
-  avatarUri: string
-}
-
 export interface UserProfileResponse extends GetGotSuccessResponse {
-  result: UserInfoType
+  result: UserType
 }
 
 export const loadProfile = async (profileId?: number | string) => {

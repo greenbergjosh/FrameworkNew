@@ -14,7 +14,6 @@ import {
   startFollowingInfluencer,
   stopFollowingInfluencer,
 } from "api/follows-services"
-import { UserInfoType } from "api/profile-services"
 import moment from "moment"
 import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
@@ -24,7 +23,7 @@ export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType>
   lastLoadInfluencers: ISO8601String | null
   influencers: Influencer[]
   lastLoadInfluencerFollowers: { [key: string]: ISO8601String | null }
-  influencerFollowers: { [key: string]: UserInfoType[] }
+  influencerFollowers: { [key: string]: UserType[] }
   lastLoadFollowers: ISO8601String | null
   followers: Followers
   lastLoadBlockedUsers: ISO8601String | null
@@ -49,7 +48,7 @@ export interface FollowsContextType extends FollowsActionCreatorType, FollowsSta
 
 type LoadInfluencerFollowersAction = FSA<
   "loadInfluencerFollowers",
-  { influencerId: string; followers: UserInfoType[] }
+  { influencerId: string; followers: UserType[] }
 >
 type LoadInfluencersAction = FSA<"loadInfluencers", InfluencersResponse>
 type LoadFollowersAction = FSA<"loadFollowers", FollowersResponse>

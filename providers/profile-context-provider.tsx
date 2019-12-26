@@ -5,7 +5,6 @@ import {
   UserInterestsResponse,
   syncContacts,
   SyncContactsResponse,
-  UserInfoType,
 } from "api/profile-services"
 import { Interest } from "api/catalog-services"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
@@ -24,7 +23,7 @@ export type Contact = {
 export interface ProfileState extends LoadifyStateType<ProfileActionCreatorsType> {
   contacts: Contact[]
   interests: Interest[]
-  userProfile?: UserInfoType
+  userProfile?: UserType
 }
 
 export interface ProfileActionCreatorsType extends GetGotContextType {
@@ -36,7 +35,7 @@ export interface ProfileActionCreatorsType extends GetGotContextType {
 
 export interface ProfileContextType extends ProfileState, ProfileActionCreatorsType {}
 
-type LoadProfileAction = FSA<"loadProfile", UserInfoType>
+type LoadProfileAction = FSA<"loadProfile", UserType>
 type SyncContactsAction = FSA<"syncContacts", SyncContactsResponse>
 type SaveInterestsAction = FSA<"saveInterests", UserInterestsResponse>
 

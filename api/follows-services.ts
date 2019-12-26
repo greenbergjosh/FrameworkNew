@@ -1,6 +1,6 @@
 import { GetGotSuccessResponse, getgotRequest } from "api"
 import { blockedUsers, followers, follows } from "./follows-services.mockData"
-import { PostType, UserInfoType } from "./feed-services"
+import { PostType } from "./feed-services"
 
 /********************
  * Blocked Users
@@ -78,7 +78,7 @@ export const loadInfluencers = async () => {
 }
 
 export interface UserProfileListResponse extends GetGotSuccessResponse {
-  results: UserInfoType[]
+  results: UserType[]
 }
 
 export const loadInfluencerFollowers = async (
