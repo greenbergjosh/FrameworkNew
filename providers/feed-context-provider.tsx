@@ -1,9 +1,8 @@
 import React, { useContext } from "react"
-import { loadHomeFeed, FeedItemType } from "../api/feed-services"
+import { FeedItemType, loadHomeFeed } from "../api/feed-services"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
-import { loadifyReducer, LoadifyStateType, loadifyContext } from "./loadify"
 import { mockData } from "components/feed"
-import { P } from "components/Markup"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
 export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {
   // Local Properties
@@ -29,10 +28,7 @@ const reducer = loadifyReducer((state: FeedState, action: FeedAction | GetGotRes
     case "loadHomeFeed":
       return {
         ...state,
-        homeFeedItems:
-          action.payload ||
-          (console.warn(`Home Feed Payload was ${action.payload}. Falling back to mock`), 0) ||
-          mockData.FEED_DETAILS_DATA.feed,
+        homeFeedItems: action.payload,
         lastLoadHomeFeed: new Date().toISOString(),
       }
     case "reset":

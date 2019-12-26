@@ -6,15 +6,11 @@ import {
   syncContacts,
   SyncContactsResponse,
   UserInfoType,
-  UserProfileResponse,
-  loadInfluencerFollowers,
 } from "api/profile-services"
 import { Interest } from "api/catalog-services"
-import { getgotStorage } from "../storage/getgotStorage"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
 import { LoadifyStateType, loadifyReducer, loadifyContext } from "./loadify"
 import { loadProfile } from "api/profile-services"
-import { USER_FEED_DETAILS_DATA } from "components/feed/mockData"
 
 export type Contact = {
   fname?: string | null
@@ -51,7 +47,7 @@ const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | Get
     case "loadProfile":
       return {
         ...state,
-        userProfile: action.payload || USER_FEED_DETAILS_DATA.user,
+        userProfile: action.payload,
       }
     case "syncContacts":
       return {
