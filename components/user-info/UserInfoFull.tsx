@@ -1,6 +1,6 @@
 import React from "react"
 import { Flex, WhiteSpace } from "@ant-design/react-native"
-import { FontWeights, styles, Units } from "constants"
+import { FontWeights, styles, Units, Colors, devBorder, AntIconSizes } from "constants"
 import { Text, TouchableOpacity, View } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
@@ -54,8 +54,19 @@ export const UserInfoFull = ({
           {isCurrentUser ? null : (
             <TouchIcon
               name="plus-circle"
-              style={{ position: "absolute", bottom: 0, right: 0 }}
-              iconStyle={styles.LinkText}
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+              }}
+              iconStyle={{
+                ...styles.LinkText,
+                backgroundColor: Colors.reverse,
+                borderRadius: AntIconSizes.md / 2,
+                borderColor: Colors.reverse,
+                borderWidth: 1,
+                overflow: "hidden",
+              }}
               onPress={() => alert("Follow user\nFeature to come!")}
             />
           )}
