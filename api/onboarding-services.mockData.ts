@@ -1,4 +1,3 @@
-import { ImageUris } from "constants"
 import { SuggestedFollowsResponse } from "./onboarding-services"
 import { FEED_DATA } from "./feed-services.mockData"
 
@@ -8,7 +7,7 @@ export const suggestedFollows: SuggestedFollowsResponse = {
     {
       userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
       handle: "boren",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/20.jpg",
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",
       feed: [...FEED_DATA.feed.slice(0, 3)],
@@ -16,18 +15,18 @@ export const suggestedFollows: SuggestedFollowsResponse = {
     {
       userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb53",
       handle: "snoren",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/21.jpg",
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",
-      feed: [...FEED_DATA.feed.slice(0, 3)],
+      feed: [...FEED_DATA.feed.slice(3, 6)],
     },
     {
       userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb54",
       handle: "goren",
-      avatarUri: ImageUris.placeholder,
+      avatarUri: "https://randomuser.me/api/portraits/women/23.jpg",
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",
-      feed: [...FEED_DATA.feed.slice(0, 3)],
+      feed: [...FEED_DATA.feed.slice(6, 9)],
     },
   ],
 }
