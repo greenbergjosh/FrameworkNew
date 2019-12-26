@@ -15,13 +15,13 @@ export type CommentType = {
   comments: CommentType[]
 }
 
-export type FeedCommentType = {
+export type PostCommentType = {
   lastActivity: ISO8601String
   likes: LikesType
   comments: CommentType[]
 }
 
-export type FeedItemType = {
+export type PostType = {
   id: GUID
   image: ImageType
   user?: UserType

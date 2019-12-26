@@ -20,7 +20,7 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
   }
   render() {
     const { navigate } = this.props.navigation
-    const { feed } = mockData.FEED_DETAILS_DATA
+    const { feed } = mockData.FEED_DATA
 
     return (
       <View>

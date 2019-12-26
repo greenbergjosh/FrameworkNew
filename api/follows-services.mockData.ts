@@ -2,6 +2,7 @@ import { ImageUris } from "constants"
 import { BlockedUsersResponse } from "./follows-services"
 import { FollowersResponse } from "./follows-services"
 import { InfluencersResponse } from "./follows-services"
+import { FEED_DATA } from "./feed-services.mockData"
 
 export const blockedUsers: BlockedUsersResponse = {
   r: 0,
@@ -90,7 +91,7 @@ export const follows: InfluencersResponse = {
           comment: "the curlssssss",
         },
       },
-      feedImagesSmall: [ImageUris.placeholder],
+      feed: [FEED_DATA.feed[0]],
       lastActivity: "2019-11-26T15:04:44.477Z",
     },
     {
@@ -101,13 +102,7 @@ export const follows: InfluencersResponse = {
       statusPhrase: {
         template: "liked 2 posts.",
       },
-      feedImagesSmall: [
-        ImageUris.placeholder,
-        ImageUris.placeholder,
-        ImageUris.placeholder,
-        ImageUris.placeholder,
-        ImageUris.placeholder,
-      ],
+      feed: [FEED_DATA.feed[1], FEED_DATA.feed[2], FEED_DATA.feed[3], FEED_DATA.feed[4]],
       lastActivity: "2019-11-26T12:04:44.477Z",
     },
     {
@@ -121,7 +116,7 @@ export const follows: InfluencersResponse = {
           user: { id: "34ad34f2-ae0f-49a5-9cf0-08dbd84b4c5a", handle: "haelise" },
         },
       },
-      feedImagesSmall: [ImageUris.placeholder],
+      feed: [FEED_DATA.feed[5]],
       lastActivity: "2019-11-24T09:00:00+05:00",
     },
   ],

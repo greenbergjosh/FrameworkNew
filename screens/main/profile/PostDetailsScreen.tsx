@@ -19,7 +19,7 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
   }
   render() {
     const { navigate } = this.props.navigation
-    const feedItem = mockData.FEED_DETAILS_DATA.feed[0]
+    const feedItem = mockData.FEED_DATA.feed[0]
 
     return (
       <ScrollView>

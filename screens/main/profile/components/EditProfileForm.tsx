@@ -55,7 +55,9 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
         multiline={true}
       />
       <WhiteSpace size="xl" />
-      <H3>Private Information</H3>
+      <H3 style={[styles.SubHeader, { marginLeft: -Units.margin, marginRight: -Units.margin }]}>
+        Private Information
+      </H3>
       <WhiteSpace size="lg" />
       <H4>Email</H4>
       <InputItem

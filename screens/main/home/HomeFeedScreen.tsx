@@ -19,7 +19,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
   // const feed = useFeedContext()
-  const { feed } = mockData.FEED_DETAILS_DATA
+  const { feed } = mockData.FEED_DATA
   const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
 
   React.useMemo(() => {

@@ -1,5 +1,6 @@
 import { GetGotSuccessResponse } from "api"
 import { blockedUsers, followers, follows } from "./follows-services.mockData"
+import { PostType } from "./feed-services"
 
 /********************
  * Blocked Users
@@ -60,7 +61,7 @@ export type Influencer = UserType & {
     template: string
     data?: {}
   }
-  feedImagesSmall?: string[]
+  feed?: PostType[]
   lastActivity: ISO8601String
 }
 

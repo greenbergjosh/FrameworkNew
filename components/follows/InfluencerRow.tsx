@@ -25,7 +25,7 @@ export const InfluencerRow = ({
   routes,
   isRecommended = false,
 }: InfluencerRowProps) => {
-  const { avatarUri, statusPhrase, feedImagesSmall, handle, id, lastActivity, userId } = influencer
+  const { avatarUri, statusPhrase, feed, handle, id, lastActivity, userId } = influencer
   return (
     <List.Item>
       <Flex direction="row" align="start" justify="start">
@@ -82,14 +82,14 @@ export const InfluencerRow = ({
           {/**************************/}
           {/* Feed Images */}
           <Flex direction="row" wrap="wrap" align="start" style={{ marginTop: 8 }}>
-            {feedImagesSmall.map((feedImage, index) => (
+            {feed.map((post, index) => (
               <TouchImage
                 key={index}
-                uri={feedImage}
+                uri={post.image.source.uri}
                 size="img40"
                 onPress={() =>
                   navigate(routes.FeedDetails, {
-                    postId: "9860b273-a4ec-493c-b0fa-da8ab13def6f",
+                    postId: post.id,
                   })
                 }
                 style={{ marginRight: 4, marginBottom: 4 }}
