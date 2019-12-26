@@ -1,6 +1,6 @@
 import { routes } from "./route.constants"
 
-const influencerFeedRoutes: FeedRoutes = {
+const influencerFeedRoutes: FeedRoutesType = {
   Feed: routes.Explore.UserFeed,
   FeedDetails: routes.Explore.UserFeedDetails,
   Followers: routes.Explore.UserFollowsFollowers,
@@ -8,7 +8,7 @@ const influencerFeedRoutes: FeedRoutes = {
   Campaign: routes.Promotions.Campaign,
 }
 
-const profileFeedRoutes: FeedRoutes = {
+const profileFeedRoutes: FeedRoutesType = {
   Feed: routes.Profile.Profile,
   FeedDetails: routes.Profile.PostDetails,
   Followers: routes.Follows.Followers,

@@ -8,7 +8,7 @@ import { FollowsScreenProps } from "screens/main/follows/FollowsScreen"
 interface InfluenecersListProps {
   isRecommended?: boolean
   navigate: FollowsScreenProps["navigation"]["navigate"]
-  routes: FeedRoutes
+  routes: FeedRoutesType
   userId: string
 }
 

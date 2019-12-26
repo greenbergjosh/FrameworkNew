@@ -9,7 +9,7 @@ interface FeedItemProps {
   image: ImageType
   campaignRouteParams: CampaignRouteParams
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
   isCurrentUser?: boolean
   style?: StyleProp<ViewStyle>
 }

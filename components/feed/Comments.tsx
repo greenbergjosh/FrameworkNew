@@ -113,7 +113,7 @@ function Comment({ comment, onPress }: CommentRowProps) {
 
 interface CommentsProps {
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
 }
 export function Comments({ navigate, routes }: CommentsProps) {
   const handleUserPress = (userId) => navigate(routes.Feed, { userId })

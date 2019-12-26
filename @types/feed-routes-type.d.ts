@@ -1,4 +1,4 @@
-type FeedRoutes = {
+type FeedRoutesType = {
   Feed: string
   FeedDetails: string
   Followers: string

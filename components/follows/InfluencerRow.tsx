@@ -13,7 +13,7 @@ import TouchImage from "../TouchImage"
 export interface InfluencerRowProps {
   influencer?: Influencer
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
   isRecommended?: boolean
 }
 

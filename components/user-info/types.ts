@@ -1,6 +1,6 @@
 export interface UserInfoProps {
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
   user: UserType | UserProfileType
 }
 

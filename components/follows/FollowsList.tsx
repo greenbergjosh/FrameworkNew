@@ -6,7 +6,7 @@ import { useFollowsContext } from "providers/follows-context-provider"
 
 interface FollowsScreenProps {
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
 }
 
 export const FollowsList = React.memo(({ navigate, routes }: FollowsScreenProps) => {

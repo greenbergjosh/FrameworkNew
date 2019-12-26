@@ -9,7 +9,7 @@ import TouchText from "../TouchText"
 export interface FollowRowProps {
   follow?: Follower
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
 }
 
 export const FollowRow = ({ follow, navigate, routes }: FollowRowProps) => {

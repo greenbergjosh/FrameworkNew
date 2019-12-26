@@ -36,7 +36,7 @@ export interface FollowerRowProps {
   follower?: Follower
   followRequest?: boolean
   navigate
-  routes: FeedRoutes
+  routes: FeedRoutesType
 }
 
 export const FollowerRow = ({ follower, followRequest, navigate, routes }: FollowerRowProps) => {
