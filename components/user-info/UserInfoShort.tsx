@@ -9,6 +9,7 @@ import { UserInfoChildProps } from "./user-info-types"
 
 export interface UserInfoShortProps extends UserInfoChildProps {
   user: UserType
+  campaignId?: GUID
 }
 
 /**

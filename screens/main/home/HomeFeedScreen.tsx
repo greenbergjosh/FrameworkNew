@@ -77,6 +77,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
               <View key={feedItem.id}>
                 <InfluencerInfoShort
                   user={feedItem.user}
+                  campaignId={feedItem.campaignId}
                   navigate={navigate}
                   routes={influencerFeedRoutes}
                 />

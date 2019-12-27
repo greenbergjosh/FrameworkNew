@@ -16,6 +16,7 @@ import {
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
+import { copyCampaignLinkHandler } from "components/copyCampaignLinkHandler"
 
 interface ActionMessage {
   action: string
@@ -267,7 +268,7 @@ function initializeGetGotInterface() {
 
 PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
-  const { isDraft, influencerTokens = {}, promotionId, requiredTokens = [], template } = navigation
+  const { isDraft, influencerTokens = {}, promotionId, campaignId, requiredTokens = [], template } = navigation
     .state.params as PromotionsCampaignNavigationParams
   const cancelHandler = () => {
     Alert.alert("Cancel Changes?", "Are you sure you want to cancel and lose your changes?", [
@@ -280,13 +281,6 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
         onPress: () => navigate(routes.Promotions.Promotions),
       },
     ])
-  }
-  const copyHandler = () => {
-    Alert.alert(
-      "Link copied to clipboard!",
-      "This campaign has been saved. You can paste this link in any of your social media applications.",
-      [{ text: "OK" }]
-    )
   }
 
   return {
@@ -327,7 +321,7 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
         <NavButton
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
           position="right"
-          onPress={copyHandler}>
+          onPress={copyCampaignLinkHandler(campaignId)}>
           Copy Link
         </NavButton>
       ),

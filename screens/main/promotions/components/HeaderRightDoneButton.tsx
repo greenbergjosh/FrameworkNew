@@ -2,11 +2,11 @@ import { useActionSheet } from "@expo/react-native-action-sheet"
 import React from "react"
 import { createCampaign } from "api/promotions-services"
 import { ActivityIndicator, Modal } from "@ant-design/react-native"
-import { Clipboard, Text } from "react-native"
+import { Text } from "react-native"
 import { routes } from "constants"
-import { baseAddress } from "api"
 import { PromotionsCampaignAdditionalImagesScreenProps } from "../PromotionsCampaignAdditionalImagesScreen"
 import NavButton from "components/NavButton"
+import { copyCampaignLinkHandler } from "components/copyCampaignLinkHandler"
 
 interface HeaderRightDoneButtonProps {
   navigation: PromotionsCampaignAdditionalImagesScreenProps["navigation"]
@@ -60,21 +60,11 @@ export const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps
 
                 {
                   text: "Copy",
-                  onPress: () => {
-                    Clipboard.setString(`${baseAddress}/c/${publishResult.result.id}`)
-                    setTimeout(() => {
-                      Modal.alert("Link Copied!", null, [
-                        {
-                          text: "OK",
-                          onPress: () => {
-                            navigation.navigate(routes.Promotions.CampaignList, {
-                              promotionId,
-                            })
-                          },
-                        },
-                      ])
-                    }, 500)
-                  },
+                  onPress: copyCampaignLinkHandler(publishResult.result.id, () => {
+                    navigation.navigate(routes.Promotions.CampaignList, {
+                      promotionId,
+                    })
+                  }),
                 },
               ]
             )

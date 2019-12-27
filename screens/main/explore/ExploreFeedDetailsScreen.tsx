@@ -30,6 +30,7 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
               <View key={feedItem.id}>
                 <InfluencerInfoShort
                   user={feedItem.user}
+                  campaignId={feedItem.campaignId}
                   navigate={navigate}
                   routes={influencerFeedRoutes}
                 />
