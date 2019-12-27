@@ -5,8 +5,7 @@ import { Alert, ScrollView, View } from "react-native"
 import { influencerFeedRoutes, routes } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { FeedItem } from "components/feed"
-import { InfluencerInfoShort } from "components/user-info"
+import { Post, InfluencerPostHeader } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
@@ -73,21 +72,21 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           <SuggestedFollows influencers={suggestedFollows} navigate={navigate} />
         ) : (
           <List>
-            {feed.map((feedItem) => (
-              <View key={feedItem.id}>
-                <InfluencerInfoShort
-                  user={feedItem.user}
-                  campaignId={feedItem.campaignId}
+            {feed.map((post) => (
+              <View key={post.id}>
+                <InfluencerPostHeader
+                  user={post.user}
+                  campaignId={post.campaignId}
                   navigate={navigate}
                   routes={influencerFeedRoutes}
                 />
-                <FeedItem
-                  image={feedItem.image}
+                <Post
+                  image={post.image}
                   navigate={navigate}
                   campaignRouteParams={{
                     isDraft: false,
-                    promotionId: feedItem.promotionId,
-                    campaignId: feedItem.campaignId,
+                    promotionId: post.promotionId,
+                    campaignId: post.campaignId,
                   }}
                   routes={influencerFeedRoutes}
                 />

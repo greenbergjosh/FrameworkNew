@@ -4,7 +4,7 @@ import { Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { profileFeedRoutes, routes, styles } from "constants"
-import { ProfileInfoFull } from "components/user-info"
+import { UserProfilePanel } from "components/ProfilePanel"
 import { ImageGrid } from "components/ImageGrid"
 import * as feedMockData from "api/feed-services.mockData"
 import * as profileMockData from "api/profile-services.mockData"
@@ -19,7 +19,7 @@ export const ProfileScreen = (props: ProfileScreenProps) => {
 
   return (
     <View>
-      <ProfileInfoFull user={user} navigate={navigate} routes={profileFeedRoutes} />
+      <UserProfilePanel user={user} navigate={navigate} routes={profileFeedRoutes} />
       <View style={styles.View}>
         <Button size="large" type="primary" onPress={() => navigate(routes.Profile.EditProfile)}>
           Edit Profile

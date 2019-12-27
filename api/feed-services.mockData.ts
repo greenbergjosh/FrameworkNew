@@ -1,7 +1,7 @@
 import { ImageUris } from "constants"
-import { PostCommentType, PostType } from "./feed-services"
+import { PostCommentType, CampaignPostType } from "./feed-services"
 
-export const FEED_DATA: { feed: PostType[] } = {
+export const FEED_DATA: { feed: CampaignPostType[] } = {
   feed: [
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db01",
@@ -424,7 +424,7 @@ export const INFLUENCER_PROFILE_DATA: UserProfileType = {
   followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
 }
 
-export const USER_FEED_DATA: { user: UserProfileType; feed: PostType[] } = {
+export const USER_FEED_DATA: { user: UserProfileType; feed: CampaignPostType[] } = {
   user: INFLUENCER_PROFILE_DATA,
   feed: FEED_DATA.feed,
 }

@@ -4,15 +4,19 @@
  */
 
 import * as _Comments from "./Comments"
-import * as _FeedItem from "./FeedItem"
+import * as _Post from "./Post"
 import * as _SocialButtons from "./SocialButtons"
+import * as _PostInfo from "./PostHeader"
 
 const { Comments } = _Comments
-const { FeedItem } = _FeedItem
+const { Post } = _Post
 const { SocialButtons } = _SocialButtons
+const { UserPostHeader, InfluencerPostHeader } = _PostInfo
 
 export {
   Comments,
-  FeedItem,
+  Post,
   SocialButtons,
+  UserPostHeader,
+  InfluencerPostHeader,
 }

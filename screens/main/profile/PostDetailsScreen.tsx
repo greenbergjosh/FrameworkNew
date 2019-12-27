@@ -2,8 +2,7 @@ import React from "react"
 import { ScrollView, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { FeedItem } from "components/feed"
-import { ProfileInfoShort } from "components/user-info"
+import { Post, UserPostHeader } from "components/feed"
 import { profileFeedRoutes } from "constants"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
@@ -19,18 +18,18 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
   }
   render() {
     const { navigate } = this.props.navigation
-    const feedItem = mockData.FEED_DATA.feed[0]
+    const post = mockData.FEED_DATA.feed[0]
 
     return (
       <ScrollView>
-        <View key={feedItem.id}>
-          <ProfileInfoShort user={feedItem.user} navigate={navigate} routes={profileFeedRoutes} />
-          <FeedItem
-            image={feedItem.image}
+        <View key={post.id}>
+          <UserPostHeader user={post.user} navigate={navigate} routes={profileFeedRoutes} />
+          <Post
+            image={post.image}
             campaignRouteParams={{
               isDraft: false,
-              promotionId: feedItem.promotionId,
-              campaignId: feedItem.campaignId,
+              promotionId: post.promotionId,
+              campaignId: post.campaignId,
             }}
             navigate={navigate}
             routes={profileFeedRoutes}

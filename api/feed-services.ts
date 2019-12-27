@@ -1,6 +1,6 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
 
-export type FeedItemType = {
+export type PostType = {
   uri: string
   id: number
   height?: number
@@ -8,7 +8,7 @@ export type FeedItemType = {
 }
 
 export interface FeedResponse extends GetGotSuccessResponse {
-  results: FeedItemType[]
+  results: PostType[]
 }
 
 export type LikesType = {
@@ -30,7 +30,7 @@ export type PostCommentType = {
   comments: CommentType[]
 }
 
-export type PostType = {
+export type CampaignPostType = {
   id: GUID
   image: ImageType
   user?: UserType

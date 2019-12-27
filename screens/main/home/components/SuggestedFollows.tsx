@@ -49,10 +49,10 @@ export default (props: SuggestedFollowsProps) => {
               <SMALL>{influencer.source}</SMALL>
               <WhiteSpace size="lg" />
               <Flex direction="row" justify="center" style={{ width: "100%" }}>
-                {influencer.feed.map((feedItem, index, ary) => (
+                {influencer.feed.map((post, index, ary) => (
                   <TouchImage
                     key={index}
-                    uri={feedItem.image.source.uri}
+                    uri={post.image.source.uri}
                     size="img64"
                     onPress={() =>
                       navigate(influencerFeedRoutes.FeedDetails, {

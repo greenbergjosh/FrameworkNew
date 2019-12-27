@@ -16,7 +16,7 @@ import {
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
-import { copyCampaignLinkHandler } from "components/copyCampaignLinkHandler"
+import { copyCampaignLinkHandler } from "components/feed/copyCampaignLinkHandler"
 
 interface ActionMessage {
   action: string

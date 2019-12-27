@@ -1,17 +1,24 @@
 import React from "react"
-import { Flex, WhiteSpace } from "@ant-design/react-native"
-import { FontWeights, styles, Units, Colors, devBorder, AntIconSizes } from "constants"
+import { ActionSheet, Flex, WhiteSpace } from "@ant-design/react-native"
+import { AntIconSizes, Colors, FontWeights, styles, Units } from "constants"
 import { Text, TouchableOpacity, View } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
 import { AwardIcon } from "assets/icons"
 import { A, H1, SMALL } from "components/Markup"
-import { UserInfoChildProps } from "./user-info-types"
 import numeral from "numeral"
-import { pluralize } from "../../util"
+import { pluralize } from "../util"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
-export interface UserInfoFullProps extends UserInfoChildProps {
+export interface ProfilePanelBaseProps {
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
+  routes: FeedRoutesType
   user: UserProfileType
+}
+
+interface ProfilePanelProps extends ProfilePanelBaseProps {
+  isCurrentUser?: boolean
+  UserActionsButton?: () => JSX.Element
 }
 
 /**
@@ -22,13 +29,13 @@ export interface UserInfoFullProps extends UserInfoChildProps {
  * @param isCurrentUser
  * @constructor
  */
-export const UserInfoFull = ({
+const ProfilePanel = ({
   user,
   navigate,
   routes,
   isCurrentUser,
   UserActionsButton,
-}: UserInfoFullProps) => {
+}: ProfilePanelProps) => {
   function getFollowerSamplePhrase(followerSample: string[], followersCount: number) {
     const sample = followerSample.join(", ")
     const count = followersCount - followerSample.length
@@ -160,4 +167,43 @@ export const UserInfoFull = ({
       <WhiteSpace size="lg" />
     </View>
   )
+}
+
+/********************************************************************
+ * Influencer
+ */
+
+export function InfluencerProfilePanel(props: ProfilePanelProps) {
+  return (
+    <ProfilePanel
+      {...props}
+      isCurrentUser={false}
+      UserActionsButton={() => <UserActionsButton />}
+    />
+  )
+}
+
+/**
+ * Influencers action menu for ellipsis button
+ * @constructor
+ */
+function UserActionsButton() {
+  const showActionSheet = () => {
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options: ["Report User", "Block This User", "Cancel"],
+        cancelButtonIndex: 2,
+      },
+      (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
+    )
+  }
+  return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
+}
+
+/********************************************************************
+ * Profile
+ */
+
+export function UserProfilePanel(props: ProfilePanelProps) {
+  return <ProfilePanel {...props} isCurrentUser={true} />
 }

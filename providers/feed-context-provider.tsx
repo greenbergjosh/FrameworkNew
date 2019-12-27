@@ -1,12 +1,11 @@
 import React, { useContext } from "react"
-import { FeedItemType, loadHomeFeed } from "../api/feed-services"
+import { loadHomeFeed, PostType } from "../api/feed-services"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
-import { mockData } from "components/feed"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
 export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {
   // Local Properties
-  homeFeedItems: FeedItemType[]
+  homeFeed: PostType[]
   lastLoadHomeFeed: ISO8601String | null
 
   // JSON Properties come from Response
@@ -19,7 +18,7 @@ export interface FeedActionCreatorType extends GetGotContextType {
 
 export interface FeedContextType extends FeedActionCreatorType, FeedState {}
 
-type LoadHomeFeedAction = FSA<"loadHomeFeed", FeedItemType[]>
+type LoadHomeFeedAction = FSA<"loadHomeFeed", PostType[]>
 
 type FeedAction = LoadHomeFeedAction // | FooAction | BarAction | BazAction
 
@@ -28,7 +27,7 @@ const reducer = loadifyReducer((state: FeedState, action: FeedAction | GetGotRes
     case "loadHomeFeed":
       return {
         ...state,
-        homeFeedItems: action.payload,
+        homeFeed: action.payload,
         lastLoadHomeFeed: new Date().toISOString(),
       }
     case "reset":
@@ -39,7 +38,7 @@ const reducer = loadifyReducer((state: FeedState, action: FeedAction | GetGotRes
 })
 
 const initialState: FeedState = {
-  homeFeedItems: [],
+  homeFeed: [],
   lastLoadHomeFeed: null,
   loading: {
     loadHomeFeed: {},

@@ -6,7 +6,7 @@ import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 
-interface FeedItemProps {
+interface PostProps {
   image: ImageType
   campaignRouteParams: CampaignRouteParams
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
@@ -15,14 +15,14 @@ interface FeedItemProps {
   style?: StyleProp<ViewStyle>
 }
 
-export function FeedItem({
+export function Post({
   image,
   campaignRouteParams,
   navigate,
   routes,
   isCurrentUser = false,
   style,
-}: FeedItemProps) {
+}: PostProps) {
   return (
     <View style={style}>
       <TouchableOpacity onPress={() => navigate(routes.Campaign, campaignRouteParams)}>
