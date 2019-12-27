@@ -1,6 +1,6 @@
 import { GetGotSuccessResponse, getgotRequest } from "api"
 import { blockedUsers, followers, follows } from "./follows-services.mockData"
-import { CampaignPostType } from "./feed-services"
+import { PostType } from "./feed-services"
 
 /********************
  * Blocked Users
@@ -61,7 +61,7 @@ export type Influencer = UserType & {
     template: string
     data?: {}
   }
-  feed?: CampaignPostType[]
+  feed?: PostType[]
   lastActivity: ISO8601String
 }
 

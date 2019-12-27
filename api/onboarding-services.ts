@@ -1,7 +1,7 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
 import { suggestedFollows } from "./onboarding-services.mockData"
 import { SID } from "constants/appkeys"
-import { CampaignPostType } from "./feed-services"
+import { PostType } from "./feed-services"
 
 /********************
  * Send Code
@@ -63,7 +63,7 @@ export const createUser = async (
 export type Influencer = UserType & {
   description?: string
   source?: string
-  feed: CampaignPostType[]
+  feed: PostType[]
 }
 
 export interface SuggestedFollowsResponse extends GetGotSuccessResponse {

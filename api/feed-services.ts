@@ -1,6 +1,18 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
 
 export type PostType = {
+  id: GUID
+  image: ImageType
+  user?: UserType
+  promotionId: GUID
+  campaignId: GUID
+}
+
+/**
+ * TODO: APIPostType should be changed to be PostType
+ * This is the interface provided by the API but it is lacking necessary properties.
+ */
+export type APIPostType = {
   uri: string
   id: number
   height?: number
@@ -8,7 +20,7 @@ export type PostType = {
 }
 
 export interface FeedResponse extends GetGotSuccessResponse {
-  results: PostType[]
+  results: APIPostType[]
 }
 
 export type LikesType = {
@@ -28,14 +40,6 @@ export type PostCommentType = {
   lastActivity: ISO8601String
   likes: LikesType
   comments: CommentType[]
-}
-
-export type CampaignPostType = {
-  id: GUID
-  image: ImageType
-  user?: UserType
-  promotionId: GUID
-  campaignId: GUID
 }
 
 export const loadHomeFeed = async (

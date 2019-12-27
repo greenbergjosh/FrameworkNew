@@ -1,11 +1,11 @@
 import React, { useContext } from "react"
-import { loadHomeFeed, PostType } from "../api/feed-services"
+import { loadHomeFeed, APIPostType } from "../api/feed-services"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
 export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {
   // Local Properties
-  homeFeed: PostType[]
+  homeFeed: APIPostType[]
   lastLoadHomeFeed: ISO8601String | null
 
   // JSON Properties come from Response
@@ -18,7 +18,7 @@ export interface FeedActionCreatorType extends GetGotContextType {
 
 export interface FeedContextType extends FeedActionCreatorType, FeedState {}
 
-type LoadHomeFeedAction = FSA<"loadHomeFeed", PostType[]>
+type LoadHomeFeedAction = FSA<"loadHomeFeed", APIPostType[]>
 
 type FeedAction = LoadHomeFeedAction // | FooAction | BarAction | BazAction
 
