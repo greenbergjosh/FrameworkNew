@@ -4,10 +4,11 @@ import { ActivityIndicator, List } from "@ant-design/react-native"
 import { FollowerRow } from "./FollowerRow"
 import { sortFollowersByDate, useFollowsContext } from "providers/follows-context-provider"
 import { useAuthContext } from "providers/auth-context-provider"
-import { FollowsScreenProps } from "screens/main/follows/FollowsScreen"
+import { Colors } from "constants"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 interface FollowersListProps {
-  navigate: FollowsScreenProps["navigation"]["navigate"]
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   userId: string
 }
@@ -28,7 +29,7 @@ export const FollowersList = React.memo(({ routes, navigate, userId }: Followers
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#f5f5f9" }}
+      style={{ flex: 1, backgroundColor: Colors.screenBackground }}
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}>
       <View style={{ backgroundColor: "white" }}>

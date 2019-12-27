@@ -1,11 +1,11 @@
-import { ContactsResponse, MessagesResponse, MessageThreadItem } from "./messages-services"
+import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages-services"
 
 export const messages: MessagesResponse = {
   r: 0,
   results: [
     {
       id: "e07001e5-39a6-47a4-8232-d8b1b81b4a5a",
-      name: "Message Name",
+      name: "Message Title 1",
       users: [
         {
           userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
@@ -14,12 +14,11 @@ export const messages: MessagesResponse = {
         },
       ],
       messageDate: "2019-11-25T07:00:00+12:00",
-      content:
-        "This is the message. This is the message. This is the message. This is the message. ",
+      content: "What is this 'content' field for?",
     },
     {
       id: "fd73f05a-4f64-4743-9eec-856ca36f550c",
-      name: "Message Name",
+      name: "Message Title 2",
       users: [
         {
           userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
@@ -33,12 +32,11 @@ export const messages: MessagesResponse = {
         },
       ],
       messageDate: "2019-11-24T07:00:00+12:00",
-      content:
-        "This is the message. This is the message. This is the message. This is the message. ",
+      content: "What is this 'content' field for?",
     },
     {
       id: "1cf44754-f0f1-499b-90ee-ca3d414992a7",
-      name: "Message Name",
+      name: "Message Title 3",
       users: [
         {
           userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
@@ -47,8 +45,7 @@ export const messages: MessagesResponse = {
         },
       ],
       messageDate: "2019-11-11T07:00:00+12:00",
-      content:
-        "This is the message. This is the message. This is the message. This is the message. ",
+      content: "What is this 'content' field for?",
     },
   ],
 }
@@ -86,6 +83,13 @@ export const messageThread: MessageThreadItem[] = [
     },
   },
 ]
+
+export const message: Message = {
+  id: "09564766-81d8-44bd-816e-1d7fd3abbdc7",
+  title: "Lunch plans?",
+  participants: ["loren", "you"],
+  thread: messageThread,
+}
 
 export const contacts: ContactsResponse = {
   r: 0,

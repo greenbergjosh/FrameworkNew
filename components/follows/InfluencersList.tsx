@@ -3,17 +3,18 @@ import { ScrollView } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { InfluencerRow } from "./InfluencerRow"
 import { useFollowsContext } from "providers/follows-context-provider"
-import { FollowsScreenProps } from "screens/main/follows/FollowsScreen"
+import { Colors } from "constants"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
-interface InfluenecersListProps {
+interface InfluencersListProps {
   isRecommended?: boolean
-  navigate: FollowsScreenProps["navigation"]["navigate"]
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
-  userId: string
+  userId?: string
 }
 
 export const InfluencersList = React.memo(
-  ({ isRecommended = false, navigate, routes, userId }: InfluenecersListProps) => {
+  ({ isRecommended = false, navigate, routes, userId }: InfluencersListProps) => {
     const followsContext = useFollowsContext()
 
     if (
@@ -28,7 +29,7 @@ export const InfluencersList = React.memo(
 
     return (
       <ScrollView
-        style={{ flex: 1, backgroundColor: "#f5f5f9" }}
+        style={{ flex: 1, backgroundColor: Colors.screenBackground }}
         automaticallyAdjustContentInsets={false}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}>

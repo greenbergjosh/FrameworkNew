@@ -4,11 +4,12 @@ import { SocialButtons } from "./SocialButtons"
 import { Comments } from "./Comments"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 interface FeedItemProps {
   image: ImageType
   campaignRouteParams: CampaignRouteParams
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   isCurrentUser?: boolean
   style?: StyleProp<ViewStyle>

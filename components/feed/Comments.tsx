@@ -10,6 +10,7 @@ import * as mockData from "api/feed-services.mockData"
 import { CommentType, LikesType } from "api/feed-services"
 import moment from "moment"
 import ReadMore from "react-native-read-more-text"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 interface LikesProps {
   value: LikesType
@@ -112,7 +113,7 @@ function Comment({ comment, onPress }: CommentRowProps) {
 }
 
 interface CommentsProps {
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 export function Comments({ navigate, routes }: CommentsProps) {

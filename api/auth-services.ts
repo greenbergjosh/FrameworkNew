@@ -4,6 +4,7 @@ import { getgotRequest, GetGotSuccessResponse } from "./index"
  * Login
  */
 
+//TODO: This user model should be of type UserType
 export interface LoginData {
   id?: string
   email: string
@@ -27,6 +28,7 @@ export const getgotLogin = async (username: string, password: string, device: st
  * Profile
  */
 
+// TODO: This user model should be of type UserType
 export interface ProfileResponse extends GetGotSuccessResponse {
   id: string
   email?: string

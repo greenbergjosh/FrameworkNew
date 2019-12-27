@@ -1,5 +1,7 @@
+import { NavigationTabScreenProps } from "react-navigation-tabs"
+
 export interface UserInfoProps {
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   user: UserType | UserProfileType
 }

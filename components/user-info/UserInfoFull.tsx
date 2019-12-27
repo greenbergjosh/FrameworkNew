@@ -86,6 +86,7 @@ export const UserInfoFull = ({
               <H1 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H1>
               {user.topInfluencer ? <AwardIcon style={{ marginLeft: 5 }} /> : null}
             </Flex>
+            {UserActionsButton ? <UserActionsButton /> : null}
           </Flex>
 
           {/*****************************

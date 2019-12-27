@@ -15,6 +15,7 @@ import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
 import { LegalSection } from "./screens/legal/LegalSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
+import { Colors } from "./constants/unit.constants"
 
 const sectionNavigator = createAnimatedSwitchNavigator(
   {
@@ -29,9 +30,9 @@ const sectionNavigator = createAnimatedSwitchNavigator(
     initialRouteName: "Landing",
     defaultNavigationOptions: {
       headerStyle: {
-        backgroundColor: "#343997",
+        backgroundColor: Colors.ggNavy,
       },
-      headerTintColor: "#fff",
+      headerTintColor: Colors.reverse,
       headerTitleStyle: {
         fontWeight: "bold",
       },

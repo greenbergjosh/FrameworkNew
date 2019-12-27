@@ -24,7 +24,7 @@ export function InfluencerInfoFull({ user, navigate, routes }: UserInfoFullProps
       routes={routes}
       isCurrentUser={false}
       onPostActionsPress={postActionsButtonPressHandler}
-      UserActionsButton={<UserActionsButton />}
+      UserActionsButton={() => <UserActionsButton />}
     />
   )
 }

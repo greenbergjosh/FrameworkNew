@@ -2,9 +2,10 @@ import { Flex } from "@ant-design/react-native"
 import React, { FunctionComponent } from "react"
 import { A, SMALL } from "components/Markup"
 import { routes } from "constants"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 interface LegalAgreementProps {
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
 }
 
 export const LegalAgreement: FunctionComponent<LegalAgreementProps> = ({ navigate }) => {

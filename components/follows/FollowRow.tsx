@@ -5,10 +5,11 @@ import { Follower } from "api/follows-services"
 import { Colors } from "constants"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 export interface FollowRowProps {
   follow?: Follower
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 

@@ -2,12 +2,12 @@ import React from "react"
 import { ScrollView } from "react-native"
 import { List } from "@ant-design/react-native"
 import { MessageRow } from "./MessageRow"
-import { Message } from "api/messages-services"
+import { MessageSummary } from "api/messages-services"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { Colors } from "constants"
 
 export interface MessageRowProps {
-  messages?: Message[]
+  messages?: MessageSummary[]
   navigate: MessagesScreenProps["navigation"]["navigate"]
 }
 

@@ -2,14 +2,14 @@ import React from "react"
 import moment from "moment"
 import { Text } from "react-native"
 import { Flex, List } from "@ant-design/react-native"
-import { Message } from "api/messages-services"
+import { MessageSummary } from "api/messages-services"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { Colors, routes, styles, Units } from "constants"
 import TouchIcon from "components/TouchIcon"
 import AvatarCluster from "components/AvatarCluster"
 
 export interface MessageRowProps {
-  message?: Message
+  message?: MessageSummary
   navigate: MessagesScreenProps["navigation"]["navigate"]
 }
 
@@ -29,7 +29,7 @@ export const MessageRow = ({ message, navigate }: MessageRowProps) => {
         <Flex direction="column" align="start" style={{ flexShrink: 1, marginRight: Units.margin }}>
           <Text style={{ fontWeight: "bold" }}>{users[0].handle}</Text>
           <Text style={styles.Body} numberOfLines={1} ellipsizeMode="tail">
-            {content}
+            {name}
           </Text>
         </Flex>
         <Flex direction="row" justify="end" align="center" wrap="wrap" style={{ flexGrow: 1 }}>

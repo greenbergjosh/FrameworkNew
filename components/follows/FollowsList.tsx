@@ -3,9 +3,11 @@ import { ScrollView, View } from "react-native"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { FollowRow } from "./FollowRow"
 import { useFollowsContext } from "providers/follows-context-provider"
+import { Colors } from "constants"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 interface FollowsScreenProps {
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 
@@ -22,7 +24,7 @@ export const FollowsList = React.memo(({ navigate, routes }: FollowsScreenProps)
   const followers = followsContext.followers
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#f5f5f9" }}
+      style={{ flex: 1, backgroundColor: Colors.screenBackground }}
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}>
       <View style={{ backgroundColor: "white" }}>

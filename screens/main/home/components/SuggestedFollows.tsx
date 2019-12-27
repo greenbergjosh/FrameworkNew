@@ -2,13 +2,13 @@ import React from "react"
 import { Button, Carousel, Flex, Icon, WhiteSpace } from "@ant-design/react-native"
 import { Image, Text, View } from "react-native"
 import { Influencer } from "api/onboarding-services"
-import { influencerFeedRoutes, routes, styles, Units } from "constants"
+import { influencerFeedRoutes, routes, styles, Units, Colors } from "constants"
 import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"
 import { H2, H3, SMALL } from "components/Markup"
 import { FollowsScreenProps } from "../../follows/FollowsScreen"
 import { InfluencersList } from "components/follows"
-import TouchImage from "../../../../components/TouchImage"
+import TouchImage from "components/TouchImage"
 
 interface SuggestedFollowsProps {
   influencers: Influencer[]
@@ -43,7 +43,7 @@ export default (props: SuggestedFollowsProps) => {
               <Text style={styles.Body}>{influencer.description}</Text>
               <WhiteSpace size="xl" />
               <Button type="primary" size="small" style={{ maxWidth: 92 }}>
-                <Icon name="plus" size="xs" color="#fff" /> Follow
+                <Icon name="plus" size="xs" color={Colors.reverse} /> Follow
               </Button>
               <WhiteSpace size="xl" />
               <SMALL>{influencer.source}</SMALL>

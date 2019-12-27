@@ -26,6 +26,7 @@ export const submitCode = async (contact: string, code: string) => {
  * Create User
  */
 
+//TODO: this model should be of type UserType
 export interface CreateUserResponse extends GetGotSuccessResponse {
   name: string
   email: string

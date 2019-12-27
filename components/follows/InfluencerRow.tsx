@@ -9,10 +9,11 @@ import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
 import { SMALL } from "components/Markup"
 import TouchImage from "../TouchImage"
+import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
-  navigate
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   isRecommended?: boolean
 }

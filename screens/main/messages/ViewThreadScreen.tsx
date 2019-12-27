@@ -30,7 +30,9 @@ export class ViewThreadScreen extends React.Component<
           position="left"
         />
       ),
-      headerTitle: <HeaderTitle title="<Group Name, or Contact Name>" />,
+      headerTitle: (
+        <HeaderTitle title={mockData.message.title || `Chat - ${mockData.message.participants.join(", ")}`} />
+      ),
     }
   }
 
@@ -40,7 +42,7 @@ export class ViewThreadScreen extends React.Component<
 
   componentWillMount() {
     this.setState({
-      messages: mockData.messageThread,
+      messages: mockData.message.thread,
     })
   }
 
@@ -52,6 +54,7 @@ export class ViewThreadScreen extends React.Component<
 
   render() {
     const { navigate } = this.props.navigation
+
     return (
       <>
         <Flex

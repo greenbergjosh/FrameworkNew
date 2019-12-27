@@ -6,7 +6,7 @@ import { IMessage } from "react-native-gifted-chat"
  * Messages
  */
 
-export type Message = {
+export type MessageSummary = {
   id: GUID
   name: string
   users: UserType[]
@@ -16,8 +16,15 @@ export type Message = {
 
 export type MessageThreadItem = IMessage
 
+export type Message = {
+  id: GUID
+  title: string
+  participants: string[]
+  thread: MessageThreadItem[]
+}
+
 export interface MessagesResponse extends GetGotSuccessResponse {
-  results: Message[]
+  results: MessageSummary[]
 }
 
 export const loadMessages = async () => {
