@@ -2,89 +2,98 @@ import { Flex, Icon, InputItem } from "@ant-design/react-native"
 import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, routes, Units } from "constants"
+import { Colors, devBorder, routes, Units } from "constants"
 import { GiftedChat } from "react-native-gifted-chat"
 import * as mockData from "api/messages-services.mockData"
 import NavButton from "components/NavButton"
+import TouchIcon from "components/TouchIcon"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "hooks/useActionSheetTakeSelectPhoto"
 
 interface ViewThreadScreenProps extends NavigationStackScreenProps {}
-interface ViewThreadScreenState {
-  messages: {}[]
-}
 
 /**
  * About GiftedChat...
  * https://blog.jscrambler.com/build-a-chat-app-with-firebase-and-react-native/
  * https://www.npmjs.com/package/react-native-gifted-chat
  */
-export class ViewThreadScreen extends React.Component<
-  ViewThreadScreenProps,
-  ViewThreadScreenState
-> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: (
-        <NavButton
-          iconName="left"
-          onPress={() => navigation.navigate(routes.Messages.default)}
-          position="left"
-        />
-      ),
-      headerTitle: (
-        <HeaderTitle title={mockData.message.title || `Chat - ${mockData.message.participants.join(", ")}`} />
-      ),
+export const ViewThreadScreen = ({}: ViewThreadScreenProps) => {
+  const user = {
+    _id: 1,
+  }
+  const [messages, setMessages] = React.useState([])
+  React.useMemo(() => setMessages(mockData.message.thread), [])
+
+  function onSend(messages = []) {
+    setMessages((prevState) => GiftedChat.append(prevState, messages))
+  }
+
+  const sendImage = useActionSheetTakeSelectPhoto((imageResult, promptKey: string = "photo") => {
+    if (imageResult.status === PhotoSelectStatus.PERMISSION_NOT_GRANTED) {
+      alert("Sorry, GetGot needs your permission to enable selecting this photo!")
+    } else if (imageResult.status === PhotoSelectStatus.SUCCESS) {
+      const message = {
+        image: imageResult.base64,
+        user,
+        createdAt: new Date(),
+        _id: Math.round(Math.random() * 1000000),
+      }
+      onSend([message])
     }
-  }
+  })
 
-  state = {
-    messages: [],
-  }
-
-  componentWillMount() {
-    this.setState({
-      messages: mockData.message.thread,
-    })
-  }
-
-  onSend(messages = []) {
-    this.setState((previousState) => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }))
-  }
-
-  render() {
-    const { navigate } = this.props.navigation
-
-    return (
-      <>
-        <Flex
-          direction="row"
-          justify="start"
-          style={{
-            borderBottomWidth: 1,
-            borderColor: Colors.border,
-            paddingLeft: Units.margin,
-            paddingRight: Units.margin,
-          }}>
-          <Flex>
-            <Icon name="usergroup-add" size="md" />
-          </Flex>
-          <Flex.Item style={{ flexGrow: 1, flexShrink: 1 }}>
-            <InputItem
-              type="text"
-              placeholder="Name this Group"
-              clearButtonMode="always"
-            />
-          </Flex.Item>
+  return (
+    <>
+      <Flex
+        direction="row"
+        justify="start"
+        style={{
+          borderBottomWidth: 1,
+          borderColor: Colors.border,
+          paddingLeft: Units.margin,
+          paddingRight: Units.margin,
+        }}>
+        <Flex>
+          <Icon name="usergroup-add" size="md" />
         </Flex>
-        <GiftedChat
-          messages={this.state.messages}
-          onSend={(messages) => this.onSend(messages)}
-          user={{
-            _id: 1,
-          }}
-        />
-      </>
-    )
+        <Flex.Item style={{ flexGrow: 1, flexShrink: 1 }}>
+          <InputItem type="text" placeholder="Name this Group" clearButtonMode="always" />
+        </Flex.Item>
+      </Flex>
+      <GiftedChat
+        messages={messages}
+        onSend={(messages) => onSend(messages)}
+        user={user}
+        renderActions={() => (
+          <TouchIcon
+            name="camera"
+            onPress={sendImage}
+            style={{
+              marginLeft: 0,
+              marginBottom: 3,
+            }}
+          />
+        )}
+      />
+    </>
+  )
+}
+
+ViewThreadScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: (
+      <NavButton
+        iconName="left"
+        onPress={() => navigation.navigate(routes.Messages.default)}
+        position="left"
+      />
+    ),
+    headerTitle: (
+      <HeaderTitle
+        title={mockData.message.title || `Chat - ${mockData.message.participants.join(", ")}`}
+      />
+    ),
   }
 }
