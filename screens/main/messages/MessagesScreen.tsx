@@ -6,10 +6,23 @@ import { Colors, routes } from "constants"
 import { HeaderTitle } from "components/HeaderTitle"
 import { MessagesList } from "./components/MessagesList"
 import NavButton from "components/NavButton"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "hooks/useActionSheetTakeSelectPhoto"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
 export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
+  const editImage = useActionSheetTakeSelectPhoto((imageResult, promptKey: string = "photo") => {
+    if (imageResult.status === PhotoSelectStatus.PERMISSION_NOT_GRANTED) {
+      alert("Sorry, GetGot needs your permission to enable selecting this photo!")
+    } else if (imageResult.status === PhotoSelectStatus.SUCCESS) {
+      const imageBase64 = imageResult.base64
+      navigate(routes.Messages.NewMessage, { image: imageBase64 })
+    }
+  })
+
   const messagesContext = useMessagesContext()
   if (
     !messagesContext.lastLoadMessages &&
@@ -32,11 +45,7 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
       <MessagesList navigate={navigate} messages={messages} />
       <Button
         style={{ backgroundColor: Colors.navBarBackground }}
-        onPress={() =>
-          alert(
-            "Create message by taking a photo or selecting a photo from library.\nFeature to come!"
-          )
-        }>
+        onPress={editImage}>
         <Icon name="camera" size="lg" />
       </Button>
     </>

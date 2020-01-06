@@ -12,15 +12,19 @@ interface NewMessageScreenProps extends NavigationStackScreenProps {}
 
 export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
   const messagesContext = useMessagesContext()
-  if (
-    !messagesContext.lastLoadContacts &&
-    !messagesContext.loading.loadContacts[JSON.stringify([])]
-  ) {
-    messagesContext.loadContacts()
-    return <ActivityIndicator animating toast size="large" text="Loading..." />
-  }
   const { contacts } = messagesContext
   const { navigate } = navigation
+  //TODO: Add this new image to the message thread
+  const { image = null } = navigation.state.params
+  React.useMemo(() => {
+    if (
+      !messagesContext.lastLoadContacts &&
+      !messagesContext.loading.loadContacts[JSON.stringify([])]
+    ) {
+      messagesContext.loadContacts()
+      return <ActivityIndicator animating toast size="large" text="Loading..." />
+    }
+  }, [])
 
   return (
     <>

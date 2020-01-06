@@ -9,6 +9,10 @@ import { H2 } from "components/Markup"
 import NavButton from "components/NavButton"
 import { PROFILE_DATA } from "api/profile-services.mockData"
 import { EditProfileForm } from "./components/EditProfileForm"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "hooks/useActionSheetTakeSelectPhoto"
 
 interface UserIdentityProps {
   user: UserType
@@ -16,15 +20,29 @@ interface UserIdentityProps {
 }
 
 function UserIdentityPanel({ user, onPress }: UserIdentityProps) {
+  const [avatarSrc, setAvatarSrc] = React.useState<string>(null)
+
+  const editAvatar = useActionSheetTakeSelectPhoto((imageResult, promptKey: string = "photo") => {
+    if (imageResult.status === PhotoSelectStatus.PERMISSION_NOT_GRANTED) {
+      alert("Sorry, GetGot needs your permission to enable selecting this photo!")
+    } else if (imageResult.status === PhotoSelectStatus.SUCCESS) {
+      const imageBase64 = imageResult.base64
+      setAvatarSrc(imageBase64)
+      // TODO: Save avatar to api
+    }
+  })
+
+  React.useMemo(() => setAvatarSrc(user.avatarUri), [])
+
   return (
     <Flex
       direction="column"
       style={{ padding: Units.margin, backgroundColor: Colors.navBarBackground }}>
       <Avatar
         size="lg"
-        source={user.avatarUri}
+        source={avatarSrc}
         style={{ marginBottom: Units.padding, position: "relative", overflow: "hidden" }}
-        onPress={onPress}>
+        onPress={editAvatar}>
         <Text
           style={[
             {
