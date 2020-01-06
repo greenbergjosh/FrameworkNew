@@ -37,7 +37,7 @@ export const SettingsDrawer = (props: SettingsDrawerProps) => {
             <SettingsDrawerContents
               auth={auth}
               navigate={navigate}
-              closeDrawer={drawerRef && drawerRef.current && drawerRef.current.closeDrawer}
+              closeDrawer={() => drawerRef && drawerRef.current.closeDrawer()}
               logout={logout}
             />
           }
