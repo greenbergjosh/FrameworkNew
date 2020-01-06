@@ -8,14 +8,16 @@ import { useMessagesContext } from "providers/messages-context-provider"
 import { ContactsList } from "./components/ContactsList"
 import NavButton from "components/NavButton"
 
-interface NewMessageScreenProps extends NavigationStackScreenProps {}
+interface NewMessageScreenProps extends NavigationStackScreenProps {
+  image?: ImageType
+}
 
 export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
   const messagesContext = useMessagesContext()
   const { contacts } = messagesContext
   const { navigate } = navigation
   //TODO: Add this new image to the message thread
-  const { image = null } = navigation.state.params
+  const image = navigation.state.params && navigation.state.params.image
   React.useMemo(() => {
     if (
       !messagesContext.lastLoadContacts &&

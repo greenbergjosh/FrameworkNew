@@ -1,10 +1,11 @@
 import React from "react"
-import { User } from "api/messages-services"
 import Avatar from "components/Avatar"
 import { TouchableOpacity, View } from "react-native"
+import { Colors, Units } from "../constants/unit.constants"
+import { styles } from "constants"
 
 interface AvatarClusterProps {
-  users: User[]
+  users: UserType[]
   onPress?: () => void
 }
 
@@ -19,8 +20,11 @@ export default function AvatarCluster({ users, onPress }: AvatarClusterProps) {
             key={user.userId + idx}
             style={{
               position: "absolute",
-              top: 3,
-              left: 7,
+              top: 0,
+              left: Units.padding,
+              borderWidth: 1,
+              borderColor: Colors.reverse,
+              borderRadius: (styles.AvatarSM.height / 2)
             }}>
             <Avatar source={user.avatarUri} size="sm" />
           </View>
