@@ -71,7 +71,7 @@ export class ViewThreadScreen extends React.Component<
           </Flex>
           <Flex.Item style={{ flexGrow: 1, flexShrink: 1 }}>
             <InputItem
-              type="email-address"
+              type="text"
               placeholder="Name this Group"
               clearButtonMode="always"
             />
