@@ -1,5 +1,6 @@
 import { ImageUris } from "constants"
 import { PostCommentType, PostType } from "./feed-services"
+import { Images } from "../constants/unit.constants"
 
 export const FEED_DATA: { feed: PostType[] } = {
   feed: [
@@ -10,7 +11,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/1/435/435" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db01",
-        dimensions: { height: 435 },
+        dimensions: { width: 435, height: 435 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -25,7 +26,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/2/300/300" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db02",
-        dimensions: { height: 300 },
+        dimensions: { width: 300, height: 300 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -40,7 +41,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/3/435/320" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db03",
-        dimensions: { height: 320 },
+        dimensions: { width: 435, height: 320 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -55,7 +56,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/4/300/250" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db04",
-        dimensions: { height: 250 },
+        dimensions: { width: 300, height: 250 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -70,7 +71,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/5/400/400" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db05",
-        dimensions: { height: 400 },
+        dimensions: { width: 400, height: 400 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -85,7 +86,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/6/435/435" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db06",
-        dimensions: { height: 435 },
+        dimensions: { width: 435, height: 435 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -100,7 +101,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/7/300/300" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db07",
-        dimensions: { height: 300 },
+        dimensions: { width: 300, height: 300 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -115,7 +116,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       image: {
         source: { uri: "https://picsum.photos/seed/8/360/360" },
         id: "e8e91d07-9824-4ef0-8944-66eb7cd9db08",
-        dimensions: { height: 360 },
+        dimensions: { width: 360, height: 360 },
       },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
@@ -127,11 +128,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db09",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db09",
-        dimensions: { height: 400 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -142,11 +139,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db10",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db10",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -157,11 +150,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db11",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db11",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -172,11 +161,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db12",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db12",
-        dimensions: { height: 279 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -187,11 +172,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db13",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db13",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -202,11 +183,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db14",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db14",
-        dimensions: { height: 200 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -217,11 +194,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db15",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db15",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -232,11 +205,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db16",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db16",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -247,11 +216,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db17",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db17",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -262,11 +227,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db18",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db18",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -277,11 +238,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db19",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db19",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -292,11 +249,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db20",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db20",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -307,11 +260,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db21",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db21",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -322,11 +271,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db22",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db22",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -337,11 +282,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db23",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db23",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -352,11 +293,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db24",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db24",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -367,11 +304,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db25",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db25",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -382,11 +315,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db26",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db26",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -397,11 +326,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db27",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: {
-        source: { uri: ImageUris.placeholder },
-        id: "e8e91d07-9824-4ef0-8944-66eb7cd9db27",
-        dimensions: { height: 435 },
-      },
+      image: Images.placeholder,
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",

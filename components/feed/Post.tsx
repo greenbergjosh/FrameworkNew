@@ -1,10 +1,11 @@
 import React from "react"
-import { Image, StyleProp, TouchableOpacity, View, ViewStyle } from "react-native"
+import { StyleProp, View, ViewStyle } from "react-native"
 import { SocialButtons } from "./SocialButtons"
 import { Comments } from "./Comments"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import TouchImage from "../TouchImage"
 
 interface PostProps {
   image: ImageType
@@ -25,13 +26,13 @@ export function Post({
 }: PostProps) {
   return (
     <View style={style}>
-      <TouchableOpacity onPress={() => navigate(routes.Campaign, campaignRouteParams)}>
-        <Image
-          key={image.id}
-          source={{ uri: image.source.uri }}
-          style={{ flex: 1, height: image.dimensions.height }}
-        />
-      </TouchableOpacity>
+      <TouchImage
+        key={image.id}
+        size={image.dimensions}
+        uri={image.source.uri}
+        onPress={() => navigate(routes.Campaign, campaignRouteParams)}
+        style={{ flex: 1, height: image.dimensions.height }}
+      />
       {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons />}
       <Comments navigate={navigate} routes={routes} />
     </View>

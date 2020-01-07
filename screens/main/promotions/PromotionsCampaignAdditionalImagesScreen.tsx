@@ -14,6 +14,7 @@ import {
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { ImageGrid } from "components/ImageGrid"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
+import { Images } from "../../../constants/unit.constants"
 
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens
@@ -41,8 +42,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
           dimensions: { width: Units.img128, height: Units.img128 },
         }))
         .concat({
-          id: "edf82f28-b367-4c35-9d6d-275d0084881a",
-          source: { uri: ImageUris.placeholder },
+          ...Images.placeholder,
           dimensions: { width: Units.img128, height: Units.img128 },
         }),
     [params.images]

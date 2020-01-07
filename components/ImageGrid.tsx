@@ -1,4 +1,4 @@
-import { FlatList, Image, ScrollView, TouchableOpacity, View } from "react-native"
+import { FlatList, Image, TouchableOpacity, View } from "react-native"
 import { Colors } from "constants"
 import React from "react"
 
@@ -22,13 +22,14 @@ function GridImage({ image, onPress }: GridImageProps) {
         // alignContent: "stretch",
         // alignItems: "stretch",
       }}>
-      <TouchableOpacity onPress={onPress}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.5}>
         <Image
           source={{ uri: image.source.uri }}
           style={{
             aspectRatio: 1,
             // flexGrow: 1,
             // flexShrink: 0,
+            backgroundColor: Colors.screenBackground,
           }}
         />
       </TouchableOpacity>
