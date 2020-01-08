@@ -41,6 +41,7 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
                   promotionId: post.promotionId,
                   campaignId: post.campaignId,
                 }}
+                liked={post.liked}
                 routes={influencerFeedRoutes}
                 style={{ marginBottom: Units.margin }}
               />

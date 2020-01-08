@@ -1,4 +1,3 @@
-import { IconNames } from "@ant-design/react-native/lib/icon"
 import { StyleProp, View, ViewStyle } from "react-native"
 import { Colors, styles, Units } from "constants"
 import TouchIcon from "./TouchIcon"
@@ -7,21 +6,12 @@ import React from "react"
 
 export interface SubHeaderProps {
   onLeftPress?: () => void
-  leftIconName?: IconNames
   onRightPress?: () => void
-  rightIconName?: IconNames
   title: string
   align?: "left" | "center" | "right"
 }
 
-export function SubHeader({
-  title,
-  onLeftPress,
-  leftIconName = "left",
-  onRightPress,
-  rightIconName = "right",
-  align = "center",
-}: SubHeaderProps) {
+export function SubHeader({ title, onLeftPress, onRightPress, align = "center" }: SubHeaderProps) {
   let alignItems
   switch (align) {
     case "left":
@@ -44,11 +34,7 @@ export function SubHeader({
     <View style={[styles.SubHeader, {}]}>
       {onLeftPress ? (
         <View style={{ flexGrow: 0, flexShrink: 1 }}>
-          <TouchIcon
-            name={leftIconName}
-            onPress={onLeftPress}
-            iconStyle={{ color: Colors.bodyText }}
-          />
+          <TouchIcon name="left" onPress={onLeftPress} iconStyle={{ color: Colors.bodyText }} />
         </View>
       ) : null}
       <View style={titleStyle}>
@@ -56,11 +42,7 @@ export function SubHeader({
       </View>
       {onRightPress ? (
         <View style={{ flexGrow: 0, flexShrink: 1 }}>
-          <TouchIcon
-            name={rightIconName}
-            onPress={onRightPress}
-            iconStyle={{ color: Colors.bodyText }}
-          />
+          <TouchIcon name="right" onPress={onRightPress} iconStyle={{ color: Colors.bodyText }} />
         </View>
       ) : null}
     </View>

@@ -31,6 +31,7 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
               promotionId: post.promotionId,
               campaignId: post.campaignId,
             }}
+            liked={post.liked}
             navigate={navigate}
             routes={profileFeedRoutes}
             isCurrentUser={true}

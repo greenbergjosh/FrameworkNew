@@ -28,5 +28,5 @@ const PromotionsNavigator = createStackNavigator(
 export const PromotionsSection = TabBarSectionNavigator(
   PromotionsNavigator,
   "Promotions",
-  "shopping"
+  "shopping-bag"
 )

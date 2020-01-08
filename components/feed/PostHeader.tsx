@@ -7,6 +7,7 @@ import TouchIcon from "components/TouchIcon"
 import { H4 } from "components/Markup"
 import { copyCampaignLinkHandler } from "./copyCampaignLinkHandler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { Colors } from "constants"
 
 export interface PostInfoBaseProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
@@ -39,7 +40,12 @@ const PostHeader = ({ user, navigate, routes, onPostActionsPress }: PostInfoProp
         <H4 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H4>
       </TouchableOpacity>
     </Flex>
-    <TouchIcon name="ellipsis" size="lg" onPress={onPostActionsPress} />
+    <TouchIcon
+      name="ellipsis1"
+      size="lg"
+      onPress={onPostActionsPress}
+      iconStyle={{ color: Colors.bodyTextEmphasis }}
+    />
   </Flex>
 )
 

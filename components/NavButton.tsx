@@ -2,8 +2,8 @@ import React from "react"
 import { StyleProp, ViewStyle } from "react-native"
 import TouchText from "./TouchText"
 import { Units } from "constants"
-import { IconNames } from "@ant-design/react-native/lib/icon"
 import TouchIcon from "./TouchIcon"
+import { ExpoIconNames } from "../@types/icon-types"
 
 interface NavButtonProps {
   onPress?: () => void
@@ -11,7 +11,7 @@ interface NavButtonProps {
   type?: "primary" | "warning" | "normal"
   disabled?: boolean
   position: "left" | "right"
-  iconName?: IconNames
+  iconName?: ExpoIconNames
 }
 
 export default function NavButton({

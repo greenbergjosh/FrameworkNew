@@ -16,4 +16,4 @@ const FollowsNavigator = createStackNavigator(
   }
 )
 
-export const FollowsSection = TabBarSectionNavigator(FollowsNavigator, "Follows", "heart")
+export const FollowsSection = TabBarSectionNavigator(FollowsNavigator, "Follows", "ios-heart")

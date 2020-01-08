@@ -41,6 +41,7 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
                     promotionId: post.promotionId,
                     campaignId: post.campaignId,
                   }}
+                  liked={post.liked}
                   routes={influencerFeedRoutes}
                 />
               </View>

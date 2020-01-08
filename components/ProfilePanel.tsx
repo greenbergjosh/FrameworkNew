@@ -4,7 +4,6 @@ import { AntIconSizes, Colors, FontWeights, styles, Units } from "constants"
 import { Text, TouchableOpacity, View } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
-import { AwardIcon } from "assets/icons"
 import { A, H1, SMALL } from "components/Markup"
 import numeral from "numeral"
 import { pluralize } from "../util"
@@ -39,7 +38,7 @@ const ProfilePanel = ({
   function getFollowerSamplePhrase(followerSample: string[], followersCount: number) {
     const sample = followerSample.join(", ")
     const count = followersCount - followerSample.length
-    const more = count > 0 ? ` + ${count} more` : null
+    const more = count > 0 ? ` +${numeral(count).format()} more` : null
     return `Followed by ${sample}${more}`
   }
 
@@ -60,7 +59,8 @@ const ProfilePanel = ({
           <Avatar source={user.avatarUri} size="lg" />
           {isCurrentUser ? null : (
             <TouchIcon
-              name="plus-circle"
+              toggledNames={{ on: "pluscircle", off: "pluscircleo" }}
+              size="md"
               style={{
                 position: "absolute",
                 bottom: 0,
@@ -69,9 +69,9 @@ const ProfilePanel = ({
               iconStyle={{
                 ...styles.LinkText,
                 backgroundColor: Colors.reverse,
-                borderRadius: AntIconSizes.md / 2,
+                borderRadius: AntIconSizes.md / 2 + 2,
                 borderColor: Colors.reverse,
-                borderWidth: 1,
+                borderWidth: 2,
                 overflow: "hidden",
               }}
               onPress={() => alert("Follow user\nFeature to come!")}
@@ -91,7 +91,7 @@ const ProfilePanel = ({
           <Flex direction="row" justify="between" style={{ flexGrow: 1 }}>
             <Flex>
               <H1 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H1>
-              {user.topInfluencer ? <AwardIcon style={{ marginLeft: 5 }} /> : null}
+              {user.topInfluencer ? <TouchIcon name="ios-ribbon" /> : null}
             </Flex>
             {UserActionsButton ? <UserActionsButton /> : null}
           </Flex>
@@ -197,7 +197,14 @@ function UserActionsButton() {
       (buttonIndex) => (buttonIndex < 2 ? alert("Feature to come!") : null)
     )
   }
-  return <TouchIcon name="ellipsis" size="lg" onPress={showActionSheet} />
+  return (
+    <TouchIcon
+      name="ellipsis1"
+      size="lg"
+      onPress={showActionSheet}
+      iconStyle={{ color: Colors.bodyTextEmphasis }}
+    />
+  )
 }
 
 /********************************************************************

@@ -1,12 +1,11 @@
 import { Alert, Text, View } from "react-native"
 import { ImageThumbnail } from "components/ImageThumbnail"
-import { ActionSheet, Flex, Icon, SwipeAction } from "@ant-design/react-native"
-import { Colors, devBorder, styles, Units, routes } from "constants"
+import { Flex, Icon, SwipeAction } from "@ant-design/react-native"
+import { Colors, styles, Units } from "constants"
 import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
 import { Promotional } from "api/promotions-services"
-import { UndoIcon } from "assets/icons"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
 import { pluralize } from "../../../../util"
 import moment from "moment"
@@ -87,7 +86,7 @@ export function PromotionCard({
     {
       text: (
         <>
-          <UndoIcon style={{ color: Colors.reverse }} />
+          <TouchIcon name="ios-undo" reverse />
           <Text style={[styles.Body, { color: Colors.reverse }]}>Unarchive</Text>
         </>
       ),

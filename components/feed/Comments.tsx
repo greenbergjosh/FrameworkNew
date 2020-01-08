@@ -80,9 +80,10 @@ function Comment({ comment, onPress }: CommentRowProps) {
         </Flex>
         <Flex style={{ flexGrow: 0, flexShrink: 1 }}>
           <TouchIcon
-            name="heart"
+            toggledNames={{ on: "heart", off: "hearto" }}
             size="xs"
             onPress={() => alert("Like comment\nFeature to come!")}
+            active={comment.liked}
           />
         </Flex>
       </Flex>

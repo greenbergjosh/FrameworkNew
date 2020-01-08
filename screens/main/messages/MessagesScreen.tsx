@@ -1,15 +1,14 @@
 import React from "react"
-import { ActivityIndicator, Button, Icon, SearchBar } from "@ant-design/react-native"
+import { ActivityIndicator, Button, SearchBar } from "@ant-design/react-native"
+import { AntDesign, Ionicons, Entypo } from "@expo/vector-icons"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "providers/messages-context-provider"
 import { Colors, routes } from "constants"
 import { HeaderTitle } from "components/HeaderTitle"
 import { MessagesList } from "./components/MessagesList"
 import NavButton from "components/NavButton"
-import {
-  PhotoSelectStatus,
-  useActionSheetTakeSelectPhoto,
-} from "hooks/useActionSheetTakeSelectPhoto"
+import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
+import { AntIconSizes } from "../../../constants/unit.constants"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
@@ -46,7 +45,7 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
       <Button
         style={{ backgroundColor: Colors.navBarBackground }}
         onPress={editImage}>
-        <Icon name="camera" size="lg" />
+        <AntDesign name="camera" size={AntIconSizes.lg} style={{ color: Colors.bodyText }} />
       </Button>
     </>
   )

@@ -18,4 +18,4 @@ const ProfileNavigator = createStackNavigator(
   }
 )
 
-export const ProfileSection = TabBarSectionNavigator(ProfileNavigator, "Profile", "user")
+export const ProfileSection = TabBarSectionNavigator(ProfileNavigator, "Profile", "ios-person")

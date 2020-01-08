@@ -88,6 +88,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
                     promotionId: post.promotionId,
                     campaignId: post.campaignId,
                   }}
+                  liked={post.liked}
                   routes={influencerFeedRoutes}
                 />
               </View>
@@ -104,14 +105,14 @@ HomeFeedScreen.navigationOptions = ({ navigation }) => {
     headerLeft: (
       <SettingsDrawerContext.Consumer>
         {({ open, toggle }) => (
-          <NavButton iconName="menu" onPress={() => toggle()} position="left" />
+          <NavButton iconName="md-menu" onPress={() => toggle()} position="left" />
         )}
       </SettingsDrawerContext.Consumer>
     ),
     headerTitle: <HeaderLogo />,
     headerRight: (
       <NavButton
-        iconName="mail"
+        iconName="md-mail"
         onPress={() => navigation.navigate(routes.Home.Messages)}
         position="right"
       />

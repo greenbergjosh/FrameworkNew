@@ -84,7 +84,6 @@ export const PromotionsCampaignAdditionalImagesScreen = (
       <SubHeader
         title="Add Feed Photos"
         onLeftPress={() => navigate(routes.Promotions.Campaign, params)}
-        leftIconName="left"
       />
       <P style={{ margin: Units.margin }}>
         These images will appear in other people&rsquo;s feeds. But if you don&rsquo;t provide any,

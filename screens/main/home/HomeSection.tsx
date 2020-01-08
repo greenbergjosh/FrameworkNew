@@ -18,4 +18,4 @@ const HomeNavigator = createStackNavigator(
   }
 )
 
-export const HomeSection = TabBarSectionNavigator(HomeNavigator, "Home", "home")
+export const HomeSection = TabBarSectionNavigator(HomeNavigator, "Home", "ios-home")

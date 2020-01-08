@@ -25,4 +25,4 @@ const ExploreNavigator = createStackNavigator(
   }
 )
 
-export const ExploreSection = TabBarSectionNavigator(ExploreNavigator, "Explore", "search")
+export const ExploreSection = TabBarSectionNavigator(ExploreNavigator, "Explore", "ios-compass")

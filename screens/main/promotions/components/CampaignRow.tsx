@@ -93,7 +93,11 @@ export const CampaignRow = ({ navigate, campaign }: CampaignRowProps) => {
             </Text>
           </Flex.Item>
           <Flex style={{ marginLeft: Units.margin, alignItems: "flex-end" }}>
-            <TouchIcon name="tag" size="md" iconStyle={{ color: Colors.navBarText }} />
+            <TouchIcon
+              name="tag"
+              size="md"
+              iconStyle={{ color: Colors.navBarText }}
+            />
           </Flex>
         </Flex>
       </Flex>

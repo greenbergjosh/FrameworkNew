@@ -6,6 +6,7 @@ export type PostType = {
   user?: UserType
   promotionId: GUID
   campaignId: GUID
+  liked?: boolean
 }
 
 /**
@@ -32,6 +33,7 @@ export type CommentType = {
   id
   user: UserType
   message: string
+  liked?: boolean
   likes: LikesType
   comments: CommentType[]
 }

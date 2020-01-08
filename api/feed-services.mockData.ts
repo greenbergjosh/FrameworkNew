@@ -2,6 +2,9 @@ import { ImageUris } from "constants"
 import { PostCommentType, PostType } from "./feed-services"
 import { Images } from "../constants/unit.constants"
 
+let id = 1
+const guid = () => `guid-${id++}`
+
 export const FEED_DATA: { feed: PostType[] } = {
   feed: [
     {
@@ -16,8 +19,10 @@ export const FEED_DATA: { feed: PostType[] } = {
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "loren",
-        avatarUri: "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
+        avatarUri:
+          "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
       },
+      liked: true,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db02",
@@ -128,7 +133,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db09",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -139,7 +144,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db10",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -150,7 +155,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db11",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -161,7 +166,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db12",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -172,7 +177,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db13",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -183,7 +188,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db14",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -194,7 +199,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db15",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -205,7 +210,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db16",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -216,7 +221,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db17",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -227,7 +232,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db18",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -238,7 +243,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db19",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -249,7 +254,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db20",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -260,7 +265,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db21",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -271,7 +276,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db22",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -282,7 +287,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db23",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -293,7 +298,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db24",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -304,7 +309,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db25",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -315,7 +320,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db26",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -326,7 +331,7 @@ export const FEED_DATA: { feed: PostType[] } = {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db27",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
       campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
-      image: Images.placeholder,
+      image: { ...Images.placeholder, id: guid() },
       user: {
         userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
         handle: "boren",
@@ -418,6 +423,7 @@ export const FEED_COMMENTS: PostCommentType = {
         avatarUri: ImageUris.placeholder,
       },
       message: "Cutie😍😍",
+      liked: true,
       likes: { count: 0 },
       comments: [],
     },

@@ -12,6 +12,7 @@ interface PostProps {
   campaignRouteParams: CampaignRouteParams
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
+  liked?: boolean
   isCurrentUser?: boolean
   style?: StyleProp<ViewStyle>
 }
@@ -21,6 +22,7 @@ export function Post({
   campaignRouteParams,
   navigate,
   routes,
+  liked,
   isCurrentUser = false,
   style,
 }: PostProps) {
@@ -33,7 +35,7 @@ export function Post({
         onPress={() => navigate(routes.Campaign, campaignRouteParams)}
         style={{ flex: 1, height: image.dimensions.height }}
       />
-      {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons />}
+      {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons liked={liked} />}
       <Comments navigate={navigate} routes={routes} />
     </View>
   )
