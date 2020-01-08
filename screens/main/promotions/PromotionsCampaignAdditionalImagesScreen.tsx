@@ -3,7 +3,7 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { P } from "components/Markup"
 import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
-import { Colors, routes, Units, ImageUris } from "constants"
+import { Colors, routes, Units } from "constants"
 import React from "react"
 import { Alert, ScrollView, Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
@@ -14,7 +14,6 @@ import {
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { ImageGrid } from "components/ImageGrid"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
-import { Images } from "../../../constants/unit.constants"
 
 interface PromotionsCampaignAdditionalImagesScreenNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens
@@ -33,18 +32,19 @@ export const PromotionsCampaignAdditionalImagesScreen = (
     setParams,
     state: { params },
   } = props.navigation
-  const images = React.useMemo(
+
+  const images: ImageType[] = React.useMemo(
+    // TODO: route param.images should be type ImageType[]
+    /*
+    Convert route params.images to ImageType[],
+    then add the extra "add image" item.
+     */
     () =>
-      (params.images || [])
-        .map((image: string, index) => ({
-          id: index.toString(),
-          source: { uri: image },
-          dimensions: { width: Units.img128, height: Units.img128 },
-        }))
-        .concat({
-          ...Images.placeholder,
-          dimensions: { width: Units.img128, height: Units.img128 },
-        }),
+      (params.images || []).map((image: string, index) => ({
+        id: index.toString(),
+        source: { uri: image },
+        dimensions: { width: Units.img128, height: Units.img128 },
+      })),
     [params.images]
   )
 
@@ -54,27 +54,27 @@ export const PromotionsCampaignAdditionalImagesScreen = (
     }
   })
 
+  function showRemovePhotoModal(index) {
+    return Modal.alert("Remove Photo?", <Text>Would you like to remove this photo?</Text>, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Remove",
+        style: { color: Colors.warning },
+        onPress: () => {
+          setParams({
+            images: [...params.images.slice(0, index), ...params.images.slice(index + 1)],
+          })
+        },
+      },
+    ])
+  }
+
   const onPressImage = React.useCallback(
     (object, index) => {
-      if (index === images.length - 1) {
-        imagePrompt()
-      } else {
-        Modal.alert("Remove Photo?", <Text>Would you like to remove this photo?</Text>, [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-          {
-            text: "Remove",
-            style: { color: Colors.warning },
-            onPress: () => {
-              setParams({
-                images: [...params.images.slice(0, index), ...params.images.slice(index + 1)],
-              })
-            },
-          },
-        ])
-      }
+      showRemovePhotoModal(index)
     },
     [images]
   )
@@ -90,7 +90,7 @@ export const PromotionsCampaignAdditionalImagesScreen = (
         we&rsquo;ll use the campaign photo.
       </P>
       <ScrollView>
-        <ImageGrid images={images} onItemPress={onPressImage} cols={3} />
+        <ImageGrid images={images} onItemPress={onPressImage} onAddPhoto={imagePrompt} />
       </ScrollView>
     </>
   )

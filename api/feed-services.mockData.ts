@@ -338,6 +338,17 @@ export const FEED_DATA: { feed: PostType[] } = {
         avatarUri: ImageUris.placeholder,
       },
     },
+    {
+      id: "c9568bdf-dec9-4a78-802c-66eb7cd9db28",
+      promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
+      campaignId: "026812ff-7046-4650-9e18-c9893c354b11",
+      image: { ...Images.placeholder, id: guid() },
+      user: {
+        userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb55",
+        handle: "boren",
+        avatarUri: ImageUris.placeholder,
+      },
+    },
   ],
 }
 

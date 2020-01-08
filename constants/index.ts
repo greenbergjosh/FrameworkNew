@@ -10,7 +10,7 @@ import { ImgSizeType as _ImgSizeType } from "./unit.constants"
 import * as navigationConstants from "./navigation.constants"
 
 export type ImgSizeType = _ImgSizeType
-export const { FontWeights, ImageUris, Units, Colors, AntIconSizes } = unitConstants
+export const { FontWeights, ImageUris, Images, Units, Colors, AntIconSizes } = unitConstants
 export const { routes } = routeConstants
 export const { influencerFeedRoutes, profileFeedRoutes } = feedRouteConstants
 export const { defaultNavigationOptions } = navigationConstants
