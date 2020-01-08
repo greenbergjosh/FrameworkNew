@@ -145,7 +145,7 @@ export function PromotionCard({
             <Flex.Item>
               <H3 style={{ color: Colors.bodyTextEmphasis }}>Retailer Name</H3>
             </Flex.Item>
-            {!expires ? (
+            {!!expires ? (
               <Flex direction="column" align="end" style={{ paddingLeft: Units.padding }}>
                 <Text style={styles.TinyCopy}>Promotion Expires</Text>
                 <Text style={styles.TinyCopy}>{moment(expires).format("MM-DD-YYYY")}</Text>
