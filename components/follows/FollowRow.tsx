@@ -1,11 +1,12 @@
 import React from "react"
 import { Text } from "react-native"
-import { Button, Flex, List } from "@ant-design/react-native"
+import { Flex, List } from "@ant-design/react-native"
 import { Follower } from "api/follows-services"
 import { Colors } from "constants"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { FollowButton } from "./FollowButton"
 
 export interface FollowRowProps {
   follow?: Follower
@@ -56,12 +57,7 @@ export const FollowRow = ({ follow, navigate, routes }: FollowRowProps) => {
         {/**************************/}
         {/* Action Buttons */}
         <Flex direction="row" wrap="wrap" align="start" style={{ marginTop: 8 }}>
-          <Button
-            type="primary"
-            size="small"
-            onPress={() => alert("Follow action\nFeature to come!")}>
-            Follow
-          </Button>
+          <FollowButton onPress={() => alert("Follow action\nFeature to come!")} />
         </Flex>
       </Flex>
     </List.Item>

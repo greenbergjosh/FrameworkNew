@@ -36,6 +36,13 @@ function Likes({ value, onPress }: LikesProps) {
   )
 }
 
+function getExpandCommentsPhrase(count) {
+  if (count === 1) {
+    return "View 1 comment"
+  }
+  return `View all ${count} comments`
+}
+
 interface CommentRowProps {
   comment: CommentType
   onPress: (userId: GUID) => void
@@ -99,7 +106,7 @@ function Comment({ comment, onPress }: CommentRowProps) {
         collapsed ? (
           <>
             <WhiteSpace size="xs" />
-            <A onPress={() => setCollapsed(false)}>View all {comments.length} comments</A>
+            <A onPress={() => setCollapsed(false)}>{getExpandCommentsPhrase(comments.length)}</A>
           </>
         ) : (
           <>

@@ -10,6 +10,7 @@ import TouchText from "../TouchText"
 import { SMALL } from "components/Markup"
 import TouchImage from "../TouchImage"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { FollowButton } from "./FollowButton"
 
 export interface InfluencerRowProps {
   influencer?: Influencer
@@ -73,9 +74,7 @@ export const InfluencerRow = ({
                 direction="row"
                 justify="end"
                 style={{ flexGrow: 1, paddingLeft: Units.padding }}>
-                <Button size="small" type="primary">
-                  Follow
-                </Button>
+                <FollowButton onPress={() => alert("Follow feature to come")} />
               </Flex>
             ) : null}
           </Flex>

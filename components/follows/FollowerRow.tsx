@@ -6,6 +6,7 @@ import { Colors } from "constants"
 import Avatar from "components/Avatar"
 import TouchText from "../TouchText"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { FollowButton } from "./FollowButton"
 
 interface ActionButtons {
   followRequest?: boolean
@@ -16,9 +17,7 @@ interface ActionButtons {
 const ActionButtons = ({ followRequest, onFollowPress, onRejectPress }: ActionButtons) => {
   if (!followRequest) {
     return (
-      <Button type="primary" size="small" onPress={onFollowPress}>
-        Follow
-      </Button>
+      <FollowButton onPress={onFollowPress}/>
     )
   }
   return (
