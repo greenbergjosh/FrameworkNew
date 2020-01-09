@@ -43,15 +43,17 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
         placeholder="Name"
         onChange={setName}
         clearButtonMode="always"
+        autoFocus={true}
       />
       <WhiteSpace size="lg" />
       <InputItem
-        type="text"
+        type="email-address"
         name="phoneOrEmail"
         value={phoneOrEmail}
         placeholder="Phone or email"
         onChange={setPhoneOrEmail}
         clearButtonMode="always"
+        autoCapitalize="none"
       />
       <WhiteSpace size="lg" />
       <LegalAgreement navigate={navigate} />

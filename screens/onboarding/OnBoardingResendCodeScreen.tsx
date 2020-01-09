@@ -31,6 +31,9 @@ export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProp
         placeholder="Phone or email"
         onChange={(e) => setEmail(e)}
         clearButtonMode="always"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoFocus={true}
       />
       <WhiteSpace size="lg" />
       <LegalAgreement navigate={navigate} />

@@ -35,11 +35,13 @@ export const AuthenticationResetPasswordScreen = (
       <H2>Reset your GetGot password</H2>
       <WhiteSpace size="lg" />
       <InputItem
-        type="text"
+        type="email-address"
         name="contact"
         value={contact}
         placeholder="Phone number, email or username"
         clearButtonMode="always"
+        autoCapitalize="none"
+        autoFocus={true}
       />
       {error && <Text style={{ color: Colors.warning }}>{error}</Text>}
       <WhiteSpace size="lg" />

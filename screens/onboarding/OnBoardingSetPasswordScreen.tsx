@@ -40,6 +40,7 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
           setPassword(value)
         }}
         clearButtonMode="always"
+        autoFocus={true}
       />
       {error && <Text style={{ color: Colors.warning }}>{error}</Text>}
       <WhiteSpace size="lg" />

@@ -38,6 +38,8 @@ export const AuthenticationResendCodeScreen = (props: AuthenticationResendCodeSc
         placeholder="Phone or email"
         onChange={(e) => setEmail(e)}
         clearButtonMode="always"
+        autoCapitalize="none"
+        autoFocus={true}
       />
       <WhiteSpace size="lg" />
       <LegalAgreement navigate={navigate} />

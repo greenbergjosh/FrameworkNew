@@ -50,6 +50,8 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
         placeholder="Phone, email or username"
         onChange={(e) => setUserName(e)}
         clearButtonMode="always"
+        autoCapitalize="none"
+        autoFocus={true}
       />
       <WhiteSpace size="lg" />
       <InputItem
