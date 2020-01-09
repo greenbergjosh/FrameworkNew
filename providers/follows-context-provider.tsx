@@ -23,7 +23,7 @@ export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType>
   lastLoadInfluencers: ISO8601String | null
   influencers: Influencer[]
   lastLoadInfluencerFollowers: { [key: string]: ISO8601String | null }
-  influencerFollowers: { [key: string]: UserType[] }
+  influencerFollowers: { [key: string]: Follower[] }
   lastLoadFollowers: ISO8601String | null
   followers: Followers
   lastLoadBlockedUsers: ISO8601String | null
@@ -48,7 +48,7 @@ export interface FollowsContextType extends FollowsActionCreatorType, FollowsSta
 
 type LoadInfluencerFollowersAction = FSA<
   "loadInfluencerFollowers",
-  { influencerId: string; followers: UserType[] }
+  { influencerId: string; followers: Follower[] }
 >
 type LoadInfluencersAction = FSA<"loadInfluencers", InfluencersResponse>
 type LoadFollowersAction = FSA<"loadFollowers", FollowersResponse>
@@ -143,7 +143,6 @@ export const FollowsContextProvider = ({ ...props }) => {
       loadifyContext(dispatch, {
         loadInfluencerFollowers: async (influencerId, search, pageSize) => {
           const response = await loadInfluencerFollowers(influencerId, search, pageSize)
-
           if (response.r === 0) {
             dispatch({
               type: "loadInfluencerFollowers",
@@ -166,6 +165,7 @@ export const FollowsContextProvider = ({ ...props }) => {
             console.error("Error loading Influencers", { response })
           }
         },
+
         loadFollowers: async () => {
           const response = await loadFollowers()
           if (response.r === 0) {
@@ -174,6 +174,7 @@ export const FollowsContextProvider = ({ ...props }) => {
             console.error("Error loading Followers", { response })
           }
         },
+
         loadBlockedUsers: async () => {
           const response = await loadBlockedUsers()
           if (response.r === 0) {
@@ -182,9 +183,11 @@ export const FollowsContextProvider = ({ ...props }) => {
             console.error("Error loading Blocked Users", { response })
           }
         },
+
         reset: () => {
           dispatch(getgotResetAction)
         },
+
         startFollowingInfluencer: async (influencerHandle) => {
           const response = await startFollowingInfluencer(influencerHandle)
           if (response.r === 0) {
@@ -203,6 +206,7 @@ export const FollowsContextProvider = ({ ...props }) => {
             console.error("Error Following Influencer(s)", { influencerHandle, response })
           }
         },
+
         stopFollowingInfluencer: async (influencerHandle) => {
           const response = await stopFollowingInfluencer(influencerHandle)
           if (response.r === 0) {

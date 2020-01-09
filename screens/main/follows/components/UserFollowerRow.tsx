@@ -1,12 +1,12 @@
 import React from "react"
-import { Text } from "react-native"
-import { Button, Flex, List } from "@ant-design/react-native"
+import { Text, View } from "react-native"
+import { Button, Flex } from "@ant-design/react-native"
 import { Follower } from "api/follows-services"
-import { Colors } from "constants"
+import { Colors, styles } from "constants"
 import Avatar from "components/Avatar"
-import TouchText from "../TouchText"
+import TouchText from "components/TouchText"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { FollowButton } from "./FollowButton"
+import { FollowButton } from "components/FollowButton"
 
 interface ActionButtons {
   followRequest?: boolean
@@ -16,9 +16,7 @@ interface ActionButtons {
 
 const ActionButtons = ({ followRequest, onFollowPress, onRejectPress }: ActionButtons) => {
   if (!followRequest) {
-    return (
-      <FollowButton onPress={onFollowPress}/>
-    )
+    return <FollowButton onPress={onFollowPress} />
   }
   return (
     <>
@@ -32,22 +30,23 @@ const ActionButtons = ({ followRequest, onFollowPress, onRejectPress }: ActionBu
   )
 }
 
-export interface FollowerRowProps {
+export interface UserFollowerRowProps {
   follower?: Follower
   followRequest?: boolean
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 
-export const FollowerRow = ({ follower, followRequest, navigate, routes }: FollowerRowProps) => {
+export const UserFollowerRow = ({
+  follower,
+  followRequest,
+  navigate,
+  routes,
+}: UserFollowerRowProps) => {
   const { avatarUri, handle, id, name, userId } = follower
   return (
-    <List.Item>
-      <Flex
-        direction="row"
-        align="start"
-        justify="start"
-        style={{ paddingTop: 5, paddingBottom: 5 }}>
+    <View style={styles.ListRow}>
+      <Flex direction="row" align="start" justify="start">
         {/**************************/}
         {/* Avatar */}
         <Flex direction="column" align="start" style={{ marginRight: 10 }}>
@@ -89,6 +88,6 @@ export const FollowerRow = ({ follower, followRequest, navigate, routes }: Follo
           />
         </Flex>
       </Flex>
-    </List.Item>
+    </View>
   )
 }

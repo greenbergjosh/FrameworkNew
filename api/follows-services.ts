@@ -7,7 +7,7 @@ import { PostType } from "./feed-services"
  */
 
 export type BlockedUser = UserType & {
-  id: number
+  id: GUID
   name: string
   blockedDate: ISO8601String
 }
@@ -34,7 +34,7 @@ export type Followers = {
 }
 
 export type Follower = UserType & {
-  id: number
+  id: GUID
   name: string
   followedDate: ISO8601String
 }
@@ -56,7 +56,7 @@ export const loadFollowers = async () => {
  */
 
 export type Influencer = UserType & {
-  id: number
+  id: GUID
   statusPhrase: {
     template: string
     data?: {}
@@ -77,16 +77,16 @@ export const loadInfluencers = async () => {
   })
 }
 
-export interface UserProfileListResponse extends GetGotSuccessResponse {
-  results: UserType[]
+export interface InfluencerFollowersResponse extends GetGotSuccessResponse {
+  results: Follower[]
 }
 
 export const loadInfluencerFollowers = async (
-  influencerUserId: string,
+  influencerUserId: GUID,
   search?: string,
   pageSize?: number
 ) => {
-  return await getgotRequest<UserProfileListResponse>("getInfluencerFollowers", {
+  return await getgotRequest<InfluencerFollowersResponse>("getInfluencerFollowers", {
     influencerUserId,
     search,
     pageSize,

@@ -1,10 +1,11 @@
 import React from "react"
-import { ScrollView } from "react-native"
-import { ActivityIndicator, List } from "@ant-design/react-native"
+import { FlatList, ScrollView } from "react-native"
+import { ActivityIndicator } from "@ant-design/react-native"
 import { InfluencerRow } from "./InfluencerRow"
 import { useFollowsContext } from "providers/follows-context-provider"
-import { Colors } from "constants"
+import { Colors, Units } from "constants"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { Empty } from "./Empty"
 
 interface InfluencersListProps {
   isRecommended?: boolean
@@ -33,17 +34,22 @@ export const InfluencersList = React.memo(
         automaticallyAdjustContentInsets={false}
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}>
-        <List>
-          {influencers.map((influencer) => (
+        <FlatList
+          data={influencers}
+          renderItem={({ item }) => (
             <InfluencerRow
-              key={influencer.id}
+              key={item.id}
               navigate={navigate}
-              influencer={influencer}
+              influencer={item}
               routes={routes}
               isRecommended={isRecommended}
             />
-          ))}
-        </List>
+          )}
+          keyExtractor={(influencer) => influencer.id}
+          ListEmptyComponent={
+            <Empty message="Not following anyone" style={{ padding: Units.margin }} />
+          }
+        />
       </ScrollView>
     )
   }

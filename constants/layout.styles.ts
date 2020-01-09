@@ -15,15 +15,6 @@ const LayoutStyles = StyleSheet.create({
     margin: Units.margin,
   },
 
-  Header: {
-    paddingLeft: Units.margin,
-    paddingRight: Units.margin,
-  },
-
-  HeaderSm: {
-    // height: 30,
-  },
-
   SubHeader: {
     backgroundColor: Colors.navBarBackground,
     borderBottomWidth: 1,
@@ -35,7 +26,21 @@ const LayoutStyles = StyleSheet.create({
     alignItems: "center",
     alignContent: "stretch",
     padding: Units.margin,
-    paddingBottom: Units.padding
+    paddingBottom: Units.padding,
+    textTransform: "uppercase",
+  },
+
+  List: {
+  },
+
+  ListRow: {
+    paddingLeft: Units.margin,
+    paddingRight: Units.margin,
+    paddingTop: Units.padding / 2,
+    paddingBottom: Units.padding / 2,
+    borderBottomWidth: 1,
+    borderColor: Colors.divider,
+    backgroundColor: Colors.reverse,
   },
 })
 

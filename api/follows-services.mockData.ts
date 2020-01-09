@@ -5,7 +5,7 @@ export const blockedUsers: BlockedUsersResponse = {
   r: 0,
   results: [
     {
-      id: 1,
+      id: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
       userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
       avatarUri: "https://randomuser.me/api/portraits/women/9.jpg",
       handle: "erynearly",
@@ -13,7 +13,7 @@ export const blockedUsers: BlockedUsersResponse = {
       blockedDate: "2019-11-25T07:00:00+12:00",
     },
     {
-      id: 2,
+      id: "8568ffe3-6346-4486-b1d0-be843dcaac25",
       userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
       avatarUri: "https://randomuser.me/api/portraits/women/10.jpg",
       handle: "itsdyasia",
@@ -21,7 +21,7 @@ export const blockedUsers: BlockedUsersResponse = {
       blockedDate: "2019-11-24T07:00:00+12:00",
     },
     {
-      id: 3,
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b0",
       userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
       avatarUri: "https://randomuser.me/api/portraits/women/11.jpg",
       handle: "idk_just_stan_bts",
@@ -36,7 +36,7 @@ export const followers: FollowersResponse = {
   result: {
     followRequests: [
       {
-        id: 4,
+        id: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
         userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
         avatarUri: "https://randomuser.me/api/portraits/women/12.jpg",
         handle: "booberry",
@@ -46,7 +46,7 @@ export const followers: FollowersResponse = {
     ],
     followers: [
       {
-        id: 1,
+        id: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
         userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
         avatarUri: "https://randomuser.me/api/portraits/women/13.jpg",
         handle: "erynearly",
@@ -54,7 +54,7 @@ export const followers: FollowersResponse = {
         followedDate: "2019-11-25T07:00:00+12:00",
       },
       {
-        id: 2,
+        id: "8568ffe3-6346-4486-b1d0-be843dcaac25",
         userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
         avatarUri: "https://randomuser.me/api/portraits/women/14.jpg",
         handle: "itsdyasia",
@@ -62,7 +62,7 @@ export const followers: FollowersResponse = {
         followedDate: "2019-11-24T07:00:00+12:00",
       },
       {
-        id: 3,
+        id: "37c240b4-b18c-4239-90ca-fea6b10167b0",
         userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
         avatarUri: "https://randomuser.me/api/portraits/women/14.jpg",
         handle: "idk_just_stan_bts",
@@ -77,7 +77,7 @@ export const follows: InfluencersResponse = {
   r: 0,
   results: [
     {
-      id: 2,
+      id: "8568ffe3-6346-4486-b1d0-be843dcaac25",
       userId: "8568ffe3-6346-4486-b1d0-be843dcaac25",
       avatarUri: "https://randomuser.me/api/portraits/women/20.jpg",
       handle: "itsdyasia",
@@ -92,7 +92,7 @@ export const follows: InfluencersResponse = {
       lastActivity: "2019-11-26T15:04:44.477Z",
     },
     {
-      id: 1,
+      id: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
       userId: "0de8d8f1-281f-4652-a49c-47ef33e5c59d",
       avatarUri: "https://randomuser.me/api/portraits/women/21.jpg",
       handle: "erynearly",
@@ -103,7 +103,7 @@ export const follows: InfluencersResponse = {
       lastActivity: "2019-11-26T12:04:44.477Z",
     },
     {
-      id: 3,
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b0",
       userId: "37c240b4-b18c-4239-90ca-fea6b10167b0",
       avatarUri: "https://randomuser.me/api/portraits/women/23.jpg",
       handle: "idk_just_stan_bts",

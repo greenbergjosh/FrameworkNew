@@ -1,14 +1,14 @@
 import React from "react"
-import { Text } from "react-native"
-import { Button, Flex, List } from "@ant-design/react-native"
+import { Text, View } from "react-native"
+import { Flex } from "@ant-design/react-native"
 import pupa from "pupa"
 import { Influencer } from "api/follows-services"
-import { Units } from "constants"
+import { styles, Units } from "constants"
 import moment from "moment"
 import Avatar from "components/Avatar"
-import TouchText from "../TouchText"
+import TouchText from "./TouchText"
 import { SMALL } from "components/Markup"
-import TouchImage from "../TouchImage"
+import TouchImage from "./TouchImage"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowButton } from "./FollowButton"
 
@@ -29,7 +29,7 @@ export const InfluencerRow = ({
 }: InfluencerRowProps) => {
   const { avatarUri, statusPhrase, feed, handle, id, lastActivity, userId } = influencer
   return (
-    <List.Item>
+    <View style={styles.ListRow}>
       <Flex direction="row" align="start" justify="start">
         {/**************************/}
         {/* Avatar */}
@@ -98,6 +98,6 @@ export const InfluencerRow = ({
           </Flex>
         </Flex.Item>
       </Flex>
-    </List.Item>
+    </View>
   )
 }

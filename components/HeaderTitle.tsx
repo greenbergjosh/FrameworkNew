@@ -22,7 +22,13 @@ export class HeaderTitle extends React.Component<HeaderTitleProps> {
       align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center"
     const padding = offset === "left" ? { left: -40 } : offset === "right" ? { left: 40 } : {}
     const textClass = size === "large" ? styles.H1 : styles.H3
-    const viewClass = size === "large" ? styles.Header : styles.HeaderSm
+    const viewClass =
+      size === "large"
+        ? {
+            paddingLeft: Units.margin,
+            paddingRight: Units.margin,
+          }
+        : null
 
     return (
       <View

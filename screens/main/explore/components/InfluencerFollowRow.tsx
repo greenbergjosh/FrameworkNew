@@ -1,23 +1,23 @@
 import React from "react"
-import { Text } from "react-native"
-import { Flex, List } from "@ant-design/react-native"
+import { Text, View } from "react-native"
+import { Flex } from "@ant-design/react-native"
 import { Follower } from "api/follows-services"
-import { Colors } from "constants"
+import { Colors, styles } from "constants"
 import Avatar from "components/Avatar"
-import TouchText from "../TouchText"
+import TouchText from "components/TouchText"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { FollowButton } from "./FollowButton"
+import { FollowButton } from "components/FollowButton"
 
-export interface FollowRowProps {
+export interface InfluencerFollowRowProps {
   follow?: Follower
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 
-export const FollowRow = ({ follow, navigate, routes }: FollowRowProps) => {
+export const InfluencerFollowRow = ({ follow, navigate, routes }: InfluencerFollowRowProps) => {
   const { avatarUri, handle, id, name, userId } = follow
   return (
-    <List.Item>
+    <View style={styles.ListRow}>
       <Flex
         direction="row"
         align="start"
@@ -60,6 +60,6 @@ export const FollowRow = ({ follow, navigate, routes }: FollowRowProps) => {
           <FollowButton onPress={() => alert("Follow action\nFeature to come!")} />
         </Flex>
       </Flex>
-    </List.Item>
+    </View>
   )
 }

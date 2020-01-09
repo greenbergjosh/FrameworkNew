@@ -7,9 +7,9 @@ import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"
 import { H2, H3, SMALL } from "components/Markup"
 import { FollowsScreenProps } from "../../follows/FollowsScreen"
-import { InfluencersList } from "components/follows"
+import { InfluencersList } from "components/InfluencersList"
 import TouchImage from "components/TouchImage"
-import { FollowButton } from "components/follows/FollowButton"
+import { FollowButton } from "components/FollowButton"
 
 interface SuggestedFollowsProps {
   influencers: Influencer[]

@@ -43,6 +43,7 @@ export enum Colors {
   bodyText = "#707070",
   bodyTextEmphasis = "#000000",
   border = "#D6D4CD",
+  divider = "#F0EEE7",
   ggNavy = "#343997",
   highlight = "#007AFF1A",
   link = "#007AFF",

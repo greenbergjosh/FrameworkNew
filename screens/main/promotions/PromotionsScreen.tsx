@@ -3,14 +3,14 @@ import { FlatList, ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { ActivityIndicator } from "@ant-design/react-native"
 import { HeaderTitle } from "components/HeaderTitle"
-import { PromotionExpander } from "screens/main/promotions/components/PromotionExpander"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import { Colors, FontWeights, routes, styles, Units } from "constants"
 import { Badge } from "components/Badge"
 import { H4, P } from "components/Markup"
 import { Tab, Tabs } from "components/Tabs"
 import { Empty } from "components/Empty"
-import { PromotionEducationPrompt } from "components/promotion/PromotionEducationPrompt"
+import { PromotionExpander } from "./components/PromotionExpander"
+import { PromotionEducationPrompt } from "./components/PromotionEducationPrompt"
 
 export interface PromotionsScreenProps extends NavigationTabScreenProps {}
 

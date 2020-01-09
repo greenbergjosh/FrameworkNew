@@ -19,7 +19,7 @@ export interface Promotion {
   fromCampaignId: GUID | null
   id: GUID
   payload: Promotional
-  publisherUserId: string
+  publisherUserId: GUID
 }
 
 export interface Campaign {
@@ -37,8 +37,8 @@ export interface Campaign {
 }
 
 export interface CampaignTemplate {
-  id: string
-  advertiserUserId: string
+  id: GUID
+  advertiserUserId: GUID
   name: string
   template: CampaignTemplateBody
   externalUrl: string | null
