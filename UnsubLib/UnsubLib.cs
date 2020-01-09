@@ -499,15 +499,15 @@ namespace UnsubLib
             }
 
             // Signal server to load domain unsub files, diff md5 unsub files
-            try
-            {
-                await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", "Signaling Unsub Server Service");
-                await SignalUnsubServerService(network, diffs, unsubFiles.Item2);
-            }
-            catch (Exception exSignal)
-            {
-                await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to signal UnsubJobServer: {exSignal}");
-            }
+            //try
+            //{
+            //    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", "Signaling Unsub Server Service");
+            //    await SignalUnsubServerService(network, diffs, unsubFiles.Item2);
+            //}
+            //catch (Exception exSignal)
+            //{
+            //    await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to signal UnsubJobServer: {exSignal}");
+            //}
         }
 
         public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider)
