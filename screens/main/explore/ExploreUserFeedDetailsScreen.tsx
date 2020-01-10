@@ -34,14 +34,13 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
             {feed.map((post) => (
               <Post
                 key={post.id}
-                image={post.image}
+                value={post}
                 navigate={navigate}
                 campaignRouteParams={{
                   isDraft: false,
                   promotionId: post.promotionId,
                   campaignId: post.campaignId,
                 }}
-                liked={post.liked}
                 routes={influencerFeedRoutes}
                 style={{ marginBottom: Units.margin }}
               />

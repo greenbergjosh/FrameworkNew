@@ -35,14 +35,13 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
                   routes={influencerFeedRoutes}
                 />
                 <Post
-                  image={post.image}
+                  value={post}
                   navigate={navigate}
                   campaignRouteParams={{
                     isDraft: false,
                     promotionId: post.promotionId,
                     campaignId: post.campaignId,
                   }}
-                  liked={post.liked}
                   routes={influencerFeedRoutes}
                 />
               </View>

@@ -7,6 +7,7 @@ export type PostType = {
   promotionId: GUID
   campaignId: GUID
   liked?: boolean
+  comments: CommentsType
 }
 
 /**
@@ -38,10 +39,11 @@ export type CommentType = {
   comments: CommentType[]
 }
 
-export type PostCommentType = {
+export type CommentsType = {
   lastActivity: ISO8601String
   likes: LikesType
   comments: CommentType[]
+  enabled: boolean
 }
 
 export const loadHomeFeed = async (

@@ -1,11 +1,10 @@
 import React from "react"
-import { Text } from "react-native"
-import { NavigationStackScreenProps } from "react-navigation-stack"
 import { Alert, ScrollView, View } from "react-native"
+import { NavigationStackScreenProps } from "react-navigation-stack"
 import { influencerFeedRoutes, routes } from "constants"
 import { List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "providers/onboarding-context-provider"
-import { Post, InfluencerPostHeader } from "components/feed"
+import { InfluencerPostHeader, Post } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
@@ -82,14 +81,13 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
                   routes={influencerFeedRoutes}
                 />
                 <Post
-                  image={post.image}
+                  value={post}
                   navigate={navigate}
                   campaignRouteParams={{
                     isDraft: false,
                     promotionId: post.promotionId,
                     campaignId: post.campaignId,
                   }}
-                  liked={post.liked}
                   routes={influencerFeedRoutes}
                 />
               </View>

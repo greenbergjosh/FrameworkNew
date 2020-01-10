@@ -8,7 +8,7 @@ import { H4 } from "components/Markup"
 import { copyCampaignLinkHandler } from "./copyCampaignLinkHandler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { PostReportModal } from "./PostReportModal"
-import { showPostAddPromoModal } from "./PostAddPromoModal"
+import { showPostAddPromoModal, showPostDisableCommentingModal } from "./showPostModals"
 
 export interface PostInfoBaseProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
@@ -112,7 +112,7 @@ export function UserPostHeader(props: PostInfoBaseProps) {
   /**
    * Strategy function for Campaign post ellipsis menu
    */
-  const userPostActions = (campaignId?) => () => {
+  const userPostActions = (campaignId) => () => {
     ActionSheet.showActionSheetWithOptions(
       {
         options: ["Archive", "Turn Off Commenting", "Copy Link", "Cancel"],
@@ -121,13 +121,16 @@ export function UserPostHeader(props: PostInfoBaseProps) {
       (buttonIndex) => {
         switch (buttonIndex) {
           case 0: // Archive
+            // TODO: API call to archive the campaign (and remove post?)
             alert("Archive feature to come!")
             break
           case 1: // Turn Off Commenting
-            alert("Turn Off Commenting feature to come!")
+            showPostDisableCommentingModal(() => {
+              // TODO: API call to disable comments
+            })
             break
           case 2: // Copy Link
-            campaignId ? copyCampaignLinkHandler(campaignId)() : null
+            copyCampaignLinkHandler(campaignId)()
             break
           case 3: // Cancel
             break

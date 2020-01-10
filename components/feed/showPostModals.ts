@@ -27,3 +27,22 @@ export const showPostAddPromoModal = ({ navigate, promotionId }: PostAddPromoPro
     ]
   )
 }
+
+export const showPostDisableCommentingModal = (onPressOK) => {
+  Alert.alert(
+    "Disable Commenting",
+    "Commenting will be disabled for this campaign post",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "OK",
+        onPress: onPressOK,
+        style: "default"
+      },
+    ],
+    { cancelable: false }
+  )
+}

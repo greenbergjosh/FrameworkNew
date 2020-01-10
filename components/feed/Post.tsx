@@ -6,26 +6,27 @@ import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import TouchImage from "../TouchImage"
+import { PostType } from "api/feed-services"
 
 interface PostProps {
-  image: ImageType
+  value: PostType
   campaignRouteParams: CampaignRouteParams
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
-  liked?: boolean
   isCurrentUser?: boolean
   style?: StyleProp<ViewStyle>
 }
 
 export function Post({
-  image,
+  value,
   campaignRouteParams,
   navigate,
   routes,
-  liked,
   isCurrentUser = false,
   style,
 }: PostProps) {
+  const { image, comments, liked } = value;
+
   return (
     <View style={style}>
       <TouchImage
@@ -35,8 +36,14 @@ export function Post({
         onPress={() => navigate(routes.Campaign, campaignRouteParams)}
         style={{ flex: 1, height: image.dimensions.height }}
       />
-      {isCurrentUser ? <WhiteSpace size="lg" /> : <SocialButtons liked={liked} />}
-      <Comments navigate={navigate} routes={routes} />
+      {isCurrentUser ? (
+        <WhiteSpace size="lg" />
+      ) : (
+        <SocialButtons liked={liked} commentsEnabled={comments.enabled} />
+      )}
+      {comments.enabled ? (
+        <Comments value={comments} navigate={navigate} routes={routes} />
+      ) : null}
     </View>
   )
 }

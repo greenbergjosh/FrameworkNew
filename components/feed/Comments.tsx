@@ -6,16 +6,20 @@ import { Flex, WhiteSpace } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
 import { A, SMALL, STRONG } from "components/Markup"
-import * as mockData from "api/feed-services.mockData"
-import { CommentType, LikesType } from "api/feed-services"
+import { CommentType, CommentsType, LikesType } from "api/feed-services"
 import moment from "moment"
 import ReadMore from "react-native-read-more-text"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+
+/************************************
+ * Private components and functions
+ */
 
 interface LikesProps {
   value: LikesType
   onPress: (userId: GUID) => void
 }
+
 function Likes({ value, onPress }: LikesProps) {
   return (
     <>
@@ -47,6 +51,7 @@ interface CommentRowProps {
   comment: CommentType
   onPress: (userId: GUID) => void
 }
+
 function Comment({ comment, onPress }: CommentRowProps) {
   const { user, message, comments } = comment
   const [collapsed, setCollapsed] = React.useState(true)
@@ -120,13 +125,23 @@ function Comment({ comment, onPress }: CommentRowProps) {
   )
 }
 
-interface CommentsProps {
+/************************************
+ * Public component
+ */
+
+export interface CommentsProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
+  value: CommentsType
 }
-export function Comments({ navigate, routes }: CommentsProps) {
+
+/**
+ * Comments component
+ * @public
+ */
+export const Comments = React.memo(({ navigate, routes, value }: CommentsProps) => {
   const handleUserPress = (userId) => navigate(routes.Feed, { userId })
-  const { likes, comments, lastActivity } = mockData.FEED_COMMENTS
+  const { likes, comments, lastActivity } = value
 
   return (
     <View style={{ marginLeft: Units.margin, marginRight: Units.margin }}>
@@ -144,4 +159,4 @@ export function Comments({ navigate, routes }: CommentsProps) {
       <WhiteSpace size="md" />
     </View>
   )
-}
+})

@@ -23,15 +23,19 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
     return (
       <ScrollView>
         <View key={post.id}>
-          <UserPostHeader user={post.user} navigate={navigate} routes={profileFeedRoutes} />
+          <UserPostHeader
+            campaignId={post.campaignId}
+            user={post.user}
+            navigate={navigate}
+            routes={profileFeedRoutes}
+          />
           <Post
-            image={post.image}
+            value={post}
             campaignRouteParams={{
               isDraft: false,
               promotionId: post.promotionId,
               campaignId: post.campaignId,
             }}
-            liked={post.liked}
             navigate={navigate}
             routes={profileFeedRoutes}
             isCurrentUser={true}
