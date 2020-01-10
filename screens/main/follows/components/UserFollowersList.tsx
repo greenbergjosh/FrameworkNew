@@ -74,7 +74,7 @@ export const UserFollowersList = React.memo(
               <UserFollowerRow
                 key={item.id}
                 follower={item}
-                followRequest={true}
+                followRequest={false}
                 navigate={navigate}
                 routes={routes}
               />
