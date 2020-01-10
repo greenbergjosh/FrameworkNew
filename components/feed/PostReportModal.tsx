@@ -1,16 +1,17 @@
 import { FlatList, Modal, View } from "react-native"
 import { Button, Radio, WhiteSpace } from "@ant-design/react-native"
 import { Colors, Units } from "constants"
-import { H2 } from "../Markup"
+import { H2, P } from "../Markup"
 import TouchIcon from "../TouchIcon"
 import React from "react"
 
 interface PostModalProps {
   visible: boolean
   onClose: () => void
+  user: UserType
 }
 
-export const PostReportModal = ({ visible, onClose }: PostModalProps) => {
+export const PostReportModal = ({ visible, onClose, user }: PostModalProps) => {
   const [reasonCode, setReasonCode] = React.useState(null)
   type ReasonType = {
     id: GUID
@@ -46,6 +47,7 @@ export const PostReportModal = ({ visible, onClose }: PostModalProps) => {
         />
         <H2>Report Inappropriate</H2>
         <WhiteSpace size="xl" />
+        <P>Report {user.handle}'s post for:</P>
         <FlatList
           data={reasons}
           keyExtractor={(reason) => reason.id}

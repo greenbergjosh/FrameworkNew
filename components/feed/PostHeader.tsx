@@ -14,8 +14,7 @@ export interface PostInfoBaseProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   user: UserType
-  campaignId?: GUID
-  promotionId?: GUID
+  campaignId: GUID
 }
 
 interface PostInfoProps extends PostInfoBaseProps {
@@ -55,7 +54,11 @@ const PostHeader = ({ user, navigate, routes, onPostActionsPress }: PostInfoProp
  * Influencer
  */
 
-export function InfluencerPostHeader(props: PostInfoBaseProps) {
+interface InfluencerPostHeaderProps extends PostInfoBaseProps {
+  promotionId: GUID
+}
+
+export function InfluencerPostHeader(props: InfluencerPostHeaderProps) {
   const [showPostReportModal, setShowPostReportModal] = React.useState(false)
 
   /**
@@ -92,7 +95,11 @@ export function InfluencerPostHeader(props: PostInfoBaseProps) {
   return (
     <>
       <PostHeader {...props} onPostActionsPress={influencerPostActions(props.campaignId)} />
-      <PostReportModal visible={showPostReportModal} onClose={() => setShowPostReportModal(null)} />
+      <PostReportModal
+        visible={showPostReportModal}
+        user={props.user}
+        onClose={() => setShowPostReportModal(null)}
+      />
     </>
   )
 }
@@ -102,32 +109,32 @@ export function InfluencerPostHeader(props: PostInfoBaseProps) {
  */
 
 export function UserPostHeader(props: PostInfoBaseProps) {
-  return <PostHeader {...props} onPostActionsPress={userPostActions(props.campaignId)} />
-}
-
-/**
- * Strategy function for Campaign post ellipsis menu
- */
-export const userPostActions = (campaignId?) => () => {
-  ActionSheet.showActionSheetWithOptions(
-    {
-      options: ["Archive", "Turn Off Commenting", "Copy Link", "Cancel"],
-      cancelButtonIndex: 3,
-    },
-    (buttonIndex) => {
-      switch (buttonIndex) {
-        case 0: // Archive
-          alert("Archive feature to come!")
-          break
-        case 1: // Turn Off Commenting
-          alert("Turn Off Commenting feature to come!")
-          break
-        case 2: // Copy Link
-          campaignId ? copyCampaignLinkHandler(campaignId)() : null
-          break
-        case 3: // Cancel
-          break
+  /**
+   * Strategy function for Campaign post ellipsis menu
+   */
+  const userPostActions = (campaignId?) => () => {
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options: ["Archive", "Turn Off Commenting", "Copy Link", "Cancel"],
+        cancelButtonIndex: 3,
+      },
+      (buttonIndex) => {
+        switch (buttonIndex) {
+          case 0: // Archive
+            alert("Archive feature to come!")
+            break
+          case 1: // Turn Off Commenting
+            alert("Turn Off Commenting feature to come!")
+            break
+          case 2: // Copy Link
+            campaignId ? copyCampaignLinkHandler(campaignId)() : null
+            break
+          case 3: // Cancel
+            break
+        }
       }
-    }
-  )
+    )
+  }
+
+  return <PostHeader {...props} onPostActionsPress={userPostActions(props.campaignId)} />
 }
