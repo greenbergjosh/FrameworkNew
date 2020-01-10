@@ -8,6 +8,7 @@ import { H4 } from "components/Markup"
 import { copyCampaignLinkHandler } from "./copyCampaignLinkHandler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Colors } from "constants"
+import { PostReportModal } from "./PostModals"
 
 export interface PostInfoBaseProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
@@ -54,33 +55,43 @@ const PostHeader = ({ user, navigate, routes, onPostActionsPress }: PostInfoProp
  */
 
 export function InfluencerPostHeader(props: PostInfoBaseProps) {
-  return <PostHeader {...props} onPostActionsPress={influencerPostActions(props.campaignId)} />
-}
+  const [showPostReportModal, setShowPostReportModal] = React.useState(false)
 
-/**
- * Strategy function for Campaign post ellipsis menu
- */
-export const influencerPostActions = (campaignId?) => () => {
-  ActionSheet.showActionSheetWithOptions(
-    {
-      options: ["Report Inappropriate", "Add To My Promotions", "Copy Link", "Cancel"],
-      cancelButtonIndex: 3,
-    },
-    (buttonIndex) => {
-      switch (buttonIndex) {
-        case 0: // Report Inappropriate
-          alert("Report Inappropriate feature to come!")
-          break
-        case 1: // Add To My Promotions
-          alert("Add To My Promotions feature to come!")
-          break
-        case 2: // Copy Link
-          campaignId ? copyCampaignLinkHandler(campaignId)() : null
-          break
-        case 3: // Cancel
-          break
+  /**
+   * Strategy function for Campaign post ellipsis menu
+   */
+  const influencerPostActions = (campaignId?) => () => {
+    ActionSheet.showActionSheetWithOptions(
+      {
+        options: ["Report Inappropriate", "Add To My Promotions", "Copy Link", "Cancel"],
+        cancelButtonIndex: 3,
+      },
+      (buttonIndex) => {
+        switch (buttonIndex) {
+          case 0: // Report Inappropriate
+            setShowPostReportModal(true)
+            break
+          case 1: // Add To My Promotions
+            alert("Add To My Promotions feature to come!")
+            break
+          case 2: // Copy Link
+            campaignId ? copyCampaignLinkHandler(campaignId)() : null
+            break
+          case 3: // Cancel
+            break
+        }
       }
-    }
+    )
+  }
+
+  return (
+    <>
+      <PostHeader {...props} onPostActionsPress={influencerPostActions(props.campaignId)} />
+      <PostReportModal
+        visible={showPostReportModal}
+        onClose={() => setShowPostReportModal(false)}
+      />
+    </>
   )
 }
 
