@@ -1,20 +1,21 @@
 import React from "react"
 import { ActionSheet, Flex } from "@ant-design/react-native"
-import { Units } from "constants"
+import { Colors, Units } from "constants"
 import { TouchableOpacity } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"
 import { H4 } from "components/Markup"
 import { copyCampaignLinkHandler } from "./copyCampaignLinkHandler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { Colors } from "constants"
-import { PostReportModal } from "./PostModals"
+import { PostReportModal } from "./PostReportModal"
+import { showPostAddPromoModal } from "./PostAddPromoModal"
 
 export interface PostInfoBaseProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   user: UserType
   campaignId?: GUID
+  promotionId?: GUID
 }
 
 interface PostInfoProps extends PostInfoBaseProps {
@@ -72,7 +73,11 @@ export function InfluencerPostHeader(props: PostInfoBaseProps) {
             setShowPostReportModal(true)
             break
           case 1: // Add To My Promotions
-            alert("Add To My Promotions feature to come!")
+            // TODO: save promo
+            showPostAddPromoModal({
+              navigate: props.navigate,
+              promotionId: props.promotionId,
+            })
             break
           case 2: // Copy Link
             campaignId ? copyCampaignLinkHandler(campaignId)() : null
@@ -87,10 +92,7 @@ export function InfluencerPostHeader(props: PostInfoBaseProps) {
   return (
     <>
       <PostHeader {...props} onPostActionsPress={influencerPostActions(props.campaignId)} />
-      <PostReportModal
-        visible={showPostReportModal}
-        onClose={() => setShowPostReportModal(false)}
-      />
+      <PostReportModal visible={showPostReportModal} onClose={() => setShowPostReportModal(null)} />
     </>
   )
 }

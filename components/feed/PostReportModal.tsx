@@ -1,19 +1,9 @@
-import {
-  Modal,
-  Text,
-  TouchableHighlight,
-  View,
-  Alert,
-  TouchableOpacity,
-  FlatList,
-} from "react-native"
-import { Flex, WhiteSpace, List, Radio, Button } from "@ant-design/react-native"
-import { Colors, routes, styles, Units } from "constants"
-import Avatar from "../Avatar"
-import { H4, H2 } from "../Markup"
+import { FlatList, Modal, View } from "react-native"
+import { Button, Radio, WhiteSpace } from "@ant-design/react-native"
+import { Colors, Units } from "constants"
+import { H2 } from "../Markup"
 import TouchIcon from "../TouchIcon"
 import React from "react"
-import SettingLink from "../../screens/main/settings/components/SettingLink"
 
 interface PostModalProps {
   visible: boolean

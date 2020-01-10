@@ -30,6 +30,7 @@ export class ExploreFeedDetailsScreen extends React.Component<ExploreFeedDetails
                 <InfluencerPostHeader
                   user={post.user}
                   campaignId={post.campaignId}
+                  promotionId={post.promotionId}
                   navigate={navigate}
                   routes={influencerFeedRoutes}
                 />

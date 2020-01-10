@@ -77,6 +77,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
                 <InfluencerPostHeader
                   user={post.user}
                   campaignId={post.campaignId}
+                  promotionId={post.promotionId}
                   navigate={navigate}
                   routes={influencerFeedRoutes}
                 />
