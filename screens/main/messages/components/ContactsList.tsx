@@ -1,9 +1,10 @@
 import React from "react"
-import { ScrollView } from "react-native"
-import { List } from "@ant-design/react-native"
+import { FlatList, ScrollView } from "react-native"
 import { ContactRow } from "./ContactRow"
 import { Contact } from "api/messages-services"
 import { MessagesScreenProps } from "../MessagesScreen"
+import { Empty } from "components/Empty"
+import { Units } from "constants"
 
 export interface ContactRowProps {
   contacts?: Contact[]
@@ -16,11 +17,14 @@ export const ContactsList = ({ navigate, contacts }: ContactRowProps) => {
       style={{ flex: 1 }}
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}>
-      <List>
-        {contacts.map((contact) => (
-          <ContactRow key={contact.id} navigate={navigate} contact={contact} />
-        ))}
-      </List>
+      <FlatList
+        data={contacts}
+        keyExtractor={(contact) => contact.id}
+        renderItem={({ item }) => <ContactRow contact={item} />}
+        ListEmptyComponent={
+          <Empty message="You have no contacts" style={{ padding: Units.margin }} />
+        }
+      />
     </ScrollView>
   )
 }

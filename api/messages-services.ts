@@ -40,7 +40,7 @@ export const loadMessages = async () => {
  */
 
 export type Contact = UserType & {
-  id: number
+  id: GUID
   contactDate: ISO8601String
   content: string
 }

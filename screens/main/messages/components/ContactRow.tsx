@@ -2,16 +2,14 @@ import React from "react"
 import { Text } from "react-native"
 import { Checkbox, Flex, List } from "@ant-design/react-native"
 import { Contact } from "api/messages-services"
-import { MessagesScreenProps } from "../MessagesScreen"
 import { styles, Units } from "constants"
 import Avatar from "components/Avatar"
 
 export interface ContactRowProps {
   contact?: Contact
-  navigate: MessagesScreenProps["navigation"]["navigate"]
 }
 
-export const ContactRow = ({ contact, navigate }: ContactRowProps) => {
+export const ContactRow = ({ contact }: ContactRowProps) => {
   const { id, userId, avatarUri, handle, name, contactDate, content } = contact
   const [checked, setChecked] = React.useState(false)
 

@@ -1,20 +1,20 @@
 import React from "react"
 import { FlatList, ScrollView, Text } from "react-native"
 import { ActivityIndicator } from "@ant-design/react-native"
-import { UserFollowerRow } from "./UserFollowerRow"
+import { FollowerRow } from "./FollowerRow"
 import { sortFollowersByDate, useFollowsContext } from "providers/follows-context-provider"
 import { Colors, styles, Units } from "constants"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "components/Empty"
 
-interface UserFollowersListProps {
+interface FollowersListProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   userId: GUID
 }
 
-export const UserFollowersList = React.memo(
-  ({ routes, navigate, userId }: UserFollowersListProps) => {
+export const FollowersList = React.memo(
+  ({ routes, navigate, userId }: FollowersListProps) => {
     const followsContext = useFollowsContext()
 
     if (
@@ -44,7 +44,7 @@ export const UserFollowersList = React.memo(
             style={styles.List}
             data={followers.followRequests}
             renderItem={({ item }) => (
-              <UserFollowerRow
+              <FollowerRow
                 key={item.id}
                 follower={item}
                 followRequest={true}
@@ -71,7 +71,7 @@ export const UserFollowersList = React.memo(
             key={group.date.format("YYYYMMDD")}
             data={group.followers}
             renderItem={({ item }) => (
-              <UserFollowerRow
+              <FollowerRow
                 key={item.id}
                 follower={item}
                 followRequest={false}

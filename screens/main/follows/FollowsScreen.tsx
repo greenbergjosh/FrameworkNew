@@ -2,7 +2,7 @@ import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { InfluencersList } from "components/InfluencersList"
-import { UserFollowersList } from "./components/UserFollowersList"
+import { FollowersList } from "./components/FollowersList"
 import { useAuthContext } from "providers/auth-context-provider"
 import { influencerFeedRoutes, routes } from "constants"
 import { Tab, Tabs } from "components/Tabs"
@@ -15,7 +15,7 @@ export const FollowsScreen = ({ navigation }: FollowsScreenProps) => {
   return (
     <Tabs stateRouteName={navigation.state.routeName}>
       <Tab title="Following You" route={routes.Follows.Followers}>
-        <UserFollowersList
+        <FollowersList
           navigate={navigate}
           routes={influencerFeedRoutes}
           userId={authContext.id}

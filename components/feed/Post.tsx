@@ -25,7 +25,7 @@ export function Post({
   isCurrentUser = false,
   style,
 }: PostProps) {
-  const { image, comments, liked } = value;
+  const { image, comments, liked } = value
 
   return (
     <View style={style}>
@@ -39,11 +39,9 @@ export function Post({
       {isCurrentUser ? (
         <WhiteSpace size="lg" />
       ) : (
-        <SocialButtons liked={liked} commentsEnabled={comments.enabled} />
+        <SocialButtons liked={liked} commentsEnabled={comments.enabled} navigate={navigate} />
       )}
-      {comments.enabled ? (
-        <Comments value={comments} navigate={navigate} routes={routes} />
-      ) : null}
+      {comments.enabled ? <Comments value={comments} navigate={navigate} routes={routes} /> : null}
     </View>
   )
 }

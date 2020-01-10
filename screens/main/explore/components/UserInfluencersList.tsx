@@ -1,19 +1,19 @@
 import React from "react"
 import { FlatList, ScrollView } from "react-native"
 import { ActivityIndicator } from "@ant-design/react-native"
-import { InfluencerFollowRow } from "./InfluencerFollowRow"
+import { UserInfluencerRow } from "./UserInfluencerRow"
 import { useFollowsContext } from "providers/follows-context-provider"
 import { Colors, Units } from "constants"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "components/Empty"
 
-interface InfluencerFollowingListProps {
+interface UserInfluencersListProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 
-export const InfluencerFollowingList = React.memo(
-  ({ navigate, routes }: InfluencerFollowingListProps) => {
+export const UserInfluencersList = React.memo(
+  ({ navigate, routes }: UserInfluencersListProps) => {
     const followsContext = useFollowsContext()
     if (
       !followsContext.lastLoadFollowers &&
@@ -32,7 +32,7 @@ export const InfluencerFollowingList = React.memo(
         <FlatList
           data={followers.followers}
           renderItem={({ item }) => (
-            <InfluencerFollowRow
+            <UserInfluencerRow
               key={item.userId}
               navigate={navigate}
               follow={item}
