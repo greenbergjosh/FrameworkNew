@@ -1,6 +1,8 @@
 import { FlatList, StyleProp, ViewStyle } from "react-native"
 import React from "react"
 import { SettingRowProps, SettingRow } from "./SettingRow"
+import { Empty } from "components/Empty"
+import { Units } from "constants"
 
 export type SettingType = {
   id: GUID
@@ -22,6 +24,9 @@ export const SettingsList = ({ values, style, children = SettingRow }: SettingsL
       renderItem={({ item }) => children({ value: item })}
       keyExtractor={(setting) => setting.id}
       style={style}
+      ListEmptyComponent={
+        <Empty message="No settings available" style={{ padding: Units.margin }} />
+      }
     />
   )
 }

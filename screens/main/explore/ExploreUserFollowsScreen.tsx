@@ -3,7 +3,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { InfluencersList } from "components/InfluencersList"
 import { InfluencerFollowersList } from "./components/InfluencerFollowersList"
-import { InfluencerInfluencersList } from "./components/InfluencerInfluencersList"
+import { InfluencerFollowingList } from "./components/InfluencerFollowingList"
 import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
 import { Tab, Tabs } from "components/Tabs"
@@ -34,7 +34,7 @@ export class ExploreUserFollowsScreen extends React.Component<ExploreUserFollows
           />
         </Tab>
         <Tab title="Following" route={routes.Explore.UserFollowsInfluencers}>
-          <InfluencerInfluencersList navigate={navigate} routes={influencerFeedRoutes} />
+          <InfluencerFollowingList navigate={navigate} routes={influencerFeedRoutes} />
         </Tab>
       </Tabs>
     )

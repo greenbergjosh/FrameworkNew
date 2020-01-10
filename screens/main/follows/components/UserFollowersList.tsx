@@ -53,6 +53,7 @@ export const UserFollowersList = React.memo(
               />
             )}
             keyExtractor={(follower) => follower.id}
+            ListEmptyComponent={null}
           />
         ) : null}
 

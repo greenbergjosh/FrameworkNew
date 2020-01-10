@@ -7,13 +7,13 @@ import { Colors, Units } from "constants"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "components/Empty"
 
-interface InfluencerInfluencersListProps {
+interface InfluencerFollowingListProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
 }
 
-export const InfluencerInfluencersList = React.memo(
-  ({ navigate, routes }: InfluencerInfluencersListProps) => {
+export const InfluencerFollowingList = React.memo(
+  ({ navigate, routes }: InfluencerFollowingListProps) => {
     const followsContext = useFollowsContext()
     if (
       !followsContext.lastLoadFollowers &&

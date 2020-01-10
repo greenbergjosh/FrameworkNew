@@ -43,17 +43,14 @@ export const PromotionsScreen = (props: PromotionsScreenProps) => {
   return (
     <Tabs stateRouteName={props.navigation.state.routeName} swipeEnabled={false}>
       <Tab title="Current" route={routes.Promotions.Promotions} badge={promotions.length}>
-        {promotions && promotions.length ? (
-          <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
-            <FlatList
-              data={promotions}
-              renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
-              keyExtractor={(promotion) => promotion.id}
-            />
-          </ScrollView>
-        ) : (
-          <PromotionEducationPrompt />
-        )}
+        <ScrollView style={{ backgroundColor: Colors.screenBackground }}>
+          <FlatList
+            data={promotions}
+            renderItem={({ item }) => <PromotionExpander navigate={navigate} promotion={item} />}
+            keyExtractor={(promotion) => promotion.id}
+            ListEmptyComponent={<PromotionEducationPrompt />}
+          />
+        </ScrollView>
       </Tab>
       <Tab title="Archived" route={routes.Promotions.PromotionsArchived} badge={promotions.length}>
         {archivedPromotions && archivedPromotions.length ? (

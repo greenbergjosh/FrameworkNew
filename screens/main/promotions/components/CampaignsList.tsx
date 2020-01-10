@@ -1,9 +1,10 @@
-import { routes } from "constants"
+import { routes, Units } from "constants"
 import { CampaignRow } from "./CampaignRow"
 import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import { Icon } from "@ant-design/react-native"
 import React from "react"
 import { Campaign, Promotion } from "api/promotions-services"
+import { Empty } from "../../../../components/Empty"
 
 const EXPANDED_CAMPAIGN_THRESHOLD = 3
 
@@ -29,6 +30,9 @@ export const CampaignsList = ({
         data={campaigns.slice(0, alwaysExpanded ? campaigns.length : EXPANDED_CAMPAIGN_THRESHOLD)}
         renderItem={({ item }) => <CampaignRow navigate={navigate} campaign={item} />}
         keyExtractor={(campaign) => campaign.id}
+        ListEmptyComponent={
+          <Empty message="No campaigns found" style={{ padding: Units.margin }} />
+        }
       />
 
       {/**********************
