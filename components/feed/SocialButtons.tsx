@@ -3,7 +3,7 @@ import { Flex } from "@ant-design/react-native"
 import TouchIcon from "components/TouchIcon"
 import { Units, Colors } from "constants"
 import { SMALL } from "components/Markup"
-import { PostShareModal } from "./PostShareModal"
+import { SharePostModal } from "./SharePostModal"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 
 interface SocialButtonsProps {
@@ -31,10 +31,9 @@ export function SocialButtons({ navigate, liked, commentsEnabled = true }: Socia
           marginBottom: Units.margin / 2,
         }}>
         <TouchIcon name="md-share" size="md" onPress={() => setShowShareModal(true)} />
-        <PostShareModal
+        <SharePostModal
           onClose={() => setShowShareModal(false)}
           visible={showShareModal}
-          navigate={navigate}
         />
         <TouchIcon
           name="ios-chatbubbles"

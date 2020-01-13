@@ -1,17 +1,17 @@
-import { FlatList, Modal, View } from "react-native"
-import { Button, Radio, WhiteSpace } from "@ant-design/react-native"
+import { FlatList, View } from "react-native"
+import { Button, Radio, WhiteSpace, Modal } from "@ant-design/react-native"
 import { Colors, Units } from "constants"
 import { H2, P } from "../Markup"
 import TouchIcon from "../TouchIcon"
 import React from "react"
 
-interface PostModalProps {
+interface ReportPostModalProps {
   visible: boolean
   onClose: () => void
   user: UserType
 }
 
-export const PostReportModal = ({ visible, onClose, user }: PostModalProps) => {
+export const ReportPostModal = ({ visible, onClose, user }: ReportPostModalProps) => {
   const [reasonCode, setReasonCode] = React.useState(null)
   type ReasonType = {
     id: GUID
@@ -28,11 +28,11 @@ export const PostReportModal = ({ visible, onClose, user }: PostModalProps) => {
 
   return (
     <Modal
-      presentationStyle="formSheet"
-      animationType="slide"
-      transparent={false}
+      popup={true}
       visible={visible}
-      onRequestClose={onClose}>
+      onClose={onClose}
+      animationType="slide-up"
+      closable={true}>
       <View
         style={{
           padding: Units.margin,
@@ -64,7 +64,6 @@ export const PostReportModal = ({ visible, onClose, user }: PostModalProps) => {
           )}
         />
         <WhiteSpace size="xl" />
-        <WhiteSpace size="xl" />
         <Button
           type="primary"
           onPress={() => {
@@ -73,6 +72,7 @@ export const PostReportModal = ({ visible, onClose, user }: PostModalProps) => {
           }}>
           Send Report
         </Button>
+        <WhiteSpace size="xl" />
       </View>
     </Modal>
   )

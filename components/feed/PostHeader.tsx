@@ -7,7 +7,7 @@ import TouchIcon from "components/TouchIcon"
 import { H4 } from "components/Markup"
 import { copyCampaignLinkHandler } from "./copyCampaignLinkHandler"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { PostReportModal } from "./PostReportModal"
+import { ReportPostModal } from "./ReportPostModal"
 import { showPostAddPromoModal, showPostDisableCommentingModal } from "./showPostModals"
 
 export interface PostInfoBaseProps {
@@ -95,7 +95,7 @@ export function InfluencerPostHeader(props: InfluencerPostHeaderProps) {
   return (
     <>
       <PostHeader {...props} onPostActionsPress={influencerPostActions(props.campaignId)} />
-      <PostReportModal
+      <ReportPostModal
         visible={showPostReportModal}
         user={props.user}
         onClose={() => setShowPostReportModal(null)}
