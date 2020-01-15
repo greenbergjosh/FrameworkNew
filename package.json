@@ -31,6 +31,8 @@
     "react-native-gesture-handler": "1.3.0",
     "react-native-gifted-chat": "0.12.0",
     "react-native-image-picker": "1.1.0",
+    "react-native-keyboard-accessory": "0.1.10",
+    "react-native-keyboard-aware-scrollview": "2.1.0",
     "react-native-modal-datetime-picker": "7.6.1",
     "react-native-read-more-text": "1.1.0",
     "react-native-reanimated": "1.2.0",

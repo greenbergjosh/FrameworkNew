@@ -85,6 +85,17 @@ export const FEED_COMMENTS: CommentsType = {
       likes: { count: 0 },
       comments: [],
     },
+    {
+      id: "69368e0c-5383-471e-b075-000000000007",
+      user: {
+        userId: "69368e0c-5383-471e-b075-3272b4923751",
+        handle: "jupiterdollies",
+        avatarUri: ImageUris.placeholder,
+      },
+      message: "yet another comment",
+      likes: { count: 0 },
+      comments: [],
+    },
   ],
 }
 

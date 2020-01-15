@@ -74,6 +74,10 @@ export default function TouchIcon({
      * will have too much space around it.
      */
     switch (size) {
+      case "xxs":
+        margin = getMargin(AntIconSizes.xxs)
+        sizePx = AntIconSizes.xxs
+        break
       case "xs":
         margin = getMargin(AntIconSizes.xs)
         sizePx = AntIconSizes.xs

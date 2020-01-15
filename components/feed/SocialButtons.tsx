@@ -5,6 +5,7 @@ import { Units, Colors } from "constants"
 import { SMALL } from "components/Markup"
 import { SharePostModal } from "./SharePostModal"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { routes } from "../../constants/route.constants"
 
 interface SocialButtonsProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
@@ -31,15 +32,14 @@ export function SocialButtons({ navigate, liked, commentsEnabled = true }: Socia
           marginBottom: Units.margin / 2,
         }}>
         <TouchIcon name="md-share" size="md" onPress={() => setShowShareModal(true)} />
-        <SharePostModal
-          onClose={() => setShowShareModal(false)}
-          visible={showShareModal}
-        />
+        <SharePostModal onClose={() => setShowShareModal(false)} visible={showShareModal} />
         <TouchIcon
           name="ios-chatbubbles"
           size="md"
           style={{ marginLeft: Units.margin / 4 }}
-          onPress={() => alert("Open Comments action\nFeature to come!")}
+          onPress={() =>
+            navigate(routes.Explore.FeedComments, { action: "add", commentId: null })
+          }
         />
         <TouchIcon
           toggledNames={{ on: "heart", off: "hearto" }}

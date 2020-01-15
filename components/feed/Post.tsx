@@ -1,7 +1,7 @@
 import React from "react"
 import { StyleProp, View, ViewStyle } from "react-native"
 import { SocialButtons } from "./SocialButtons"
-import { Comments } from "./Comments"
+import { CommentSummary } from "./CommentSummary"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
@@ -41,7 +41,7 @@ export function Post({
       ) : (
         <SocialButtons liked={liked} commentsEnabled={comments.enabled} navigate={navigate} />
       )}
-      {comments.enabled ? <Comments value={comments} navigate={navigate} routes={routes} /> : null}
+      {comments.enabled ? <CommentSummary value={comments} navigate={navigate} routes={routes} /> : null}
     </View>
   )
 }

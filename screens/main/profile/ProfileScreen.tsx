@@ -1,9 +1,8 @@
 import React from "react"
-import { View } from "react-native"
 import { Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { profileFeedRoutes, routes, styles } from "constants"
+import { profileFeedRoutes, routes, Units } from "constants"
 import { UserProfilePanel } from "components/ProfilePanel"
 import { ImageGrid } from "components/ImageGrid"
 import * as feedMockData from "api/feed-services.mockData"
@@ -18,18 +17,20 @@ export const ProfileScreen = (props: ProfileScreenProps) => {
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
 
   return (
-    <View>
+    <>
       <UserProfilePanel user={user} navigate={navigate} routes={profileFeedRoutes} />
-      <View style={styles.View}>
-        <Button size="large" type="primary" onPress={() => navigate(routes.Profile.EditProfile)}>
-          Edit Profile
-        </Button>
-      </View>
+      <Button
+        style={{ margin: Units.margin }}
+        size="large"
+        type="primary"
+        onPress={() => navigate(routes.Profile.EditProfile)}>
+        Edit Profile
+      </Button>
       <ImageGrid
         images={images}
         onItemPress={(id) => navigate(routes.Profile.PostDetails, { id })}
       />
-    </View>
+    </>
   )
 }
 ProfileScreen.navigationOptions = ({ navigation }) => {

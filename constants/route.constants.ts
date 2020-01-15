@@ -55,6 +55,7 @@ enum Explore {
   default = "Explore.Feed",
   Feed = "Explore.Feed",
   FeedDetails = "Explore.FeedDetails",
+  FeedComments = "Explore.FeedComments",
   UserFeed = "Explore.UserFeed",
   UserFeedDetails = "Explore.UserFeedDetails",
   UserFollows = "Explore.UserFollows",

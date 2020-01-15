@@ -16,78 +16,84 @@ import { Colors, Units } from "constants"
 import React from "react"
 import { H4 } from "../Markup"
 import { KeyboardAccessoryView } from "react-native-keyboard-accessory"
+import TouchText from "../TouchText"
 
 interface PostToFeedProps {
+  visible: boolean
   onClose: () => void
-  style?: StyleProp<ViewStyle>
+  accomodateTabNavigation: boolean
 }
 
-export const PostToFeed = ({ onClose, style }: PostToFeedProps) => {
+export const CommentKeyboard = ({ visible, onClose, accomodateTabNavigation }: PostToFeedProps) => {
   const [message, setMessage] = React.useState(null)
-  const [showKeyboard, setShowKeyboard] = React.useState(false)
+  const inputRef = React.useRef<TextInput>()
 
-  // Will mount add listeners
-  const { keyboardWillShowListener, keyboardWillHideListener } = React.useMemo(() => {
-    const keyboardWillShowListener = Keyboard.addListener("keyboardWillShow", (e) => {
-      setShowKeyboard(true)
-    })
+  React.useEffect(() => {
+    visible ? inputRef.current.focus() : null
+  }, [visible])
+
+  // Component will mount: add listeners
+  const { keyboardWillHideListener } = React.useMemo(() => {
     const keyboardWillHideListener = Keyboard.addListener("keyboardWillHide", (e) => {
-      setShowKeyboard(false)
+      onClose()
     })
     return {
-      keyboardWillShowListener,
       keyboardWillHideListener,
     }
   }, [])
 
-  // Unmount cleanup listeners
+  // Unmount: remove listeners
   React.useEffect(() => {
     return () => {
-      keyboardWillShowListener.remove()
       keyboardWillHideListener.remove()
     }
   }, [])
 
   return (
-    <View style={style}>
-      {showKeyboard ? <ScrollView /> : null}
+    <>
+      {/*{showKeyboard ? <ScrollView /> : null}*/}
       <KeyboardAccessoryView
         alwaysVisible
-        hideBorder
-        style={{ backgroundColor: Colors.reverse, borderWidth: 0 }}>
+        style={{
+          backgroundColor: Colors.navBarBackground,
+          marginBottom: accomodateTabNavigation ? -70 : 0
+        }}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View
             style={{
+              paddingTop: Units.padding,
               paddingLeft: Units.margin,
               paddingRight: Units.margin,
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "nowrap",
             }}>
-            <H4>Post this message to your feed</H4>
             <TextInput
-              placeholder="Enter your message"
+              ref={inputRef}
+              placeholder="Add a comment"
               style={{
                 borderColor: Colors.border,
                 borderWidth: 1,
                 padding: Units.padding,
-                height: 100,
-                marginTop: Units.padding,
-                marginBottom: Units.padding,
+                height: 45,
+                flexGrow: 1,
+                marginRight: Units.padding,
               }}
               multiline={true}
               numberOfLines={4}
               onChangeText={(text) => setMessage(text)}
               value={message}
             />
-            <Button
-              type="primary"
+            <TouchText
               onPress={() => {
-                // TODO: api call to send post
-                onClose()
+                // TODO: api call to send comment
+                Keyboard.dismiss()
               }}>
               Post
-            </Button>
+            </TouchText>
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAccessoryView>
-    </View>
+    </>
   )
 }

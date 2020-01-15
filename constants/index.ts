@@ -21,9 +21,9 @@ export const styles = StyleSheet.create({
   ...ImageStyles,
 })
 
-export function devBorder(color) {
+export function devBorder(color, width = 1) {
   return {
-    borderWidth: 1,
+    borderWidth: width,
     borderColor: color,
   }
 }

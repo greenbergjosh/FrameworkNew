@@ -9,10 +9,12 @@ const LayoutStyles = StyleSheet.create({
   ViewContainer: {
     margin: Units.margin,
     marginTop: Units.padding * 4,
+    height: "100%",
   },
 
   View: {
     margin: Units.margin,
+    height: "100%",
   },
 
   SubHeader: {

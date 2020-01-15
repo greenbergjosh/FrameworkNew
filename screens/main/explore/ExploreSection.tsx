@@ -3,6 +3,7 @@ import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { createStackNavigator } from "react-navigation-stack"
 import { ExploreFeedDetailsScreen } from "./ExploreFeedDetailsScreen"
+import { ExploreFeedCommentsScreen } from "./ExploreFeedCommentsScreen"
 import { ExploreFeedScreen } from "./ExploreFeedScreen"
 import { ExploreUserFeedDetailsScreen } from "./ExploreUserFeedDetailsScreen"
 import { ExploreUserFeedScreen } from "./ExploreUserFeedScreen"
@@ -12,6 +13,7 @@ const ExploreNavigator = createStackNavigator(
   {
     [routes.Explore.Feed]: { screen: ExploreFeedScreen },
     [routes.Explore.FeedDetails]: { screen: ExploreFeedDetailsScreen },
+    [routes.Explore.FeedComments]: { screen: ExploreFeedCommentsScreen },
     [routes.Explore.UserFeed]: { screen: ExploreUserFeedScreen },
     [routes.Explore.UserFeedDetails]: { screen: ExploreUserFeedDetailsScreen },
     [routes.Explore.UserFollows]: { screen: ExploreUserFollowsScreen },

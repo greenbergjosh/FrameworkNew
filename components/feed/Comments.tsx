@@ -1,127 +1,107 @@
 import React from "react"
-import { Text, View } from "react-native"
-import Collapsible from "react-native-collapsible"
-import { styles, Units, Colors } from "constants"
+import { FlatList, ScrollView, Text, View } from "react-native"
+import { Colors, FontWeights, Units, styles, devBorder } from "constants"
 import { Flex, WhiteSpace } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
-import TouchIcon from "components/TouchIcon"
-import { A, SMALL, STRONG } from "components/Markup"
-import { CommentType, CommentsType, LikesType } from "api/feed-services"
-import moment from "moment"
-import ReadMore from "react-native-read-more-text"
+import { SMALL, STRONG, A } from "components/Markup"
+import { CommentsType, CommentType } from "api/feed-services"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
+import { Empty } from "components/Empty"
+import TouchText from "components/TouchText"
+import TouchIcon from "../TouchIcon"
+import { routes } from "../../constants/route.constants"
+import { CommentKeyboard } from "./CommentKeyboard"
 
 /************************************
  * Private components and functions
  */
 
-interface LikesProps {
-  value: LikesType
-  onPress: (userId: GUID) => void
+interface CommentProps {
+  navigate: NavigationTabScreenProps["navigation"]["navigate"]
+  routes: FeedRoutesType
+  comment: CommentType
+  size?: "xs" | "sm"
 }
 
-function Likes({ value, onPress }: LikesProps) {
+function Comment({ comment, size = "sm", navigate, routes }: CommentProps) {
+  const { user, message, comments } = comment
+
   return (
     <>
-      <Flex>
-        <Avatar source={value.firstUser.avatarUri} size="xs" />
-        <Text style={{ marginLeft: Units.padding / 2 }}>
-          Liked by{" "}
-          <STRONG
-            onPress={() => onPress(value.firstUser.userId)}
-            style={{ color: Colors.bodyTextEmphasis }}>
-            {value.firstUser.handle}
-          </STRONG>{" "}
-          and <STRONG>{value.count - 1} others</STRONG>
-        </Text>
-      </Flex>
-      <WhiteSpace size="md" />
-    </>
-  )
-}
-
-function getExpandCommentsPhrase(count) {
-  if (count === 1) {
-    return "View 1 comment"
-  }
-  return `View all ${count} comments`
-}
-
-interface CommentRowProps {
-  comment: CommentType
-  onPress: (userId: GUID) => void
-}
-
-function Comment({ comment, onPress }: CommentRowProps) {
-  const { user, message, comments } = comment
-  const [collapsed, setCollapsed] = React.useState(true)
-  return (
-    <View
-      style={{
-        borderLeftWidth: 1,
-        borderColor: Colors.border,
-        paddingLeft: Units.padding,
-        marginLeft: Units.padding / 2,
-      }}>
-      <Flex
-        direction="row"
-        justify="between"
-        style={{ alignContent: "stretch", alignItems: "flex-start" }}>
-        <Flex
-          align="start"
-          style={{
-            flexGrow: 0,
-            flexShrink: 1,
-            marginRight: Units.margin,
-          }}>
-          <STRONG
-            onPress={() => onPress(user.userId)}
-            style={{ color: Colors.bodyTextEmphasis, marginRight: Units.padding / 2 }}>
-            {user.handle}
-          </STRONG>
-          <Flex.Item>
-            <ReadMore
-              numberOfLines={1}
-              renderTruncatedFooter={(pressHandler) => <A onPress={pressHandler}>more</A>}
-              renderRevealedFooter={(pressHandler) => <A onPress={pressHandler}>less</A>}>
-              <Text style={styles.Body} numberOfLines={1} ellipsizeMode="tail" selectable={true}>
-                {message}
-              </Text>
-            </ReadMore>
-          </Flex.Item>
+      <Flex direction="row" align="start" justify="start">
+        {/* AVATAR LEFT COLUMN ***********************/}
+        <Flex direction="column" align="start" style={{ marginRight: 10 }}>
+          <Avatar
+            source={user.avatarUri}
+            size={size}
+            onPress={() => navigate(routes.Feed, { userId: "abc-123" })}
+          />
         </Flex>
-        <Flex style={{ flexGrow: 0, flexShrink: 1 }}>
+
+        {/* COMMENT INFO CENTER COLUMN ***********************/}
+        <Flex.Item>
+          <Flex direction="row" align="start" wrap="wrap">
+            <TouchText
+              labelStyle={{ color: Colors.bodyTextEmphasis, fontWeight: FontWeights.bold }}
+              onPress={() => navigate(routes.Feed, { userId: "abc-123" })}>
+              {`${user.handle}  `}
+            </TouchText>
+            <Text style={{ color: Colors.bodyTextEmphasis }}>{message}</Text>
+          </Flex>
+          <Flex style={{ marginTop: Units.padding / 2 }}>
+            <SMALL style={{ marginRight: Units.padding }}>3w</SMALL>
+            <TouchText
+              style={{ marginRight: Units.padding }}
+              labelStyle={{
+                fontWeight: FontWeights.bold,
+                fontSize: styles.SmallCopy.fontSize,
+                lineHeight: styles.SmallCopy.lineHeight,
+              }}
+              onPress={() => alert("View likes feature to come!")}>
+              2 Likes
+            </TouchText>
+            <TouchText
+              labelStyle={{
+                fontWeight: FontWeights.bold,
+                fontSize: styles.SmallCopy.fontSize,
+                lineHeight: styles.SmallCopy.lineHeight,
+              }}
+              onPress={() => alert("Reply feature to come!")}>
+              Reply
+            </TouchText>
+          </Flex>
+        </Flex.Item>
+
+        {/* LIKE RIGHT COLUMN ***********************/}
+        <Flex direction="column" align="start" style={{ paddingTop: 5 }}>
           <TouchIcon
             toggledNames={{ on: "heart", off: "hearto" }}
-            size="xs"
+            size="xxs"
             onPress={() => alert("Like comment\nFeature to come!")}
             active={comment.liked}
           />
         </Flex>
       </Flex>
 
-      {/* EXPAND COMMENTS */}
-      <Collapsible collapsed={collapsed}>
-        <WhiteSpace size="md" />
-        {comments.map((comment) => (
-          <Comment key={comment.id} comment={comment} onPress={onPress} />
-        ))}
-      </Collapsible>
-      {comments.length > 0 ? (
-        collapsed ? (
-          <>
-            <WhiteSpace size="xs" />
-            <A onPress={() => setCollapsed(false)}>{getExpandCommentsPhrase(comments.length)}</A>
-          </>
-        ) : (
-          <>
-            <WhiteSpace size="xs" />
-            <A onPress={() => setCollapsed(true)}>View less</A>
-          </>
-        )
+      {/* CHILD COMMENTS ***********************/}
+      {comment.comments.length > 0 ? (
+        <FlatList
+          data={comments}
+          style={{
+            marginLeft: Units.margin,
+            paddingLeft: Units.padding,
+            paddingTop: Units.margin,
+            borderLeftWidth: 1,
+            borderColor: Colors.border,
+          }}
+          ItemSeparatorComponent={() => <View style={{ height: Units.margin }} />}
+          keyExtractor={(comment) => comment.id}
+          renderItem={({ item }) => (
+            <Comment key={item.id} comment={item} size="xs" navigate={navigate} routes={routes} />
+          )}
+        />
       ) : null}
-      <WhiteSpace size="md" />
-    </View>
+    </>
   )
 }
 
@@ -136,7 +116,7 @@ export interface CommentsProps {
 }
 
 /**
- * Comments component
+ * CommentThread component
  * @public
  */
 export const Comments = React.memo(({ navigate, routes, value }: CommentsProps) => {
@@ -144,19 +124,12 @@ export const Comments = React.memo(({ navigate, routes, value }: CommentsProps) 
   const { likes, comments, lastActivity } = value
 
   return (
-    <View style={{ marginLeft: Units.margin, marginRight: Units.margin }}>
-      <Likes value={likes} onPress={handleUserPress} />
-      {comments.map((comment) => (
-        <Comment key={comment.id} comment={comment} onPress={handleUserPress} />
-      ))}
-      <SMALL>
-        {moment
-          .utc(lastActivity)
-          .fromNow(true)
-          .toUpperCase()}{" "}
-        AGO
-      </SMALL>
-      <WhiteSpace size="md" />
-    </View>
+    <FlatList
+      data={comments}
+      keyExtractor={(comment) => comment.id}
+      renderItem={({ item }) => <Comment comment={item} navigate={navigate} routes={routes} />}
+      ItemSeparatorComponent={() => <View style={{ height: Units.margin * 1.5 }} />}
+      ListEmptyComponent={<Empty message="No comments found" style={{ padding: Units.margin }} />}
+    />
   )
 })
