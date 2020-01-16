@@ -1,7 +1,8 @@
 import { Provider } from "@ant-design/react-native"
 import { ActionSheetProvider } from "@expo/react-native-action-sheet"
 import { AppLoading } from "expo"
-import React from "react"
+import * as Font from "expo-font"
+import React, { useEffect } from "react"
 import { StatusBar } from "react-native"
 import { Transition } from "react-native-reanimated"
 import { createAppContainer } from "react-navigation"
@@ -54,6 +55,25 @@ const App = () => {
     setTheme(theme)
     setCurrentTheme(currentTheme)
   }
+
+  useEffect(() => {
+    async function init() {
+      await Font.loadAsync(
+        "antoutline",
+        // eslint-disable-next-line
+        require("@ant-design/icons-react-native/fonts/antoutline.ttf")
+      )
+
+      await Font.loadAsync(
+        "antfill",
+        // eslint-disable-next-line
+        require("@ant-design/icons-react-native/fonts/antfill.ttf")
+      )
+      setIsReady(true)
+    }
+
+    init()
+  }, [])
 
   if (!isReady) {
     return <AppLoading />
