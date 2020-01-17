@@ -26,6 +26,7 @@ interface PostToFeedProps {
 
 export const CommentKeyboard = ({ visible, onClose, accomodateTabNavigation }: PostToFeedProps) => {
   const [message, setMessage] = React.useState(null)
+  const [keyboardShown, setKeyboardShown] = React.useState(false)
   const inputRef = React.useRef<TextInput>()
 
   React.useEffect(() => {
@@ -33,12 +34,17 @@ export const CommentKeyboard = ({ visible, onClose, accomodateTabNavigation }: P
   }, [visible])
 
   // Component will mount: add listeners
-  const { keyboardWillHideListener } = React.useMemo(() => {
+  const { keyboardWillHideListener, keyboardWillShowListener } = React.useMemo(() => {
+    const keyboardWillShowListener = Keyboard.addListener("keyboardWillShow", (e) => {
+      setKeyboardShown(true)
+    })
     const keyboardWillHideListener = Keyboard.addListener("keyboardWillHide", (e) => {
+      setKeyboardShown(false)
       onClose()
     })
     return {
       keyboardWillHideListener,
+      keyboardWillShowListener,
     }
   }, [])
 
@@ -46,17 +52,17 @@ export const CommentKeyboard = ({ visible, onClose, accomodateTabNavigation }: P
   React.useEffect(() => {
     return () => {
       keyboardWillHideListener.remove()
+      keyboardWillShowListener.remove()
     }
   }, [])
 
   return (
     <>
-      {/*{showKeyboard ? <ScrollView /> : null}*/}
       <KeyboardAccessoryView
         alwaysVisible
         style={{
           backgroundColor: Colors.navBarBackground,
-          marginBottom: accomodateTabNavigation ? -70 : 0
+          marginBottom: accomodateTabNavigation && keyboardShown ? -(Units.padding * 2) : 0,
         }}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View
