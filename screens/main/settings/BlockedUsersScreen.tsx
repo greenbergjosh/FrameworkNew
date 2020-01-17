@@ -1,13 +1,12 @@
 import React from "react"
 import { ActivityIndicator, Flex } from "@ant-design/react-native"
-import { ScrollView, Text, View } from "react-native"
+import { SafeAreaView, ScrollView, Text, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { routes, styles } from "constants"
+import { Colors, routes, styles } from "constants"
 import { useFollowsContext } from "providers/follows-context-provider"
 import { BlockedUserRow } from "./components/BlockedUserRow"
 import NavButton from "components/NavButton"
-import { Colors } from "../../../constants/unit.constants"
 
 interface BlockedUsersScreenProps extends NavigationTabScreenProps {}
 
@@ -24,7 +23,7 @@ export const BlockedUsersScreen = ({ navigation }: BlockedUsersScreenProps) => {
 
   const blockedUsers = followsContext.blockedUsers
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       {blockedUsers.length > 0 ? (
         <ScrollView
           style={{ flex: 1, backgroundColor: Colors.screenBackground }}
@@ -41,7 +40,7 @@ export const BlockedUsersScreen = ({ navigation }: BlockedUsersScreenProps) => {
           <Text style={styles.Body}>You have not blocked anyone</Text>
         </Flex>
       )}
-    </>
+    </SafeAreaView>
   )
 }
 

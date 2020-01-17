@@ -10,10 +10,7 @@ import React from "react"
 import { Alert } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import {
-  PhotoSelectStatus,
-  useActionSheetTakeSelectPhoto,
-} from "hooks/useActionSheetTakeSelectPhoto"
+import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
 import { copyCampaignLinkHandler } from "components/feed/copyCampaignLinkHandler"
@@ -297,7 +294,7 @@ PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
           disabled={!requiredTokens.every((token) => token in influencerTokens)}
           iconName="left"
           position="left"
-          onPress={() => navigate(routes.Promotions.Promotions)}
+          onPress={() => navigation.goBack()}
         />
       ),
     headerTitle: <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,

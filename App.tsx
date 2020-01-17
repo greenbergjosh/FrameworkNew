@@ -14,36 +14,35 @@ import { LandingScreen } from "./screens/landing/LandingScreen"
 import { MainSection } from "./screens/main/MainSection"
 import { LegalSection } from "./screens/legal/LegalSection"
 import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
-import { Colors } from "./constants/unit.constants"
+import { Colors, routes } from "constants"
 
-const sectionNavigator = createAnimatedSwitchNavigator(
-  {
-    Landing: { screen: LandingScreen },
-    OnBoarding: { screen: OnBoardingSection },
-    Authentication: { screen: AuthenticationSection },
-    Main: { screen: MainSection },
-    Legal: { screen: LegalSection },
-    DevMenu: { screen: DevMenuScreen },
-  },
-  {
-    initialRouteName: "Landing",
-    defaultNavigationOptions: {
-      headerStyle: {
-        backgroundColor: Colors.ggNavy,
-      },
-      headerTintColor: Colors.reverse,
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
+export const appRoutes = {
+  [routes.App.Landing]: { screen: LandingScreen },
+  [routes.App.OnBoarding]: { screen: OnBoardingSection },
+  [routes.App.Authentication]: { screen: AuthenticationSection },
+  [routes.App.Main]: { screen: MainSection },
+  [routes.App.Legal]: { screen: LegalSection },
+  [routes.App.DevMenu]: { screen: DevMenuScreen },
+}
+
+const sectionNavigator = createAnimatedSwitchNavigator(appRoutes, {
+  initialRouteName: routes.App.default,
+  defaultNavigationOptions: {
+    headerStyle: {
+      backgroundColor: Colors.ggNavy,
     },
-    transition: (
-      <Transition.Together>
-        <Transition.Out type="slide-bottom" durationMs={400} interpolation="easeIn" />
-        <Transition.In type="fade" durationMs={500} />
-      </Transition.Together>
-    ),
-  }
-)
+    headerTintColor: Colors.reverse,
+    headerTitleStyle: {
+      fontWeight: "bold",
+    },
+  },
+  transition: (
+    <Transition.Together>
+      <Transition.Out type="slide-bottom" durationMs={400} interpolation="easeIn" />
+      <Transition.In type="fade" durationMs={500} />
+    </Transition.Together>
+  ),
+})
 const RootNavigator = createAppContainer(sectionNavigator)
 
 const App = () => {

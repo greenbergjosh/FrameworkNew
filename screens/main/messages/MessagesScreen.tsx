@@ -1,14 +1,14 @@
 import React from "react"
 import { ActivityIndicator, Button, SearchBar } from "@ant-design/react-native"
-import { AntDesign, Ionicons, Entypo } from "@expo/vector-icons"
+import { AntDesign } from "@expo/vector-icons"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "providers/messages-context-provider"
-import { Colors, routes } from "constants"
+import { Colors, routes, AntIconSizes } from "constants"
 import { HeaderTitle } from "components/HeaderTitle"
 import { MessagesList } from "./components/MessagesList"
 import NavButton from "components/NavButton"
 import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
-import { AntIconSizes } from "../../../constants/unit.constants"
+import { SafeAreaView } from "react-native"
 
 export interface MessagesScreenProps extends NavigationStackScreenProps {}
 
@@ -34,7 +34,7 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
   const { navigate } = navigation
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <SearchBar
         placeholder="Search"
         cancelText="Cancel"
@@ -42,12 +42,10 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
         onSubmit={() => alert("Search\n Feature to come!")}
       />
       <MessagesList navigate={navigate} messages={messages} />
-      <Button
-        style={{ backgroundColor: Colors.navBarBackground }}
-        onPress={editImage}>
+      <Button style={{ backgroundColor: Colors.navBarBackground }} onPress={editImage}>
         <AntDesign name="camera" size={AntIconSizes.lg} style={{ color: Colors.bodyText }} />
       </Button>
-    </>
+    </SafeAreaView>
   )
 }
 MessagesScreen.navigationOptions = ({ navigation }) => {
@@ -55,7 +53,7 @@ MessagesScreen.navigationOptions = ({ navigation }) => {
     headerLeft: (
       <NavButton
         iconName="left"
-        onPress={() => navigation.navigate(routes.Home.default)}
+        onPress={() => navigation.goBack()}
         position="left"
       />
     ),

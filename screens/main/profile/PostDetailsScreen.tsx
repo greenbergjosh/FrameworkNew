@@ -1,11 +1,12 @@
 import React from "react"
-import { ScrollView, View } from "react-native"
+import { SafeAreaView, ScrollView } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Post, UserPostHeader } from "components/feed"
-import { profileFeedRoutes } from "constants"
+import { profileFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
+import { BottomTabBar } from "components/BottomTabBar"
 
 interface PostDetailsScreenProps extends NavigationTabScreenProps {}
 
@@ -21,8 +22,8 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
     const post = mockData.FEED_DATA.feed[0]
 
     return (
-      <ScrollView>
-        <View key={post.id}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView>
           <UserPostHeader
             campaignId={post.campaignId}
             user={post.user}
@@ -40,8 +41,9 @@ export class PostDetailsScreen extends React.Component<PostDetailsScreenProps> {
             routes={profileFeedRoutes}
             isCurrentUser={true}
           />
-        </View>
-      </ScrollView>
+        </ScrollView>
+        <BottomTabBar activeTab={routes.Profile.default} />
+      </SafeAreaView>
     )
   }
 }

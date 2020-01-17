@@ -7,25 +7,23 @@ import { AuthenticationResendCodeScreen } from "./AuthenticationResendCodeScreen
 import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
-import { Colors, defaultNavigationOptions, routes } from "constants"
+import { defaultNavigationOptions, routes } from "constants"
 
+export const authenticationRoutes = {
+  [routes.Authentication.Login]: { screen: AuthenticationLoginScreen },
+  [routes.Authentication.Banned]: { screen: AuthenticationBannedScreen },
+  [routes.Authentication.ResetPassword]: { screen: AuthenticationResetPasswordScreen },
+  [routes.Authentication.NewPassword]: { screen: AuthenticationNewPasswordScreen },
+  [routes.Authentication.ResendCode]: { screen: AuthenticationResendCodeScreen },
+}
 
-const AuthenticationNavigator = createStackNavigator(
-  {
-    [routes.Authentication.Login]: { screen: AuthenticationLoginScreen },
-    [routes.Authentication.Banned]: { screen: AuthenticationBannedScreen },
-    [routes.Authentication.ResetPassword]: { screen: AuthenticationResetPasswordScreen },
-    [routes.Authentication.NewPassword]: { screen: AuthenticationNewPasswordScreen },
-    [routes.Authentication.ResendCode]: { screen: AuthenticationResendCodeScreen },
-  },
-  {
-    initialRouteName: routes.Authentication.default,
-    defaultNavigationOptions,
-  }
-)
+const AuthenticationNavigator = createStackNavigator(authenticationRoutes, {
+  initialRouteName: routes.Authentication.default,
+  defaultNavigationOptions,
+})
 
 export const AuthenticationSection = () => {
-  const navigation = useContext(NavigationContext);
+  const navigation = useContext(NavigationContext)
   return <AuthenticationNavigator navigation={navigation} />
 }
 

@@ -7,6 +7,8 @@ import { UserProfilePanel } from "components/ProfilePanel"
 import { ImageGrid } from "components/ImageGrid"
 import * as feedMockData from "api/feed-services.mockData"
 import * as profileMockData from "api/profile-services.mockData"
+import { SafeAreaView } from "react-native"
+import { BottomTabBar } from "components/BottomTabBar"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
@@ -17,7 +19,7 @@ export const ProfileScreen = (props: ProfileScreenProps) => {
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <UserProfilePanel user={user} navigate={navigate} routes={profileFeedRoutes} />
       <Button
         style={{ margin: Units.margin }}
@@ -30,7 +32,8 @@ export const ProfileScreen = (props: ProfileScreenProps) => {
         images={images}
         onItemPress={(id) => navigate(routes.Profile.PostDetails, { id })}
       />
-    </>
+      <BottomTabBar activeTab={routes.Profile.default} />
+    </SafeAreaView>
   )
 }
 ProfileScreen.navigationOptions = ({ navigation }) => {

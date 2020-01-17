@@ -6,6 +6,7 @@ import { SettingsList } from "./components/SettingsList"
 import { PRIVACYOPTIONS_DATA } from "api/profile-services.mockData"
 import { SettingType } from "api/profile-services"
 import NavButton from "components/NavButton"
+import { SafeAreaView } from "react-native"
 
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}
 
@@ -14,7 +15,11 @@ export const PrivacyOptionsScreen = ({ navigation }: PrivacyOptionsScreenProps) 
   function handleSettingChange(setting, isChecked) {
     setSettings([...settings, setting])
   }
-  return <SettingsList values={settings} style={styles.ViewContainer} />
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <SettingsList values={settings} style={styles.ViewContainer} />
+    </SafeAreaView>
+  )
 }
 
 PrivacyOptionsScreen.navigationOptions = ({ navigation }) => {

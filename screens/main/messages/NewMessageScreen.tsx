@@ -1,5 +1,5 @@
 import React from "react"
-import { Text } from "react-native"
+import { SafeAreaView, Text } from "react-native"
 import { ActivityIndicator, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
@@ -29,7 +29,7 @@ export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
   }, [])
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <Flex
         direction="row"
         justify="start"
@@ -50,7 +50,7 @@ export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
       </Text>
       <WhiteSpace size="md" />
       <ContactsList navigate={navigate} contacts={contacts} />
-    </>
+    </SafeAreaView>
   )
 }
 NewMessageScreen.navigationOptions = ({ navigation }) => {

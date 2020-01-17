@@ -2,15 +2,13 @@ import { Flex, Icon, InputItem } from "@ant-design/react-native"
 import React from "react"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Colors, devBorder, routes, Units } from "constants"
+import { Colors, routes, Units } from "constants"
 import { GiftedChat } from "react-native-gifted-chat"
 import * as mockData from "api/messages-services.mockData"
 import NavButton from "components/NavButton"
 import TouchIcon from "components/TouchIcon"
-import {
-  PhotoSelectStatus,
-  useActionSheetTakeSelectPhoto,
-} from "hooks/useActionSheetTakeSelectPhoto"
+import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
+import { SafeAreaView } from "react-native"
 
 interface ViewThreadScreenProps extends NavigationStackScreenProps {}
 
@@ -45,7 +43,7 @@ export const ViewThreadScreen = ({}: ViewThreadScreenProps) => {
   })
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <Flex
         direction="row"
         justify="start"
@@ -77,7 +75,7 @@ export const ViewThreadScreen = ({}: ViewThreadScreenProps) => {
           />
         )}
       />
-    </>
+    </SafeAreaView>
   )
 }
 

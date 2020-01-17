@@ -6,7 +6,7 @@ import { SettingsList } from "./components/SettingsList"
 import { SettingRow } from "./components/SettingRow"
 import { NOTIFICATIONS_DATA } from "api/profile-services.mockData"
 import { SettingType } from "api/profile-services"
-import { Text, View } from "react-native"
+import { SafeAreaView, Text, View } from "react-native"
 import NavButton from "components/NavButton"
 
 interface NotificationsScreenProps extends NavigationTabScreenProps {}
@@ -18,7 +18,7 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
   }
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <SettingRow
         value={{
           id: "bd7acbea-c1b1-46c2-aed5-3ad53abb2001",
@@ -53,7 +53,7 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
           </View>
         )}
       </SettingsList>
-    </>
+    </SafeAreaView>
   )
 }
 

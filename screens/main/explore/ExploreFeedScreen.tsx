@@ -5,7 +5,8 @@ import { HeaderTitle } from "components/HeaderTitle"
 import * as mockData from "api/feed-services.mockData"
 import { routes } from "constants"
 import { ImageGrid } from "components/ImageGrid"
-import { ScrollView } from "react-native"
+import { SafeAreaView, ScrollView } from "react-native"
+import { BottomTabBar } from "components/BottomTabBar"
 
 export interface ExploreFeedScreenProps extends NavigationTabScreenProps {}
 
@@ -14,7 +15,7 @@ export const ExploreFeedScreen = (props: ExploreFeedScreenProps) => {
   const { feed } = mockData.FEED_DATA
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <SearchBar
         placeholder="Search"
         cancelText="Cancel"
@@ -27,7 +28,8 @@ export const ExploreFeedScreen = (props: ExploreFeedScreenProps) => {
           onItemPress={(id) => navigate(routes.Explore.FeedDetails, { id })}
         />
       </ScrollView>
-    </>
+      <BottomTabBar activeTab={routes.Explore.default} />
+    </SafeAreaView>
   )
 }
 ExploreFeedScreen.navigationOptions = ({ navigation }) => {

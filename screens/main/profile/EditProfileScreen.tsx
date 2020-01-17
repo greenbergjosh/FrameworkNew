@@ -1,5 +1,5 @@
 import React from "react"
-import { ScrollView, Text } from "react-native"
+import { SafeAreaView, ScrollView, Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import Avatar from "components/Avatar"
@@ -9,10 +9,7 @@ import { H2 } from "components/Markup"
 import NavButton from "components/NavButton"
 import { PROFILE_DATA } from "api/profile-services.mockData"
 import { EditProfileForm } from "./components/EditProfileForm"
-import {
-  PhotoSelectStatus,
-  useActionSheetTakeSelectPhoto,
-} from "hooks/useActionSheetTakeSelectPhoto"
+import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
 
 interface UserIdentityProps {
   user: UserType
@@ -70,7 +67,7 @@ interface EditProfileScreenProps extends React.FunctionComponent, NavigationTabS
 export const EditProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   const { navigate } = navigation
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <UserIdentityPanel
         user={PROFILE_DATA}
         onPress={() => alert("Edit avatar photo\nFeature to come!")}
@@ -78,7 +75,7 @@ export const EditProfileScreen = ({ navigation }: EditProfileScreenProps) => {
       <ScrollView>
         <EditProfileForm user={PROFILE_DATA} style={{ margin: Units.margin }} />
       </ScrollView>
-    </>
+    </SafeAreaView>
   )
 }
 EditProfileScreen.navigationOptions = ({ navigation }) => {

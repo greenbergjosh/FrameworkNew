@@ -1,14 +1,15 @@
 import { ActivityIndicator } from "@ant-design/react-native"
-import { PromotionExpander } from "screens/main/promotions/components/PromotionExpander"
 import { usePromotionsContext } from "providers/promotions-context-provider"
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { Tab, Tabs } from "../../../components/Tabs"
+import { Tab, Tabs } from "components/Tabs"
 import { Colors, routes } from "constants"
-import { ScrollView } from "react-native"
+import { SafeAreaView, ScrollView } from "react-native"
 import { PromotionCard } from "./components/PromotionCard"
 import { CampaignsList } from "./components/CampaignsList"
+import { BottomTabBar } from "components/BottomTabBar"
+import NavButton from "components/NavButton"
 
 interface PromotionsCampaignListParams {
   promotionId: GUID
@@ -35,7 +36,7 @@ export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreen
   }
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <PromotionCard
         promotional={promotion.payload}
         promotionId={promotion.id}
@@ -66,13 +67,14 @@ export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreen
           </ScrollView>
         </Tab>
       </Tabs>
-    </>
+      <BottomTabBar activeTab={routes.Promotions.default} />
+    </SafeAreaView>
   )
 }
 
 PromotionsCampaignListScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: null,
-    headerTitle: () => <HeaderTitle title="Campaigns" offset="left" />,
+    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: () => <HeaderTitle title="Campaigns" offset="none" />,
   }
 }

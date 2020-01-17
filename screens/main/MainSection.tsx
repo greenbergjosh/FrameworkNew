@@ -1,41 +1,94 @@
 import { HeaderLogo } from "components/HeaderLogo"
-import { routes } from "constants"
+import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { createBottomTabNavigator } from "react-navigation-tabs"
-import { ExploreSection } from "./explore/ExploreSection"
-import { FollowsSection } from "./follows/FollowsSection"
-import { HomeSection } from "./home/HomeSection"
-import { MessagesSection } from "./messages/MessagesSection"
-import { ProfileSection } from "./profile/ProfileSection"
-import { PromotionsSection } from "./promotions/PromotionsSection"
+import { exploreRoutes } from "./explore/Explore.routes"
+import { followsRoutes } from "./follows/Follows.routes"
+import { homeRoutes } from "./home/Home.routes"
+import { messagesRoutes } from "./messages/Messages.routes"
+import { profileRoutes } from "./profile/Profile.routes"
+import { promotionsRoutes } from "./promotions/Promotions.routes"
 import { SettingsDrawer, SettingsDrawerContext } from "./settings/SettingsDrawer"
-import { SettingsSection } from "./settings/SettingsSection"
+import { settingsRoutes } from "./settings/Settings.routes"
+import { createStackNavigator } from "react-navigation-stack"
+import { HomeFeedScreen } from "./home/HomeFeedScreen"
+import { ExploreFeedScreen } from "./explore/ExploreFeedScreen"
+import { PromotionsScreen } from "./promotions/PromotionsScreen"
+import { FollowsScreen } from "./follows/FollowsScreen"
+import { ProfileScreen } from "./profile/ProfileScreen"
+import { Animated, Easing } from "react-native"
 
 interface MainSectionProps extends NavigationSwitchScreenProps {}
 interface MainSectionState {
   settingsDrawerOpen: boolean
 }
 
-const MainNavigator = createBottomTabNavigator(
-  {
-    [routes.Main.Home]: { screen: HomeSection },
-    [routes.Main.Explore]: { screen: ExploreSection },
-    [routes.Main.Promotions]: { screen: PromotionsSection },
-    [routes.Main.Follows]: { screen: FollowsSection },
-    [routes.Main.Profile]: { screen: ProfileSection },
-  },
-  {
-    initialRouteName: routes.Main.default,
-    defaultNavigationOptions: {},
-    tabBarOptions: {
-      keyboardHidesTabBar: true,
-      labelPosition: "below-icon",
-      labelStyle: { textAlign: "center" },
-      tabStyle: { width: "auto" },
+export const mainRootRoutes = {
+  [routes.Main.Home]: { screen: HomeFeedScreen },
+  [routes.Main.Explore]: { screen: ExploreFeedScreen },
+  [routes.Main.Promotions]: { screen: PromotionsScreen },
+  [routes.Main.Follows]: { screen: FollowsScreen },
+  [routes.Main.Profile]: { screen: ProfileScreen },
+}
+
+export const mainRoutes = {
+  ...exploreRoutes,
+  ...followsRoutes,
+  ...homeRoutes,
+  ...messagesRoutes,
+  ...profileRoutes,
+  ...promotionsRoutes,
+  ...settingsRoutes,
+  ...mainRootRoutes,
+}
+
+/**
+ * See: https://reactnavigation.org/docs/en/stack-navigator-1.0.html#modal-stacknavigator-with-custom-screen-transitions
+ * @constructor
+ */
+const TransitionConfiguration = () => {
+  return {
+    transitionSpec: {
+      duration: 750,
+      easing: Easing.out(Easing.poly(4)),
+      timing: Animated.timing,
+      useNativeDriver: true,
+    },
+    screenInterpolator: (sceneProps) => {
+      const { layout, position, scene } = sceneProps
+      const { index, route } = scene
+      const width = layout.initWidth
+
+      /*
+         Allow transitions to be defined on-the-fly with
+         navigate(routeName, { tansition: "TransitionName" }
+       */
+      const params = route.params || {}
+      const transition = params.transition || "default"
+
+      const opacity = position.interpolate({
+        inputRange: [index - 1, index - 0.99, index],
+        outputRange: [0, 1, 1],
+      })
+
+      const translateX = position.interpolate({
+        inputRange: [index - 1, index, index + 1],
+        outputRange: [width, 0, 0],
+      });
+
+      return {
+        fade: { opacity },
+        default: { transform: [{ translateX }] },
+      }[transition]
     },
   }
-)
+}
+
+const MainNavigator = createStackNavigator(mainRoutes, {
+  initialRouteName: routes.Main.default,
+  defaultNavigationOptions,
+  transitionConfig: TransitionConfiguration,
+})
 
 export class MainSection extends React.Component<MainSectionProps, MainSectionState> {
   static router = MainNavigator.router

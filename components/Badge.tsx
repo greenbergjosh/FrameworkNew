@@ -1,14 +1,13 @@
 import React, { FunctionComponent } from "react"
 import { StyleProp, Text, View, ViewStyle } from "react-native"
-import { styles } from "constants"
-import { Colors } from "../constants/unit.constants"
+import { Colors, styles } from "constants"
 
-export interface EmptyProps {
+export interface BadgeProps {
   style?: StyleProp<ViewStyle>
   text?: string | React.ReactNode
 }
 
-export const Badge: FunctionComponent<EmptyProps> = ({ style, text }) => {
+export const Badge: FunctionComponent<BadgeProps> = ({ style, text }) => {
   const containerStyle = {
     borderWidth: 1,
     borderColor: Colors.link,

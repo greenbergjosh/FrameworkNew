@@ -6,6 +6,16 @@ export interface NavigationItem {
   icon?: IconProps["name"]
 }
 
+enum App {
+  default = "App.Landing",
+  Landing = "App.Landing",
+  OnBoarding = "App.OnBoarding",
+  Authentication = "App.Authentication",
+  Main = "App.Main",
+  Legal = "App.Legal",
+  DevMenu = "App.DevMenu",
+}
+
 enum Authentication {
   default = "Authentication.Login",
   Banned = "Authentication.Banned",
@@ -137,6 +147,7 @@ const SettingsNav: NavigationItem[] = [
 const DevMenu = "DevMenu"
 
 export const routes = {
+  App,
   Authentication,
   DevMenu,
   Explore,

@@ -13,16 +13,18 @@ import { defaultNavigationOptions, routes } from "constants"
 
 interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 
+export const onboardingRoutes = {
+  [routes.OnBoarding.CreateAccount]: { screen: OnBoardingCreateAccountScreen },
+  [routes.OnBoarding.CodeEntry]: { screen: OnBoardingCodeEntryScreen },
+  [routes.OnBoarding.ResendCode]: { screen: OnBoardingResendCodeScreen },
+  [routes.OnBoarding.SetPassword]: { screen: OnBoardingSetPasswordScreen },
+  [routes.OnBoarding.SelectInterests]: { screen: OnBoardingSelectInterestsScreen },
+  [routes.OnBoarding.SyncContacts]: { screen: OnBoardingSyncContactsScreen },
+  [routes.OnBoarding.Tour]: { screen: OnBoardingTourScreen },
+}
+
 const OnBoardingNavigator = createStackNavigator(
-  {
-    [routes.OnBoarding.CreateAccount]: { screen: OnBoardingCreateAccountScreen },
-    [routes.OnBoarding.CodeEntry]: { screen: OnBoardingCodeEntryScreen },
-    [routes.OnBoarding.ResendCode]: { screen: OnBoardingResendCodeScreen },
-    [routes.OnBoarding.SetPassword]: { screen: OnBoardingSetPasswordScreen },
-    [routes.OnBoarding.SelectInterests]: { screen: OnBoardingSelectInterestsScreen },
-    [routes.OnBoarding.SyncContacts]: { screen: OnBoardingSyncContactsScreen },
-    [routes.OnBoarding.Tour]: { screen: OnBoardingTourScreen },
-  },
+  onboardingRoutes,
   {
     initialRouteName: routes.OnBoarding.default,
     defaultNavigationOptions,

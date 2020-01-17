@@ -1,5 +1,5 @@
 import React from "react"
-import { Alert, ScrollView, View } from "react-native"
+import { Alert, SafeAreaView, ScrollView, View } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { influencerFeedRoutes, routes } from "constants"
 import { List } from "@ant-design/react-native"
@@ -13,6 +13,7 @@ import NavButton from "components/NavButton"
 import moment from "moment"
 import { useFeedContext } from "providers/feed-context-provider"
 import * as mockData from "api/feed-services.mockData"
+import { BottomTabBar } from "components/BottomTabBar"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 
@@ -58,15 +59,15 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   }
 
   return (
-    <>
-      <DevTempNav
-        mode={mode}
-        setMode={setMode}
-        showStartCampaignDialog={() =>
-          showStartCampaignDialog("606891fe-a0c1-436c-8cb8-ddcdcb3f4268")
-        }
-      />
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
+        <DevTempNav
+          mode={mode}
+          setMode={setMode}
+          showStartCampaignDialog={() =>
+            showStartCampaignDialog("606891fe-a0c1-436c-8cb8-ddcdcb3f4268")
+          }
+        />
         {mode === "onboarding" ? (
           <SuggestedFollows influencers={suggestedFollows} navigate={navigate} />
         ) : (
@@ -95,7 +96,8 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           </List>
         )}
       </ScrollView>
-    </>
+      <BottomTabBar activeTab={routes.Home.default} />
+    </SafeAreaView>
   )
 }
 

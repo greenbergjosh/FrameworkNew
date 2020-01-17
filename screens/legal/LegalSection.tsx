@@ -8,13 +8,15 @@ import { LegalUserAgreementScreen } from "./LegalUserAgreementScreen"
 import { LegalPrivacyPolicyScreen } from "./LegalPrivacyPolicyScreen"
 import { LegalCookiePolicyScreen } from "./LegalCookiePolicyScreen"
 
+export const legalRoutes = {
+  [routes.Legal.TermsOfService]: { screen: LegalTermsOfServiceScreen },
+  [routes.Legal.UserAgreement]: { screen: LegalUserAgreementScreen },
+  [routes.Legal.PrivacyPolicy]: { screen: LegalPrivacyPolicyScreen },
+  [routes.Legal.CookiePolicy]: { screen: LegalCookiePolicyScreen },
+}
+
 const LegalNavigator = createStackNavigator(
-  {
-    [routes.Legal.TermsOfService]: { screen: LegalTermsOfServiceScreen },
-    [routes.Legal.UserAgreement]: { screen: LegalUserAgreementScreen },
-    [routes.Legal.PrivacyPolicy]: { screen: LegalPrivacyPolicyScreen },
-    [routes.Legal.CookiePolicy]: { screen: LegalCookiePolicyScreen },
-  },
+  legalRoutes,
   {
     initialRouteName: routes.Legal.default,
     defaultNavigationOptions,
