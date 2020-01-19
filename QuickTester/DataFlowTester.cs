@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -26,15 +27,80 @@ namespace QuickTester
             //    "QuickTester.DataFlowTester+Msg",
             //    Guid.NewGuid(), 2, 3, false);
 
+            // Real code should take a FrameworkWrapper.  
             FrameworkWrapper fw = null; //new FrameworkWrapper(null);
-            
 
+            // We will take a RsolynWrapper here for simple testing without DB
+            string TestF1 =
+                @"
+                    System.Console.WriteLine(p.x1);
+                    if (p.x1 > 0) await f.testf1(new {x1 = p.x1 - 1}, s);
+                    """"";
+            var scripts = new List<ScriptDescriptor>();
+            var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts");
+            dynamic rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            rw.CompileAndCache(new ScriptDescriptor(null, "TestF1", TestF1, false, null));
+
+            /* T->T->A */
+            dynamic tBlock1 = DynamicBlockCreator(
+                "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
+                "QuickTester.DataFlowTester+Msg",
+                "QuickTester.DataFlowTester+Msg",
+                //fw,  // This is the real parameter
+                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
+                    //Guid.NewGuid(),  // This is the real parameter
+                "testf1", // This is the named function for easy testing with RoslynWrapper
+                2, DataflowBlockOptions.Unbounded, false, new List<string>() { "tblock1: " });
+
+            dynamic tBlock2 = DynamicBlockCreator(
+                "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
+                "QuickTester.DataFlowTester+Msg",
+                "QuickTester.DataFlowTester+Msg",
+                //fw,  // This is the real parameter
+                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
+                    //Guid.NewGuid(),  // This is the real parameter
+                "testf1", // This is the named function for easy testing with RoslynWrapper
+                2, DataflowBlockOptions.Unbounded, false, new List<string>() { "tblock2: " });
+
+            dynamic actionBlock = DynamicBlockCreator(
+                "System.Threading.Tasks.Dataflow.ActionBlock`1, System.Threading.Tasks.Dataflow",
+                "QuickTester.DataFlowTester+Msg",
+                null,
+                //fw,  // This is the real parameter
+                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
+                    //Guid.NewGuid(),  // This is the real parameter
+                "testf1", // This is the named function for easy testing with RoslynWrapper
+                2, DataflowBlockOptions.Unbounded, false, new List<string>() { "ablock: " });
+
+            tBlock1.LinkTo(tBlock2.block, new DataflowLinkOptions
+            {
+                PropagateCompletion = true
+            }, (Predicate<Msg>)((Msg response) => !response.HasError));
+
+            tBlock2.LinkTo<Msg>(actionBlock.block, new DataflowLinkOptions
+            {
+                PropagateCompletion = true
+            }, (Predicate<Msg>)((Msg response) => !response.HasError)); // LinkTo only for Responses with HasError != true
+            tBlock2.LinkTo(DataflowBlock.NullTarget<Msg>());
+
+            for (int i = 0; i < 10; i++)
+                await tBlock1.SendAsync(new Msg { x = i });
+
+            tBlock1.Complete();
+
+            await actionBlock.Completion;
+            /* T->T->A */
+
+            /*
             dynamic x = DynamicBlockCreator(
                 "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
                 "QuickTester.DataFlowTester+Msg",
                 "QuickTester.DataFlowTester+Msg",
-                fw,
-                Guid.NewGuid(), 2, DataflowBlockOptions.Unbounded, false);
+                //fw,  // This is the real parameter
+                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
+                //Guid.NewGuid(),  // This is the real parameter
+                "testf1", // This is the named function for easy testing with RoslynWrapper
+                2, DataflowBlockOptions.Unbounded, false);
             x.LinkTo(DataflowBlock.NullTarget<Msg>(), new DataflowLinkOptions
             {
                 PropagateCompletion = true
@@ -46,16 +112,17 @@ namespace QuickTester
             x.Complete();
             Task tt = x.Completion;
             await tt;
+            */
         }
 
         
         public class DynamicBlock : System.Dynamic.DynamicObject
         {
-            dynamic block;
-            MethodInfo sendAsync;
-            MethodInfo linkTo2;
-            MethodInfo linkTo3;
-            MethodInfo linkTo4;
+            public dynamic block;
+            public MethodInfo sendAsync;
+            public MethodInfo linkTo2;
+            public MethodInfo linkTo3;
+            public MethodInfo linkTo4;
 
             public DynamicBlock(dynamic block, MethodInfo sendAsync, MethodInfo linkTo2, MethodInfo linkTo3, MethodInfo linkTo4)
             {
@@ -107,16 +174,37 @@ namespace QuickTester
             }
         }
 
-        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, FrameworkWrapper fw, Guid lbmId, int maxParallelism, int boundedCapacity, bool ensureOrdered)
+        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, 
+            /*FrameworkWrapper fw, Guid lbmId, */ dynamic rw, string fname,
+            int maxParallelism, int boundedCapacity, bool ensureOrdered, List<String> args = null)
         {
             try
             {
-                Type genericTypeTest = Type.GetType(blockType);
-                int count = genericTypeTest.GetGenericArguments().Length;
+                Type genericFuncType = null;
+                Type genericType = null;
+                if (!srcType.IsNullOrWhitespace() && destType.IsNullOrWhitespace())
+                {
+                    genericFuncType = typeof(Func<,>).MakeGenericType(
+                        new Type[] { Type.GetType(srcType), typeof(Task) });
+                    genericType = Type.GetType(blockType).MakeGenericType(new Type[] { Type.GetType(srcType) });
+                }
+                else if (srcType.IsNullOrWhitespace() && !destType.IsNullOrWhitespace())
+                {
+                    genericFuncType = typeof(Func<,>).MakeGenericType(
+                        new Type[] { typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
+                    genericType = Type.GetType(blockType).MakeGenericType(new Type[] { Type.GetType(destType) });
+                }
+                else if (!srcType.IsNullOrWhitespace() && !destType.IsNullOrWhitespace())
+                {
+                    genericFuncType = typeof(Func<,>).MakeGenericType(
+                        new Type[] { Type.GetType(srcType), typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
+                    genericType = Type.GetType(blockType).MakeGenericType(new Type[] { Type.GetType(srcType), Type.GetType(destType) });
+                }
+                else
+                {
+                    // Has to be an ISourceBlock or ITargetBlock derived class so this case should never happen
+                }
 
-                Type genericType = Type.GetType(blockType).MakeGenericType(new Type[]{ Type.GetType(srcType), Type.GetType(destType) });
-                Type genericFuncType = typeof(Func<,>).MakeGenericType(
-                    new Type[]{ Type.GetType(srcType), typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
                 var cnstctr = genericType.GetConstructor(new Type[] { genericFuncType, typeof(ExecutionDataflowBlockOptions) });
 
                 dynamic tBlock1 = cnstctr.Invoke(new object[] {Funcify(async (object msg) =>
@@ -124,15 +212,17 @@ namespace QuickTester
                     try
                     {
                         // Maybe call the LBM and cast its result
-                        Console.WriteLine("aBlockBehavior: before delay");
-                        Console.WriteLine("lbm" + lbmId.ToString());
-                        var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
-                        var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                            new { msg, err = fw.Err }, new StateWrapper());
+                        Console.WriteLine($"{args[0]}: Before delay");
+                        //Console.WriteLine("lbm" + lbmId.ToString());
+                        //var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
+                        //var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
+                        //    new { msg, err = fw.Err }, new StateWrapper());
+                        var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
                         await Task.Delay(100);
-                        Console.WriteLine("aBlockBehavior: after delay");
-                        return Convert.ChangeType(lbmResult, Type.GetType(destType));
+                        Console.WriteLine($"{args[0]}: After delay");
+                        //return Convert.ChangeType(lbmResult, Type.GetType(destType));
                         //return new Msg { x = 1, HasError = false };
+                        return new Msg((Msg)msg);
                     }
                     catch (Exception ex)
                     {
@@ -146,19 +236,23 @@ namespace QuickTester
                     EnsureOrdered = ensureOrdered
                 }});
 
-                // This does not need to be called every time
-                // public static Task<bool> SendAsync<TInput>(this ITargetBlock<TInput> target, TInput item);
-                var sendAsyncQuery = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
+                MethodInfo sendAsync = null;
+                if (!srcType.IsNullOrWhitespace())
+                {
+                    // This does not need to be called every time
+                    // public static Task<bool> SendAsync<TInput>(this ITargetBlock<TInput> target, TInput item);
+                    var sendAsyncQuery = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
                             | BindingFlags.Public | BindingFlags.NonPublic)
-                            where method.GetParameters().Length == 2
-                            where method.IsDefined(typeof(ExtensionAttribute), false)
-                            where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                            where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
-                            where method.Name == "SendAsync"
-                            select method;
+                                         where method.GetParameters().Length == 2
+                                         where method.IsDefined(typeof(ExtensionAttribute), false)
+                                         where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                         where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
+                                         where method.Name == "SendAsync"
+                                         select method;
 
-                MethodInfo sendAsyncInfo = sendAsyncQuery.First();
-                var sendAsync = sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType));
+                    MethodInfo sendAsyncInfo = sendAsyncQuery.First();
+                    sendAsync = sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType));
+                }                    
 
                 //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target);
                 //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target, Predicate<TOutput> predicate);
@@ -175,7 +269,8 @@ namespace QuickTester
                             select method;
 
                 MethodInfo linkTo2Info = linkTo2Query.First();
-                var linkTo2 = linkTo2Info.MakeGenericMethod(Type.GetType(destType));
+                MethodInfo linkTo2 = null;
+                if (!destType.IsNullOrWhitespace()) linkTo2 = linkTo2Info.MakeGenericMethod(Type.GetType(destType));
 
                 var linkTo3Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
                             | BindingFlags.Public | BindingFlags.NonPublic)
@@ -188,7 +283,8 @@ namespace QuickTester
                                    select method;
 
                 MethodInfo linkTo3Info = linkTo3Query.First();
-                var linkTo3 = linkTo3Info.MakeGenericMethod(Type.GetType(destType));
+                MethodInfo linkTo3 = null;
+                if (!destType.IsNullOrWhitespace()) linkTo3 = linkTo3Info.MakeGenericMethod(Type.GetType(destType));
 
                 var linkTo4Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
                             | BindingFlags.Public | BindingFlags.NonPublic)
@@ -202,7 +298,8 @@ namespace QuickTester
                                    select method;
 
                 MethodInfo linkTo4Info = linkTo4Query.First();
-                var linkTo4 = linkTo4Info.MakeGenericMethod(Type.GetType(destType));
+                MethodInfo linkTo4 = null;
+                if (!destType.IsNullOrWhitespace()) linkTo4 = linkTo4Info.MakeGenericMethod(Type.GetType(destType));
 
                 return new DynamicBlock(tBlock1, sendAsync, linkTo2, linkTo3, linkTo4);
             }
@@ -218,7 +315,20 @@ namespace QuickTester
         public static Func<T> Actionify<T>(Func<T> f)
         { return f; }
 
-        public class Msg { public int x; public bool HasError; }
+        public class Msg 
+        { 
+            public int x; 
+            public bool HasError;
+
+            public Msg() { }
+
+            public Msg(Msg msg)
+            {
+                this.x = msg.x;
+                this.HasError = msg.HasError;
+            }
+        
+        }
         public static async Task ActionTester()
         {
             var tBlock1 = new TransformBlock<Msg, Msg>(async msg =>
