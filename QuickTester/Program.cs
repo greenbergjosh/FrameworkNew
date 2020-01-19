@@ -81,7 +81,7 @@ namespace QuickTester
         // If you're looking for something that was in here before, I moved everything into individual static classes in the project. Sorry for the convenience. - Alberto
         private static async Task Main(string[] _args)
         {
-            CurlThinWrapper.Run();
+            // CurlThinWrapper.Run();
             //var f = new FileInfo("d:\\sources\\test.txt");
 
             //var lines = await FileSystem.ReadLines(f.FullName, 400);
@@ -106,7 +106,7 @@ namespace QuickTester
             //{
             //    Console.WriteLine("Here");
             //}
-            await RoslynTester.TestRoslyn();
+            //await RoslynTester.TestRoslyn();
             await DataFlowTester.TestDynamicBlockCreator();
 
             //var pc = ChannelsTester.CreateChannel(3, 3, channelProducer, channelConsumer);
