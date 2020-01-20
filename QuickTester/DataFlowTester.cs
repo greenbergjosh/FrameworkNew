@@ -20,62 +20,53 @@ namespace QuickTester
     {
         public static async Task TestDynamicBlockCreator()
         {
-            //await ActionTester();
-            //await DynamicBlockCreatorOld(
-            //    "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
-            //    "QuickTester.DataFlowTester+Msg",
-            //    "QuickTester.DataFlowTester+Msg",
-            //    Guid.NewGuid(), 2, 3, false);
-
             // Real code should take a FrameworkWrapper.  
             FrameworkWrapper fw = null; //new FrameworkWrapper(null);
 
-            // We will take a RsolynWrapper here for simple testing without DB
+            // We will take a RoslynWrapper here for simple testing without DB
             string TestF1 =
                 @"
                     System.Console.WriteLine(p.x1);
                     if (p.x1 > 0) await f.testf1(new {x1 = p.x1 - 1}, s);
                     """"";
+            string TestF2 =
+                @"
+                    return !p.x1.HasError;
+                    """"";
             var scripts = new List<ScriptDescriptor>();
             var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts");
             dynamic rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
             rw.CompileAndCache(new ScriptDescriptor(null, "TestF1", TestF1, false, null));
+            rw.CompileAndCache(new ScriptDescriptor(null, "TestF2", TestF2, false, null));
+            string fname = "testf1";
 
             /* T->T->A */
             dynamic tBlock1 = DynamicBlockCreator(
                 "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
                 "QuickTester.DataFlowTester+Msg",
                 "QuickTester.DataFlowTester+Msg",
-                //fw,  // This is the real parameter
-                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
-                    //Guid.NewGuid(),  // This is the real parameter
-                "testf1", // This is the named function for easy testing with RoslynWrapper
-                2, DataflowBlockOptions.Unbounded, false, new List<string>() { "tblock1: " });
+                CreateRoslynCompatibleFunction(rw, fname, new string[] { "tblock1: " }),
+                2, DataflowBlockOptions.Unbounded, false);
 
             dynamic tBlock2 = DynamicBlockCreator(
                 "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
                 "QuickTester.DataFlowTester+Msg",
                 "QuickTester.DataFlowTester+Msg",
-                //fw,  // This is the real parameter
-                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
-                    //Guid.NewGuid(),  // This is the real parameter
-                "testf1", // This is the named function for easy testing with RoslynWrapper
-                2, DataflowBlockOptions.Unbounded, false, new List<string>() { "tblock2: " });
+                CreateRoslynCompatibleFunction(rw, fname, new string[] { "tblock2: " }),
+                2, DataflowBlockOptions.Unbounded, false);
 
             dynamic actionBlock = DynamicBlockCreator(
                 "System.Threading.Tasks.Dataflow.ActionBlock`1, System.Threading.Tasks.Dataflow",
                 "QuickTester.DataFlowTester+Msg",
                 null,
-                //fw,  // This is the real parameter
-                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
-                    //Guid.NewGuid(),  // This is the real parameter
-                "testf1", // This is the named function for easy testing with RoslynWrapper
-                2, DataflowBlockOptions.Unbounded, false, new List<string>() { "ablock: " });
+                CreateRoslynCompatibleFunction(rw, fname, new string[] { "ablock: " }),
+                2, DataflowBlockOptions.Unbounded, false);
 
             tBlock1.LinkTo(tBlock2.block, new DataflowLinkOptions
             {
                 PropagateCompletion = true
-            }, (Predicate<Msg>)((Msg response) => !response.HasError));
+            }, CreateLinkToPredicate(rw, "QuickTester.DataFlowTester+Msg", "testf2", null));
+            //(Predicate<Msg>)((Msg response) => !response.HasError));
 
             tBlock2.LinkTo<Msg>(actionBlock.block, new DataflowLinkOptions
             {
@@ -89,30 +80,92 @@ namespace QuickTester
             tBlock1.Complete();
 
             await actionBlock.Completion;
-            /* T->T->A */
+        }
 
-            /*
-            dynamic x = DynamicBlockCreator(
-                "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
-                "QuickTester.DataFlowTester+Msg",
-                "QuickTester.DataFlowTester+Msg",
-                //fw,  // This is the real parameter
-                rw, // This is used for testing without DB - should have a FrameworkWrapper version that maybe doesn't require DB
-                //Guid.NewGuid(),  // This is the real parameter
-                "testf1", // This is the named function for easy testing with RoslynWrapper
-                2, DataflowBlockOptions.Unbounded, false);
-            x.LinkTo(DataflowBlock.NullTarget<Msg>(), new DataflowLinkOptions
+        public static bool TestPredicate(object msg)
+        {
+            return true;
+        }
+
+        public static object CreateLinkToPredicate(RoslynWrapper rw, string linkType, string fname, string[] args)
+        {
+            //Type predicateType = typeof(Func<,>).MakeGenericType(
+            //            new Type[] { Type.GetType(linkType), typeof(bool) });
+            //MethodInfo mi = Funcify((object msg) =>
+            //{
+            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+            //    return (bool)lbmResultTask.GetAwaiter().GetResult();
+            //}).Method;
+
+            // return Delegate.CreateDelegate(predicateType, mi);
+
+            Type predicateType = typeof(Predicate<>).MakeGenericType(new Type[] { Type.GetType(linkType) });
+            //Predicate<Msg> p = new Predicate<Msg>(Funcify((object msg) =>
+            //{
+            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+            //    return (bool)lbmResultTask.GetAwaiter().GetResult();
+            //}));
+            //return p;
+
+            //MethodInfo meth = (new Func<int, string>(i => i.ToString())).Method
+            var del = Funcify((object msg) =>
             {
-                PropagateCompletion = true
-            }, (Predicate<Msg>)((Msg response) => !response.HasError));
+                var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+                return (bool)lbmResultTask.GetAwaiter().GetResult();
+            });
+            MethodInfo mi = Funcify((object msg) =>
+            {
+                var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+                return (bool)lbmResultTask.GetAwaiter().GetResult();
+            }).Method;
 
-            await x.SendAsync(new Msg { x = 1 });
-            await x.SendAsync(new Msg { x = 2 });
-            await x.SendAsync(new Msg { x = 3 });
-            x.Complete();
-            Task tt = x.Completion;
-            await tt;
-            */
+            //MethodInfo mi = typeof(DataFlowTester).GetMethod("TestPredicate");
+            return Delegate.CreateDelegate(predicateType, del.Target, del.Method);
+            //return Delegate.CreateDelegate(predicateType, null, mi);
+
+            //var cnstctr = predicateType.GetConstructors()[0];
+            //object predicate = cnstctr.Invoke(new object[] { null,
+            //Funcify((object msg) =>
+            //{
+            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+            //    return lbmResultTask.GetAwaiter().GetResult();
+            //})});
+            //return predicate;
+
+
+            //return Convert.ChangeType(Funcify((object msg) =>
+            //{
+            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+            //    return lbmResultTask.GetAwaiter().GetResult();
+            //}), predicateType);
+
+        }
+
+        public static object CreateRoslynCompatibleFunction(RoslynWrapper rw, string fname, string[] args)
+        {
+            return
+                Funcify(async (object msg) =>
+                {
+                    try
+                    {
+                        // Maybe call the LBM and cast its result
+                        Console.WriteLine($"{args[0]}: Before delay");
+                        //Console.WriteLine("lbm" + lbmId.ToString());
+                        //var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
+                        //var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
+                        //    new { msg, err = fw.Err }, new StateWrapper());
+                        var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
+                        await Task.Delay(100);
+                        Console.WriteLine($"{args[0]}: After delay");
+                        //return Convert.ChangeType(lbmResult, Type.GetType(destType));
+                        //return new Msg { x = 1, HasError = false };
+                        return new Msg((Msg)msg);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new Msg { x = 0, HasError = false };
+                    }
+                });
         }
 
         
@@ -174,8 +227,7 @@ namespace QuickTester
             }
         }
 
-        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, 
-            /*FrameworkWrapper fw, Guid lbmId, */ dynamic rw, string fname,
+        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, object f,
             int maxParallelism, int boundedCapacity, bool ensureOrdered, List<String> args = null)
         {
             try
@@ -207,29 +259,7 @@ namespace QuickTester
 
                 var cnstctr = genericType.GetConstructor(new Type[] { genericFuncType, typeof(ExecutionDataflowBlockOptions) });
 
-                dynamic tBlock1 = cnstctr.Invoke(new object[] {Funcify(async (object msg) =>
-                {
-                    try
-                    {
-                        // Maybe call the LBM and cast its result
-                        Console.WriteLine($"{args[0]}: Before delay");
-                        //Console.WriteLine("lbm" + lbmId.ToString());
-                        //var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
-                        //var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                        //    new { msg, err = fw.Err }, new StateWrapper());
-                        var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
-                        await Task.Delay(100);
-                        Console.WriteLine($"{args[0]}: After delay");
-                        //return Convert.ChangeType(lbmResult, Type.GetType(destType));
-                        //return new Msg { x = 1, HasError = false };
-                        return new Msg((Msg)msg);
-                    }
-                    catch (Exception ex)
-                    {
-                        return new Msg { x = 0, HasError = false };
-                    }
-
-                }),  new ExecutionDataflowBlockOptions()
+                dynamic tBlock1 = cnstctr.Invoke(new object[] {f,  new ExecutionDataflowBlockOptions()
                 {
                     MaxDegreeOfParallelism = maxParallelism,
                     BoundedCapacity = (boundedCapacity == -1) ? DataflowBlockOptions.Unbounded : boundedCapacity,
