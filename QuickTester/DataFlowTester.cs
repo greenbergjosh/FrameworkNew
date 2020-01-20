@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -17,45 +18,216 @@ namespace QuickTester
 {
     public class DataFlowTester
     {
+        // Convert JSON to 
+        public static void BuildDynamicBlockWorkflow(string JsonWorkflowDefinition)
+        {
+            //If no tasks[x].SourceType, default to Msg
+            //If no links[x].ToId, default to DataflowBlock.NullTarget<typeof(SourceType)>()
+
+            //"tasks":
+            //[
+            //  {
+            //  "Id": 1,
+            //  "BlockType": "Transform",
+            //  "SourceType": "QuickTester.DataFlowTester+Msg",
+            //  "DestinationType: "QuickTester.DataFlowTester+Msg",
+            //  "EvaluatableId": "1234",
+            //  "Args": "likely a json object",
+            //  "MaxParallelism" : "",
+            //  "BoundedCapacity": "",
+            //  "EnsureOrdered" : ""
+            //  }
+            //]
+            //"links": 
+            //[
+            //  {
+            //    "FromId": 1,
+            //    "ToId" : 2,
+            //    "PropagateCompletion": true,
+            //    "PredicateEvaluatableId": 123
+            //  }
+            //]
+
+            // There will be one head returned
+            // await head.SendAsync(new Msg { x = i });
+            // head.Complete();
+            // There will be many tails returned
+            // await Task.WhenAll(tails.Completion)
+        }
+
+        // This is not part of the final code - this is just an example that will be automated using BuildDynamicBlockWorkflow
+        // This should be fixed to use Fw, or maybe there should be two versions of the library, one with FW, one without
         public static async Task TestDynamicBlockCreator()
         {
-            //await ActionTester();
-            //await DynamicBlockCreatorOld(
-            //    "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
-            //    "QuickTester.DataFlowTester+Msg",
-            //    "QuickTester.DataFlowTester+Msg",
-            //    Guid.NewGuid(), 2, 3, false);
-
+            // Real code should take a FrameworkWrapper.  
             FrameworkWrapper fw = null; //new FrameworkWrapper(null);
-            
 
-            dynamic x = DynamicBlockCreator(
+            // We will take a RoslynWrapper here for simple testing without DB
+            //string TestF1 =
+            //    @"
+            //        System.Console.WriteLine(p.x1);
+            //        if (p.x1 > 0) await f.testf1(new {x1 = p.x1 - 1}, s);
+            //        """"";
+            string TestF1 =
+                @"
+                    System.Console.WriteLine(""testf1"");
+                    return p.msg;
+                    """"";
+            string TestF2 =
+                @"
+                    return !p.x1.HasError;
+                    """"";
+            var scripts = new List<ScriptDescriptor>();
+            var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts");
+            dynamic rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            rw.CompileAndCache(new ScriptDescriptor(null, "TestF1", TestF1, false, null));
+            rw.CompileAndCache(new ScriptDescriptor(null, "TestF2", TestF2, false, null));
+            string fname = "testf1";
+
+            /* T->T->A */
+            dynamic tBlock1 = DynamicBlockCreator(
                 "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
                 "QuickTester.DataFlowTester+Msg",
                 "QuickTester.DataFlowTester+Msg",
-                fw,
-                Guid.NewGuid(), 2, DataflowBlockOptions.Unbounded, false);
-            x.LinkTo(DataflowBlock.NullTarget<Msg>(), new DataflowLinkOptions
+                CreateRoslynCompatibleFunction(rw, fname, new string[] { "tblock1: " }),  // Funcify(async (object msg) => (Msg)msg),
+                2, DataflowBlockOptions.Unbounded, false);
+
+            dynamic tBlock2 = DynamicBlockCreator(
+                "System.Threading.Tasks.Dataflow.TransformBlock`2, System.Threading.Tasks.Dataflow",
+                "QuickTester.DataFlowTester+Msg",
+                "QuickTester.DataFlowTester+Msg",
+                CreateRoslynCompatibleFunction(rw, fname, new string[] { "tblock2: " }),
+                2, DataflowBlockOptions.Unbounded, false);
+
+            dynamic actionBlock = DynamicBlockCreator(
+                "System.Threading.Tasks.Dataflow.ActionBlock`1, System.Threading.Tasks.Dataflow",
+                "QuickTester.DataFlowTester+Msg",
+                null,
+                CreateRoslynCompatibleFunction(rw, fname, new string[] { "ablock: " }),
+                2, DataflowBlockOptions.Unbounded, false);
+
+            tBlock1.LinkTo(tBlock2.block, new DataflowLinkOptions
             {
                 PropagateCompletion = true
-            }, (Predicate<Msg>)((Msg response) => !response.HasError));
+            }, CreateLinkToPredicate(rw, "QuickTester.DataFlowTester+Msg", "testf2", null));
+            tBlock1.LinkTo(DataflowBlock.NullTarget<Msg>());
 
-            await x.SendAsync(new Msg { x = 1 });
-            await x.SendAsync(new Msg { x = 2 });
-            await x.SendAsync(new Msg { x = 3 });
-            x.Complete();
-            Task tt = x.Completion;
-            await tt;
+            tBlock2.LinkTo(actionBlock.block, new DataflowLinkOptions
+            {
+                PropagateCompletion = true
+            }, CreateLinkToPredicate(rw, "QuickTester.DataFlowTester+Msg", "testf2", null));
+            tBlock2.LinkTo(DataflowBlock.NullTarget<Msg>());
+
+            for (int i = 0; i < 10; i++)
+                await tBlock1.SendAsync(new Msg { x = i });
+
+            tBlock1.Complete();
+
+            await actionBlock.Completion;
+        }
+
+        public static object CreateLinkToPredicate(RoslynWrapper rw, string linkType, string fname, string[] args)
+        {
+            Type predicateType = typeof(Predicate<>).MakeGenericType(new Type[] { Type.GetType(linkType) });
+            var del = Funcify((object msg) =>
+            {
+                var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
+                return (bool)lbmResultTask.GetAwaiter().GetResult();
+            });
+            return Delegate.CreateDelegate(predicateType, del.Target, del.Method);
+        }
+
+        // The lambda in here should be stripped down to the minimum it can be and should maybe work with FW and should use GlobalConfig instead of fname
+        public static object CreateRoslynCompatibleFunction(RoslynWrapper rw, string fname, string[] args)
+        {
+            return
+                Funcify(async (object msg) =>
+                {
+                    try
+                    {
+                        // Maybe call the LBM and cast its result
+                        Console.WriteLine($"{args[0]}: Before delay");
+                        //Console.WriteLine("lbm" + lbmId.ToString());
+                        //var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
+                        //var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
+                        //    new { msg, err = fw.Err }, new StateWrapper());
+                        //var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
+                        await Task.Delay(100);
+                        Console.WriteLine($"{args[0]}: After delay");
+                        //return Convert.ChangeType(lbmResult, Type.GetType(destType));
+                        //return new Msg { x = 1, HasError = false };
+                        //return new Msg((Msg)msg);
+                        return (Msg)msg;
+                        //return await rw[fname](new { msg }, new StateWrapper());
+                    }
+                    catch (Exception ex)
+                    {
+                        return new Msg { x = 0, HasError = false };
+                    }
+                });
         }
 
         
         public class DynamicBlock : System.Dynamic.DynamicObject
         {
-            dynamic block;
-            MethodInfo sendAsync;
-            MethodInfo linkTo2;
-            MethodInfo linkTo3;
-            MethodInfo linkTo4;
+            public dynamic block;
+            public MethodInfo sendAsync;
+            public MethodInfo linkTo2;
+            public MethodInfo linkTo3;
+            public MethodInfo linkTo4;
+
+            public static readonly MethodInfo sendAsyncInfo;
+            public static readonly MethodInfo linkTo2Info;
+            public static readonly MethodInfo linkTo3Info;
+            public static readonly MethodInfo linkTo4Info;
+
+            static DynamicBlock()
+            {
+                // public static Task<bool> SendAsync<TInput>(this ITargetBlock<TInput> target, TInput item);
+                var sendAsyncQuery = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
+                        | BindingFlags.Public | BindingFlags.NonPublic)
+                                    where method.GetParameters().Length == 2
+                                    where method.IsDefined(typeof(ExtensionAttribute), false)
+                                    where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                    where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
+                                    where method.Name == "SendAsync"
+                                    select method;
+                sendAsyncInfo = sendAsyncQuery.First();
+
+                //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target);
+                //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target, Predicate<TOutput> predicate);
+                //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target, DataflowLinkOptions linkOptions, Predicate<TOutput> predicate);
+                var linkTo2Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
+                            | BindingFlags.Public | BindingFlags.NonPublic)
+                                   where method.GetParameters().Length == 2
+                                   where method.IsDefined(typeof(ExtensionAttribute), false)
+                                   where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ISourceBlock<>)
+                                   where method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                   where method.Name == "LinkTo"
+                                   select method;
+                linkTo2Info = linkTo2Query.First();
+                var linkTo3Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
+                            | BindingFlags.Public | BindingFlags.NonPublic)
+                                   where method.GetParameters().Length == 3
+                                   where method.IsDefined(typeof(ExtensionAttribute), false)
+                                   where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ISourceBlock<>)
+                                   where method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                   where method.GetParameters()[2].ParameterType.GetGenericTypeDefinition() == typeof(Predicate<>)
+                                   where method.Name == "LinkTo"
+                                   select method;
+                linkTo3Info = linkTo3Query.First();
+                var linkTo4Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
+                            | BindingFlags.Public | BindingFlags.NonPublic)
+                                   where method.GetParameters().Length == 4
+                                   where method.IsDefined(typeof(ExtensionAttribute), false)
+                                   where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ISourceBlock<>)
+                                   where method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                   where method.GetParameters()[2].ParameterType == typeof(DataflowLinkOptions)
+                                   where method.GetParameters()[3].ParameterType.GetGenericTypeDefinition() == typeof(Predicate<>)
+                                   where method.Name == "LinkTo"
+                                   select method;
+                linkTo4Info = linkTo4Query.First();
+            }
 
             public DynamicBlock(dynamic block, MethodInfo sendAsync, MethodInfo linkTo2, MethodInfo linkTo3, MethodInfo linkTo4)
             {
@@ -107,102 +279,56 @@ namespace QuickTester
             }
         }
 
-        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, FrameworkWrapper fw, Guid lbmId, int maxParallelism, int boundedCapacity, bool ensureOrdered)
+        public static DynamicBlock DynamicBlockCreator(string blockType, string srcType, string destType, object f,
+            int maxParallelism, int boundedCapacity, bool ensureOrdered, List<String> args = null)
         {
             try
             {
-                Type genericTypeTest = Type.GetType(blockType);
-                int count = genericTypeTest.GetGenericArguments().Length;
+                Type genericFuncType = null;
+                Type genericType = null;
+                if (!srcType.IsNullOrWhitespace() && destType.IsNullOrWhitespace())
+                {
+                    genericFuncType = typeof(Func<,>).MakeGenericType(
+                        new Type[] { Type.GetType(srcType), typeof(Task) });
+                    genericType = Type.GetType(blockType).MakeGenericType(new Type[] { Type.GetType(srcType) });
+                }
+                else if (srcType.IsNullOrWhitespace() && !destType.IsNullOrWhitespace())
+                {
+                    genericFuncType = typeof(Func<,>).MakeGenericType(
+                        new Type[] { typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
+                    genericType = Type.GetType(blockType).MakeGenericType(new Type[] { Type.GetType(destType) });
+                }
+                else if (!srcType.IsNullOrWhitespace() && !destType.IsNullOrWhitespace())
+                {
+                    genericFuncType = typeof(Func<,>).MakeGenericType(
+                        new Type[] { Type.GetType(srcType), typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
+                    genericType = Type.GetType(blockType).MakeGenericType(new Type[] { Type.GetType(srcType), Type.GetType(destType) });
+                }
+                else
+                {
+                    // Has to be an ISourceBlock or ITargetBlock derived class so this case should never happen
+                }
 
-                Type genericType = Type.GetType(blockType).MakeGenericType(new Type[]{ Type.GetType(srcType), Type.GetType(destType) });
-                Type genericFuncType = typeof(Func<,>).MakeGenericType(
-                    new Type[]{ Type.GetType(srcType), typeof(Task<>).MakeGenericType(Type.GetType(destType)) });
                 var cnstctr = genericType.GetConstructor(new Type[] { genericFuncType, typeof(ExecutionDataflowBlockOptions) });
 
-                dynamic tBlock1 = cnstctr.Invoke(new object[] {Funcify(async (object msg) =>
-                {
-                    try
-                    {
-                        // Maybe call the LBM and cast its result
-                        Console.WriteLine("aBlockBehavior: before delay");
-                        Console.WriteLine("lbm" + lbmId.ToString());
-                        var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
-                        var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
-                            new { msg, err = fw.Err }, new StateWrapper());
-                        await Task.Delay(100);
-                        Console.WriteLine("aBlockBehavior: after delay");
-                        return Convert.ChangeType(lbmResult, Type.GetType(destType));
-                        //return new Msg { x = 1, HasError = false };
-                    }
-                    catch (Exception ex)
-                    {
-                        return new Msg { x = 0, HasError = false };
-                    }
-
-                }),  new ExecutionDataflowBlockOptions()
+                dynamic tBlock1 = cnstctr.Invoke(new object[] {f,  new ExecutionDataflowBlockOptions()
                 {
                     MaxDegreeOfParallelism = maxParallelism,
                     BoundedCapacity = (boundedCapacity == -1) ? DataflowBlockOptions.Unbounded : boundedCapacity,
                     EnsureOrdered = ensureOrdered
                 }});
 
-                // This does not need to be called every time
-                // public static Task<bool> SendAsync<TInput>(this ITargetBlock<TInput> target, TInput item);
-                var sendAsyncQuery = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
-                            | BindingFlags.Public | BindingFlags.NonPublic)
-                            where method.GetParameters().Length == 2
-                            where method.IsDefined(typeof(ExtensionAttribute), false)
-                            where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                            where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
-                            where method.Name == "SendAsync"
-                            select method;
+                MethodInfo sendAsync = (!srcType.IsNullOrWhitespace()) ?
+                    DynamicBlock.sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType)) : null;                 
 
-                MethodInfo sendAsyncInfo = sendAsyncQuery.First();
-                var sendAsync = sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType));
+                MethodInfo linkTo2 = (!destType.IsNullOrWhitespace()) ? 
+                    DynamicBlock.linkTo2Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
-                //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target);
-                //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target, Predicate<TOutput> predicate);
-                //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target, DataflowLinkOptions linkOptions, Predicate<TOutput> predicate);
+                MethodInfo linkTo3 = (!destType.IsNullOrWhitespace()) ? 
+                    DynamicBlock.linkTo3Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
-                // This does not need to be called every time
-                var linkTo2Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
-                            | BindingFlags.Public | BindingFlags.NonPublic)
-                            where method.GetParameters().Length == 2
-                            where method.IsDefined(typeof(ExtensionAttribute), false)
-                            where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ISourceBlock<>)
-                            where method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                            where method.Name == "LinkTo"
-                            select method;
-
-                MethodInfo linkTo2Info = linkTo2Query.First();
-                var linkTo2 = linkTo2Info.MakeGenericMethod(Type.GetType(destType));
-
-                var linkTo3Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
-                            | BindingFlags.Public | BindingFlags.NonPublic)
-                                   where method.GetParameters().Length == 3
-                                   where method.IsDefined(typeof(ExtensionAttribute), false)
-                                   where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ISourceBlock<>)
-                                   where method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                                   where method.GetParameters()[2].ParameterType.GetGenericTypeDefinition() == typeof(Predicate<>)
-                                   where method.Name == "LinkTo"
-                                   select method;
-
-                MethodInfo linkTo3Info = linkTo3Query.First();
-                var linkTo3 = linkTo3Info.MakeGenericMethod(Type.GetType(destType));
-
-                var linkTo4Query = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
-                            | BindingFlags.Public | BindingFlags.NonPublic)
-                                   where method.GetParameters().Length == 4
-                                   where method.IsDefined(typeof(ExtensionAttribute), false)
-                                   where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ISourceBlock<>)
-                                   where method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                                   where method.GetParameters()[2].ParameterType == typeof(DataflowLinkOptions)
-                                   where method.GetParameters()[3].ParameterType.GetGenericTypeDefinition() == typeof(Predicate<>)
-                                   where method.Name == "LinkTo"
-                                   select method;
-
-                MethodInfo linkTo4Info = linkTo4Query.First();
-                var linkTo4 = linkTo4Info.MakeGenericMethod(Type.GetType(destType));
+                MethodInfo linkTo4 = (!destType.IsNullOrWhitespace()) ?
+                    DynamicBlock.linkTo4Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
                 return new DynamicBlock(tBlock1, sendAsync, linkTo2, linkTo3, linkTo4);
             }
@@ -218,7 +344,22 @@ namespace QuickTester
         public static Func<T> Actionify<T>(Func<T> f)
         { return f; }
 
-        public class Msg { public int x; public bool HasError; }
+        public class Msg 
+        { 
+            public int x; 
+            public bool HasError;
+
+            public Msg() { }
+
+            public Msg(Msg msg)
+            {
+                this.x = msg.x;
+                this.HasError = msg.HasError;
+            }
+        
+        }
+
+        // This method goes away completely from the library - it is here to see the explicit way to use TPL Dataflow
         public static async Task ActionTester()
         {
             var tBlock1 = new TransformBlock<Msg, Msg>(async msg =>
@@ -273,6 +414,7 @@ namespace QuickTester
             await actionBlock.Completion;
         }
 
+        // This method goes away - it is only used by the ActionTester
         public static async Task<Msg> tBlock1Behavior(Msg msg)
         {
             try
@@ -288,6 +430,7 @@ namespace QuickTester
             }
         }
 
+        // This method goes away - it is only used by the ActionTester
         public static async Task<Msg> tBlock2Behavior(Msg msg)
         {
             try
@@ -303,6 +446,7 @@ namespace QuickTester
             }
         }
 
+        // This method goes away - it is only used by the ActionTester
         public static async Task<Msg> aBlockBehavior(Msg msg)
         {
             try
