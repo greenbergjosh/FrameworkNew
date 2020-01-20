@@ -1,4 +1,4 @@
-import { GetGotSuccessResponse } from "./index"
+import { GetGotSuccessResponse } from "./getgotRequest"
 import { interests } from "./catalog.services.mockData"
 
 /********************

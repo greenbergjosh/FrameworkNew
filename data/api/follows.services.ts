@@ -1,4 +1,4 @@
-import { GetGotSuccessResponse, getgotRequest } from "./index"
+import { GetGotSuccessResponse, getgotRequest } from "./getgotRequest"
 import { blockedUsers, followers, follows } from "./follows.services.mockData"
 import { PostType } from "./feed.services"
 

@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
 import { InterestGroup, InterestsResponse, loadInterests } from "./api/catalog.services"
-import { GetGotResponse } from "./api"
+import { GetGotResponse } from "./api/getgotRequest"
 
 export interface CatalogState {
   lastLoadInterests: ISO8601String | null

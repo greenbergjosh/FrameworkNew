@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { GetGotResponse } from "./api"
+import { GetGotResponse } from "./api/getgotRequest"
 import {
   saveUserInterests,
   UserInterestsResponse,

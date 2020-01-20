@@ -1,4 +1,4 @@
-import { getgotRequest, GetGotSuccessResponse } from "./index"
+import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
 
 export type PostType = {
   id: GUID

@@ -1,5 +1,5 @@
 import { Clipboard } from "react-native"
-import { baseAddress } from "data/api"
+import { baseAddress } from "data/api/getgotRequest"
 import { Modal } from "@ant-design/react-native"
 
 export const copyCampaignLinkHandler = (campaignId, onPress?) => () => {

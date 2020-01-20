@@ -1,4 +1,4 @@
-import { getgotRequest, GetGotSuccessResponse } from "./index"
+import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
 import { suggestedFollows } from "./onBoarding.services.mockData"
 import { SID } from "constants/appkeys"
 import { PostType } from "./feed.services"

@@ -1,4 +1,4 @@
-import { GetGotResponse } from "./api"
+import { GetGotResponse } from "./api/getgotRequest"
 import React, { useContext } from "react"
 import { getgotStorage } from "../storage/getgotStorage"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgotContextType"
