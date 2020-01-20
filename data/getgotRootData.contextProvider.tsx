@@ -1,14 +1,14 @@
 import { ReactComponentLike } from "prop-types"
 import React, { useContext } from "react"
-import { AuthContextProvider, useAuthContext } from "./auth-context-provider"
-import { FeedContextProvider, useFeedContext } from "./feed-context-provider"
-import { GetGotContextType, GetGotRootDataContextType } from "./getgot-context-type"
-import { OnBoardingContextProvider, useOnBoardingContext } from "./onboarding-context-provider"
-import { ProfileContextProvider, useProfileContext } from "./profile-context-provider"
-import { PromotionsContextProvider, usePromotionsContext } from "./promotions-context-provider"
-import { CatalogContextProvider, useCatalogContext } from "./catalog-context-provider"
-import { FollowsContextProvider, useFollowsContext } from "./follows-context-provider"
-import { MessagesContextProvider, useMessagesContext } from "./messages-context-provider"
+import { AuthContextProvider, useAuthContext } from "./auth.contextProvider"
+import { FeedContextProvider, useFeedContext } from "./feed.contextProvider"
+import { GetGotContextType, GetGotRootDataContextType } from "./getgotContextType"
+import { OnBoardingContextProvider, useOnBoardingContext } from "./onBoarding.contextProvider"
+import { ProfileContextProvider, useProfileContext } from "./profile.contextProvider"
+import { PromotionsContextProvider, usePromotionsContext } from "./promotions.contextProvider"
+import { CatalogContextProvider, useCatalogContext } from "./catalog.contextProvider"
+import { FollowsContextProvider, useFollowsContext } from "./follows.contextProvider"
+import { MessagesContextProvider, useMessagesContext } from "./messages.contextProvider"
 
 const providers: {
   [key: string]: { provider: ReactComponentLike; hook: () => GetGotContextType }
@@ -29,7 +29,7 @@ const initialContext: GetGotRootDataContextType = {
 
 const GetGotRootDataContext = React.createContext(initialContext)
 
-export const GetGotRootDataContextProvider = (props: { children: JSX.Element }) => {
+export const GetgotRootDataContextProvider = (props: { children: JSX.Element }) => {
   const dataContexts = Object.values(providers).map(({ hook }) => hook())
 
   // Given the providers map above, iterate over each and wrap each on around the next one

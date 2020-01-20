@@ -1,6 +1,6 @@
-import { GetGotSuccessResponse, getgotRequest } from "api"
-import { blockedUsers, followers, follows } from "./follows-services.mockData"
-import { PostType } from "./feed-services"
+import { GetGotSuccessResponse, getgotRequest } from "./index"
+import { blockedUsers, followers, follows } from "./follows.services.mockData"
+import { PostType } from "./feed.services"
 
 /********************
  * Blocked Users

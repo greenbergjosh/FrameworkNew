@@ -1,6 +1,6 @@
 import { useActionSheet } from "@expo/react-native-action-sheet"
 import React from "react"
-import { createCampaign } from "api/promotions-services"
+import { createCampaign } from "data/api/promotions.services"
 import { ActivityIndicator, Modal } from "@ant-design/react-native"
 import { Text } from "react-native"
 import { routes } from "constants"

@@ -3,7 +3,7 @@ import { StyleProp, TextStyle, TouchableOpacity, View, ViewStyle } from "react-n
 import { AntDesign, Ionicons, Entypo } from "@expo/vector-icons"
 import { IconProps as AntIconProps } from "@ant-design/react-native/lib/icon"
 import { AntIconSizes, Colors, Units } from "constants"
-import { ExpoIconNames } from "../@types/icon-types"
+import { ExpoIconType } from "../@types/expo-icon-type"
 import AntIconsMap from "@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/AntDesign.json"
 import EntypoIconsMap from "@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/Entypo.json"
 
@@ -12,7 +12,7 @@ function getMargin(iconSize) {
 }
 
 interface IconProps {
-  name: ExpoIconNames
+  name: ExpoIconType
   size: AntIconProps["size"]
   style: StyleProp<TextStyle>
 }
@@ -29,8 +29,8 @@ function Icon({ name, size, style }: IconProps) {
 
 interface TouchIconProps {
   size?: AntIconProps["size"]
-  name?: ExpoIconNames
-  toggledNames?: { on: ExpoIconNames; off: ExpoIconNames }
+  name?: ExpoIconType
+  toggledNames?: { on: ExpoIconType; off: ExpoIconType }
   active?: boolean
   onPress?: () => void
   style?: StyleProp<ViewStyle>
@@ -54,7 +54,7 @@ export default function TouchIcon({
   reverse = false,
   children,
 }: TouchIconProps) {
-  const [icon, setIcon] = React.useState<ExpoIconNames>("question")
+  const [icon, setIcon] = React.useState<ExpoIconType>("question")
 
   React.useMemo(() => {
     if (toggledNames) {

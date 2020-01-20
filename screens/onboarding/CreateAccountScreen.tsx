@@ -1,7 +1,7 @@
 import { HeaderLogo } from "components/HeaderLogo"
 import { LegalAgreement } from "components/LegalAgreement"
 import { routes, styles } from "constants"
-import { useOnBoardingContext } from "providers/onboarding-context-provider"
+import { useOnBoardingContext } from "data/onBoarding.contextProvider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"

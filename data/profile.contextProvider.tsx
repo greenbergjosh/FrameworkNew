@@ -1,15 +1,15 @@
 import React, { useContext } from "react"
-import { GetGotResponse } from "api"
+import { GetGotResponse } from "./api"
 import {
   saveUserInterests,
   UserInterestsResponse,
   syncContacts,
   SyncContactsResponse,
-} from "api/profile-services"
-import { Interest } from "api/catalog-services"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
+} from "./api/profile.services"
+import { Interest } from "./api/catalog.services"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
 import { LoadifyStateType, loadifyReducer, loadifyContext } from "./loadify"
-import { loadProfile } from "api/profile-services"
+import { loadProfile } from "./api/profile.services"
 
 export type Contact = {
   fname?: string | null

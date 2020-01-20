@@ -1,6 +1,5 @@
-import { ImageUris } from "constants"
-import { CommentsType, PostType } from "./feed-services"
-import { Images } from "../constants/unit.constants"
+import { ImageUris, Images } from "constants"
+import { CommentsType, PostType } from "./feed.services"
 
 let id = 1
 const guid = () => `guid-${id++}`

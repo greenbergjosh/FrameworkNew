@@ -1,5 +1,5 @@
 import { Contact as ExpoContactType } from "expo-contacts/build/Contacts"
-import { Contact } from "../profile-context-provider"
+import { Contact } from "../profile.contextProvider"
 
 export function ExpoContactsToContacts(expoContacts: ExpoContactType[]): Contact[] {
   return expoContacts.map((expoContact) => ExpoContactToContact(expoContact))

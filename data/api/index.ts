@@ -1,5 +1,5 @@
 import { getOr } from "lodash/fp"
-import { getgotStorage } from "../storage/getgotStorage"
+import { getgotStorage } from "../../storage/getgotStorage"
 
 export const resultCodes = {
   0: "Success",

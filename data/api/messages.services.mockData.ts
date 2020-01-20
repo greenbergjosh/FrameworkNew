@@ -1,4 +1,4 @@
-import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages-services"
+import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages.services"
 
 export const messages: MessagesResponse = {
   r: 0,

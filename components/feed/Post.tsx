@@ -5,8 +5,8 @@ import { CommentSummary } from "./CommentSummary"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import TouchImage from "../TouchImage"
-import { PostType } from "api/feed-services"
+import TouchImage from "components/TouchImage"
+import { PostType } from "data/api/feed.services"
 
 interface PostProps {
   value: PostType

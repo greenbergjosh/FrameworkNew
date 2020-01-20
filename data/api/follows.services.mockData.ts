@@ -1,5 +1,5 @@
-import { BlockedUsersResponse, FollowersResponse, InfluencersResponse } from "./follows-services"
-import { FEED_DATA } from "./feed-services.mockData"
+import { BlockedUsersResponse, FollowersResponse, InfluencersResponse } from "./follows.services"
+import { FEED_DATA } from "./feed.services.mockData"
 
 export const blockedUsers: BlockedUsersResponse = {
   r: 0,

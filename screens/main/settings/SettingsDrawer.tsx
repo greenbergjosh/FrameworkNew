@@ -1,9 +1,9 @@
 import { Drawer } from "@ant-design/react-native"
 import DrawerLayout from "@bang88/react-native-drawer-layout"
-import { useGetGotRootDataContext } from "providers/getgot-root-data-context-provider"
+import { useGetGotRootDataContext } from "data/getgotRootData.contextProvider"
 import React from "react"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
-import { useAuthContext } from "providers/auth-context-provider"
+import { useAuthContext } from "data/auth.contextProvider"
 import { Colors, routes } from "constants"
 import SettingsDrawerContents from "./components/SettingsDrawerContents"
 

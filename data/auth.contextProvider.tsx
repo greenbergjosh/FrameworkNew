@@ -1,7 +1,7 @@
 import React, { useContext } from "react"
-import { loadProfile, LoginData, LoginResponse } from "../api/auth-services"
+import { loadProfile, LoginData, LoginResponse } from "./api/auth.services"
 import { getgotStorage } from "../storage/getgotStorage"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
 
 export interface AuthState extends Partial<LoginData> {
   // Local Properties

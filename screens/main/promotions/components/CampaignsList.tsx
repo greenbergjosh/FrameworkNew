@@ -3,8 +3,8 @@ import { CampaignRow } from "./CampaignRow"
 import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import { Icon } from "@ant-design/react-native"
 import React from "react"
-import { Campaign, Promotion } from "api/promotions-services"
-import { Empty } from "../../../../components/Empty"
+import { Campaign, Promotion } from "data/api/promotions.services"
+import { Empty } from "components/Empty"
 
 const EXPANDED_CAMPAIGN_THRESHOLD = 3
 

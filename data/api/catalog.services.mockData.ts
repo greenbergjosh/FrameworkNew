@@ -1,4 +1,4 @@
-import { InterestsResponse } from "./catalog-services"
+import { InterestsResponse } from "./catalog.services"
 
 export const interests: InterestsResponse = {
   r: 0,

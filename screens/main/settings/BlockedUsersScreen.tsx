@@ -4,7 +4,7 @@ import { SafeAreaView, ScrollView, Text, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes, styles } from "constants"
-import { useFollowsContext } from "providers/follows-context-provider"
+import { useFollowsContext } from "data/follows.contextProvider"
 import { BlockedUserRow } from "./components/BlockedUserRow"
 import NavButton from "components/NavButton"
 

@@ -7,7 +7,7 @@ import { Flex } from "@ant-design/react-native"
 import { Colors, routes, styles, Units } from "constants"
 import { H2 } from "components/Markup"
 import NavButton from "components/NavButton"
-import { PROFILE_DATA } from "api/profile-services.mockData"
+import { PROFILE_DATA } from "data/api/profile.services.mockData"
 import { EditProfileForm } from "./components/EditProfileForm"
 import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
 

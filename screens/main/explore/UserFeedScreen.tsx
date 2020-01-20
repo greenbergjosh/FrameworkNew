@@ -6,7 +6,7 @@ import { InfluencerProfilePanel } from "components/ProfilePanel"
 import { ImageGrid } from "components/ImageGrid"
 import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
-import * as mockData from "api/feed-services.mockData"
+import * as mockData from "data/api/feed.services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
 
 interface UserFeedScreenProps extends NavigationTabScreenProps {}

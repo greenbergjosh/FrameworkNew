@@ -2,7 +2,7 @@ import { Flex, Switch } from "@ant-design/react-native"
 import { Colors, styles, Units } from "constants"
 import { StyleProp, Text, TextStyle, ViewStyle } from "react-native"
 import React from "react"
-import { SettingType } from "api/profile-services"
+import { SettingType } from "data/api/profile.services"
 import { H3, P } from "components/Markup"
 
 export interface SettingRowProps {

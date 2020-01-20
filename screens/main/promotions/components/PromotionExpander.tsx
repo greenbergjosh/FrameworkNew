@@ -1,14 +1,14 @@
 import React from "react"
 import Collapsible from "react-native-collapsible"
 import { ActivityIndicator, Flex } from "@ant-design/react-native"
-import { Promotion } from "api/promotions-services"
+import { Promotion } from "data/api/promotions.services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { Units } from "constants"
 import { PromotionCard } from "./PromotionCard"
 import { CampaignsList } from "./CampaignsList"
 import { ExpanderIcon } from "./ExpanderIcon"
 import { CampaignsListEmpty } from "./CampaignsListEmpty"
-import { usePromotionsContext } from "providers/promotions-context-provider"
+import { usePromotionsContext } from "data/promotions.contextProvider"
 
 export interface PromotionExpanderProps {
   alwaysExpanded?: boolean

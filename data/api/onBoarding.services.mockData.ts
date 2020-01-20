@@ -1,5 +1,5 @@
-import { SuggestedFollowsResponse } from "./onboarding-services"
-import { FEED_DATA } from "./feed-services.mockData"
+import { SuggestedFollowsResponse } from "./onBoarding.services"
+import { FEED_DATA } from "./feed.services.mockData"
 
 export const suggestedFollows: SuggestedFollowsResponse = {
   r: 0,

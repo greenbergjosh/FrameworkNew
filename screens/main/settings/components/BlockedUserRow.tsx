@@ -1,7 +1,7 @@
 import React from "react"
 import { Text } from "react-native"
 import { Button, Flex, List } from "@ant-design/react-native"
-import { BlockedUser } from "api/follows-services"
+import { BlockedUser } from "data/api/follows.services"
 import { Colors } from "constants"
 import Avatar from "components/Avatar"
 import { STRONG } from "components/Markup"

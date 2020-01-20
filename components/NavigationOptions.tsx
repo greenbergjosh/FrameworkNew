@@ -2,8 +2,8 @@ import TouchIcon from "components/TouchIcon"
 import { SMALL } from "components/Markup"
 import React from "react"
 import { NavigationBottomTabOptions } from "react-navigation-tabs"
-import { Colors } from "../constants/unit.constants"
-import { ExpoIconNames } from "../@types/icon-types"
+import { Colors } from "constants"
+import { ExpoIconType } from "../@types/expo-icon-type"
 
 export const TabBarIcon = ({ icon, focused }) => {
   const color = focused ? Colors.ggNavy : Colors.navBarText
@@ -24,7 +24,7 @@ export const getNavigationOptions = (title, icon) => ({
   tabBarLabel: ({ focused }) => TabBarLabel({ title, focused }),
 })
 
-const TabBarSectionNavigator = (Navigator, title, icon: ExpoIconNames) => {
+const TabBarSectionNavigator = (Navigator, title, icon: ExpoIconType) => {
   const nav = ({ navigation }) => <Navigator navigation={navigation} />
   nav.router = Navigator.router
   nav.navigationOptions = getNavigationOptions(title, icon)

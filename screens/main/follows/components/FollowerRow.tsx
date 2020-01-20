@@ -1,6 +1,6 @@
 import React from "react"
 import { Button } from "@ant-design/react-native"
-import { Follower } from "api/follows-services"
+import { Follower } from "data/api/follows.services"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowButton } from "components/FollowButton"
 import { UserRow } from "components/UserRow"

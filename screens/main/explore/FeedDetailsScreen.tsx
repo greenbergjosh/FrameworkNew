@@ -6,7 +6,7 @@ import { List } from "@ant-design/react-native"
 import { InfluencerPostHeader, Post } from "components/feed"
 import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
-import * as mockData from "api/feed-services.mockData"
+import * as mockData from "data/api/feed.services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
 
 interface FeedDetailsScreenProps extends NavigationTabScreenProps {}

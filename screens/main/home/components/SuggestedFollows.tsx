@@ -1,7 +1,7 @@
 import React from "react"
 import { Carousel, Flex, WhiteSpace } from "@ant-design/react-native"
 import { Text, View } from "react-native"
-import { Influencer } from "api/onboarding-services"
+import { Influencer } from "data/api/onBoarding.services"
 import { influencerFeedRoutes, routes, styles } from "constants"
 import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"

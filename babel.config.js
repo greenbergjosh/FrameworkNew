@@ -9,12 +9,11 @@ module.exports = function(api) {
         {
           alias: {
             "@types": "./@types",
-            "api": "./api",
             "assets": "./assets",
             "components": "./components",
             "constants": "./constants",
+            "data": "./data",
             "hooks": "./hooks",
-            "providers": "./providers",
             "screens": "./screens",
           },
         },

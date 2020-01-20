@@ -4,7 +4,7 @@ import { ActivityIndicator, Flex, InputItem, WhiteSpace } from "@ant-design/reac
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes, styles, Units } from "constants"
-import { useMessagesContext } from "providers/messages-context-provider"
+import { useMessagesContext } from "data/messages.contextProvider"
 import { ContactsList } from "./components/ContactsList"
 import NavButton from "components/NavButton"
 

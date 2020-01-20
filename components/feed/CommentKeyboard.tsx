@@ -1,20 +1,6 @@
-import {
-  KeyboardAvoidingView,
-  ScrollView,
-  StyleProp,
-  TextInput,
-  View,
-  ViewStyle,
-  SafeAreaView,
-  Keyboard,
-  TouchableWithoutFeedback,
-  Animated,
-  Dimensions,
-} from "react-native"
-import { Button, SearchBar, WhiteSpace } from "@ant-design/react-native"
+import { Keyboard, TextInput, TouchableWithoutFeedback, View } from "react-native"
 import { Colors, Units } from "constants"
 import React from "react"
-import { H4 } from "../Markup"
 import { KeyboardAccessoryView } from "react-native-keyboard-accessory"
 import TouchText from "../TouchText"
 

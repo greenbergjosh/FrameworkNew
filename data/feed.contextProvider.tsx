@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
-import { loadHomeFeed, APIPostType } from "../api/feed-services"
-import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgot-context-type"
+import { loadHomeFeed, APIPostType } from "./api/feed.services"
+import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgotContextType"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
 export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {

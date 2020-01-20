@@ -1,7 +1,7 @@
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import * as mockData from "api/feed-services.mockData"
+import * as mockData from "data/api/feed.services.mockData"
 import NavButton from "components/NavButton"
 import { Comments } from "components/feed"
 import { influencerFeedRoutes, styles } from "constants"

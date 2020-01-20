@@ -1,7 +1,7 @@
 import { getgotRequest, GetGotSuccessResponse } from "./index"
-import { suggestedFollows } from "./onboarding-services.mockData"
+import { suggestedFollows } from "./onBoarding.services.mockData"
 import { SID } from "constants/appkeys"
-import { PostType } from "./feed-services"
+import { PostType } from "./feed.services"
 
 /********************
  * Send Code

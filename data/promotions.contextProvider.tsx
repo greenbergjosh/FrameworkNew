@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 import {
   loadPromotions,
@@ -11,7 +11,7 @@ import {
   CampaignTemplate,
   loadCampaignTemplates,
   CampaignTemplatesResponse,
-} from "../api/promotions-services"
+} from "./api/promotions.services"
 
 export interface PromotionsState extends LoadifyStateType<PromotionsActionCreatorType> {
   // Local Properties

@@ -1,5 +1,5 @@
 import { GetGotSuccessResponse } from "./index"
-import { interests } from "./catalog-services.mockData"
+import { interests } from "./catalog.services.mockData"
 
 /********************
  * Interests

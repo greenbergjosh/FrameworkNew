@@ -7,13 +7,13 @@ import { StatusBar } from "react-native"
 import { Transition } from "react-native-reanimated"
 import { createAppContainer } from "react-navigation"
 import createAnimatedSwitchNavigator from "react-navigation-animated-switch"
-import { GetGotRootDataContextProvider } from "./providers/getgot-root-data-context-provider"
-import { AuthenticationSection } from "./screens/authentication/AuthenticationSection"
-import { DevMenuScreen } from "./screens/DevMenuScreen"
-import { LandingScreen } from "./screens/landing/LandingScreen"
-import { MainSection } from "./screens/main/MainSection"
-import { LegalSection } from "./screens/legal/LegalSection"
-import { OnBoardingSection } from "./screens/onboarding/OnBoardingSection"
+import { GetgotRootDataContextProvider } from "data/getgotRootData.contextProvider"
+import { AuthenticationSection } from "screens/authentication/AuthenticationSection"
+import { DevMenuScreen } from "screens/DevMenuScreen"
+import { LandingScreen } from "screens/landing/LandingScreen"
+import { MainSection } from "screens/main/MainSection"
+import { LegalSection } from "screens/legal/LegalSection"
+import { OnBoardingSection } from "screens/onboarding/OnBoardingSection"
 import { Colors, routes } from "constants"
 
 export const appRoutes = {
@@ -81,7 +81,7 @@ const App = () => {
   return (
     <>
       <StatusBar barStyle="light-content" />
-      <GetGotRootDataContextProvider>
+      <GetgotRootDataContextProvider>
         <Provider theme={theme}>
           <ActionSheetProvider>
             <RootNavigator
@@ -100,7 +100,7 @@ const App = () => {
             />
           </ActionSheetProvider>
         </Provider>
-      </GetGotRootDataContextProvider>
+      </GetgotRootDataContextProvider>
     </>
   )
 }

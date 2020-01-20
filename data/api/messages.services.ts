@@ -1,5 +1,5 @@
-import { GetGotSuccessResponse } from "api"
-import { contacts, messages } from "./messages-services.mockData"
+import { GetGotSuccessResponse } from "./index"
+import { contacts, messages } from "./messages.services.mockData"
 import { IMessage } from "react-native-gifted-chat"
 
 /********************

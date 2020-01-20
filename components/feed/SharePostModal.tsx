@@ -12,7 +12,7 @@ import { ActivityIndicator, Modal, WhiteSpace } from "@ant-design/react-native"
 import { Colors, Units, devBorder } from "constants"
 import TouchIcon from "components/TouchIcon"
 import React from "react"
-import { useFollowsContext } from "providers/follows-context-provider"
+import { useFollowsContext } from "data/follows.contextProvider"
 import { SharePost } from "./SharePost"
 import { PostToFeed } from "./PostToFeed"
 

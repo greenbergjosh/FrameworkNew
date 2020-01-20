@@ -13,10 +13,10 @@ import {
   loadInfluencers,
   startFollowingInfluencer,
   stopFollowingInfluencer,
-} from "api/follows-services"
+} from "./api/follows.services"
 import moment from "moment"
 import React, { useContext } from "react"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgot-context-type"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {

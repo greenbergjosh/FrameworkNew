@@ -1,12 +1,12 @@
 import React, { useContext } from "react"
-import { Text, View } from "react-native"
+import { View } from "react-native"
 import { Button, Flex, Icon, WhiteSpace } from "@ant-design/react-native"
 import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
-import { Colors, routes, styles, Units, FontWeights } from "constants"
-import { useAuthContext } from "providers/auth-context-provider"
-import { useGetGotRootDataContext } from "providers/getgot-root-data-context-provider"
-import { P, A, BR, H2, STRONG } from "components/Markup"
+import { Colors, routes, styles, Units } from "constants"
+import { useAuthContext } from "data/auth.contextProvider"
+import { useGetGotRootDataContext } from "data/getgotRootData.contextProvider"
+import { A, BR, H2, P, STRONG } from "components/Markup"
 
 export const BannedScreen = () => {
   const auth = useAuthContext()

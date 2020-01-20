@@ -1,16 +1,14 @@
 import React from "react"
-import { FlatList, ScrollView, Text, View } from "react-native"
-import { Colors, FontWeights, Units, styles, devBorder } from "constants"
-import { Flex, WhiteSpace } from "@ant-design/react-native"
+import { FlatList, Text, View } from "react-native"
+import { Colors, FontWeights, styles, Units } from "constants"
+import { Flex } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
-import { SMALL, STRONG, A } from "components/Markup"
-import { CommentsType, CommentType } from "api/feed-services"
+import { SMALL } from "components/Markup"
+import { CommentsType, CommentType } from "data/api/feed.services"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "components/Empty"
 import TouchText from "components/TouchText"
-import TouchIcon from "../TouchIcon"
-import { routes } from "../../constants/route.constants"
-import { CommentKeyboard } from "./CommentKeyboard"
+import TouchIcon from "components/TouchIcon"
 
 /************************************
  * Private components and functions

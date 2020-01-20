@@ -4,12 +4,12 @@ import { Colors, routes, Units } from "constants"
 import TouchText from "components/TouchText"
 import { withNavigation } from "react-navigation"
 import TouchIcon from "./TouchIcon"
-import { ExpoIconNames } from "../@types/icon-types"
+import { ExpoIconType } from "../@types/expo-icon-type"
 
 type MenuItemType = {
   key: string
   title: string
-  icon: ExpoIconNames
+  icon: ExpoIconType
 }
 
 const menuItems: MenuItemType[] = [

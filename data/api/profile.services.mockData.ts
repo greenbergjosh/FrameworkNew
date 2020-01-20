@@ -1,4 +1,4 @@
-import { SettingType } from "./profile-services"
+import { SettingType } from "./profile.services"
 
 export const PROFILE_DATA: UserProfileType = {
   userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",

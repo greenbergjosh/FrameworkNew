@@ -1,4 +1,4 @@
-import { Followers } from "../../api/follows-services"
+import { Followers } from "data/api/follows.services"
 import {
   FlatList,
   Keyboard,

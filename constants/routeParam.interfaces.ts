@@ -1,4 +1,4 @@
-import { CampaignTemplate } from "api/promotions-services"
+import { CampaignTemplate } from "data/api/promotions.services"
 
 export interface InfluencerTokens {
   [key: string]: unknown

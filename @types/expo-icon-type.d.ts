@@ -5,7 +5,7 @@ import Ionicons from "@expo/vector-icons/build/vendor/react-native-vector-icons/
 type AntIconNames = keyof typeof AntIcons
 
 /*
-Too many types in the ExpoIconNames union throws TS2509,
+Too many types in the ExpoIconType union throws TS2509,
 so we're just including the used icons since we're
 only using one icon from Entypo.
  */
@@ -13,4 +13,4 @@ type EntypoIconNames = "shopping-bag"
 
 type IoniconsNames = keyof typeof Ionicons
 
-type ExpoIconNames = AntIconNames | EntypoIconNames | IoniconsNames
+type ExpoIconType = AntIconNames | EntypoIconNames | IoniconsNames

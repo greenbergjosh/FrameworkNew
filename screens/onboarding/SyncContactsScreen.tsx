@@ -4,12 +4,11 @@ import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, P, SMALL, A } from "components/Markup"
 import { Text, View } from "react-native"
-import { routes, styles } from "constants"
-import { useProfileContext } from "providers/profile-context-provider"
+import { routes, styles, Colors } from "constants"
+import { useProfileContext } from "data/profile.contextProvider"
 import * as Contacts from "expo-contacts"
 import * as Permissions from "expo-permissions"
-import { ExpoContactsToContacts } from "providers/model-translations/contacts"
-import { Colors } from "../../constants/unit.constants"
+import { ExpoContactsToContacts } from "data/model-translations/contacts"
 
 interface SyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
