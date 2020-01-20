@@ -66,12 +66,12 @@ namespace QuickTester
             {
                 PropagateCompletion = true
             }, CreateLinkToPredicate(rw, "QuickTester.DataFlowTester+Msg", "testf2", null));
-            //(Predicate<Msg>)((Msg response) => !response.HasError));
+            tBlock1.LinkTo(DataflowBlock.NullTarget<Msg>());
 
-            tBlock2.LinkTo<Msg>(actionBlock.block, new DataflowLinkOptions
+            tBlock2.LinkTo(actionBlock.block, new DataflowLinkOptions
             {
                 PropagateCompletion = true
-            }, (Predicate<Msg>)((Msg response) => !response.HasError)); // LinkTo only for Responses with HasError != true
+            }, CreateLinkToPredicate(rw, "QuickTester.DataFlowTester+Msg", "testf2", null));
             tBlock2.LinkTo(DataflowBlock.NullTarget<Msg>());
 
             for (int i = 0; i < 10; i++)
@@ -82,63 +82,15 @@ namespace QuickTester
             await actionBlock.Completion;
         }
 
-        public static bool TestPredicate(object msg)
-        {
-            return true;
-        }
-
         public static object CreateLinkToPredicate(RoslynWrapper rw, string linkType, string fname, string[] args)
         {
-            //Type predicateType = typeof(Func<,>).MakeGenericType(
-            //            new Type[] { Type.GetType(linkType), typeof(bool) });
-            //MethodInfo mi = Funcify((object msg) =>
-            //{
-            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
-            //    return (bool)lbmResultTask.GetAwaiter().GetResult();
-            //}).Method;
-
-            // return Delegate.CreateDelegate(predicateType, mi);
-
             Type predicateType = typeof(Predicate<>).MakeGenericType(new Type[] { Type.GetType(linkType) });
-            //Predicate<Msg> p = new Predicate<Msg>(Funcify((object msg) =>
-            //{
-            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
-            //    return (bool)lbmResultTask.GetAwaiter().GetResult();
-            //}));
-            //return p;
-
-            //MethodInfo meth = (new Func<int, string>(i => i.ToString())).Method
             var del = Funcify((object msg) =>
             {
                 var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
                 return (bool)lbmResultTask.GetAwaiter().GetResult();
             });
-            MethodInfo mi = Funcify((object msg) =>
-            {
-                var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
-                return (bool)lbmResultTask.GetAwaiter().GetResult();
-            }).Method;
-
-            //MethodInfo mi = typeof(DataFlowTester).GetMethod("TestPredicate");
             return Delegate.CreateDelegate(predicateType, del.Target, del.Method);
-            //return Delegate.CreateDelegate(predicateType, null, mi);
-
-            //var cnstctr = predicateType.GetConstructors()[0];
-            //object predicate = cnstctr.Invoke(new object[] { null,
-            //Funcify((object msg) =>
-            //{
-            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
-            //    return lbmResultTask.GetAwaiter().GetResult();
-            //})});
-            //return predicate;
-
-
-            //return Convert.ChangeType(Funcify((object msg) =>
-            //{
-            //    var lbmResultTask = rw[fname](new { x1 = msg }, new StateWrapper());
-            //    return lbmResultTask.GetAwaiter().GetResult();
-            //}), predicateType);
-
         }
 
         public static object CreateRoslynCompatibleFunction(RoslynWrapper rw, string fname, string[] args)
@@ -154,12 +106,13 @@ namespace QuickTester
                         //var lbm = (await fw.Entities.GetEntity(lbmId))?.GetS("Config");
                         //var lbmResult = (string)await fw.RoslynWrapper.Evaluate(lbmId, lbm,
                         //    new { msg, err = fw.Err }, new StateWrapper());
-                        var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
+                        //var lbmResult = await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
                         await Task.Delay(100);
                         Console.WriteLine($"{args[0]}: After delay");
                         //return Convert.ChangeType(lbmResult, Type.GetType(destType));
                         //return new Msg { x = 1, HasError = false };
-                        return new Msg((Msg)msg);
+                        //return new Msg((Msg)msg);
+                        return await rw[fname](new { x1 = ((Msg)msg).x }, new StateWrapper());
                     }
                     catch (Exception ex)
                     {
