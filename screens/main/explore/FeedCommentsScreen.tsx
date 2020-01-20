@@ -8,9 +8,9 @@ import { influencerFeedRoutes, styles } from "constants"
 import { SafeAreaView, ScrollView } from "react-native"
 import { CommentKeyboard } from "components/feed/CommentKeyboard"
 
-export interface ExploreFeedCommentsScreenProps extends NavigationTabScreenProps {}
+export interface FeedCommentsScreenProps extends NavigationTabScreenProps {}
 
-export const ExploreFeedCommentsScreen = (props: ExploreFeedCommentsScreenProps) => {
+export const FeedCommentsScreen = (props: FeedCommentsScreenProps) => {
   const { navigate } = props.navigation
   const { feed } = mockData.FEED_DATA
   const [showCommentKeyboard, setShowCommentKeyboard] = React.useState(false)
@@ -37,7 +37,7 @@ export const ExploreFeedCommentsScreen = (props: ExploreFeedCommentsScreenProps)
     </SafeAreaView>
   )
 }
-ExploreFeedCommentsScreen.navigationOptions = ({ navigation }) => {
+FeedCommentsScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: () => (
       <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />

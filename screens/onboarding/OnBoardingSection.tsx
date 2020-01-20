@@ -2,25 +2,25 @@ import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
 import { HeaderLogo } from "components/HeaderLogo"
-import { OnBoardingCodeEntryScreen } from "./OnBoardingCodeEntryScreen"
-import { OnBoardingResendCodeScreen } from "./OnBoardingResendCodeScreen"
-import { OnBoardingSelectInterestsScreen } from "./OnBoardingSelectInterestsScreen"
-import { OnBoardingSetPasswordScreen } from "./OnBoardingSetPasswordScreen"
-import { OnBoardingCreateAccountScreen } from "./OnBoardingCreateAccountScreen"
-import { OnBoardingSyncContactsScreen } from "./OnBoardingSyncContactsScreen"
-import { OnBoardingTourScreen } from "./OnBoardingTourScreen"
+import { CodeEntryScreen } from "./CodeEntryScreen"
+import { ResendCodeScreen } from "./ResendCodeScreen"
+import { SelectInterestsScreen } from "./SelectInterestsScreen"
+import { SetPasswordScreen } from "./SetPasswordScreen"
+import { CreateAccountScreen } from "./CreateAccountScreen"
+import { SyncContactsScreen } from "./SyncContactsScreen"
+import { TourScreen } from "./TourScreen"
 import { defaultNavigationOptions, routes } from "constants"
 
 interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 
 export const onboardingRoutes = {
-  [routes.OnBoarding.CreateAccount]: { screen: OnBoardingCreateAccountScreen },
-  [routes.OnBoarding.CodeEntry]: { screen: OnBoardingCodeEntryScreen },
-  [routes.OnBoarding.ResendCode]: { screen: OnBoardingResendCodeScreen },
-  [routes.OnBoarding.SetPassword]: { screen: OnBoardingSetPasswordScreen },
-  [routes.OnBoarding.SelectInterests]: { screen: OnBoardingSelectInterestsScreen },
-  [routes.OnBoarding.SyncContacts]: { screen: OnBoardingSyncContactsScreen },
-  [routes.OnBoarding.Tour]: { screen: OnBoardingTourScreen },
+  [routes.OnBoarding.CreateAccount]: { screen: CreateAccountScreen },
+  [routes.OnBoarding.CodeEntry]: { screen: CodeEntryScreen },
+  [routes.OnBoarding.ResendCode]: { screen: ResendCodeScreen },
+  [routes.OnBoarding.SetPassword]: { screen: SetPasswordScreen },
+  [routes.OnBoarding.SelectInterests]: { screen: SelectInterestsScreen },
+  [routes.OnBoarding.SyncContacts]: { screen: SyncContactsScreen },
+  [routes.OnBoarding.Tour]: { screen: TourScreen },
 }
 
 const OnBoardingNavigator = createStackNavigator(

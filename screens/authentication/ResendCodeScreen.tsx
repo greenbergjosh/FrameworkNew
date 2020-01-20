@@ -8,9 +8,9 @@ import { LegalAgreement } from "components/LegalAgreement"
 import { H2, P } from "components/Markup"
 import NavButton from "components/NavButton"
 
-interface AuthenticationResendCodeScreenProps extends NavigationSwitchScreenProps {}
+interface ResendCodeScreenProps extends NavigationSwitchScreenProps {}
 
-export const AuthenticationResendCodeScreen = (props: AuthenticationResendCodeScreenProps) => {
+export const ResendCodeScreen = (props: ResendCodeScreenProps) => {
   const [email, setEmail] = React.useState("")
 
   const { navigate } = props.navigation
@@ -57,7 +57,7 @@ export const AuthenticationResendCodeScreen = (props: AuthenticationResendCodeSc
   )
 }
 
-AuthenticationResendCodeScreen.navigationOptions = ({ navigation }) => {
+ResendCodeScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: <HeaderLogo />,

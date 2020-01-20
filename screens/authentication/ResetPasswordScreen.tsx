@@ -9,10 +9,10 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { H2, P } from "components/Markup"
 import NavButton from "components/NavButton"
 
-interface AuthenticationResetPasswordScreenProps extends NavigationSwitchScreenProps {}
+interface ResetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
-export const AuthenticationResetPasswordScreen = (
-  props: AuthenticationResetPasswordScreenProps
+export const ResetPasswordScreen = (
+  props: ResetPasswordScreenProps
 ) => {
   const [contact, setContact] = React.useState("")
   const [error, setError] = React.useState()
@@ -60,7 +60,7 @@ export const AuthenticationResetPasswordScreen = (
   )
 }
 
-AuthenticationResetPasswordScreen.navigationOptions = ({ navigation }) => {
+ResetPasswordScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: <HeaderLogo />,

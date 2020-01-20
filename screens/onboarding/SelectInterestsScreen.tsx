@@ -18,7 +18,7 @@ import { useCatalogContext } from "providers/catalog-context-provider"
 import { useProfileContext } from "providers/profile-context-provider"
 import { Interest, InterestGroup } from "api/catalog-services"
 
-interface OnBoardingSelectInterestsScreenProps extends NavigationSwitchScreenProps {}
+interface SelectInterestsScreenProps extends NavigationSwitchScreenProps {}
 
 interface InterestGroupsProps {
   value: InterestGroup[]
@@ -77,7 +77,7 @@ function createSearchableInterests(interests) {
   return new Fuse(flatInterests, options)
 }
 
-export const OnBoardingSelectInterestsScreen = (props: OnBoardingSelectInterestsScreenProps) => {
+export const SelectInterestsScreen = (props: SelectInterestsScreenProps) => {
   const { navigate } = props.navigation
   const [error, setError] = React.useState()
   const [selected, setSelected] = React.useState([])
@@ -184,7 +184,7 @@ export const OnBoardingSelectInterestsScreen = (props: OnBoardingSelectInterests
   )
 }
 
-OnBoardingSelectInterestsScreen.navigationOptions = ({ navigation }) => {
+SelectInterestsScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

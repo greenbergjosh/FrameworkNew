@@ -9,14 +9,14 @@ import NavButton from "components/NavButton"
 import { ImageGrid } from "components/ImageGrid"
 import { TemplatePreviewModal, TemplateSelectionType } from "./components/TemplatePreviewModal"
 
-interface PromotionsCampaignTemplateScreenNavigationParams {
+interface CampaignTemplateScreenNavigationParams {
   promotionId: GUID
 }
 
-export interface PromotionsCampaignTemplateScreenProps
-  extends NavigationTabScreenProps<PromotionsCampaignTemplateScreenNavigationParams> {}
+export interface CampaignTemplateScreenProps
+  extends NavigationTabScreenProps<CampaignTemplateScreenNavigationParams> {}
 
-export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTemplateScreenProps) => {
+export const CampaignTemplatesScreen = (props: CampaignTemplateScreenProps) => {
   const promotionsContext = usePromotionsContext()
   const [searchText, setSearchText] = React.useState("")
   const [selectedTemplate, setSelectedTemplate] = React.useState(null)
@@ -85,7 +85,7 @@ export const PromotionsCampaignTemplatesScreen = (props: PromotionsCampaignTempl
   )
 }
 
-PromotionsCampaignTemplatesScreen.navigationOptions = ({ navigation }) => {
+CampaignTemplatesScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: null,
     headerTitle: <HeaderTitle title="Choose a Template" />,

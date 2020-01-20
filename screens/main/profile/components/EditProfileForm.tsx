@@ -25,14 +25,6 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
         defaultValue={editedUser.name}
       />
       <WhiteSpace size="lg" />
-      <H4>Username</H4>
-      <InputItem
-        type="text"
-        name="username"
-        placeholder="Your username"
-        clearButtonMode="always"
-        defaultValue={editedUser.handle}
-      />
       <WhiteSpace size="lg" />
       <H4>Website</H4>
       <InputItem
@@ -59,23 +51,6 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
         Private Information
       </H3>
       <WhiteSpace size="lg" />
-      <H4>Email</H4>
-      <InputItem
-        type="email-address"
-        name="email"
-        placeholder="Your email address"
-        clearButtonMode="always"
-        defaultValue={editedUser.contact.email}
-      />
-      <WhiteSpace size="lg" />
-      <H4>Phone</H4>
-      <InputItem
-        type="phone"
-        name="phone"
-        placeholder="Your phone number"
-        clearButtonMode="always"
-        defaultValue={editedUser.contact.phone}
-      />
       <WhiteSpace size="lg" />
       <H4>Gender</H4>
       <List>

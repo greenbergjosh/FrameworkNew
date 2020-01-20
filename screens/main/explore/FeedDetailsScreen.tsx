@@ -1,37 +1,33 @@
 import React from "react"
-import { SafeAreaView, ScrollView } from "react-native"
-import { List } from "@ant-design/react-native"
+import { SafeAreaView, ScrollView, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
+import { List } from "@ant-design/react-native"
 import { InfluencerPostHeader, Post } from "components/feed"
-import { influencerFeedRoutes, routes, Units } from "constants"
+import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
 
-interface ExploreUserFeedDetailsScreenProps extends NavigationTabScreenProps {}
+interface FeedDetailsScreenProps extends NavigationTabScreenProps {}
 
-export class ExploreUserFeedDetailsScreen extends React.Component<
-  ExploreUserFeedDetailsScreenProps
-> {
+export class FeedDetailsScreen extends React.Component<FeedDetailsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
       headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-      headerTitle: (
-        <HeaderTitle title={`${mockData.USER_FEED_DATA.user.handle}'s Posts`} offset="none" />
-      ),
+      headerTitle: <HeaderTitle title="Explore" offset="none" />,
     }
   }
   render() {
     const { navigate } = this.props.navigation
-    const { user, feed } = mockData.USER_FEED_DATA
+    const { feed } = mockData.FEED_DATA
 
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView>
           <List>
             {feed.map((post) => (
-              <>
+              <View key={post.id}>
                 <InfluencerPostHeader
                   user={post.user}
                   campaignId={post.campaignId}
@@ -40,7 +36,6 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
                   routes={influencerFeedRoutes}
                 />
                 <Post
-                  key={post.id}
                   value={post}
                   navigate={navigate}
                   campaignRouteParams={{
@@ -49,9 +44,8 @@ export class ExploreUserFeedDetailsScreen extends React.Component<
                     campaignId: post.campaignId,
                   }}
                   routes={influencerFeedRoutes}
-                  style={{ marginBottom: Units.margin }}
                 />
-              </>
+              </View>
             ))}
           </List>
         </ScrollView>

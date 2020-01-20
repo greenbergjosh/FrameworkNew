@@ -8,9 +8,9 @@ import { getgotLogin } from "api/auth-services"
 import { useAuthContext } from "providers/auth-context-provider"
 import { routes, styles } from "constants"
 
-interface AuthenticationLoginScreenProps extends NavigationSwitchScreenProps {}
+interface LoginScreenProps extends NavigationSwitchScreenProps {}
 
-export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps) => {
+export const LoginScreen = (props: LoginScreenProps) => {
   const auth = useAuthContext()
   const [userName, setUserName] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -102,7 +102,7 @@ export const AuthenticationLoginScreen = (props: AuthenticationLoginScreenProps)
   )
 }
 
-AuthenticationLoginScreen.navigationOptions = ({ navigation }) => {
+LoginScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

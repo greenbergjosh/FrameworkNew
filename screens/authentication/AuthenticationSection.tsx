@@ -1,20 +1,20 @@
 import React, { useContext } from "react"
-import { AuthenticationBannedScreen } from "./AuthenticationBannedScreen"
-import { AuthenticationLoginScreen } from "./AuthenticationLoginScreen"
-import { AuthenticationResetPasswordScreen } from "./AuthenticationResetPasswordScreen"
-import { AuthenticationNewPasswordScreen } from "./AuthenticationNewPasswordScreen"
-import { AuthenticationResendCodeScreen } from "./AuthenticationResendCodeScreen"
+import { BannedScreen } from "./BannedScreen"
+import { LoginScreen } from "./LoginScreen"
+import { ResetPasswordScreen } from "./ResetPasswordScreen"
+import { NewPasswordScreen } from "./NewPasswordScreen"
+import { ResendCodeScreen } from "./ResendCodeScreen"
 import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
 import { defaultNavigationOptions, routes } from "constants"
 
 export const authenticationRoutes = {
-  [routes.Authentication.Login]: { screen: AuthenticationLoginScreen },
-  [routes.Authentication.Banned]: { screen: AuthenticationBannedScreen },
-  [routes.Authentication.ResetPassword]: { screen: AuthenticationResetPasswordScreen },
-  [routes.Authentication.NewPassword]: { screen: AuthenticationNewPasswordScreen },
-  [routes.Authentication.ResendCode]: { screen: AuthenticationResendCodeScreen },
+  [routes.Authentication.Login]: { screen: LoginScreen },
+  [routes.Authentication.Banned]: { screen: BannedScreen },
+  [routes.Authentication.ResetPassword]: { screen: ResetPasswordScreen },
+  [routes.Authentication.NewPassword]: { screen: NewPasswordScreen },
+  [routes.Authentication.ResendCode]: { screen: ResendCodeScreen },
 }
 
 const AuthenticationNavigator = createStackNavigator(authenticationRoutes, {

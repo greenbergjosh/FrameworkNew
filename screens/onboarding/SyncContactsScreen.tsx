@@ -11,9 +11,9 @@ import * as Permissions from "expo-permissions"
 import { ExpoContactsToContacts } from "providers/model-translations/contacts"
 import { Colors } from "../../constants/unit.constants"
 
-interface OnBoardingSyncContactsScreenProps extends NavigationSwitchScreenProps {}
+interface SyncContactsScreenProps extends NavigationSwitchScreenProps {}
 
-export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreenProps) => {
+export const SyncContactsScreen = (props: SyncContactsScreenProps) => {
   // const [modalVisible, setModalVisible] = React.useState(false)
   const [error, setError] = React.useState()
   const [isWaiting, setWaiting] = React.useState(false)
@@ -88,7 +88,7 @@ export const OnBoardingSyncContactsScreen = (props: OnBoardingSyncContactsScreen
   )
 }
 
-OnBoardingSyncContactsScreen.navigationOptions = ({ navigation }) => {
+SyncContactsScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

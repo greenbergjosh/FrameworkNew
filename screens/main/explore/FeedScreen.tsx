@@ -8,9 +8,9 @@ import { ImageGrid } from "components/ImageGrid"
 import { SafeAreaView, ScrollView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
 
-export interface ExploreFeedScreenProps extends NavigationTabScreenProps {}
+export interface FeedScreenProps extends NavigationTabScreenProps {}
 
-export const ExploreFeedScreen = (props: ExploreFeedScreenProps) => {
+export const FeedScreen = (props: FeedScreenProps) => {
   const { navigate } = props.navigation
   const { feed } = mockData.FEED_DATA
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
@@ -32,7 +32,7 @@ export const ExploreFeedScreen = (props: ExploreFeedScreenProps) => {
     </SafeAreaView>
   )
 }
-ExploreFeedScreen.navigationOptions = ({ navigation }) => {
+FeedScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: null,
     headerTitle: () => <HeaderTitle title="Explore" align="left" size="large" />,

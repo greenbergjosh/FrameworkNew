@@ -9,9 +9,9 @@ import NavButton from "components/NavButton"
 import * as mockData from "api/feed-services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
 
-interface ExploreUserFeedScreenProps extends NavigationTabScreenProps {}
+interface UserFeedScreenProps extends NavigationTabScreenProps {}
 
-export const ExploreUserFeedScreen = (props: ExploreUserFeedScreenProps) => {
+export const UserFeedScreen = (props: UserFeedScreenProps) => {
   const { navigate } = props.navigation
   const { user, feed } = mockData.USER_FEED_DATA
   const images = React.useMemo(() => feed.map((f) => f.image), [feed])
@@ -28,7 +28,7 @@ export const ExploreUserFeedScreen = (props: ExploreUserFeedScreenProps) => {
   )
 }
 
-ExploreUserFeedScreen.navigationOptions = ({ navigation }) => {
+UserFeedScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: <HeaderTitle title={mockData.USER_FEED_DATA.user.handle} offset="none" />,

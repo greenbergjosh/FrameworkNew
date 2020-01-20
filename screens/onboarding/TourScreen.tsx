@@ -5,9 +5,9 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { styles } from "constants"
 import { Flex } from "@ant-design/react-native"
 
-interface OnBoardingTourScreenProps extends NavigationSwitchScreenProps {}
+interface TourScreenProps extends NavigationSwitchScreenProps {}
 
-export const OnBoardingTourScreen = (props: OnBoardingTourScreenProps) => {
+export const TourScreen = (props: TourScreenProps) => {
   return (
     <Flex justify="center" align="center" direction="column" style={{ flexGrow: 1 }}>
       <Text style={styles.Body}>Tour screens to come</Text>
@@ -15,7 +15,7 @@ export const OnBoardingTourScreen = (props: OnBoardingTourScreenProps) => {
   )
 }
 
-OnBoardingTourScreen.navigationOptions = ({ navigation }) => {
+TourScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

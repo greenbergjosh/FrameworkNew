@@ -11,14 +11,14 @@ import { CampaignsList } from "./components/CampaignsList"
 import { BottomTabBar } from "components/BottomTabBar"
 import NavButton from "components/NavButton"
 
-interface PromotionsCampaignListParams {
+interface CampaignListParams {
   promotionId: GUID
 }
 
-interface PromotionsCampaignListScreenProps
-  extends NavigationTabScreenProps<PromotionsCampaignListParams> {}
+interface CampaignListScreenProps
+  extends NavigationTabScreenProps<CampaignListParams> {}
 
-export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreenProps) => {
+export const CampaignListScreen = (props: CampaignListScreenProps) => {
   const {
     navigate,
     state: {
@@ -72,7 +72,7 @@ export const PromotionsCampaignListScreen = (props: PromotionsCampaignListScreen
   )
 }
 
-PromotionsCampaignListScreen.navigationOptions = ({ navigation }) => {
+CampaignListScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: () => <HeaderTitle title="Campaigns" offset="none" />,

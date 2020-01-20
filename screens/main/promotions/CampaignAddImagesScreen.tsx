@@ -15,17 +15,17 @@ import {
 import { ImageGrid } from "components/ImageGrid"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
 
-interface PromotionsCampaignAdditionalImagesScreenNavigationParams extends CampaignRouteParams {
+interface CampaignAddImagesScreenNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens
   requiredTokens: string[]
   images?: string[]
 }
 
-export interface PromotionsCampaignAdditionalImagesScreenProps
-  extends NavigationTabScreenProps<PromotionsCampaignAdditionalImagesScreenNavigationParams> {}
+export interface CampaignAddImagesScreenProps
+  extends NavigationTabScreenProps<CampaignAddImagesScreenNavigationParams> {}
 
-export const PromotionsCampaignAdditionalImagesScreen = (
-  props: PromotionsCampaignAdditionalImagesScreenProps
+export const CampaignAddImagesScreen = (
+  props: CampaignAddImagesScreenProps
 ) => {
   const {
     navigate,
@@ -96,10 +96,10 @@ export const PromotionsCampaignAdditionalImagesScreen = (
   )
 }
 
-PromotionsCampaignAdditionalImagesScreen.navigationOptions = ({ navigation }) => {
+CampaignAddImagesScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
   const { isDraft } = navigation.state
-    .params as PromotionsCampaignAdditionalImagesScreenNavigationParams
+    .params as CampaignAddImagesScreenNavigationParams
   const cancelHandler = () => {
     Alert.alert("Are you sure you want to lose your changes and cancel?", null, [
       {

@@ -2,28 +2,21 @@ import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-des
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
 import { routes, styles } from "constants"
-import { useAuthContext } from "providers/auth-context-provider"
+import { useOnBoardingContext } from "providers/onboarding-context-provider"
 import React from "react"
-import { Alert, Text, View } from "react-native"
+import { Text, View } from "react-native"
 import CodeInput from "react-native-confirmation-code-input"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import NavButton from "components/NavButton"
 
-interface AuthenticationNewPasswordScreenProps extends NavigationSwitchScreenProps {}
+interface CodeEntryScreenProps extends NavigationSwitchScreenProps {}
 
-export const AuthenticationNewPasswordScreen = (props: AuthenticationNewPasswordScreenProps) => {
-  const [password, setPassword] = React.useState("")
-  const [error, setError] = React.useState()
+export const CodeEntryScreen = (props: CodeEntryScreenProps) => {
   const [code, setCode] = React.useState("")
   const [isWaiting, setWaiting] = React.useState(false)
-  const { navigate } = props.navigation
-  const authContext = useAuthContext()
 
-  const pressHandler = () => {
-    Alert.alert("Your password is reset!", null, [
-      { text: "OK", onPress: () => navigate(routes.Authentication.default) },
-    ])
-  }
+  const { navigate } = props.navigation
+
+  const onBoardingContext = useOnBoardingContext()
 
   return isWaiting ? (
     <ActivityIndicator animating toast size="large" text="Loading..." />
@@ -34,7 +27,7 @@ export const AuthenticationNewPasswordScreen = (props: AuthenticationNewPassword
         <H2>We sent you a code</H2>
         <WhiteSpace size="lg" />
         <H3>Enter it below to verify</H3>
-        <H3>{authContext.email}</H3>
+        <H3>{onBoardingContext.contact}</H3>
       </Flex>
       <WhiteSpace size="lg" />
       <CodeInput
@@ -52,23 +45,11 @@ export const AuthenticationNewPasswordScreen = (props: AuthenticationNewPassword
         onFulfill={(code) => setCode(code)}
       />
       <WhiteSpace size="lg" />
-      <InputItem
-        type="password"
-        name="password"
-        value={password}
-        placeholder="Password"
-        onChange={(value) => {
-          setError(null)
-          setPassword(value)
-        }}
-        clearButtonMode="always"
-      />
-      <WhiteSpace size="lg" />
       <Flex justify="start" style={{ marginTop: 20 }}>
         <Button
           type="ghost"
           style={styles.LinkButton}
-          onPress={() => navigate(routes.Authentication.ResendCode)}>
+          onPress={() => navigate(routes.OnBoarding.ResendCode)}>
           Didn&rsquo;t receive the message?
         </Button>
       </Flex>
@@ -78,17 +59,16 @@ export const AuthenticationNewPasswordScreen = (props: AuthenticationNewPassword
           type="primary"
           size="large"
           style={styles.Button}
-          // onPress={async () => {
-          //   setWaiting(true)
-          //   try {
-          //     await authContext.enterCode(code)
-          //     setWaiting(false)
-          //     navigate(routes.Authentication.NewPassword)
-          //   } catch (ex) {
-          //     setWaiting(false)
-          //   }
-          // }}
-          onPress={() => pressHandler()}>
+          onPress={async () => {
+            setWaiting(true)
+            try {
+              await onBoardingContext.enterCode(code)
+              setWaiting(false)
+              navigate(routes.OnBoarding.SetPassword)
+            } catch (ex) {
+              setWaiting(false)
+            }
+          }}>
           Confirm
         </Button>
       </Flex>
@@ -96,9 +76,8 @@ export const AuthenticationNewPasswordScreen = (props: AuthenticationNewPassword
   )
 }
 
-AuthenticationNewPasswordScreen.navigationOptions = ({ navigation }) => {
+CodeEntryScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-    headerTitle: <HeaderLogo />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

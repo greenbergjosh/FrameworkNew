@@ -20,14 +20,15 @@ interface ActionMessage {
   payload: any
 }
 
-interface PromotionsCampaignNavigationParams extends CampaignRouteParams {
+interface CampaignNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens
   requiredTokens: string[]
 }
 
-interface PromotionsCampaignScreenProps
-  extends NavigationTabScreenProps<PromotionsCampaignNavigationParams> {}
-export const PromotionsCampaignScreen = (props: PromotionsCampaignScreenProps) => {
+interface CampaignScreenProps
+  extends NavigationTabScreenProps<CampaignNavigationParams> {}
+
+export const CampaignScreen = (props: CampaignScreenProps) => {
   const getgotWebView: React.RefObject<WebView> = React.useRef(null)
   const [showMessageModal, setShowMessageModal] = React.useState(false)
   const [promptKey, setPromptKey] = React.useState<string>(null)
@@ -263,10 +264,10 @@ function initializeGetGotInterface() {
   console.info("GetGotInterface has been initialized!")
 }
 
-PromotionsCampaignScreen.navigationOptions = ({ navigation }) => {
+CampaignScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
   const { isDraft, influencerTokens = {}, promotionId, campaignId, requiredTokens = [], template } = navigation
-    .state.params as PromotionsCampaignNavigationParams
+    .state.params as CampaignNavigationParams
   const cancelHandler = () => {
     Alert.alert("Cancel Changes?", "Are you sure you want to cancel and lose your changes?", [
       {

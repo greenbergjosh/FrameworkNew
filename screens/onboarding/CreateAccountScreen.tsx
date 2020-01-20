@@ -15,9 +15,9 @@ import {
   ActivityIndicator,
 } from "@ant-design/react-native"
 
-interface OnBoardingCreateAccountScreenProps extends NavigationSwitchScreenProps {}
+interface CreateAccountScreenProps extends NavigationSwitchScreenProps {}
 
-export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScreenProps) => {
+export const CreateAccountScreen = (props: CreateAccountScreenProps) => {
   const [name, setName] = React.useState("")
   const [phoneOrEmail, setPhoneOrEmail] = React.useState("")
   const [modalVisible, setModalVisible] = React.useState(false)
@@ -106,7 +106,7 @@ export const OnBoardingCreateAccountScreen = (props: OnBoardingCreateAccountScre
   )
 }
 
-OnBoardingCreateAccountScreen.navigationOptions = ({ navigation }) => {
+CreateAccountScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

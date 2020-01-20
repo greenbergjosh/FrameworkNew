@@ -8,7 +8,7 @@ import { useAuthContext } from "providers/auth-context-provider"
 import { useGetGotRootDataContext } from "providers/getgot-root-data-context-provider"
 import { P, A, BR, H2, STRONG } from "components/Markup"
 
-export const AuthenticationBannedScreen = () => {
+export const BannedScreen = () => {
   const auth = useAuthContext()
   const rootDataContext = useGetGotRootDataContext()
   const { navigate } = useContext(NavigationContext)
@@ -77,7 +77,7 @@ export const AuthenticationBannedScreen = () => {
   )
 }
 
-AuthenticationBannedScreen.navigationOptions = ({ navigation }) => {
+BannedScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

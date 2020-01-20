@@ -10,9 +10,9 @@ import { Tab, Tabs } from "components/Tabs"
 import { SafeAreaView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
 
-export interface ExploreUserFollowsScreenProps extends NavigationTabScreenProps {}
+export interface UserFollowsScreenProps extends NavigationTabScreenProps {}
 
-export class ExploreUserFollowsScreen extends React.Component<ExploreUserFollowsScreenProps> {
+export class UserFollowsScreen extends React.Component<UserFollowsScreenProps> {
   static navigationOptions = ({ navigation }) => {
     return {
       headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,

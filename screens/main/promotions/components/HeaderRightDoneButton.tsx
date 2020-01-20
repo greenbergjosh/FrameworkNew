@@ -4,12 +4,12 @@ import { createCampaign } from "api/promotions-services"
 import { ActivityIndicator, Modal } from "@ant-design/react-native"
 import { Text } from "react-native"
 import { routes } from "constants"
-import { PromotionsCampaignAdditionalImagesScreenProps } from "../PromotionsCampaignAdditionalImagesScreen"
+import { CampaignAddImagesScreenProps } from "../CampaignAddImagesScreen"
 import NavButton from "components/NavButton"
 import { copyCampaignLinkHandler } from "components/feed/copyCampaignLinkHandler"
 
 interface HeaderRightDoneButtonProps {
-  navigation: PromotionsCampaignAdditionalImagesScreenProps["navigation"]
+  navigation: CampaignAddImagesScreenProps["navigation"]
 }
 
 export const HeaderRightDoneButton = ({ navigation }: HeaderRightDoneButtonProps) => {

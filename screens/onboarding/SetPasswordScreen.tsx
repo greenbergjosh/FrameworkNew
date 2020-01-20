@@ -9,9 +9,9 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
 import { Colors } from "../../constants/unit.constants"
 
-interface OnBoardingSetPasswordScreenProps extends NavigationSwitchScreenProps {}
+interface SetPasswordScreenProps extends NavigationSwitchScreenProps {}
 
-export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenProps) => {
+export const SetPasswordScreen = (props: SetPasswordScreenProps) => {
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState()
   const [isWaiting, setWaiting] = React.useState(false)
@@ -72,7 +72,7 @@ export const OnBoardingSetPasswordScreen = (props: OnBoardingSetPasswordScreenPr
   )
 }
 
-OnBoardingSetPasswordScreen.navigationOptions = ({ navigation }) => {
+SetPasswordScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }

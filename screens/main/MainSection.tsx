@@ -2,17 +2,17 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { defaultNavigationOptions, routes } from "constants"
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
-import { exploreRoutes } from "./explore/Explore.routes"
-import { followsRoutes } from "./follows/Follows.routes"
-import { homeRoutes } from "./home/Home.routes"
-import { messagesRoutes } from "./messages/Messages.routes"
-import { profileRoutes } from "./profile/Profile.routes"
-import { promotionsRoutes } from "./promotions/Promotions.routes"
+import { exploreRoutes } from "./explore/exploreRoutes"
+import { followsRoutes } from "./follows/followsRoutes"
+import { homeRoutes } from "./home/homeRoutes"
+import { messagesRoutes } from "./messages/messagesRoutes"
+import { profileRoutes } from "./profile/profileRoutes"
+import { promotionsRoutes } from "./promotions/promotionsRoutes"
 import { SettingsDrawer, SettingsDrawerContext } from "./settings/SettingsDrawer"
-import { settingsRoutes } from "./settings/Settings.routes"
+import { settingsRoutes } from "./settings/settingsRoutes"
 import { createStackNavigator } from "react-navigation-stack"
 import { HomeFeedScreen } from "./home/HomeFeedScreen"
-import { ExploreFeedScreen } from "./explore/ExploreFeedScreen"
+import { FeedScreen } from "./explore/FeedScreen"
 import { PromotionsScreen } from "./promotions/PromotionsScreen"
 import { FollowsScreen } from "./follows/FollowsScreen"
 import { ProfileScreen } from "./profile/ProfileScreen"
@@ -25,7 +25,7 @@ interface MainSectionState {
 
 export const mainRootRoutes = {
   [routes.Main.Home]: { screen: HomeFeedScreen },
-  [routes.Main.Explore]: { screen: ExploreFeedScreen },
+  [routes.Main.Explore]: { screen: FeedScreen },
   [routes.Main.Promotions]: { screen: PromotionsScreen },
   [routes.Main.Follows]: { screen: FollowsScreen },
   [routes.Main.Profile]: { screen: ProfileScreen },

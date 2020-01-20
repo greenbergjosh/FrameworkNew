@@ -7,9 +7,9 @@ import { styles, routes } from "constants"
 import { LegalAgreement } from "components/LegalAgreement"
 import { H2, P } from "components/Markup"
 
-interface OnBoardingResendCodeScreenProps extends NavigationSwitchScreenProps {}
+interface ResendCodeScreenProps extends NavigationSwitchScreenProps {}
 
-export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProps) => {
+export const ResendCodeScreen = (props: ResendCodeScreenProps) => {
   const [email, setEmail] = React.useState("")
 
   const { navigate } = props.navigation
@@ -51,7 +51,7 @@ export const OnBoardingResendCodeScreen = (props: OnBoardingResendCodeScreenProp
   )
 }
 
-OnBoardingResendCodeScreen.navigationOptions = ({ navigation }) => {
+ResendCodeScreen.navigationOptions = ({ navigation }) => {
   return {
     headerTitle: () => <HeaderLogo />,
   }
