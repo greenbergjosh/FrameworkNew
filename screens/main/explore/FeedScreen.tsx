@@ -1,19 +1,45 @@
 import React from "react"
-import { SearchBar } from "@ant-design/react-native"
+import { ActivityIndicator, SearchBar } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import * as mockData from "data/api/feed.services.mockData"
 import { routes } from "constants"
 import { ImageGrid } from "components/ImageGrid"
 import { SafeAreaView, ScrollView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
+import { useFeedContext } from "data/feed.contextProvider"
+
+type CampaignImageType = ImageType & {
+  id: GUID
+}
 
 export interface FeedScreenProps extends NavigationTabScreenProps {}
 
 export const FeedScreen = (props: FeedScreenProps) => {
   const { navigate } = props.navigation
-  const { feed } = mockData.FEED_DATA
-  const images = React.useMemo(() => feed.map((f) => f.image), [feed])
+  const feedContext = useFeedContext()
+  const { exploreFeed } = feedContext
+
+  const images: CampaignImageType[] = React.useMemo(() => {
+    return !!exploreFeed ? exploreFeed.map((f) => ({ ...f.image, postId: f.id })) : []
+  }, [exploreFeed])
+
+  /*
+   * Load Feed Dataxx
+   */
+  React.useMemo(() => {
+    if (
+      !feedContext.lastLoadExploreFeed &&
+      !feedContext.loading.loadExploreFeed[JSON.stringify([])]
+    ) {
+      feedContext.loadExploreFeed()
+      return <ActivityIndicator animating toast size="large" text="Loading..." />
+    }
+  }, [])
+
+  if (!feedContext.lastLoadExploreFeed) {
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <SearchBar
@@ -25,7 +51,7 @@ export const FeedScreen = (props: FeedScreenProps) => {
       <ScrollView>
         <ImageGrid
           images={images}
-          onItemPress={(id) => navigate(routes.Explore.FeedDetails, { id })}
+          onItemPress={(postId) => navigate(routes.Explore.FeedDetails, { postId })}
         />
       </ScrollView>
       <BottomTabBar activeTab={routes.Explore.default} />

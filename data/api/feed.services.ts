@@ -1,14 +1,5 @@
-import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
-
-export type PostType = {
-  id: GUID
-  image: ImageType
-  user?: UserType
-  promotionId: GUID
-  campaignId: GUID
-  liked?: boolean
-  comments: CommentsType
-}
+import { GetGotSuccessResponse } from "./getgotRequest"
+import { FEED_DATA, COMMENTS_DATA } from "./feed.services.mockData"
 
 /**
  * TODO: APIPostType should be changed to be PostType
@@ -21,35 +12,42 @@ export type APIPostType = {
   user?: UserType
 }
 
+/********************
+ * Feed
+ */
+
 export interface FeedResponse extends GetGotSuccessResponse {
-  results: APIPostType[]
+  results: PostType[]
 }
 
-export type LikesType = {
-  count: number
-  firstUser?: UserType
-}
-
-export type CommentType = {
-  id
-  user: UserType
-  message: string
-  liked?: boolean
-  likes: LikesType
-  comments: CommentType[]
-}
-
-export type CommentsType = {
-  lastActivity: ISO8601String
-  likes: LikesType
-  comments: CommentType[]
-  enabled: boolean
-}
-
-export const loadHomeFeed = async (
+export const loadFeed = async (
   pageSize?: number,
   searchText?: string,
-  lastCampaignId?: string
+  lastPostId?: GUID
 ) => {
-  return await getgotRequest<FeedResponse>("getFeed", { pageSize, searchText, lastCampaignId })
+  // TODO: update with the final api function name and remove mock Promise
+  // return await getgotRequest<FeedResponse>("getFeed", { pageSize, searchText, lastPostId })
+  return new Promise<FeedResponse>((resolve) => {
+    setTimeout(resolve, 100, FEED_DATA)
+  })
+}
+
+/********************
+ * Comments
+ */
+
+export interface CommentsResponse extends GetGotSuccessResponse {
+  results: CommentType[]
+}
+
+export const loadComments = async (
+  postId: GUID,
+  pageSize?: number,
+  lastCommentId?: GUID
+) => {
+  // TODO: update with the final api function name and remove mock Promise
+  // return await getgotRequest<CommentsResponse>("getComments", { postId, pageSize, lastCommentId })
+  return new Promise<CommentsResponse>((resolve) => {
+    setTimeout(resolve, 100, COMMENTS_DATA)
+  })
 }

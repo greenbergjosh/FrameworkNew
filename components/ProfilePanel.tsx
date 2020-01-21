@@ -12,7 +12,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 export interface ProfilePanelBaseProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
-  user: UserProfileType
+  profile: ProfileType
 }
 
 interface ProfilePanelProps extends ProfilePanelBaseProps {
@@ -29,7 +29,7 @@ interface ProfilePanelProps extends ProfilePanelBaseProps {
  * @constructor
  */
 const ProfilePanel = ({
-  user,
+  profile,
   navigate,
   routes,
   isCurrentUser,
@@ -56,7 +56,7 @@ const ProfilePanel = ({
          * Avatar and Stats columns
          */}
         <Flex>
-          <Avatar source={user.avatarUri} size="lg" />
+          <Avatar source={profile.avatarUri} size="lg" />
           {isCurrentUser ? null : (
             <TouchIcon
               toggledNames={{ on: "pluscircle", off: "pluscircleo" }}
@@ -90,8 +90,8 @@ const ProfilePanel = ({
            */}
           <Flex direction="row" justify="between" style={{ flexGrow: 1 }}>
             <Flex>
-              <H1 style={{ marginLeft: Units.margin / 2 }}>{user.handle}</H1>
-              {user.topInfluencer ? <TouchIcon name="ios-ribbon" /> : null}
+              <H1 style={{ marginLeft: Units.margin / 2 }}>{profile.handle}</H1>
+              {profile.topInfluencer ? <TouchIcon name="ios-ribbon" /> : null}
             </Flex>
             {UserActionsButton ? <UserActionsButton /> : null}
           </Flex>
@@ -111,23 +111,23 @@ const ProfilePanel = ({
             }}>
             <Flex direction="column" style={{ alignItems: "center" }}>
               <Text style={{ fontWeight: FontWeights.bold }}>
-                {numeral(user.postsCount).format()}
+                {numeral(profile.postsCount).format()}
               </Text>
-              <Text>{pluralize(user.postsCount, "post")}</Text>
+              <Text>{pluralize(profile.postsCount, "post")}</Text>
             </Flex>
             <TouchableOpacity
               style={{ alignItems: "center", flexDirection: "column" }}
               onPress={() => navigate(routes.Followers)}>
               <A style={{ fontWeight: FontWeights.bold }}>
-                {numeral(user.followersCount).format()}
+                {numeral(profile.followersCount).format()}
               </A>
-              <A>{pluralize(user.followersCount, "follower")}</A>
+              <A>{pluralize(profile.followersCount, "follower")}</A>
             </TouchableOpacity>
             <TouchableOpacity
               style={{ alignItems: "center", flexDirection: "column" }}
               onPress={() => navigate(routes.Influencers)}>
               <A style={{ fontWeight: FontWeights.bold }}>
-                {numeral(user.followingCount).format()}
+                {numeral(profile.followingCount).format()}
               </A>
               <A>following</A>
             </TouchableOpacity>
@@ -142,7 +142,7 @@ const ProfilePanel = ({
         <>
           <WhiteSpace size="md" />
           <Flex justify="center">
-            <SMALL>{getFollowerSamplePhrase(user.followerSample, user.followersCount)}</SMALL>
+            <SMALL>{getFollowerSamplePhrase(profile.followerSample, profile.followersCount)}</SMALL>
           </Flex>
         </>
       )}
@@ -155,13 +155,13 @@ const ProfilePanel = ({
         direction="column"
         align="start"
         style={{ marginLeft: Units.margin * 2, marginRight: Units.margin * 2 }}>
-        <Text style={styles.Body}>{user.bio}</Text>
+        <Text style={styles.Body}>{profile.bio}</Text>
         <WhiteSpace size="sm" />
         <A
           style={{ fontWeight: FontWeights.bold }}
           onPress={() => alert("Open web link\n Feature to come!")}
           numberOfLines={1}>
-          {user.bioLink.toString()}
+          {profile.bioLink.toString()}
         </A>
       </Flex>
       <WhiteSpace size="lg" />

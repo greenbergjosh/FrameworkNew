@@ -3,13 +3,16 @@ import { SafeAreaView, ScrollView, Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import Avatar from "components/Avatar"
-import { Flex } from "@ant-design/react-native"
+import { ActivityIndicator, Flex } from "@ant-design/react-native"
 import { Colors, routes, styles, Units } from "constants"
 import { H2 } from "components/Markup"
 import NavButton from "components/NavButton"
-import { PROFILE_DATA } from "data/api/profile.services.mockData"
 import { EditProfileForm } from "./components/EditProfileForm"
-import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "hooks/useActionSheetTakeSelectPhoto"
+import { useProfileContext } from "data/profile.contextProvider"
 
 interface UserIdentityProps {
   user: UserType
@@ -64,16 +67,25 @@ function UserIdentityPanel({ user, onPress }: UserIdentityProps) {
 
 interface EditProfileScreenProps extends React.FunctionComponent, NavigationTabScreenProps {}
 
-export const EditProfileScreen = ({ navigation }: EditProfileScreenProps) => {
-  const { navigate } = navigation
+export const EditProfileScreen = ({}: EditProfileScreenProps) => {
+  const profileContext = useProfileContext()
+  if (
+    !profileContext.lastLoadProfile &&
+    !profileContext.loading.loadProfile[JSON.stringify([])]
+  ) {
+    profileContext.loadProfile()
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
+  const { profile } = profileContext
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <UserIdentityPanel
-        user={PROFILE_DATA}
+        user={profile as UserType}
         onPress={() => alert("Edit avatar photo\nFeature to come!")}
       />
       <ScrollView>
-        <EditProfileForm user={PROFILE_DATA} style={{ margin: Units.margin }} />
+        <EditProfileForm profile={profile} style={{ margin: Units.margin }} />
       </ScrollView>
     </SafeAreaView>
   )

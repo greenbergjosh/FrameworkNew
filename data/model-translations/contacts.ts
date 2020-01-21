@@ -1,7 +1,6 @@
 import { Contact as ExpoContactType } from "expo-contacts/build/Contacts"
-import { Contact } from "../profile.contextProvider"
 
-export function ExpoContactsToContacts(expoContacts: ExpoContactType[]): Contact[] {
+export function ExpoContactsToContacts(expoContacts: ExpoContactType[]): ContactType[] {
   return expoContacts.map((expoContact) => ExpoContactToContact(expoContact))
 }
 
@@ -14,11 +13,11 @@ export const ExpoContactToContact = (expoContact) => ({
   gender: null,
 })
 
-export function toExpoContacts(ggContacts: Contact[]): ExpoContactType[] {
+export function toExpoContacts(ggContacts: ContactType[]): ExpoContactType[] {
   return ggContacts.map((contact) => toExpoContact(contact))
 }
 
-export const toExpoContact = (contact: Contact): ExpoContactType => ({
+export const toExpoContact = (contact: ContactType): ExpoContactType => ({
   id: null,
   contactType: "person",
   name: `${contact.fname} ${contact.lname}`,

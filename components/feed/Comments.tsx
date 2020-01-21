@@ -4,7 +4,6 @@ import { Colors, FontWeights, styles, Units } from "constants"
 import { Flex } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
 import { SMALL } from "components/Markup"
-import { CommentsType, CommentType } from "data/api/feed.services"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "components/Empty"
 import TouchText from "components/TouchText"
@@ -110,7 +109,7 @@ function Comment({ comment, size = "sm", navigate, routes }: CommentProps) {
 export interface CommentsProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
-  value: CommentsType
+  value: CommentType[]
 }
 
 /**
@@ -119,11 +118,10 @@ export interface CommentsProps {
  */
 export const Comments = React.memo(({ navigate, routes, value }: CommentsProps) => {
   const handleUserPress = (userId) => navigate(routes.Feed, { userId })
-  const { likes, comments, lastActivity } = value
 
   return (
     <FlatList
-      data={comments}
+      data={value}
       keyExtractor={(comment) => comment.id}
       renderItem={({ item }) => <Comment comment={item} navigate={navigate} routes={routes} />}
       ItemSeparatorComponent={() => <View style={{ height: Units.margin * 1.5 }} />}

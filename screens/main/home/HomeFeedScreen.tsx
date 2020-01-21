@@ -2,7 +2,7 @@ import React from "react"
 import { Alert, SafeAreaView, ScrollView, View } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { influencerFeedRoutes, routes } from "constants"
-import { List } from "@ant-design/react-native"
+import { ActivityIndicator, List } from "@ant-design/react-native"
 import { useOnBoardingContext } from "data/onBoarding.contextProvider"
 import { InfluencerPostHeader, Post } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
@@ -12,7 +12,6 @@ import SuggestedFollows from "./components/SuggestedFollows"
 import NavButton from "components/NavButton"
 import moment from "moment"
 import { useFeedContext } from "data/feed.contextProvider"
-import * as mockData from "data/api/feed.services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}
@@ -20,14 +19,18 @@ interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
+  const onBoardingContext = useOnBoardingContext()
   const feedContext = useFeedContext()
-  const { feed } = mockData.FEED_DATA
-  const { suggestedFollows, loadSuggestedFollows } = useOnBoardingContext()
+  const { suggestedFollows, loadSuggestedFollows } = onBoardingContext
+  const { homeFeed } = feedContext
 
   React.useMemo(() => {
     loadSuggestedFollows()
   }, [])
 
+  /*
+   * Refresh home feed every few minutes
+   */
   React.useEffect(() => {
     if (
       (!feedContext.lastLoadHomeFeed ||
@@ -37,6 +40,10 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
       feedContext.loadHomeFeed()
     }
   }, [feedContext.lastLoadHomeFeed])
+
+  if (!feedContext.lastLoadHomeFeed) {
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
 
   const showStartCampaignDialog = (promotionId: GUID) => {
     Alert.alert(
@@ -72,7 +79,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           <SuggestedFollows influencers={suggestedFollows} navigate={navigate} />
         ) : (
           <List>
-            {feed.map((post) => (
+            {homeFeed.map((post) => (
               <View key={post.id}>
                 <InfluencerPostHeader
                   user={post.user}

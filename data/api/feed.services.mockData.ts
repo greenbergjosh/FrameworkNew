@@ -1,21 +1,13 @@
 import { ImageUris, Images } from "constants"
-import { CommentsType, PostType } from "./feed.services"
+import { FeedResponse, CommentsResponse } from "./feed.services"
+
 
 let id = 1
 const guid = () => `guid-${id++}`
 
-export const FEED_COMMENTS: CommentsType = {
-  lastActivity: "2019-11-26T15:04:44.477Z",
-  enabled: true,
-  likes: {
-    count: 78,
-    firstUser: {
-      userId: "69368e0c-5383-471e-b075-3272b4922750",
-      handle: "groovy.dollies",
-      avatarUri: "https://randomuser.me/api/portraits/women/2.jpg",
-    },
-  },
-  comments: [
+export const COMMENTS_DATA: CommentsResponse = {
+  r: 0,
+  results: [
     {
       id: "69368e0c-5383-471e-b075-000000000001",
       user: {
@@ -95,11 +87,26 @@ export const FEED_COMMENTS: CommentsType = {
       likes: { count: 0 },
       comments: [],
     },
-  ],
+  ]
 }
 
-export const FEED_DATA: { feed: PostType[] } = {
-  feed: [
+export const FEED_COMMENTS: CommentsType = {
+  lastActivity: "2019-11-26T15:04:44.477Z",
+  enabled: true,
+  likes: {
+    count: 78,
+    firstUser: {
+      userId: "69368e0c-5383-471e-b075-3272b4922750",
+      handle: "groovy.dollies",
+      avatarUri: "https://randomuser.me/api/portraits/women/2.jpg",
+    },
+  },
+  comments: COMMENTS_DATA.results,
+}
+
+export const FEED_DATA: FeedResponse = {
+  r: 0,
+  results: [
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db01",
       promotionId: "1680cacc-17d1-46ee-a1fa-1c90d65d6f2d",
@@ -473,7 +480,7 @@ export const FEED_DATA: { feed: PostType[] } = {
   ],
 }
 
-export const INFLUENCER_PROFILE_DATA: UserProfileType = {
+export const INFLUENCER_PROFILE_DATA: ProfileType = {
   userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
   handle: "loren",
   avatarUri: "https://randomuser.me/api/portraits/women/43.jpg",
@@ -486,7 +493,7 @@ export const INFLUENCER_PROFILE_DATA: UserProfileType = {
   followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
 }
 
-export const USER_FEED_DATA: { user: UserProfileType; feed: PostType[] } = {
+export const USER_FEED_DATA: { user: ProfileType; feed: PostType[] } = {
   user: INFLUENCER_PROFILE_DATA,
-  feed: FEED_DATA.feed,
+  feed: FEED_DATA.results,
 }

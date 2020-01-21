@@ -18,7 +18,7 @@ export const UserFeedScreen = (props: UserFeedScreenProps) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <InfluencerProfilePanel user={user} navigate={navigate} routes={influencerFeedRoutes} />
+      <InfluencerProfilePanel profile={user} navigate={navigate} routes={influencerFeedRoutes} />
       <ImageGrid
         images={images}
         onItemPress={(id) => navigate(routes.Explore.UserFeedDetails, { id })}

@@ -16,13 +16,13 @@ import { ScrollView, Text, View } from "react-native"
 import { FontWeights, routes, styles } from "constants"
 import { useCatalogContext } from "data/catalog.contextProvider"
 import { useProfileContext } from "data/profile.contextProvider"
-import { Interest, InterestGroup } from "data/api/catalog.services"
+import { InterestType, InterestGroupType } from "data/api/catalog.services"
 
 interface SelectInterestsScreenProps extends NavigationSwitchScreenProps {}
 
 interface InterestGroupsProps {
-  value: InterestGroup[]
-  onSelect: (isSelected: boolean, interest: Interest) => void
+  value: InterestGroupType[]
+  onSelect: (isSelected: boolean, interest: InterestType) => void
 }
 
 const InterestGroups = (props: InterestGroupsProps) => {
@@ -52,7 +52,7 @@ const InterestGroups = (props: InterestGroupsProps) => {
 }
 
 let fuseSearchableInterests: Fuse<
-  Interest,
+  InterestType,
   {
     caseSensitive: boolean
     keys: string[]
@@ -63,7 +63,7 @@ let fuseSearchableInterests: Fuse<
 
 function createSearchableInterests(interests) {
   // Flatten interest groups
-  let flatInterests: Interest[] = []
+  let flatInterests: InterestType[] = []
   interests.forEach((group) => {
     flatInterests = [...flatInterests, ...group.interests]
   })
@@ -81,7 +81,7 @@ export const SelectInterestsScreen = (props: SelectInterestsScreenProps) => {
   const { navigate } = props.navigation
   const [error, setError] = React.useState()
   const [selected, setSelected] = React.useState([])
-  const [filteredInterests, setFilteredInterests] = React.useState<InterestGroup[]>([])
+  const [filteredInterests, setFilteredInterests] = React.useState<InterestGroupType[]>([])
   const [isSaving, setIsSaving] = React.useState(false)
   const { lastLoadInterests, interests, loadInterests } = useCatalogContext()
   const profileContext = useProfileContext()
@@ -121,9 +121,9 @@ export const SelectInterestsScreen = (props: SelectInterestsScreenProps) => {
 
     // Filter the original interest groups
     const filtered = []
-    const filterById = (item: Interest) => results.includes(item.id.toString())
+    const filterById = (item: InterestType) => results.includes(item.id.toString())
     interests.forEach((group) => {
-      const filteredGroup: InterestGroup = Object.assign({}, group)
+      const filteredGroup: InterestGroupType = Object.assign({}, group)
       filteredGroup.interests = group.interests.filter(filterById)
       filtered.push(filteredGroup)
     })

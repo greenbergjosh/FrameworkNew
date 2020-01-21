@@ -8,12 +8,12 @@ import DateTimePicker from "react-native-modal-datetime-picker"
 
 interface EditProfileFormProps {
   style: StyleProp<ViewStyle>
-  user: UserProfileType
+  profile: ProfileType
 }
 
-export function EditProfileForm({ user, style }: EditProfileFormProps) {
+export function EditProfileForm({ profile, style }: EditProfileFormProps) {
   const [showDOBPicker, setShowDOBPicker] = React.useState(false)
-  const [editedUser, setEditedUser] = React.useState(user)
+  const [editedProfile, setEditedProfile] = React.useState(profile)
   return (
     <View style={style}>
       <H4>Name</H4>
@@ -22,7 +22,7 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
         name="name"
         placeholder="Your full name"
         clearButtonMode="always"
-        defaultValue={editedUser.name}
+        defaultValue={editedProfile.name}
       />
       <WhiteSpace size="lg" />
       <WhiteSpace size="lg" />
@@ -32,7 +32,7 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
         name="website"
         placeholder="http://"
         clearButtonMode="always"
-        defaultValue={editedUser.bioLink.toString()}
+        defaultValue={editedProfile.bioLink.toString()}
         multiline={true}
       />
       <WhiteSpace size="lg" />
@@ -43,7 +43,7 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
         placeholder="Describe yourself"
         clearButtonMode="always"
         numberOfLines={3}
-        defaultValue={editedUser.bio}
+        defaultValue={editedProfile.bio}
         multiline={true}
       />
       <WhiteSpace size="xl" />
@@ -56,30 +56,30 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
       <List>
         <Radio.RadioItem
           key={0}
-          checked={editedUser.gender === "M"}
+          checked={editedProfile.gender === "M"}
           onChange={(event: any) => {
             if (event.target.checked) {
-              setEditedUser({ ...editedUser, gender: "M" })
+              setEditedProfile({ ...editedProfile, gender: "M" })
             }
           }}>
           Male
         </Radio.RadioItem>
         <Radio.RadioItem
           key={1}
-          checked={editedUser.gender === "F"}
+          checked={editedProfile.gender === "F"}
           onChange={(event: any) => {
             if (event.target.checked) {
-              setEditedUser({ ...editedUser, gender: "F" })
+              setEditedProfile({ ...editedProfile, gender: "F" })
             }
           }}>
           Female
         </Radio.RadioItem>
         <Radio.RadioItem
           key={2}
-          checked={editedUser.gender === "U"}
+          checked={editedProfile.gender === "U"}
           onChange={(event: any) => {
             if (event.target.checked) {
-              setEditedUser({ ...editedUser, gender: "U" })
+              setEditedProfile({ ...editedProfile, gender: "U" })
             }
           }}>
           Undisclosed
@@ -94,13 +94,13 @@ export function EditProfileForm({ user, style }: EditProfileFormProps) {
           lineHeight: styles.H3.lineHeight,
           margin: Units.margin,
         }}>
-        {editedUser.dob ? moment(editedUser.dob).format("MMMM DD, YYYY") : "Select Date"}
+        {editedProfile.dob ? moment(editedProfile.dob).format("MMMM DD, YYYY") : "Select Date"}
       </A>
       <DateTimePicker
         isVisible={showDOBPicker}
-        date={moment(editedUser.dob).toDate()}
+        date={moment(editedProfile.dob).toDate()}
         onConfirm={(newDOB) => {
-          setEditedUser({ ...editedUser, dob: newDOB.toISOString() })
+          setEditedProfile({ ...editedProfile, dob: newDOB.toISOString() })
           setShowDOBPicker(false)
         }}
         onCancel={() => setShowDOBPicker(false)}

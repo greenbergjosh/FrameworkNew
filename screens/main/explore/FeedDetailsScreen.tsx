@@ -2,55 +2,76 @@ import React from "react"
 import { SafeAreaView, ScrollView, View } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
-import { List } from "@ant-design/react-native"
+import { ActivityIndicator, List } from "@ant-design/react-native"
 import { InfluencerPostHeader, Post } from "components/feed"
 import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
-import * as mockData from "data/api/feed.services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
+import { useFeedContext } from "data/feed.contextProvider"
 
-interface FeedDetailsScreenProps extends NavigationTabScreenProps {}
+interface FeedDetailsScreenParams {
+  postId: GUID
+}
 
-export class FeedDetailsScreen extends React.Component<FeedDetailsScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-      headerTitle: <HeaderTitle title="Explore" offset="none" />,
+interface FeedDetailsScreenProps extends NavigationTabScreenProps<FeedDetailsScreenParams> {}
+
+export const FeedDetailsScreen = (props: FeedDetailsScreenProps) => {
+  const { navigate } = props.navigation
+  const postId = props.navigation.state.params && props.navigation.state.params.postId
+  const feedContext = useFeedContext()
+  const { exploreFeed } = feedContext
+
+  /*
+   * Load Feed Data
+   */
+  React.useMemo(() => {
+    if (
+      !feedContext.lastLoadExploreFeed &&
+      !feedContext.loading.loadExploreFeed[JSON.stringify([])]
+    ) {
+      feedContext.loadExploreFeed(postId)
+      return <ActivityIndicator animating toast size="large" text="Loading..." />
     }
-  }
-  render() {
-    const { navigate } = this.props.navigation
-    const { feed } = mockData.FEED_DATA
+  }, [])
 
-    return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView>
-          <List>
-            {feed.map((post) => (
-              <View key={post.id}>
-                <InfluencerPostHeader
-                  user={post.user}
-                  campaignId={post.campaignId}
-                  promotionId={post.promotionId}
-                  navigate={navigate}
-                  routes={influencerFeedRoutes}
-                />
-                <Post
-                  value={post}
-                  navigate={navigate}
-                  campaignRouteParams={{
-                    isDraft: false,
-                    promotionId: post.promotionId,
-                    campaignId: post.campaignId,
-                  }}
-                  routes={influencerFeedRoutes}
-                />
-              </View>
-            ))}
-          </List>
-        </ScrollView>
-        <BottomTabBar activeTab={routes.Explore.default} />
-      </SafeAreaView>
-    )
+  if (!feedContext.lastLoadExploreFeed) {
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView>
+        <List>
+          {exploreFeed.map((post) => (
+            <View key={post.id}>
+              <InfluencerPostHeader
+                user={post.user}
+                campaignId={post.campaignId}
+                promotionId={post.promotionId}
+                navigate={navigate}
+                routes={influencerFeedRoutes}
+              />
+              <Post
+                value={post}
+                navigate={navigate}
+                campaignRouteParams={{
+                  isDraft: false,
+                  promotionId: post.promotionId,
+                  campaignId: post.campaignId,
+                }}
+                routes={influencerFeedRoutes}
+              />
+            </View>
+          ))}
+        </List>
+      </ScrollView>
+      <BottomTabBar activeTab={routes.Explore.default} />
+    </SafeAreaView>
+  )
+}
+FeedDetailsScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: <HeaderTitle title="Explore" offset="none" />,
   }
 }

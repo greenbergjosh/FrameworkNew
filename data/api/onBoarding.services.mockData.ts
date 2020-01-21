@@ -10,7 +10,7 @@ export const suggestedFollows: SuggestedFollowsResponse = {
       avatarUri: "https://randomuser.me/api/portraits/women/20.jpg",
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",
-      feed: [...FEED_DATA.feed.slice(0, 3)],
+      feed: [...FEED_DATA.results.slice(0, 3)],
     },
     {
       userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb53",
@@ -18,7 +18,7 @@ export const suggestedFollows: SuggestedFollowsResponse = {
       avatarUri: "https://randomuser.me/api/portraits/women/21.jpg",
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",
-      feed: [...FEED_DATA.feed.slice(3, 6)],
+      feed: [...FEED_DATA.results.slice(3, 6)],
     },
     {
       userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb54",
@@ -26,7 +26,7 @@ export const suggestedFollows: SuggestedFollowsResponse = {
       avatarUri: "https://randomuser.me/api/portraits/women/23.jpg",
       description: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
       source: "From your contacts",
-      feed: [...FEED_DATA.feed.slice(6, 9)],
+      feed: [...FEED_DATA.results.slice(6, 9)],
     },
   ],
 }

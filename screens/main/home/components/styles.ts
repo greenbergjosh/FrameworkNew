@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native"
-import { Colors } from "constants"
-import { Units } from "../../../../constants/unit.constants"
+import { Colors, Units } from "constants"
 
 export const carouselStyles = StyleSheet.create({
   carouselHorizontal: {

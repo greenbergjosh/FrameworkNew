@@ -5,22 +5,22 @@ import { interests } from "./catalog.services.mockData"
  * Interests
  */
 
-export type Interest = {
+export type InterestType = {
   id: number
   groupId: number
   name: string
   description: string
 }
 
-export type InterestGroup = {
+export type InterestGroupType = {
   id: number
   name: string
   description: string
-  interests: Interest[]
+  interests: InterestType[]
 }
 
 export interface InterestsResponse extends GetGotSuccessResponse {
-  results: InterestGroup[]
+  results: InterestGroupType[]
 }
 
 export const loadInterests = async () => {

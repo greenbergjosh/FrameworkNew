@@ -1,26 +1,63 @@
 import React from "react"
-import { Button } from "@ant-design/react-native"
+import { ActivityIndicator, Button } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { profileFeedRoutes, routes, Units } from "constants"
 import { UserProfilePanel } from "components/ProfilePanel"
 import { ImageGrid } from "components/ImageGrid"
-import * as feedMockData from "data/api/feed.services.mockData"
-import * as profileMockData from "data/api/profile.services.mockData"
+import { useProfileContext } from "data/profile.contextProvider"
 import { SafeAreaView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
+import { useAuthContext } from "data/auth.contextProvider"
+import { useFeedContext } from "data/feed.contextProvider"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 
 export const ProfileScreen = (props: ProfileScreenProps) => {
   const { navigate } = props.navigation
-  const { feed } = feedMockData.USER_FEED_DATA
-  const user = profileMockData.PROFILE_DATA
-  const images = React.useMemo(() => feed.map((f) => f.image), [feed])
+
+  /* Contexts */
+  const authContext = useAuthContext()
+  const profileContext = useProfileContext()
+  const feedContext = useFeedContext()
+  const { profile } = profileContext
+  const { profileFeed } = feedContext
+
+  const images = React.useMemo(() => {
+    return !!profileFeed ? profileFeed.map((f) => f.image) : []
+  }, [profileFeed])
+
+  /*
+   * Load Profile and Feed Data
+   */
+  React.useMemo(() => {
+    let showActivityIndicator = false
+    if (
+      !profileContext.lastLoadProfile &&
+      !profileContext.loading.loadProfile[JSON.stringify([authContext.id])]
+    ) {
+      profileContext.loadProfile(authContext.id)
+      showActivityIndicator = true
+    }
+    if (
+      !feedContext.lastLoadProfileFeed &&
+      !feedContext.loading.loadProfileFeed[JSON.stringify([])]
+    ) {
+      feedContext.loadProfileFeed()
+      showActivityIndicator = true
+    }
+    if (showActivityIndicator) {
+      return <ActivityIndicator animating toast size="large" text="Loading..." />
+    }
+  }, [])
+
+  if (!profileContext.lastLoadProfile || !feedContext.lastLoadProfileFeed) {
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <UserProfilePanel user={user} navigate={navigate} routes={profileFeedRoutes} />
+      <UserProfilePanel profile={profile} navigate={navigate} routes={profileFeedRoutes} />
       <Button
         style={{ margin: Units.margin }}
         size="large"

@@ -1,13 +1,12 @@
 import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { LegalAgreement } from "components/LegalAgreement"
-import { routes, styles } from "constants"
+import { routes, styles, Colors } from "constants"
 import { useOnBoardingContext } from "data/onBoarding.contextProvider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
-import { Colors } from "../../constants/unit.constants"
 
 interface SetPasswordScreenProps extends NavigationSwitchScreenProps {}
 

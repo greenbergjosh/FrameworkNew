@@ -88,7 +88,7 @@ export const follows: InfluencersResponse = {
           comment: "the curlssssss",
         },
       },
-      feed: [FEED_DATA.feed[0]],
+      feed: [FEED_DATA.results[0]],
       lastActivity: "2019-11-26T15:04:44.477Z",
     },
     {
@@ -99,7 +99,7 @@ export const follows: InfluencersResponse = {
       statusPhrase: {
         template: "liked 2 posts.",
       },
-      feed: [FEED_DATA.feed[1], FEED_DATA.feed[2], FEED_DATA.feed[3], FEED_DATA.feed[4]],
+      feed: [FEED_DATA.results[1], FEED_DATA.results[2], FEED_DATA.results[3], FEED_DATA.results[4]],
       lastActivity: "2019-11-26T12:04:44.477Z",
     },
     {
@@ -113,7 +113,7 @@ export const follows: InfluencersResponse = {
           user: { id: "34ad34f2-ae0f-49a5-9cf0-08dbd84b4c5a", handle: "haelise" },
         },
       },
-      feed: [FEED_DATA.feed[5]],
+      feed: [FEED_DATA.results[5]],
       lastActivity: "2019-11-24T09:00:00+05:00",
     },
   ],

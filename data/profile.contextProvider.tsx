@@ -1,62 +1,62 @@
 import React, { useContext } from "react"
 import { GetGotResponse } from "./api/getgotRequest"
 import {
+  ProfileResponse,
   saveUserInterests,
   UserInterestsResponse,
   syncContacts,
   SyncContactsResponse,
 } from "./api/profile.services"
-import { Interest } from "./api/catalog.services"
+import { InterestType } from "./api/catalog.services"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
 import { LoadifyStateType, loadifyReducer, loadifyContext } from "./loadify"
 import { loadProfile } from "./api/profile.services"
 
-export type Contact = {
-  fname?: string | null
-  lname?: string | null
-  phone?: string | null
-  email?: string | null
-  dob?: string | null
-  gender: null
-}
-
 export interface ProfileState extends LoadifyStateType<ProfileActionCreatorsType> {
-  contacts: Contact[]
-  interests: Interest[]
-  userProfile?: UserType
+  lastLoadProfile: ISO8601String | null
+  lastSyncContacts: ISO8601String | null
+  lastSaveInterests: ISO8601String | null
+  profile?: ProfileType
+  contacts: ContactType[]
+  interests: InterestType[]
 }
 
 export interface ProfileActionCreatorsType extends GetGotContextType {
   // Action Creators
-  loadUserProfile: (profileId?: string) => Promise<void>
-  syncContacts: (contacts: Contact[]) => Promise<GetGotResponse>
-  saveInterests: (interests: Interest[]) => Promise<GetGotResponse>
+  loadProfile: (profileId?: GUID) => Promise<void>
+  syncContacts: (contacts: ContactType[]) => Promise<GetGotResponse>
+  saveInterests: (interests: InterestType[]) => Promise<GetGotResponse>
 }
 
-export interface ProfileContextType extends ProfileState, ProfileActionCreatorsType {}
+export interface ProfileContextType extends ProfileActionCreatorsType, ProfileState {}
 
-type LoadProfileAction = FSA<"loadProfile", UserType>
+type LoadProfileAction = FSA<"loadProfile", ProfileResponse>
 type SyncContactsAction = FSA<"syncContacts", SyncContactsResponse>
 type SaveInterestsAction = FSA<"saveInterests", UserInterestsResponse>
 
 type ProfileAction = LoadProfileAction | SyncContactsAction | SaveInterestsAction
 
-const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | GetGotResetAction) => {
+const reducer = loadifyReducer(
+  (state: ProfileState, action: ProfileAction | GetGotResetAction) => {
   switch (action.type) {
     case "loadProfile":
       return {
         ...state,
-        userProfile: action.payload,
+        ...action.payload,
+        profile: {...action.payload.result},
+        lastLoadProfile: new Date().toISOString(),
       }
     case "syncContacts":
       return {
         ...state,
         ...action.payload,
+        lastSyncContacts: new Date().toISOString(),
       }
     case "saveInterests":
       return {
         ...state,
         ...action.payload,
+        lastSaveInterests: new Date().toISOString(),
       }
     case "reset":
       return initialState
@@ -66,20 +66,23 @@ const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | Get
 })
 
 const initialState: ProfileState = {
+  lastLoadProfile: null,
+  lastSyncContacts: null,
+  lastSaveInterests: null,
+  profile: null,
   contacts: [],
   interests: [],
   loading: {
-    loadUserProfile: {},
+    loadProfile: {},
     syncContacts: {},
     saveInterests: {},
     reset: {},
   },
-  userProfile: null,
 }
 
 const initialContext: ProfileContextType = {
   ...initialState,
-  loadUserProfile: async () => {},
+  loadProfile: async () => {},
   syncContacts: async () => ({} as GetGotResponse),
   saveInterests: async () => ({} as GetGotResponse),
   reset: () => {},
@@ -87,22 +90,17 @@ const initialContext: ProfileContextType = {
 
 const ProfileContext = React.createContext(initialContext)
 
+// Provider is used by GetGotRootDataContextProvider
 export const ProfileContextProvider = ({ ...props }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
-
-  return (
-    <ProfileContext.Provider
-      value={loadifyContext(dispatch, {
-        ...state,
-
-        // -----====== ACTION CREATORS =====----- \\
-        loadUserProfile: async (profileId) => {
+  const loadifiedActionCreators = React.useMemo(
+    () =>
+      loadifyContext(dispatch, {
+        loadProfile: async (profileId) => {
           const response = await loadProfile(profileId)
-          debugger
           if (response.r === 0) {
-            dispatch({ type: "loadProfile", payload: response.result })
+            dispatch({ type: "loadProfile", payload: response })
           } else {
-            debugger
             console.warn(
               `Error loading profile for ${profileId ? "id: " + profileId : "current user."}`
             )
@@ -111,7 +109,6 @@ export const ProfileContextProvider = ({ ...props }) => {
         },
         syncContacts: async (contacts) => {
           const response = await syncContacts(contacts)
-
           if (response.r === 0) {
             dispatch({ type: "syncContacts", payload: response })
           } else {
@@ -122,7 +119,6 @@ export const ProfileContextProvider = ({ ...props }) => {
         saveInterests: async (interests) => {
           const interestIds = interests.map((interest) => interest.id)
           const response = await saveUserInterests(interestIds)
-
           if (response.r === 0) {
             dispatch({ type: "saveInterests", payload: response })
           } else {
@@ -133,10 +129,16 @@ export const ProfileContextProvider = ({ ...props }) => {
         reset: () => {
           dispatch(getgotResetAction)
         },
-      })}>
-      {props.children}
-    </ProfileContext.Provider>
+      }),
+    [dispatch, getgotResetAction, loadProfile, syncContacts, saveUserInterests]
   )
+
+  const contextValue = React.useMemo(() => ({ ...state, ...loadifiedActionCreators }), [
+    state,
+    loadifiedActionCreators,
+  ])
+
+  return <ProfileContext.Provider value={contextValue}>{props.children}</ProfileContext.Provider>
 }
 
 export const useProfileContext = () => useContext(ProfileContext)
