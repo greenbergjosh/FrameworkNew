@@ -3,7 +3,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { routes, styles } from "constants"
 import { SettingsList } from "./components/SettingsList"
-import { PRIVACYOPTIONS_DATA } from "data/api/profile.services.mockData"
+import { PRIVACYOPTIONS_MOCK_DATA } from "data/api/profile.services.mockData"
 import { SettingType } from "data/api/profile.services"
 import NavButton from "components/NavButton"
 import { SafeAreaView } from "react-native"
@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native"
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}
 
 export const PrivacyOptionsScreen = ({ navigation }: PrivacyOptionsScreenProps) => {
-  const [settings, setSettings] = React.useState<SettingType[]>(PRIVACYOPTIONS_DATA)
+  const [settings, setSettings] = React.useState<SettingType[]>(PRIVACYOPTIONS_MOCK_DATA)
   function handleSettingChange(setting, isChecked) {
     setSettings([...settings, setting])
   }

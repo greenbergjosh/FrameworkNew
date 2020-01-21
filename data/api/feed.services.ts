@@ -1,5 +1,5 @@
 import { GetGotSuccessResponse } from "./getgotRequest"
-import { FEED_DATA, COMMENTS_DATA, USER_FEED_DATA } from "./feed.services.mockData"
+import { FEED_MOCK_DATA, COMMENTS_MOCK_DATA, USER_FEED_MOCK_DATA } from "./feed.services.mockData"
 
 /**
  * TODO: APIPostType should be changed to be PostType
@@ -24,7 +24,7 @@ export const loadFeed = async (pageSize?: number, searchText?: string, lastPostI
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<FeedResponse>("getFeed", { pageSize, searchText, lastPostId })
   return new Promise<FeedResponse>((resolve) => {
-    setTimeout(resolve, 100, FEED_DATA)
+    setTimeout(resolve, 100, FEED_MOCK_DATA)
   })
 }
 
@@ -50,7 +50,7 @@ export const loadUserFeed = async (
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<UserFeedResponse>("getUserFeed", { userId, pageSize, searchText, lastPostId })
   return new Promise<UserFeedResponse>((resolve) => {
-    setTimeout(resolve, 100, USER_FEED_DATA)
+    setTimeout(resolve, 100, USER_FEED_MOCK_DATA)
   })
 }
 
@@ -66,6 +66,6 @@ export const loadComments = async (postId: GUID, pageSize?: number, lastCommentI
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<CommentsResponse>("getComments", { postId, pageSize, lastCommentId })
   return new Promise<CommentsResponse>((resolve) => {
-    setTimeout(resolve, 100, COMMENTS_DATA)
+    setTimeout(resolve, 100, COMMENTS_MOCK_DATA)
   })
 }

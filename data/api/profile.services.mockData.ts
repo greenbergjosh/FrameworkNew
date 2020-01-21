@@ -1,6 +1,6 @@
 import { SettingType, ProfileResponse } from "./profile.services"
 
-export const PROFILE_DATA: ProfileResponse = {
+export const PROFILE_MOCK_DATA: ProfileResponse = {
   r: 0,
   result: {
     userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
@@ -20,7 +20,7 @@ export const PROFILE_DATA: ProfileResponse = {
   },
 }
 
-export const ANALYTICS_DATA = {
+export const ANALYTICS_MOCK_DATA = {
   impressionsCount: 2526,
   clickThruCount: 396,
   itemsSoldCount: 52,
@@ -28,7 +28,7 @@ export const ANALYTICS_DATA = {
   reach: 139,
 }
 
-export const PRIVACYOPTIONS_DATA: SettingType[] = [
+export const PRIVACYOPTIONS_MOCK_DATA: SettingType[] = [
   {
     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
     title: "Let others find me by email address",
@@ -50,7 +50,7 @@ export const PRIVACYOPTIONS_DATA: SettingType[] = [
   },
 ]
 
-export const NOTIFICATIONS_DATA: SettingType[] = [
+export const NOTIFICATIONS_MOCK_DATA: SettingType[] = [
   {
     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
     title: "Likes",

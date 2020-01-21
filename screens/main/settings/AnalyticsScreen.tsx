@@ -7,7 +7,7 @@ import { Colors, routes, Units } from "constants"
 import { H3, STRONG } from "components/Markup"
 import NavButton from "components/NavButton"
 import numeral from "numeral"
-import { ANALYTICS_DATA } from "data/api/profile.services.mockData"
+import { ANALYTICS_MOCK_DATA } from "data/api/profile.services.mockData"
 
 interface AnalyticsScreenProps extends NavigationTabScreenProps {}
 
@@ -38,7 +38,7 @@ export class AnalyticsScreen extends React.Component<AnalyticsScreenProps> {
       clickThruCount,
       itemsSoldCount,
       commissionTotal,
-    } = ANALYTICS_DATA
+    } = ANALYTICS_MOCK_DATA
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView>

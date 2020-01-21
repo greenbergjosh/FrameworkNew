@@ -22,7 +22,7 @@ export const ViewThreadScreen = ({}: ViewThreadScreenProps) => {
     _id: 1,
   }
   const [messages, setMessages] = React.useState([])
-  React.useMemo(() => setMessages(mockData.message.thread), [])
+  React.useMemo(() => setMessages(mockData.MESSAGE_MOCK_DATA.thread), [])
 
   function onSend(messages = []) {
     setMessages((prevState) => GiftedChat.append(prevState, messages))
@@ -90,7 +90,7 @@ ViewThreadScreen.navigationOptions = ({ navigation }) => {
     ),
     headerTitle: (
       <HeaderTitle
-        title={mockData.message.title || `Chat - ${mockData.message.participants.join(", ")}`}
+        title={mockData.MESSAGE_MOCK_DATA.title || `Chat - ${mockData.MESSAGE_MOCK_DATA.participants.join(", ")}`}
       />
     ),
   }

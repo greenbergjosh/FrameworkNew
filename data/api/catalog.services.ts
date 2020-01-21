@@ -1,5 +1,5 @@
 import { GetGotSuccessResponse } from "./getgotRequest"
-import { interests } from "./catalog.services.mockData"
+import { INTERESTS_MOCK_DATA } from "./catalog.services.mockData"
 
 /********************
  * Interests
@@ -27,6 +27,6 @@ export const loadInterests = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<InterestsResponse>("getinterests", {})
   return new Promise<InterestsResponse>((resolve) => {
-    setTimeout(resolve, 2000, interests)
+    setTimeout(resolve, 2000, INTERESTS_MOCK_DATA)
   })
 }

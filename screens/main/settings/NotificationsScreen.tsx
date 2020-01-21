@@ -4,7 +4,7 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes, styles, Units } from "constants"
 import { SettingsList } from "./components/SettingsList"
 import { SettingRow } from "./components/SettingRow"
-import { NOTIFICATIONS_DATA } from "data/api/profile.services.mockData"
+import { NOTIFICATIONS_MOCK_DATA } from "data/api/profile.services.mockData"
 import { SettingType } from "data/api/profile.services"
 import { SafeAreaView, Text, View } from "react-native"
 import NavButton from "components/NavButton"
@@ -12,7 +12,7 @@ import NavButton from "components/NavButton"
 interface NotificationsScreenProps extends NavigationTabScreenProps {}
 
 export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) => {
-  const [settings, setSettings] = React.useState<SettingType[]>(NOTIFICATIONS_DATA)
+  const [settings, setSettings] = React.useState<SettingType[]>(NOTIFICATIONS_MOCK_DATA)
   function handleSettingChange(setting, isChecked) {
     setSettings([...settings, setting])
   }

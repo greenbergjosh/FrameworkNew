@@ -1,6 +1,6 @@
 import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages.services"
 
-export const messages: MessagesResponse = {
+export const MESSAGES_MOCK_DATA: MessagesResponse = {
   r: 0,
   results: [
     {
@@ -50,48 +50,46 @@ export const messages: MessagesResponse = {
   ],
 }
 
-export const messageThread: MessageThreadItem[] = [
-  {
-    _id: "1cf44754-f0f1-499b-90ee-message00001",
-    text: "What are you feeling like?",
-    createdAt: new Date(),
-    user: {
-      _id: "1cf44754-f0f1-499b-90ee-user00000001",
-      name: "React Native",
-      avatar: "https://randomuser.me/api/portraits/women/30.jpg",
-    },
-  },
-  {
-    _id: "1cf44754-f0f1-499b-90ee-message00002",
-    text: "Yeah, let's go somewhere soon",
-    createdAt: new Date(),
-    user: {
-      _id: "1cf44754-f0f1-499b-90ee-user00000002",
-      name: "React Native",
-      avatar:
-        "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
-    },
-  },
-  {
-    _id: "1cf44754-f0f1-499b-90ee-message00003",
-    text: "Are you getting hungry? Wanna go somewhere?",
-    createdAt: new Date(),
-    user: {
-      _id: "1cf44754-f0f1-499b-90ee-user00000003",
-      name: "React Native",
-      avatar: "https://randomuser.me/api/portraits/women/30.jpg",
-    },
-  },
-]
-
-export const message: Message = {
+export const MESSAGE_MOCK_DATA: Message = {
   id: "09564766-81d8-44bd-816e-1d7fd3abbdc7",
   title: "Lunch plans?",
   participants: ["loren", "you"],
-  thread: messageThread,
+  thread: [
+    {
+      _id: "1cf44754-f0f1-499b-90ee-message00001",
+      text: "What are you feeling like?",
+      createdAt: new Date(),
+      user: {
+        _id: "1cf44754-f0f1-499b-90ee-user00000001",
+        name: "React Native",
+        avatar: "https://randomuser.me/api/portraits/women/30.jpg",
+      },
+    },
+    {
+      _id: "1cf44754-f0f1-499b-90ee-message00002",
+      text: "Yeah, let's go somewhere soon",
+      createdAt: new Date(),
+      user: {
+        _id: "1cf44754-f0f1-499b-90ee-user00000002",
+        name: "React Native",
+        avatar:
+          "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
+      },
+    },
+    {
+      _id: "1cf44754-f0f1-499b-90ee-message00003",
+      text: "Are you getting hungry? Wanna go somewhere?",
+      createdAt: new Date(),
+      user: {
+        _id: "1cf44754-f0f1-499b-90ee-user00000003",
+        name: "React Native",
+        avatar: "https://randomuser.me/api/portraits/women/30.jpg",
+      },
+    },
+  ],
 }
 
-export const contacts: ContactsResponse = {
+export const CONTACTS_MOCK_DATA: ContactsResponse = {
   r: 0,
   results: [
     {

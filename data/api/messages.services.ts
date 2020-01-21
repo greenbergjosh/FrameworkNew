@@ -1,5 +1,5 @@
 import { GetGotSuccessResponse } from "./getgotRequest"
-import { contacts, messages } from "./messages.services.mockData"
+import { CONTACTS_MOCK_DATA, MESSAGES_MOCK_DATA } from "./messages.services.mockData"
 import { IMessage } from "react-native-gifted-chat"
 
 /********************
@@ -31,7 +31,7 @@ export const loadMessages = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<MessagesResponse>("getmessages", {})
   return new Promise<MessagesResponse>((resolve) => {
-    setTimeout(resolve, 100, messages)
+    setTimeout(resolve, 100, MESSAGES_MOCK_DATA)
   })
 }
 
@@ -53,6 +53,6 @@ export const loadContacts = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<ContactsResponse>("getcontacts", {})
   return new Promise<ContactsResponse>((resolve) => {
-    setTimeout(resolve, 100, contacts)
+    setTimeout(resolve, 100, CONTACTS_MOCK_DATA)
   })
 }

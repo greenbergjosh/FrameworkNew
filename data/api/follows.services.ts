@@ -1,6 +1,5 @@
 import { GetGotSuccessResponse, getgotRequest } from "./getgotRequest"
-import { blockedUsers, followers, follows } from "./follows.services.mockData"
-import { PostType } from "./feed.services"
+import { BLOCKED_USERS_MOCK_DATA, FOLLOWERS_MOCK_DATA, FOLLOWS_MOCK_DATA } from "./follows.services.mockData"
 
 /********************
  * Blocked Users
@@ -20,7 +19,7 @@ export const loadBlockedUsers = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<BlockedUsersResponse>("getblockedusers", {})
   return new Promise<BlockedUsersResponse>((resolve) => {
-    setTimeout(resolve, 100, blockedUsers)
+    setTimeout(resolve, 100, BLOCKED_USERS_MOCK_DATA)
   })
 }
 
@@ -47,7 +46,7 @@ export const loadFollowers = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<FollowsResponse>("getfollowers", {})
   return new Promise<FollowersResponse>((resolve) => {
-    setTimeout(resolve, 100, followers)
+    setTimeout(resolve, 100, FOLLOWERS_MOCK_DATA)
   })
 }
 
@@ -73,7 +72,7 @@ export const loadInfluencers = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<FollowsResponse>("getinfluencers", {})
   return new Promise<InfluencersResponse>((resolve) => {
-    setTimeout(resolve, 100, follows)
+    setTimeout(resolve, 100, FOLLOWS_MOCK_DATA)
   })
 }
 

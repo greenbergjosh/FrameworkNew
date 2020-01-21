@@ -1,5 +1,5 @@
 import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
-import { PROFILE_DATA } from "./profile.services.mockData"
+import { PROFILE_MOCK_DATA } from "./profile.services.mockData"
 
 /********************
  * Contacts
@@ -42,7 +42,7 @@ export const loadProfile = async (profileId: GUID) => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<ProfileResponse>("get_user_profile", { id: profileId })
   return new Promise<ProfileResponse>((resolve) => {
-    setTimeout(resolve, 100, PROFILE_DATA)
+    setTimeout(resolve, 100, PROFILE_MOCK_DATA)
   })
 }
 

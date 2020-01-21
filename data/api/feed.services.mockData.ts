@@ -5,7 +5,7 @@ import { FeedResponse, CommentsResponse, UserFeedResponse } from "./feed.service
 let id = 1
 const guid = () => `guid-${id++}`
 
-export const COMMENTS_DATA: CommentsResponse = {
+export const COMMENTS_MOCK_DATA: CommentsResponse = {
   r: 0,
   results: [
     {
@@ -90,7 +90,7 @@ export const COMMENTS_DATA: CommentsResponse = {
   ]
 }
 
-export const FEED_COMMENTS: CommentsType = {
+export const FEED_COMMENTS_MOCK_DATA: CommentsType = {
   lastActivity: "2019-11-26T15:04:44.477Z",
   enabled: true,
   likes: {
@@ -101,10 +101,10 @@ export const FEED_COMMENTS: CommentsType = {
       avatarUri: "https://randomuser.me/api/portraits/women/2.jpg",
     },
   },
-  comments: COMMENTS_DATA.results,
+  comments: COMMENTS_MOCK_DATA.results,
 }
 
-export const FEED_DATA: FeedResponse = {
+export const FEED_MOCK_DATA: FeedResponse = {
   r: 0,
   results: [
     {
@@ -123,7 +123,7 @@ export const FEED_DATA: FeedResponse = {
           "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=b616b2c5b373a80ffc9636ba24f7a4a9",
       },
       liked: true,
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db02",
@@ -139,7 +139,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: "https://randomuser.me/api/portraits/women/6.jpg",
       },
-      comments: {...FEED_COMMENTS, enabled: false},
+      comments: {...FEED_COMMENTS_MOCK_DATA, enabled: false},
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db03",
@@ -155,7 +155,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "snoren",
         avatarUri: "https://randomuser.me/api/portraits/women/7.jpg",
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db04",
@@ -171,7 +171,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db05",
@@ -187,7 +187,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db06",
@@ -203,7 +203,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db07",
@@ -219,7 +219,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db08",
@@ -235,7 +235,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db09",
@@ -247,7 +247,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db10",
@@ -259,7 +259,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db11",
@@ -271,7 +271,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db12",
@@ -283,7 +283,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db13",
@@ -295,7 +295,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db14",
@@ -307,7 +307,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db15",
@@ -319,7 +319,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db16",
@@ -331,7 +331,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db17",
@@ -343,7 +343,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db18",
@@ -355,7 +355,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db19",
@@ -367,7 +367,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db20",
@@ -379,7 +379,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db21",
@@ -391,7 +391,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db22",
@@ -403,7 +403,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db23",
@@ -415,7 +415,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db24",
@@ -427,7 +427,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db25",
@@ -439,7 +439,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db26",
@@ -451,7 +451,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db27",
@@ -463,7 +463,7 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
     {
       id: "c9568bdf-dec9-4a78-802c-66eb7cd9db28",
@@ -475,12 +475,12 @@ export const FEED_DATA: FeedResponse = {
         handle: "boren",
         avatarUri: ImageUris.placeholder,
       },
-      comments: FEED_COMMENTS,
+      comments: FEED_COMMENTS_MOCK_DATA,
     },
   ],
 }
 
-export const USER_FEED_DATA: UserFeedResponse = {
+export const USER_FEED_MOCK_DATA: UserFeedResponse = {
   r: 0,
   result: {
     user: {
@@ -495,6 +495,6 @@ export const USER_FEED_DATA: UserFeedResponse = {
       bioLink: new URL("youtu.be/Emkxvx11nz4"),
       followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
     },
-    feed: FEED_DATA.results,
+    feed: FEED_MOCK_DATA.results,
   }
 }
