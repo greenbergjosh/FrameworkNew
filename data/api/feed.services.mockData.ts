@@ -1,5 +1,5 @@
 import { ImageUris, Images } from "constants"
-import { FeedResponse, CommentsResponse } from "./feed.services"
+import { FeedResponse, CommentsResponse, UserFeedResponse } from "./feed.services"
 
 
 let id = 1
@@ -480,20 +480,21 @@ export const FEED_DATA: FeedResponse = {
   ],
 }
 
-export const INFLUENCER_PROFILE_DATA: ProfileType = {
-  userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
-  handle: "loren",
-  avatarUri: "https://randomuser.me/api/portraits/women/43.jpg",
-  topInfluencer: true,
-  postsCount: 1185,
-  followersCount: 17000000,
-  followingCount: 225,
-  bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
-  bioLink: new URL("youtu.be/Emkxvx11nz4"),
-  followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
-}
-
-export const USER_FEED_DATA: { user: ProfileType; feed: PostType[] } = {
-  user: INFLUENCER_PROFILE_DATA,
-  feed: FEED_DATA.results,
+export const USER_FEED_DATA: UserFeedResponse = {
+  r: 0,
+  result: {
+    user: {
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
+      handle: "loren",
+      avatarUri: "https://randomuser.me/api/portraits/women/43.jpg",
+      topInfluencer: true,
+      postsCount: 1185,
+      followersCount: 17000000,
+      followingCount: 225,
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      bioLink: new URL("youtu.be/Emkxvx11nz4"),
+      followerSample: ["agplace", "agpretzels", "brookeeelizbeth"],
+    },
+    feed: FEED_DATA.results,
+  }
 }

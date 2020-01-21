@@ -1,5 +1,12 @@
 import React, { useContext } from "react"
-import { loadFeed, loadComments, FeedResponse, CommentsResponse } from "./api/feed.services"
+import {
+  loadFeed,
+  loadComments,
+  FeedResponse,
+  CommentsResponse,
+  UserFeedResponse,
+  loadUserFeed, UserFeedType,
+} from "./api/feed.services"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgotContextType"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
 
@@ -7,10 +14,12 @@ export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {
   lastLoadHomeFeed: ISO8601String | null
   lastLoadProfileFeed: ISO8601String | null
   lastLoadExploreFeed: ISO8601String | null
+  lastLoadUserFeed: ISO8601String | null
   lastLoadComments: ISO8601String | null
   homeFeed: PostType[]
   profileFeed: PostType[]
   exploreFeed: PostType[]
+  userFeed: UserFeedType
   comments: CommentType[]
 }
 
@@ -19,6 +28,7 @@ export interface FeedActionCreatorType extends GetGotContextType {
   loadHomeFeed: (force?: boolean) => Promise<void>
   loadProfileFeed: (postId?: GUID, force?: boolean) => Promise<void>
   loadExploreFeed: (postId?: GUID, force?: boolean) => Promise<void>
+  loadUserFeed: (userId?: GUID, force?: boolean) => Promise<void>
   loadComments: (postId: GUID) => Promise<void>
 }
 
@@ -27,12 +37,14 @@ export interface FeedContextType extends FeedActionCreatorType, FeedState {}
 type LoadHomeFeedAction = FSA<"loadHomeFeed", FeedResponse>
 type LoadProfileFeedAction = FSA<"loadProfileFeed", FeedResponse>
 type LoadExploreFeedAction = FSA<"loadExploreFeed", FeedResponse>
+type LoadUserFeedAction = FSA<"loadUserFeed", UserFeedResponse>
 type LoadCommentsAction = FSA<"loadComments", CommentsResponse>
 
 type FeedAction =
   | LoadHomeFeedAction
   | LoadProfileFeedAction
   | LoadExploreFeedAction
+  | LoadUserFeedAction
   | LoadCommentsAction
 
 const reducer = loadifyReducer((state: FeedState, action: FeedAction | GetGotResetAction) => {
@@ -58,6 +70,13 @@ const reducer = loadifyReducer((state: FeedState, action: FeedAction | GetGotRes
         exploreFeed: [...action.payload.results],
         lastLoadExploreFeed: new Date().toISOString(),
       }
+    case "loadUserFeed":
+      return {
+        ...state,
+        ...action.payload,
+        userFeed: {...action.payload.result},
+        lastLoadUserFeed: new Date().toISOString(),
+      }
     case "loadComments":
       return {
         ...state,
@@ -76,15 +95,18 @@ const initialState: FeedState = {
   lastLoadHomeFeed: null,
   lastLoadProfileFeed: null,
   lastLoadExploreFeed: null,
+  lastLoadUserFeed: null,
   lastLoadComments: null,
   homeFeed: [],
   profileFeed: [],
   exploreFeed: [],
+  userFeed: null,
   comments: [],
   loading: {
     loadHomeFeed: {},
     loadProfileFeed: {},
     loadExploreFeed: {},
+    loadUserFeed: {},
     loadComments: {},
     reset: {},
   },
@@ -95,6 +117,7 @@ const initialContext: FeedContextType = {
   loadHomeFeed: async () => {},
   loadProfileFeed: async () => {},
   loadExploreFeed: async () => {},
+  loadUserFeed: async () => {},
   loadComments: async () => {},
   reset: () => {},
 }
@@ -129,6 +152,14 @@ export const FeedContextProvider = ({ ...props }) => {
             dispatch({ type: "loadExploreFeed", payload: response })
           } else {
             console.error("Error loading Explore Feed", response)
+          }
+        },
+        loadUserFeed: async (userId: GUID) => {
+          const response = await loadUserFeed(userId, null, null, null)
+          if (response.r === 0) {
+            dispatch({ type: "loadUserFeed", payload: response })
+          } else {
+            console.error("Error loading User Feed", response)
           }
         },
         loadComments: async (postId: GUID) => {

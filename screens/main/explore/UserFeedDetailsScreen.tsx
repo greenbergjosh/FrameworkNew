@@ -1,62 +1,78 @@
 import React from "react"
-import { SafeAreaView, ScrollView } from "react-native"
-import { List } from "@ant-design/react-native"
+import { SafeAreaView, ScrollView, View } from "react-native"
+import { ActivityIndicator, List } from "@ant-design/react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { InfluencerPostHeader, Post } from "components/feed"
 import { influencerFeedRoutes, routes, Units } from "constants"
 import NavButton from "components/NavButton"
-import * as mockData from "data/api/feed.services.mockData"
 import { BottomTabBar } from "components/BottomTabBar"
+import { useFeedContext } from "data/feed.contextProvider"
 
-interface UserFeedDetailsScreenProps extends NavigationTabScreenProps {}
+interface FeedDetailsScreenParams {
+  userId: GUID
+}
 
-export class UserFeedDetailsScreen extends React.Component<
-  UserFeedDetailsScreenProps
-> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-      headerTitle: (
-        <HeaderTitle title={`${mockData.USER_FEED_DATA.user.handle}'s Posts`} offset="none" />
-      ),
+interface UserFeedDetailsScreenProps extends NavigationTabScreenProps<FeedDetailsScreenParams> {}
+
+export const UserFeedDetailsScreen = (props: UserFeedDetailsScreenProps) => {
+  const { navigate } = props.navigation
+  const userId = props.navigation.state.params && props.navigation.state.params.userId
+  const feedContext = useFeedContext()
+  const { userFeed } = feedContext
+
+  /*
+   * Load Feed Data
+   */
+  React.useMemo(() => {
+    if (
+      !feedContext.lastLoadUserFeed &&
+      !feedContext.loading.loadUserFeed[JSON.stringify([userId])]
+    ) {
+      feedContext.loadUserFeed(userId)
+      return <ActivityIndicator animating toast size="large" text="Loading..." />
     }
-  }
-  render() {
-    const { navigate } = this.props.navigation
-    const { user, feed } = mockData.USER_FEED_DATA
+  }, [])
 
-    return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView>
-          <List>
-            {feed.map((post) => (
-              <>
-                <InfluencerPostHeader
-                  user={post.user}
-                  campaignId={post.campaignId}
-                  promotionId={post.promotionId}
-                  navigate={navigate}
-                  routes={influencerFeedRoutes}
-                />
-                <Post
-                  key={post.id}
-                  value={post}
-                  navigate={navigate}
-                  campaignRouteParams={{
-                    isDraft: false,
-                    promotionId: post.promotionId,
-                    campaignId: post.campaignId,
-                  }}
-                  routes={influencerFeedRoutes}
-                  style={{ marginBottom: Units.margin }}
-                />
-              </>
-            ))}
-          </List>
-        </ScrollView>
-        <BottomTabBar activeTab={routes.Explore.default} />
-      </SafeAreaView>
-    )
+  if (!feedContext.lastLoadUserFeed) {
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView>
+        <List>
+          {userFeed.feed.map((post) => (
+            <View key={post.id}>
+              <InfluencerPostHeader
+                user={post.user}
+                campaignId={post.campaignId}
+                promotionId={post.promotionId}
+                navigate={navigate}
+                routes={influencerFeedRoutes}
+              />
+              <Post
+                value={post}
+                navigate={navigate}
+                campaignRouteParams={{
+                  isDraft: false,
+                  promotionId: post.promotionId,
+                  campaignId: post.campaignId,
+                }}
+                routes={influencerFeedRoutes}
+                style={{ marginBottom: Units.margin }}
+              />
+            </View>
+          ))}
+        </List>
+      </ScrollView>
+      <BottomTabBar activeTab={routes.Explore.default} />
+    </SafeAreaView>
+  )
+}
+UserFeedDetailsScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: <HeaderTitle title="loren's Posts" offset="none" />,
   }
 }

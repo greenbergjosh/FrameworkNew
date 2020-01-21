@@ -8,7 +8,7 @@ import { SafeAreaView, ScrollView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
 import { useFeedContext } from "data/feed.contextProvider"
 
-type CampaignImageType = ImageType & {
+type PostImageType = ImageType & {
   id: GUID
 }
 
@@ -19,7 +19,7 @@ export const FeedScreen = (props: FeedScreenProps) => {
   const feedContext = useFeedContext()
   const { exploreFeed } = feedContext
 
-  const images: CampaignImageType[] = React.useMemo(() => {
+  const images: PostImageType[] = React.useMemo(() => {
     return !!exploreFeed ? exploreFeed.map((f) => ({ ...f.image, postId: f.id })) : []
   }, [exploreFeed])
 
