@@ -1,18 +1,14 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Utility;
+using Utility.DynamicDataFlow;
 
 namespace QuickTester
 {
@@ -53,6 +49,38 @@ namespace QuickTester
             // head.Complete();
             // There will be many tails returned
             // await Task.WhenAll(tails.Completion)
+        }
+
+        public static async Task TestDynamicDataFlow()
+        {
+            var transform1 = DynamicDataFlowBlock<string, string>.Create("Transform", s => $"Processed by transform 1: {s}", maxDegreesOfParallelism: 2);
+            var transform2 = DynamicDataFlowBlock<string, string>.Create("Transform", s => $"Processed by transform 2: {s.ToLower()}", maxDegreesOfParallelism: 2);
+            var transform3 = DynamicDataFlowBlock<string, string>.Create("Transform", s => $"Processed by transform 3: {s.ToUpper()}", maxDegreesOfParallelism: 2);
+            var action1 = DynamicDataFlowBlock<string>.Create("Action", Console.WriteLine);
+
+            transform1.LinkTo(transform2, new DataflowLinkOptions() { PropagateCompletion = true }, s => (s.Last() - '0') % 2 == 0);
+            transform1.LinkTo(transform3, new DataflowLinkOptions() { PropagateCompletion = true }, s => (s.Last() - '0') % 2 != 0);
+
+            transform2.LinkTo(action1, new DataflowLinkOptions() { PropagateCompletion = true });
+            transform3.LinkTo(action1, new DataflowLinkOptions() { PropagateCompletion = true });
+
+            var sendTasks = new List<Task<bool>>();
+
+            for (var i = 0; i < 10; i++)
+            {
+                sendTasks.Add(transform1.SendAsync($"HELLO {i}"));
+            }
+
+            await Task.WhenAll(sendTasks);
+
+            if (sendTasks.Any(t => !t.Result))
+            {
+                throw new Exception("Failed to send all messages.");
+            }
+
+            transform1.Complete();
+
+            await action1.Completion;
         }
 
         // This is not part of the final code - this is just an example that will be automated using BuildDynamicBlockWorkflow
@@ -167,7 +195,7 @@ namespace QuickTester
                 });
         }
 
-        
+
         public class DynamicBlock : System.Dynamic.DynamicObject
         {
             public dynamic block;
@@ -186,12 +214,12 @@ namespace QuickTester
                 // public static Task<bool> SendAsync<TInput>(this ITargetBlock<TInput> target, TInput item);
                 var sendAsyncQuery = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
                         | BindingFlags.Public | BindingFlags.NonPublic)
-                                    where method.GetParameters().Length == 2
-                                    where method.IsDefined(typeof(ExtensionAttribute), false)
-                                    where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                                    where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
-                                    where method.Name == "SendAsync"
-                                    select method;
+                                     where method.GetParameters().Length == 2
+                                     where method.IsDefined(typeof(ExtensionAttribute), false)
+                                     where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                     where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
+                                     where method.Name == "SendAsync"
+                                     select method;
                 sendAsyncInfo = sendAsyncQuery.First();
 
                 //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target);
@@ -259,7 +287,7 @@ namespace QuickTester
                         result = linkTo3.Invoke(null, new object[] { this.block, args[0], args[1] });
                     else
                         result = linkTo4.Invoke(null, new object[] { this.block, args[0], args[1], args[2] });
-                   
+
                     return true;
                 }
                 else if (binder.Name.Equals("SendAsync"))
@@ -319,12 +347,12 @@ namespace QuickTester
                 }});
 
                 MethodInfo sendAsync = (!srcType.IsNullOrWhitespace()) ?
-                    DynamicBlock.sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType)) : null;                 
+                    DynamicBlock.sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType)) : null;
 
-                MethodInfo linkTo2 = (!destType.IsNullOrWhitespace()) ? 
+                MethodInfo linkTo2 = (!destType.IsNullOrWhitespace()) ?
                     DynamicBlock.linkTo2Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
-                MethodInfo linkTo3 = (!destType.IsNullOrWhitespace()) ? 
+                MethodInfo linkTo3 = (!destType.IsNullOrWhitespace()) ?
                     DynamicBlock.linkTo3Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
                 MethodInfo linkTo4 = (!destType.IsNullOrWhitespace()) ?
@@ -336,17 +364,17 @@ namespace QuickTester
             {
                 return null;
             }
-        }        
-        
+        }
+
         public static Func<T, TResult> Funcify<T, TResult>(Func<T, TResult> f)
         { return f; }
 
         public static Func<T> Actionify<T>(Func<T> f)
         { return f; }
 
-        public class Msg 
-        { 
-            public int x; 
+        public class Msg
+        {
+            public int x;
             public bool HasError;
 
             public Msg() { }
@@ -356,7 +384,7 @@ namespace QuickTester
                 this.x = msg.x;
                 this.HasError = msg.HasError;
             }
-        
+
         }
 
         // This method goes away completely from the library - it is here to see the explicit way to use TPL Dataflow
