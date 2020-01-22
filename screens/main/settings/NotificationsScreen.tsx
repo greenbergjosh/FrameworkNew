@@ -64,7 +64,7 @@ NotificationsScreen.navigationOptions = ({ navigation }) => {
         Cancel
       </NavButton>
     ),
-    headerTitle: <HeaderTitle title="Privacy Options" />,
+    headerTitle: <HeaderTitle title="Notifications" />,
     headerRight: (
       <NavButton
         onPress={() => navigation.navigate(routes.Home.Feed)}

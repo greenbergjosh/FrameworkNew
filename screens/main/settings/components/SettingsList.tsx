@@ -17,6 +17,13 @@ interface SettingsListProps {
   children?: (props: SettingRowProps) => React.ReactElement<any>
 }
 
+/**
+ *
+ * @param values
+ * @param style
+ * @param children - Defaults to SettingRow if no children provided
+ * @constructor
+ */
 export const SettingsList = ({ values, style, children = SettingRow }: SettingsListProps) => {
   return (
     <FlatList

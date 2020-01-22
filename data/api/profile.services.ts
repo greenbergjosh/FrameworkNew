@@ -1,5 +1,5 @@
 import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
-import { PROFILE_MOCK_DATA } from "./profile.services.mockData"
+import { PRIVACYOPTIONS_MOCK_DATA, PROFILE_MOCK_DATA } from "./profile.services.mockData"
 
 /********************
  * Contacts
@@ -43,6 +43,22 @@ export const loadProfile = async (profileId: GUID) => {
   // return await getgotRequest<ProfileResponse>("get_user_profile", { id: profileId })
   return new Promise<ProfileResponse>((resolve) => {
     setTimeout(resolve, 100, PROFILE_MOCK_DATA)
+  })
+}
+
+/********************
+ * User Profile
+ */
+
+export interface PrivacyOptionsResponse extends GetGotSuccessResponse {
+  results: SettingType[]
+}
+
+export const loadPrivacyOptions = async (profileId: GUID) => {
+  // TODO: update with the final api function name and remove mock Promise
+  // return await getgotRequest<PrivacyOptionsResponse>("??????", { id: profileId })
+  return new Promise<PrivacyOptionsResponse>((resolve) => {
+    setTimeout(resolve, 100, PRIVACYOPTIONS_MOCK_DATA)
   })
 }
 
