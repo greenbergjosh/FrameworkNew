@@ -13,7 +13,7 @@ import Fuse from "fuse.js"
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
 import { ScrollView, Text, View } from "react-native"
-import { FontWeights, routes, styles } from "constants"
+import { FontWeights, routes, styles, Units } from "constants"
 import { useCatalogContext } from "data/catalog.contextProvider"
 import { useProfileContext } from "data/profile.contextProvider"
 import { InterestType, InterestGroupType } from "data/api/catalog.services"
@@ -159,7 +159,7 @@ export const SelectInterestsScreen = (props: SelectInterestsScreenProps) => {
             />
             <WhiteSpace size="sm" />
           </View>
-          <ScrollView style={[styles.View, { marginTop: 0, flex: 1 }]}>
+          <ScrollView style={{ margin: Units.margin, marginTop: 0, flex: 1 }}>
             <InterestGroups value={filteredInterests} onSelect={handleSelect} />
           </ScrollView>
           <View style={styles.BottomButtonBar}>

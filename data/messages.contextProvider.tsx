@@ -12,8 +12,9 @@ import {
 
 export interface MessagesState extends LoadifyStateType<MessagesActionCreatorType> {
   lastLoadMessages: ISO8601String | null
-  lastLoadContacts: ISO8601String | null
   messages: MessageSummary[]
+
+  lastLoadContacts: ISO8601String | null
   contacts: Contact[]
 }
 
@@ -57,9 +58,11 @@ const reducer = loadifyReducer(
 
 const initialState: MessagesState = {
   lastLoadMessages: null,
-  lastLoadContacts: null,
   messages: [],
+
+  lastLoadContacts: null,
   contacts: [],
+
   loading: {
     loadMessages: {},
     loadContacts: {},

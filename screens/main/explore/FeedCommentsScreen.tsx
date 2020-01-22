@@ -8,6 +8,7 @@ import { SafeAreaView, ScrollView } from "react-native"
 import { CommentKeyboard } from "components/feed/CommentKeyboard"
 import { useFeedContext } from "data/feed.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
+import { Units } from "../../../constants/unit.constants"
 
 export interface FeedCommentsParams {
   postId: GUID
@@ -52,7 +53,7 @@ export const FeedCommentsScreen = (props: FeedCommentsScreenProps) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView ref={scrollRef} style={styles.View}>
+      <ScrollView ref={scrollRef} style={{ margin: Units.margin }}>
         <Comments value={comments} navigate={navigate} routes={influencerFeedRoutes} />
       </ScrollView>
       <CommentKeyboard

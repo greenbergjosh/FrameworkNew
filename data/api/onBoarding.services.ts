@@ -1,7 +1,5 @@
 import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
-import { suggestedFollows } from "./onBoarding.services.mockData"
 import { SID } from "constants/appkeys"
-import { PostType } from "./feed.services"
 
 /********************
  * Send Code
@@ -54,26 +52,4 @@ export const createUser = async (
     null,
     SID
   )
-}
-
-/********************
- * Suggested Follows
- */
-
-export type Influencer = UserType & {
-  description?: string
-  source?: string
-  feed: PostType[]
-}
-
-export interface SuggestedFollowsResponse extends GetGotSuccessResponse {
-  results: Influencer[]
-}
-
-export const loadSuggestedFollows = async () => {
-  // TODO: update with the final api function name and remove mock Promise
-  // return await getgotRequest<SuggestedFollowsResponse>("getsuggestedfollows", {})
-  return new Promise<SuggestedFollowsResponse>((resolve) => {
-    setTimeout(resolve, 100, suggestedFollows)
-  })
 }

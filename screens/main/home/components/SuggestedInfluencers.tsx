@@ -1,8 +1,7 @@
 import React from "react"
-import { Carousel, Flex, WhiteSpace } from "@ant-design/react-native"
-import { Text, View } from "react-native"
-import { Influencer } from "data/api/onBoarding.services"
-import { influencerFeedRoutes, routes, styles } from "constants"
+import { ActivityIndicator, Carousel, Flex, WhiteSpace } from "@ant-design/react-native"
+import { ScrollView, Text, View } from "react-native"
+import { influencerFeedRoutes, routes, styles, Units } from "constants"
 import { carouselStyles } from "./styles"
 import Avatar from "components/Avatar"
 import { H2, H3, SMALL } from "components/Markup"
@@ -10,20 +9,28 @@ import { FollowsScreenProps } from "../../follows/FollowsScreen"
 import { InfluencersList } from "components/InfluencersList"
 import TouchImage from "components/TouchImage"
 import { FollowButton } from "components/FollowButton"
+import { useFollowsContext } from "data/follows.contextProvider"
 
-interface SuggestedFollowsProps {
-  influencers: Influencer[]
+interface SuggestedInfluencersProps {
   navigate: FollowsScreenProps["navigation"]["navigate"]
 }
 
-export default (props: SuggestedFollowsProps) => {
-  const { influencers, navigate } = props
-  if (!influencers) {
-    return null
+export default (props: SuggestedInfluencersProps) => {
+  const { navigate } = props
+  const followsContext = useFollowsContext()
+  const { suggestedInfluencers } = followsContext
+
+  if (
+    !followsContext.lastLoadSuggestedInfluencers &&
+    !followsContext.loading.loadSuggestedInfluencers[JSON.stringify([])]
+  ) {
+    followsContext.loadSuggestedInfluencers()
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
+
   return (
     <>
-      <View style={styles.View}>
+      <View style={{ margin: Units.margin }}>
         <H2>Welcome to GetGot</H2>
         <WhiteSpace size="lg" />
         <H3 style={[{ textAlign: "center" }]}>
@@ -32,7 +39,7 @@ export default (props: SuggestedFollowsProps) => {
         <WhiteSpace size="xl" />
         <WhiteSpace size="xl" />
         <Carousel afterChange={this.onHorizontalSelectedIndexChange}>
-          {influencers.map((influencer) => (
+          {suggestedInfluencers.slice(0, 3).map((influencer) => (
             <View style={carouselStyles.carouselHorizontal} key={influencer.userId}>
               <Flex direction="column" align="center">
                 <Avatar
@@ -42,11 +49,11 @@ export default (props: SuggestedFollowsProps) => {
                 />
                 <H2>{influencer.handle}</H2>
                 <WhiteSpace size="sm" />
-                <Text style={styles.Body}>{influencer.description}</Text>
+                <Text style={styles.Body}>{influencer.bio}</Text>
                 <WhiteSpace size="xl" />
                 <FollowButton onPress={() => alert("Follow feature to come")} />
                 <WhiteSpace size="xl" />
-                <SMALL>{influencer.source}</SMALL>
+                <SMALL>{influencer.statusPhrase.template}</SMALL>
                 <WhiteSpace size="lg" />
                 <Flex direction="row" justify="center" style={{ width: "100%" }}>
                   {influencer.feed.map((post, index, ary) => (
@@ -68,11 +75,16 @@ export default (props: SuggestedFollowsProps) => {
           ))}
         </Carousel>
       </View>
-      <WhiteSpace />
       <View style={styles.SubHeader}>
         <Text style={styles.Body}>OTHER PEOPLE TO FOLLOW</Text>
       </View>
-      <InfluencersList navigate={navigate} routes={influencerFeedRoutes} isRecommended={true} />
+      <InfluencersList
+        influencers={suggestedInfluencers.slice(3)}
+        navigate={navigate}
+        routes={influencerFeedRoutes}
+        isRecommended={true}
+      />
+      <ScrollView />
     </>
   )
 }

@@ -1,4 +1,9 @@
-import { BlockedUsersResponse, FollowersResponse, InfluencersResponse } from "./follows.services"
+import {
+  BlockedUsersResponse,
+  FollowersResponse,
+  InfluencersResponse,
+  SuggestedInfluencersResponse,
+} from "./follows.services"
 import { FEED_MOCK_DATA } from "./feed.services.mockData"
 
 export const BLOCKED_USERS_MOCK_DATA: BlockedUsersResponse = {
@@ -99,7 +104,12 @@ export const FOLLOWS_MOCK_DATA: InfluencersResponse = {
       statusPhrase: {
         template: "liked 2 posts.",
       },
-      feed: [FEED_MOCK_DATA.results[1], FEED_MOCK_DATA.results[2], FEED_MOCK_DATA.results[3], FEED_MOCK_DATA.results[4]],
+      feed: [
+        FEED_MOCK_DATA.results[1],
+        FEED_MOCK_DATA.results[2],
+        FEED_MOCK_DATA.results[3],
+        FEED_MOCK_DATA.results[4],
+      ],
       lastActivity: "2019-11-26T12:04:44.477Z",
     },
     {
@@ -114,6 +124,84 @@ export const FOLLOWS_MOCK_DATA: InfluencersResponse = {
         },
       },
       feed: [FEED_MOCK_DATA.results[5]],
+      lastActivity: "2019-11-24T09:00:00+05:00",
+    },
+  ],
+}
+
+export const SUGGESTED_INFLUENCERS_MOCK_DATA: SuggestedInfluencersResponse = {
+  r: 0,
+  results: [
+    {
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b0",
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
+      avatarUri: "https://randomuser.me/api/portraits/women/20.jpg",
+      handle: "boren",
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      statusPhrase: {
+        template: "From your contacts",
+      },
+      feed: [...FEED_MOCK_DATA.results.slice(0, 3)],
+      lastActivity: "2019-11-24T09:00:00+05:00",
+    },
+    {
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b1",
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb53",
+      avatarUri: "https://randomuser.me/api/portraits/women/21.jpg",
+      handle: "snoren",
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      statusPhrase: {
+        template: "From your contacts",
+      },
+      feed: [...FEED_MOCK_DATA.results.slice(3, 6)],
+      lastActivity: "2019-11-24T09:00:00+05:00",
+    },
+    {
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b2",
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb54",
+      avatarUri: "https://randomuser.me/api/portraits/women/23.jpg",
+      handle: "goren",
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      statusPhrase: {
+        template: "From your contacts",
+      },
+      feed: [...FEED_MOCK_DATA.results.slice(6, 9)],
+      lastActivity: "2019-11-24T09:00:00+05:00",
+    },
+    {
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b3",
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb52",
+      avatarUri: "https://randomuser.me/api/portraits/women/24.jpg",
+      handle: "bajoren",
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      statusPhrase: {
+        template: "From your contacts",
+      },
+      feed: [...FEED_MOCK_DATA.results.slice(0, 3)],
+      lastActivity: "2019-11-24T09:00:00+05:00",
+    },
+    {
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b4",
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb53",
+      avatarUri: "https://randomuser.me/api/portraits/women/25.jpg",
+      handle: "katorin",
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      statusPhrase: {
+        template: "From your contacts",
+      },
+      feed: [...FEED_MOCK_DATA.results.slice(3, 6)],
+      lastActivity: "2019-11-24T09:00:00+05:00",
+    },
+    {
+      id: "37c240b4-b18c-4239-90ca-fea6b10167b5",
+      userId: "a7d1a061-24bc-405e-a5e0-adeb88dceb54",
+      avatarUri: "https://randomuser.me/api/portraits/women/26.jpg",
+      handle: "orin",
+      bio: "✧･ﾟ:* angelverse *:･ﾟ✧*:･ﾟ✧",
+      statusPhrase: {
+        template: "From your contacts",
+      },
+      feed: [...FEED_MOCK_DATA.results.slice(6, 9)],
       lastActivity: "2019-11-24T09:00:00+05:00",
     },
   ],

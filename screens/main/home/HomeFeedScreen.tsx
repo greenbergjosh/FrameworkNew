@@ -3,12 +3,11 @@ import { Alert, SafeAreaView, ScrollView, View } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
 import { influencerFeedRoutes, routes } from "constants"
 import { ActivityIndicator, List } from "@ant-design/react-native"
-import { useOnBoardingContext } from "data/onBoarding.contextProvider"
 import { InfluencerPostHeader, Post } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"
 import { SettingsDrawerContext } from "../settings/SettingsDrawer"
 import DevTempNav from "./components/DevTempNav"
-import SuggestedFollows from "./components/SuggestedFollows"
+import SuggestedInfluencers from "./components/SuggestedInfluencers"
 import NavButton from "components/NavButton"
 import moment from "moment"
 import { useFeedContext } from "data/feed.contextProvider"
@@ -19,14 +18,8 @@ interface HomeFeedScreenProps extends NavigationStackScreenProps {}
 export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
   const { navigate } = props.navigation
   const [mode, setMode] = React.useState("homefeed")
-  const onBoardingContext = useOnBoardingContext()
   const feedContext = useFeedContext()
-  const { suggestedFollows, loadSuggestedFollows } = onBoardingContext
   const { homeFeed } = feedContext
-
-  React.useMemo(() => {
-    loadSuggestedFollows()
-  }, [])
 
   /*
    * Refresh home feed every few minutes
@@ -76,7 +69,7 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
           }
         />
         {mode === "onboarding" ? (
-          <SuggestedFollows influencers={suggestedFollows} navigate={navigate} />
+          <SuggestedInfluencers navigate={navigate} />
         ) : (
           <List>
             {homeFeed.map((post) => (

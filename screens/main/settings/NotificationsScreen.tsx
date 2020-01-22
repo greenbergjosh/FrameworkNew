@@ -51,7 +51,7 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
       <View style={styles.SubHeader}>
         <Text style={styles.Body}>POSTS AND COMMENTS</Text>
       </View>
-      <SettingsList values={notificationSettings} style={styles.View}>
+      <SettingsList values={notificationSettings} style={{ margin: Units.margin }}>
         {({ value }) => (
           <View
             style={{

@@ -12,11 +12,6 @@ const LayoutStyles = StyleSheet.create({
     height: "100%",
   },
 
-  View: {
-    margin: Units.margin,
-    height: "100%",
-  },
-
   SubHeader: {
     backgroundColor: Colors.navBarBackground,
     borderBottomWidth: 1,

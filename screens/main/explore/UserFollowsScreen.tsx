@@ -8,40 +8,50 @@ import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
 import { Tab, Tabs } from "components/Tabs"
 import { SafeAreaView } from "react-native"
+import { ActivityIndicator } from "@ant-design/react-native"
 import { BottomTabBar } from "components/BottomTabBar"
+import { useFollowsContext } from "data/follows.contextProvider"
 
 export interface UserFollowsScreenProps extends NavigationTabScreenProps {}
 
-export class UserFollowsScreen extends React.Component<UserFollowsScreenProps> {
-  static navigationOptions = ({ navigation }) => {
-    return {
-      headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-      headerTitle: <HeaderTitle title="loren" />,
-    }
+export const UserFollowsScreen = (props: UserFollowsScreenProps) => {
+  const { navigate } = props.navigation
+  const followsContext = useFollowsContext()
+
+  if (
+    !followsContext.lastLoadInfluencers &&
+    !followsContext.loading.loadInfluencers[JSON.stringify([])]
+  ) {
+    followsContext.loadInfluencers()
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
 
-  render() {
-    const { navigate } = this.props.navigation
+  const { influencers } = followsContext
 
-    return (
-      <SafeAreaView style={{ flex: 1 }}>
-        <Tabs stateRouteName={this.props.navigation.state.routeName}>
-          <Tab title="Mutual" route={routes.Explore.UserFollowsMutual}>
-            <InfluencersList navigate={navigate} routes={influencerFeedRoutes} />
-          </Tab>
-          <Tab title="Followers" route={routes.Explore.UserFollowsFollowers}>
-            <UserFollowersList
-              navigate={navigate}
-              routes={influencerFeedRoutes}
-              influencerId={""}
-            />
-          </Tab>
-          <Tab title="Following" route={routes.Explore.UserFollowsInfluencers}>
-            <UserInfluencersList navigate={navigate} routes={influencerFeedRoutes} />
-          </Tab>
-        </Tabs>
-        <BottomTabBar activeTab={routes.Explore.default} />
-      </SafeAreaView>
-    )
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Tabs stateRouteName={props.navigation.state.routeName}>
+        <Tab title="Mutual" route={routes.Explore.UserFollowsMutual}>
+          <InfluencersList
+            influencers={influencers}
+            navigate={navigate}
+            routes={influencerFeedRoutes}
+          />
+        </Tab>
+        <Tab title="Followers" route={routes.Explore.UserFollowsFollowers}>
+          <UserFollowersList navigate={navigate} routes={influencerFeedRoutes} influencerId={""} />
+        </Tab>
+        <Tab title="Following" route={routes.Explore.UserFollowsInfluencers}>
+          <UserInfluencersList navigate={navigate} routes={influencerFeedRoutes} />
+        </Tab>
+      </Tabs>
+      <BottomTabBar activeTab={routes.Explore.default} />
+    </SafeAreaView>
+  )
+}
+UserFollowsScreen.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: <HeaderTitle title="loren" />,
   }
 }

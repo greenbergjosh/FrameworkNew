@@ -8,12 +8,26 @@ import { influencerFeedRoutes, routes } from "constants"
 import { Tab, Tabs } from "components/Tabs"
 import { SafeAreaView, ScrollView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
+import { useFollowsContext } from "../../../data/follows.contextProvider"
+import { ActivityIndicator } from "@ant-design/react-native"
 
 export interface FollowsScreenProps extends NavigationTabScreenProps {}
 
 export const FollowsScreen = ({ navigation }: FollowsScreenProps) => {
-  const authContext = useAuthContext()
   const { navigate } = navigation
+  const authContext = useAuthContext()
+  const followsContext = useFollowsContext()
+
+  if (
+    !followsContext.lastLoadInfluencers &&
+    !followsContext.loading.loadInfluencers[JSON.stringify([])]
+  ) {
+    followsContext.loadInfluencers()
+    return <ActivityIndicator animating toast size="large" text="Loading..." />
+  }
+
+  const { influencers } = followsContext
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Tabs stateRouteName={navigation.state.routeName}>
@@ -26,6 +40,7 @@ export const FollowsScreen = ({ navigation }: FollowsScreenProps) => {
         </Tab>
         <Tab title="You Follow" route={routes.Follows.Influencers}>
           <InfluencersList
+            influencers={influencers}
             navigate={navigate}
             routes={influencerFeedRoutes}
             userId={authContext.id}
