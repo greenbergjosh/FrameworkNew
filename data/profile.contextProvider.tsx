@@ -1,14 +1,16 @@
 import React, { useContext } from "react"
 import { GetGotResponse } from "./api/getgotRequest"
 import {
+  loadNotificationSettings,
+  loadPrivacyOptions,
+  NotificationSettingsResponse,
+  PrivacyOptionsResponse,
   ProfileResponse,
   saveUserInterests,
-  UserInterestsResponse,
+  SettingType,
   syncContacts,
   SyncContactsResponse,
-  SettingType,
-  PrivacyOptionsResponse,
-  loadPrivacyOptions,
+  UserInterestsResponse,
 } from "./api/profile.services"
 import { InterestType } from "./api/catalog.services"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
@@ -27,6 +29,9 @@ export interface ProfileState extends LoadifyStateType<ProfileActionCreatorsType
 
   lastLoadPrivacyOptions: ISO8601String | null
   privacyOptions: SettingType[]
+
+  lastLoadNotificationSettings: ISO8601String | null
+  notificationSettings: SettingType[]
 }
 
 export interface ProfileActionCreatorsType extends GetGotContextType {
@@ -35,6 +40,7 @@ export interface ProfileActionCreatorsType extends GetGotContextType {
   syncContacts: (contacts: ContactType[]) => Promise<GetGotResponse>
   saveInterests: (interests: InterestType[]) => Promise<GetGotResponse>
   loadPrivacyOptions: (userId?: GUID) => Promise<GetGotResponse>
+  loadNotificationSettings: (userId?: GUID) => Promise<GetGotResponse>
 }
 
 export interface ProfileContextType extends ProfileActionCreatorsType, ProfileState {}
@@ -43,12 +49,14 @@ type LoadProfileAction = FSA<"loadProfile", ProfileResponse>
 type SyncContactsAction = FSA<"syncContacts", SyncContactsResponse>
 type SaveInterestsAction = FSA<"saveInterests", UserInterestsResponse>
 type LoadPrivacyOptionsAction = FSA<"loadPrivacyOptions", PrivacyOptionsResponse>
+type LoadNotificationSettingsAction = FSA<"loadNotificationSettings", NotificationSettingsResponse>
 
 type ProfileAction =
   | LoadProfileAction
   | SyncContactsAction
   | SaveInterestsAction
   | LoadPrivacyOptionsAction
+  | LoadNotificationSettingsAction
 
 const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | GetGotResetAction) => {
   switch (action.type) {
@@ -75,8 +83,15 @@ const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | Get
       return {
         ...state,
         ...action.payload,
-        privacyOptions: [ ...action.payload.results ],
+        privacyOptions: [...action.payload.results],
         lastLoadPrivacyOptions: new Date().toISOString(),
+      }
+    case "loadNotificationSettings":
+      return {
+        ...state,
+        ...action.payload,
+        notificationSettings: [...action.payload.results],
+        lastLoadNotificationSettings: new Date().toISOString(),
       }
     case "reset":
       return initialState
@@ -98,11 +113,15 @@ const initialState: ProfileState = {
   lastLoadPrivacyOptions: null,
   privacyOptions: [],
 
+  lastLoadNotificationSettings: null,
+  notificationSettings: [],
+
   loading: {
     loadProfile: {},
     syncContacts: {},
     saveInterests: {},
     loadPrivacyOptions: {},
+    loadNotificationSettings: {},
     reset: {},
   },
 }
@@ -113,6 +132,7 @@ const initialContext: ProfileContextType = {
   syncContacts: async () => ({} as GetGotResponse),
   saveInterests: async () => ({} as GetGotResponse),
   loadPrivacyOptions: async () => ({} as GetGotResponse),
+  loadNotificationSettings: async () => ({} as GetGotResponse),
   reset: () => {},
 }
 
@@ -163,11 +183,30 @@ export const ProfileContextProvider = ({ ...props }) => {
           }
           return response
         },
+        loadNotificationSettings: async (userId) => {
+          const response = await loadNotificationSettings(userId)
+          if (response.r === 0) {
+            dispatch({ type: "loadNotificationSettings", payload: response })
+          } else {
+            console.warn(
+              `Error loading notificationSettings for ${userId ? "id: " + userId : "current user."}`
+            )
+          }
+          return response
+        },
         reset: () => {
           dispatch(getgotResetAction)
         },
       }),
-    [dispatch, getgotResetAction, loadProfile, syncContacts, saveUserInterests]
+    [
+      dispatch,
+      getgotResetAction,
+      loadProfile,
+      syncContacts,
+      saveUserInterests,
+      loadPrivacyOptions,
+      loadNotificationSettings,
+    ]
   )
 
   const contextValue = React.useMemo(() => ({ ...state, ...loadifiedActionCreators }), [

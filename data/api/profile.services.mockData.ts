@@ -1,4 +1,8 @@
-import { SettingType, ProfileResponse, PrivacyOptionsResponse } from "./profile.services"
+import {
+  ProfileResponse,
+  PrivacyOptionsResponse,
+  NotificationSettingsResponse,
+} from "./profile.services"
 
 export const PROFILE_MOCK_DATA: ProfileResponse = {
   r: 0,
@@ -53,41 +57,44 @@ export const PRIVACYOPTIONS_MOCK_DATA: PrivacyOptionsResponse = {
   ],
 }
 
-export const NOTIFICATIONS_MOCK_DATA: SettingType[] = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    title: "Likes",
-    description: "",
-    checked: true,
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    title: "Likes and Comments on Photos of You",
-    description: "",
-    checked: true,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    title: "Photos of You",
-    description: "",
-    checked: false,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d73",
-    title: "Comments",
-    description: "",
-    checked: false,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d74",
-    title: "Comment Likes",
-    description: "",
-    checked: false,
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d75",
-    title: "First Posts",
-    description: "",
-    checked: false,
-  },
-]
+export const NOTIFICATION_SETTINGS_MOCK_DATA: NotificationSettingsResponse = {
+  r: 0,
+  results: [
+    {
+      id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
+      title: "Likes",
+      description: "",
+      checked: true,
+    },
+    {
+      id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
+      title: "Likes and Comments on Photos of You",
+      description: "",
+      checked: true,
+    },
+    {
+      id: "58694a0f-3da1-471f-bd96-145571e29d72",
+      title: "Photos of You",
+      description: "",
+      checked: false,
+    },
+    {
+      id: "58694a0f-3da1-471f-bd96-145571e29d73",
+      title: "Comments",
+      description: "",
+      checked: false,
+    },
+    {
+      id: "58694a0f-3da1-471f-bd96-145571e29d74",
+      title: "Comment Likes",
+      description: "",
+      checked: false,
+    },
+    {
+      id: "58694a0f-3da1-471f-bd96-145571e29d75",
+      title: "First Posts",
+      description: "",
+      checked: false,
+    },
+  ],
+}
