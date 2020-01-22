@@ -2,6 +2,7 @@ import {
   ProfileResponse,
   PrivacyOptionsResponse,
   NotificationSettingsResponse,
+  AnalyticsResponse
 } from "./profile.services"
 
 export const PROFILE_MOCK_DATA: ProfileResponse = {
@@ -24,12 +25,15 @@ export const PROFILE_MOCK_DATA: ProfileResponse = {
   },
 }
 
-export const ANALYTICS_MOCK_DATA = {
-  impressionsCount: 2526,
-  clickThruCount: 396,
-  itemsSoldCount: 52,
-  commissionTotal: 126,
-  reach: 139,
+export const ANALYTICS_MOCK_DATA: AnalyticsResponse = {
+  r: 0,
+  result: {
+    impressionsCount: 2526,
+    clickThruCount: 396,
+    itemsSoldCount: 52,
+    commissionTotal: 126,
+    reach: 139,
+  },
 }
 
 export const PRIVACYOPTIONS_MOCK_DATA: PrivacyOptionsResponse = {

@@ -11,6 +11,9 @@ import {
   syncContacts,
   SyncContactsResponse,
   UserInterestsResponse,
+  AnalyticsType,
+  AnalyticsResponse,
+  loadAnalytics,
 } from "./api/profile.services"
 import { InterestType } from "./api/catalog.services"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
@@ -32,6 +35,9 @@ export interface ProfileState extends LoadifyStateType<ProfileActionCreatorsType
 
   lastLoadNotificationSettings: ISO8601String | null
   notificationSettings: SettingType[]
+
+  lastLoadAnalytics: ISO8601String | null
+  analytics: AnalyticsType
 }
 
 export interface ProfileActionCreatorsType extends GetGotContextType {
@@ -41,6 +47,7 @@ export interface ProfileActionCreatorsType extends GetGotContextType {
   saveInterests: (interests: InterestType[]) => Promise<GetGotResponse>
   loadPrivacyOptions: (userId?: GUID) => Promise<GetGotResponse>
   loadNotificationSettings: (userId?: GUID) => Promise<GetGotResponse>
+  loadAnalytics: (userId?: GUID) => Promise<void>
 }
 
 export interface ProfileContextType extends ProfileActionCreatorsType, ProfileState {}
@@ -50,6 +57,7 @@ type SyncContactsAction = FSA<"syncContacts", SyncContactsResponse>
 type SaveInterestsAction = FSA<"saveInterests", UserInterestsResponse>
 type LoadPrivacyOptionsAction = FSA<"loadPrivacyOptions", PrivacyOptionsResponse>
 type LoadNotificationSettingsAction = FSA<"loadNotificationSettings", NotificationSettingsResponse>
+type LoadAnalyticsAction = FSA<"loadAnalytics", AnalyticsResponse>
 
 type ProfileAction =
   | LoadProfileAction
@@ -57,6 +65,7 @@ type ProfileAction =
   | SaveInterestsAction
   | LoadPrivacyOptionsAction
   | LoadNotificationSettingsAction
+  | LoadAnalyticsAction
 
 const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | GetGotResetAction) => {
   switch (action.type) {
@@ -93,6 +102,13 @@ const reducer = loadifyReducer((state: ProfileState, action: ProfileAction | Get
         notificationSettings: [...action.payload.results],
         lastLoadNotificationSettings: new Date().toISOString(),
       }
+    case "loadAnalytics":
+      return {
+        ...state,
+        ...action.payload,
+        analytics: { ...action.payload.result },
+        lastLoadAnalytics: new Date().toISOString(),
+      }
     case "reset":
       return initialState
     default:
@@ -116,12 +132,16 @@ const initialState: ProfileState = {
   lastLoadNotificationSettings: null,
   notificationSettings: [],
 
+  lastLoadAnalytics: null,
+  analytics: null,
+
   loading: {
     loadProfile: {},
     syncContacts: {},
     saveInterests: {},
     loadPrivacyOptions: {},
     loadNotificationSettings: {},
+    loadAnalytics: {},
     reset: {},
   },
 }
@@ -133,6 +153,7 @@ const initialContext: ProfileContextType = {
   saveInterests: async () => ({} as GetGotResponse),
   loadPrivacyOptions: async () => ({} as GetGotResponse),
   loadNotificationSettings: async () => ({} as GetGotResponse),
+  loadAnalytics: async () => {},
   reset: () => {},
 }
 
@@ -194,6 +215,16 @@ export const ProfileContextProvider = ({ ...props }) => {
           }
           return response
         },
+        loadAnalytics: async (userId) => {
+          const response = await loadAnalytics(userId)
+          if (response.r === 0) {
+            dispatch({ type: "loadAnalytics", payload: response })
+          } else {
+            console.warn(
+              `Error loading analytics for ${userId ? "id: " + userId : "current user."}`
+            )
+          }
+        },
         reset: () => {
           dispatch(getgotResetAction)
         },
@@ -206,6 +237,7 @@ export const ProfileContextProvider = ({ ...props }) => {
       saveUserInterests,
       loadPrivacyOptions,
       loadNotificationSettings,
+      loadAnalytics,
     ]
   )
 

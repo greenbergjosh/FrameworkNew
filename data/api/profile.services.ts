@@ -1,5 +1,10 @@
 import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
-import { NOTIFICATION_SETTINGS_MOCK_DATA, PRIVACYOPTIONS_MOCK_DATA, PROFILE_MOCK_DATA } from "./profile.services.mockData"
+import {
+  ANALYTICS_MOCK_DATA,
+  NOTIFICATION_SETTINGS_MOCK_DATA,
+  PRIVACYOPTIONS_MOCK_DATA,
+  PROFILE_MOCK_DATA,
+} from "./profile.services.mockData"
 
 /********************
  * Types
@@ -10,6 +15,14 @@ export type SettingType = {
   title: string
   description: string
   checked: boolean
+}
+
+export type AnalyticsType = {
+  impressionsCount: number
+  clickThruCount: number
+  itemsSoldCount: number
+  commissionTotal: number
+  reach: number
 }
 
 /********************
@@ -73,8 +86,8 @@ export const loadPrivacyOptions = async (userId: GUID) => {
   })
 }
 
-/********************
- * Privacy Options
+/*************************
+ * Notification Settings
  */
 
 export interface NotificationSettingsResponse extends GetGotSuccessResponse {
@@ -86,5 +99,21 @@ export const loadNotificationSettings = async (userId: GUID) => {
   // return await getgotRequest<NotificationSettingsResponse>("??????", { id: userId })
   return new Promise<NotificationSettingsResponse>((resolve) => {
     setTimeout(resolve, 100, NOTIFICATION_SETTINGS_MOCK_DATA)
+  })
+}
+
+/*************************
+ * Analytics
+ */
+
+export interface AnalyticsResponse extends GetGotSuccessResponse {
+  result: AnalyticsType
+}
+
+export const loadAnalytics = async (userId: GUID) => {
+  // TODO: update with the final api function name and remove mock Promise
+  // return await getgotRequest<AnalyticsResponse>("??????", { id: userId })
+  return new Promise<AnalyticsResponse>((resolve) => {
+    setTimeout(resolve, 100, ANALYTICS_MOCK_DATA)
   })
 }
