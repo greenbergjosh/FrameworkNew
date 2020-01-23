@@ -59,10 +59,12 @@ namespace QuickTester
         ""predicate"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 != 0;""
 	}, {
 		""from"": 2,
-		""to"": 4
+		""to"": 4,
+		""propagateCompletion"": false
 	}, {
 		""from"": 3,
-		""to"": 4
+		""to"": 4,
+		""propagateCompletion"": false
 	}]
 }";
 
@@ -83,6 +85,8 @@ namespace QuickTester
             }
 
             flow.Complete(1);
+            
+            await flow.Completed(2, 3).ContinueWith(_ => flow.Complete(4));
 
             await flow.AllCompleted;
         }

@@ -11,27 +11,33 @@ namespace Utility.Dataflow
 {
     public class DynamicDataflow
     {
-        private Dictionary<int, IDataflowBlock> _dataFlowBlocks;
+        private Dictionary<int, IDataflowBlock> _dataflowBlocks;
 
-        private DynamicDataflow(Dictionary<int, IDataflowBlock> dataFlowBlocks)
+        private DynamicDataflow(Dictionary<int, IDataflowBlock> dataflowBlocks)
         {
-            _dataFlowBlocks = dataFlowBlocks;
-            AllCompleted = Task.WhenAll(_dataFlowBlocks.Values.Select(block => block.Completion));
+            _dataflowBlocks = dataflowBlocks;
+            AllCompleted = Task.WhenAll(_dataflowBlocks.Values.Select(block => block.Completion));
         }
 
         public Task<bool> SendAsync<T>(int blockId, T input)
         {
-            var block = _dataFlowBlocks[blockId];
+            var block = _dataflowBlocks[blockId];
 
             return (block as ITargetBlock<T>).SendAsync(input);
         }
 
         public void Complete(int blockId)
         {
-            var block = _dataFlowBlocks[blockId];
+            var block = _dataflowBlocks[blockId];
 
             block.Complete();
         }
+
+        public Task Completed(int blockId) => _dataflowBlocks[blockId].Completion;
+
+        public Task Completed(params int[] blockIds) => Completed((IEnumerable<int>)blockIds);
+
+        public Task Completed(IEnumerable<int> blockIds) => Task.WhenAll(blockIds.Select(id => _dataflowBlocks[id].Completion));
 
         public Task AllCompleted { get; }
 
