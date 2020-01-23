@@ -7,7 +7,10 @@ import { GiftedChat } from "react-native-gifted-chat"
 import * as mockData from "data/api/messages.services.mockData"
 import NavButton from "components/NavButton"
 import TouchIcon from "components/TouchIcon"
-import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "hooks/useActionSheetTakeSelectPhoto"
 import { SafeAreaView } from "react-native"
 
 interface ViewThreadScreenProps extends NavigationStackScreenProps {}
@@ -90,8 +93,19 @@ ViewThreadScreen.navigationOptions = ({ navigation }) => {
     ),
     headerTitle: (
       <HeaderTitle
-        title={mockData.MESSAGE_MOCK_DATA.title || `Chat - ${mockData.MESSAGE_MOCK_DATA.participants.join(", ")}`}
+        title={
+          mockData.MESSAGE_MOCK_DATA.title ||
+          `Chat - ${mockData.MESSAGE_MOCK_DATA.participants.join(", ")}`
+        }
       />
+    ),
+    headerRight: (
+      <NavButton
+        onPress={() => navigation.navigate(routes.Messages.default)}
+        position="right"
+        type="primary">
+        Close
+      </NavButton>
     ),
   }
 }
