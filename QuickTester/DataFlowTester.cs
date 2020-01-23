@@ -8,67 +8,118 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Utility;
-using Utility.DynamicDataFlow;
+using Utility.Dataflow;
 
 namespace QuickTester
 {
     public class DataFlowTester
     {
-        // Convert JSON to 
-        public static void BuildDynamicBlockWorkflow(string JsonWorkflowDefinition)
+        public static async Task TestDynamicDataflow()
         {
-            //If no tasks[x].SourceType, default to Msg
-            //If no links[x].ToId, default to DataflowBlock.NullTarget<typeof(SourceType)>()
+            var config = @"
+{
+	""defaultBlockOptions"": {
+		""maxDegreeOfParallelism"": 50
+	},
+	""defaultLinkOptions"": {
+		""propagateCompletion"": true
+	},
+	""blocks"": [{
+		""id"": 1,
+		""blockType"": ""Transform"",
+		""inputType"": ""System.String"",
+		""outputType"": ""System.String"",
+		""code"": ""return $\""Processed by 1: {p.Input}\"";""
+	}, {
+		""id"": 2,
+		""blockType"": ""Transform"",
+		""inputType"": ""System.String"",
+		""outputType"": ""System.String"",
+		""code"": ""return p.Input.ToLower();""
+	}, {
+		""id"": 3,
+		""blockType"": ""Transform"",
+		""inputType"": ""System.String"",
+		""outputType"": ""System.String"",
+		""code"": ""return p.Input.ToUpper();""
+	}, {
+		""id"": 4,
+		""blockType"": ""Action"",
+		""inputType"": ""System.String"",
+		""code"": ""System.Console.WriteLine(p.Input);"",
+		""#maxDegreeOfParallelism"": 1
+	}],
+	""links"": [{
+		""from"": 1,
+		""to"": 2,
+        ""predicate"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 == 0;""
+	}, {
+		""from"": 1,
+		""to"": 3,
+        ""predicate"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 != 0;""
+	}, {
+		""from"": 2,
+		""to"": 4
+	}, {
+		""from"": 3,
+		""to"": 4
+	}]
+}";
 
-            //"tasks":
-            //[
-            //  {
-            //  "Id": 1,
-            //  "BlockType": "Transform",
-            //  "SourceType": "QuickTester.DataFlowTester+Msg",
-            //  "DestinationType: "QuickTester.DataFlowTester+Msg",
-            //  "EvaluatableId": "1234",
-            //  "Args": "likely a json object",
-            //  "MaxParallelism" : "",
-            //  "BoundedCapacity": "",
-            //  "EnsureOrdered" : ""
-            //  }
-            //]
-            //"links": 
-            //[
-            //  {
-            //    "FromId": 1,
-            //    "ToId" : 2,
-            //    "PropagateCompletion": true,
-            //    "PredicateEvaluatableId": 123
-            //  }
-            //]
-
-            // There will be one head returned
-            // await head.SendAsync(new Msg { x = i });
-            // head.Complete();
-            // There will be many tails returned
-            // await Task.WhenAll(tails.Completion)
-        }
-
-        public static async Task TestDynamicDataFlow()
-        {
-            var transform1 = DynamicDataFlowBlock<string, string>.Create("Transform", s => $"Processed by transform 1: {s}", maxDegreesOfParallelism: 2);
-            var transform2 = DynamicDataFlowBlock<string, string>.Create("Transform", s => $"Processed by transform 2: {s.ToLower()}", maxDegreesOfParallelism: 2);
-            var transform3 = DynamicDataFlowBlock<string, string>.Create("Transform", s => $"Processed by transform 3: {s.ToUpper()}", maxDegreesOfParallelism: 2);
-            var action1 = DynamicDataFlowBlock<string>.Create("Action", Console.WriteLine);
-
-            transform1.LinkTo(transform2, new DataflowLinkOptions() { PropagateCompletion = true }, s => (s.Last() - '0') % 2 == 0);
-            transform1.LinkTo(transform3, new DataflowLinkOptions() { PropagateCompletion = true }, s => (s.Last() - '0') % 2 != 0);
-
-            transform2.LinkTo(action1, new DataflowLinkOptions() { PropagateCompletion = true });
-            transform3.LinkTo(action1, new DataflowLinkOptions() { PropagateCompletion = true });
+            var flow = DynamicDataflow.Create(config);
 
             var sendTasks = new List<Task<bool>>();
 
             for (var i = 0; i < 10; i++)
             {
-                sendTasks.Add(transform1.SendAsync($"HELLO {i}"));
+                sendTasks.Add(flow.SendAsync(1, $"HELLO {i}"));
+            }
+
+            await Task.WhenAll(sendTasks);
+
+            if (sendTasks.Any(t => !t.Result))
+            {
+                throw new Exception("Failed to send all messages.");
+            }
+
+            flow.Complete(1);
+
+            await flow.AllCompleted;
+        }
+
+        public static async Task TestRoslyn()
+        {
+            var scripts = new List<ScriptDescriptor>();
+            var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts");
+            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+
+            var transform2Code = @"return p.Input.ToLower();";
+            rw.CompileAndCache(new ScriptDescriptor("transform2", transform2Code, false, null));
+
+            Func<string, Task<string>> transform2Func = async s => (string)await rw["transform2"](new { Input = s }, new StateWrapper());
+
+            var dataBlockOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 2 };
+
+            var transform1 = new TransformBlock<string, string>(s => $"Processed by transform 1: {s}", dataBlockOptions);
+            //var transform2 = new TransformBlock<string, string>(s => s.ToLower(), dataBlockOptions);
+            var transform2 = new TransformBlock<string, string>(transform2Func, dataBlockOptions);
+            var transform3 = new TransformBlock<string, string>(s => s.ToUpper(), dataBlockOptions);
+            var action = new ActionBlock<string>(Console.WriteLine, dataBlockOptions);
+
+            var dataFlowLinkOptions = new DataflowLinkOptions() { PropagateCompletion = true };
+            //transform1.LinkTo(transform2, dataFlowLinkOptions);
+            transform1.LinkTo(transform2, dataFlowLinkOptions, s => (s.Last() - '0') % 2 == 0);
+            transform1.LinkTo(transform3, dataFlowLinkOptions, s => (s.Last() - '0') % 2 != 0);
+            transform1.LinkTo(DataflowBlock.NullTarget<string>());
+
+            transform2.LinkTo(action, dataFlowLinkOptions);
+            transform3.LinkTo(action, dataFlowLinkOptions);
+
+            var sendTasks = new List<Task<bool>>();
+
+            for (var i = 0; i < 10; i++)
+            {
+                sendTasks.Add(transform1.SendAsync($"Hello {i}"));
             }
 
             await Task.WhenAll(sendTasks);
@@ -80,7 +131,7 @@ namespace QuickTester
 
             transform1.Complete();
 
-            await action1.Completion;
+            await action.Completion;
         }
 
         // This is not part of the final code - this is just an example that will be automated using BuildDynamicBlockWorkflow
