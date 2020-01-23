@@ -1,0 +1,25 @@
+{
+  "name": "getgot-mock-server",
+  "version": "1.0.0",
+  "description": "Mock data services server",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node -r esm .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "pg": "^7.15.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.2",
+    "@types/node": "^13.1.0",
+    "typescript": "^3.7.4"
+  }
+}

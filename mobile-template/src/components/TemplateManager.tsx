@@ -71,6 +71,7 @@ export const TemplateManager = ({ getgotService }: TemplateManagerProps) => {
 
   const setTokenValues = React.useCallback(
     (tokenValues: { [key: string]: string }) => {
+      alert("Setting Data State " + JSON.stringify(tokenValues))
       setDataState({ ...dataState, ...tokenValues })
     },
     [dataState]
