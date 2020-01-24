@@ -39,8 +39,6 @@ namespace Utility.Dataflow
 
         public Task Completed(IEnumerable<int> blockIds) => Task.WhenAll(blockIds.Select(id => _dataflowBlocks[id].Completion));
 
-        public IDataflowBlock this[int id] => _dataflowBlocks[id];
-
         public Task AllCompleted { get; }
 
         public static DynamicDataflow Create(string config) => Create(JsonWrapper.JsonToGenericEntity(config));
@@ -136,18 +134,14 @@ namespace Utility.Dataflow
         {
             var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
 
-            return (TInput input) => rw[sd.Key](new { Input = input }, new StateWrapper());
+            return input => rw[sd.Key](new { Input = input }, new StateWrapper());
         }
 
         private static Func<TInput, Task<TOutput>> CreateFunction<TInput, TOutput>(string code, RoslynWrapper rw)
         {
             var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
 
-            return async (TInput input) =>
-            {
-                Console.WriteLine("running rw");
-                return (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
-            };
+            return async input => (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
         }
 
         private static ExecutionDataflowBlockOptions GetExecutionDataflowBlockOptions(IGenericEntity options, IGenericEntity defaultDataflowBlockOptions)
@@ -209,7 +203,7 @@ namespace Utility.Dataflow
         {
             var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
 
-            return (TOutput input) => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
+            return input => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
         }
 
         private static DataflowLinkOptions GetDataflowLinkOptions(IGenericEntity options, IGenericEntity defaultDataflowLinkOptions)
