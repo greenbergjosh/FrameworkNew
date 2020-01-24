@@ -250,7 +250,6 @@ namespace QuickTester
                 });
         }
 
-
         public class DynamicBlock : System.Dynamic.DynamicObject
         {
             public dynamic block;
