@@ -134,14 +134,14 @@ namespace Utility.Dataflow
         {
             var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
 
-            return input => rw[sd.Key](new { Input = input }, new StateWrapper());
+            return (TInput input) => rw[sd.Key](new { Input = input }, new StateWrapper());
         }
 
         private static Func<TInput, Task<TOutput>> CreateFunction<TInput, TOutput>(string code, RoslynWrapper rw)
         {
             var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
 
-            return async input => (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
+            return async (TInput input) => (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
         }
 
         private static ExecutionDataflowBlockOptions GetExecutionDataflowBlockOptions(IGenericEntity options, IGenericEntity defaultDataflowBlockOptions)
@@ -203,7 +203,7 @@ namespace Utility.Dataflow
         {
             var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
 
-            return input => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
+            return (TOutput input) => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
         }
 
         private static DataflowLinkOptions GetDataflowLinkOptions(IGenericEntity options, IGenericEntity defaultDataflowLinkOptions)
