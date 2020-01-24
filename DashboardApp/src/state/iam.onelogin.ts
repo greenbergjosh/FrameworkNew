@@ -1,9 +1,9 @@
 import { Left, Right } from "../data/Either"
 import { none, some } from "fp-ts/lib/Option"
 import * as Store from "./store.types"
-import { UserManager, SigninResponse } from "oidc-client"
+import { UserManager, SigninResponse, UserManagerSettings } from "oidc-client"
 
-const ONELOGIN_CONFIG = {
+const ONELOGIN_CONFIG: UserManagerSettings = {
   authority: "https://onpoint.onelogin.com/oidc",
   client_id: "2d4a9f30-dd76-0137-cba6-0265d75027d4148697", // eslint-disable-line @typescript-eslint/camelcase
   redirect_uri: window.location.origin, // eslint-disable-line @typescript-eslint/camelcase
@@ -38,6 +38,18 @@ export type Profile = {
 }
 
 export const extractUserFromProfile = (user: SigninResponse) => {
+  if (!user.profile) {
+    return {
+      profileId: "",
+      name: null,
+      givenName: null,
+      familyName: null,
+      imageUrl: null,
+      email: null,
+      idToken: user.id_token,
+      accessToken: user.access_token,
+    }
+  }
   return {
     profileId: user.profile.sub,
     name: user.profile.name,
