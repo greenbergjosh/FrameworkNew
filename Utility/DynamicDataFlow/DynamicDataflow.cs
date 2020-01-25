@@ -11,14 +11,23 @@ namespace Utility.Dataflow
 {
     public class DynamicDataflow
     {
+        #region Prvate Fields
         private Dictionary<int, IDataflowBlock> _dataflowBlocks;
+        #endregion
 
+        #region Constructor
         private DynamicDataflow(Dictionary<int, IDataflowBlock> dataflowBlocks)
         {
             _dataflowBlocks = dataflowBlocks;
             AllCompleted = Task.WhenAll(_dataflowBlocks.Values.Select(block => block.Completion));
         }
+        #endregion
 
+        #region Public Properties
+        public Task AllCompleted { get; }
+        #endregion
+
+        #region Public Methods
         public Task<bool> SendAsync<T>(int blockId, T input)
         {
             var block = _dataflowBlocks[blockId];
@@ -38,16 +47,20 @@ namespace Utility.Dataflow
         public Task Completed(params int[] blockIds) => Completed((IEnumerable<int>)blockIds);
 
         public Task Completed(IEnumerable<int> blockIds) => Task.WhenAll(blockIds.Select(id => _dataflowBlocks[id].Completion));
+        #endregion
 
-        public Task AllCompleted { get; }
+        #region Public Static Methods
+        public static Task<DynamicDataflow> Create(string config, FrameworkWrapper fw = null) => Create(JsonWrapper.JsonToGenericEntity(config), fw);
 
-        public static DynamicDataflow Create(string config) => Create(JsonWrapper.JsonToGenericEntity(config));
-
-        public static DynamicDataflow Create(IGenericEntity config)
+        public static async Task<DynamicDataflow> Create(IGenericEntity config, FrameworkWrapper fw = null)
         {
-            var scripts = new List<ScriptDescriptor>();
-            var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DataflowScripts");
-            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            var rw = fw?.RoslynWrapper;
+            if (rw == null)
+            {
+                var scripts = new List<ScriptDescriptor>();
+                var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DataflowScripts");
+                rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+            }
 
             var defaultDataflowBlockOptions = config.GetE("/defaultBlockOptions");
             var defaultDataflowLinkOptions = config.GetE("/defaultLinkOptions");
@@ -59,22 +72,23 @@ namespace Utility.Dataflow
             foreach (var block in blocks)
             {
                 int.TryParse(block.GetS("id"), out var id);
-                dataflowBlocks.Add(id, CreateDataflowBlock(block, defaultDataflowBlockOptions, rw));
+                dataflowBlocks.Add(id, await CreateDataflowBlock(block, defaultDataflowBlockOptions, fw, rw));
             }
 
             var links = config.GetL("/links");
 
             foreach (var link in links)
             {
-                CreateLink(link, dataflowBlocks, defaultDataflowLinkOptions, rw);
+                await CreateLink(link, dataflowBlocks, defaultDataflowLinkOptions, fw, rw);
             }
 
             return new DynamicDataflow(dataflowBlocks.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.block));
         }
+        #endregion
 
         #region Private Static Methods
         #region DataflowBlock Methods
-        private static (IDataflowBlock block, Type inputType, Type outputType) CreateDataflowBlock(IGenericEntity block, IGenericEntity defaultDataflowBlockOptions, RoslynWrapper rw)
+        private static Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateDataflowBlock(IGenericEntity block, IGenericEntity defaultDataflowBlockOptions, FrameworkWrapper fw, RoslynWrapper rw)
         {
             var blockType = block.GetS("/blockType");
 
@@ -82,64 +96,64 @@ namespace Utility.Dataflow
             {
                 case "Transform":
                     var transformOptions = GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
-                    return CreateTransformBlock(block, transformOptions, rw);
+                    return CreateTransformBlock(block, transformOptions, fw, rw);
                 case "Action":
                     var actionOptions = GetExecutionDataflowBlockOptions(block, defaultDataflowBlockOptions);
-                    return CreateActionBlock(block, actionOptions, rw);
+                    return CreateActionBlock(block, actionOptions, fw, rw);
                 default:
                     throw new Exception($"Unsupported block type {blockType}");
             }
         }
 
-        private static (IDataflowBlock block, Type inputType, Type outputType) CreateActionBlock(IGenericEntity block, ExecutionDataflowBlockOptions options, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateActionBlock(IGenericEntity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
         {
             var inputType = Type.GetType(block.GetS("/inputType"));
 
-            var code = block.GetS("/code");
-
             var funcMaker = typeof(DynamicDataflow).GetMethod(nameof(CreateAction), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(inputType);
 
-            var func = funcMaker.Invoke(null, new object[] { code, rw });
+            var behaviorCode = await GetCode(block.GetE("/behavior"), fw);
 
-            var constructor = typeof(ActionBlock<>).MakeGenericType(inputType).GetConstructor(new[] { func.GetType(), typeof(ExecutionDataflowBlockOptions) });
+            var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, rw });
 
-            var actionBlock = (IDataflowBlock)constructor.Invoke(new object[] { func, options });
+            var constructor = typeof(ActionBlock<>).MakeGenericType(inputType).GetConstructor(new[] { behavior.GetType(), typeof(ExecutionDataflowBlockOptions) });
+
+            var actionBlock = (IDataflowBlock)constructor.Invoke(new object[] { behavior, options });
 
             return (actionBlock, inputType, null);
         }
 
-        private static (IDataflowBlock block, Type inputType, Type outputType) CreateTransformBlock(IGenericEntity block, ExecutionDataflowBlockOptions options, RoslynWrapper rw)
+        private static async Task<(IDataflowBlock block, Type inputType, Type outputType)> CreateTransformBlock(IGenericEntity block, ExecutionDataflowBlockOptions options, FrameworkWrapper fw, RoslynWrapper rw)
         {
             var inputType = Type.GetType(block.GetS("/inputType"));
             var outputType = Type.GetType(block.GetS("/outputType"));
-
-            var code = block.GetS("/code");
 
             var funcType = typeof(Func<,>).MakeGenericType(inputType, outputType);
 
             var funcMaker = typeof(DynamicDataflow).GetMethod(nameof(CreateFunction), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(inputType, outputType);
 
-            var func = funcMaker.Invoke(null, new object[] { code, rw });
+            var behaviorCode = await GetCode(block.GetE("/behavior"), fw);
+
+            var behavior = funcMaker.Invoke(null, new object[] { behaviorCode, rw });
 
             var taskOutputType = typeof(Task<>).MakeGenericType(outputType);
 
-            var constructor = typeof(TransformBlock<,>).MakeGenericType(inputType, outputType).GetConstructor(new[] { func.GetType(), typeof(ExecutionDataflowBlockOptions) });
+            var constructor = typeof(TransformBlock<,>).MakeGenericType(inputType, outputType).GetConstructor(new[] { behavior.GetType(), typeof(ExecutionDataflowBlockOptions) });
 
-            var transform = (IDataflowBlock)constructor.Invoke(new object[] { func, options });
+            var transform = (IDataflowBlock)constructor.Invoke(new object[] { behavior, options });
 
             return (transform, inputType, outputType);
         }
 
-        private static Func<TInput, Task> CreateAction<TInput>(string code, RoslynWrapper rw)
+        private static Func<TInput, Task> CreateAction<TInput>((Guid id, string code) behavior, RoslynWrapper rw)
         {
-            var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
+            var sd = rw.CompileAndCache(new ScriptDescriptor(behavior.id, null, behavior.code));
 
             return (TInput input) => rw[sd.Key](new { Input = input }, new StateWrapper());
         }
 
-        private static Func<TInput, Task<TOutput>> CreateFunction<TInput, TOutput>(string code, RoslynWrapper rw)
+        private static Func<TInput, Task<TOutput>> CreateFunction<TInput, TOutput>((Guid id, string code) behavior, RoslynWrapper rw)
         {
-            var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
+            var sd = rw.CompileAndCache(new ScriptDescriptor(behavior.id, null, behavior.code));
 
             return async (TInput input) => (TOutput)await rw[sd.Key](new { Input = input }, new StateWrapper());
         }
@@ -159,13 +173,14 @@ namespace Utility.Dataflow
         #endregion
 
         #region Link Methods
-        private static void CreateLink(IGenericEntity edge, Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)> dataflowBlocks, IGenericEntity defaultDataflowLinkOptions, RoslynWrapper rw)
+        private static async Task CreateLink(IGenericEntity edge, Dictionary<int, (IDataflowBlock block, Type inputType, Type outputType)> dataflowBlocks, IGenericEntity defaultDataflowLinkOptions, FrameworkWrapper fw, RoslynWrapper rw)
         {
             var dataflowLinkOptions = GetDataflowLinkOptions(edge, defaultDataflowLinkOptions);
 
             var fromId = int.Parse(edge.GetS("/from"));
             var toId = int.Parse(edge.GetS("/to"));
-            var predicateCode = edge.GetS("/predicate");
+
+            var predicateCode = await GetCode(edge.GetE("/predicate"), fw);
 
             var source = dataflowBlocks[fromId];
             var target = dataflowBlocks[toId];
@@ -184,7 +199,7 @@ namespace Utility.Dataflow
             var targetBlockType = typeof(ITargetBlock<>).MakeGenericType(source.outputType);
             var predicateType = typeof(Predicate<>).MakeGenericType(source.outputType);
 
-            if (!string.IsNullOrWhiteSpace(predicateCode))
+            if (!string.IsNullOrWhiteSpace(predicateCode.code))
             {
                 var predicateMaker = typeof(DynamicDataflow).GetMethod(nameof(CreatePredicate), BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(source.outputType);
                 var predicate = predicateMaker.Invoke(null, new object[] { predicateCode, rw });
@@ -199,9 +214,9 @@ namespace Utility.Dataflow
             }
         }
 
-        private static Predicate<TOutput> CreatePredicate<TOutput>(string code, RoslynWrapper rw)
+        private static Predicate<TOutput> CreatePredicate<TOutput>((Guid id, string code) predicate, RoslynWrapper rw)
         {
-            var sd = rw.CompileAndCache(new ScriptDescriptor(null, code));
+            var sd = rw.CompileAndCache(new ScriptDescriptor(predicate.id, null, predicate.code));
 
             return (TOutput input) => (bool)rw[sd.Key](new { Input = input }, new StateWrapper()).GetAwaiter().GetResult();
         }
@@ -245,6 +260,22 @@ namespace Utility.Dataflow
             return value;
         }
         #endregion
+
+        public static async Task<(Guid id, string code)> GetCode(IGenericEntity entity, FrameworkWrapper fw)
+        {
+            if (entity == null)
+            {
+                return (Guid.Empty, null);
+            }
+
+            if (Guid.TryParse(entity.GetS("entityId") ?? string.Empty, out var entityId))
+            {
+                var lbm = await fw.Entities.GetEntity(entityId);
+                return (entityId, lbm.GetS("Config"));
+            }
+
+            return (Guid.NewGuid(), entity.GetS("code"));
+        }
         #endregion
     }
 }
