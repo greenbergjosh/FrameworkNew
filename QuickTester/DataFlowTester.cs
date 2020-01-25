@@ -29,34 +29,47 @@ namespace QuickTester
 		""blockType"": ""Transform"",
 		""inputType"": ""System.String"",
 		""outputType"": ""System.String"",
-		""code"": ""return $\""Processed by 1: {p.Input}\"";""
+		""behavior"": {
+            ""code"": ""return $\""Processed by 1: {p.Input}\"";""
+        }
 	}, {
 		""id"": 2,
 		""blockType"": ""Transform"",
 		""inputType"": ""System.String"",
 		""outputType"": ""System.String"",
-		""code"": ""return p.Input.ToLower();""
+		""behavior"": {
+     		""code"": ""return p.Input.ToLower();""
+        }
 	}, {
 		""id"": 3,
 		""blockType"": ""Transform"",
 		""inputType"": ""System.String"",
 		""outputType"": ""System.String"",
-		""code"": ""return p.Input.ToUpper();""
+		""behavior"": {
+     		""code"": ""return p.Input.ToUpper();""
+        }
 	}, {
 		""id"": 4,
 		""blockType"": ""Action"",
 		""inputType"": ""System.String"",
-		""code"": ""System.Console.WriteLine(p.Input);"",
+		""behavior"": {
+     		""#code"": ""System.Console.WriteLine(p.Input);"",
+            ""entityId"": ""088d9b95-ebe2-4646-97b8-8d0b2cfcd1e5""
+        },
 		""#maxDegreeOfParallelism"": 1
 	}],
 	""links"": [{
 		""from"": 1,
 		""to"": 2,
-        ""predicate"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 == 0;""
+        ""predicate"": {
+             ""code"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 == 0;""
+         }
 	}, {
 		""from"": 1,
 		""to"": 3,
-        ""predicate"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 != 0;""
+        ""predicate"": {
+            ""code"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 != 0;""
+        }
 	}, {
 		""from"": 2,
 		""to"": 4,
@@ -68,7 +81,9 @@ namespace QuickTester
 	}]
 }";
 
-            var flow = DynamicDataflow.Create(config);
+            var fw = new FrameworkWrapper();
+
+            var flow = await DynamicDataflow.Create(config, fw);
 
             var sendTasks = new List<Task<bool>>();
 
