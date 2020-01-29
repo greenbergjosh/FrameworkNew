@@ -38,6 +38,9 @@ export type Profile = {
 }
 
 export const extractUserFromProfile = (user: SigninResponse) => {
+  if (!user.access_token || !user.id_token) {
+    return null
+  }
   if (!user.profile) {
     return {
       profileId: "",
@@ -101,6 +104,16 @@ export function handleOneLoginAuthSignedIn(
   currentUser: SigninResponse
 ) {
   const appUser = extractUserFromProfile(currentUser)
+  if (!appUser) {
+    dispatch.logger.logError(
+      "An error occurred while trying to authenticate your OneLogin account."
+    )
+    dispatch.feedback.notify({
+      type: "error",
+      message: `An error occurred while trying to authenticate your OneLogin account. Response from OneLogin is invalid.`,
+    })
+    return null
+  }
   return dispatch.remoteDataClient.authLoginOneLogin(appUser).then((e) =>
     e.fold(
       Left((HttpError) => {
