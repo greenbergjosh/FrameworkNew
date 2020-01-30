@@ -2,6 +2,7 @@ import { Left, Right } from "../data/Either"
 import { none, some } from "fp-ts/lib/Option"
 import * as Store from "./store.types"
 import { UserManager, SigninResponse, UserManagerSettings } from "oidc-client"
+import { globalHistory } from "@reach/router"
 
 const ONELOGIN_CONFIG: UserManagerSettings = {
   authority: "https://onpoint.onelogin.com/oidc",
@@ -12,6 +13,69 @@ const ONELOGIN_CONFIG: UserManagerSettings = {
 
   filterProtocolClaims: true,
   loadUserInfo: true,
+}
+
+const genericErrorMessage = "An error occurred while trying to authenticate your OneLogin account."
+const notifyAndLog = (dispatch: Store.AppDispatch, message: string) => {
+  dispatch.logger.logError(message)
+  dispatch.feedback.notify({ type: "error", message })
+}
+
+const dispatchError = {
+  accessDenied: (dispatch: Store.AppDispatch) => {
+    notifyAndLog(
+      dispatch,
+      "Your OneLogin account is not authorized to access this application. Please check with your administrator."
+    )
+  },
+  serverException: (dispatch: Store.AppDispatch, errorDescription: string) => {
+    const message =
+      errorDescription && errorDescription.length > 0
+        ? `${genericErrorMessage}\n${errorDescription}`
+        : genericErrorMessage
+    notifyAndLog(dispatch, message)
+  },
+  profileEmpty: (dispatch: Store.AppDispatch) => {
+    notifyAndLog(dispatch, `${genericErrorMessage} Response from OneLogin is invalid.`)
+  },
+}
+
+function arrayToObject(hashAry: string[][]) {
+  return hashAry.reduce((obj, item) => obj = { ...obj, [item[0]]: item[1] }, {})
+}
+
+/**
+ * Parse RedirectURI's hash into a KVP object
+ * @param uri
+ */
+function parseRedirectUriHash(uri: string) {
+  const hashAry = uri
+    .replace("#", "")
+    .split("&")
+    .map((i) => i.split("="))
+  const hash: any = arrayToObject(hashAry)
+  return {
+    error: hash.error,
+    errorDescription: decodeURI(hash.error_description),
+    state: hash.state,
+  }
+}
+
+/**
+ * OneLogin returns errors in the RedirectURI's hash
+ * @param dispatch
+ */
+function hasErrorInRedirectUriHash(dispatch: Store.AppDispatch) {
+  if (globalHistory.location.hash.indexOf("error=") < 0) {
+    return false
+  }
+  const hash = parseRedirectUriHash(globalHistory.location.hash)
+  if (hash.error === "access_denied") {
+    dispatchError.accessDenied(dispatch)
+  } else {
+    dispatchError.serverException(dispatch, hash.errorDescription)
+  }
+  return true
 }
 
 /**
@@ -80,6 +144,9 @@ export async function checkOneLoginAuthSignedIn(dispatch: Store.AppDispatch) {
   if (window.location.href.indexOf("#") < 0) {
     return
   }
+  if (hasErrorInRedirectUriHash(dispatch)) {
+    return
+  }
   const userManager = new UserManager(ONELOGIN_CONFIG)
   const currentUser = await userManager
     .signinRedirectCallback()
@@ -105,13 +172,7 @@ export function handleOneLoginAuthSignedIn(
 ) {
   const appUser = extractUserFromProfile(currentUser)
   if (!appUser) {
-    dispatch.logger.logError(
-      "An error occurred while trying to authenticate your OneLogin account."
-    )
-    dispatch.feedback.notify({
-      type: "error",
-      message: `An error occurred while trying to authenticate your OneLogin account. Response from OneLogin is invalid.`,
-    })
+    dispatchError.profileEmpty(dispatch)
     return null
   }
   return dispatch.remoteDataClient.authLoginOneLogin(appUser).then((e) =>
@@ -129,22 +190,13 @@ export function handleOneLoginAuthSignedIn(
           Unauthorized() {
             dispatch.remoteDataClient.update({ token: null })
             dispatch.iam.update({ profile: none })
-            dispatch.logger.logError("Your Google account is not authorized")
-            dispatch.feedback.notify({
-              type: "error",
-              message: `Your Google account is not authorized to access this application. Please check with your administrator.`,
-            })
+            dispatch.logger.logError("Your OneLogin account is not authorized")
+            dispatchError.accessDenied(dispatch)
           },
           ServerException({ reason }) {
             dispatch.remoteDataClient.update({ token: null })
             dispatch.iam.update({ profile: none })
-            dispatch.logger.logError(
-              `Something went wrong while on our servers while authenticating with Google:\n${reason}`
-            )
-            dispatch.feedback.notify({
-              type: "error",
-              message: `An error occurred while trying to sync your Google account.`,
-            })
+            dispatchError.serverException(dispatch, reason)
           },
         })
       })
