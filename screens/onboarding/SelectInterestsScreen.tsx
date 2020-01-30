@@ -14,8 +14,8 @@ import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
 import { ScrollView, Text, View } from "react-native"
 import { FontWeights, routes, styles, Units } from "constants"
-import { useCatalogContext } from "data/catalog.contextProvider"
-import { useProfileContext } from "data/profile.contextProvider"
+import { useCatalogContext } from "data/contextProviders/catalog.contextProvider"
+import { useProfileContext } from "data/contextProviders/profile.contextProvider"
 import { InterestType, InterestGroupType } from "data/api/catalog.services"
 
 interface SelectInterestsScreenProps extends NavigationSwitchScreenProps {}

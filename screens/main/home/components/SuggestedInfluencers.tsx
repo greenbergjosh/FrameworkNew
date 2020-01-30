@@ -9,7 +9,7 @@ import { FollowsScreenProps } from "../../follows/FollowsScreen"
 import { InfluencersList } from "components/InfluencersList"
 import TouchImage from "components/TouchImage"
 import { FollowButton } from "components/FollowButton"
-import { useFollowsContext } from "data/follows.contextProvider"
+import { useFollowsContext } from "data/contextProviders/follows.contextProvider"
 
 interface SuggestedInfluencersProps {
   navigate: FollowsScreenProps["navigation"]["navigate"]

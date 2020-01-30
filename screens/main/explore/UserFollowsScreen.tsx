@@ -10,7 +10,7 @@ import { Tab, Tabs } from "components/Tabs"
 import { SafeAreaView } from "react-native"
 import { ActivityIndicator } from "@ant-design/react-native"
 import { BottomTabBar } from "components/BottomTabBar"
-import { useFollowsContext } from "data/follows.contextProvider"
+import { useFollowsContext } from "data/contextProviders/follows.contextProvider"
 
 export interface UserFollowsScreenProps extends NavigationTabScreenProps {}
 

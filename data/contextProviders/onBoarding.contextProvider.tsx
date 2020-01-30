@@ -1,8 +1,8 @@
-import { GetGotResponse } from "./api/getgotRequest"
+import { GetGotResponse } from "../api/getgotRequest"
 import React, { useContext } from "react"
-import { getgotStorage } from "../storage/getgotStorage"
-import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgotContextType"
-import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
+import { getgotStorage } from "../../storage/getgotStorage"
+import { GetGotContextType, GetGotResetAction, getgotResetAction } from "../getgotContextType"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 import {
   createUser,
   CreateUserResponse,
@@ -10,7 +10,7 @@ import {
   SendCodeResponse,
   submitCode,
   SubmitCodeResponse,
-} from "./api/onBoarding.services"
+} from "../api/onBoarding.services"
 
 /*************************************************************
  * API steps to create an account:

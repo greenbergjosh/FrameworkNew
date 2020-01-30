@@ -1,5 +1,5 @@
 import { ActivityIndicator } from "@ant-design/react-native"
-import { usePromotionsContext } from "data/promotions.contextProvider"
+import { usePromotionsContext } from "data/contextProviders/promotions.contextProvider"
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"

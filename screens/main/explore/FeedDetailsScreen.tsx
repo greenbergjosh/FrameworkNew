@@ -7,7 +7,7 @@ import { InfluencerPostHeader, Post } from "components/feed"
 import { influencerFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
 import { BottomTabBar } from "components/BottomTabBar"
-import { useFeedContext } from "data/feed.contextProvider"
+import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 
 interface FeedDetailsScreenParams {
   postId: GUID

@@ -6,9 +6,9 @@ import {
   CommentsResponse,
   UserFeedResponse,
   loadUserFeed, UserFeedType,
-} from "./api/feed.services"
-import { GetGotContextType, GetGotResetAction, getgotResetAction } from "./getgotContextType"
-import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
+} from "../api/feed.services"
+import { GetGotContextType, GetGotResetAction, getgotResetAction } from "../getgotContextType"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 
 export interface FeedState extends LoadifyStateType<FeedActionCreatorType> {
   lastLoadHomeFeed: ISO8601String | null

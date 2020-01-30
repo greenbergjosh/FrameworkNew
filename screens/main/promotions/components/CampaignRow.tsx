@@ -6,7 +6,7 @@ import { Campaign } from "data/api/promotions.services"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { Colors, FontWeights, routes, styles, Units } from "constants"
 import { ImageThumbnail } from "components/ImageThumbnail"
-import { fixDataImageEncoding } from "data/promotions.contextProvider"
+import { fixDataImageEncoding } from "data/contextProviders/promotions.contextProvider"
 import TouchIcon from "components/TouchIcon"
 import { A, SMALL } from "components/Markup"
 

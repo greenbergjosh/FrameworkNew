@@ -12,7 +12,7 @@ import {
   PhotoSelectStatus,
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
-import { useProfileContext } from "data/profile.contextProvider"
+import { useProfileContext } from "data/contextProviders/profile.contextProvider"
 
 interface UserIdentityProps {
   user: UserType

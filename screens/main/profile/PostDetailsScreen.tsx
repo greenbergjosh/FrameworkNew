@@ -6,7 +6,7 @@ import { Post, UserPostHeader } from "components/feed"
 import { profileFeedRoutes, routes } from "constants"
 import NavButton from "components/NavButton"
 import { BottomTabBar } from "components/BottomTabBar"
-import { useFeedContext } from "data/feed.contextProvider"
+import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
 
 interface PostDetailsScreenProps extends NavigationTabScreenProps {}

@@ -14,12 +14,12 @@ import {
   startFollowingInfluencer,
   stopFollowingInfluencer,
   SuggestedInfluencersResponse,
-} from "./api/follows.services"
+} from "../api/follows.services"
 import moment from "moment"
 import React, { useContext } from "react"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
-import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
-import { GetGotResponse } from "./api/getgotRequest"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
+import { GetGotResponse } from "../api/getgotRequest"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {
   lastLoadInfluencers: ISO8601String | null

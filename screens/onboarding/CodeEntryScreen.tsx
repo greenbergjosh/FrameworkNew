@@ -2,7 +2,7 @@ import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-des
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
 import { routes, styles } from "constants"
-import { useOnBoardingContext } from "data/onBoarding.contextProvider"
+import { useOnBoardingContext } from "data/contextProviders/onBoarding.contextProvider"
 import React from "react"
 import { Text, View } from "react-native"
 import CodeInput from "react-native-confirmation-code-input"

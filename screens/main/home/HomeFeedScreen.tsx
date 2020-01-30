@@ -10,7 +10,7 @@ import DevTempNav from "./components/DevTempNav"
 import SuggestedInfluencers from "./components/SuggestedInfluencers"
 import NavButton from "components/NavButton"
 import moment from "moment"
-import { useFeedContext } from "data/feed.contextProvider"
+import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 import { BottomTabBar } from "components/BottomTabBar"
 
 interface HomeFeedScreenProps extends NavigationStackScreenProps {}

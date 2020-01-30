@@ -4,8 +4,8 @@ import { Button, Flex, Icon, WhiteSpace } from "@ant-design/react-native"
 import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 import { Colors, routes, styles, Units } from "constants"
-import { useAuthContext } from "data/auth.contextProvider"
-import { useGetGotRootDataContext } from "data/getgotRootData.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
+import { useGetGotRootDataContext } from "data/contextProviders/getgotRootData.contextProvider"
 import { A, BR, H2, P, STRONG } from "components/Markup"
 
 export const BannedScreen = () => {

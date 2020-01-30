@@ -5,11 +5,11 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { profileFeedRoutes, routes, Units } from "constants"
 import { UserProfilePanel } from "components/ProfilePanel"
 import { ImageGrid } from "components/ImageGrid"
-import { useProfileContext } from "data/profile.contextProvider"
+import { useProfileContext } from "data/contextProviders/profile.contextProvider"
 import { SafeAreaView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
-import { useAuthContext } from "data/auth.contextProvider"
-import { useFeedContext } from "data/feed.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
+import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 
 interface ProfileScreenProps extends NavigationTabScreenProps {}
 

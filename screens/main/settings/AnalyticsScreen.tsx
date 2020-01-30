@@ -7,7 +7,7 @@ import { H3, STRONG } from "components/Markup"
 import { HeaderTitle } from "components/HeaderTitle"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { SafeAreaView, ScrollView } from "react-native"
-import { useProfileContext } from "data/profile.contextProvider"
+import { useProfileContext } from "data/contextProviders/profile.contextProvider"
 
 interface AnalyticsScreenProps extends NavigationTabScreenProps {}
 

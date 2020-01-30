@@ -8,7 +8,7 @@ import { PromotionCard } from "./PromotionCard"
 import { CampaignsList } from "./CampaignsList"
 import { ExpanderIcon } from "./ExpanderIcon"
 import { CampaignsListEmpty } from "./CampaignsListEmpty"
-import { usePromotionsContext } from "data/promotions.contextProvider"
+import { usePromotionsContext } from "data/contextProviders/promotions.contextProvider"
 
 export interface PromotionExpanderProps {
   alwaysExpanded?: boolean

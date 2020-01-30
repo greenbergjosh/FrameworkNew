@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { GetGotResponse } from "./api/getgotRequest"
+import { GetGotResponse } from "../api/getgotRequest"
 import {
   loadNotificationSettings,
   loadPrivacyOptions,
@@ -14,11 +14,11 @@ import {
   AnalyticsType,
   AnalyticsResponse,
   loadAnalytics,
-} from "./api/profile.services"
-import { InterestType } from "./api/catalog.services"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
-import { LoadifyStateType, loadifyReducer, loadifyContext } from "./loadify"
-import { loadProfile } from "./api/profile.services"
+} from "../api/profile.services"
+import { InterestType } from "../api/catalog.services"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
+import { LoadifyStateType, loadifyReducer, loadifyContext } from "../loadify"
+import { loadProfile } from "../api/profile.services"
 
 export interface ProfileState extends LoadifyStateType<ProfileActionCreatorsType> {
   lastLoadProfile: ISO8601String | null

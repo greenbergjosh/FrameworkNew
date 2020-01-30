@@ -7,8 +7,8 @@ import { SettingRow } from "./components/SettingRow"
 import { SettingType } from "data/api/profile.services"
 import { SafeAreaView, Text, View } from "react-native"
 import NavButton from "components/NavButton"
-import { useAuthContext } from "data/auth.contextProvider"
-import { useProfileContext } from "data/profile.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
+import { useProfileContext } from "data/contextProviders/profile.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
 
 interface NotificationsScreenProps extends NavigationTabScreenProps {}

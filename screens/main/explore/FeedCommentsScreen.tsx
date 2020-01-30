@@ -6,7 +6,7 @@ import { Comments } from "components/feed"
 import { influencerFeedRoutes, styles } from "constants"
 import { SafeAreaView, ScrollView } from "react-native"
 import { CommentKeyboard } from "components/feed/CommentKeyboard"
-import { useFeedContext } from "data/feed.contextProvider"
+import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
 import { Units } from "../../../constants/unit.constants"
 

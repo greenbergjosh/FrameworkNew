@@ -5,9 +5,9 @@ import { routes, styles } from "constants"
 import { SettingsList } from "./components/SettingsList"
 import NavButton from "components/NavButton"
 import { SafeAreaView } from "react-native"
-import { useProfileContext } from "data/profile.contextProvider"
+import { useProfileContext } from "data/contextProviders/profile.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
-import { useAuthContext } from "data/auth.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 
 interface PrivacyOptionsScreenProps extends NavigationTabScreenProps {}
 

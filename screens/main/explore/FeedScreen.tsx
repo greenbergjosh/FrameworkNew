@@ -6,7 +6,7 @@ import { routes } from "constants"
 import { ImageGrid } from "components/ImageGrid"
 import { SafeAreaView, ScrollView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
-import { useFeedContext } from "data/feed.contextProvider"
+import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 
 type PostImageType = ImageType & {
   id: GUID

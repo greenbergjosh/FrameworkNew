@@ -5,7 +5,7 @@ import { NavigationSwitchScreenProps } from "react-navigation"
 import React from "react"
 import { Text, View } from "react-native"
 import { getgotLogin } from "data/api/auth.services"
-import { useAuthContext } from "data/auth.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 import { routes, styles } from "constants"
 
 interface LoginScreenProps extends NavigationSwitchScreenProps {}

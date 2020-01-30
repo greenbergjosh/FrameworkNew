@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
-import { GetGotContextType, getgotResetAction, GetGotResetAction } from "./getgotContextType"
-import { loadifyContext, loadifyReducer, LoadifyStateType } from "./loadify"
+import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
+import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 import {
   loadMessages,
   MessageSummary,
@@ -8,7 +8,7 @@ import {
   loadContacts,
   Contact,
   ContactsResponse,
-} from "./api/messages.services"
+} from "../api/messages.services"
 
 export interface MessagesState extends LoadifyStateType<MessagesActionCreatorType> {
   lastLoadMessages: ISO8601String | null

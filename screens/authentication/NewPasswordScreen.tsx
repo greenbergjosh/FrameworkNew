@@ -2,7 +2,7 @@ import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-des
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, H3, P } from "components/Markup"
 import { routes, styles } from "constants"
-import { useAuthContext } from "data/auth.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 import React from "react"
 import { Alert, Text, View } from "react-native"
 import CodeInput from "react-native-confirmation-code-input"

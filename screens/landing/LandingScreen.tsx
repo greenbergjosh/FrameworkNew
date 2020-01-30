@@ -5,7 +5,7 @@ import {
   WhiteSpace
   } from "@ant-design/react-native"
 import { routes, styles } from "constants"
-import { useAuthContext } from "data/auth.contextProvider"
+import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 import React from "react"
 import { Text, View } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
