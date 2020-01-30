@@ -1,7 +1,7 @@
 import React from "react"
 import { FlatList, ScrollView } from "react-native"
 import { ContactRow } from "./ContactRow"
-import { Contact } from "data/api/messages.services"
+import { Contact } from "data/api/messages"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { Empty } from "components/Empty"
 import { Units } from "constants"

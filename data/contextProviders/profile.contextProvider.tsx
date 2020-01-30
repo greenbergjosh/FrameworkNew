@@ -14,11 +14,11 @@ import {
   AnalyticsType,
   AnalyticsResponse,
   loadAnalytics,
-} from "../api/profile.services"
-import { InterestType } from "../api/catalog.services"
+} from "../api/profile"
+import { InterestType } from "../api/catalog"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
 import { LoadifyStateType, loadifyReducer, loadifyContext } from "../loadify"
-import { loadProfile } from "../api/profile.services"
+import { loadProfile } from "../api/profile"
 
 export interface ProfileState extends LoadifyStateType<ProfileActionCreatorsType> {
   lastLoadProfile: ISO8601String | null

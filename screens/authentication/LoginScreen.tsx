@@ -4,7 +4,7 @@ import { H2, P } from "components/Markup"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import React from "react"
 import { Text, View } from "react-native"
-import { getgotLogin } from "data/api/auth.services"
+import { getgotLogin } from "data/api/auth"
 import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 import { routes, styles } from "constants"
 

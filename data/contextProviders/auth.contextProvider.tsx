@@ -1,5 +1,5 @@
 import React, { useContext } from "react"
-import { loadProfile, LoginData, LoginResponse } from "../api/auth.services"
+import { loadProfile, LoginData, LoginResponse } from "../api/auth"
 import { getgotStorage } from "../../storage/getgotStorage"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
 

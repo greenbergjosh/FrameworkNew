@@ -1,4 +1,4 @@
-import { InterestsResponse } from "./catalog.services"
+import { InterestsResponse } from "./catalog"
 
 export const INTERESTS_MOCK_DATA: InterestsResponse = {
   r: 0,

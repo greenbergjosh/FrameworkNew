@@ -1,5 +1,5 @@
 import { templateHost } from "data/api/getgotRequest"
-import { CampaignTemplate } from "data/api/promotions.services"
+import { CampaignTemplate } from "data/api/promotions"
 import { HeaderTitle } from "components/HeaderTitle"
 import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"

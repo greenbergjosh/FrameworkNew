@@ -3,7 +3,7 @@ import {
   PrivacyOptionsResponse,
   NotificationSettingsResponse,
   AnalyticsResponse
-} from "./profile.services"
+} from "./profile"
 
 export const PROFILE_MOCK_DATA: ProfileResponse = {
   r: 0,

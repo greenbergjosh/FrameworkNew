@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
-import { InterestGroupType, InterestsResponse, loadInterests } from "../api/catalog.services"
+import { InterestGroupType, InterestsResponse, loadInterests } from "../api/catalog"
 import { GetGotResponse } from "../api/getgotRequest"
 
 export interface CatalogState {

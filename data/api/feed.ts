@@ -1,5 +1,5 @@
 import { GetGotSuccessResponse } from "./getgotRequest"
-import { FEED_MOCK_DATA, COMMENTS_MOCK_DATA, USER_FEED_MOCK_DATA } from "./feed.services.mockData"
+import { FEED_MOCK_DATA, COMMENTS_MOCK_DATA, USER_FEED_MOCK_DATA } from "./feed.mockData"
 
 /**
  * TODO: APIPostType should be changed to be PostType

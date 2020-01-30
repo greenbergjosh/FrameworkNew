@@ -4,7 +4,7 @@ import {
   NOTIFICATION_SETTINGS_MOCK_DATA,
   PRIVACYOPTIONS_MOCK_DATA,
   PROFILE_MOCK_DATA,
-} from "./profile.services.mockData"
+} from "./profile.mockData"
 
 /********************
  * Types

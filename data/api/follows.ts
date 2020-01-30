@@ -4,7 +4,7 @@ import {
   FOLLOWERS_MOCK_DATA,
   FOLLOWS_MOCK_DATA,
   SUGGESTED_INFLUENCERS_MOCK_DATA,
-} from "./follows.services.mockData"
+} from "./follows.mockData"
 
 /********************
  * Types

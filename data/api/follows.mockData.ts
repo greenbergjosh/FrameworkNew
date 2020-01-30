@@ -3,8 +3,8 @@ import {
   FollowersResponse,
   InfluencersResponse,
   SuggestedInfluencersResponse,
-} from "./follows.services"
-import { FEED_MOCK_DATA } from "./feed.services.mockData"
+} from "./follows"
+import { FEED_MOCK_DATA } from "./feed.mockData"
 
 export const BLOCKED_USERS_MOCK_DATA: BlockedUsersResponse = {
   r: 0,

@@ -14,7 +14,7 @@ import {
   startFollowingInfluencer,
   stopFollowingInfluencer,
   SuggestedInfluencersResponse,
-} from "../api/follows.services"
+} from "../api/follows"
 import moment from "moment"
 import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"

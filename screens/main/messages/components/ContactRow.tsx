@@ -1,7 +1,7 @@
 import React from "react"
 import { Text } from "react-native"
 import { Checkbox, Flex, List } from "@ant-design/react-native"
-import { Contact } from "data/api/messages.services"
+import { Contact } from "data/api/messages"
 import { styles, Units } from "constants"
 import Avatar from "components/Avatar"
 

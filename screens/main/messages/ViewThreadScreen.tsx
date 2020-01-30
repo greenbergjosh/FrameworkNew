@@ -4,7 +4,7 @@ import { NavigationStackScreenProps } from "react-navigation-stack"
 import { HeaderTitle } from "components/HeaderTitle"
 import { Colors, routes, Units } from "constants"
 import { GiftedChat } from "react-native-gifted-chat"
-import * as mockData from "data/api/messages.services.mockData"
+import * as mockData from "data/api/messages.mockData"
 import NavButton from "components/NavButton"
 import TouchIcon from "components/TouchIcon"
 import {

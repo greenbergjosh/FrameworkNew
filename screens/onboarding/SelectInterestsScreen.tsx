@@ -16,7 +16,7 @@ import { ScrollView, Text, View } from "react-native"
 import { FontWeights, routes, styles, Units } from "constants"
 import { useCatalogContext } from "data/contextProviders/catalog.contextProvider"
 import { useProfileContext } from "data/contextProviders/profile.contextProvider"
-import { InterestType, InterestGroupType } from "data/api/catalog.services"
+import { InterestType, InterestGroupType } from "data/api/catalog"
 
 interface SelectInterestsScreenProps extends NavigationSwitchScreenProps {}
 

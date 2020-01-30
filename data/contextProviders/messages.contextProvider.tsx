@@ -8,7 +8,7 @@ import {
   loadContacts,
   Contact,
   ContactsResponse,
-} from "../api/messages.services"
+} from "../api/messages"
 
 export interface MessagesState extends LoadifyStateType<MessagesActionCreatorType> {
   lastLoadMessages: ISO8601String | null

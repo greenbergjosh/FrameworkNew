@@ -1,7 +1,7 @@
 import React from "react"
 import Collapsible from "react-native-collapsible"
 import { ActivityIndicator, Flex } from "@ant-design/react-native"
-import { Promotion } from "data/api/promotions.services"
+import { Promotion } from "data/api/promotions"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { Units } from "constants"
 import { PromotionCard } from "./PromotionCard"

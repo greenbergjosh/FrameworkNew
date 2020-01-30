@@ -11,7 +11,7 @@ import {
   CampaignTemplate,
   loadCampaignTemplates,
   CampaignTemplatesResponse,
-} from "../api/promotions.services"
+} from "../api/promotions"
 
 export interface PromotionsState extends LoadifyStateType<PromotionsActionCreatorType> {
   // Local Properties

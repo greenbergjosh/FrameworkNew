@@ -10,7 +10,7 @@ import {
   SendCodeResponse,
   submitCode,
   SubmitCodeResponse,
-} from "../api/onBoarding.services"
+} from "../api/onBoarding"
 
 /*************************************************************
  * API steps to create an account:

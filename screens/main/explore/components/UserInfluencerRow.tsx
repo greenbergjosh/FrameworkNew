@@ -1,5 +1,5 @@
 import React from "react"
-import { Follower } from "data/api/follows.services"
+import { Follower } from "data/api/follows"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowButton } from "components/FollowButton"
 import { UserRow } from "components/UserRow"

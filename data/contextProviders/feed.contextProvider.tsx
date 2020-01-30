@@ -6,7 +6,7 @@ import {
   CommentsResponse,
   UserFeedResponse,
   loadUserFeed, UserFeedType,
-} from "../api/feed.services"
+} from "../api/feed"
 import { GetGotContextType, GetGotResetAction, getgotResetAction } from "../getgotContextType"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 

@@ -1,5 +1,5 @@
 import { ImageUris, Images } from "constants"
-import { FeedResponse, CommentsResponse, UserFeedResponse } from "./feed.services"
+import { FeedResponse, CommentsResponse, UserFeedResponse } from "./feed"
 
 
 let id = 1

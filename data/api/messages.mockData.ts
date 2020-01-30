@@ -1,4 +1,4 @@
-import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages.services"
+import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages"
 
 export const MESSAGES_MOCK_DATA: MessagesResponse = {
   r: 0,
