@@ -13,7 +13,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
-import { copyCampaignLinkHandler } from "components/feed/copyCampaignLinkHandler"
+import { copyCampaignLinkHandler } from "hooks/copyCampaignLinkHandler"
 
 interface ActionMessage {
   action: string

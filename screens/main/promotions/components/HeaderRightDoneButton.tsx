@@ -6,7 +6,7 @@ import { Text } from "react-native"
 import { routes } from "constants"
 import { CampaignAddImagesScreenProps } from "../CampaignAddImagesScreen"
 import NavButton from "components/NavButton"
-import { copyCampaignLinkHandler } from "components/feed/copyCampaignLinkHandler"
+import { copyCampaignLinkHandler } from "hooks/copyCampaignLinkHandler"
 
 interface HeaderRightDoneButtonProps {
   navigation: CampaignAddImagesScreenProps["navigation"]

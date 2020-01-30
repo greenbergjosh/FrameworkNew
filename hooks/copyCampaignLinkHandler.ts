@@ -2,6 +2,7 @@ import { Clipboard } from "react-native"
 import { baseAddress } from "data/api/getgotRequest"
 import { Modal } from "@ant-design/react-native"
 
+// TODO: Rewrite this as a hook
 export const copyCampaignLinkHandler = (campaignId, onPress?) => () => {
   Clipboard.setString(`${baseAddress}/c/${campaignId}`)
   setTimeout(() => {
