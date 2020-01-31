@@ -17,7 +17,7 @@ namespace Utility.OpgAuth
                 {
                     return Regex.IsMatch(details.Email, d.GetS(""));
                 }
-                catch (Exception e)
+                catch
                 {
                     return false;
                 }

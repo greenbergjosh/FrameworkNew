@@ -12,9 +12,9 @@ using Utility.GenericEntity;
 using Utility.OpgAuth;
 using FuncDic = System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>;
 using FuncKvp = System.Collections.Generic.KeyValuePair<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>;
+using Jw = Utility.JsonWrapper;
 using ScopeDic = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>>;
 using ScopeKvp = System.Collections.Generic.KeyValuePair<string, System.Collections.Concurrent.ConcurrentDictionary<string, TheGreatWallOfDataLib.Routing.Routing.ApiFunc>>;
-using Jw = Utility.JsonWrapper;
 
 namespace TheGreatWallOfDataLib.Routing
 {
@@ -44,7 +44,11 @@ namespace TheGreatWallOfDataLib.Routing
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
             new ScopeDic(__.Select(s => new ScopeKvp(s.scope, new FuncDic(s.funcs.Select(f => new FuncKvp(f.funcName, f.func))))));
 
-        public static async Task Initialize(FrameworkWrapper fw) => _fw = fw;
+        public static Task Initialize(FrameworkWrapper fw)
+        {
+            _fw = fw;
+            return Task.CompletedTask;
+        }
 
         public static ApiFunc GetFunc(string scopeName, string funcName)
         {
@@ -106,7 +110,7 @@ namespace TheGreatWallOfDataLib.Routing
                 if (resArr?.Any() != true) errors.Add($"{inSignalGroups} failed. Result: {res?.GetS("")}");
                 res = await Data.CallFn(conn, suppressIp, _fw.StartupConfiguration.GetS("Config/Tests/signal:suppressIp"));
                 sw.Restart(() => stats.Add(suppressIp, sw.Elapsed.TotalSeconds));
-                
+
                 if (res?.GetS("suppress").ParseBool() != true) errors.Add($"{suppressIp} failed. Result: {res?.GetS("")}");
             }
             catch (Exception e)

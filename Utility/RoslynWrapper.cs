@@ -56,6 +56,7 @@ namespace Utility
                     sd.Code = Regex.Replace(sd.Code, "(#r.+\r\n)", "//$1");
                     var scriptOptions = ScriptOptions.Default
                         .AddReferences(
+                            Assembly.GetAssembly(typeof(System.Linq.Enumerable)),  // System.Linq
                             Assembly.GetAssembly(typeof(DynamicObject)),  // System.Code
                             Assembly.GetAssembly(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo)),  // Microsoft.CSharp
                             Assembly.GetAssembly(typeof(ExpandoObject)),  // System.Dynamic
@@ -66,7 +67,7 @@ namespace Utility
                             Assembly.GetAssembly(typeof(SetCookieHeaderValue))
                         )
                         .AddReferences(dynamicAssemblies)
-                        .AddImports("System.Dynamic", "System.Xml");
+                        .AddImports("System.Dynamic", "System.Xml", "System.Linq");
 
                     if (sd.Debug)
                     {

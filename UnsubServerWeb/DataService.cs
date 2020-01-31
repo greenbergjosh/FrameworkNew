@@ -30,7 +30,7 @@ namespace UnsubServerWeb
                 var method = dtve.GetS("m");
 
                 // Leaving out the await was on purpose, let's not hold up the call for trace logging
-                _fw.Trace($"Router:{method}", dtve.GetS(""));
+                _ = _fw.Trace($"Router:{method}", dtve.GetS(""));
 
                 switch (method)
                 {

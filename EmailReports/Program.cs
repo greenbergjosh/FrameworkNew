@@ -302,7 +302,7 @@ namespace EmailReports
             {
                 return new MailAddress(addr.Trim());
             }
-            catch (Exception e)
+            catch
             {
                 return null;
             }
@@ -314,7 +314,7 @@ namespace EmailReports
             {
                 return addr.Split(";", StringSplitOptions.RemoveEmptyEntries).Select(e => new MailAddress(e.Trim()));
             }
-            catch (Exception e)
+            catch
             {
                 return new MailAddress[0];
             }

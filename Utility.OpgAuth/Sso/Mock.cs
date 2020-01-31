@@ -20,7 +20,7 @@ namespace Utility.OpgAuth.Sso
 
         public override string PlatformType { get; } = "Mock";
 
-        public override async Task<UserDetails> GetUserDetails(IGenericEntity authData)
+        public override Task<UserDetails> GetUserDetails(IGenericEntity authData)
         {
             string e;
 
@@ -37,7 +37,7 @@ namespace Utility.OpgAuth.Sso
             }
             else e = _emails[Random.Number(0, _emails.Length - 1)];
 
-            return new UserDetails(null, e, "Mock name", e, null, null, null);
+            return Task.FromResult(new UserDetails(null, e, "Mock name", e, null, null, null));
         }
     }
 }

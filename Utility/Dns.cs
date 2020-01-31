@@ -1,32 +1,47 @@
-﻿using Heijden.DNS;
+﻿using DnsClient;
+using DnsClient.Protocol;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Utility
 {
     public static class Dns
     {
         public const string DefaultDnsHost = "4.2.2.1";
+        public static readonly ILookupClient _lookupClient = new LookupClient(IPAddress.Parse(DefaultDnsHost));
 
-        public static string ReverseIp(string Ip)
+        public static string ReverseIp(string ip)
         {
-            string[] octets = Ip.Trim().Split('.');
+            string[] octets = ip.Trim().Split('.');
             Array.Reverse(octets);
             return String.Join(".", octets);
         }
 
-        public static string ReverseLookupIp (string ip, string dnsHost = DefaultDnsHost)
+        public static async Task<string> LookupIp(string name, string dnsHost = DefaultDnsHost)
         {
-            Response ReverseLookupResponse = new Resolver(dnsHost).Query(ReverseIp(ip) + ".in-addr.arpa", QType.PTR);
-            return ReverseLookupResponse.RecordsPTR.Length > 0 ? ReverseLookupResponse.RecordsPTR[0].ToString() : "";
+            var response = await _lookupClient.QueryServerAsync(new[] { IPAddress.Parse(dnsHost) }, name, QueryType.A);
+            var result = (ARecord)response.Answers.FirstOrDefault();
+
+            return result?.Address.ToString() ?? "";
         }
 
-        public static string ReverseLookupIp (string ip, Dictionary<string, string> cache, string dnsHost = DefaultDnsHost)
+        public static async Task<IEnumerable<string>> LookupIps(string name, string dnsHost = DefaultDnsHost)
         {
-            if (cache.ContainsKey(ip) && ! cache[ip].IsNullOrWhitespace()) return cache[ip];
-            cache[ip] = ReverseLookupIp(ip, dnsHost);
-            return cache[ip];
+            var response = await _lookupClient.QueryServerAsync(new[] { IPAddress.Parse(dnsHost) }, name, QueryType.A);
+
+            return response.Answers.Cast<ARecord>().Select(a => a.Address.ToString());
+        }
+
+        public static async Task<string> ReverseLookupIp(string ip, string dnsHost = DefaultDnsHost)
+        {
+            var response = await _lookupClient.QueryServerReverseAsync(new[] { IPAddress.Parse(dnsHost) }, IPAddress.Parse(ip));
+            var result = (PtrRecord)response.Answers.FirstOrDefault();
+
+            return result?.DomainName ?? "";
         }
     }
 }
