@@ -5698,6 +5698,6 @@ namespace QuickTester
 
             File.WriteAllText(Path.Combine("C:/Users/OnPoint Global/Documents/dev/Workspace/supprLoadTest", $"op-{DateTime.Now:hh-mm}.txt"), msgs.Join("\n"));
         }
-        
+
     }
 }

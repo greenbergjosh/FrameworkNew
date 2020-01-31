@@ -96,21 +96,21 @@ namespace Utility.OpgAuth
             return await platform.GetUserDetails(payload);
         }
 
-        public static async Task<string> VerifyCode(string email, string verificationCode)
+        public static Task<string> VerifyCode(string email, string verificationCode)
         {
             if (!_initialized) throw new Exception(_initError);
 
             throw new NotImplementedException();
         }
 
-        public static async Task<string> SendVerificationCode(string email)
+        public static Task<string> SendVerificationCode(string email)
         {
             if (!_initialized) throw new Exception(_initError);
 
             throw new NotImplementedException();
         }
 
-        public static async Task<UserDetails> Login(string username, string password)
+        public static Task<UserDetails> Login(string username, string password)
         {
             if (!_initialized) throw new Exception(_initError);
 
@@ -173,7 +173,7 @@ namespace Utility.OpgAuth
             }
         }
 
-        public static async Task<string> RegisterUser(string handle, string email, string password, string verificationCode)
+        public static Task<string> RegisterUser(string handle, string email, string password, string verificationCode)
         {
             if (!_initialized) throw new Exception(_initError);
 

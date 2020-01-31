@@ -25,18 +25,18 @@ namespace Utility.EDW.Reporting
                 selector, novalid, invalid, unhandled)
         { }
 
-        public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
+        public static Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
 			var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
-            return endpoints;
+            return Task.FromResult(endpoints);
         }
 
-        public static async Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
+        public static Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
         {
             var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
-            return endpoints;
+            return Task.FromResult(endpoints);
         }
 
         public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => await File.AppendAllTextAsync(errorFilePath, DateTime.Now + "::" + w.ToString()).ConfigureAwait(false);

@@ -100,7 +100,7 @@ namespace QuickTester
             }
 
             flow.Complete(1);
-            
+
             await flow.Completed(2, 3).ContinueWith(_ => flow.Complete(4));
 
             await flow.AllCompleted;
@@ -157,9 +157,6 @@ namespace QuickTester
         // This should be fixed to use Fw, or maybe there should be two versions of the library, one with FW, one without
         public static async Task TestDynamicBlockCreator()
         {
-            // Real code should take a FrameworkWrapper.  
-            FrameworkWrapper fw = null; //new FrameworkWrapper(null);
-
             // We will take a RoslynWrapper here for simple testing without DB
             //string TestF1 =
             //    @"
@@ -258,7 +255,7 @@ namespace QuickTester
                         return (Msg)msg;
                         //return await rw[fname](new { msg }, new StateWrapper());
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         return new Msg { x = 0, HasError = false };
                     }
@@ -430,7 +427,7 @@ namespace QuickTester
 
                 return new DynamicBlock(tBlock1, sendAsync, linkTo2, linkTo3, linkTo4);
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
@@ -522,7 +519,7 @@ namespace QuickTester
                 Console.WriteLine("tBlock1Behavior: " + msg.x + " after delay");
                 return new Msg { x = msg.x, HasError = msg.x % 2 == 0 ? false : true };
             }
-            catch (Exception ex)
+            catch
             {
                 return new Msg { x = 0, HasError = false };
             }
@@ -538,7 +535,7 @@ namespace QuickTester
                 Console.WriteLine("tBlock2Behavior: " + msg.x + " after delay");
                 return new Msg { x = msg.x, HasError = msg.x % 4 == 0 ? false : true };
             }
-            catch (Exception ex)
+            catch
             {
                 return new Msg { x = 0, HasError = false };
             }
@@ -554,7 +551,7 @@ namespace QuickTester
                 Console.WriteLine("aBlockBehavior: " + msg.x + " after delay");
                 return new Msg { x = msg.x, HasError = false };
             }
-            catch (Exception ex)
+            catch
             {
                 return new Msg { x = 0, HasError = false };
             }

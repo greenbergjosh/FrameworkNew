@@ -1,12 +1,10 @@
-﻿using CurlThin;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using CurlThin;
 using CurlThin.Enums;
 using CurlThin.Helpers;
 using CurlThin.Native;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace QuickTester
 {
@@ -22,10 +20,10 @@ namespace QuickTester
             try
             {
                 var dataCopier = new DataCallbackCopier();
-                
+
                 //CurlNative.Easy.SetOpt(easy, CURLoption.URL, "http://httpbin.org/ip");
                 //CurlNative.Easy.SetOpt(easy, CURLoption.WRITEFUNCTION, dataCopier.DataHandler);
-                
+
                 CurlNative.Easy.SetOpt(easy, CURLoption.BUFFERSIZE, 102400);
                 CurlNative.Easy.SetOpt(easy, CURLoption.URL, "ftp://142.44.215.16/dph.hsr");
                 CurlNative.Easy.SetOpt(easy, CURLoption.USERPWD, "jgreenberg:kr0b0t");
@@ -42,8 +40,8 @@ namespace QuickTester
                     stream.Write(buffer, 0, length);
                     return (UIntPtr)length;
                 });
-               
-                
+
+
 
                 var result = CurlNative.Easy.Perform(easy);
                 stream.Close();

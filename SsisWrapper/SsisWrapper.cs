@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.SqlServer.Management.Smo;
 using System.Text;
 using Utility;
 
@@ -44,7 +43,7 @@ namespace SsisWrapper
             StringBuilder quotedPkgPath = new StringBuilder("\"");
 
             string[] ps = dtexec.Split('\\');
-            for (int i = 0; i < ps.Length-1; i++)
+            for (int i = 0; i < ps.Length - 1; i++)
             {
                 if (i == 0) quotedDtExecPath.Append(ps[i] + "\\");
                 else if (ps[i].Contains(' ')) quotedDtExecPath.Append("\"" + ps[i] + "\"\\");
@@ -68,11 +67,14 @@ namespace SsisWrapper
             {
                 cn.Open();
                 SqlCommand cmd = cn.CreateCommand();
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                 cmd.CommandText = cmds;
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                 object ret = await cmd.ExecuteScalarAsync();
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "<Pending>")]
         public static async Task<long> GetRecordCount(string connectionString, string tableName)
         {
             Int64 count = 0;
@@ -90,16 +92,6 @@ namespace SsisWrapper
             }
 
             return count;
-        }
-
-        public static void CreateTemporaryDatabaseTable(string databaseName, string tableName,
-            params Column[] columns)
-        {
-            Server srv = new Server();
-            Database db = srv.Databases[databaseName];
-            Table tb = new Table(db, tableName);
-            foreach (var c in columns) tb.Columns.Add(c);
-            tb.Create();
         }
     }
 }
