@@ -1,28 +1,28 @@
 import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
 
-export interface PromotionDiscount {
+export interface PromotionDiscountType {
   type: "PERCENT" | "VALUE"
   value: number
 }
 
-export type Promotional = {
+export type PromotionalType = {
   sku?: string
   url: string
   name: string
   images: string | string[]
-  discount?: PromotionDiscount
+  discount?: PromotionDiscountType
 }
 
-export interface Promotion {
+export interface PromotionType {
   created: ISO8601String
   expires: ISO8601String | null
   fromCampaignId: GUID | null
   id: GUID
-  payload: Promotional
+  payload: PromotionalType
   publisherUserId: GUID
 }
 
-export interface Campaign {
+export interface CampaignType {
   id: GUID
   promotionId: GUID
   messageBodyTemplateId: GUID | null
@@ -36,35 +36,35 @@ export interface Campaign {
   send_date: ISO8601String
 }
 
-export interface CampaignTemplate {
+export interface CampaignTemplateType {
   id: GUID
   advertiserUserId: GUID
   name: string
-  template: CampaignTemplateBody
+  template: CampaignTemplateBodyType
   externalUrl: string | null
   meta: string | null
 }
 
-export interface CampaignTemplateBody {
+export interface CampaignTemplateBodyType {
   retailerTokens: { [key: string]: unknown }
   previewImage: string
   html?: string | null
 }
 
 export interface PromotionsResponse extends GetGotSuccessResponse {
-  results: Promotion[]
+  results: PromotionType[]
 }
 
 export interface PromotionCampaignsResponse extends GetGotSuccessResponse {
-  results: Campaign[]
+  results: CampaignType[]
 }
 
 export interface CampaignTemplatesResponse extends GetGotSuccessResponse {
-  results: CampaignTemplate[]
+  results: CampaignTemplateType[]
 }
 
 export interface CreateCampaignResponse extends GetGotSuccessResponse {
-  result: Campaign
+  result: CampaignType
 }
 
 export const loadPromotions = async (
@@ -153,7 +153,7 @@ export const loadCampaignTemplates = async (
   return response
 }
 
-export const createCampaign = async (campaign: Partial<Campaign>) => {
+export const createCampaign = async (campaign: Partial<CampaignType>) => {
   const preparedCampaign = { ...campaign, templateParts: JSON.stringify(campaign.templateParts) }
   const response = await getgotRequest<CreateCampaignResponse>("createCampaign", preparedCampaign)
 

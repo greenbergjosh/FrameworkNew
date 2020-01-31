@@ -2,7 +2,7 @@ import { Flex } from "@ant-design/react-native"
 import moment from "moment"
 import React from "react"
 import { Text, TouchableOpacity } from "react-native"
-import { Campaign } from "data/api/promotions"
+import { CampaignType } from "data/api/promotions"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { Colors, FontWeights, routes, styles, Units } from "constants"
 import { ImageThumbnail } from "components/ImageThumbnail"
@@ -11,7 +11,7 @@ import TouchIcon from "components/TouchIcon"
 import { A, SMALL } from "components/Markup"
 
 export interface CampaignRowProps {
-  campaign: Campaign
+  campaign: CampaignType
   navigate: PromotionsScreenProps["navigation"]["navigate"]
 }
 

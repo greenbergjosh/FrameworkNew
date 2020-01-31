@@ -1,5 +1,5 @@
 import { templateHost } from "data/api/getgotRequest"
-import { CampaignTemplate } from "data/api/promotions"
+import { CampaignTemplateType } from "data/api/promotions"
 import { HeaderTitle } from "components/HeaderTitle"
 import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
@@ -44,7 +44,7 @@ export const CampaignScreen = (props: CampaignScreenProps) => {
   } = props.navigation.state.params
 
   // Assume initially the template was selected in the previous screen or defaults to an empty object, for safety
-  let template = paramsTemplate || ({} as Partial<CampaignTemplate>)
+  let template = paramsTemplate || ({} as Partial<CampaignTemplateType>)
 
   let templateParts
 

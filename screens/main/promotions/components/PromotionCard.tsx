@@ -5,14 +5,14 @@ import { Colors, styles, Units } from "constants"
 import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
-import { Promotional } from "data/api/promotions"
+import { PromotionalType } from "data/api/promotions"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
 import { pluralize } from "../../../../util"
 import moment from "moment"
 
 interface PromotionCardProps {
   onPress?: () => void
-  promotional: Promotional
+  promotional: PromotionalType
   expires: ISO8601String | null
   isArchived: boolean
   campaignCount: number

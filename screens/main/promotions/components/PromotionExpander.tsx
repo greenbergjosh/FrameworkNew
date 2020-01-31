@@ -1,7 +1,7 @@
 import React from "react"
 import Collapsible from "react-native-collapsible"
 import { ActivityIndicator, Flex } from "@ant-design/react-native"
-import { Promotion } from "data/api/promotions"
+import { PromotionType } from "data/api/promotions"
 import { PromotionsScreenProps } from "screens/main/promotions/PromotionsScreen"
 import { Units } from "constants"
 import { PromotionCard } from "./PromotionCard"
@@ -13,7 +13,7 @@ import { usePromotionsContext } from "data/contextProviders/promotions.contextPr
 export interface PromotionExpanderProps {
   alwaysExpanded?: boolean
   navigate: PromotionsScreenProps["navigation"]["navigate"]
-  promotion: Promotion
+  promotion: PromotionType
   isArchived?: boolean
 }
 

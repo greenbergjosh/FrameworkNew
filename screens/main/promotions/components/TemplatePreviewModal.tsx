@@ -2,10 +2,10 @@ import { Button, Flex, Modal, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
 import { Image, View } from "react-native"
 import { routes } from "constants"
-import { CampaignTemplate } from "data/api/promotions"
+import { CampaignTemplateType } from "data/api/promotions"
 import { CampaignRouteParams } from "constants/routeParam.interfaces"
 
-export type TemplateSelectionType = { campaignTemplate: CampaignTemplate; promotionId: GUID }
+export type TemplateSelectionType = { campaignTemplate: CampaignTemplateType; promotionId: GUID }
 
 export interface TemplatePreviewModalProps {
   selected: TemplateSelectionType
@@ -23,7 +23,7 @@ const initialState: TemplateSelectionType = {
     },
     externalUrl: null,
     meta: null,
-  } as CampaignTemplate,
+  } as CampaignTemplateType,
   promotionId: null,
 }
 

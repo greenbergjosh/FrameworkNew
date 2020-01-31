@@ -3,30 +3,30 @@ import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getg
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 import {
   loadPromotions,
-  Promotion,
+  PromotionType,
   PromotionsResponse,
   loadPromotionCampaigns,
   PromotionCampaignsResponse,
-  Campaign,
-  CampaignTemplate,
+  CampaignType,
+  CampaignTemplateType,
   loadCampaignTemplates,
   CampaignTemplatesResponse,
 } from "../api/promotions"
 
 export interface PromotionsState extends LoadifyStateType<PromotionsActionCreatorType> {
   // Local Properties
-  campaignsById: { [campaignId: string /* GUID */]: Campaign }
-  campaignsByPromotion: { [promotionId: string /* GUID */]: Campaign[] }
+  campaignsById: { [campaignId: string /* GUID */]: CampaignType }
+  campaignsByPromotion: { [promotionId: string /* GUID */]: CampaignType[] }
   lastLoadPromotionCampaigns: { [searchKey: string]: ISO8601String | null }
   lastLoadPromotions: ISO8601String | null
-  promotionsById: { [promotionId: string /* GUID */]: Promotion }
+  promotionsById: { [promotionId: string /* GUID */]: PromotionType }
 
-  campaignTemplatesById: { [templateId: string /* GUID */]: CampaignTemplate }
-  campaignTemplatesBySearchKey: { [searchKey: string]: CampaignTemplate[] }
+  campaignTemplatesById: { [templateId: string /* GUID */]: CampaignTemplateType }
+  campaignTemplatesBySearchKey: { [searchKey: string]: CampaignTemplateType[] }
   lastLoadCampaignTemplates: { [searchKey: string]: ISO8601String | null }
 
   // JSON Properties come from Responses
-  results: Promotion[]
+  results: PromotionType[]
 }
 
 export interface PromotionsActionCreatorType extends GetGotContextType {
