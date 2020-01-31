@@ -39,7 +39,7 @@ namespace Utility.Mta.Pmta
             return new MailResult(msg.To, errors);
         }
 
-        public override async Task<string> GetStatus(string jobId)
+        public override Task<string> GetStatus(string jobId)
         {
             throw new NotImplementedException();
         }

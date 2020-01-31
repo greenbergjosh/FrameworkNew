@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -87,16 +86,16 @@ namespace QuickTester
         }
 
         //var channel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
-            //{
-            //    SingleWriter = false,
-            //    SingleReader = false,
-            //    AllowSynchronousContinuations = false // the default
-            //});
+        //{
+        //    SingleWriter = false,
+        //    SingleReader = false,
+        //    AllowSynchronousContinuations = false // the default
+        //});
         // CreateChannel(1, 3, "oN", produce into next channel)
         // CreateChannel(3, 3, "oN + sN", produce into next channel)
         // CreateChannel(3, 3, "oN + sN + tN", just write output)
 
-        public static (Task,Task) CreateChannel(int ctProducers, int ctConsumers, Func<Task<IEnumerable<string>>> produce, Func<string, Task> consume)
+        public static (Task, Task) CreateChannel(int ctProducers, int ctConsumers, Func<Task<IEnumerable<string>>> produce, Func<string, Task> consume)
         {
             var channel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
             {
@@ -211,7 +210,7 @@ namespace QuickTester
             List<Task> cTasks = new List<Task>();
             for (int i = 0; i < (consumers != null ? consumers.Count : 0); i++) cTasks.Add(ConsumeData(i));
 
-            return ((producers != null ? producers.Count : 0) == 0 ? Task.CompletedTask : Task.WhenAll(pTasks).ContinueWith(_ => channel.Writer.Complete()), 
+            return ((producers != null ? producers.Count : 0) == 0 ? Task.CompletedTask : Task.WhenAll(pTasks).ContinueWith(_ => channel.Writer.Complete()),
                 Task.WhenAll(cTasks).ContinueWith(_ => { if (nextChannel != null) nextChannel.Writer.Complete(); }));
         }
 
@@ -235,7 +234,7 @@ namespace QuickTester
                 SingleReader = false,
                 AllowSynchronousContinuations = false // the default
             });
-            var pc1 = ChannelsTester.Channeler(channel1, new List<Func<Task<IEnumerable<string>>>>() { async () => GetStrings(1), async () => GetStrings(2), async () => GetStrings(3) },
+            var pc1 = ChannelsTester.Channeler(channel1, new List<Func<Task<IEnumerable<string>>>>() { () => Task.FromResult(GetStrings(1)), () => Task.FromResult(GetStrings(2)), () => Task.FromResult(GetStrings(3)) },
                 new List<Func<string, Task<string>>>() {
                     async (string msg) =>
                     {
@@ -437,7 +436,7 @@ namespace QuickTester
             }
         }
 
-        
+
 
         internal class Consumer
         {
@@ -473,11 +472,11 @@ namespace QuickTester
                     await Task.Delay(_delay); // simulate processing time
                     Console.WriteLine($"CONSUMER ({_identifier}): Consuming {timeString}");
                 } while (timeString != null);
-                
+
 
                 Console.WriteLine($"CONSUMER ({_identifier}): Completed");
 
-                
+
             }
 
             public ValueTask<string> ConsumeAsync()
@@ -505,7 +504,7 @@ namespace QuickTester
             }
         }
 
-        public static async Task<IEnumerable<string>> channelProducer()
+        public static IEnumerable<string> channelProducer()
         {
             return GetStrings();
         }

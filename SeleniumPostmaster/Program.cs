@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -69,7 +68,7 @@ namespace SeleniumPostmaster
                 }
                 if (ps.GetS("Config/ProxyAddress").IsNullOrWhitespace() ^ ps.GetS("Config/ProxyPort").IsNullOrWhitespace())
                 {
-                    await Fw.Error(nameof(Main),$"Proxy configuration missing either host or port values for account: {ps.GetS("Config/Username")}, skipping");
+                    await Fw.Error(nameof(Main), $"Proxy configuration missing either host or port values for account: {ps.GetS("Config/Username")}, skipping");
                     continue;
                 }
 
@@ -105,12 +104,12 @@ namespace SeleniumPostmaster
                     }
 #endif
 
-                    IWebDriver driver =  new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"),chromeOptions);
+                    IWebDriver driver = new ChromeDriver(Fw.StartupConfiguration.GetS("Config/ChromeDriverPath"), chromeOptions);
                     (foundSpam, foundComplaint) = await DoGmail(driver, pmAcctId, username, password, ps.GetS("Config/GoogleVerificationPhone"), GmailPostmasterUrl);
                     driver.Close();
 
                 }
-                if (foundSpam|| foundComplaint)
+                if (foundSpam || foundComplaint)
                 {
                     await Fw.Trace(nameof(Main), $"Will send a spam/complaint notification for {type} on account {username}");
 #if !DEBUG
@@ -126,16 +125,16 @@ namespace SeleniumPostmaster
             }
         }
 
-        public static async Task SendNotification (string subject, string body, string from, string to )
+        public static async Task SendNotification(string subject, string body, string from, string to)
         {
             var payload = PL.O(new
             {
                 from_address = from,
                 subject,
                 body
-            }) ;
+            });
             payload.Add(PL.O(new { email_addresses = to }, new bool[] { false }));
-            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SendEmail", DateTime.Now,payload.ToString() ));
+            await Fw.PostingQueueWriter.Write(new PostingQueueEntry("SendEmail", DateTime.Now, payload.ToString()));
         }
 
         public static async Task<(bool foundTrap, bool foundComplaint)> DoHotmail(string pmAcctId, string username, string password,
@@ -165,16 +164,16 @@ namespace SeleniumPostmaster
                                         "tmps", "tmpe", "thc", "helo", "from", "cmnt"}));
 
                         JArray ja = new JArray();
-                        foreach(var line in retj1ge.GetL(""))
+                        foreach (var line in retj1ge.GetL(""))
                         {
-                            string reverse = Utility.Dns.ReverseLookupIp(line.GetS("ip"));
+                            string reverse = await Utility.Dns.ReverseLookupIp(line.GetS("ip"));
                             JObject jo = JObject.Parse(line.GetS(""));
                             jo.Add("rih", reverse);
                             ja.Add(jo);
                         }
 
                         dataLayerFn = "InsertHotmailData";
-                        result = await Data.CallFn( ConnectionName, dataLayerFn, Jw.Json(new { PostmasterAccountId = pmAcctId }), ja.ToString());
+                        result = await Data.CallFn(ConnectionName, dataLayerFn, Jw.Json(new { PostmasterAccountId = pmAcctId }), ja.ToString());
                         if (result.GetS("Result") != "Success")
                         {
                             await Fw.Error(nameof(DoHotmail), $"Unexpected result calling stored function (data layer name: {dataLayerFn}): {result.GetS("")}");
@@ -331,7 +330,9 @@ namespace SeleniumPostmaster
                                 line.IndexOf('>') - line.IndexOf('<') - 1);
                         }
                     }
-                    catch (Exception parseException) { }
+                    catch
+                    {
+                    }
                 }
             }
 
@@ -441,7 +442,7 @@ namespace SeleniumPostmaster
                             string jsSpam = Utility.JsonWrapper.JsonTuple<Tuple<string, string, string>>
                                 (spamRate, new List<string>() { "id", "sd", "sr" },
                                 new bool[] { true, true, true });
- 
+
                             string dataLayerFn = "InsertGmailDomainSpamRate";
                             var result = await Data.CallFn(ConnectionName, dataLayerFn, Jw.Empty, jsSpam);
                             if (result.GetS("Result") != "Success")
@@ -474,16 +475,16 @@ namespace SeleniumPostmaster
                             for (int i = 0; i < bars.Count; i++)
                             {
                                 var bar = bars[i];
-                                await Fw.Trace(nameof(DoGmail), $"Found {bars.Count} IP reputation bars, about to click bar {i+1}");
+                                await Fw.Trace(nameof(DoGmail), $"Found {bars.Count} IP reputation bars, about to click bar {i + 1}");
                                 new Actions(driver).Click(bar).Perform();
 
 
                                 // Google unpredictably buries the bar from above one level deeper, and when we "click" the bar
                                 // nothing actually shows up in terms of IPs.  If this happens, look for this nesting, and drop into
                                 // it.  There should only be one "bar" in there, click it, and proceed as before.
-                                if (driver.FindElements(By.XPath("//tr[@class='google-visualization-table-tr-head']/th")).Count == 0 )
+                                if (driver.FindElements(By.XPath("//tr[@class='google-visualization-table-tr-head']/th")).Count == 0)
                                 {
-                                    await Fw.Trace(nameof(DoGmail), $"Found no IP table for bar {i+1}, descent into possibly deeper bar collection, finding, and clicking");
+                                    await Fw.Trace(nameof(DoGmail), $"Found no IP table for bar {i + 1}, descent into possibly deeper bar collection, finding, and clicking");
                                     bar = ReturnHiddenBar();
                                     new Actions(driver).Click(bar).Perform();
                                     Wait(driver, 500, 500);
@@ -509,21 +510,21 @@ namespace SeleniumPostmaster
 
                                     // there's only one
                                     Fw.Trace(nameof(ReturnHiddenBar), $"Found {innerBars.Count} hidden bars now returning right-most").GetAwaiter().GetResult();
-                                    return innerBars[innerBars.Count-1];
+                                    return innerBars[innerBars.Count - 1];
                                 }
-                                
-                                (string reputation, DateTime repDate) SelectedReputationParts ()
+
+                                (string reputation, DateTime repDate) SelectedReputationParts()
                                 {
                                     IWebElement ipHdr = driver.FindElement(By.XPath("//tr[@class='google-visualization-table-tr-head']/th"));
                                     string[] hdrParts = ipHdr.Text.Split(' ');
-                                    return (reputation : hdrParts[0], repDate : ParseDateFromHeader(hdrParts));
+                                    return (reputation: hdrParts[0], repDate: ParseDateFromHeader(hdrParts));
                                 }
 
                                 IList<IWebElement> ips = driver.FindElements(By.XPath("//table[@class='google-visualization-table-table']/tbody/tr/td"));
                                 foreach (var ip in ips)
                                 {
                                     string ipaddr = ip.Text;
-                                    await Fw.Trace(nameof(DoGmail), $"Before adding to database-bound list: IP is {ipaddr}, bar count is {bars.Count}, current bar is {i+1}, ips count is: {ips.Count}, for date: {repDate}, reputation: {reputation}");
+                                    await Fw.Trace(nameof(DoGmail), $"Before adding to database-bound list: IP is {ipaddr}, bar count is {bars.Count}, current bar is {i + 1}, ips count is: {ips.Count}, for date: {repDate}, reputation: {reputation}");
 
                                     domIpRep.Add(new Tuple<string, string, DateTime, string>
                                         (domId, ipaddr, repDate, reputation));
@@ -629,7 +630,7 @@ namespace SeleniumPostmaster
                                             (domId, fbid, fbspamrate, fbDate));
                                     }
                                 }
-                                catch (Exception ex)
+                                catch
                                 { }
                             }
 
@@ -760,8 +761,9 @@ namespace SeleniumPostmaster
                                     Actions actions = new Actions(driver);
                                     actions.MoveToElement(clickableCircles[0]).Click().Build().Perform();
                                 }
-                                catch (Exception noDataExc)
-                                { }
+                                catch
+                                {
+                                }
 
                                 try
                                 {
@@ -782,7 +784,7 @@ namespace SeleniumPostmaster
                                         }
                                     }
                                 }
-                                catch (Exception ex)
+                                catch
                                 { }
 
                                 circleG = driver.FindElements(By.XPath("//*[name()='svg']//*[name()='g' and starts-with(@clip-path,'url')]/following-sibling::*[name()='g']"));

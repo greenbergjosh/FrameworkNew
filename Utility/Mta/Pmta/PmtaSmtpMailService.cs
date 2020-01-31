@@ -12,14 +12,19 @@ namespace Utility.Mta.Pmta
         private readonly int _port;
         private readonly bool _ssl;
 
-        public PmtaSmtpMailService(FrameworkWrapper fw, string configRootPath) : base(fw, configRootPath) { }
+        public PmtaSmtpMailService(FrameworkWrapper fw, string configRootPath) : base(fw, configRootPath)
+        {
+            _pmtaAddress = null;
+            _port = 0;
+            _ssl = false;
+        }
 
         public override async Task<IEnumerable<MailResult>> Send(MailPackage pkg, string vmta = null)
         {
             CleanAndValidatePackage(pkg);
 
             vmta = GetVmtaIp(pkg, vmta);
-            
+
             var recipients = GetRecipientMessages(pkg);
             var results = new List<MailResult>();
 

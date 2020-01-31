@@ -124,14 +124,5 @@ namespace Utility.Mta.Pmta
         }
 
         private IStatsProvider StartStats() => _enableStatistics ? (IStatsProvider) new StatsProvider() : new NullStatsProvider();
-
-        #region ConnectionPoolingBeta
-
-        private readonly bool _useConnectionPooling = false;
-        private readonly bool _maxConnections = false;
-        private readonly ConcurrentBag<(Connection conn, DateTime? reserved)> _connections;
-        private readonly ConcurrentQueue<Connection> _availableConnections;
-
-        #endregion
     }
 }

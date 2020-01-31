@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CsvHelper.Configuration;
 using Newtonsoft.Json.Linq;
 using Utility.GenericEntity;
+using System.Globalization;
 
 namespace Utility
 {
@@ -242,7 +243,7 @@ namespace Utility
 
             using (var reader = new StringReader(csv))
             {
-                using (var csvReader = new CsvHelper.CsvReader(reader))
+                using (var csvReader = new CsvHelper.CsvReader(reader, CultureInfo.CurrentCulture))
                 {
                     while (csvReader.Read())
                     {
