@@ -81,6 +81,8 @@ namespace QuickTester
         // If you're looking for something that was in here before, I moved everything into individual static classes in the project. Sorry for the convenience. - Alberto
         private static async Task Main(string[] _args)
         {
+            CurlCommandLineParser.Test();
+            int x = 0;
             // CurlThinWrapper.Run();
             //var f = new FileInfo("d:\\sources\\test.txt");
 
