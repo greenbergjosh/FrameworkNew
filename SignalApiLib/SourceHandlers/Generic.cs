@@ -25,7 +25,7 @@ namespace SignalApiLib.SourceHandlers
             return !sourceStr.IsNullOrWhitespace() && !_cfg.GetS(sourceStr.ToLower()).IsNullOrWhitespace();
         }
 
-        public async Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
+        public Task<string> HandleRequest(string requestFromPost, HttpContext ctx)
         {
             throw new NotImplementedException();
         }

@@ -123,7 +123,7 @@ namespace Utility
 
             throw new NotImplementedException();
 
-            return (result, errors.ToArray());
+            //return (result, errors.ToArray());
         }
 
         public static (TResult result, string[] errors) TryMutateTo<TResult>(this JObject source, IDictionary<string, MutationConfig> mutationConfig)

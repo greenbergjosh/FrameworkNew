@@ -21,23 +21,28 @@ namespace Utility.EDW.Logging
             FailureDelegate invalid,
             UnhandledExceptionDelegate unhandled)
             : base(endpointPollingInterval, writeTimeoutMs, initEndpoints, pollEndpoints, td, badEndpointWalkaway,
-                selector, novalid, invalid, unhandled) { }
+                selector, novalid, invalid, unhandled)
+        { }
 
-        public static async Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
+        public static Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
             var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/ErrSilos")) endpoints.Add(new ErrorSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
-            return endpoints;
+            return Task.FromResult(endpoints);
         }
 
-        public static async Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
+        public static Task<List<IEndpoint>> PollEndpoints(IGenericEntity config)
         {
             var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/ErrSilos")) endpoints.Add(new ErrorSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
-            return endpoints;
+            return Task.FromResult(endpoints);
         }
 
-        public static async Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, DateTime.Now + "::" + w);
+        public static Task InitiateWalkaway(object w, string errorFilePath, int timeoutSeconds)
+        {
+            FileSystem.WriteLineToFileThreadSafe(errorFilePath, DateTime.Now + "::" + w);
+            return Task.CompletedTask;
+        }
 
         public static int NextWalkawayValue(int previousValue)
         {
@@ -63,12 +68,23 @@ namespace Utility.EDW.Logging
             return e;
         }
 
-        public static async Task NoValid(object w, string errorFilePath) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::NoValid::{w}");
+        public static Task NoValid(object w, string errorFilePath)
+        {
+            FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::NoValid::{w}");
+            return Task.CompletedTask;
+        }
 
-        public static async Task Failure(object w, string errorFilePath) => FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Failure::{w}");
+        public static Task Failure(object w, string errorFilePath)
+        {
+            FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Failure::{w}");
+            return Task.CompletedTask;
+        }
 
-        public static async Task Unhandled(object w, string errorFilePath, Exception ex) =>
+        public static Task Unhandled(object w, string errorFilePath, Exception ex)
+        {
             FileSystem.WriteLineToFileThreadSafe(errorFilePath, $"{DateTime.Now}::Unhandled::{w}::Exception::{ex?.UnwrapForLog() ?? "None provided"}");
+            return Task.CompletedTask;
+        }
 
         public static ErrorSiloLoadBalancedWriter InitializeErrorSiloLoadBalancedWriter(IGenericEntity config)
         {

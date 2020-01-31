@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Oauth2.v2" Version="1.38.0.1532" />
+    <PackageReference Include="Google.Apis.Oauth2.v2" Version="1.43.0.1602" />
   </ItemGroup>
 
   <ItemGroup>

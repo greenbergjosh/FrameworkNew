@@ -15,6 +15,8 @@ using Utility;
 using System.Reflection;
 using System.Text;
 using Jw = Utility.JsonWrapper;
+using Utility.Http;
+using Microsoft.Extensions.Hosting;
 
 namespace GenericWindowsService
 {
@@ -43,7 +45,7 @@ namespace GenericWindowsService
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configure..." + Environment.NewLine);
 
@@ -72,6 +74,8 @@ namespace GenericWindowsService
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuring Http Handler..." + Environment.NewLine);
 
+                HealthCheckHandler.Initialize(Program.Fw).GetAwaiter().GetResult();
+
                 app.Run(async context =>
                 {
                     try
@@ -79,6 +83,10 @@ namespace GenericWindowsService
                         if (context.Request.Query["m"] == "config")
                         {
                             await context.WriteSuccessRespAsync(Program.Fw.StartupConfiguration.GetS(""), Encoding.UTF8);
+                        }
+                        else if (await HealthCheckHandler.Handle(context, Program.Fw))
+                        {
+                            return;
                         }
                         else await Program.Service.HandleHttpRequest(context);
                     }

@@ -1,25 +1,24 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Timers;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Jw = Utility.JsonWrapper;
-using Pw = Utility.ParallelWrapper;
-using Fs = Utility.FileSystem;
-using Utility;
-using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Timers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnsubLib.NetworkProviders;
+using Utility;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
 using Utility.GenericEntity;
+using Fs = Utility.FileSystem;
+using Jw = Utility.JsonWrapper;
+using Pw = Utility.ParallelWrapper;
 
 namespace UnsubLib
 {
@@ -343,7 +342,7 @@ namespace UnsubLib
                 {
                     uris = await GetUnsubUris(network, cse, networkProvider);
                 }
-                catch (HaltingException e)
+                catch (HaltingException)
                 {
                     throw;
                 }
@@ -499,15 +498,15 @@ namespace UnsubLib
             }
 
             // Signal server to load domain unsub files, diff md5 unsub files
-            try
-            {
-                await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", "Signaling Unsub Server Service");
-                await SignalUnsubServerService(network, diffs, unsubFiles.Item2);
-            }
-            catch (Exception exSignal)
-            {
-                await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to signal UnsubJobServer: {exSignal}");
-            }
+            //try
+            //{
+            //    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", "Signaling Unsub Server Service");
+            //    await SignalUnsubServerService(network, diffs, unsubFiles.Item2);
+            //}
+            //catch (Exception exSignal)
+            //{
+            //    await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to signal UnsubJobServer: {exSignal}");
+            //}
         }
 
         public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider)
@@ -705,9 +704,8 @@ namespace UnsubLib
                             {
                                 plainTextFile.Delete();
                             }
-                            catch (Exception e)
+                            catch
                             {
-
                             }
                         }
 
@@ -916,7 +914,9 @@ namespace UnsubLib
                     if (c.GetS("MostRecentUnsubFileId") != null)
                         refdFiles.Add(c.GetS("MostRecentUnsubFileId").ToLower());
                 }
-                catch (Exception ex) { }
+                catch
+                {
+                }
             }
 
             if (!String.IsNullOrEmpty(FileCacheDirectory))
@@ -1225,8 +1225,6 @@ namespace UnsubLib
 
         public async Task<long?> GetFileSize(string fileName)
         {
-            long? fileSize = null;
-
             try
             {
                 if (!String.IsNullOrEmpty(FileCacheDirectory))
@@ -1274,7 +1272,7 @@ namespace UnsubLib
                 }
 
                 return fi.Length;
-                
+
             }
             catch (Exception fileSizeException)
             {
@@ -1574,7 +1572,7 @@ namespace UnsubLib
                 }
 
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
-                var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength ), digest);
+                var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digest);
 
                 if (!isUnsub && globalSupp)
                 {
@@ -1663,7 +1661,7 @@ namespace UnsubLib
 
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
                 // SHA512 unsub files currently have a "0x" prefix.  Better handling needed if that's optional in the future
-                binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName),( type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digests);
+                binarySearchResults = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digests);
 
             }
             catch (Exception ex)
@@ -1715,7 +1713,8 @@ namespace UnsubLib
                 new UnsubFileProviders.Optizmo(_fw),
                 new UnsubFileProviders.MidEnity(_fw),
                 new UnsubFileProviders.W4(_fw),
-                new UnsubFileProviders.Unsubly(_fw)
+                new UnsubFileProviders.Unsubly(_fw),
+                new UnsubFileProviders.Ad1Media()
             };
 
             try
@@ -1800,7 +1799,7 @@ namespace UnsubLib
                     },
                     ClientWorkingDirectory, 30 * 60, parallelism);
             }
-            
+
 
             if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
 
@@ -1858,7 +1857,7 @@ namespace UnsubLib
                 await _fw.Trace(nameof(HandlerType), $"SingleLine Match");
                 return LineHandler(lines[0]);
             }
-            
+
             // if the number of lines is 2 : 2, otherwise number of lines - 1 (don't test last possibly-partial line)
             var maxLines = lines.Length == 2 ? 2 : lines.Length - 1;
             var (firstMatch, restMatch) = LinesHandler(lines.Take(maxLines).ToArray());
@@ -1893,36 +1892,36 @@ namespace UnsubLib
             if (handler == null)
                 await _fw.Error(nameof(ZipTester), $"Unknown file type: {f.FullName}");
 
-            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
+            await _fw.Trace(nameof(ZipTester), $"Handling file {f.FullName} with {handler ?? UNKNOWNHANDLER}, length after {nameof(ZipTester)}: {GetFileSize2(f.FullName).GetAwaiter().GetResult()}");
             return handler ?? UNKNOWNHANDLER;
         }
 
-        public async Task<object> Md5ZipHandler(FileInfo f, string logContext)
+        public Task<object> Md5ZipHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return fileName;
+            return Task.FromResult<object>(fileName);
         }
 
-        public async Task<object> PlainTextHandler(FileInfo f, string logContext)
+        public Task<object> PlainTextHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return fileName;
+            return Task.FromResult<object>(fileName);
         }
 
-        public async Task<object> DomainZipHandler(FileInfo f, string logContext)
+        public Task<object> DomainZipHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return fileName;
+            return Task.FromResult<object>(fileName);
         }
 
-        public async Task<object> Sha512ZipHandler(FileInfo f, string logContext)
+        public Task<object> Sha512ZipHandler(FileInfo f, string logContext)
         {
             var fileName = Guid.NewGuid();
             f.MoveTo($"{ClientWorkingDirectory}\\{fileName}.txt");
-            return fileName;
+            return Task.FromResult<object>(fileName);
         }
 
         public async Task<object> UnknownTypeHandler(FileInfo fi, string logContext)

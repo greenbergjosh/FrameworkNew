@@ -1,67 +1,162 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Utility;
+using Utility.Dataflow;
 
 namespace QuickTester
 {
     public class DataFlowTester
     {
-        // Convert JSON to 
-        public static void BuildDynamicBlockWorkflow(string JsonWorkflowDefinition)
+        public static async Task TestDynamicDataflow()
         {
-            //If no tasks[x].SourceType, default to Msg
-            //If no links[x].ToId, default to DataflowBlock.NullTarget<typeof(SourceType)>()
+            var config = @"
+{
+	""defaultBlockOptions"": {
+		""maxDegreeOfParallelism"": 50
+	},
+	""defaultLinkOptions"": {
+		""propagateCompletion"": true
+	},
+	""blocks"": [{
+		""id"": 1,
+		""blockType"": ""Transform"",
+		""inputType"": ""System.String"",
+		""outputType"": ""System.String"",
+		""behavior"": {
+            ""code"": ""return $\""Processed by 1: {p.Input}\"";""
+        }
+	}, {
+		""id"": 2,
+		""blockType"": ""Transform"",
+		""inputType"": ""System.String"",
+		""outputType"": ""System.String"",
+		""behavior"": {
+     		""code"": ""return p.Input.ToLower();""
+        }
+	}, {
+		""id"": 3,
+		""blockType"": ""Transform"",
+		""inputType"": ""System.String"",
+		""outputType"": ""System.String"",
+		""behavior"": {
+     		""code"": ""return p.Input.ToUpper();""
+        }
+	}, {
+		""id"": 4,
+		""blockType"": ""Action"",
+		""inputType"": ""System.String"",
+		""behavior"": {
+     		""#code"": ""System.Console.WriteLine(p.Input);"",
+            ""entityId"": ""088d9b95-ebe2-4646-97b8-8d0b2cfcd1e5""
+        },
+		""#maxDegreeOfParallelism"": 1
+	}],
+	""links"": [{
+		""from"": 1,
+		""to"": 2,
+        ""predicate"": {
+             ""code"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 == 0;""
+         }
+	}, {
+		""from"": 1,
+		""to"": 3,
+        ""predicate"": {
+            ""code"": ""return (p.Input[p.Input.Length - 1] - '0') % 2 != 0;""
+        }
+	}, {
+		""from"": 2,
+		""to"": 4,
+		""propagateCompletion"": false
+	}, {
+		""from"": 3,
+		""to"": 4,
+		""propagateCompletion"": false
+	}]
+}";
 
-            //"tasks":
-            //[
-            //  {
-            //  "Id": 1,
-            //  "BlockType": "Transform",
-            //  "SourceType": "QuickTester.DataFlowTester+Msg",
-            //  "DestinationType: "QuickTester.DataFlowTester+Msg",
-            //  "EvaluatableId": "1234",
-            //  "Args": "likely a json object",
-            //  "MaxParallelism" : "",
-            //  "BoundedCapacity": "",
-            //  "EnsureOrdered" : ""
-            //  }
-            //]
-            //"links": 
-            //[
-            //  {
-            //    "FromId": 1,
-            //    "ToId" : 2,
-            //    "PropagateCompletion": true,
-            //    "PredicateEvaluatableId": 123
-            //  }
-            //]
+            var fw = new FrameworkWrapper();
 
-            // There will be one head returned
-            // await head.SendAsync(new Msg { x = i });
-            // head.Complete();
-            // There will be many tails returned
-            // await Task.WhenAll(tails.Completion)
+            var flow = await DynamicDataflow.Create(config, fw);
+
+            var sendTasks = new List<Task<bool>>();
+
+            for (var i = 0; i < 10; i++)
+            {
+                sendTasks.Add(flow.SendAsync(1, $"HELLO {i}"));
+            }
+
+            await Task.WhenAll(sendTasks);
+
+            if (sendTasks.Any(t => !t.Result))
+            {
+                throw new Exception("Failed to send all messages.");
+            }
+
+            flow.Complete(1);
+
+            await flow.Completed(2, 3).ContinueWith(_ => flow.Complete(4));
+
+            await flow.AllCompleted;
+        }
+
+        public static async Task TestRoslyn()
+        {
+            var scripts = new List<ScriptDescriptor>();
+            var scriptsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts");
+            var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
+
+            var transform2Code = @"return p.Input.ToLower();";
+            rw.CompileAndCache(new ScriptDescriptor("transform2", transform2Code, false, null));
+
+            Func<string, Task<string>> transform2Func = async s => (string)await rw["transform2"](new { Input = s }, new StateWrapper());
+
+            var dataBlockOptions = new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 2 };
+
+            var transform1 = new TransformBlock<string, string>(s => $"Processed by transform 1: {s}", dataBlockOptions);
+            //var transform2 = new TransformBlock<string, string>(s => s.ToLower(), dataBlockOptions);
+            var transform2 = new TransformBlock<string, string>(transform2Func, dataBlockOptions);
+            var transform3 = new TransformBlock<string, string>(s => s.ToUpper(), dataBlockOptions);
+            var action = new ActionBlock<string>(Console.WriteLine, dataBlockOptions);
+
+            var dataFlowLinkOptions = new DataflowLinkOptions() { PropagateCompletion = true };
+            //transform1.LinkTo(transform2, dataFlowLinkOptions);
+            transform1.LinkTo(transform2, dataFlowLinkOptions, s => (s.Last() - '0') % 2 == 0);
+            transform1.LinkTo(transform3, dataFlowLinkOptions, s => (s.Last() - '0') % 2 != 0);
+            transform1.LinkTo(DataflowBlock.NullTarget<string>());
+
+            transform2.LinkTo(action, dataFlowLinkOptions);
+            transform3.LinkTo(action, dataFlowLinkOptions);
+
+            var sendTasks = new List<Task<bool>>();
+
+            for (var i = 0; i < 10; i++)
+            {
+                sendTasks.Add(transform1.SendAsync($"Hello {i}"));
+            }
+
+            await Task.WhenAll(sendTasks);
+
+            if (sendTasks.Any(t => !t.Result))
+            {
+                throw new Exception("Failed to send all messages.");
+            }
+
+            transform1.Complete();
+
+            await action.Completion;
         }
 
         // This is not part of the final code - this is just an example that will be automated using BuildDynamicBlockWorkflow
         // This should be fixed to use Fw, or maybe there should be two versions of the library, one with FW, one without
         public static async Task TestDynamicBlockCreator()
         {
-            // Real code should take a FrameworkWrapper.  
-            FrameworkWrapper fw = null; //new FrameworkWrapper(null);
-
             // We will take a RoslynWrapper here for simple testing without DB
             //string TestF1 =
             //    @"
@@ -160,14 +255,14 @@ namespace QuickTester
                         return (Msg)msg;
                         //return await rw[fname](new { msg }, new StateWrapper());
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         return new Msg { x = 0, HasError = false };
                     }
                 });
         }
 
-        
+
         public class DynamicBlock : System.Dynamic.DynamicObject
         {
             public dynamic block;
@@ -186,12 +281,12 @@ namespace QuickTester
                 // public static Task<bool> SendAsync<TInput>(this ITargetBlock<TInput> target, TInput item);
                 var sendAsyncQuery = from method in typeof(DataflowBlock).GetMethods(BindingFlags.Static
                         | BindingFlags.Public | BindingFlags.NonPublic)
-                                    where method.GetParameters().Length == 2
-                                    where method.IsDefined(typeof(ExtensionAttribute), false)
-                                    where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
-                                    where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
-                                    where method.Name == "SendAsync"
-                                    select method;
+                                     where method.GetParameters().Length == 2
+                                     where method.IsDefined(typeof(ExtensionAttribute), false)
+                                     where method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ITargetBlock<>)
+                                     where method.GetParameters()[1].ParameterType == method.GetGenericArguments()[0]
+                                     where method.Name == "SendAsync"
+                                     select method;
                 sendAsyncInfo = sendAsyncQuery.First();
 
                 //public static IDisposable LinkTo<TOutput>(this ISourceBlock<TOutput> source, ITargetBlock<TOutput> target);
@@ -259,7 +354,7 @@ namespace QuickTester
                         result = linkTo3.Invoke(null, new object[] { this.block, args[0], args[1] });
                     else
                         result = linkTo4.Invoke(null, new object[] { this.block, args[0], args[1], args[2] });
-                   
+
                     return true;
                 }
                 else if (binder.Name.Equals("SendAsync"))
@@ -319,12 +414,12 @@ namespace QuickTester
                 }});
 
                 MethodInfo sendAsync = (!srcType.IsNullOrWhitespace()) ?
-                    DynamicBlock.sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType)) : null;                 
+                    DynamicBlock.sendAsyncInfo.MakeGenericMethod(Type.GetType(srcType)) : null;
 
-                MethodInfo linkTo2 = (!destType.IsNullOrWhitespace()) ? 
+                MethodInfo linkTo2 = (!destType.IsNullOrWhitespace()) ?
                     DynamicBlock.linkTo2Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
-                MethodInfo linkTo3 = (!destType.IsNullOrWhitespace()) ? 
+                MethodInfo linkTo3 = (!destType.IsNullOrWhitespace()) ?
                     DynamicBlock.linkTo3Info.MakeGenericMethod(Type.GetType(destType)) : null;
 
                 MethodInfo linkTo4 = (!destType.IsNullOrWhitespace()) ?
@@ -332,21 +427,21 @@ namespace QuickTester
 
                 return new DynamicBlock(tBlock1, sendAsync, linkTo2, linkTo3, linkTo4);
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
-        }        
-        
+        }
+
         public static Func<T, TResult> Funcify<T, TResult>(Func<T, TResult> f)
         { return f; }
 
         public static Func<T> Actionify<T>(Func<T> f)
         { return f; }
 
-        public class Msg 
-        { 
-            public int x; 
+        public class Msg
+        {
+            public int x;
             public bool HasError;
 
             public Msg() { }
@@ -356,7 +451,7 @@ namespace QuickTester
                 this.x = msg.x;
                 this.HasError = msg.HasError;
             }
-        
+
         }
 
         // This method goes away completely from the library - it is here to see the explicit way to use TPL Dataflow
@@ -424,7 +519,7 @@ namespace QuickTester
                 Console.WriteLine("tBlock1Behavior: " + msg.x + " after delay");
                 return new Msg { x = msg.x, HasError = msg.x % 2 == 0 ? false : true };
             }
-            catch (Exception ex)
+            catch
             {
                 return new Msg { x = 0, HasError = false };
             }
@@ -440,7 +535,7 @@ namespace QuickTester
                 Console.WriteLine("tBlock2Behavior: " + msg.x + " after delay");
                 return new Msg { x = msg.x, HasError = msg.x % 4 == 0 ? false : true };
             }
-            catch (Exception ex)
+            catch
             {
                 return new Msg { x = 0, HasError = false };
             }
@@ -456,7 +551,7 @@ namespace QuickTester
                 Console.WriteLine("aBlockBehavior: " + msg.x + " after delay");
                 return new Msg { x = msg.x, HasError = false };
             }
-            catch (Exception ex)
+            catch
             {
                 return new Msg { x = 0, HasError = false };
             }

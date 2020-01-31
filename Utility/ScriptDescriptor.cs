@@ -16,7 +16,7 @@ namespace Utility
 
         public ScriptRunner<object> Script;
 
-        public ScriptDescriptor(Guid? id, string name, string code, bool debug, string debugDir)
+        public ScriptDescriptor(Guid? id, string name, string code, bool debug = false, string debugDir = null)
         {
             Id = id;
             Name = name;
@@ -26,7 +26,7 @@ namespace Utility
             _key = null;
         }
 
-        public ScriptDescriptor(string name, string code, bool debug, string debugDir)
+        public ScriptDescriptor(string name, string code, bool debug = false, string debugDir = null)
         {
             Id = null;
             Name = name;
@@ -42,7 +42,7 @@ namespace Utility
             get
             {
                 if (_key == null) _key = (Id == null ? null : Id.ToString().ToLower()) ?? 
-                        (Name.ToLower() ?? Hashing.Utf8MD5HashAsHexString(Code));
+                        (Name?.ToLower() ?? Hashing.Utf8MD5HashAsHexString(Code));
                 return _key;
             }
         }

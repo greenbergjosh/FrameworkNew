@@ -77,7 +77,7 @@ namespace SimpleImportExport
 
             if (isMatch && !pattern.FileDateFormat.IsNullOrWhitespace())
             {
-                var fileDateStr = match.Groups.FirstOrDefault(g => g.Name == "fileDate")?.Value;
+                var fileDateStr = match.Groups.Cast<Group>().FirstOrDefault(g => g.Name == "fileDate")?.Value;
 
                 if (!fileDateStr.IsNullOrWhitespace())
                 {

@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Utility;
 using Utility.DataLayer;
-using Microsoft.Extensions.Caching.Memory;
+using Utility.Http;
 
 namespace GenericDataService
 {
@@ -45,7 +47,7 @@ namespace GenericDataService
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -98,6 +100,8 @@ namespace GenericDataService
 
             TaskScheduler.UnobservedTaskException += UnobservedTaskExceptionEventHandler;
 
+            HealthCheckHandler.Initialize(fw).GetAwaiter().GetResult();
+
             app.Run(async (context) =>
             {
                 try
@@ -146,6 +150,10 @@ namespace GenericDataService
                             await context.WriteFailureRespAsync(JsonWrapper.Serialize(new { result = "failed", traceLog }), Encoding.UTF8);
                         }
 
+                        return;
+                    }
+                    else if (await HealthCheckHandler.Handle(context, fw))
+                    {
                         return;
                     }
 

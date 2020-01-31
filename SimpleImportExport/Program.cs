@@ -310,7 +310,7 @@ namespace SimpleImportExport
             }
             catch (Exception e)
             {
-                await _fw.Error(nameof(GetEnpointConfig), $"Failed to load endpoint: {ge.GetS("")}");
+                await _fw.Error(nameof(GetEnpointConfig), $"Failed to load endpoint: {ge.GetS("")} ex: ${e.UnwrapForLog()}");
                 throw;
             }
         }
