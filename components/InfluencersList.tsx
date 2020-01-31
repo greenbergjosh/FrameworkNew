@@ -10,7 +10,7 @@ interface InfluencersListProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   userId?: string
-  influencers: Influencer[]
+  influencers: InfluencerType[]
 }
 
 export const InfluencersList = React.memo(

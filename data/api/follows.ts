@@ -62,7 +62,7 @@ export const loadFollowers = async () => {
  */
 
 export interface InfluencersResponse extends GetGotSuccessResponse {
-  results: Influencer[]
+  results: InfluencerType[]
 }
 
 export const loadInfluencers = async () => {
@@ -98,7 +98,7 @@ export const loadInfluencerFollowers = async (
  */
 
 export interface SuggestedInfluencersResponse extends GetGotSuccessResponse {
-  results: Influencer[]
+  results: InfluencerType[]
 }
 
 export const loadSuggestedInfluencers = async () => {

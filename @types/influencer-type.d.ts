@@ -1,4 +1,4 @@
-type Influencer = UserType & {
+type InfluencerType = UserType & {
   id: GUID
   statusPhrase: {
     template: string

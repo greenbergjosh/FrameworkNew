@@ -23,7 +23,7 @@ import { GetGotResponse } from "../api/getgotRequest"
 
 export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType> {
   lastLoadInfluencers: ISO8601String | null
-  influencers: Influencer[]
+  influencers: InfluencerType[]
 
   lastLoadInfluencerFollowers: { [key: string]: ISO8601String | null }
   influencerFollowers: { [key: string]: Follower[] }
@@ -35,7 +35,7 @@ export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType>
   blockedUsers: BlockedUser[]
 
   lastLoadSuggestedInfluencers: ISO8601String | null
-  suggestedInfluencers: Influencer[]
+  suggestedInfluencers: InfluencerType[]
 }
 
 export interface FollowsActionCreatorType extends GetGotContextType {
