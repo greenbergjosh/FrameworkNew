@@ -1,5 +1,9 @@
 import { getgotRequest, GetGotSuccessResponse } from "./getgotRequest"
 
+/********************
+ * Types
+ */
+
 export interface PromotionDiscountType {
   type: "PERCENT" | "VALUE"
   value: number
@@ -51,20 +55,12 @@ export interface CampaignTemplateBodyType {
   html?: string | null
 }
 
+/********************
+ * Promotions
+ */
+
 export interface PromotionsResponse extends GetGotSuccessResponse {
   results: PromotionType[]
-}
-
-export interface PromotionCampaignsResponse extends GetGotSuccessResponse {
-  results: CampaignType[]
-}
-
-export interface CampaignTemplatesResponse extends GetGotSuccessResponse {
-  results: CampaignTemplateType[]
-}
-
-export interface CreateCampaignResponse extends GetGotSuccessResponse {
-  result: CampaignType
 }
 
 export const loadPromotions = async (
@@ -105,6 +101,14 @@ export const loadPromotions = async (
   return response
 }
 
+/********************
+ * Campaigns
+ */
+
+export interface PromotionCampaignsResponse extends GetGotSuccessResponse {
+  results: CampaignType[]
+}
+
 export const loadPromotionCampaigns = async (
   promotionId: string,
   searchText?: string,
@@ -117,6 +121,42 @@ export const loadPromotionCampaigns = async (
     searchText,
     lastPromotionId,
   })
+}
+
+export interface CreateCampaignResponse extends GetGotSuccessResponse {
+  result: CampaignType
+}
+
+export const createCampaign = async (campaign: Partial<CampaignType>) => {
+  const preparedCampaign = { ...campaign, templateParts: JSON.stringify(campaign.templateParts) }
+  const response = await getgotRequest<CreateCampaignResponse>("createCampaign", preparedCampaign)
+
+  if (response.r === 0) {
+    // On success responses, we need to parse the template JSON
+    try {
+      response.result.templateParts = JSON.parse(
+        (response.result.templateParts as unknown) as string
+      )
+    } catch (ex) {
+      console.warn(
+        "promotions-services",
+        "Create Campaign succeeded, but the templateParts were unparseable",
+        response,
+        preparedCampaign,
+        ex
+      )
+      response.result.templateParts = {}
+    }
+  }
+  return response
+}
+
+/********************
+ * Templates
+ */
+
+export interface CampaignTemplatesResponse extends GetGotSuccessResponse {
+  results: CampaignTemplateType[]
 }
 
 export const loadCampaignTemplates = async (
@@ -149,30 +189,6 @@ export const loadCampaignTemplates = async (
 
       return acc
     }, [])
-  }
-  return response
-}
-
-export const createCampaign = async (campaign: Partial<CampaignType>) => {
-  const preparedCampaign = { ...campaign, templateParts: JSON.stringify(campaign.templateParts) }
-  const response = await getgotRequest<CreateCampaignResponse>("createCampaign", preparedCampaign)
-
-  if (response.r === 0) {
-    // On success responses, we need to parse the template JSON
-    try {
-      response.result.templateParts = JSON.parse(
-        (response.result.templateParts as unknown) as string
-      )
-    } catch (ex) {
-      console.warn(
-        "promotions-services",
-        "Create Campaign succeeded, but the templateParts were unparseable",
-        response,
-        preparedCampaign,
-        ex
-      )
-      response.result.templateParts = {}
-    }
   }
   return response
 }
