@@ -1,6 +1,6 @@
 import React from "react"
 import { Button } from "@ant-design/react-native"
-import { Follower } from "data/api/follows"
+import { FollowerType } from "data/api/follows"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowButton } from "components/FollowButton"
 import { UserRow } from "components/UserRow"
@@ -28,7 +28,7 @@ const ActionButtons = ({ followRequest, onFollowPress, onRejectPress }: ActionBu
 }
 
 export interface FollowerRowProps {
-  follower?: Follower
+  follower?: FollowerType
   followRequest?: boolean
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType

@@ -3,7 +3,7 @@ import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getg
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 import {
   loadMessages,
-  MessageSummary,
+  MessageSummaryType,
   MessagesResponse,
   loadContacts,
   Contact,
@@ -12,7 +12,7 @@ import {
 
 export interface MessagesState extends LoadifyStateType<MessagesActionCreatorType> {
   lastLoadMessages: ISO8601String | null
-  messages: MessageSummary[]
+  messages: MessageSummaryType[]
 
   lastLoadContacts: ISO8601String | null
   contacts: Contact[]

@@ -2,14 +2,14 @@ import React from "react"
 import moment from "moment"
 import { Text } from "react-native"
 import { Flex, List } from "@ant-design/react-native"
-import { MessageSummary } from "data/api/messages"
+import { MessageSummaryType } from "data/api/messages"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { Colors, routes, styles, Units } from "constants"
 import TouchIcon from "components/TouchIcon"
 import AvatarCluster from "components/AvatarCluster"
 
 export interface MessageRowProps {
-  message?: MessageSummary
+  message?: MessageSummaryType
   navigate: MessagesScreenProps["navigation"]["navigate"]
 }
 

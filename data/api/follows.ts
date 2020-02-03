@@ -10,19 +10,19 @@ import {
  * Types
  */
 
-export type BlockedUser = UserType & {
+export type BlockedUserType = UserType & {
   id: GUID
   blockedDate: ISO8601String
 }
 
-export type Follower = UserType & {
+export type FollowerType = UserType & {
   id: GUID
   followedDate: ISO8601String
 }
 
-export type Followers = {
-  followRequests: Follower[]
-  followers: Follower[]
+export type FollowersType = {
+  followRequests: FollowerType[]
+  followers: FollowerType[]
 }
 
 /********************
@@ -30,7 +30,7 @@ export type Followers = {
  */
 
 export interface BlockedUsersResponse extends GetGotSuccessResponse {
-  results: BlockedUser[]
+  results: BlockedUserType[]
 }
 
 export const loadBlockedUsers = async () => {
@@ -46,7 +46,7 @@ export const loadBlockedUsers = async () => {
  */
 
 export interface FollowersResponse extends GetGotSuccessResponse {
-  result: Followers
+  result: FollowersType
 }
 
 export const loadFollowers = async () => {
@@ -78,7 +78,7 @@ export const loadInfluencers = async () => {
  */
 
 export interface InfluencerFollowersResponse extends GetGotSuccessResponse {
-  results: Follower[]
+  results: FollowerType[]
 }
 
 export const loadInfluencerFollowers = async (

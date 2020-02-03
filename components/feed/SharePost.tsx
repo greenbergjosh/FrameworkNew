@@ -1,4 +1,4 @@
-import { Followers } from "data/api/follows"
+import { FollowersType } from "data/api/follows"
 import {
   FlatList,
   Keyboard,
@@ -47,7 +47,7 @@ export const PostToFeedButton = ({ onPost }: PostToFeedButtonProps) => {
 }
 
 interface SharePostProps {
-  followers: Followers
+  followers: FollowersType
   onClose: () => void
   onPost: () => void
   style?: StyleProp<ViewStyle>

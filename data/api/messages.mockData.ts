@@ -1,4 +1,4 @@
-import { ContactsResponse, MessagesResponse, MessageThreadItem, Message } from "./messages"
+import { ContactsResponse, MessagesResponse, MessageThreadItemType, MessageType } from "./messages"
 
 export const MESSAGES_MOCK_DATA: MessagesResponse = {
   r: 0,
@@ -50,7 +50,7 @@ export const MESSAGES_MOCK_DATA: MessagesResponse = {
   ],
 }
 
-export const MESSAGE_MOCK_DATA: Message = {
+export const MESSAGE_MOCK_DATA: MessageType = {
   id: "09564766-81d8-44bd-816e-1d7fd3abbdc7",
   title: "Lunch plans?",
   participants: ["loren", "you"],

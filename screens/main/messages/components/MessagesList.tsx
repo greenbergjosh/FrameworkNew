@@ -2,11 +2,11 @@ import React from "react"
 import { ScrollView } from "react-native"
 import { List } from "@ant-design/react-native"
 import { MessageRow } from "./MessageRow"
-import { MessageSummary } from "data/api/messages"
+import { MessageSummaryType } from "data/api/messages"
 import { MessagesScreenProps } from "../MessagesScreen"
 
 export interface MessageRowProps {
-  messages?: MessageSummary[]
+  messages?: MessageSummaryType[]
   navigate: MessagesScreenProps["navigation"]["navigate"]
 }
 

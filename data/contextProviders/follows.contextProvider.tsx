@@ -1,9 +1,9 @@
 import { Toast } from "@ant-design/react-native"
 import {
-  BlockedUser,
+  BlockedUserType,
   BlockedUsersResponse,
-  Follower,
-  Followers,
+  FollowerType,
+  FollowersType,
   FollowersResponse,
   InfluencersResponse,
   loadBlockedUsers,
@@ -26,13 +26,13 @@ export interface FollowsState extends LoadifyStateType<FollowsActionCreatorType>
   influencers: InfluencerType[]
 
   lastLoadInfluencerFollowers: { [key: string]: ISO8601String | null }
-  influencerFollowers: { [key: string]: Follower[] }
+  influencerFollowers: { [key: string]: FollowerType[] }
 
   lastLoadFollowers: ISO8601String | null
-  followers: Followers
+  followers: FollowersType
 
   lastLoadBlockedUsers: ISO8601String | null
-  blockedUsers: BlockedUser[]
+  blockedUsers: BlockedUserType[]
 
   lastLoadSuggestedInfluencers: ISO8601String | null
   suggestedInfluencers: InfluencerType[]
@@ -57,7 +57,7 @@ export interface FollowsContextType extends FollowsActionCreatorType, FollowsSta
 
 type LoadInfluencerFollowersAction = FSA<
   "loadInfluencerFollowers",
-  { influencerId: string; followers: Follower[] }
+  { influencerId: string; followers: FollowerType[] }
 >
 type LoadInfluencersAction = FSA<"loadInfluencers", InfluencersResponse>
 type LoadFollowersAction = FSA<"loadFollowers", FollowersResponse>
@@ -288,9 +288,9 @@ export const useFollowsContext = () => useContext(FollowsContext)
  * UTILITY FUNCTIONS
  */
 
-type FollowersByDate = { date: moment.Moment; relativeTime: string; followers: Follower[] }[]
+type FollowersByDate = { date: moment.Moment; relativeTime: string; followers: FollowerType[] }[]
 
-export function sortFollowersByDate(followers: Follower[]): FollowersByDate {
+export function sortFollowersByDate(followers: FollowerType[]): FollowersByDate {
   // Create object with dates as keys
   const groups = followers.reduce((groups, follower) => {
     const date = moment.utc(follower.followedDate)
