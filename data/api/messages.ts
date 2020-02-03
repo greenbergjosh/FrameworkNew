@@ -14,13 +14,11 @@ export type MessageSummaryType = {
   content: string
 }
 
-export type MessageThreadItemType = IMessage
-
 export type MessageType = {
   id: GUID
   title: string
   participants: string[]
-  thread: MessageThreadItemType[]
+  thread: IMessage[]
 }
 
 export interface MessagesResponse extends GetGotSuccessResponse {
