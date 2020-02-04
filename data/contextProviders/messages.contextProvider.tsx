@@ -2,44 +2,43 @@ import React, { useContext } from "react"
 import { GetGotContextType, getgotResetAction, GetGotResetAction } from "../getgotContextType"
 import { loadifyContext, loadifyReducer, LoadifyStateType } from "../loadify"
 import {
-  loadMessages,
-  MessageSummaryType,
-  MessagesResponse,
+  loadChats,
+  ChatType,
+  ChatsResponse,
   loadContacts,
-  Contact,
   ContactsResponse,
 } from "../api/messages"
 
 export interface MessagesState extends LoadifyStateType<MessagesActionCreatorType> {
-  lastLoadMessages: ISO8601String | null
-  messages: MessageSummaryType[]
+  lastLoadChats: ISO8601String | null
+  chats: ChatType[]
 
   lastLoadContacts: ISO8601String | null
-  contacts: Contact[]
+  contacts: UserType[]
 }
 
 export interface MessagesActionCreatorType extends GetGotContextType {
   // Action Creators
-  loadMessages: () => Promise<void>
+  loadChats: () => Promise<void>
   loadContacts: () => Promise<void>
 }
 
 export interface MessagesContextType extends MessagesActionCreatorType, MessagesState {}
 
-type LoadMessagesAction = FSA<"loadMessages", MessagesResponse>
+type LoadChatsAction = FSA<"loadChats", ChatsResponse>
 type LoadContactsAction = FSA<"loadContacts", ContactsResponse>
 
-type MessagesAction = LoadMessagesAction | LoadContactsAction
+type MessagesAction = LoadChatsAction | LoadContactsAction
 
 const reducer = loadifyReducer(
   (state: MessagesState, action: MessagesAction | GetGotResetAction) => {
     switch (action.type) {
-      case "loadMessages":
+      case "loadChats":
         return {
           ...state,
           ...action.payload,
-          messages: [...action.payload.results],
-          lastLoadMessages: new Date().toISOString(),
+          chats: [...action.payload.results],
+          lastLoadChats: new Date().toISOString(),
         }
       case "loadContacts":
         return {
@@ -57,14 +56,14 @@ const reducer = loadifyReducer(
 )
 
 const initialState: MessagesState = {
-  lastLoadMessages: null,
-  messages: [],
+  lastLoadChats: null,
+  chats: [],
 
   lastLoadContacts: null,
   contacts: [],
 
   loading: {
-    loadMessages: {},
+    loadChats: {},
     loadContacts: {},
     reset: {},
   },
@@ -72,7 +71,7 @@ const initialState: MessagesState = {
 
 const initialContext: MessagesContextType = {
   ...initialState,
-  loadMessages: async () => {},
+  loadChats: async () => {},
   loadContacts: async () => {},
   reset: () => {},
 }
@@ -85,12 +84,12 @@ export const MessagesContextProvider = ({ ...props }) => {
   const loadifiedActionCreators = React.useMemo(
     () =>
       loadifyContext(dispatch, {
-        loadMessages: async () => {
-          const response = await loadMessages()
+        loadChats: async () => {
+          const response = await loadChats()
           if (response.r === 0) {
-            dispatch({ type: "loadMessages", payload: response })
+            dispatch({ type: "loadChats", payload: response })
           } else {
-            console.error("Error loading Messages", { response })
+            console.error("Error loading Chats", { response })
           }
         },
         loadContacts: async () => {
@@ -105,7 +104,7 @@ export const MessagesContextProvider = ({ ...props }) => {
           dispatch(getgotResetAction)
         },
       }),
-    [dispatch, getgotResetAction, loadMessages, loadContacts]
+    [dispatch, getgotResetAction, loadChats, loadContacts]
   )
 
   const contextValue = React.useMemo(() => ({ ...state, ...loadifiedActionCreators }), [

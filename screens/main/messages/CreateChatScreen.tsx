@@ -8,11 +8,11 @@ import { useMessagesContext } from "data/contextProviders/messages.contextProvid
 import { ContactsList } from "./components/ContactsList"
 import NavButton from "components/NavButton"
 
-interface NewMessageScreenProps extends NavigationStackScreenProps {
+interface CreateChatScreenProps extends NavigationStackScreenProps {
   image?: ImageType
 }
 
-export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
+export const CreateChatScreen = ({ navigation }: CreateChatScreenProps) => {
   const messagesContext = useMessagesContext()
   const { contacts } = messagesContext
   const { navigate } = navigation
@@ -53,7 +53,7 @@ export const NewMessageScreen = ({ navigation }: NewMessageScreenProps) => {
     </SafeAreaView>
   )
 }
-NewMessageScreen.navigationOptions = ({ navigation }) => {
+CreateChatScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: (
       <NavButton onPress={() => navigation.navigate(routes.Messages.default)} position="left">
@@ -64,7 +64,7 @@ NewMessageScreen.navigationOptions = ({ navigation }) => {
     headerRight: (
       <NavButton
         type="primary"
-        onPress={() => navigation.navigate(routes.Messages.ViewThread)}
+        onPress={() => navigation.navigate(routes.Messages.Chat)}
         position="right">
         Done
       </NavButton>

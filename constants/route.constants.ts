@@ -77,8 +77,8 @@ enum Explore {
 enum Messages {
   default = "Messages.Messages",
   Messages = "Messages.Messages",
-  NewMessage = "Messages.NewMessage",
-  ViewThread = "Messages.ViewThread",
+  CreateChat = "Messages.CreateChat",
+  Chat = "Messages.Chat",
 }
 
 enum Settings {

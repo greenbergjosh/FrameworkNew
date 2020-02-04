@@ -13,19 +13,19 @@ import {
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { SafeAreaView } from "react-native"
 
-interface ViewThreadScreenProps extends NavigationStackScreenProps {}
+interface ChatScreenProps extends NavigationStackScreenProps {}
 
 /**
  * About GiftedChat...
  * https://blog.jscrambler.com/build-a-chat-app-with-firebase-and-react-native/
  * https://www.npmjs.com/package/react-native-gifted-chat
  */
-export const ViewThreadScreen = ({}: ViewThreadScreenProps) => {
+export const ChatScreen = ({}: ChatScreenProps) => {
   const user = {
     _id: 1,
   }
   const [messages, setMessages] = React.useState([])
-  React.useMemo(() => setMessages(mockData.MESSAGE_MOCK_DATA.thread), [])
+  React.useMemo(() => setMessages(mockData.CHAT_MOCK_DATA.chat), [])
 
   function onSend(messages = []) {
     setMessages((prevState) => GiftedChat.append(prevState, messages))
@@ -82,7 +82,7 @@ export const ViewThreadScreen = ({}: ViewThreadScreenProps) => {
   )
 }
 
-ViewThreadScreen.navigationOptions = ({ navigation }) => {
+ChatScreen.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: (
       <NavButton
@@ -94,8 +94,8 @@ ViewThreadScreen.navigationOptions = ({ navigation }) => {
     headerTitle: (
       <HeaderTitle
         title={
-          mockData.MESSAGE_MOCK_DATA.title ||
-          `Chat - ${mockData.MESSAGE_MOCK_DATA.participants.join(", ")}`
+          mockData.CHAT_MOCK_DATA.title ||
+          `Chat - ${mockData.CHAT_MOCK_DATA.users.join(", ")}`
         }
       />
     ),

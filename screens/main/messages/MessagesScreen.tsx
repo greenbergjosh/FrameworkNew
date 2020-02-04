@@ -5,7 +5,7 @@ import { NavigationStackScreenProps } from "react-navigation-stack"
 import { useMessagesContext } from "data/contextProviders/messages.contextProvider"
 import { Colors, routes, AntIconSizes } from "constants"
 import { HeaderTitle } from "components/HeaderTitle"
-import { MessagesList } from "./components/MessagesList"
+import { ChatsList } from "./components/ChatsList"
 import NavButton from "components/NavButton"
 import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
 import { SafeAreaView } from "react-native"
@@ -18,19 +18,19 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
       alert("Sorry, GetGot needs your permission to enable selecting this photo!")
     } else if (imageResult.status === PhotoSelectStatus.SUCCESS) {
       const imageBase64 = imageResult.base64
-      navigate(routes.Messages.NewMessage, { image: imageBase64 })
+      navigate(routes.Messages.CreateChat, { image: imageBase64 })
     }
   })
 
   const messagesContext = useMessagesContext()
   if (
-    !messagesContext.lastLoadMessages &&
-    !messagesContext.loading.loadMessages[JSON.stringify([])]
+    !messagesContext.lastLoadChats &&
+    !messagesContext.loading.loadChats[JSON.stringify([])]
   ) {
-    messagesContext.loadMessages()
+    messagesContext.loadChats()
     return <ActivityIndicator animating toast size="large" text="Loading..." />
   }
-  const { messages } = messagesContext
+  const { chats } = messagesContext
   const { navigate } = navigation
 
   return (
@@ -41,7 +41,7 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
         showCancelButton={false}
         onSubmit={() => alert("Search\n Feature to come!")}
       />
-      <MessagesList navigate={navigate} messages={messages} />
+      <ChatsList navigate={navigate} chats={chats} />
       <Button style={{ backgroundColor: Colors.navBarBackground }} onPress={editImage}>
         <AntDesign name="camera" size={AntIconSizes.lg} style={{ color: Colors.bodyText }} />
       </Button>
@@ -61,7 +61,7 @@ MessagesScreen.navigationOptions = ({ navigation }) => {
     headerRight: (
       <NavButton
         iconName="plus"
-        onPress={() => navigation.navigate(routes.Messages.NewMessage)}
+        onPress={() => navigation.navigate(routes.Messages.CreateChat)}
         position="right"
       />
     ),

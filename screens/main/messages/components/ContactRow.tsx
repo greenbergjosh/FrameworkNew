@@ -1,20 +1,19 @@
 import React from "react"
 import { Text } from "react-native"
 import { Checkbox, Flex, List } from "@ant-design/react-native"
-import { Contact } from "data/api/messages"
 import { styles, Units } from "constants"
 import Avatar from "components/Avatar"
 
 export interface ContactRowProps {
-  contact?: Contact
+  contact?: UserType
 }
 
 export const ContactRow = ({ contact }: ContactRowProps) => {
-  const { id, userId, avatarUri, handle, name, contactDate, content } = contact
+  const { userId, avatarUri, handle, name } = contact
   const [checked, setChecked] = React.useState(false)
 
   return (
-    <List.Item key={contact.id} onPress={() => setChecked(!checked)}>
+    <List.Item key={userId} onPress={() => setChecked(!checked)}>
       <Flex direction="row" style={{ marginTop: 5 }}>
         <Flex direction="column" align="start" style={{ marginRight: 10 }}>
           <Avatar source={avatarUri} size="md" />

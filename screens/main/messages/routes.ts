@@ -1,10 +1,10 @@
 import { routes } from "constants"
 import { MessagesScreen } from "./MessagesScreen"
-import { NewMessageScreen } from "./NewMessageScreen"
-import { ViewThreadScreen } from "./ViewThreadScreen"
+import { CreateChatScreen } from "./CreateChatScreen"
+import { ChatScreen } from "./ChatScreen"
 
 export const messagesRoutes = {
   [routes.Messages.Messages]: { screen: MessagesScreen },
-  [routes.Messages.NewMessage]: { screen: NewMessageScreen },
-  [routes.Messages.ViewThread]: { screen: ViewThreadScreen },
+  [routes.Messages.CreateChat]: { screen: CreateChatScreen },
+  [routes.Messages.Chat]: { screen: ChatScreen },
 }

@@ -1,35 +1,32 @@
 import { GetGotSuccessResponse } from "./getgotRequest"
-import { CONTACTS_MOCK_DATA, MESSAGES_MOCK_DATA } from "./messages.mockData"
+import { CONTACTS_MOCK_DATA, CHATS_MOCK_DATA } from "./messages.mockData"
 import { IMessage } from "react-native-gifted-chat"
 
 /********************
- * Messages
+ * Types
  */
 
-export type MessageSummaryType = {
-  id: GUID
-  name: string
-  users: UserType[]
-  messageDate: ISO8601String
-  content: string
-}
-
-export type MessageType = {
+export type ChatType = {
   id: GUID
   title: string
-  participants: string[]
-  thread: IMessage[]
+  users: UserType[]
+  lastMessageDate: ISO8601String
+  chat?: IMessage[]
 }
 
-export interface MessagesResponse extends GetGotSuccessResponse {
-  results: MessageSummaryType[]
+/********************
+ * Chats
+ */
+
+export interface ChatsResponse extends GetGotSuccessResponse {
+  results: ChatType[]
 }
 
-export const loadMessages = async () => {
+export const loadChats = async () => {
   // TODO: update with the final api function name and remove mock Promise
   // return await getgotRequest<MessagesResponse>("getmessages", {})
-  return new Promise<MessagesResponse>((resolve) => {
-    setTimeout(resolve, 100, MESSAGES_MOCK_DATA)
+  return new Promise<ChatsResponse>((resolve) => {
+    setTimeout(resolve, 100, CHATS_MOCK_DATA)
   })
 }
 
@@ -37,14 +34,8 @@ export const loadMessages = async () => {
  * Contacts
  */
 
-export type Contact = UserType & {
-  id: GUID
-  contactDate: ISO8601String
-  content: string
-}
-
 export interface ContactsResponse extends GetGotSuccessResponse {
-  results: Contact[]
+  results: UserType[]
 }
 
 export const loadContacts = async () => {

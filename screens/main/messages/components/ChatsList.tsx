@@ -1,24 +1,24 @@
 import React from "react"
 import { ScrollView } from "react-native"
 import { List } from "@ant-design/react-native"
-import { MessageRow } from "./MessageRow"
-import { MessageSummaryType } from "data/api/messages"
+import { ChatRow } from "./ChatRow"
+import { ChatType } from "data/api/messages"
 import { MessagesScreenProps } from "../MessagesScreen"
 
-export interface MessageRowProps {
-  messages?: MessageSummaryType[]
+export interface ChatsRowProps {
+  chats?: ChatType[]
   navigate: MessagesScreenProps["navigation"]["navigate"]
 }
 
-export const MessagesList = ({ navigate, messages }: MessageRowProps) => {
+export const ChatsList = ({ navigate, chats }: ChatsRowProps) => {
   return (
     <ScrollView
       style={{ flex: 1 }}
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}>
       <List>
-        {messages.map((message) => (
-          <MessageRow key={message.id} navigate={navigate} message={message} />
+        {chats.map((message) => (
+          <ChatRow key={message.id} navigate={navigate} chat={message} />
         ))}
       </List>
     </ScrollView>
