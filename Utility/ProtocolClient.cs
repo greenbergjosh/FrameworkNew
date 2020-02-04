@@ -195,7 +195,7 @@ namespace Utility
             string fileDestinationDirectory)
         {
             var ufn = Guid.NewGuid().ToString();
-            var rs = new Dictionary<string, object>();
+            var results = new Dictionary<string, object>();
             try
             {
                 await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn);
@@ -205,7 +205,7 @@ namespace Utility
                 {
                     var tr = await zipEntryTester(f);
                     var pr = await zipEntryProcessors[tr](f);
-                    rs[tr] = pr;
+                    results[tr] = pr;
                 }
             }
             finally
@@ -218,7 +218,7 @@ namespace Utility
                 }
             }
 
-            return rs;
+            return results;
         }
 
         public static async Task UploadStream(string fileName, Stream stream, string host, string userName,
