@@ -25,7 +25,7 @@ export const ChatScreen = ({}: ChatScreenProps) => {
     _id: 1,
   }
   const [messages, setMessages] = React.useState([])
-  React.useMemo(() => setMessages(mockData.CHAT_MOCK_DATA.chat), [])
+  React.useMemo(() => setMessages(mockData.CHAT_MOCK_DATA.messages), [])
 
   function onSend(messages = []) {
     setMessages((prevState) => GiftedChat.append(prevState, messages))

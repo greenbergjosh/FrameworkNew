@@ -11,7 +11,7 @@ export type ChatType = {
   title: string
   users: UserType[]
   lastMessageDate: ISO8601String
-  chat?: IMessage[]
+  messages?: IMessage[]
 }
 
 /********************

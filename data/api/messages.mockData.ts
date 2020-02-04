@@ -58,7 +58,7 @@ export const CHAT_MOCK_DATA: ChatType = {
     },
   ],
   lastMessageDate: "2019-11-25T07:00:00+12:00",
-  chat: [
+  messages: [
     {
       _id: 1,
       text: "What are you feeling like?",
