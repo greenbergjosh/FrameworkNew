@@ -47,7 +47,7 @@ namespace UnsubLib
         public string FileCacheFtpServerPath;
         public string SortBufferSize;
         public int FileCopyTimeout;
-        private FrameworkWrapper _fw;
+        private readonly FrameworkWrapper _fw;
 
         public RoslynWrapper RosWrap;
 
@@ -397,7 +397,7 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
 
             // Download unsub files
-            var unsubFiles = await DownloadUnsubFiles(uris, network, isManual);
+            var (networkCampaignFiles, networkDomainFiles, networkCampaignTypes) = await DownloadUnsubFiles(uris, network, isManual);
 
             // Generate diff list
             var campaignsWithNegativeDelta = new List<string>();
@@ -411,10 +411,10 @@ namespace UnsubLib
                 await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Processing campaign: {c.GetS("") ?? "null"}");
                 var campId = c.GetS("Id");
 
-                if (unsubFiles.Item1.ContainsKey(campId))
+                if (networkCampaignFiles.ContainsKey(campId))
                 {
-                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Checking size of {unsubFiles.Item1[campId]}");
-                    var newFileId = unsubFiles.Item1[campId].ToLower();
+                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Checking size of {networkCampaignFiles[campId]}");
+                    var newFileId = networkCampaignFiles[campId].ToLower();
                     var newFileName = newFileId + ".txt.srt";
                     await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"File exists? {File.Exists(newFileName)} {newFileName}");
                     var newFileSize = await GetFileSize(newFileName);
@@ -466,9 +466,9 @@ namespace UnsubLib
                     }
                 }
 
-                if (unsubFiles.Item3.ContainsKey(campId))
+                if (networkCampaignTypes.ContainsKey(campId))
                 {
-                    digestTypes.Add(campId, unsubFiles.Item3[campId] == SHA512HANDLER ? SHA512HANDLER_ID : MD5HANDLER_ID);
+                    digestTypes.Add(campId, networkCampaignTypes[campId] == SHA512HANDLER ? SHA512HANDLER_ID : MD5HANDLER_ID);
                 }
             }
 
@@ -477,7 +477,7 @@ namespace UnsubLib
             {
                 var campaignsWithPositiveDelta = new Dictionary<string, string>();
 
-                foreach (var cmp in unsubFiles.Item1)
+                foreach (var cmp in networkCampaignFiles)
                 {
                     if (!campaignsWithNegativeDelta.Contains(cmp.Key))
                         campaignsWithPositiveDelta.Add(cmp.Key, cmp.Value);
@@ -593,7 +593,7 @@ namespace UnsubLib
             return uris;
         }
 
-        public async Task<Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, bool isManual)
+        public async Task<(ConcurrentDictionary<string, string> networkCampaignFiles, ConcurrentDictionary<string, string> networkDomainFiles, ConcurrentDictionary<string, string> networkCampaignTypes)> DownloadUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, bool isManual)
         {
             var networkName = network.GetS("Name");
             var networkUnsubMethod = network.GetS("Credentials/UnsubMethod");
@@ -823,7 +823,7 @@ namespace UnsubLib
             await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Finished file downloads for {networkName}");
             await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", Jw.Serialize(destinations.Select(d => new { path = d, exists = File.Exists(d) }).ToArray()));
 
-            return new Tuple<ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>, ConcurrentDictionary<string, string>>(ncf, ndf, nct);
+            return (ncf, ndf, nct);
         }
 
         public async Task SignalUnsubServerService(IGenericEntity network, HashSet<Tuple<string, string>> diffs, IDictionary<string, string> ndf)
@@ -1321,7 +1321,7 @@ namespace UnsubLib
                 {
                     if (Fs.TryDeleteFile(file))
                     {
-                        newFileSize = newFileSize - file.Length;
+                        newFileSize -= file.Length;
                         if (newFileSize <= 0) break;
                     }
                 }
@@ -1345,7 +1345,7 @@ namespace UnsubLib
             const string tempSuffix = "_temp";
             var success = false;
             var fileName = fileId + ext;
-            var dfileName = destFileName == null ? fileName : destFileName;
+            var dfileName = destFileName ?? fileName;
             var finalFile = new FileInfo($"{destDir}\\{dfileName}");
 
             if (!String.IsNullOrEmpty(FileCacheFtpServer) || !String.IsNullOrEmpty(FileCacheDirectory))
@@ -1656,7 +1656,7 @@ namespace UnsubLib
                 {
                     await _fw.Error(nameof(IsUnsubList), $"Unsub file missing for campaign id {campaignId}");
 
-                    return JsonConvert.SerializeObject(new { NotUnsub = new string[0], Error = "Missing unsub file" });
+                    return JsonConvert.SerializeObject(new { NotUnsub = Array.Empty<string>(), Error = "Missing unsub file" });
                 }
 
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");

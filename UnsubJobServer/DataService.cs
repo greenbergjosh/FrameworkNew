@@ -45,7 +45,7 @@ namespace UnsubJobServer
                             await nw.LoadUnsubFiles(dtv);
                         }
 #else
-                        Task.Run(() => nw.LoadUnsubFiles(dtv));
+                        _ = Task.Run(() => nw.LoadUnsubFiles(dtv));
 #endif
 
                         result = JsonWrapper.Json(new { Result = "Success" });
