@@ -1,0 +1,40 @@
+{
+  "components": [
+    {
+      "id": "b4ccb0ac-83f3-46f1-bd63-47bc6f5bdccc",
+      "table": "Config",
+      "routable": true,
+      "title": "Global Config Admin",
+      "services": {
+        "get": "get",
+        "insert": "insert",
+        "update": "update",
+        "delete": "delete"
+      },
+      "fields": [
+        {
+          "title": "Name",
+          "accessor": "name",
+          "type": "string",
+          "ordinal": 1,
+          "validation": {
+            "service": "isNameUnique"
+          }
+        },
+        {
+          "title": "Type",
+          "accessor": "type",
+          "type": "dropdown",
+          "options": [],
+          "ordinal": 2
+        },
+        {
+          "title": "Config",
+          "accessor": "config",
+          "type": "code",
+          "ordinal": 3
+        }
+      ]
+    }
+  ]
+}
