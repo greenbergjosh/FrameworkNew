@@ -1,0 +1,49 @@
+$brand-primary: #343997;
+
+.login-app {
+  .brand-primary-block {
+    background-color: $brand-primary;
+    color: #ffffff;
+    padding-top: 7px;
+    height: 75px;
+  }
+
+  .login-header {
+    margin-top: 20px;
+    font-family: "SF Display", sans;
+    font-weight: 200;
+    font-size: 20pt;
+    text-align: center;
+  }
+
+  .centered {
+    text-align: center;
+  }
+
+  .ant-input-affix-wrapper:hover .ant-input:not(.ant-input-disabled) {
+    border-right-width: 0 !important;
+  }
+  .login-input {
+    margin: 15px 0px;
+    input {
+      border-width: 0px 0px 1px 0px;
+      border-radius: 0;
+      font-family: "SF Text";
+      font-size: 13pt;
+    }
+  }
+
+  .login-button-wrapper {
+    margin-top: 70px;
+  }
+
+  .login-button {
+    background-color: #077aff;
+    border-radius: 10px;
+    height: 50px;
+    width: 50%;
+    font-family: "SF Text";
+    font-weight: 600;
+    font-size: 13pt;
+  }
+}
