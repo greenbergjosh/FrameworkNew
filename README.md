@@ -1,6 +1,6 @@
 # interface-builder
 
-> Easy-to-build forms & layouts with drag-and-drop in real time.
+> Easy-to-build forms and layouts with drag-and-drop and an extendable component architecture so you're not limited.
 
 [![NPM](https://img.shields.io/npm/v/interface-builder.svg)](https://www.npmjs.com/package/interface-builder) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
