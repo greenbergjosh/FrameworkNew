@@ -8,7 +8,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
+<<<<<<< HEAD:GetGotRetailerWeb/Program.cs
+namespace GetGotRetailerWeb
+=======
 namespace GetGotRetailerService
+>>>>>>> b02c7bcfe404cf2a718a36d88d849bb27fcc54c7:GetGotRetailerService/Program.cs
 {
     public class Program
     {

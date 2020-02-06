@@ -1,29 +1,37 @@
+import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
-import { TreeNode } from "antd/lib/tree-select"
-import { fromEither, none } from "fp-ts/lib/Option"
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Icon,
+  Skeleton,
+  Tabs,
+  Tag,
+  Tree,
+  Typography
+  } from "antd"
+import { fromEither, none, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
+import JSON5 from "json5"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { CodeEditor, EditorLangCodec } from "../../../../../components/code-editor"
+import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager.type"
+import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 import { fromStrToJSONRec } from "../../../../../data/JSON"
 import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
 import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Empty,
-  Form,
-  Icon,
-  Row,
-  Skeleton,
-  Tree,
-  Typography,
-  Tag,
-} from "antd"
+  CodeEditor,
+  ComponentDefinition,
+  EditorLangCodec,
+  UserInterface,
+} from "@opg/interface-builder"
+
 interface Props {
   configId: string
 }
@@ -43,10 +51,27 @@ export function ShowGlobalConfig({
     associations: store.select.globalConfig.associations(s),
     configs: s.globalConfig.configs,
     configsById: store.select.globalConfig.configsById(s),
+    configNames: store.select.globalConfig.configNames(s),
+    configsByType: store.select.globalConfig.configsByType(s),
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
+    reportDataByQuery: s.reports.reportDataByQuery,
   }))
+
+  const userInterfaceContextManager: AdminUserInterfaceContextManager = {
+    executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
+    reportDataByQuery: fromStore.reportDataByQuery,
+    loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
+      return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
+    },
+    loadById: (id: string) => {
+      return record.lookup(id, fromStore.configsById).toNullable()
+    },
+    loadByURL: (url: string) => {
+      return [] // axios
+    },
+  }
 
   const { focusedConfig, entityTypeConfig, editorLanguage } = React.useMemo(() => {
     const focusedConfig = record.lookup(normalizeURLParams(configId), fromStore.configsById)
@@ -68,6 +93,76 @@ export function ShowGlobalConfig({
     fromStore.defaultEntityTypeConfig.lang,
   ])
 
+  const isRootConfig = entityTypeConfig.map(({ id }) => id === configId).getOrElse(false)
+  const configComponents = isRootConfig
+    ? ROOT_CONFIG_COMPONENTS
+    : (() => {
+        // First check in the manual overrides
+        const layoutMappingRecords = record.lookup("LayoutMapping", fromStore.configsByType)
+        // TODO: Traverse up the type-of relationship to find if a parent type has layout assignments
+        const collectedLayoutOverrides = layoutMappingRecords
+          .map((layoutMappings) =>
+            layoutMappings.reduce(
+              (result, layoutMapping) => {
+                const configOption = tryCatch(() =>
+                  JSON5.parse(layoutMapping.config.getOrElse("{}"))
+                )
+
+                configOption.map(({ layout, entityTypes, configs }) => {
+                  if (layout) {
+                    if (configs && configs.includes(configId)) {
+                      result.byConfigId.push(layout)
+                    }
+                    if (
+                      entityTypes &&
+                      entityTypeConfig.map(({ id }) => entityTypes.includes(id)).getOrElse(false)
+                    ) {
+                      result.byEntityType.push(layout)
+                    }
+                  }
+                })
+
+                return result
+              },
+              { byEntityType: [] as string[], byConfigId: [] as string[] }
+            )
+          )
+          .toNullable()
+
+        // Were there any LayoutMapping assignments for this item?
+        if (collectedLayoutOverrides) {
+          if (collectedLayoutOverrides.byConfigId.length) {
+            // TODO: Eventually merge these layouts, perhaps?
+            const layout = record
+              .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
+              .chain(({ config }) =>
+                tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
+              )
+              .toNullable()
+
+            if (layout) {
+              return layout
+            }
+          } else if (collectedLayoutOverrides.byConfigId.length) {
+          }
+        }
+
+        return entityTypeConfig
+          .map((parentType) => {
+            return tryCatch(() => JSON5.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
+              ROOT_CONFIG_COMPONENTS
+            )
+          })
+          .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
+      })()
+
+  const config = focusedConfig.toNullable()
+  const jsonData = (editorLanguage === "json" && config
+    ? tryCatch(() => JSON5.parse(config.config.getOrElse("")))
+    : none
+  ).toNullable()
+  const jsonHasErrors = !jsonData
+
   const association = focusedConfig.chain(({ id }) => record.lookup(id, fromStore.associations))
   return (
     <Skeleton active loading={fromStore.configs.isPending()}>
@@ -83,9 +178,7 @@ export function ShowGlobalConfig({
               <Alert
                 banner
                 closable
-                description={`No config of type "EntityType" could be found for configs of type "${
-                  config.type
-                }." For the best experience, please create an EntityType config for ${config.type}`}
+                description={`No config of type "EntityType" could be found for configs of type "${config.type}." For the best experience, please create an EntityType config for ${config.type}`}
                 message={`No EntityType exists for ${config.type}`}
                 type="warning"
               />
@@ -97,11 +190,35 @@ export function ShowGlobalConfig({
             <Card
               bordered={false}
               extra={
-                <Button type="primary" size="small">
-                  <Reach.Link to={`./edit`}>
-                    <Icon type="edit" /> Edit
-                  </Reach.Link>
-                </Button>
+                <Button.Group>
+                  {record.lookup(config.name, fromStore.entityTypes).fold(null, () => (
+                    <Button size="small">
+                      <Reach.Link to={`../create?type=${config.name}`}>
+                        <Icon type="plus" /> New {config.name}
+                      </Reach.Link>
+                    </Button>
+                  ))}
+                  <Button size="small">
+                    <Reach.Link
+                      to={`../create?type=${encodeURIComponent(
+                        config.type
+                      )}&name=${encodeURIComponent(
+                        fromStore.configNames
+                          ? generateUniqueCopyName(config.name, fromStore.configNames)
+                          : config.name
+                      )}&config=${tryCatch(() =>
+                        encodeURIComponent(config.config.getOrElse("{}"))
+                      ).getOrElse("")}`}>
+                      <Icon type="copy" /> Copy to New
+                    </Reach.Link>
+                  </Button>
+
+                  <Button type="primary" size="small">
+                    <Reach.Link to="./edit">
+                      <Icon type="edit" /> Edit
+                    </Reach.Link>
+                  </Button>
+                </Button.Group>
               }
               title={`Config Details`}>
               <Form
@@ -126,13 +243,42 @@ export function ShowGlobalConfig({
 
                 {/* ---------- Config.Config Input ---------------- */}
                 <Form.Item label="Config">
-                  <CodeEditor
-                    content={config.config.getOrElse("")}
-                    contentDraft={none}
-                    height={500}
-                    language={editorLanguage}
-                    width="100%"
-                  />
+                  <Tabs
+                    defaultActiveKey={
+                      configComponents && configComponents.length && !jsonHasErrors
+                        ? "form"
+                        : "editor"
+                    }>
+                    <Tabs.TabPane
+                      key={"form"}
+                      tab={"Properties"}
+                      disabled={!configComponents || !configComponents.length || jsonHasErrors}>
+                      {jsonHasErrors ? (
+                        <Alert
+                          type="error"
+                          description="Please correct errors in the JSON before attempting to edit the layout."
+                          message="JSON Errors"
+                        />
+                      ) : (
+                        <UserInterface
+                          contextManager={userInterfaceContextManager}
+                          data={jsonData}
+                          mode="display"
+                          components={configComponents}
+                        />
+                      )}
+                      {/* <Alert type="info" message={form.values.config} /> */}
+                    </Tabs.TabPane>
+                    <Tabs.TabPane key={"editor"} tab={"Developer Editor"}>
+                      <CodeEditor
+                        content={config.config.getOrElse("")}
+                        contentDraft={none}
+                        height={500}
+                        language={editorLanguage}
+                        width="100%"
+                      />
+                    </Tabs.TabPane>
+                  </Tabs>
                 </Form.Item>
               </Form>
             </Card>
@@ -213,6 +359,23 @@ const formItemLayout = {
     md: { span: 20 },
     lg: { span: 22 },
   },
+}
+
+/**
+ * Determines a unique name by appending Copy, Copy 1, Copy 2, Copy 3, etc until a unique name is found
+ * @param baseName The starting name to use
+ * @param existingNames The list of names from the store
+ */
+function generateUniqueCopyName(baseName: string, existingNames: string[] = []) {
+  const nameSet = new Set(existingNames.map((str) => str.toLowerCase()))
+
+  let resultingName = `${baseName} Copy`
+  let copyIndex = 1
+  while (nameSet.has(resultingName.toLowerCase())) {
+    resultingName = `${baseName} Copy ${copyIndex++}`
+  }
+
+  return resultingName
 }
 
 export default ShowGlobalConfig

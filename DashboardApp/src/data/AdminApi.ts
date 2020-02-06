@@ -28,29 +28,24 @@ export const ErrorPayload = iots.type({
   r: ErrorCodeCodec,
 })
 
+export const authLoginPayloadCodec = iots.type({
+  LoginToken: iots.string,
+  Name: iots.string,
+  Email: NonEmptyString,
+  ImageUrl: iots.string,
+})
+
 export const authResponsePayloadCodec = {
   login: iots.type({
     "auth:login": iots.union([
       ErrorPayload,
       iots.type({
         r: iots.literal(0),
-        result: iots.type({
-          token: iots.string,
-          name: iots.string,
-          email: NonEmptyString,
-          profileImage: iots.string,
-        }),
+        result: authLoginPayloadCodec,
       }),
     ]),
   }),
 }
-
-export const authLoginPayloadCodec = iots.type({
-  token: iots.string,
-  name: iots.string,
-  email: NonEmptyString,
-  profileImage: iots.string,
-})
 
 export const globalConfigResponsePayloadCodec = {
   delete: iots.type({
@@ -106,6 +101,8 @@ export const reportResponsePayloadCodecs = {
     }),
 }
 
+export const genericArrayPayloadCodec = iots.array(JSONRecordCodec)
+
 export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): ApiResponse<T> {
   switch (r) {
     case 1: return ServerException({reason: adminApiErrors[1]})
@@ -131,4 +128,12 @@ export function ServerException<T>(err: { reason: string }): ApiResponse<T> {
 }
 export function Unauthorized<T>(): ApiResponse<T> {
   return ({ Unauthorized: f }) => f()
+}
+
+export interface KeyValuePair {
+  key: string
+  value: string
+}
+export interface KeyValuePairConfig {
+  items: KeyValuePair[]
 }

@@ -15,10 +15,21 @@ import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
+import { registry, registerMonacoEditorMount, antComponents } from "@opg/interface-builder"
+import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
+import { RemoteComponentInterfaceComponent } from "./components/custom-ib-components/remote-component/RemoteComponentInterfaceComponent"
+import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/slot-config/SlotConfigInterfaceComponent"
+import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
+import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
+import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 
 const persistor = getPersistor()
 
-function AppLoadingScreen() {
+interface AppLoadingScreenProps {
+  title?: string
+}
+
+function AppLoadingScreen({ title }: AppLoadingScreenProps) {
   return (
     <>
       <Helmet>
@@ -26,7 +37,7 @@ function AppLoadingScreen() {
       </Helmet>
 
       <div className={`${styles.appLoadingIndicator}`}>
-        <Spin size="large" tip="Initializing OnPoint Admin" />
+        <Spin size="large" tip={"Initializing OnPoint Admin" + (title ? `... ${title}` : "")} />
       </div>
     </>
   )
@@ -42,12 +53,24 @@ export function App(): JSX.Element {
     dispatch.iam.attemptResumeSession()
   }, [dispatch.iam])
 
+  React.useEffect(() => {
+    registry.register(antComponents)
+    registry.register({query: QueryInterfaceComponent})
+    registry.register({"remote-component": RemoteComponentInterfaceComponent})
+    registry.register({"slot-config": SlotConfigInterfaceComponent})
+    registry.register({select: SelectInterfaceComponent})
+    registry.register({tags: TagsInterfaceComponent})
+    registerMonacoEditorMount(getCustomEditorConstructionOptions)
+  }, [])
+
   return (
-    <PersistGate persistor={persistor} loading={<AppLoadingScreen />}>
+    <PersistGate
+      persistor={persistor}
+      loading={<AppLoadingScreen title="Restoring Application State" />}>
       <div className={`${styles.app}`}>
         <ReactRedux.Provider store={store}>
           {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
-            <AppLoadingScreen />
+            <AppLoadingScreen title="Checking Session Authentication" />
           ) : (
             <Routes />
           )}

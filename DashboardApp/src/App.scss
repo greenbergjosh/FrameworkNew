@@ -1,13 +1,20 @@
 /* SyncFusion Essential JS 2 app styles */
-@import "../node_modules/@syncfusion/ej2-base/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-buttons/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-calendars/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-dropdowns/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-inputs/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-navigations/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-popups/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-splitbuttons/styles/bootstrap4.css";
-@import "../node_modules/@syncfusion/ej2-react-grids/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-base/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-buttons/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-calendars/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-dropdowns/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-inputs/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-navigations/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-popups/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-splitbuttons/styles/bootstrap4.css";
+@import "~@syncfusion/ej2-react-grids/styles/bootstrap4.css";
+
+/*
+TODO: Replace with CSS import that allows for proper tree shaking
+React-App-Rewired does not handle these transitive dependencies correctly
+which causes antd components used in interface-builder only to have broken styles.
+ */
+@import "~antd/dist/antd.css";
 
 /* SyncFusion Theme Overrides */
 @import "./styles/syncfusion/bootstrap4-orange.css";
@@ -17,3 +24,17 @@
 
 /* OnPoint overrides for AntDesign styles */
 @import "./styles/antd.overrides.scss";
+
+// #grained {
+//   pointer-events: none;
+//   position: fixed !important;
+//   z-index: 10000;
+//   top: 0;
+//   left: 0;
+//   height: 100vh;
+//   width: 100vw;
+// }
+
+// #grained::before {
+//   position: fixed !important;
+// }

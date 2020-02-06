@@ -119,6 +119,7 @@ export function mkCompleteLocalDraft(
 //
 
 export interface Associations {
+  isTypeOf: Array<PersistedConfig["id"]>
   usedBy: Array<PersistedConfig["id"]>
   uses: Array<PersistedConfig["id"]>
   referencedBy: Array<PersistedConfig["id"]>

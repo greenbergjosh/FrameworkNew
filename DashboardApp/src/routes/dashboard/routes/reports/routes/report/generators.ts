@@ -1,3 +1,5 @@
+import { SelectParam } from "antd/lib/menu"
+import { assertNever } from "../../../../../../lib/assert-never"
 import {
   QueryConfig,
   ParameterItem,
@@ -5,8 +7,6 @@ import {
   DateRangeParameterItem,
   SelectParameterItem,
 } from "../../../../../../data/Report"
-import { SelectParam } from "antd/lib/menu"
-import { assertNever } from "../../../../../../lib/assert-never"
 
 export const generators = {
   string: (parameter: ParameterItem): QueryLayoutItem => ({}),

@@ -1,6 +1,8 @@
-import { Option } from "fp-ts/lib/Option"
+import { ComponentDefinition } from "@opg/interface-builder"
+import { none, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
+import { string } from "prop-types"
 import { JSONRecord, JSONRecordCodec } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
@@ -23,15 +25,15 @@ export const LayoutItemCodec = iots.taggedUnion("component", [
 
 export type RemoteReportConfig = {
   type: "ReportConfig"
-  query: Nullable<GlobalConfigReference>
-  layout: LayoutItem
-  details: Nullable<GlobalConfigReference | RemoteReportConfig>
+  query: string
+  details: string
 }
 export type LocalReportConfig = {
   type: "ReportConfig"
-  query: Option<GlobalConfigReference>
-  layout: LayoutItem
-  details: Option<GlobalConfigReference | LocalReportConfig>
+  query: string
+  columns: [iots.UnknownRecordC]
+  details: string | ReportDetails | LocalReportConfig
+  dataMapping?: DataMappingItem[]
 }
 export const ReportConfigCodec = iots.recursion<
   LocalReportConfig,
@@ -41,11 +43,9 @@ export const ReportConfigCodec = iots.recursion<
 >("ReportConfig", (_ReportConfigCodec) =>
   iots.type({
     type: iots.literal("ReportConfig"),
-    query: iotst.createOptionFromNullable(GlobalConfigReferenceCodec),
-    layout: LayoutItemCodec,
-    details: iotst.createOptionFromNullable(
-      iots.taggedUnion("type", [GlobalConfigReferenceCodec, _ReportConfigCodec])
-    ),
+    query: iots.string,
+    columns: iots.any,
+    details: iots.any,
   })
 )
 
@@ -66,6 +66,7 @@ export const StringParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("string"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -75,6 +76,7 @@ export const IntegerParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("integer"),
     defaultValue: iotst.createOptionFromNullable(iots.number),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -84,6 +86,7 @@ export const FloatParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("float"),
     defaultValue: iotst.createOptionFromNullable(iots.number),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -93,6 +96,7 @@ export const DateParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("date"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -102,6 +106,7 @@ export const DateRangeParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("date-range"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -111,6 +116,7 @@ export const BooleanParameterItemCodec = iots.intersection([
   iots.type({
     type: iots.literal("boolean"),
     defaultValue: iotst.createOptionFromNullable(iots.boolean),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -142,6 +148,7 @@ export const SelectParameterItemCodec = iots.intersection([
     options: SelectParameterItemOptionsCodec,
     type: iots.literal("select"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
+    required: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -155,6 +162,29 @@ export const ParameterItemCodec = iots.taggedUnion("type", [
   BooleanParameterItemCodec,
   SelectParameterItemCodec,
 ])
+
+export type HTTPRequestQueryConfig = iots.TypeOf<typeof HTTPRequestQueryConfigCodec>
+export const HTTPRequestQueryConfigCodec = iots.type({
+  format: iots.literal("HTTPRequest"),
+  layout: iots.array(iots.UnknownRecord),
+
+  body: iots.taggedUnion("format", [
+    iots.type({
+      format: iots.literal("raw"),
+      lang: iots.string,
+      raw: iots.string,
+    }),
+
+    iots.type({
+      format: iots.literal("form-encoded"),
+      content: iots.record(iots.string, iots.string),
+    }),
+  ]),
+  headers: iots.record(iots.string, iots.string),
+  method: iots.string,
+  parameters: iots.array(ParameterItemCodec),
+  query: iots.string,
+})
 
 export type SQLQueryConfig = iots.TypeOf<typeof SQLQueryConfigCodec>
 export const SQLQueryConfigCodec = iots.type({
@@ -175,6 +205,55 @@ export const StoredProcQueryConfigCodec = iots.type({
 export type QueryLayoutItem = JSONRecord
 export type QueryConfig = iots.TypeOf<typeof QueryConfigCodec>
 export const QueryConfigCodec = iots.taggedUnion("format", [
+  HTTPRequestQueryConfigCodec,
   SQLQueryConfigCodec,
   StoredProcQueryConfigCodec,
 ])
+
+// TODO: io-ts codecs for the below?
+
+export interface DataMappingItem {
+  originalKey: string
+  mappedKey: string
+}
+
+export interface IReportDetails {
+  type: "report" | "layout" | "none"
+  dataMapping?: DataMappingItem[]
+}
+
+export interface IReportDetailsAsReport extends IReportDetails {
+  type: "report"
+  reportType: "inline" | "config"
+}
+
+export interface ReportDetailsAsInlineReport extends IReportDetailsAsReport {
+  type: "report"
+  reportType: "inline"
+  help: string
+  data: LocalReportConfig
+}
+
+export interface ReportDetailsAsConfigReport extends IReportDetailsAsReport {
+  type: "report"
+  reportType: "config"
+  help: number
+  report: GlobalConfigReference["id"]
+}
+
+export interface ReportDetailsAsLayout extends IReportDetails {
+  type: "layout"
+  layout: ComponentDefinition[]
+}
+
+export interface ReportDetailsAsNone extends IReportDetails {
+  type: "none"
+}
+
+export type ReportDetailsAsReport = ReportDetailsAsInlineReport | ReportDetailsAsConfigReport
+export type ReportDetails = ReportDetailsAsReport | ReportDetailsAsLayout | ReportDetailsAsNone
+
+export interface SimpleLayoutConfig {
+  type: "SimpleLayoutConfig"
+  layout: ComponentDefinition[]
+}

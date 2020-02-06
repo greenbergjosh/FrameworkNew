@@ -1,6 +1,7 @@
 import { Card } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
+import { ComponentDefinition } from "@opg/interface-builder"
 import { WithRouteProps } from "../../../../state/navigation"
 
 interface Props {}
@@ -24,3 +25,33 @@ export function GlobalConfigAdmin({
 }
 
 export default GlobalConfigAdmin
+
+export const ROOT_CONFIG_COMPONENTS = [
+  {
+    key: "lang",
+    valueKey: "lang",
+    component: "select",
+    label: "Language",
+    dataHandlerType: "local",
+    data: {
+      values: [{ label: "JSON", value: "json" }, { label: "C#", value: "csharp" }],
+    },
+  },
+  {
+    key: "layout",
+    label: "Root Layout Creator",
+    valueKey: "layout",
+    component: "user-interface",
+    defaultDataValue: {},
+    defaultValue: [],
+    mode: "edit",
+    visibilityConditions: {
+      "===": [
+        "json",
+        {
+          var: ["lang"],
+        },
+      ],
+    },
+  },
+] as ComponentDefinition[]

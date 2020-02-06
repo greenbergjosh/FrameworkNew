@@ -1,14 +1,19 @@
 declare const styles: {
-  readonly breadCrumbsRow: string
-  readonly fullHeight: string
-  readonly horizontalMenu: string
-  readonly image: string
-  readonly sidebar: string
-  readonly title: string
-  readonly topToolbar: string
-  readonly trigger: string
-  readonly layoutContainer: string
-  readonly logo: string
-  readonly logoCollapsed: string
-}
-export = styles
+  readonly "breadCrumbsRow": string;
+  readonly "fullHeight": string;
+  readonly "horizontalMenu": string;
+  readonly "image": string;
+  readonly "sidebar": string;
+  readonly "title": string;
+  readonly "topToolbar": string;
+  readonly "trigger": string;
+  readonly "layoutContainer": string;
+  readonly "logo": string;
+  readonly "logoCollapsed": string;
+  readonly "navigationLeftArrow": string;
+  readonly "navigationRightArrow": string;
+  readonly "navigationArrow": string;
+  readonly "hoverColorText": string;
+};
+export = styles;
+

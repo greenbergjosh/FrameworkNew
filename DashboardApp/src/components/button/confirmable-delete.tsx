@@ -1,6 +1,6 @@
-import React from "react"
+import { Button, Col, Icon, Popover, Row, Typography } from "antd"
 import { ButtonProps } from "antd/lib/button"
-import { Popover, Button, Icon, Row, Col, Typography } from "antd"
+import React from "react"
 
 export interface Props {
   confirmationTitle?: string
@@ -27,7 +27,7 @@ export function ConfirmableDeleteButton({
       trigger="click"
       visible={isShowingConfirmation}
       onVisibleChange={setIsShowingConfirmation}>
-      <Button icon="delete" title="delete" type="danger" {...props}>
+      <Button icon="delete" title="Delete" type="danger" {...props}>
         {/* <Icon type="delete" /> */}
       </Button>
     </Popover>

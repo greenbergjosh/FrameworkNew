@@ -1792,6 +1792,20 @@
 }
 
 /*!componenticons*/
+.e-toolbar-items .e-collapse::before {
+  content: "\e70c";
+}
+
+.e-toolbar-items .e-expand::before {
+  content: "\e777";
+}
+
+.e-toolbar-items .e-group::before {
+  content: "\e926";
+}
+
+// --- \\
+
 .e-pager .e-icon-last::before,
 .e-grid-menu .e-icon-last::before {
   content: "\e7bb";
@@ -14529,17 +14543,18 @@ ejs-sidebar {
   content: "\e76a";
 }
 
-.e-grid .e-icon-filter::before,
+*/ .e-grid .e-icon-filter::before,
 .e-grid-menu .e-icon-filter::before {
-  content: "\e714";
-}
+  /* content: "\e714"; */
+  content: "\e748";
+} /*
 
 .e-grid .e-excl-filter-icon::before,
 .e-grid-menu .e-excl-filter-icon::before {
   content: "\e2714";
 }
 
-.e-grid .e-excl-filter-icon.e-filtered::before,
+ .e-grid .e-excl-filter-icon.e-filtered::before,
 .e-grid-menu .e-excl-filter-icon.e-filtered::before {
   content: "\e748";
 }
