@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -37,6 +38,7 @@ namespace UnsubLib
         public string FileCacheFtpServer;
         public string FileCacheFtpUser;
         public string FileCacheFtpPassword;
+        public string ManualFilePath;
         public long WorkingFileCacheSize;
         public long SearchFileCacheSize;
         public string UnsubServerUri;
@@ -63,6 +65,10 @@ namespace UnsubLib
         private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
         private const string Conn = "Unsub";
 
+        private HashSet<string> _queuedCampaigns = null;
+        private readonly string _queuedCampaignsUrl;
+        private readonly string _queuedCampaignsBody;
+
         public UnsubLib(FrameworkWrapper fw)
         {
             _fw = fw;
@@ -77,6 +83,7 @@ namespace UnsubLib
             FileCacheFtpServer = config.GetS("Config/FileCacheFtpServer");
             FileCacheFtpUser = config.GetS("Config/FileCacheFtpUser");
             FileCacheFtpPassword = config.GetS("Config/FileCacheFtpPassword");
+            ManualFilePath = config.GetS("Config/ManualFilePath");
             WorkingFileCacheSize = Int64.Parse(config.GetS("Config/WorkingFileCacheSize"));
             SearchFileCacheSize = Int64.Parse(config.GetS("Config/SearchFileCacheSize"));
             UnsubServerUri = config.GetS("Config/UnsubServerUri");
@@ -102,6 +109,9 @@ namespace UnsubLib
             var rw = new RoslynWrapper(scripts, $@"{scriptsPath}\\debug");
 
             RosWrap = rw;
+
+            _queuedCampaignsUrl = config.GetS("Config/QueuedCampaignsUrl");
+            _queuedCampaignsBody = config.GetS("Config/QueuedCampaignsBody");
         }
 
         public async Task<IGenericEntity> GetNetworks(string singleNetworkName)
@@ -119,7 +129,7 @@ namespace UnsubLib
         public async Task ManualDirectory(IGenericEntity network, bool isManual)
         {
             var networkName = network.GetS("Name");
-            var path = Path.Combine(ClientWorkingDirectory, "Manual", networkName);
+            var path = Path.Combine(ManualFilePath, networkName);
 
             var di = new DirectoryInfo(path);
 
@@ -303,16 +313,17 @@ namespace UnsubLib
             var cleanUp = unsubFiles.Select(u => u.unsub.Directory).DistinctBy(u => u.FullName);
 
             cleanUp.ForEach(d =>
-                        {
-                            try
-                            {
-                                d.Delete(true);
-                            }
-                            catch (Exception e)
-                            {
-                                _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to delete manual folder after processing:\r\n{d.FullName}\r\n{e.UnwrapForLog()}").Wait();
-                            }
-                        });
+                {
+                    try
+                    {
+                        d.Delete(true);
+                    }
+                    catch (Exception e)
+                    {
+                        _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to delete manual folder after processing:\r\n{d.FullName}\r\n{e.UnwrapForLog()}").Wait();
+                    }
+                }
+            );
         }
 
         public async Task ScheduledUnsubJob(IGenericEntity network, string networkCampaignId = null)
@@ -323,7 +334,7 @@ namespace UnsubLib
             var networkProvider = NetworkProviders.Factory.GetInstance(_fw, network);
 
             IDictionary<string, List<IGenericEntity>> uris = new Dictionary<string, List<IGenericEntity>>();
-            IGenericEntity cse;
+            IEnumerable<IGenericEntity> cse;
 
             if (networkCampaignId.IsNullOrWhitespace())
             {
@@ -332,6 +343,12 @@ namespace UnsubLib
                 if (cse == null)
                 {
                     await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"GetUnsubUris({networkName}): Null campaigns returned");
+                    return;
+                }
+
+                if (!cse.Any())
+                {
+                    await _fw.Trace($"{nameof(ScheduledUnsubJob)}-{networkName}", $"GetUnsubUris({networkName}): No campaigns returned");
                     return;
                 }
 
@@ -379,7 +396,7 @@ namespace UnsubLib
                     return;
                 }
 
-                cse = Jw.JsonToGenericEntity($"[{campaign.GetS("")}]");
+                cse = new[] { campaign };
                 uris.Add(uri, new List<IGenericEntity>() { campaign });
             }
 
@@ -387,12 +404,12 @@ namespace UnsubLib
 
             var bad = uris.Where(u => u.Value?.Any() != true).ToArray();
 
-            await ProcessUnsubFiles(uris, network, cse.GetL("").ToArray(), false);
+            await ProcessUnsubFiles(uris, network, cse.ToArray(), false);
 
             await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Completed ProcessUnsubFiles");
         }
 
-        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, ICollection<IGenericEntity> cse, bool isManual)
+        public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IEnumerable<IGenericEntity> cse, bool isManual)
         {
             var networkName = network.GetS("Name");
 
@@ -509,7 +526,7 @@ namespace UnsubLib
             //}
         }
 
-        public async Task<IGenericEntity> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider)
+        public async Task<IEnumerable<IGenericEntity>> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider)
         {
             var networkName = network.GetS("Name");
             var networkId = network.GetS("Id");
@@ -531,10 +548,23 @@ namespace UnsubLib
                 if (campaigns != null) File.WriteAllText(localNetworkFilePath, campaigns.GetS(""));
             }
 
-            return campaigns;
+            if (campaigns != null)
+            {
+                await LoadQueuedCampaigns();
+
+                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {campaigns.GetL("").Count()}");
+
+                var queuedCampaigns = campaigns.GetL("").Where(c => _queuedCampaigns.Contains(c.GetS("Id"))).ToList();
+
+                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API and queued according to Console: {queuedCampaigns.Count}");
+
+                return queuedCampaigns;
+            }
+
+            return Enumerable.Empty<IGenericEntity>();
         }
 
-        public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IGenericEntity campaigns, INetworkProvider networkProvider)
+        public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IEnumerable<IGenericEntity> campaigns, INetworkProvider networkProvider)
         {
             var networkName = network.GetS("Name");
             var parallelism = network.GetS("Credentials/Parallelism").ParseInt() ?? 5;
@@ -546,7 +576,7 @@ namespace UnsubLib
 
             try
             {
-                task = campaigns.GetL("").ForEachAsync(parallelism, cancelToken.Token, async c =>
+                task = campaigns.ForEachAsync(parallelism, cancelToken.Token, async c =>
                 {
                     var campaignId = c.GetS("NetworkCampaignId");
                     var unsubRelationshipId = c.GetS("NetworkUnsubRelationshipId");
@@ -975,18 +1005,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+            }
 #if DEBUG
             }
 #endif
@@ -1926,8 +1956,25 @@ namespace UnsubLib
 
         public async Task<object> UnknownTypeHandler(FileInfo fi, string logContext)
         {
-            await _fw.Error(nameof(UnknownTypeHandler), $"Unknown file type: {fi.FullName} { logContext}");
+            await _fw.Error(nameof(UnknownTypeHandler), $"Unknown file type: {fi.FullName} {logContext}");
             return new object();
+        }
+
+        public async Task LoadQueuedCampaigns()
+        {
+            if (_queuedCampaigns == null)
+            {
+                var response = await new HttpClient().PostAsync(_queuedCampaignsUrl, _queuedCampaignsBody == null ? null : new StringContent(_queuedCampaignsBody));
+                var result = await response.Content.ReadAsStringAsync();
+
+                dynamic queued = JsonConvert.DeserializeObject(result);
+
+                _queuedCampaigns = new HashSet<string>();
+                foreach (var campaign in queued)
+                {
+                    _queuedCampaigns.Add(campaign["CampaignUId"].ToString());
+                }
+            }
         }
     }
 }
