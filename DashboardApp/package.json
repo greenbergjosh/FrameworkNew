@@ -55,9 +55,11 @@
   },
   "scripts": {
     "start": "concurrently \"npm:start-rewired\"  \"npm:watch-*\"",
+    "start-win": "concurrently \"npm:start-rewired-win\"  \"npm:watch-*\"",
     "watch-css": "tcm --watch -p src/**/*.module.css",
     "watch-scss": "tsm --watch src/**/*.module.scss",
     "start-rewired": "export NODE_OPTIONS=--max_old_space_size=4096&&export HTTPS=true&&export HTTPS=true&&react-app-rewired --max_old_space_size=4096 start",
+    "start-rewired-win": "set NODE_OPTIONS=--max_old_space_size=4096&&set HTTPS=true&&set HTTPS=true&&react-app-rewired --max_old_space_size=4096 start",
     "build": "react-app-rewired --max_old_space_size=4096 build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
