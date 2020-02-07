@@ -8,12 +8,12 @@
 - [node and npm](https://nodejs.org/en/)
 - [yarn](https://classic.yarnpkg.com/en/docs/install/#mac-stable)
 
-### Install
+## Install
 ```bash
 yarn @opg/interface-builder
 ```
 
-### Usage
+## Usage
 
 ```tsx
 import * as React from 'react'
@@ -46,13 +46,13 @@ const MyComponent: React.FC = () => {
 }
 ```
 
-### Demo
+## Demo
 ```bash
 cd interface-builder/example
 yarn && yarn start
 ```
 
-# Contributing to the project
+## Contributing to the project
 
 ### Dev environment
 > Run the file watcher in `interface-builder` to compile changes,
