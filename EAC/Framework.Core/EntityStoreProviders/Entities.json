@@ -1,0 +1,631 @@
+{
+  "Relations": [
+    {
+      "LEntityId": "00000000-0000-0000-0000-000000000000",
+      "Name": "Scheduler",
+      "REntityId": "00000000-0000-0000-0000-000000000001"
+    }
+  ],
+
+
+  "Contracts": [
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "Name": "Memory Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "Method",
+          "Required": true,
+          "AllowedValues": [
+            "Get",
+            "Set"
+          ]
+        },
+        {
+          "Name": "Location"
+        },
+        {
+          "Name": "Partition"
+        },
+        {
+          "Name": "Key",
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "RequiredWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [
+                "Set"
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "DefaultValue",
+          "ValidWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [
+                "Get"
+              ]
+            }
+          ]
+        },
+        {
+          "Name": "DefaultValueCreator",
+          "ValidWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [
+                "Get"
+              ]
+            }
+          ]
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "Result",
+          "RequiredWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [
+                "Get"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000002",
+      "Name": "Decorator Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "PrimaryEntityId",
+          "Required": true
+        },
+        {
+          "Name": "Evaluatables",
+          "Required": true
+        },
+        {
+          "Name": "RepeatAndReverseOnPost",
+          "AllowedValues": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000003",
+      "Name": "Decoration Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "DecorationStage",
+          "Required": true,
+          "AllowedValues": [
+            "Pre",
+            "Post"
+          ]
+        },
+        {
+          "Name": "CompositeReturn",
+          "RequiredWhen": [
+            {
+              "Name": "DecorationStage",
+              "MatchValues": [
+                "Post"
+              ]
+            }
+          ]
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "IntroducedParameters",
+          "Required": true
+        }
+      ]
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000004",
+      "Name": "IO Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "Method",
+          "Required": "True",
+          "AllowedValues": [
+            "Write",
+            "WriteLine",
+            "Indent",
+            "Unindent"
+          ]
+        },
+        {
+          "Name": "Message",
+          "RequiredWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [
+                "Write",
+                "WriteLine"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000102",
+      "Name": "Accumulator Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "Value",
+          "Required": true
+        },
+        {
+          "Name": "ReadLocation"
+        },
+        {
+          "Name": "WriteLocation"
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "PreviousValue",
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "Required": true
+        },
+        {
+          "Name": "CurrentValue",
+          "Required": true
+        }
+      ]
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000200",
+      "Name": "Creative Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "Content",
+          "Required": true
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "Result",
+          "Required": true
+        }
+      ]
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000204",
+      "Name": "Sequence Evaluatable Contract",
+      "Inputs": [
+        {
+          "Name": "Slots",
+          "Required": true
+        }
+      ],
+      "Outputs": [
+        {
+          "Name": "Completed"
+        }
+      ]
+    }
+  ],
+
+
+
+
+  "Nodes": [
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000000",
+      "Name": "Bootstrapper Code",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.BootstrapEvaluatable, Evaluate"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000666",
+      "Name": "Constant for tests",
+      "Evaluate": {
+        "Constant": "I am a constant"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000667",
+      "Name": "Roslyn Addition Implementation",
+      "Memory": "Grid",
+      "Evaluate": {
+        "Code": "return s.Get(\"p1\", 0) + s.Get(\"p2\", 0);"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000001",
+      "Contract": "00000000-0000-0000-0000-000000000001",
+      "Name": "Memory Evaluatable Code",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.MemoryEvaluatable, Evaluate"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000002",
+      "Contract": "00000000-0000-0000-0000-000000000002",
+      "Name": "Decorator Evaluatable Code",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.DecoratorEvaluatable, Evaluate"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000004",
+      "Name": "IO Evaluatable",
+      "Contract": "00000000-0000-0000-0000-000000000004",
+      "Calls": [
+        {
+          "Name": "MemoryGet",
+          "Contract": "00000000-0000-0000-0000-000000000001",
+          "Parameters": {
+            "Method": "Get",
+            "Partition": "__IO__"
+          }
+        },
+        {
+          "Name": "MemorySet",
+          "Contract": "00000000-0000-0000-0000-000000000001",
+          "Parameters": {
+            "Method": "Set",
+            "Partition": "__IO__"
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.IoEvaluatable, Evaluate"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000102",
+      "Name": "Accumulator Evaluatable",
+      "Contract": "00000000-0000-0000-0000-000000000102",
+      "Services": [
+        {
+          "Name": "MemoryEvaluatable",
+          "Contract": "00000000-0000-0000-0000-000000000001",
+          "Implementation": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "Name": "IoEvaluatable",
+          "Contract": "00000000-0000-0000-0000-000000000004",
+          "Implementation": "00000000-0000-0000-0000-000000000004"
+        }
+      ],
+      "Calls": [
+        {
+          "Name": "IO",
+          "Contract": "00000000-0000-0000-0000-000000000004",
+          "Parameters": {
+            "Method": "WriteLine"
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.AccumulatorEvaluatable, Evaluate"
+      }
+    },
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000999",
+      "Name": "Stack of constant for tests",
+      "Evaluate": {
+        "Memory": "Stack",
+        "EntityId": "00000000-0000-0000-0000-000000000666"
+      }
+    },
+
+    {
+      "Id": "00000000-0000-0000-0000-000000001000",
+      "Name": "Stack of stack of constant for tests",
+      "Evaluate": {
+        "Memory": "Stack",
+        "EntityId": "00000000-0000-0000-0000-000000000999"
+      }
+    },
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000200",
+      "Name": "Creative Evaluatable",
+      "Contract": "00000000-0000-0000-0000-000000000200",
+      "Services": [
+        {
+          "Name": "MemoryEvaluatable",
+          "Contract": "00000000-0000-0000-0000-000000000001",
+          "Implementation": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "Name": "IoEvaluatable",
+          "Contract": "00000000-0000-0000-0000-000000000004",
+          "Implementation": "00000000-0000-0000-0000-000000000004"
+        }
+      ],
+      "Calls": [
+        {
+          "Name": "IO",
+          "Contract": "00000000-0000-0000-0000-000000000004",
+          "Parameters": {
+            "Method": "WriteLine"
+          }
+        }
+      ],
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.CreativeEvaluatable, Evaluate"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000204",
+      "Name": "Sequence Evaluatable",
+      "Contract": "00000000-0000-0000-0000-000000000204",
+      "Evaluate": {
+        "Type": "StaticCode",
+        "ProviderType": "Framework.Core.CodeProviders.CSharpCodeProvider",
+        "Implementation": "Framework.Core.Languages.E.SequenceEvaluatable, Evaluate"
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000400",
+      "Name": "Sequence 400",
+      "Evaluate": {
+        "Memory": "Grid",
+        "EntityId": "00000000-0000-0000-0000-000000000204",
+        "Parameters": {
+          "Slots": [
+            {
+              "Evaluate": {
+                "Memory": "Grid",
+                "EntityId": "00000000-0000-0000-0000-000000000600"
+              }
+            },
+            {
+              "Evaluate": {
+                "Constant": 2
+              }
+            },
+            {
+              "Evaluate": {
+                "Memory": "Stack",
+                "EntityId": "00000000-0000-0000-0000-000000000605"
+              }
+            },
+            {
+              "Evaluate": {
+                "Memory": "Grid",
+                "EntityId": "00000000-0000-0000-0000-000000000607"
+              }
+            },
+            {
+              "Evaluate": {
+                "Memory": "Stack",
+                "EntityId": "00000000-0000-0000-0000-000000000609"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000401",
+      "Name": "Sequence 401",
+      "Evaluate": {
+        "Memory": "Grid",
+        "EntityId": "00000000-0000-0000-0000-000000000204",
+        "Parameters": {
+          "Slots": [
+            {
+              "Evaluate": {
+                "Constant": 1
+              }
+            },
+            {
+              "Evaluate": {
+                "Constant": 2
+              }
+            },
+            {
+              "Evaluate": {
+                "Constant": 3
+              }
+            },
+            {
+              "Evaluate": {
+                "Constant": 4
+              }
+            }
+          ]
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000600",
+      "Name": "Creative 600",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 600!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000601",
+      "Name": "Creative 601",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 601!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000602",
+      "Name": "Creative 602",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 602!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000603",
+      "Name": "Creative 603",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 603!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000604",
+      "Name": "Creative 604",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 604!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000605",
+      "Name": "Creative 605",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 605!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000606",
+      "Name": "Creative 606",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 606!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000607",
+      "Name": "Creative 607",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 607!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000608",
+      "Name": "Creative 608",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 608!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000609",
+      "Name": "Creative 609",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 609!!!"
+        }
+      }
+    },
+
+
+    {
+      "Id": "00000000-0000-0000-0000-000000000610",
+      "Name": "Creative 610",
+      "Evaluate": {
+        "EntityId": "00000000-0000-0000-0000-000000000200",
+        "Parameters": {
+          "Content": "This is Creative 610!!!"
+        }
+      }
+    }
+  ]
+}
