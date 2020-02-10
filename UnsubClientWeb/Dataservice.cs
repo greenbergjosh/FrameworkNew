@@ -31,21 +31,25 @@ namespace UnsubClientWeb
 
                 var dtv = Jw.JsonToGenericEntity(requestFromPost);
 
-                var nw = new UnsubLib.UnsubLib(_fw);
+                var unsub = new UnsubLib.UnsubLib(_fw);
+                var method = dtv.GetS("m");
 
-                switch (dtv.GetS("m"))
+                // Leaving out the await was on purpose, let's not hold up the call for trace logging
+                _ = _fw.Trace($"Router:{method}", dtv.GetS(""));
+
+                switch (method)
                 {
                     case "IsUnsub":
-                        result = await nw.ServerIsUnsub(requestFromPost);
+                        result = await unsub.IsUnsub(dtv);
                         break;
                     case "IsUnsubList":
-                        result = await nw.ServerIsUnsubList(requestFromPost);
+                        result = await unsub.IsUnsubList(dtv);
                         break;
                     case "GetCampaigns":
-                        result = (await nw.GetCampaigns())?.GetS("") ?? result;
+                        result = (await unsub.GetCampaigns())?.GetS("") ?? result;
                         break;
                     case "ForceUnsub":
-                        result = await nw.ServerForceUnsub(requestFromPost);
+                        result = await unsub.ForceUnsub(dtv);
                         break;
                     case "alive":
                         await _fw.Log(nameof(Run), "Someone asked if I was alive, I was");
@@ -61,23 +65,23 @@ namespace UnsubClientWeb
                         try
                         {
                             var sw = Stopwatch.StartNew();
-                            var res = await nw.GetCampaigns();
+                            var res = await unsub.GetCampaigns();
 
                             sw.Restart(() => stats.Add("GetCampaigns", sw.Elapsed.TotalSeconds));
 
                             var resArr = res?.GetL("")?.ToArray();
 
-                            if (resArr?.Any() != true) errors.Add($"{nameof(nw.GetCampaigns)} returned null or empty array. Result: {res?.GetS("")}");
+                            if (resArr?.Any() != true) errors.Add($"{nameof(unsub.GetCampaigns)} returned null or empty array. Result: {res?.GetS("")}");
                             else
                             {
                                 var latestCampaign = resArr.OrderByDescending(c => c.GetS("MostRecentUnsubFileDate").ParseDate()).First();
                                 var testEmails = Jw.TryParseArray(_fw.StartupConfiguration.GetS("Config/TestEmails"));
-                                var isUnsubArgs = Jw.Serialize(new { m = "IsUnsubList", CampaignId = latestCampaign.GetS("Id"), GlobalSuppression = true, EmailMd5 = testEmails });
+                                var isUnsubArgs = Jw.JsonToGenericEntity(Jw.Serialize(new { m = "IsUnsubList", CampaignId = latestCampaign.GetS("Id"), GlobalSuppression = true, EmailMd5 = testEmails }));
 
-                                res = Jw.JsonToGenericEntity(await nw.ServerIsUnsubList(isUnsubArgs));
+                                res = Jw.JsonToGenericEntity(await unsub.IsUnsubList(isUnsubArgs));
                                 sw.Restart(() => stats.Add("IsUnsub", sw.Elapsed.TotalSeconds));
                                 resArr = res?.GetL("NotUnsub")?.ToArray();
-                                if (resArr?.Any() != true) errors.Add($"{nameof(nw.ServerIsUnsubList)} returned null or empty array. Result: {res?.GetS("")}");
+                                if (resArr?.Any() != true) errors.Add($"{nameof(unsub.IsUnsubList)} returned null or empty array. Result: {res?.GetS("")}");
                             }
                         }
                         catch (Exception e)

@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "gsl n:W4 c:2572 c:24893"
+      "commandLineArgs": "skipClean n:W4Cathy c:14635"
     }
   }
 }

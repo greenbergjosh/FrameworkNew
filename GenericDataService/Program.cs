@@ -24,6 +24,7 @@ namespace GenericDataService
                 {
                     options.Limits.MinRequestBodyDataRate = new MinDataRate(240, TimeSpan.FromSeconds(30));
                 })
+                .UseIIS()
                 .UseStartup<Startup>();
     }
 }

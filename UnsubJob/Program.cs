@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Utility;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using UnsubLib;
 using UnsubLib.NetworkProviders;
+using Utility;
 using Utility.GenericEntity;
 
 namespace UnsubJob
@@ -21,25 +20,10 @@ namespace UnsubJob
 
             await Fw.Log(nameof(Main), "Starting...");
 
-            // AppName = "UnsubJob"
             var nw = new UnsubLib.UnsubLib(Fw);
 
             IEnumerable<IGenericEntity> networks = null;
 
-            /*var other = new Factory.Other(Fw);
-            var network = (await nw.GetNetworks("Amobee")).GetL("").First();
-
-            await ProtocolClient.DownloadEzepo();
-            var campaigns = await other.GetCampaigns(network);
-
-            var uri = await other.GetSuppressionLocationUrl(network, "2402");
-            
-            var l = new UnsubLib.UnsubFileProviders.Unsubly(Fw);
-            var canHandle = l.CanHandle(network, uri);
-            var uri2 = await l.GetFileUrl(network, uri);
-
-            await nw.DownloadSuppressionFiles(network, uri2, "test");*/
-                    
             try
             {
                 if (args.Any(a => string.Equals(a, "skipClean", StringComparison.CurrentCultureIgnoreCase)))
@@ -71,6 +55,8 @@ namespace UnsubJob
             var manualOnly = args.Any(a => string.Equals(a, "mo", StringComparison.CurrentCultureIgnoreCase));
             var singleNetworkName = args.Where(a => a.StartsWith("n:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
             string networkCampaignId = null;
+
+            var skipQueuedCheck = args.Any(a => string.Equals(a, "skipQueuedCheck", StringComparison.CurrentCultureIgnoreCase));
 
             if (singleNetworkName != null) networkCampaignId = args.Where(a => a.StartsWith("c:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(2)).FirstOrDefault();
 
@@ -112,7 +98,7 @@ namespace UnsubJob
                         {
                             try
                             {
-                                await nw.ScheduledUnsubJob(n, c);
+                                await nw.ScheduledUnsubJob(n, c, skipQueuedCheck);
                             }
                             catch (Exception e)
                             {
@@ -127,7 +113,7 @@ namespace UnsubJob
                 }
                 finally
                 {
-                    
+
                 }
                 return;
             }
@@ -147,7 +133,7 @@ namespace UnsubJob
                         try
                         {
                             await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
-                            await nw.ScheduledUnsubJob(n, networkCampaignId);
+                            await nw.ScheduledUnsubJob(n, networkCampaignId, skipQueuedCheck);
                             await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
                         }
                         catch (HaltingException e)
@@ -198,46 +184,6 @@ namespace UnsubJob
             }
 
             await Fw.Log(nameof(Main), "...Stopping");
-        }
-
-        public void Nothing()
-        {
-            //List<string> files = new List<string>()
-            //{
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt",
-            //    "0aa19e73-8c43-46c7-9a5f-124110d5d21c.txt.srt"
-            //};
-
-            //ServicePointManager.DefaultConnectionLimit = 10;
-            ////foreach (var c in files)
-            //await Pw.ForEachAsync(files, 10, async c =>
-            //{
-            //    await Utility.ProtocolClient.DownloadFileFtp(@"e:\workspace\unsub",
-            //    c,
-            //    Guid.NewGuid().ToString() + ".tst", "localhost", "josh", "josh!123");
-            //});
-
-            // Test server signaling
-            //HashSet<Tuple<string, string>> diffs = new HashSet<Tuple<string, string>>();
-            //Dictionary<string, string> ndf = new Dictionary<string, string>();
-            //diffs.Add(new Tuple<string, string>("a4afb09d-7ec9-420e-b214-3c9ad65121bd",
-            //    "a4afb09d-7ec9-420e-b214-3c9ad65121be"));
-            //diffs.Add(new Tuple<string, string>("feae7a23-ecd8-4278-9e74-e270b475bc60",
-            //    "feae7a23-ecd8-4278-9e74-e270b475bc61"));
-            //ndf.Add("95CDC8CA-F898-4516-BE04-5A1F4AD00B8F", "e128c734-f196-4912-b9d6-7cda39d14d7a");
-            //ndf.Add("E0E96736-B403-40ED-9528-A26886FCFA6D", "fef122e7-e0b7-4ec9-921b-a9aece1f428c");
-            //nw.SignalUnsubServerService(diffs, ndf).GetAwaiter().GetResult();
-            // End test
         }
     }
 }

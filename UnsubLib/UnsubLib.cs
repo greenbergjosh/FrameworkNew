@@ -326,7 +326,7 @@ namespace UnsubLib
             );
         }
 
-        public async Task ScheduledUnsubJob(IGenericEntity network, string networkCampaignId = null)
+        public async Task ScheduledUnsubJob(IGenericEntity network, string networkCampaignId, bool skipQueuedCheck)
         {
             // Get campaigns
             var networkId = network.GetS("Id");
@@ -338,7 +338,7 @@ namespace UnsubLib
 
             if (networkCampaignId.IsNullOrWhitespace())
             {
-                cse = await GetCampaignsScheduledJobs(network, networkProvider);
+                cse = await GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
 
                 if (cse == null)
                 {
@@ -466,11 +466,11 @@ namespace UnsubLib
 
                             Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + newFileName);
 
-                            if (!String.IsNullOrEmpty(FileCacheDirectory))
+                            if (!string.IsNullOrEmpty(FileCacheDirectory))
                             {
                                 Fs.TryDeleteFile(FileCacheDirectory + "\\" + newFileName);
                             }
-                            else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                            else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                             {
                                 await ProtocolClient.DeleteFileFromFtpServer(
                                     FileCacheFtpServerPath + "/" + newFileName,
@@ -526,7 +526,7 @@ namespace UnsubLib
             //}
         }
 
-        public async Task<IEnumerable<IGenericEntity>> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider)
+        public async Task<IEnumerable<IGenericEntity>> GetCampaignsScheduledJobs(IGenericEntity network, INetworkProvider networkProvider, bool skipQueuedCheck)
         {
             var networkName = network.GetS("Name");
             var networkId = network.GetS("Id");
@@ -548,20 +548,20 @@ namespace UnsubLib
                 if (campaigns != null) File.WriteAllText(localNetworkFilePath, campaigns.GetS(""));
             }
 
-            if (campaigns != null)
+            if (campaigns != null && !skipQueuedCheck)
             {
                 await LoadQueuedCampaigns();
 
                 await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {campaigns.GetL("").Count()}");
 
-                var queuedCampaigns = campaigns.GetL("").Where(c => _queuedCampaigns.Contains(c.GetS("Id"))).ToList();
+                var queuedCampaigns = campaigns.GetL("").Where(c => c.GetS("ReceivedCount") == "1" || _queuedCampaigns.Contains(c.GetS("Id"))).ToList();
 
-                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API and queued according to Console: {queuedCampaigns.Count}");
+                await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API and (queued according to Console or first time seeing campaign): {queuedCampaigns.Count}");
 
                 return queuedCampaigns;
             }
 
-            return Enumerable.Empty<IGenericEntity>();
+            return campaigns?.GetL("") ?? Enumerable.Empty<IGenericEntity>();
         }
 
         public async Task<IDictionary<string, List<IGenericEntity>>> GetUnsubUris(IGenericEntity network, IEnumerable<IGenericEntity> campaigns, INetworkProvider networkProvider)
@@ -749,30 +749,43 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed Cleaning({networkName}):: for file {fdest}({fileSize})");
 
-                        if (!String.IsNullOrEmpty(FileCacheDirectory))
+                        var srcPath = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
+                        var src = new FileInfo(srcPath);
+
+                        if (!string.IsNullOrEmpty(FileCacheDirectory))
                         {
-                            var src = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
                             var dest = Path.Combine(FileCacheDirectory, fdest + ".txt.srt");
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for Digest file {fdest} {src} -> {dest} Exists: {File.Exists(src)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToDirectory for Digest file {fdest} {srcPath} -> {dest} Exists: {src.Exists}");
 
-                            new FileInfo(src).MoveTo(dest);
+                            src.MoveTo(dest);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for Digest file {fdest} {src} -> {dest} Exists: {File.Exists(dest)}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for Digest file {fdest} {srcPath} -> {dest} Exists: {File.Exists(dest)}");
+
                             destinations.Add(dest);
                         }
-                        else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                        else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                         {
-                            var src = Path.Combine(ClientWorkingDirectory, fdest + ".txt.srt");
                             var dest = FileCacheFtpServerPath + "/" + fdest + ".txt.srt";
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for Digest file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToFtp for Digest file {fdest}  {srcPath} -> Host: {FileCacheFtpServer} {dest}");
 
-                            await ProtocolClient.UploadFile(src, dest, FileCacheFtpServer, FileCacheFtpUser, FileCacheFtpPassword);
+                            await ProtocolClient.UploadFile(srcPath, dest, FileCacheFtpServer, FileCacheFtpUser, FileCacheFtpPassword);
 
-                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for Digest file {fdest}  {src} -> Host: {FileCacheFtpServer} {dest}");
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for Digest file {fdest}  {srcPath} -> Host: {FileCacheFtpServer} {dest}");
 
                             Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest + ".txt.srt"}");
+                        }
+
+                        if (_queuedCampaigns.Any() && !string.IsNullOrWhiteSpace(SearchDirectory))
+                        {
+                            var searchDest = Path.Combine(SearchDirectory, fdest + ".txt.srt");
+
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting UploadToSearchDirectory for Digest file {fdest} {srcPath} -> {searchDest} Exists: {src.Exists}");
+
+                            src.MoveTo(searchDest);
+
+                            await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToSearchDirectory for Digest file {fdest} {srcPath} -> {searchDest} Exists: {File.Exists(searchDest)}");
                         }
 
                         Fs.TryDeleteFile($"{ClientWorkingDirectory}\\{fdest}.txt");
@@ -784,7 +797,7 @@ namespace UnsubLib
                     {
                         var fdom = cf[DOMAINHANDLER].ToString().ToLower();
 
-                        if (!String.IsNullOrEmpty(FileCacheDirectory))
+                        if (!string.IsNullOrEmpty(FileCacheDirectory))
                         {
                             var src = Path.Combine(ClientWorkingDirectory, fdom + ".txt");
                             var dest = Path.Combine(FileCacheDirectory, fdom + ".txt");
@@ -796,7 +809,7 @@ namespace UnsubLib
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToDirectory for Domain file {fdom} {src} -> {dest} Exists: {File.Exists(dest)}");
                             destinations.Add(dest);
                         }
-                        else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                        else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                         {
                             var src = Path.Combine(ClientWorkingDirectory, fdom + ".txt");
                             var dest = FileCacheFtpServerPath + "/" + fdom + ".txt";
@@ -949,7 +962,7 @@ namespace UnsubLib
                 }
             }
 
-            if (!String.IsNullOrEmpty(FileCacheDirectory))
+            if (!string.IsNullOrEmpty(FileCacheDirectory))
             {
                 var sourceDir = new DirectoryInfo(FileCacheDirectory);
                 var files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
@@ -960,7 +973,7 @@ namespace UnsubLib
                         Fs.TryDeleteFile(file);
                 }
             }
-            else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+            else if (!string.IsNullOrEmpty(FileCacheFtpServer))
             {
                 List<string> listFiles;
                 listFiles = await ProtocolClient.FtpGetFiles(
@@ -1005,18 +1018,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: " + exClean.ToString());
+                }
 #if DEBUG
             }
 #endif
@@ -1048,7 +1061,7 @@ namespace UnsubLib
         {
             var result = Jw.Json(new { Result = "Success" });
 
-            if (!String.IsNullOrEmpty(FileCacheDirectory))
+            if (!string.IsNullOrEmpty(FileCacheDirectory))
             {
                 var sourceDir = new DirectoryInfo(FileCacheDirectory);
                 var files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
@@ -1059,7 +1072,7 @@ namespace UnsubLib
                 }
                 await _fw.Trace(nameof(LoadUnsubFiles), $"List of All Cached files(FileCacheDirectory): {sbAllFiles}");
             }
-            else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+            else if (!string.IsNullOrEmpty(FileCacheFtpServer))
             {
                 var allFiles = await ProtocolClient.FtpGetFiles("Unsub", FileCacheFtpServer, FileCacheFtpUser, FileCacheFtpPassword);
                 var sbAllFiles = new StringBuilder();
@@ -1128,11 +1141,11 @@ namespace UnsubLib
                 {
                     Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + domFile + ".txt");
 
-                    if (!String.IsNullOrEmpty(FileCacheDirectory))
+                    if (!string.IsNullOrEmpty(FileCacheDirectory))
                     {
                         Fs.TryDeleteFile(FileCacheDirectory + "\\" + domFile + ".txt");
                     }
-                    else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                    else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                     {
                         await ProtocolClient.DeleteFileFromFtpServer(
                             FileCacheFtpServerPath + "/" + domFile + ".txt",
@@ -1257,7 +1270,7 @@ namespace UnsubLib
         {
             try
             {
-                if (!String.IsNullOrEmpty(FileCacheDirectory))
+                if (!string.IsNullOrEmpty(FileCacheDirectory))
                 {
                     var fi = new FileInfo(FileCacheDirectory + "\\" + fileName);
 
@@ -1269,7 +1282,7 @@ namespace UnsubLib
 
                     return fi.Length;
                 }
-                else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                 {
                     return await ProtocolClient.FtpGetFileSize(
                             FileCacheFtpServerPath + "/" + fileName,
@@ -1317,11 +1330,11 @@ namespace UnsubLib
             {
                 long newFileSize = 0;
 
-                if (!String.IsNullOrEmpty(FileCacheDirectory))
+                if (!string.IsNullOrEmpty(FileCacheDirectory))
                 {
                     newFileSize = new FileInfo(FileCacheDirectory + "\\" + fileName).Length;
                 }
-                else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                 {
                     newFileSize = await ProtocolClient.FtpGetFileSize(
                         FileCacheFtpServerPath + "/" + fileName,
@@ -1378,7 +1391,7 @@ namespace UnsubLib
             var dfileName = destFileName ?? fileName;
             var finalFile = new FileInfo($"{destDir}\\{dfileName}");
 
-            if (!String.IsNullOrEmpty(FileCacheFtpServer) || !String.IsNullOrEmpty(FileCacheDirectory))
+            if (!string.IsNullOrEmpty(FileCacheFtpServer) || !string.IsNullOrEmpty(FileCacheDirectory))
             {
                 var di = new DirectoryInfo(destDir);
                 var files = di.GetFiles(fileName);
@@ -1424,7 +1437,7 @@ namespace UnsubLib
 
                         try
                         {
-                            if (!String.IsNullOrEmpty(FileCacheDirectory))
+                            if (!string.IsNullOrEmpty(FileCacheDirectory))
                             {
                                 var cacheFile = new FileInfo(Path.Combine(FileCacheDirectory, fileName));
 
@@ -1438,7 +1451,7 @@ namespace UnsubLib
                                 cacheFile.CopyTo(tempFile.FullName, true);
                                 tempFile.MoveTo(finalFile.FullName);
                             }
-                            else if (!String.IsNullOrEmpty(FileCacheFtpServer))
+                            else if (!string.IsNullOrEmpty(FileCacheFtpServer))
                             {
                                 using (var fs = tempFile.Open(FileMode.Open, FileAccess.Write, FileShare.None))
                                 {
@@ -1601,7 +1614,7 @@ namespace UnsubLib
                     return Jw.Json(new { Result = false, Error = "Missing unsub file" });
                 }
 
-                await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
+                await _fw.Trace(nameof(IsUnsub), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
                 var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digest);
 
                 if (!isUnsub && globalSupp)

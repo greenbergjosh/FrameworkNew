@@ -224,6 +224,7 @@ namespace Utility
 
                 foreach (var key in keys)
                 {
+                    var keyLower = key.ToLower();
                     var numRec = fLength / lineLength;
                     var bottom = 0L;
                     var top = numRec - 1;
@@ -237,7 +238,7 @@ namespace Utility
 
                         await fs.ReadAsync(buffer, 0, baseLineLength);
 
-                        var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(key.ToLower());
+                        var cmp = Encoding.UTF8.GetString(buffer, 0, buffer.Length).ToLower().CompareTo(keyLower);
 
                         if (cmp < 0) bottom = cur + 1;
                         else if (cmp > 0) top = cur - 1;
