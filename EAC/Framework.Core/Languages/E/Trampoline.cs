@@ -8,14 +8,14 @@ namespace Framework.Core.Languages.E
 {
     public static class Trampoline
     {
-        public static async Task<object> Evaluate(IGenericEntity s, Guid entityId, 
+        public static async Task<object> Evaluate(IGenericEntity s, Guid entityId,
             IDictionary<string, object> parameters = null)
         {
             var entity = await Store.GetEntity(entityId);
             return await Evaluate(Keywords.Join, s, entity, parameters);
         }
 
-        public static async Task<object> Evaluate(string memory, IGenericEntity s, 
+        public static async Task<object> Evaluate(string memory, IGenericEntity s,
             IGenericEntity entity, IDictionary<string, object> parameters = null)
         {
             var completed = false;
@@ -85,7 +85,7 @@ namespace Framework.Core.Languages.E
             return outputs;
         }
 
-        private static Guid PreDecorateStack(string memory, IGenericEntity entity, IGenericEntity s, 
+        private static Guid PreDecorateStack(string memory, IGenericEntity entity, IGenericEntity s,
             IDictionary<string, object> parameters)
         {
             Guid previousCellId = Guid.Empty;
@@ -153,19 +153,19 @@ namespace Framework.Core.Languages.E
             return previousCellId;
         }
 
-        private static void PostDecorateStack(string memory, IGenericEntity entity, IGenericEntity s, 
+        private static void PostDecorateStack(string memory, IGenericEntity entity, IGenericEntity s,
             IDictionary<string, object> outputs)
         {
             var state = (State)s;
-            
+
             var hasId = entity.TryGetValue("Id", out object _);
 
             if (hasId && memory != Keywords.Join)
             {
-                Guid g;
+                Guid g = Guid.NewGuid();
                 state.PopContext();
                 var context = state.Context;
-                
+
                 if (memory == Keywords.Grid)
                 {
                     var entityName = entity.GetS("Name");
@@ -203,7 +203,7 @@ namespace Framework.Core.Languages.E
 
                     if (context != null)
                         context[Keywords.ContinuationPointer] = g;
-                    
+
                     state.PopStackFrame();
                 }
                 else
@@ -261,7 +261,7 @@ namespace Framework.Core.Languages.E
                 paramEntityDictionary.TryGetValue(Keywords.Memory, out var memory, Keywords.Stack);
                 var paramResults = await Evaluate(memory, s, paramEntityDictionary);
 
-                if (paramResults is IReadOnlyDictionary<string, object> rd && 
+                if (paramResults is IReadOnlyDictionary<string, object> rd &&
                     rd.TryGetValue(Keywords.Result, out object result))
                     s.Set(kv.Key, result);
                 else
@@ -326,7 +326,7 @@ namespace Framework.Core.Languages.E
             }
         }
 
-        private static void ApplyOutputsMap(IGenericEntity entity, IDictionary<string, object> results, 
+        private static void ApplyOutputsMap(IGenericEntity entity, IDictionary<string, object> results,
             IDictionary<string, object> outputs)
         {
             foreach (var outputMap in entity.GetD(Keywords.OutputsMap))
@@ -349,7 +349,7 @@ namespace Framework.Core.Languages.E
             Validate(contract, s, tryGetValue, Keywords.Inputs);
         }
 
-        private static void ValidateOutputs(IGenericEntity contract, IGenericEntity s, 
+        private static void ValidateOutputs(IGenericEntity contract, IGenericEntity s,
             IDictionary<string, object> results)
         {
             if (contract == null)
@@ -363,7 +363,7 @@ namespace Framework.Core.Languages.E
             Validate(contract, s, tryGetValue, Keywords.Outputs);
         }
 
-        private static void Validate(IGenericEntity contract, IGenericEntity s, 
+        private static void Validate(IGenericEntity contract, IGenericEntity s,
             Func<string, (bool, object)> tryGetValue, string key)
         {
             foreach (var rule in contract.GetL(key))
@@ -399,7 +399,7 @@ namespace Framework.Core.Languages.E
                 var match = requirement
                     .GetA(Keywords.MatchValues)
                     .Any(matchValue => Equals(paramValue, matchValue));
-                if(match && !found)
+                if (match && !found)
                     throw new InvalidOperationException(
                         $"Parameter [{name}] is required when parameter [{paramName}] value equals [{paramValue}].");
             }
@@ -423,7 +423,7 @@ namespace Framework.Core.Languages.E
                     $"Parameter [{name}] value [{value}] does not match allowed values.");
         }
 
-        private static void ValidateValidWhen(IGenericEntity rule, IGenericEntity s, string name, bool found, 
+        private static void ValidateValidWhen(IGenericEntity rule, IGenericEntity s, string name, bool found,
             Func<string, (bool, object)> tryGetValue)
         {
             if (!found)
