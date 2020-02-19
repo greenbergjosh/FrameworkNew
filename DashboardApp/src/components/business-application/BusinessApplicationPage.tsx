@@ -12,6 +12,7 @@ import {
   BusinessApplicationPageId,
   BusinessApplicationPageConfig,
 } from "./business-application.types"
+import { AdminUserInterfaceContextManagerProvider } from "../../data/AdminUserInterfaceContextManager"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId
@@ -42,11 +43,16 @@ export const BusinessApplicationPage = ({
   })
 
   return (
-    <UserInterface
-      mode="display"
-      components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
-      data={[]}
-    />
+    <AdminUserInterfaceContextManagerProvider>
+      {(userInterfaceContextManager) => (
+        <UserInterface
+          mode="display"
+          contextManager={userInterfaceContextManager}
+          components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
+          data={[]}
+        />
+      )}
+    </AdminUserInterfaceContextManagerProvider>
     // <div>
     //   <span>Global Config Page: {fromStore.globalConfigPath}</span>
     //   <pre>{JSON.stringify(businessApplicationConfig, null, 2)}</pre>
