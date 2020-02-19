@@ -1228,14 +1228,15 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@opg/interface-builder@^1.0.0-alpha-33":
-  version "1.0.0-alpha-33"
-  resolved "http://ec2-35-170-186-135.compute-1.amazonaws.com:4000/@opg%2finterface-builder/-/interface-builder-1.0.0-alpha-33.tgz#feff8b387bf4a6da24e12eef6cadc2e181a8a341"
-  integrity sha512-6M+2JhvC0dBkjV00kwK65Lq8Da+QbIIymEKWW0J//PYlqG4TN4dOg12vNYQaXTPyIxHpH98TlDinLl7g83yqHw==
+"@opg/interface-builder@1.0.0-alpha-35":
+  version "1.0.0-alpha-35"
+  resolved "http://ec2-18-212-74-48.compute-1.amazonaws.com:4000/@opg%2finterface-builder/-/interface-builder-1.0.0-alpha-35.tgz#0934c5fd5bbad9f7e2258a4db3382ac3daf86ce2"
+  integrity sha512-HmCATM4LIoyVcx17slz1Wf7muHh+DN9mHWX6s/6/BsX5J7b6AkBtvTT/ON3vy2GSpxMwsI0qbMtJCPppZmWyQQ==
   dependencies:
     "@babel/polyfill" "^7.4.3"
     "@reach/component-component" "^0.1.3"
     "@syncfusion/ej2-react-grids" "^17.1.42"
+    "@syncfusion/ej2-react-inputs" "17.4.47"
     "@syncfusion/ej2-react-navigations" "^17.1.43"
     "@types/uuid" "^3.4.6"
     antd "3.20.1"
@@ -1408,12 +1409,26 @@
   dependencies:
     "@syncfusion/ej2-icons" "~17.3.27"
 
+"@syncfusion/ej2-base@~17.4.47":
+  version "17.4.47"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-base/-/ej2-base-17.4.47.tgz#920ffab880bcba5788343199bac41ffba31dab4f"
+  integrity sha512-NtW0IKgLYzq4fZBmyG+kT3WEDqD9Wq+fsUkg6k1xQjp8Xy6zCqJul2U15BDF8GwY9nIH/nvsoPFV5+025ypJnA==
+  dependencies:
+    "@syncfusion/ej2-icons" "~17.4.47"
+
 "@syncfusion/ej2-buttons@~17.3.27":
   version "17.3.27"
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-buttons/-/ej2-buttons-17.3.27.tgz#bcdab200ae909c98f9cda3e2e82d7bd88ef82f9e"
   integrity sha512-xfT85sZCzI88fdU3vUHI504nBkSUyFN7vJr2jO9EBRSo4CjjS4kjKc4ugkz8AT3VTTujJJxIczBHUF1erXbxRg==
   dependencies:
     "@syncfusion/ej2-base" "~17.3.27"
+
+"@syncfusion/ej2-buttons@~17.4.47", "@syncfusion/ej2-buttons@~17.4.49":
+  version "17.4.49"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-buttons/-/ej2-buttons-17.4.49.tgz#68809d9ba0b08d1154ded95cbface6cccc69f72e"
+  integrity sha512-1Ohe1q8lwg+8e7f0TQzOdDS4l1giDArz3OqPeH92loQvnG2naXG7kHsKaAaADa/0x1B7vWZKLYBg63t30F1RcA==
+  dependencies:
+    "@syncfusion/ej2-base" "~17.4.47"
 
 "@syncfusion/ej2-calendars@~17.3.28":
   version "17.3.28"
@@ -1503,6 +1518,21 @@
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-icons/-/ej2-icons-17.3.27.tgz#100ecedf7b65593b3f4458dd120083001016986c"
   integrity sha512-0MM+93IrtXCnyXybVLjyRdy8JSJ4diCC0gZagFc1VhBofhZqrpWlCLt3C0SUyfsSvuMyYZUisR41iwqRP84yIQ==
 
+"@syncfusion/ej2-icons@~17.4.47":
+  version "17.4.47"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-icons/-/ej2-icons-17.4.47.tgz#7e7f91f541b43baaa2f2e62953290da55b7bead3"
+  integrity sha512-u+6f53FUKPEOVf2ZXVTFOZtqNSkoe4z0VDHjOQXIeX1iLnBjTEgKoKiQXEZGncB814wKW2RJ6htEhgVZW6yxzw==
+
+"@syncfusion/ej2-inputs@17.4.47":
+  version "17.4.47"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-inputs/-/ej2-inputs-17.4.47.tgz#1d16a74eb1cd6207e1948fb046921b0e754b82b6"
+  integrity sha512-Eo3eAbFEHcQesr2vvhwx8gGEoY2KHmHa9lPjkmRqb+fAcLieWMU+Wl5VO0UN3dE+Fx28QCEkWS/7pfuvnJLnrg==
+  dependencies:
+    "@syncfusion/ej2-base" "~17.4.47"
+    "@syncfusion/ej2-buttons" "~17.4.47"
+    "@syncfusion/ej2-popups" "~17.4.47"
+    "@syncfusion/ej2-splitbuttons" "~17.4.47"
+
 "@syncfusion/ej2-inputs@~17.3.27", "@syncfusion/ej2-inputs@~17.3.28":
   version "17.3.28"
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-inputs/-/ej2-inputs-17.3.28.tgz#0c70c9ace9ab7cb57c49e0dfbf2f5e5528a33d82"
@@ -1569,12 +1599,27 @@
     "@syncfusion/ej2-base" "~17.3.27"
     "@syncfusion/ej2-buttons" "~17.3.27"
 
+"@syncfusion/ej2-popups@~17.4.47", "@syncfusion/ej2-popups@~17.4.49":
+  version "17.4.49"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-popups/-/ej2-popups-17.4.49.tgz#2a0f837b4843bd88e5dc2a7a5f9f5577ccd220d5"
+  integrity sha512-4T9I+PoSwPnE9sTUI3dttxUTIppW/dsVSwi/XoCsASsQqrT4U0As27o1tek9v1FshydZRna9R6iX9pv0ux663w==
+  dependencies:
+    "@syncfusion/ej2-base" "~17.4.47"
+    "@syncfusion/ej2-buttons" "~17.4.49"
+
 "@syncfusion/ej2-react-base@~17.3.27":
   version "17.3.27"
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-react-base/-/ej2-react-base-17.3.27.tgz#51bb4cca333a90b8e8d3478a949f061913304fcb"
   integrity sha512-sGciSG4v72GplOgoT1L3Feieo7e45sWt1CmKoTZqUbeqra5tFOOquVuqaqWk970IikM0KfYKXtAtqNeEeflzqQ==
   dependencies:
     "@syncfusion/ej2-base" "~17.3.27"
+
+"@syncfusion/ej2-react-base@~17.4.47":
+  version "17.4.49"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-react-base/-/ej2-react-base-17.4.49.tgz#1cc58d9ea5ba391306b2345e56dd3194285dc834"
+  integrity sha512-TquWHwdqT5P+rMVYVienMsz/vEEmAt+bZODi3xmlhA4p27HJELbKVGlafjo+6tdEZe0XjQtiaGow8ikyIg4mvA==
+  dependencies:
+    "@syncfusion/ej2-base" "~17.4.47"
 
 "@syncfusion/ej2-react-charts@^17.1.43":
   version "17.3.28"
@@ -1593,6 +1638,15 @@
     "@syncfusion/ej2-base" "~17.3.27"
     "@syncfusion/ej2-grids" "17.3.28"
     "@syncfusion/ej2-react-base" "~17.3.27"
+
+"@syncfusion/ej2-react-inputs@17.4.47":
+  version "17.4.47"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-react-inputs/-/ej2-react-inputs-17.4.47.tgz#8cf688cf165be1ea44346d1d5e2e605c02b58699"
+  integrity sha512-vDr4gQpOa2fyLJbcqD/yAl5FVy66nfmToHCons4KNAEeQC77zuDFTYOSo8Zp1mVZ2emd/jcH026XwEv85tC2eA==
+  dependencies:
+    "@syncfusion/ej2-base" "~17.4.47"
+    "@syncfusion/ej2-inputs" "17.4.47"
+    "@syncfusion/ej2-react-base" "~17.4.47"
 
 "@syncfusion/ej2-react-layouts@^17.1.43":
   version "17.3.28"
@@ -1628,6 +1682,14 @@
   dependencies:
     "@syncfusion/ej2-base" "~17.3.27"
     "@syncfusion/ej2-popups" "~17.3.27"
+
+"@syncfusion/ej2-splitbuttons@~17.4.47":
+  version "17.4.49"
+  resolved "https://registry.npmjs.org/@syncfusion/ej2-splitbuttons/-/ej2-splitbuttons-17.4.49.tgz#190d6b141d4ac59f6c9fc027ee2c1ee8ed833a5e"
+  integrity sha512-nnBFzoR5UxCPaaQZUV31L9+hL13x223Tt7lhvqnxTDNmDb2MTwXQ3PPN/VYhza1AQnQjY17Ro7HPqPF7pbMnHQ==
+  dependencies:
+    "@syncfusion/ej2-base" "~17.4.47"
+    "@syncfusion/ej2-popups" "~17.4.49"
 
 "@syncfusion/ej2-svg-base@~17.3.27":
   version "17.3.27"
