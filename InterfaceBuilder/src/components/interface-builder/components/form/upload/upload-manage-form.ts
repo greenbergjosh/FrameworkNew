@@ -33,7 +33,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 // Testing URL: https://www.mocky.io/v2/5cc8019d300000980a055e76
                 // Testing URL: https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save
-                defaultValue: "https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+                defaultValue: "https://",
                 label: "Upload URL",
                 help: "URL for the service that receives the uploaded file.",
               },
@@ -42,7 +42,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "removeUrl",
                 component: "input",
                 // Testing URL: https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove
-                defaultValue: "https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove",
+                defaultValue: "https://",
                 label: "Remove URL",
                 help: "URL for the service that removes an uploaded file.",
               },
