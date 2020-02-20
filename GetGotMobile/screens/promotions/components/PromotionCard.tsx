@@ -7,7 +7,7 @@ import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"
 import { PromotionalType } from "data/api/promotions"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
-import { pluralize } from "../../../../util"
+import { pluralize } from "../../../util"
 import moment from "moment"
 
 interface PromotionCardProps {

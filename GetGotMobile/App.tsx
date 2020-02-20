@@ -11,7 +11,7 @@ import { GetgotRootDataContextProvider } from "data/contextProviders/getgotRootD
 import { AuthenticationSection } from "screens/authentication/AuthenticationSection"
 import { DevMenuScreen } from "screens/DevMenuScreen"
 import { LandingScreen } from "screens/landing/LandingScreen"
-import { MainSection } from "screens/main/MainSection"
+import { MainSection } from "screens/MainSection"
 import { LegalSection } from "screens/legal/LegalSection"
 import { OnBoardingSection } from "screens/onboarding/OnBoardingSection"
 import { routes } from "routes"
