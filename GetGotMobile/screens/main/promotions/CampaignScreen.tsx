@@ -1,10 +1,9 @@
-import { templateHost } from "data/api/getgotRequest"
 import { CampaignTemplateType } from "data/api/promotions"
 import { HeaderTitle } from "components/HeaderTitle"
 import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
 import { TextAreaModal } from "./components/TextAreaModal"
-import { routes } from "constants"
+import { routes } from "routes"
 import { usePromotionsContext } from "data/contextProviders/promotions.contextProvider"
 import React from "react"
 import { Alert } from "react-native"
@@ -12,8 +11,9 @@ import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
-import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
+import { CampaignRouteParams, InfluencerTokens } from "routes/routeParam.interfaces"
 import { copyCampaignLinkHandler } from "hooks/copyCampaignLinkHandler"
+import { TEMPLATE_BASE_URL } from "constants/urls"
 
 interface ActionMessage {
   action: string
@@ -176,7 +176,7 @@ export const CampaignScreen = (props: CampaignScreenProps) => {
         source={{
           uri:
             template.id &&
-            `${templateHost}?&templateId=${template.id}&randomSeed=${Math.round(
+            `${TEMPLATE_BASE_URL}?&templateId=${template.id}&randomSeed=${Math.round(
               Math.random() * 4000
             )}&editable=${isDraft}&debugMode=false`,
         }}

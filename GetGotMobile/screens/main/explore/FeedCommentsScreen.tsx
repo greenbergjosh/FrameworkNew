@@ -3,12 +3,12 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import NavButton from "components/NavButton"
 import { Comments } from "components/feed"
-import { influencerFeedRoutes, styles } from "constants"
+import { influencerFeedRoutes } from "routes"
 import { SafeAreaView, ScrollView } from "react-native"
 import { CommentKeyboard } from "components/feed/CommentKeyboard"
 import { useFeedContext } from "data/contextProviders/feed.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
-import { Units } from "../../../constants/unit.constants"
+import { Units } from "styles"
 
 export interface FeedCommentsParams {
   postId: GUID

@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "routes"
 import { EditProfileScreen } from "./EditProfileScreen"
 import { PostDetailsScreen } from "./PostDetailsScreen"
 import { ProfileScreen } from "./ProfileScreen"

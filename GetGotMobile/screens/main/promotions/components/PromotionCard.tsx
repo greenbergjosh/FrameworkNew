@@ -1,7 +1,7 @@
 import { Alert, Text, View } from "react-native"
 import { ImageThumbnail } from "components/ImageThumbnail"
 import { Flex, Icon, SwipeAction } from "@ant-design/react-native"
-import { Colors, styles, Units } from "constants"
+import { Colors, styles, Units } from "styles"
 import React from "react"
 import { H3, SMALL } from "components/Markup"
 import TouchIcon from "components/TouchIcon"

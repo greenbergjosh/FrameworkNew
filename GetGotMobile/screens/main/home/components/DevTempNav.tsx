@@ -1,7 +1,7 @@
 import React from "react"
 import { Button, Flex, WhiteSpace } from "@ant-design/react-native"
 import { Text } from "react-native"
-import { styles, Colors } from "constants"
+import { styles, Colors } from "styles"
 
 interface DevTempNavProps {
   showStartCampaignDialog: () => void

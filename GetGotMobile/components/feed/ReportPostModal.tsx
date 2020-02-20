@@ -1,6 +1,6 @@
 import { FlatList, View } from "react-native"
 import { Button, Radio, WhiteSpace, Modal } from "@ant-design/react-native"
-import { Colors, Units } from "constants"
+import { Colors, Units } from "styles"
 import { H2, P } from "../Markup"
 import TouchIcon from "../TouchIcon"
 import React from "react"

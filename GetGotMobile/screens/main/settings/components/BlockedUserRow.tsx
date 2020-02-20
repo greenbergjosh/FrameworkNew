@@ -2,7 +2,7 @@ import React from "react"
 import { Text } from "react-native"
 import { Button, Flex, List } from "@ant-design/react-native"
 import { BlockedUserType } from "data/api/follows"
-import { Colors } from "constants"
+import { Colors } from "styles"
 import Avatar from "components/Avatar"
 import { STRONG } from "components/Markup"
 

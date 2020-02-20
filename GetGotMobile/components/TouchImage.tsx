@@ -11,7 +11,7 @@ import {
   View,
   ViewStyle,
 } from "react-native"
-import { Colors, ImageUris, ImgSizeType, Units } from "constants"
+import { Colors, ImageUris, ImgSizeType, Units } from "styles"
 
 interface TouchImageProps {
   size?: ImgSizeType | { width?: number; height: number }

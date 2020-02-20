@@ -1,7 +1,7 @@
 import React from "react"
 import { FlatList, ScrollView } from "react-native"
 import { InfluencerRow } from "./InfluencerRow"
-import { Colors, Units } from "constants"
+import { Colors, Units } from "styles"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "./Empty"
 

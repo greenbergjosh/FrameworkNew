@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "routes"
 import { AnalyticsScreen } from "./AnalyticsScreen"
 import { BlockedUsersScreen } from "./BlockedUsersScreen"
 import { NotificationsScreen } from "./NotificationsScreen"

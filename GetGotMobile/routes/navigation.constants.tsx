@@ -1,5 +1,5 @@
 import React from "react"
-import { Colors } from "./unit.constants"
+import { Colors } from "styles"
 
 export const defaultNavigationOptions = {
   headerStyle: {

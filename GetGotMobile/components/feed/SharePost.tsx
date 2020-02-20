@@ -9,7 +9,7 @@ import {
   View,
   ViewStyle,
 } from "react-native"
-import { Colors, devBorder, ImageUris, styles, Units } from "constants"
+import { Colors, ImageUris, styles, Units } from "styles"
 import { Button, Checkbox, Flex, SearchBar, WhiteSpace } from "@ant-design/react-native"
 import Avatar from "../Avatar"
 import TouchIcon from "../TouchIcon"

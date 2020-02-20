@@ -4,7 +4,7 @@ import { Button, Flex, Icon } from "@ant-design/react-native"
 import { HeaderLogo } from "components/HeaderLogo"
 import { H2, P } from "components/Markup"
 import { NavigationContext } from "react-navigation"
-import { styles, Units } from "constants"
+import { styles, Units } from "styles"
 
 export const UserAgreementScreen = () => {
   const { navigate } = useContext(NavigationContext)

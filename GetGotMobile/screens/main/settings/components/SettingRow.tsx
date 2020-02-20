@@ -1,5 +1,5 @@
 import { Flex, Switch } from "@ant-design/react-native"
-import { Colors, styles, Units } from "constants"
+import { Colors, styles, Units } from "styles"
 import { StyleProp, Text, TextStyle, ViewStyle } from "react-native"
 import React from "react"
 import { SettingType } from "data/api/profile"

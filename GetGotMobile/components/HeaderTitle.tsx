@@ -1,6 +1,6 @@
 import React from "react"
-import { Image, Text, View } from "react-native"
-import { Colors, styles, Units } from "constants"
+import { Text, View } from "react-native"
+import { Colors, styles, Units } from "styles"
 
 interface HeaderTitleProps {
   title?: string

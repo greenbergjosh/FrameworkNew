@@ -3,7 +3,7 @@ import { FlatList, ScrollView } from "react-native"
 import { ContactRow } from "./ContactRow"
 import { MessagesScreenProps } from "../MessagesScreen"
 import { Empty } from "components/Empty"
-import { Units } from "constants"
+import { Units } from "styles"
 
 export interface ContactRowProps {
   contacts?: UserType[]

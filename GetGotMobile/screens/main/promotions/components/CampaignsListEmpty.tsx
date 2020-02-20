@@ -1,7 +1,7 @@
 import { Empty } from "components/Empty"
 import { Text, View } from "react-native"
 import React from "react"
-import { Colors, styles, Units } from "constants"
+import { Colors, styles, Units } from "styles"
 import { A } from "components/Markup"
 import { showCreateCampaignActionSheet } from "./CreateCampaignActionSheet"
 

@@ -1,7 +1,7 @@
 import { Icon } from "@ant-design/react-native"
 import React, { FunctionComponent } from "react"
 import { StyleProp, Text, TextStyle, View, ViewStyle } from "react-native"
-import { Colors } from "../constants/unit.constants"
+import { Colors } from "styles"
 
 export interface EmptyProps {
   message?: string | React.ReactNode

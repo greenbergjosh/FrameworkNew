@@ -2,7 +2,7 @@ import TouchIcon from "components/TouchIcon"
 import { SMALL } from "components/Markup"
 import React from "react"
 import { NavigationBottomTabOptions } from "react-navigation-tabs"
-import { Colors } from "constants"
+import { Colors } from "styles"
 import { ExpoIconType } from "../@types/expo-icon-type"
 
 export const TabBarIcon = ({ icon, focused }) => {

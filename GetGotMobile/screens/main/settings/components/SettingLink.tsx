@@ -2,7 +2,7 @@ import React from "react"
 import { Icon } from "@ant-design/react-native"
 import { IconProps } from "@ant-design/react-native/lib/icon"
 import { Text, TouchableOpacity } from "react-native"
-import { Colors, Units } from "constants"
+import { Colors, Units } from "styles"
 import { ListItemProps } from "@ant-design/react-native/es/list/ListItem"
 
 interface DrawerItemProps extends ListItemProps {

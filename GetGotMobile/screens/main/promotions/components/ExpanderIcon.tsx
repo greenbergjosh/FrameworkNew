@@ -1,5 +1,5 @@
 import { Flex, Icon } from "@ant-design/react-native"
-import { AntIconSizes, Colors } from "constants"
+import { AntIconSizes, Colors } from "styles"
 import React from "react"
 
 export function ExpanderIcon(props: { collapsed: boolean }) {

@@ -3,7 +3,8 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { P } from "components/Markup"
 import NavButton from "components/NavButton"
 import { SubHeader } from "components/SubHeader"
-import { Colors, routes, Units } from "constants"
+import { routes } from "routes"
+import { Colors, Units } from "styles"
 import React from "react"
 import { Alert, ScrollView, Text } from "react-native"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
@@ -13,7 +14,7 @@ import {
   useActionSheetTakeSelectPhoto,
 } from "hooks/useActionSheetTakeSelectPhoto"
 import { ImageGrid } from "components/ImageGrid"
-import { CampaignRouteParams, InfluencerTokens } from "constants/routeParam.interfaces"
+import { CampaignRouteParams, InfluencerTokens } from "routes/routeParam.interfaces"
 
 interface CampaignAddImagesScreenNavigationParams extends CampaignRouteParams {
   influencerTokens: InfluencerTokens

@@ -1,6 +1,6 @@
 import React from "react"
 import { ActionSheet, Flex } from "@ant-design/react-native"
-import { Colors, Units } from "constants"
+import { Colors, Units } from "styles"
 import { TouchableOpacity } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"

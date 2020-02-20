@@ -1,4 +1,5 @@
-import { routes, Units } from "constants"
+import { routes } from "routes"
+import { Units } from "styles"
 import { CampaignRow } from "./CampaignRow"
 import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import { Icon } from "@ant-design/react-native"

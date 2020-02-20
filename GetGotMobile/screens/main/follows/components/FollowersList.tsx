@@ -3,7 +3,7 @@ import { FlatList, ScrollView, Text } from "react-native"
 import { ActivityIndicator } from "@ant-design/react-native"
 import { FollowerRow } from "./FollowerRow"
 import { sortFollowersByDate, useFollowsContext } from "data/contextProviders/follows.contextProvider"
-import { Colors, styles, Units } from "constants"
+import { Colors, styles, Units } from "styles"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { Empty } from "components/Empty"
 

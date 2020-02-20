@@ -6,7 +6,8 @@ import React from "react"
 import { Text, View } from "react-native"
 import { getgotLogin } from "data/api/auth"
 import { useAuthContext } from "data/contextProviders/auth.contextProvider"
-import { routes, styles } from "constants"
+import { routes } from "routes"
+import { styles } from "styles"
 
 interface LoginScreenProps extends NavigationSwitchScreenProps {}
 

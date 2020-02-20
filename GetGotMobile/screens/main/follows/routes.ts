@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "routes"
 import { FollowsScreen } from "./FollowsScreen"
 
 export const followsRoutes = {

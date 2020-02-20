@@ -7,7 +7,7 @@ import { ResendCodeScreen } from "./ResendCodeScreen"
 import { HeaderLogo } from "components/HeaderLogo"
 import { NavigationContext } from "react-navigation"
 import { createStackNavigator } from "react-navigation-stack"
-import { defaultNavigationOptions, routes } from "constants"
+import { defaultNavigationOptions, routes } from "routes"
 
 export const authenticationRoutes = {
   [routes.Authentication.Login]: { screen: LoginScreen },

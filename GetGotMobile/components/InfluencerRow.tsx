@@ -2,8 +2,7 @@ import React from "react"
 import { Text, View } from "react-native"
 import { Flex } from "@ant-design/react-native"
 import pupa from "pupa"
-import { Influencer } from "data/api/follows"
-import { styles, Units } from "constants"
+import { styles, Units } from "styles"
 import moment from "moment"
 import Avatar from "components/Avatar"
 import TouchText from "./TouchText"
@@ -13,7 +12,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { FollowButton } from "./FollowButton"
 
 export interface InfluencerRowProps {
-  influencer?: Influencer
+  influencer?: InfluencerType
   navigate: NavigationTabScreenProps["navigation"]["navigate"]
   routes: FeedRoutesType
   isRecommended?: boolean

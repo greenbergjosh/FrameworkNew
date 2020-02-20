@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "routes"
 import { FeedDetailsScreen } from "./FeedDetailsScreen"
 import { FeedCommentsScreen } from "./FeedCommentsScreen"
 import { FeedScreen } from "./FeedScreen"

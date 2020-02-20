@@ -1,5 +1,5 @@
 import { StyleProp, View, ViewStyle } from "react-native"
-import { Colors, styles, Units } from "constants"
+import { Colors, styles, Units } from "styles"
 import TouchIcon from "./TouchIcon"
 import { H3 } from "./Markup"
 import React from "react"

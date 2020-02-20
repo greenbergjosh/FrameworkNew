@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "routes"
 import { CampaignAddImagesScreen } from "./CampaignAddImagesScreen"
 import { CampaignListScreen } from "./CampaignListScreen"
 import { CampaignScreen } from "./CampaignScreen"

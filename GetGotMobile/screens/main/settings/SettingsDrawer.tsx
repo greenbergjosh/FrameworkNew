@@ -4,7 +4,8 @@ import { useGetGotRootDataContext } from "data/contextProviders/getgotRootData.c
 import React from "react"
 import { NavigationParams, NavigationRoute, NavigationSwitchProp } from "react-navigation"
 import { useAuthContext } from "data/contextProviders/auth.contextProvider"
-import { Colors, routes } from "constants"
+import { routes } from "routes"
+import { Colors } from "styles"
 import SettingsDrawerContents from "./components/SettingsDrawerContents"
 
 export const SettingsDrawerContext = React.createContext({

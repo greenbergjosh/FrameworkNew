@@ -2,7 +2,7 @@ import { StyleProp, View, ViewStyle } from "react-native"
 import React from "react"
 import { A, H3, H4 } from "components/Markup"
 import { InputItem, List, Radio, WhiteSpace } from "@ant-design/react-native"
-import { styles, Units } from "constants"
+import { styles, Units } from "styles"
 import moment from "moment"
 import DateTimePicker from "react-native-modal-datetime-picker"
 

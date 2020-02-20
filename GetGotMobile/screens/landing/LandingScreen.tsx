@@ -4,7 +4,8 @@ import {
   Flex,
   WhiteSpace
   } from "@ant-design/react-native"
-import { routes, styles } from "constants"
+import { routes } from "routes"
+import { styles } from "styles"
 import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 import React from "react"
 import { Text, View } from "react-native"

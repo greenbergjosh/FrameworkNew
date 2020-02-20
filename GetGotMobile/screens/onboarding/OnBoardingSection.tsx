@@ -9,7 +9,7 @@ import { SetPasswordScreen } from "./SetPasswordScreen"
 import { CreateAccountScreen } from "./CreateAccountScreen"
 import { SyncContactsScreen } from "./SyncContactsScreen"
 import { TourScreen } from "./TourScreen"
-import { defaultNavigationOptions, routes } from "constants"
+import { defaultNavigationOptions, routes } from "routes"
 
 interface OnBoardingSectionProps extends NavigationSwitchScreenProps {}
 

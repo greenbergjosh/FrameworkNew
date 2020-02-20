@@ -1,7 +1,7 @@
 import React from "react"
 import { StyleProp, ViewStyle } from "react-native"
 import TouchText from "./TouchText"
-import { Units } from "constants"
+import { Units } from "styles"
 import TouchIcon from "./TouchIcon"
 import { ExpoIconType } from "../@types/expo-icon-type"
 

@@ -2,7 +2,7 @@ import { FlatList, StyleProp, ViewStyle } from "react-native"
 import React from "react"
 import { SettingRowProps, SettingRow } from "./SettingRow"
 import { Empty } from "components/Empty"
-import { Units } from "constants"
+import { Units } from "styles"
 
 export type SettingType = {
   id: GUID

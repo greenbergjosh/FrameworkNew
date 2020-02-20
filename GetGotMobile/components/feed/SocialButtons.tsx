@@ -1,11 +1,11 @@
 import React from "react"
 import { Flex } from "@ant-design/react-native"
 import TouchIcon from "components/TouchIcon"
-import { Units, Colors } from "constants"
+import { Units, Colors } from "styles"
 import { SMALL } from "components/Markup"
 import { SharePostModal } from "./SharePostModal"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { routes } from "../../constants/route.constants"
+import { routes } from "routes"
 
 interface SocialButtonsProps {
   navigate: NavigationTabScreenProps["navigation"]["navigate"]

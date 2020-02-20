@@ -1,4 +1,4 @@
-import { routes } from "constants"
+import { routes } from "routes"
 import { MessagesScreen } from "./MessagesScreen"
 import { CreateChatScreen } from "./CreateChatScreen"
 import { ChatScreen } from "./ChatScreen"

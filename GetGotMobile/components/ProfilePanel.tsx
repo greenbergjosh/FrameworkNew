@@ -1,6 +1,6 @@
 import React from "react"
 import { ActionSheet, Flex, WhiteSpace } from "@ant-design/react-native"
-import { AntIconSizes, Colors, FontWeights, styles, Units } from "constants"
+import { AntIconSizes, Colors, FontWeights, styles, Units } from "styles"
 import { Text, TouchableOpacity, View } from "react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"

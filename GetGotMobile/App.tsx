@@ -14,7 +14,8 @@ import { LandingScreen } from "screens/landing/LandingScreen"
 import { MainSection } from "screens/main/MainSection"
 import { LegalSection } from "screens/legal/LegalSection"
 import { OnBoardingSection } from "screens/onboarding/OnBoardingSection"
-import { Colors, routes } from "constants"
+import { routes } from "routes"
+import { Colors } from "styles"
 
 export const appRoutes = {
   [routes.App.Landing]: { screen: LandingScreen },

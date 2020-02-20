@@ -1,7 +1,7 @@
 import React from "react"
 import { Text } from "react-native"
 import { Checkbox, Flex, List } from "@ant-design/react-native"
-import { styles, Units } from "constants"
+import { styles, Units } from "styles"
 import Avatar from "components/Avatar"
 
 export interface ContactRowProps {

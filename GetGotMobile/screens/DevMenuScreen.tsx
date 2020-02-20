@@ -4,7 +4,7 @@ import { NavigationTabScreenProps } from "react-navigation-tabs"
 import { HeaderTitle } from "components/HeaderTitle"
 import { H2, P, A, SMALL } from "components/Markup"
 import { ScrollView, Text, View } from "react-native"
-import { routes, styles } from "constants"
+import { routes } from "routes"
 
 interface DevMenuScreenProps extends NavigationTabScreenProps {}
 

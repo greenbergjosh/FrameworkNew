@@ -1,5 +1,5 @@
 import { HeaderLogo } from "components/HeaderLogo"
-import { defaultNavigationOptions, routes } from "constants"
+import { defaultNavigationOptions, routes } from "routes"
 import React from "react"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { exploreRoutes } from "./explore/routes"

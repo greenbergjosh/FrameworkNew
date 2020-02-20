@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from "react"
 import { TouchableOpacity, View } from "react-native"
-import { Colors, routes, Units } from "constants"
+import { routes } from "routes"
+import { Colors, Units } from "styles"
 import TouchText from "components/TouchText"
 import { withNavigation } from "react-navigation"
 import TouchIcon from "./TouchIcon"

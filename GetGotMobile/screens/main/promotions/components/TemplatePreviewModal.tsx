@@ -1,9 +1,9 @@
 import { Button, Flex, Modal, WhiteSpace } from "@ant-design/react-native"
 import React from "react"
 import { Image, View } from "react-native"
-import { routes } from "constants"
+import { routes } from "routes"
 import { CampaignTemplateType } from "data/api/promotions"
-import { CampaignRouteParams } from "constants/routeParam.interfaces"
+import { CampaignRouteParams } from "routes/routeParam.interfaces"
 
 export type TemplateSelectionType = { campaignTemplate: CampaignTemplateType; promotionId: GUID }
 

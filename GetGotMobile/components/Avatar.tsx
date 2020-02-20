@@ -1,6 +1,6 @@
 import React from "react"
 import { Image, StyleProp, TouchableOpacity, View, ViewStyle } from "react-native"
-import { ImageUris, styles, Units } from "constants"
+import { ImageUris, styles, Units } from "styles"
 
 interface AvatarProps {
   size?: "xs" | "sm" | "md" | "lg"

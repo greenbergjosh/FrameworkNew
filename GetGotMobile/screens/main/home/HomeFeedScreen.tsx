@@ -1,7 +1,7 @@
 import React from "react"
 import { Alert, SafeAreaView, ScrollView, View } from "react-native"
 import { NavigationStackScreenProps } from "react-navigation-stack"
-import { influencerFeedRoutes, routes } from "constants"
+import { influencerFeedRoutes, routes } from "routes"
 import { ActivityIndicator, List } from "@ant-design/react-native"
 import { InfluencerPostHeader, Post } from "components/feed"
 import { HeaderLogo } from "components/HeaderLogo"

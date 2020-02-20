@@ -1,5 +1,5 @@
 import { Alert } from "react-native"
-import { routes } from "constants"
+import { routes } from "routes"
 import React from "react"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
 

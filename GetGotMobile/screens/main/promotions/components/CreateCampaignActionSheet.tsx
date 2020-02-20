@@ -1,5 +1,5 @@
 import { ActionSheet } from "@ant-design/react-native"
-import { routes } from "constants"
+import { routes } from "routes"
 
 export const showCreateCampaignActionSheet = (promotionId: GUID, navigate) => {
   ActionSheet.showActionSheetWithOptions(

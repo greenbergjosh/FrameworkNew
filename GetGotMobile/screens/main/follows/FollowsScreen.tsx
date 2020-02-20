@@ -4,11 +4,11 @@ import { HeaderTitle } from "components/HeaderTitle"
 import { InfluencersList } from "components/InfluencersList"
 import { FollowersList } from "./components/FollowersList"
 import { useAuthContext } from "data/contextProviders/auth.contextProvider"
-import { influencerFeedRoutes, routes } from "constants"
+import { influencerFeedRoutes, routes } from "routes"
 import { Tab, Tabs } from "components/Tabs"
 import { SafeAreaView, ScrollView } from "react-native"
 import { BottomTabBar } from "components/BottomTabBar"
-import { useFollowsContext } from "../../../data/contextProviders/follows.contextProvider"
+import { useFollowsContext } from "data/contextProviders/follows.contextProvider"
 import { ActivityIndicator } from "@ant-design/react-native"
 
 export interface FollowsScreenProps extends NavigationTabScreenProps {}
