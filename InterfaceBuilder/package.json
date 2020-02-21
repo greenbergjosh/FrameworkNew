@@ -45,13 +45,13 @@
     "io-ts-types": "^0.4.7",
     "json-logic-js": "^1.2.2",
     "lodash": "4.17.15",
-    "monaco-editor": "^0.16.2",
+    "monaco-editor": "0.20.0",
     "monocle-ts": "^1.7.1",
     "newtype-ts": "0.2.1",
     "react-dnd": "7.7.0",
     "react-dnd-html5-backend": "7.7.0",
     "react-dnd-touch-backend": "0.8.3",
-    "react-monaco-editor": "^0.25.1",
+    "react-monaco-editor": "0.34.0",
     "uuid": "^3.3.3"
   },
   "peerDependencies": {

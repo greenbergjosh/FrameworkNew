@@ -325,6 +325,14 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
+"@types/react@^15.x || ^16.x":
+  version "16.9.22"
+  resolved "https://registry.npmjs.org/@types/react/-/react-16.9.22.tgz#f0288c92d94e93c4b43e3f5633edf788b2c040ae"
+  integrity sha512-7OSt4EGiLvy0h5R7X+r0c7S739TCU/LvWbkNOrm10lUwNHe7XPz5OLhLOSZeCkqO9JSCly1NkYJ7ODTUqVnHJQ==
+  dependencies:
+    "@types/prop-types" "*"
+    csstype "^2.2.0"
+
 "@types/reserved-words@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@types/reserved-words/-/reserved-words-0.1.0.tgz#a9d5318bb4ac4466862b93fc702542b75d2cd3ac"
@@ -2682,10 +2690,10 @@ moment@2.x, moment@^2.24.0:
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
 
-monaco-editor@^0.16.0, monaco-editor@^0.16.2:
-  version "0.16.2"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.16.2.tgz#950084ed82eeaef1c8c9d3c1bcab849fe11b2415"
-  integrity sha512-NtGrFzf54jADe7qsWh3lazhS7Kj0XHkJUGBq9fA/Jbwc+sgVcyfsYF6z2AQ7hPqDC+JmdOt/OwFjBnRwqXtx6w==
+monaco-editor@0.20.0:
+  version "0.20.0"
+  resolved "https://registry.npmjs.org/monaco-editor/-/monaco-editor-0.20.0.tgz#5d5009343a550124426cb4d965a4d27a348b4dea"
+  integrity sha512-hkvf4EtPJRMQlPC3UbMoRs0vTAFAYdzFQ+gpMb8A+9znae1c43q8Mab9iVsgTcg/4PNiLGGn3SlDIa8uvK1FIQ==
 
 monocle-ts@^1.0.0, monocle-ts@^1.7.1:
   version "1.7.2"
@@ -3966,13 +3974,12 @@ react-lifecycles-compat@^3.0.2, react-lifecycles-compat@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
-react-monaco-editor@^0.25.1:
-  version "0.25.1"
-  resolved "https://registry.yarnpkg.com/react-monaco-editor/-/react-monaco-editor-0.25.1.tgz#29215061da23d0e4ad7bf928d9403288d5be4e92"
-  integrity sha512-VLksQjt8fmeIZoET9fQgmR0sdCCBFaiss92MwW5JvgO3JfrnhHtrLBqrSQRjtbUmef1EmEKi4gZp5Mh0oidvVg==
+react-monaco-editor@0.34.0:
+  version "0.34.0"
+  resolved "https://registry.npmjs.org/react-monaco-editor/-/react-monaco-editor-0.34.0.tgz#14ec8b10d448bf11f85f711ab9d91117bc46b3b8"
+  integrity sha512-XoGgTMVcdrMQr1yJM7/SDfG5wLkET2An2DME1mUvOYZRHJlqfPDEkaF3eP60dRxBGztkqqQgQNdkEOJCCxEuFQ==
   dependencies:
-    "@types/react" "*"
-    monaco-editor "^0.16.0"
+    "@types/react" "^15.x || ^16.x"
     prop-types "^15.7.2"
 
 react-slick@~0.24.0:
