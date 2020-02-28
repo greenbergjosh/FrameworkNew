@@ -1,4 +1,4 @@
-import { icons } from "../_shared/icon-select-form-config"
+import { getIconSelectConfig } from "../_shared/icon-select-form-config"
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
 
@@ -189,7 +189,7 @@ const appearanceTab = {
       },
     },
     {
-      ...icons,
+      ...getIconSelectConfig(),
       ordinal: 13,
     },
     {

@@ -9,6 +9,7 @@ import { DataMapInterfaceComponent } from "../components/interface-builder/compo
 import { DateInterfaceComponent } from "../components/interface-builder/components/form/date/DateInterfaceComponent"
 import { DateRangeInterfaceComponent } from "../components/interface-builder/components/form/date-range/DateRangeInterfaceComponent"
 import { DividerInterfaceComponent } from "../components/interface-builder/components/display/divider/DividerInterfaceComponent"
+import { DownloadInterfaceComponent } from "../components/interface-builder/components/form/download/DownloadInterfaceComponent"
 import { EmptyInterfaceComponent } from "../components/interface-builder/components/display/empty/EmptyInterfaceComponent"
 import { FormInterfaceComponent } from "../components/interface-builder/components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "../components/interface-builder/components/form/input/InputInterfaceComponent"
@@ -48,6 +49,7 @@ export default {
   date: DateInterfaceComponent,
   "date-range": DateRangeInterfaceComponent,
   divider: DividerInterfaceComponent,
+  download: DownloadInterfaceComponent,
   // menu: MenuInterfaceComponent,
   empty: EmptyInterfaceComponent,
   form: FormInterfaceComponent,
