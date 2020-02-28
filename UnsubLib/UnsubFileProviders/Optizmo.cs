@@ -47,8 +47,7 @@ namespace UnsubLib.UnsubFileProviders
         }
 
         public bool CanHandle(IGenericEntity network, Uri uri) => 
-            uri.ToString().Contains("mailer-api.optizmo.net") || 
-            uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace();
+            uri.ToString().Contains("mailer-api.optizmo.net") || (uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace());
 
         public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
         {

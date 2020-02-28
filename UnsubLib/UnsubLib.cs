@@ -313,16 +313,16 @@ namespace UnsubLib
             var cleanUp = unsubFiles.Select(u => u.unsub.Directory).DistinctBy(u => u.FullName);
 
             cleanUp.ForEach(d =>
+            {
+                try
                 {
-                    try
-                    {
-                        d.Delete(true);
-                    }
-                    catch (Exception e)
-                    {
-                        _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to delete manual folder after processing:\r\n{d.FullName}\r\n{e.UnwrapForLog()}").Wait();
-                    }
+                    d.Delete(true);
                 }
+                catch (Exception e)
+                {
+                    _fw.Error($"{nameof(ManualJob)}-{networkName}", $"Failed to delete manual folder after processing:\r\n{d.FullName}\r\n{e.UnwrapForLog()}").Wait();
+                }
+            }
             );
         }
 
@@ -387,8 +387,9 @@ namespace UnsubLib
                     return;
                 }
 
+                // This won't work for NetworkProviders like Tune who return the file download URI in their "get campaigns" API.
                 var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider,
-                    network.GetS("Credentials/Parallelism").ParseInt() ?? 5);
+                    network.GetS("Credentials/Parallelism").ParseInt() ?? 5, null);
 
                 if (uri.IsNullOrWhitespace())
                 {
@@ -554,7 +555,7 @@ namespace UnsubLib
 
                 await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API: {campaigns.GetL("").Count()}");
 
-                var queuedCampaigns = campaigns.GetL("").Where(c => c.GetS("ReceivedCount") == "1" || _queuedCampaigns.Contains(c.GetS("Id"))).ToList();
+                var queuedCampaigns = campaigns.GetL("").Where(c => _queuedCampaigns.Contains(c.GetS("Id"))).ToList();
 
                 await _fw.Trace($"{nameof(GetCampaignsScheduledJobs)}-{networkName}", $"Campaigns returned via API and (queued according to Console or first time seeing campaign): {queuedCampaigns.Count}");
 
@@ -580,6 +581,9 @@ namespace UnsubLib
                 {
                     var campaignId = c.GetS("NetworkCampaignId");
                     var unsubRelationshipId = c.GetS("NetworkUnsubRelationshipId");
+                    var fileDownloadUri = c.GetS("UnsubFileDownloadUri");
+
+                    string uri = null;
 
                     try
                     {
@@ -587,15 +591,9 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Getting file url for {networkName} campaign {campaignId}");
 
-                        var uri = await GetSuppressionFileUri(network, unsubRelationshipId, networkProvider, parallelism);
+                        uri = await GetSuppressionFileUri(network, unsubRelationshipId, networkProvider, parallelism, fileDownloadUri);
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Retrieved file url for {networkName} campaign {campaignId}");
-
-                        if (!string.IsNullOrEmpty(uri))
-                        {
-                            if (uris.ContainsKey(uri)) uris[uri].Add(c);
-                            else uris.TryAdd(uri, new List<IGenericEntity>() { c });
-                        }
                     }
                     catch (HaltingException)
                     {
@@ -604,7 +602,16 @@ namespace UnsubLib
                     }
                     catch (Exception e)
                     {
-                        await _fw.Error($"{nameof(GetUnsubUris)}-{networkName}", $"FAiled to get file url for {networkName} campaign {campaignId}: {e}");
+                        await _fw.Error($"{nameof(GetUnsubUris)}-{networkName}", $"Failed to get file url for {networkName} campaign {campaignId}: {e}");
+                    }
+
+                    if (!string.IsNullOrEmpty(uri))
+                    {
+                        uris.AddOrUpdate(uri, _ => new List<IGenericEntity>() { c }, (_, list) =>
+                        {
+                            list.Add(c);
+                            return list;
+                        });
                     }
                 });
 
@@ -772,7 +779,8 @@ namespace UnsubLib
                             await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UploadToFtp for Digest file {fdest}  {srcPath} -> Host: {FileCacheFtpServer} {dest}");
                         }
 
-                        if (_queuedCampaigns.Any() && !string.IsNullOrWhiteSpace(SearchDirectory))
+                        // Only write to the database if we've pulled the campaigns queued for mailing, or if we've been given a single campaign to run.
+                        if ((_queuedCampaigns?.Any() == true || uris.Count == 1) && !string.IsNullOrWhiteSpace(SearchDirectory))
                         {
                             var searchDest = Path.Combine(SearchDirectory, fdest + ".txt.srt");
 
@@ -1026,18 +1034,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+                }
 #if DEBUG
             }
 #endif
@@ -1794,7 +1802,7 @@ namespace UnsubLib
             return Jw.Serialize(new { NotUnsub = emailsNotFound });
         }
 
-        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections)
+        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections, string fileDownloadUri)
         {
             if (unsubRelationshipId.IsNullOrWhitespace())
             {
@@ -1818,7 +1826,15 @@ namespace UnsubLib
 
             try
             {
-                var locationUrl = await networkProvider.GetSuppressionLocationUrl(network, unsubRelationshipId);
+                Uri locationUrl;
+                if (!string.IsNullOrWhiteSpace(fileDownloadUri))
+                {
+                    locationUrl = new Uri(fileDownloadUri);
+                }
+                else
+                {
+                    locationUrl = await networkProvider.GetSuppressionLocationUrl(network, unsubRelationshipId);
+                }
 
                 if (locationUrl != null)
                 {

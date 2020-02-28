@@ -16,19 +16,13 @@ namespace UnsubLib.NetworkProviders
     {
         public static INetworkProvider GetInstance(FrameworkWrapper fw, IGenericEntity network)
         {
-            switch (network.GetS("Credentials/NetworkType"))
+            return (network.GetS("Credentials/NetworkType")) switch
             {
-                case "Cake":
-                    return new Cake(fw);
-
-                case "W4":
-                    return new W4(fw);
-
-                default:
-                    return new Other(fw);
-            }
+                "Cake" => new Cake(fw),
+                "W4" => new W4(fw),
+                "Tune" => new Tune(fw),
+                _ => new Other(fw),
+            };
         }
-
-
     }
 }
