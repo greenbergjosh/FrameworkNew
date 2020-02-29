@@ -53,8 +53,6 @@ namespace UnsubLib.NetworkProviders
                 var flattened = new Dictionary<string, IGenericEntity>(campaigns.GetDe("response/data").Select(c => new KeyValuePair<string, IGenericEntity>(c.key, c.entity.GetE("Offer"))));
                 var converted = JsonWrapper.Serialize(new { body = flattened.Values.Select(entity => JsonConvert.DeserializeObject(entity.GetS(""))) });
 
-                System.IO.File.WriteAllText(@"C:\users\edtor\Desktop\converted.json", converted);
-
                 var res = await Data.CallFn("Unsub", "MergeNetworkCampaigns",
                         JsonWrapper.Json(new
                         {
