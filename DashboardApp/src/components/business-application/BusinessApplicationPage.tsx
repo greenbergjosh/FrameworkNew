@@ -47,7 +47,6 @@ export const BusinessApplicationPage = ({
       {(userInterfaceContextManager) => (
         <UserInterface
           mode="display"
-          contextManager={userInterfaceContextManager}
           components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
           data={[]}
         />

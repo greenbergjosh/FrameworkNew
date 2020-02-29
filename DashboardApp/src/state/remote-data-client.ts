@@ -22,8 +22,8 @@ declare module "./store.types" {
   }
 }
 
-// const apiUrl = "//data.techopg.com/pr"
-const apiUrl = "//stage.data.techopg.com"
+const apiUrl = "//data.techopg.com/pr"
+// const apiUrl = "//stage.data.techopg.com"
 
 export interface State {
   token: null | string
