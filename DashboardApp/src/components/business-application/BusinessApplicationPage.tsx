@@ -1,7 +1,7 @@
 import { tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
-import React from "react"
+import React, { useState } from "react"
 import { useRematch } from "../../hooks"
 import { globalConfig } from "../../state/global-config"
 import { store } from "../../state/store"
@@ -30,11 +30,22 @@ export const BusinessApplicationPage = ({
   businessApplicationPageConfig,
   title,
 }: BusinessApplicationProps): JSX.Element => {
+
+  /*
+   * Not sure what Patrick had in mind here,
+   * but it seems likely that he meant to persist the users
+   * interaction with the app.
+   */
   const [fromStore, dispatch] = useRematch((s) => ({
     configsById: store.select.globalConfig.configsById(s),
     globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
     reportPath: s.navigation.routes.dashboard.subroutes["reports"].abs,
   }))
+  /*
+   * For now, the user interacts with state
+   * but it is not persisted.
+   */
+  const [data, setData] = useState({})
 
   console.log("BusinessApplication.render", {
     applicationId,
@@ -47,8 +58,10 @@ export const BusinessApplicationPage = ({
       {(userInterfaceContextManager) => (
         <UserInterface
           mode="display"
+          contextManager={userInterfaceContextManager}
           components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
-          data={[]}
+          data={data}
+          onChangeData={(newData) => setData(newData)}
         />
       )}
     </AdminUserInterfaceContextManagerProvider>
