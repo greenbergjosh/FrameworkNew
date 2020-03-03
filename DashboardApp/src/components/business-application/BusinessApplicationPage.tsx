@@ -13,6 +13,8 @@ import {
   BusinessApplicationPageConfig,
 } from "./business-application.types"
 import { AdminUserInterfaceContextManagerProvider } from "../../data/AdminUserInterfaceContextManager"
+import { Button, PageHeader } from "antd"
+import * as Reach from "@reach/router"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId
@@ -30,7 +32,6 @@ export const BusinessApplicationPage = ({
   businessApplicationPageConfig,
   title,
 }: BusinessApplicationProps): JSX.Element => {
-
   /*
    * Not sure what Patrick had in mind here,
    * but it seems likely that he meant to persist the users
@@ -54,17 +55,37 @@ export const BusinessApplicationPage = ({
   })
 
   return (
-    <AdminUserInterfaceContextManagerProvider>
-      {(userInterfaceContextManager) => (
-        <UserInterface
-          mode="display"
-          contextManager={userInterfaceContextManager}
-          components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
-          data={data}
-          onChangeData={(newData) => setData(newData)}
-        />
-      )}
-    </AdminUserInterfaceContextManagerProvider>
+    <div>
+      <PageHeader
+        extra={
+          applicationId && (
+            <Button.Group size="small">
+              <Button>
+                <Reach.Link to={`${fromStore.globalConfigPath}/${pageId}`}>
+                  View Config
+                </Reach.Link>
+              </Button>
+            </Button.Group>
+          )
+        }
+        style={{ padding: "15px" }}
+        title={title}
+        // subTitle={businessApplicationConfig.description}
+      />
+      <AdminUserInterfaceContextManagerProvider>
+        {(userInterfaceContextManager) => (
+          <UserInterface
+            mode="display"
+            contextManager={userInterfaceContextManager}
+            components={
+              (businessApplicationPageConfig && businessApplicationPageConfig.layout) || []
+            }
+            data={data}
+            onChangeData={(newData) => setData(newData)}
+          />
+        )}
+      </AdminUserInterfaceContextManagerProvider>
+    </div>
     // <div>
     //   <span>Global Config Page: {fromStore.globalConfigPath}</span>
     //   <pre>{JSON.stringify(businessApplicationConfig, null, 2)}</pre>
