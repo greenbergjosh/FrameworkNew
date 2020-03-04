@@ -1,5 +1,5 @@
 Entity(Id, Config)
-BinaryEntityRelationship(LEntityId, REntityId, LName, RName)
+BinaryEntityRelationship(LEntityId, REntityId, LName, RName, Sequence)
 
 Point to a specific EntityVersion
 Point to a specific Entity (use selection to choose a variant)
@@ -136,6 +136,8 @@ Get("Thread/Whatever/")
 Get("Process/Whatever")
 IGenericEntity ge = Get(id);
 IEnumerable<IGenericEntity> ges = GetLBySubject("Campaign");
+
+ge.Invoke("x/y/z", "parms")
 
 IGenericEntity ge = Get(id1);
 ge.Get("x/y/z");  // gets the value held in the z property

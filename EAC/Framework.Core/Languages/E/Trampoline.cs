@@ -162,7 +162,7 @@ namespace Framework.Core.Languages.E
 
             if (hasId && memory != Keywords.Join)
             {
-                Guid g;
+                Guid g = Guid.NewGuid(); // was unassigned but would not build
                 state.PopContext();
                 var context = state.Context;
                 
