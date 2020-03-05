@@ -15,36 +15,17 @@ const DndExample: React.FC = () => {
   return (
     <Card>
       <Helmet>
-        <title>Drag-n-Drop Example | Interface Builder</title>
+        <title>Form Example | Interface Builder</title>
       </Helmet>
       <PageHeader
-        title="Drag-n-Drop Example"
-        subTitle="Drag components into the layout. When you are done, click the Preview tab."
+        title="Form Example"
+        subTitle="To change the form, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
       />
       <Tabs defaultActiveKey="1">
         {/*************************
-         * CONFIGURE TAB
-         */}
-        <TabPane tab="Configure" key="1">
-          <UserInterface
-            mode="edit"
-            components={schema}
-            data={data}
-            onChangeData={(newData) => {
-              console.log("New Data", newData)
-              setData(newData)
-            }}
-            onChangeSchema={(newSchema) => {
-              console.log("New Schema", newSchema)
-              setSchema(newSchema)
-            }}
-          />
-        </TabPane>
-
-        {/*************************
          * PREVIEW TAB
          */}
-        <TabPane tab="Preview" key="2">
+        <TabPane tab="Preview" key="1">
           <Title level={3}>Rendered View</Title>
           <Layout>
             <Layout.Content
@@ -70,6 +51,25 @@ const DndExample: React.FC = () => {
           <pre>
             <Text code>{JSON.stringify(data, null, 2)}</Text>
           </pre>
+        </TabPane>
+
+        {/*************************
+         * CONFIGURE TAB
+         */}
+        <TabPane tab="Configure" key="2">
+          <UserInterface
+            mode="edit"
+            components={schema}
+            data={data}
+            onChangeData={(newData) => {
+              console.log("New Data", newData)
+              setData(newData)
+            }}
+            onChangeSchema={(newSchema) => {
+              console.log("New Schema", newSchema)
+              setSchema(newSchema)
+            }}
+          />
         </TabPane>
 
         {/*************************

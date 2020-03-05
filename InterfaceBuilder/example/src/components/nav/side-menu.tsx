@@ -17,7 +17,7 @@ const SideMenu: React.FC = () => (
           Examples
         </span>
       }>
-      <Menu.Item key="1">Drag-n-Drop</Menu.Item>
+      <Menu.Item key="1">Form</Menu.Item>
     </SubMenu>
   </Menu>
 )

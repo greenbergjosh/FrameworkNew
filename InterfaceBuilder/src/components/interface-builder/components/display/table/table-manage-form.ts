@@ -86,6 +86,60 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
             ],
           },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "showGroupedColumn",
+                valueKey: "showGroupedColumn",
+                label: "Default Collapse Groups",
+                component: "toggle",
+                defaultValue: false,
+                help: "Start with all groups collapsed.",
+              },
+              {
+                key: "defaultPageSize",
+                valueKey: "defaultPageSize",
+                component: "select",
+                label: "Default Page Size",
+                defaultValue: "50",
+                dataHandlerType: "local",
+                help: "Default number of rows to show per page.",
+                data: {
+                  values: [
+                    {
+                      label: "All",
+                      value: "All",
+                    },
+                    {
+                      label: "25",
+                      value: "25",
+                    },
+                    {
+                      label: "50",
+                      value: "50",
+                    },
+                    {
+                      label: "100",
+                      value: "100",
+                    },
+                    {
+                      label: "150",
+                      value: "150",
+                    },
+                    {
+                      label: "200",
+                      value: "200",
+                    },
+                    {
+                      label: "500",
+                      value: "500",
+                    },
+                  ],
+                },
+              },
+            ],
+          },
         ],
       },
     ],
