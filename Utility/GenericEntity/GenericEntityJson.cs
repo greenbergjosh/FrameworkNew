@@ -131,6 +131,19 @@ namespace Utility.GenericEntity
             }
         }
 
+        public override IEnumerable<(string key, IGenericEntity entity)> GetDe(string path)
+        {
+            if (_root.SelectToken(ConvertPath(path)) is JObject jo)
+            {
+                foreach (var je in jo.Properties())
+                {
+                    var entity = new GenericEntityJson();
+                    entity.InitializeEntity(rw, null, je.Value);
+                    yield return (je.Name, entity);
+                }
+            }
+        }
+
         //public override IEnumerable<Tuple<string, string>> GetArrTuples(string path)
         //{
         //    GenericEntityJson entity = new GenericEntityJson();

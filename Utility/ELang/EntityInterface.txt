@@ -176,4 +176,19 @@ IGenericEntity ge = ge.Get(id1, vary=true, version=true);
 // entity will automatically find (and delegate evaluation to) the appropriate variant/version
 
 
+// Postgres and SQL sprocs as LBM's, consider passing them the stack and allowing them to return enough info to continue evaluation
+// Note that a MethodSuite can have LBMs of any type (heterogeneous)
+Entity	Type				Value
+1		MethodSuite			{ "Name": "Signal", "Functions": { "getCampaigns": 2 } }
+2		LBM					{ "Type": "Postgres", "ConnectionStringId": 3, "Function": "path.get_campaigns" }
+3		ConnectionString	{ "ConnectionString": "Server=10...." }
+
+// Common use-case to be able to switch between two different databases
+1		MethodSuite			{ "Name": "Signal-Postgres", "Functions": { "getCampaigns": 2 } }
+2		LBM					{ "Type": "Postgres", "ConnectionStringId": 3, "Function": "path.get_campaigns" }
+3		ConnectionString	{ "ConnectionString": "Server=10...." }
+4		MethodSuite			{ "Name": "Signal-SQL", "Functions": { "getCampaigns": 5 } }
+5		LBM					{ "Type": "SQL", "ConnectionStringId": 6, "Function": "Path.GetCampaigns" }
+6		ConnectionString	{ "ConnectionString": "Server=14...." }
+
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,9 +66,8 @@ namespace TheGreatWallOfDataLib
                 }
 
                 requestBody = await context.GetRawBodyStringAsync();
+
                 var req = Jw.JsonToGenericEntity(requestBody);
-                //var req = await context.GetGenericEntityAsync();
-                //requestBody = Jw.Serialize(req);
                 await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
