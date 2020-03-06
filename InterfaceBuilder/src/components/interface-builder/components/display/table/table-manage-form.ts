@@ -90,8 +90,8 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "appearance",
             components: [
               {
-                key: "showGroupedColumn",
-                valueKey: "showGroupedColumn",
+                key: "defaultCollapseAll",
+                valueKey: "defaultCollapseAll",
                 label: "Default Collapse Groups",
                 component: "toggle",
                 defaultValue: false,

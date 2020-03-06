@@ -51,7 +51,7 @@ interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
   defaultCollapseAll?: boolean
-  defaultPageSize?: number
+  defaultPageSize?: number | string
 }
 
 interface TableInterfaceComponentDisplayModeProps extends ITableInterfaceComponentProps {
@@ -205,12 +205,16 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     return acc
                   }, [] as SortDescriptorModel[]),
                 }
-                const pageSettings: PageSettingsModel | undefined = defaultPageSize
-                  ? {
+                const pageSettings: PageSettingsModel | undefined =
+                  defaultPageSize === "All"
+                    ? {
+                      pageSize: 999999,
+                    }
+                    : typeof defaultPageSize === "number"
+                    ? {
                       pageSize: defaultPageSize,
                     }
-                  : undefined
-
+                    : undefined
                 const groupSettings: GroupSettingsModel = {
                   columns: sortBy("groupOrder", columns).reduce((acc, column) => {
                     if (column.field && typeof column.groupOrder !== "undefined") {

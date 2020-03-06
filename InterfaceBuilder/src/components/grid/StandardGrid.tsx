@@ -420,12 +420,12 @@ export const StandardGrid = React.forwardRef(
       ] as AggregateRowModel[]
     }, [usableColumns])
 
-    const dataBound = React.useCallback(() => {
-      typeof ref === "object" && ref!.current!.autoFitColumns()
+    const dataBound = () => {
+      //   typeof ref === "object" && ref!.current!.autoFitColumns()
       if (defaultCollapseAll) {
         typeof ref === "object" && ref!.current!.groupModule.collapseAll()
       }
-    }, [ref, usableData, defaultCollapseAll])
+    }
 
     const editSettings = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" as EditMode }
     const editingToolbarItems = ([] as string[]).concat(
@@ -447,7 +447,7 @@ export const StandardGrid = React.forwardRef(
           actionComplete={actionComplete}
           aggregates={aggregates}
           columns={usableColumns}
-          // dataBound={dataBound}
+          dataBound={dataBound}
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
