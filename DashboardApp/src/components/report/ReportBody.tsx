@@ -23,6 +23,7 @@ import {
   SortDescriptorModel,
   GroupSettingsModel,
   SortSettingsModel,
+  PageSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import {
   DataMappingItem,
@@ -175,6 +176,16 @@ export const ReportBody = React.memo(
         return acc
       }, [] as SortDescriptorModel[]),
     }
+    const pageSettings: PageSettingsModel | undefined =
+      reportConfig.defaultPageSize === "All"
+        ? {
+          pageSize: 999999,
+        }
+        : typeof reportConfig.defaultPageSize === "number"
+        ? {
+          pageSize: reportConfig.defaultPageSize,
+        }
+        : undefined
     const groupSettings: GroupSettingsModel = {
       columns: sortBy("groupOrder", reportConfig.columns as any[]).reduce((acc, column) => {
         if (column.field && typeof column.groupOrder !== "undefined") {
@@ -237,6 +248,8 @@ export const ReportBody = React.memo(
             loading={fromStore.isExecutingQuery}
             sortSettings={sortSettings}
             groupSettings={groupSettings}
+            pageSettings={pageSettings}
+            defaultCollapseAll={reportConfig.defaultCollapseAll}
           />
         </div>
       </>

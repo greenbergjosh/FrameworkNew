@@ -34,6 +34,8 @@ export type LocalReportConfig = {
   columns: [iots.UnknownRecordC]
   details: string | ReportDetails | LocalReportConfig
   dataMapping?: DataMappingItem[]
+  defaultCollapseAll?: boolean
+  defaultPageSize?: number | string
 }
 export const ReportConfigCodec = iots.recursion<
   LocalReportConfig,
