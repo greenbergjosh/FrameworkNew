@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipClean skipQueuedCheck n:\"Madrivo\" c:4492"
+      "commandLineArgs": "skipClean skipQueuedCheck n:\"Globalwide Media\""
     }
   }
 }

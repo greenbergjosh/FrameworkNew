@@ -12,7 +12,7 @@ namespace UnsubLib.NetworkProviders
 {
     class Tune : INetworkProvider
     {
-        private FrameworkWrapper _fw;
+        private readonly FrameworkWrapper _fw;
         private readonly string _logMethod = $"{nameof(NetworkProviders)}.{nameof(Tune)}";
 
         public Tune(FrameworkWrapper fw)
@@ -39,14 +39,14 @@ namespace UnsubLib.NetworkProviders
             try
             {
                 await _fw.Trace(_logMethod, $"Getting campaigns from {networkName}");
-                var response = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
+                var (success, body) = await ProtocolClient.HttpGetAsync(url, new[] { (key: "Accept", value: "application/json") });
 
-                if (response.success == false)
+                if (success == false)
                 {
                     throw new HaltingException($"Http request for campaigns failed for {networkName}: {url}", null);
                 }
 
-                var campaigns = JsonWrapper.ToGenericEntity(response.body);
+                var campaigns = JsonWrapper.ToGenericEntity(body);
 
                 await _fw.Trace(_logMethod, $"Retrieved campaigns from {networkName}");
 
@@ -98,7 +98,11 @@ namespace UnsubLib.NetworkProviders
             foreach (var campaign in campaigns.GetL(""))
             {
                 var offerId = campaign.GetS("NetworkCampaignId");
-                var tuneCampaign = tuneCampaigns[offerId];
+                if (!tuneCampaigns.TryGetValue(offerId, out var tuneCampaign))
+                {
+                    continue;
+                }
+
                 var unsubFileDownloadUri = tuneCampaign.GetS("dne_download_url");
 
                 if (string.IsNullOrWhiteSpace(unsubFileDownloadUri))

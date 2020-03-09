@@ -679,7 +679,9 @@ namespace UnsubLib
                                     { UNKNOWNHANDLER, f => UnknownTypeHandler(f, logCtx) }
                                 },
                                 fis.DirectoryName,
-                                ClientWorkingDirectory);
+                                ClientWorkingDirectory,
+                                1000 * 60 * 20 // 20 minute timeout
+                                );
 
                         await _fw.Trace($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Completed UnzipUnbuffered({networkName}):: for url {uri.Key}");
                     }
@@ -1582,7 +1584,7 @@ namespace UnsubLib
             await tcs.Task;
         }
 
-        public async Task<(string fileId, string type)> GetFileIdAndTypeFromCampaignId(string campaignId)
+        public async Task<(string fileId, string type, DateTime mostRecentFileDate)> GetFileIdAndTypeFromCampaignId(string campaignId)
         {
             var args = Jw.Json(new { CId = campaignId });
 
@@ -1591,14 +1593,16 @@ namespace UnsubLib
                 var c = await Data.CallFn(Conn, "SelectNetworkCampaign", args);
                 var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
                 var type = c.GetS("SuppressionDigestType");
-
+                var mostRecentFileDateString = c.GetS("MostRecentUnsubFileDate");
+                DateTime.TryParse(mostRecentFileDateString, out var mostRecentFileDate);
+                
                 if (fileId == null)
                 {
                     await _fw.Trace(nameof(GetFileIdAndTypeFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
-                    return (fileId: null, type);
+                    return (fileId: null, type, mostRecentFileDate);
                 }
 
-                return (fileId, type);
+                return (fileId, type, mostRecentFileDate);
             }
             catch (Exception e)
             {
@@ -1636,7 +1640,12 @@ namespace UnsubLib
 
             try
             {
-                (var fileId, var type) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                (var fileId, var type, var mostRecentFileDate) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                if ((DateTime.Now - mostRecentFileDate).TotalDays > 14)
+                {
+                    throw new InvalidOperationException("File is greater than 14 days old.");
+                }
+
                 var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
 
                 if (!email.IsNullOrWhitespace()) digest = Hashing.CalculateMD5Hash(email.ToLower());
@@ -1704,7 +1713,11 @@ namespace UnsubLib
 
             try
             {
-                (var fileId, var fileType) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                (var fileId, var fileType, var mostRecentFileDate) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                if ((DateTime.Now - mostRecentFileDate).TotalDays > 14)
+                {
+                    throw new InvalidOperationException("File is greater than 14 days old.");
+                }
 
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileId} in database with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
 
