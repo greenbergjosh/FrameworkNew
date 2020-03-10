@@ -387,7 +387,6 @@ namespace UnsubLib
                     return;
                 }
 
-                // This won't work for NetworkProviders like Tune who return the file download URI in their "get campaigns" API.
                 var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider,
                     network.GetS("Credentials/Parallelism").ParseInt() ?? 5, null);
 

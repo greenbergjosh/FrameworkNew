@@ -86,9 +86,25 @@ namespace UnsubLib.NetworkProviders
             }
         }
 
-        public Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
+        public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
         {
-            throw new NotImplementedException();
+            var campaigns = await GetCampaigns(network);
+
+            var campaign = campaigns.GetL("").SingleOrDefault(c => c.GetS("NetworkCampaignId") == unsubRelationshipId);
+
+            if (campaign == null)
+            {
+                await _fw.Error(_logMethod, $"Failed to get {network.GetS("Name")} campaign {unsubRelationshipId}");
+            }
+
+            var unsubFileDownloadUri = campaign.GetS("UnsubFileDownloadUri");
+            if (string.IsNullOrWhiteSpace(unsubFileDownloadUri))
+            {
+                await _fw.Error(_logMethod, $"{network.GetS("Name")} campaign {campaign.GetS("NetworkCampaignName")} has no file download Uri");
+                return null;
+            }
+
+            return new Uri(unsubFileDownloadUri);
         }
 
         private static IGenericEntity AddUnsubDownloadFileUri(IGenericEntity campaigns, Dictionary<string, IGenericEntity> tuneCampaigns)
