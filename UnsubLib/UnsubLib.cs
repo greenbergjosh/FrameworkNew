@@ -1583,7 +1583,7 @@ namespace UnsubLib
             await tcs.Task;
         }
 
-        public async Task<(string fileId, string type, DateTime mostRecentFileDate)> GetFileIdAndTypeFromCampaignId(string campaignId)
+        public async Task<(string fileId, string type, DateTime mostRecentFileDate, int? unsubRefreshPeriod)> GetFileIdAndTypeFromCampaignId(string campaignId)
         {
             var args = Jw.Json(new { CId = campaignId });
 
@@ -1594,14 +1594,15 @@ namespace UnsubLib
                 var type = c.GetS("SuppressionDigestType");
                 var mostRecentFileDateString = c.GetS("MostRecentUnsubFileDate");
                 DateTime.TryParse(mostRecentFileDateString, out var mostRecentFileDate);
-                
+                int? unsubRefreshPeriod = c.GetS("UnsubRefreshPeriod").ParseInt();
+
                 if (fileId == null)
                 {
                     await _fw.Trace(nameof(GetFileIdAndTypeFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
-                    return (fileId: null, type, mostRecentFileDate);
+                    return (fileId: null, type, mostRecentFileDate, unsubRefreshPeriod);
                 }
 
-                return (fileId, type, mostRecentFileDate);
+                return (fileId, type, mostRecentFileDate, unsubRefreshPeriod);
             }
             catch (Exception e)
             {
@@ -1639,10 +1640,10 @@ namespace UnsubLib
 
             try
             {
-                (var fileId, var type, var mostRecentFileDate) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                if ((DateTime.Now - mostRecentFileDate).TotalDays > 14)
+                (var fileId, var type, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                if ((DateTime.Now - mostRecentFileDate).TotalDays > (unsubRefreshPeriod ?? _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10))
                 {
-                    throw new InvalidOperationException("File is greater than 14 days old.");
+                    throw new InvalidOperationException("File is greater than 10 days old.");
                 }
 
                 var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
@@ -1712,8 +1713,8 @@ namespace UnsubLib
 
             try
             {
-                (var fileId, var fileType, var mostRecentFileDate) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                if ((DateTime.Now - mostRecentFileDate).TotalDays > 14)
+                (var fileId, var fileType, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                if ((DateTime.Now - mostRecentFileDate).TotalDays > (unsubRefreshPeriod ?? _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10))
                 {
                     throw new InvalidOperationException("File is greater than 14 days old.");
                 }
