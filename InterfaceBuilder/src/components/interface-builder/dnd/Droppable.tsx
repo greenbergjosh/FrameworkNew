@@ -18,6 +18,7 @@ import {
   isShallowEqual,
   shallowPropCheck,
 } from "./util"
+import "./dnd.module.scss"
 
 const dropHandlers = {
   // canDrop(props: DroppableInnerProps) {

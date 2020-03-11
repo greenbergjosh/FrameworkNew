@@ -5,7 +5,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "clean": "rm -rf node_modules/interface-builder/src node_modules/interface-builder/.idea node_modules/interface-builder/example node_modules/interface-builder/node_modules/react node_modules/interface-builder/node_modules/react-dom",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -25,7 +24,7 @@
     ]
   },
   "dependencies": {
-    "@opg/interface-builder": "file:../lib",
+    "@opg/interface-builder": "link:../",
     "@types/jest": "24.0.22",
     "@types/node": "12.12.7",
     "@types/react": "16.9.11",

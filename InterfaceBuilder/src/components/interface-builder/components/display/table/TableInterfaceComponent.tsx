@@ -334,6 +334,7 @@ const editComponents: ComponentDefinition[] = [
             defaultValue: "string",
           },
           ...tableDataTypes.flatMap((type) =>
+            // @ts-ignore
             type.form.map((formItem) => ({
               ...formItem,
               visibilityConditions: formItem.visibilityConditions

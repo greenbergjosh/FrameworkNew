@@ -7,7 +7,7 @@ import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
 import MonacoEditor, { MonacoDiffEditor, MonacoEditorProps } from "react-monaco-editor"
 import { None, Some } from "../../../lib/Option"
-import IEditorConstructionOptions = editor.IEditorConstructionOptions
+// import { pathTypeLib } from "./pathTypeLib"
 
 /*******************************
  * Types & Interfaces
@@ -47,7 +47,7 @@ export const registerMonacoEditorMount = (customEditorWillMount: CustomEditorWil
   willMountRegistry.push(customEditorWillMount)
 }
 
-export const activeEditorSettings: NonNullable<IEditorConstructionOptions> = {
+export const activeEditorSettings: NonNullable<editor.IEditorConstructionOptions> = {
   cursorBlinking: "blink",
   cursorSmoothCaretAnimation: false,
   cursorStyle: "block",
@@ -86,7 +86,7 @@ export const activeEditorSettings: NonNullable<IEditorConstructionOptions> = {
   wrappingIndent: "same",
 }
 
-const inactiveEditorSettings: NonNullable<IEditorConstructionOptions> = {
+const inactiveEditorSettings: NonNullable<editor.IEditorConstructionOptions> = {
   ...activeEditorSettings,
   readOnly: true,
 }
@@ -145,6 +145,27 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
         []
       )
 
+      /*
+      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: false,
+        noSyntaxValidation: false,
+      })
+
+      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ES2015,
+        allowNonTsExtensions: true,
+        noLib: true,
+      })
+
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(
+        pathTypeLib,
+        "ts:filename/pathTypeLib.d.ts"
+      )
+      */
+
+      /**
+       * Monkey patch setModelMarkers
+       */
       //@ts-ignore
       if (!monaco.editor.setModelMarkers._monkeyPatched) {
         const oldSetModelMarkers = monaco.editor.setModelMarkers

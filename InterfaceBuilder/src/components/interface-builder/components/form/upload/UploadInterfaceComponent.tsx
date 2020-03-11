@@ -15,7 +15,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
-import "./upload.scss"
+import "./upload.module.scss"
 
 /******************************
  * Interfaces, Types, Enums
