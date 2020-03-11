@@ -163,7 +163,7 @@ namespace GenericDataService
                         return;
                     }
 
-                    if (context.Request.Form.Files.Count == 1 && context.Request.Form.ContainsKey("chunkIndex") && context.Request.Form.ContainsKey("totalChunk"))
+                    if (context.Request.HasFormContentType && context.Request.Form.Files.Count == 1 && context.Request.Form.ContainsKey("chunkIndex") && context.Request.Form.ContainsKey("totalChunk"))
                     {
                         var chunkIndex = int.Parse(context.Request.Form["chunkIndex"]);
                         var totalChunks = int.Parse(context.Request.Form["totalChunk"]);
