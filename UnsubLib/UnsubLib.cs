@@ -383,8 +383,15 @@ namespace UnsubLib
 
                 if (campaign == null)
                 {
-                    await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"{networkName} campaign {networkCampaignId} has not been merged into database, this is required for single reprocessing");
-                    return;
+                    cse = await GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
+
+                    campaign = cse.SingleOrDefault(c => c.GetS("NetworkCampaignId") == networkCampaignId);
+
+                    if (campaign == null)
+                    {
+                        await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"{networkName} campaign {networkCampaignId} has not been merged into database, this is required for single reprocessing");
+                        return;
+                    }
                 }
 
                 var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider,
