@@ -1,5 +1,5 @@
 import { Keyboard, TextInput, TouchableWithoutFeedback, View } from "react-native"
-import { Colors, Units } from "constants"
+import { Colors, Units } from "styles"
 import React from "react"
 import { KeyboardAccessoryView } from "react-native-keyboard-accessory"
 import TouchText from "../TouchText"

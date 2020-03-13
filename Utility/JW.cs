@@ -14,7 +14,7 @@ namespace Utility
 
         public bool V(int i) => (Quotes == null || Quotes.Length < i + 1) ? true : Quotes[i];
 
-        public static string Q(object x) => x != null ? "\"" + x.ToString() + "\"" : "null";
+        public static string Q(object x) => x != null ? JsonConvert.ToString(x.ToString()) : "null";
     }
 
     public interface IJ { }
@@ -261,7 +261,7 @@ namespace Utility
                             else throw new NotImplementedException();
                         }
                     }
-                    else if(p.Value is JToken) pl.Add(PL.N(p.Name, p.Value.ToString()));
+                    else if (p.Value is JToken) pl.Add(PL.N(p.Name, p.Value.ToString()));
                     else throw new NotImplementedException();
                 }
 

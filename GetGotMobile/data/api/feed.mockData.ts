@@ -1,4 +1,4 @@
-import { ImageUris, Images } from "constants"
+import { ImageUris, Images } from "styles"
 import { FeedResponse, CommentsResponse, UserFeedResponse } from "./feed"
 
 

@@ -1,6 +1,5 @@
 import React from "react"
-import { Image, Text, View } from "react-native"
-import { styles, Colors } from "constants"
+import { Image, View } from "react-native"
 
 export interface HeaderLogoProps {}
 

@@ -1,6 +1,6 @@
 import React from "react"
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native"
-import { Colors, styles, FontWeights, devBorder, Units } from "constants"
+import { Colors, styles, FontWeights, Units } from "styles"
 
 interface TouchTextProps {
   size?: "sm" | "md" | "lg"

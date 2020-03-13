@@ -12,7 +12,7 @@ namespace UnsubLib.UnsubFileProviders
     public class UnsubCentralV2 : IUnsubLocationProvider
     {
         private readonly FrameworkWrapper _fw;
-        private string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(UnsubCentralV2)}";
+        private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(UnsubCentralV2)}";
 
         public UnsubCentralV2(FrameworkWrapper fw)
         {
@@ -56,88 +56,87 @@ namespace UnsubLib.UnsubFileProviders
 
             try
             {
+                using var client = new HttpClient();
+                string key;
+                string secure;
 
-                using (var client = new HttpClient())
+                HttpResponseMessage resp;
+                var qsOriginal = HttpUtility.ParseQueryString(uri.Query);
+                if (qsOriginal["keyID"] != null)
                 {
-                    string key;
-                    string secure;
+                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} Has keyID");
 
-                    HttpResponseMessage resp;
-                    var qsOriginal = HttpUtility.ParseQueryString(uri.Query);
-                    if (qsOriginal["keyID"] != null)
+                    var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+                    resp = await client.SendAsync(requestMessage);
+                    var redirectUrl = resp?.Headers?.Location ?? requestMessage.RequestUri;
+                    if (redirectUrl == null)
                     {
-                        await _fw.Trace("UV2C", $"{campaignId} {uriStr} Has keyID");
-
-                        resp = await client.GetAsync(uri);
-                        var redirectUrl = resp?.Headers?.Location;
-                        if (redirectUrl == null)
-                        {
-                            await _fw.Error("UV2C", $"{campaignId} {uriStr} Response had no redirect");
-                            await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
-                            return defaultUrl;
-                        }
-
-                        var qs = HttpUtility.ParseQueryString(redirectUrl.Query);
-                        key = qs["key"];
-                        secure = qs["s"];
-                    }
-                    else
-                    {
-                        key = qsOriginal["key"];
-                        secure = qsOriginal["s"];
-                    }
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} key {key} secure {secure}");
-
-                    if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace())
-                    {
-                        await _fw.Trace("UV2C", $"{campaignId} {uriStr} defaultUrl {defaultUrl}");
+                        await _fw.Error("UV2C", $"{campaignId} {uriStr} Response had no redirect");
+                        await _fw.Error($"{_logMethod}.{nameof(GetFileUrl)}", "Response had no redirect");
                         return defaultUrl;
                     }
 
-                    var data = new Dictionary<string, string> { { "key", key }, { "s", secure } };
-                    var loginUrl = $"https://go.unsubcentral.com/backend/api/login";
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} before login");
-
-                    resp = await client.PostAsync(loginUrl, new FormUrlEncodedContent(data));
-                    var res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} after login {res.GetS("")}");
-
-                    var token = res.GetS("payload");
-
-                    if (token.IsNullOrWhitespace()) return defaultUrl;
-
-                    var fileIdUrl = $"https://go.unsubcentral.com/backend/api/keys?token={token}&find=ByAffiliateKeyStringEquals&keyString={key}";
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} before get {fileIdUrl}");
-
-                    resp = await client.GetAsync(fileIdUrl);
-                    res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} after get {fileIdUrl}");
-
-                    var unsubListId = res.GetS("unsubList/id");
-                    var dlUrl = $"https://go.unsubcentral.com/backend/api/export/list/{unsubListId}/download?token={token}&type=DOWNLOAD_GRP_ENC_TEXT";
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} before get {dlUrl}");
-                    resp = await client.GetAsync(dlUrl);
-                    res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} after get {dlUrl}");
-
-                    var dl = res.GetS("payload");
-                    await _fw.Trace("UV2C", string.Format("{0} payload value: {1}", campaignId, !dl.IsNullOrWhitespace() ? dl : $"empty, will use default Url: {defaultUrl}"));
-
-                    var result = string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;
-
-                    await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {dl}");
-
-                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} final result {result}");
-
-                    return result;
+                    var qs = HttpUtility.ParseQueryString(redirectUrl.Query);
+                    key = qs["key"];
+                    secure = qs["s"];
                 }
+                else
+                {
+                    key = qsOriginal["key"];
+                    secure = qsOriginal["s"];
+                }
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} key {key} secure {secure}");
+
+                if (key.IsNullOrWhitespace() || secure.IsNullOrWhitespace())
+                {
+                    await _fw.Trace("UV2C", $"{campaignId} {uriStr} defaultUrl {defaultUrl}");
+                    return defaultUrl;
+                }
+
+                var data = new Dictionary<string, string> { { "key", key }, { "s", secure } };
+                var loginUrl = $"https://go.unsubcentral.com/backend/api/login";
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} before login");
+
+                resp = await client.PostAsync(loginUrl, new FormUrlEncodedContent(data));
+                var res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} after login {res.GetS("")}");
+
+                var token = res.GetS("payload");
+
+                if (token.IsNullOrWhitespace()) return defaultUrl;
+
+                var fileIdUrl = $"https://go.unsubcentral.com/backend/api/keys?token={token}&find=ByAffiliateKeyStringEquals&keyString={key}";
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} before get {fileIdUrl}");
+
+                resp = await client.GetAsync(fileIdUrl);
+                res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} after get {fileIdUrl}");
+
+                var unsubListId = res.GetS("unsubList/id");
+                var dlUrl = $"https://go.unsubcentral.com/backend/api/export/list/{unsubListId}/download?token={token}&type=DOWNLOAD_GRP_ENC_TEXT";
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} before get {dlUrl}");
+                resp = await client.GetAsync(dlUrl);
+                res = Jw.JsonToGenericEntity(await resp.Content.ReadAsStringAsync());
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} after get {dlUrl}");
+
+                var dl = res.GetS("payload");
+                await _fw.Trace("UV2C", string.Format("{0} payload value: {1}", campaignId, !dl.IsNullOrWhitespace() ? dl : $"empty, will use default Url: {defaultUrl}"));
+
+                var result = string.IsNullOrWhiteSpace(dl) ? defaultUrl : dl;
+
+                await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {dl}");
+
+                await _fw.Trace("UV2C", $"{campaignId} {uriStr} final result {result}");
+
+                return result;
             }
             catch (Exception e)
             {

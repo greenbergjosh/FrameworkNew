@@ -1,15 +1,6 @@
-import {
-  View,
-  Animated,
-  Easing,
-  Dimensions,
-  StyleProp,
-  ViewStyle,
-  TouchableOpacity,
-  Text,
-} from "react-native"
+import { Animated, Dimensions, StyleProp, ViewStyle } from "react-native"
 import { ActivityIndicator, Modal, WhiteSpace } from "@ant-design/react-native"
-import { Colors, Units, devBorder } from "constants"
+import { Units } from "styles"
 import TouchIcon from "components/TouchIcon"
 import React from "react"
 import { useFollowsContext } from "data/contextProviders/follows.contextProvider"
@@ -94,10 +85,7 @@ export const SharePostModal = ({ visible, onClose }: SharePostModalProps) => {
           onPost={togglePanel}
           onClose={onClose}
         />
-        <PostToFeed
-          style={[childPanelWidthStyle]}
-          onClose={onClose}
-        />
+        <PostToFeed style={[childPanelWidthStyle]} onClose={onClose} />
       </Animated.View>
       <WhiteSpace size="xl" />
     </Modal>

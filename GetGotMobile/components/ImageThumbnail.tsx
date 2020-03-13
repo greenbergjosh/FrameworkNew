@@ -1,6 +1,6 @@
 import { Image, StyleProp, View, ViewStyle } from "react-native"
 import React from "react"
-import { ImageUris, Units, Colors } from "constants"
+import { ImageUris, Units, Colors } from "styles"
 
 interface ImageThumbnailProps {
   image: string | string[]

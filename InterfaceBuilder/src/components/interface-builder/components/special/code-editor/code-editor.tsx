@@ -2,14 +2,16 @@ import Component from "@reach/component-component"
 import { Button, Card, Icon } from "antd"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
-import { IDisposable, MarkerSeverity } from "monaco-editor"
+import { editor, IDisposable, MarkerSeverity } from "monaco-editor"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
-import MonacoEditor, {
-  MonacoDiffEditor,
-  MonacoEditorProps,
-} from "react-monaco-editor"
+import MonacoEditor, { MonacoDiffEditor, MonacoEditorProps } from "react-monaco-editor"
 import { None, Some } from "../../../lib/Option"
+import IEditorConstructionOptions = editor.IEditorConstructionOptions
+
+/*******************************
+ * Types & Interfaces
+ */
 
 export type EditorTheme = "vs" | "vs-dark" | "hc-black"
 export type EditorLang = iots.TypeOf<typeof EditorLangCodec>
@@ -35,10 +37,74 @@ interface Props extends Required<Pick<MonacoEditorProps, "height" | "width">> {
 
 export type CustomEditorWillMount = (monaco: typeof monacoEditor) => IDisposable[]
 
+/*******************************
+ * Constants
+ */
+
 const willMountRegistry: CustomEditorWillMount[] = []
+
 export const registerMonacoEditorMount = (customEditorWillMount: CustomEditorWillMount) => {
   willMountRegistry.push(customEditorWillMount)
 }
+
+export const activeEditorSettings: NonNullable<IEditorConstructionOptions> = {
+  cursorBlinking: "blink",
+  cursorSmoothCaretAnimation: false,
+  cursorStyle: "block",
+  extraEditorClassName: "",
+  fixedOverflowWidgets: false,
+  glyphMargin: false,
+  lineDecorationsWidth: 10,
+  lineNumbers: "on",
+  lineNumbersMinChars: 4,
+  minimap: {
+    enabled: false,
+  },
+  mouseWheelZoom: false,
+  overviewRulerBorder: false,
+  overviewRulerLanes: 2,
+  quickSuggestions: {
+    comments: true,
+    other: true,
+    strings: true,
+  },
+  readOnly: false,
+  renderFinalNewline: true,
+  renderLineHighlight: "none",
+  revealHorizontalRightPadding: 30,
+  roundedSelection: true,
+  rulers: [],
+  scrollBeyondLastLine: false,
+  selectionClipboard: true,
+  selectOnLineNumbers: true,
+  showUnused: true,
+  snippetSuggestions: "none",
+  // @ts-ignore
+  wordBasedSuggestions: false,
+  wordWrap: "off",
+  wordWrapColumn: 80,
+  wrappingIndent: "same",
+}
+
+const inactiveEditorSettings: NonNullable<IEditorConstructionOptions> = {
+  ...activeEditorSettings,
+  readOnly: true,
+}
+
+const diffEditorSettings = {
+  ...activeEditorSettings,
+  renderSideBySide: true,
+}
+
+// function editorWillMount(monaco: typeof monacoEditor) {
+//   const adapter = new GUIDEditorServiceAdapter(monaco)
+//   monaco.languages.registerLinkProvider("json", adapter)
+//   monaco.languages.registerHoverProvider("json", adapter)
+// }
+
+/*******************************
+ * CodeEditor Component
+ */
 
 export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Element {
   const [state, setState] = React.useState({
@@ -147,58 +213,3 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
     </div>
   )
 })
-
-export const activeEditorSettings: NonNullable<MonacoEditorProps["options"]> = {
-  cursorBlinking: "blink",
-  cursorSmoothCaretAnimation: false,
-  cursorStyle: "block",
-  extraEditorClassName: "",
-  fixedOverflowWidgets: false,
-  glyphMargin: false,
-  lineDecorationsWidth: 10,
-  lineNumbers: "on",
-  lineNumbersMinChars: 4,
-  minimap: {
-    enabled: false,
-  },
-  mouseWheelZoom: false,
-  overviewRulerBorder: false,
-  overviewRulerLanes: 2,
-  quickSuggestions: {
-    comments: true,
-    other: true,
-    strings: true,
-  },
-  readOnly: false,
-  renderFinalNewline: true,
-  renderLineHighlight: "none",
-  revealHorizontalRightPadding: 30,
-  roundedSelection: true,
-  rulers: [],
-  scrollBeyondLastLine: false,
-  selectionClipboard: true,
-  selectOnLineNumbers: true,
-  showUnused: true,
-  snippetSuggestions: "none",
-  theme: "vs-dark",
-  wordBasedSuggestions: false,
-  wordWrap: "off",
-  wordWrapColumn: 80,
-  wrappingIndent: "same",
-}
-
-const inactiveEditorSettings: NonNullable<MonacoEditorProps["options"]> = {
-  ...activeEditorSettings,
-  readOnly: true,
-}
-
-const diffEditorSettings = {
-  ...activeEditorSettings,
-  renderSideBySide: true,
-}
-
-// function editorWillMount(monaco: typeof monacoEditor) {
-//   const adapter = new GUIDEditorServiceAdapter(monaco)
-//   monaco.languages.registerLinkProvider("json", adapter)
-//   monaco.languages.registerHoverProvider("json", adapter)
-// }

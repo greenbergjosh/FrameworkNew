@@ -11,13 +11,15 @@
     "inlineSourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "api": ["./api"],
-      "assets": ["./assets"],
-      "components": ["./components"],
-      "constants": ["./constants"],
-      "hooks": ["./hooks"],
-      "providers": ["./providers"],
-      "screens": ["./screens"]
+      "@types/*": ["./@types/*"],
+      "assets/*": ["./assets/*"],
+      "components/*": ["./components/*"],
+      "constants/*": ["./constants/*"],
+      "data/*": ["./data/*"],
+      "hooks/*": ["./hooks/*"],
+      "routes/*": ["./routes/*"],
+      "screens/*": ["./screens/*"],
+      "styles/*": ["./styles/*"]
     }
   }
 }

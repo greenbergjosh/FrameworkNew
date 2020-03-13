@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react"
 import { StyleProp, Text, View, ViewStyle } from "react-native"
-import { Colors, styles } from "constants"
+import { Colors, styles } from "styles"
 
 export interface BadgeProps {
   style?: StyleProp<ViewStyle>

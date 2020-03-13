@@ -2,7 +2,7 @@ import React from "react"
 import { Text } from "react-native"
 import { NavigationSwitchScreenProps } from "react-navigation"
 import { HeaderLogo } from "components/HeaderLogo"
-import { styles } from "constants"
+import { styles } from "styles"
 import { Flex } from "@ant-design/react-native"
 
 interface TourScreenProps extends NavigationSwitchScreenProps {}

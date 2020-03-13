@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Utility.DataLayer;
 using Utility.EDW.Logging;
 using Utility.EDW.Queueing;
@@ -29,7 +29,7 @@ namespace Utility
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
         public bool TraceLogging = true;
         public bool TraceToConsole = false;
-        public IMemoryCache Cache;
+        public IDistributedCache Cache;
 
         public FrameworkWrapper(string[] commandLineArgs = null)
         {

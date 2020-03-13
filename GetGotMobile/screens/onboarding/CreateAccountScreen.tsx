@@ -1,6 +1,7 @@
 import { HeaderLogo } from "components/HeaderLogo"
 import { LegalAgreement } from "components/LegalAgreement"
-import { routes, styles } from "constants"
+import { routes } from "routes"
+import { styles } from "styles"
 import { useOnBoardingContext } from "data/contextProviders/onBoarding.contextProvider"
 import React from "react"
 import { Text, View } from "react-native"

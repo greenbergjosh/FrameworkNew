@@ -18,6 +18,11 @@ namespace SignalApiLib
         public void Config(FrameworkWrapper fw)
         {
             _fw = fw;
+            ReInitialize();
+        }
+
+        public void ReInitialize()
+        {
             _genericSourceHandler = new Generic(_fw, _fw.StartupConfiguration.GetE("Config/GenericHandlers"));
             _sourceHandlers = new Dictionary<string, ISourceHandler>
             {
@@ -26,33 +31,33 @@ namespace SignalApiLib
             };
         }
 
-        public async Task Run(HttpContext ctx)
+        public async Task Run(HttpContext context)
         {
             var requestFromPost = "";
-            var sourceStr = ctx.Request.Path.Value.Trim('/').ToLower();
+            var sourceStr = context.Request.Path.Value.Trim('/').ToLower();
 
             if (sourceStr.StartsWith("setTrace"))
             {
                 _fw.TraceLogging = sourceStr.EndsWith("true");
-                await ctx.WriteSuccessRespAsync(JsonWrapper.Serialize(new { trace = _fw.TraceLogging }));
+                await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { trace = _fw.TraceLogging }));
                 return;
             }
 
             try
             {
-                requestFromPost = await ctx.GetRawBodyStringAsync();
+                requestFromPost = await context.GetRawBodyStringAsync();
 
                 await _fw.Trace($"{nameof(Run)}:{sourceStr}", requestFromPost);
 
-                var res = await HandleRequest(sourceStr, requestFromPost, ctx);
+                var res = await HandleRequest(sourceStr, requestFromPost, context);
 
-                if (res.IsNullOrWhitespace()) await ctx.WriteFailureRespAsync(_defaultFailureResponse);
-                else await ctx.WriteSuccessRespAsync(res);
+                if (res.IsNullOrWhitespace()) await context.WriteFailureRespAsync(_defaultFailureResponse);
+                else await context.WriteSuccessRespAsync(res);
             }
             catch (Exception ex)
             {
                 await _fw.Error("Start", $@"{requestFromPost}::{ex}");
-                await ctx.WriteFailureRespAsync(_defaultFailureResponse);
+                await context.WriteFailureRespAsync(_defaultFailureResponse);
             }
         }
 

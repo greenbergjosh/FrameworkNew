@@ -1,6 +1,6 @@
 import React from "react"
 import { H3 } from "components/Markup"
-import { Colors, styles } from "constants"
+import { Colors, styles } from "styles"
 import { NavigationState, Route, TabBar, TabView } from "react-native-tab-view"
 import { Dimensions } from "react-native"
 import { Badge } from "components/Badge"

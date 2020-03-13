@@ -1,8 +1,8 @@
-import { FlatList, Image, TouchableOpacity, View, Text } from "react-native"
-import { Colors } from "constants"
+import { FlatList, Image, TouchableOpacity, View } from "react-native"
+import { Colors } from "styles"
 import React from "react"
 import { Flex, Icon, WhiteSpace } from "@ant-design/react-native"
-import { H2, H3 } from "./Markup"
+import { H3 } from "./Markup"
 
 interface GridImageProps {
   image: ImageType

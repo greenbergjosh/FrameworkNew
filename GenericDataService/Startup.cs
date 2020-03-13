@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -24,7 +27,7 @@ namespace GenericDataService
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options =>
+            _ = services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
                     builder => builder
@@ -36,13 +39,14 @@ namespace GenericDataService
                     // domain explicitly, which is what we were doing before the upgrade above.
                     .SetIsOriginAllowed(x => { return true; })
                     );
-            });
-            services.Configure<CookiePolicyOptions>(options =>
+            })
+            .Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => false;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            })
+            .AddDistributedMemoryCache();
         }
 
         public void UnobservedTaskExceptionEventHandler(object obj, UnobservedTaskExceptionEventArgs args) => File.AppendAllText("DataService.log", $"{DateTime.Now}::{args}{Environment.NewLine}");
@@ -60,7 +64,7 @@ namespace GenericDataService
             {
                 fw = new FrameworkWrapper
                 {
-                    Cache = app.ApplicationServices.GetService<IMemoryCache>()
+                    Cache = app.ApplicationServices.GetService<IDistributedCache>()
                 };
 
                 using (var dynamicContext = new AssemblyResolver(fw.StartupConfiguration.GetS("Config/DataServiceAssemblyFilePath"), fw.StartupConfiguration.GetL("Config/AssemblyDirs").Select(d => d.GetS(""))))
@@ -102,6 +106,8 @@ namespace GenericDataService
 
             HealthCheckHandler.Initialize(fw).GetAwaiter().GetResult();
 
+            var chunkHandler = new ChunkedFileHandler(new IDistributedCacheChunkStorageProvider(fw.Cache));
+
             app.Run(async (context) =>
             {
                 try
@@ -134,7 +140,7 @@ namespace GenericDataService
                         {
                             try
                             {
-                                if(_dataServiceHasReInit) DataService.ReInitialize();
+                                if (_dataServiceHasReInit) DataService.ReInitialize();
                                 await context.WriteSuccessRespAsync(JsonWrapper.Serialize(new { result = "success" }), Encoding.UTF8);
                             }
                             catch (Exception e)
@@ -155,6 +161,25 @@ namespace GenericDataService
                     else if (await HealthCheckHandler.Handle(context, fw))
                     {
                         return;
+                    }
+
+                    if (context.Request.HasFormContentType && context.Request.Form.Files.Count == 1 && context.Request.Form.ContainsKey("chunkIndex") && context.Request.Form.ContainsKey("totalChunk"))
+                    {
+                        var chunkIndex = int.Parse(context.Request.Form["chunkIndex"]);
+                        var totalChunks = int.Parse(context.Request.Form["totalChunk"]);
+                        var filename = context.Request.Form.Files[0].FileName;
+                        var fileChunk = context.Request.Form.Files[0].OpenReadStream();
+
+                        var completedFileStream = await chunkHandler.HandleChunk(filename, chunkIndex, totalChunks, fileChunk);
+                        if (completedFileStream != null)
+                        {
+                            context.Items[filename] = completedFileStream;
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 200;
+                            return;
+                        }
                     }
 
                     await this.DataService.Run(context);

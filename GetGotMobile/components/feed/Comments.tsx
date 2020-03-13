@@ -1,6 +1,6 @@
 import React from "react"
 import { FlatList, Text, View } from "react-native"
-import { Colors, FontWeights, styles, Units } from "constants"
+import { Colors, FontWeights, styles, Units } from "styles"
 import { Flex } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
 import { SMALL } from "components/Markup"

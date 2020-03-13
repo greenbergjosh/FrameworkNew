@@ -1,0 +1,23 @@
+.hideDropArea {
+  display: inline-block;
+
+  .e-upload {
+    border: 0;
+
+    .e-file-select-wrap {
+      padding: 0;
+    }
+
+    ul {
+      border: 1px solid #ddd;
+    }
+
+    .e-file-drop {
+      display: none;
+    }
+  }
+}
+
+.hideFilesList {
+  border: dotted 8px greenyellow;
+}

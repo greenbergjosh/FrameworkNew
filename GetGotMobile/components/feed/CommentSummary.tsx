@@ -1,6 +1,7 @@
 import React from "react"
 import { Text, View } from "react-native"
-import { Colors, routes, styles, Units } from "constants"
+import { routes } from "routes"
+import { Colors, styles, Units } from "styles"
 import { Flex, WhiteSpace } from "@ant-design/react-native"
 import Avatar from "components/Avatar"
 import TouchIcon from "components/TouchIcon"

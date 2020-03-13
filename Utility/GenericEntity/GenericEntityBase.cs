@@ -67,6 +67,11 @@ namespace Utility.GenericEntity
             throw new NotImplementedException();
         }
 
+        public virtual IEnumerable<(string key, IGenericEntity entity)> GetDe(string path)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual object Get(string path)
         {
             return this[path];

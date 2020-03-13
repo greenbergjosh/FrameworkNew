@@ -1,7 +1,7 @@
 import React, { ReactElement } from "react"
 import { Text, View } from "react-native"
 import { Flex } from "@ant-design/react-native"
-import { Colors, styles } from "constants"
+import { Colors, styles } from "styles"
 import Avatar from "components/Avatar"
 import TouchText from "components/TouchText"
 

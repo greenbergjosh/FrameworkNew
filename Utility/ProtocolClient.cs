@@ -156,13 +156,21 @@ namespace Utility
             return rs;
         }
 
-        public static async Task<Dictionary<string, object>> UnzipUnbuffered(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory)
+        public static async Task<Dictionary<string, object>> UnzipUnbuffered(string fileName, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string fileSourceDirectory, string fileDestinationDirectory, int? timeout = null)
         {
             var ufn = Guid.NewGuid().ToString();
             var results = new Dictionary<string, object>();
             try
             {
-                await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn);
+                if (timeout.HasValue)
+                {
+                    await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn, timeout.Value);
+                }
+                else
+                {
+                    await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn);
+                }
+
 
                 var dir = new DirectoryInfo(fileDestinationDirectory + "\\" + ufn);
                 foreach (var f in dir.GetFiles())

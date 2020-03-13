@@ -1,5 +1,5 @@
 import { Text } from "react-native"
-import { FontWeights, styles, Units } from "constants"
+import { FontWeights, styles, Units } from "styles"
 import React from "react"
 
 interface MarkdownProps {

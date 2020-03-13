@@ -27,7 +27,13 @@ namespace SignalApiLib.SourceHandlers
 
             if (Jw.TryParseObject(requestFromPost) == null)
             {
-                await _fw.Error(_logCtx, $"Invalid post body: {requestFromPost ?? "null"}");
+                var body = requestFromPost ?? "<null>";
+                if (string.IsNullOrWhiteSpace(body))
+                {
+                    body = "<empty>";
+                }
+
+                await _fw.Error(_logCtx, $"Invalid post body: {body} queryString: {ctx.Request.QueryString.Value}");
                 return result;
             }
 

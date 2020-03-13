@@ -1,6 +1,7 @@
 import { ActivityIndicator, Button, Flex, InputItem, WhiteSpace } from "@ant-design/react-native"
 import { LegalAgreement } from "components/LegalAgreement"
-import { routes, styles, Colors } from "constants"
+import { routes } from "routes"
+import { styles, Colors } from "styles"
 import { useAuthContext } from "data/contextProviders/auth.contextProvider"
 import React from "react"
 import { Alert, Text, View } from "react-native"

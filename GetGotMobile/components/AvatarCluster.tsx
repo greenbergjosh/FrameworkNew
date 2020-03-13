@@ -1,8 +1,7 @@
 import React from "react"
 import Avatar from "components/Avatar"
 import { TouchableOpacity, View } from "react-native"
-import { Colors, Units } from "../constants/unit.constants"
-import { styles } from "constants"
+import { Colors, Units, styles } from "styles"
 
 interface AvatarClusterProps {
   users: UserType[]
