@@ -1810,7 +1810,7 @@ namespace UnsubLib
 
                     var res = await Data.CallFn("Signal", "inSignalGroups", args);
 
-                    emailsNotFound = res?.GetL("out").Select(g => g.GetS("")).ToList();
+                    emailsNotFound = emailsNotFound.Except(res?.GetL("in").Select(g => g.GetS(""))).ToList();
                 }
                 catch (Exception e)
                 {
