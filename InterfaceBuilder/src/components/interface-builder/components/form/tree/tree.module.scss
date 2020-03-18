@@ -1,0 +1,26 @@
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  .tree-component-delete-button {
+    opacity: 0;
+    background-color: transparent;
+    border: 0;
+    padding: 0px !important;
+    height: auto;
+  }
+
+  .ant-tree-node-content-wrapper:hover .tree-component-delete-button {
+    opacity: 1;
+  }
+
+  .tree-component-delete-divider {
+    opacity: 0;
+  }
+
+  .ant-tree-node-content-wrapper:hover .tree-component-delete-divider {
+    opacity: 1;
+  }
+}

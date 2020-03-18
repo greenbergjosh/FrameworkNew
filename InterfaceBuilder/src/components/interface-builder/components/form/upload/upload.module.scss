@@ -1,0 +1,26 @@
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  .hideDropArea {
+    display: inline-block;
+
+    .e-upload {
+      border: 0;
+
+      .e-file-select-wrap {
+        padding: 0;
+      }
+
+      ul {
+        border: 1px solid #ddd;
+      }
+
+      .e-file-drop {
+        display: none;
+      }
+    }
+  }
+}

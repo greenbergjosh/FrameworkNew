@@ -1,5 +1,6 @@
-import classNames from "classnames"
 import React from "react"
+import classNames from "classnames"
+import "../dnd.module.scss"
 
 export interface DroppablePlaceholderProps {
   className?: string

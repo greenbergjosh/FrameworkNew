@@ -6,6 +6,7 @@ import TopMenu from "./components/nav/top-menu"
 import SideMenu from "./components/nav/side-menu"
 import DndExample from "./components/examples/dnd"
 import "./App.css"
+import "@opg/interface-builder/dist/main.css"
 
 const { Header, Content, Sider } = Layout
 registry.register(antComponents)
@@ -24,7 +25,7 @@ const App: React.FC = () => {
         <Layout style={{ padding: "0 24px 24px" }}>
           <Breadcrumb style={{ margin: "16px 0" }}>
             <Breadcrumb.Item>Examples</Breadcrumb.Item>
-            <Breadcrumb.Item>Drag-n-Drop</Breadcrumb.Item>
+            <Breadcrumb.Item>Form</Breadcrumb.Item>
           </Breadcrumb>
           <Content>
             <DndExample />

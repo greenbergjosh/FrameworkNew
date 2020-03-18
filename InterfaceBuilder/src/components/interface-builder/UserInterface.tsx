@@ -20,7 +20,7 @@ import { InterfaceComponentChoices } from "./InterfaceComponentChoices"
 import { moveInList } from "./lib/move-in-list"
 import { ManageComponentModal } from "./manage/ManageComponentModal"
 import { ComponentRegistryContext, registry } from "./registry"
-import "./user-interface.scss"
+import "./user-interface.module.scss"
 import { UserInterfaceContext, UserInterfaceContextManager } from "./UserInterfaceContextManager"
 import { DataPathContext } from "./util/DataPathContext"
 // eslint-disable-line @typescript-eslint/camelcase

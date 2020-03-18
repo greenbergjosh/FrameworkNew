@@ -1,0 +1,84 @@
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  .dnd-droppable {
+    display: inherit;
+    position: relative;
+    border: 1px solid transparent;
+    padding: 5px 5px 15px 5px;
+    border-radius: 10px;
+
+    transition: 0.1s padding-bottom ease-out;
+
+    &.accept-drop {
+      border: 1px dashed lightgray;
+      padding-bottom: 15px;
+    }
+
+    &.has-placeholder {
+      padding-bottom: 105px;
+
+      > .dnd-draggable.placeholder-above > * {
+        transform: translateY(75px);
+      }
+
+      > .dnd-draggable.placeholder-beside-left > * {
+        transform: translateX(75px);
+      }
+    }
+
+    .droppable-placeholder {
+      &:not(.empty-container) {
+        position: absolute;
+      }
+
+      &.horizontal {
+        transform: rotate(270deg);
+      }
+
+      height: 65px;
+      background-color: #f2f4f5;
+      border: none;
+      border-radius: 10px;
+      transition: 0.1s top ease-out;
+      z-index: 10;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .dnd-draggable {
+    position: relative;
+    padding: 0;
+    cursor: move;
+
+    & > * {
+      transition: 0.1s transform ease-out;
+    }
+
+    .dnd-draggable-edit-buttons {
+      opacity: 0;
+      transition: 0.1s opacity ease-out;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.5);
+
+      .dnd-draggable-edit-title {
+        margin-right: 15px;
+      }
+    }
+
+    &:hover > .dnd-draggable-edit-buttons {
+      opacity: 1;
+    }
+  }
+}

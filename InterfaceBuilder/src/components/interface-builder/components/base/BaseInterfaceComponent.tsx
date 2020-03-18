@@ -33,6 +33,7 @@ export interface ComponentDefinitionNamedProps {
   hideLabel?: boolean
   label?: string
   visibilityConditions?: JSONObject
+  [key: string]: unknown
 }
 
 export interface ComponentDefinitionRecursiveProp {

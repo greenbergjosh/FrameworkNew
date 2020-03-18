@@ -16,6 +16,7 @@ import {
   GroupSettingsModel,
   SortDescriptorModel,
   SortSettingsModel,
+  PageSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import {
   BaseInterfaceComponent,
@@ -49,6 +50,8 @@ interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   rowDetails?: ComponentDefinition[]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+  defaultCollapseAll?: boolean
+  defaultPageSize?: number | string
 }
 
 interface TableInterfaceComponentDisplayModeProps extends ITableInterfaceComponentProps {
@@ -94,6 +97,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       rowDetails,
       userInterfaceData,
       valueKey,
+      defaultCollapseAll,
+      defaultPageSize,
     } = this.props
 
     return (
@@ -200,7 +205,16 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     return acc
                   }, [] as SortDescriptorModel[]),
                 }
-
+                const pageSettings: PageSettingsModel | undefined =
+                  defaultPageSize === "All"
+                    ? {
+                      pageSize: 999999,
+                    }
+                    : typeof defaultPageSize === "number"
+                    ? {
+                      pageSize: defaultPageSize,
+                    }
+                    : undefined
                 const groupSettings: GroupSettingsModel = {
                   columns: sortBy("groupOrder", columns).reduce((acc, column) => {
                     if (column.field && typeof column.groupOrder !== "undefined") {
@@ -224,9 +238,11 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     columns={columns}
                     contextData={userInterfaceData}
                     data={dataArray}
+                    groupSettings={groupSettings}
                     loading={!!loading}
                     sortSettings={sortSettings}
-                    groupSettings={groupSettings}
+                    pageSettings={pageSettings}
+                    defaultCollapseAll={defaultCollapseAll}
                     detailTemplate={
                       rowDetails && rowDetails.length
                         ? (parentData: any) => {
@@ -318,6 +334,7 @@ const editComponents: ComponentDefinition[] = [
             defaultValue: "string",
           },
           ...tableDataTypes.flatMap((type) =>
+            // @ts-ignore
             type.form.map((formItem) => ({
               ...formItem,
               visibilityConditions: formItem.visibilityConditions

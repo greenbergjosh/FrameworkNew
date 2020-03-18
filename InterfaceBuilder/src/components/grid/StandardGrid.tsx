@@ -168,12 +168,14 @@ export interface StandardGridComponentProps {
   allowDeleting?: boolean
   allowEditing?: boolean
   columns: ColumnModel[]
-  data: JSONRecord[]
   contextData?: JSONRecord
+  data: JSONRecord[]
+  defaultCollapseAll?: boolean
   detailTemplate?: string | Function | any
-  loading?: boolean
-  sortSettings?: SortSettingsModel
   groupSettings?: GroupSettingsModel
+  loading?: boolean
+  pageSettings?: PageSettingsModel
+  sortSettings?: SortSettingsModel
   //   editSettingsTemplate?: string | Function | any
   //   groupSettingsCaptionTemplate?: string | Function | any
   //   onToolbarClick: (args?: ClickEventArgs) => void
@@ -191,9 +193,11 @@ export const StandardGrid = React.forwardRef(
       columns,
       contextData,
       data,
+      defaultCollapseAll,
       detailTemplate,
       groupSettings,
       loading,
+      pageSettings,
       sortSettings,
     }: StandardGridComponentProps,
     ref?: React.Ref<GridComponent>
@@ -416,9 +420,12 @@ export const StandardGrid = React.forwardRef(
       ] as AggregateRowModel[]
     }, [usableColumns])
 
-    const dataBound = React.useCallback(() => {
-      ref && typeof ref === "object" && ref.current && ref.current.autoFitColumns()
-    }, [ref, usableData])
+    const dataBound = () => {
+      //   typeof ref === "object" && ref!.current!.autoFitColumns()
+      if (defaultCollapseAll) {
+        typeof ref === "object" && ref!.current!.groupModule.collapseAll()
+      }
+    }
 
     const editSettings = { allowAdding, allowDeleting, allowEditing, mode: "Dialog" as EditMode }
     const editingToolbarItems = ([] as string[]).concat(
@@ -440,12 +447,16 @@ export const StandardGrid = React.forwardRef(
           actionComplete={actionComplete}
           aggregates={aggregates}
           columns={usableColumns}
-          // dataBound={dataBound}
+          dataBound={dataBound}
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
           groupSettings={{ ...commonGridOptions.groupSettings, ...groupSettings }}
           sortSettings={sortSettings}
+          pageSettings={{
+            ...commonGridOptions.pageSettings,
+            ...pageSettings,
+          }}
           toolbarClick={handleToolbarClick}>
           <Inject services={gridComponentServices} />
         </PureGridComponent>

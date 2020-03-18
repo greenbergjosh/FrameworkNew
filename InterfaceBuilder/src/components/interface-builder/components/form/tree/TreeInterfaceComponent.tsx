@@ -18,7 +18,7 @@ import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { ConfirmableDeleteButton } from "./confirmable-delete"
-import "./tree-interface-component.scss"
+import "./tree.module.scss"
 import { treeManageForm } from "./tree-manage-form"
 import {
   AntTreeNodeDropEvent,
