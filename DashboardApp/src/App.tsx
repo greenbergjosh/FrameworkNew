@@ -10,6 +10,7 @@ import { CSSTransition, TransitionGroup } from "react-transition-group"
 import { PersistGate } from "redux-persist/integration/react"
 import styles from "./App.module.css"
 import "./App.scss"
+import "@opg/interface-builder/dist/main.css"
 import { None, Some } from "./data/Option"
 import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
@@ -37,7 +38,7 @@ function AppLoadingScreen({ title }: AppLoadingScreenProps) {
       </Helmet>
 
       <div className={`${styles.appLoadingIndicator}`}>
-        <Spin size="large" tip={"Initializing OnPoint Admin" + (title ? `... ${title}` : "")} />
+        <Spin size="large" tip={`Initializing OnPoint Admin${  title ? `... ${title}` : ""}`} />
       </div>
     </>
   )

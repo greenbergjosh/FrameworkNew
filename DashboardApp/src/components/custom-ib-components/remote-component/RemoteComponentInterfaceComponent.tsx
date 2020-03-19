@@ -77,6 +77,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
       const { loadById } = this.context
       // If there is a valueKey, pull from the nested data
       const data = (valueKey ? get(valueKey, userInterfaceData) : userInterfaceData) || {}
+      // @ts-ignore
       const remoteConfig = loadById(remoteId)
       if (remoteConfig) {
         const layout = tryCatch(
@@ -109,14 +110,13 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<
           )
 
           return <div style={{ marginLeft: indented ? 15 : 0 }}>{wrappedContent}</div>
-        } else {
-          return (
-            <Alert
-              type="warning"
-              message={`Remote Component ${remoteConfig.name} does not have a layout`}
-            />
-          )
         }
+        return (
+          <Alert
+            type="warning"
+            message={`Remote Component ${remoteConfig.name} does not have a layout`}
+          />
+        )
       }
     }
 
