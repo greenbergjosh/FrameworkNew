@@ -42,6 +42,12 @@ export interface Effects {
     params: JSONRecord | JSONArray
   }): Promise<any>
 
+  executeQueryUpdate(payload: {
+    resultURI: string
+    query: QueryConfig
+    params: JSONRecord | JSONArray
+  }): Promise<any>
+
   executeHTTPRequestQuery(payload: {
     resultURI: string
     query: HTTPRequestQueryConfig
@@ -120,6 +126,50 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
             )
           )
       }
+    },
+    executeQueryUpdate({ resultURI: lookupKey, query, params }) {
+      return dispatch.remoteDataClient
+        .reportQueryUpdate({
+          query: query.query,
+          params,
+        })
+        .then((x) =>
+          x.fold(
+            Left((error) => {
+              dispatch.remoteDataClient.defaultHttpErrorHandler(error)
+              throw error
+            }),
+            Right((ApiResponse) =>
+              ApiResponse({
+                OK(payload) {
+                  dispatch.feedback.notify({
+                    type: "success",
+                    message: "Successfully saved your changes"
+                  })
+                },
+                Unauthorized() {
+                  dispatch.logger.logError("unauthed")
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
+                    message: "You do not have permission to execute this query",
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
+                },
+                ServerException(err) {
+                  dispatch.logger.logError(err.reason)
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
+                    message: `An error occurred while executing this query: ${err.reason}`,
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
+                },
+              })
+            )
+          )
+        )
+
     },
     executeHTTPRequestQuery({ resultURI: lookupKey, query, params }) {
       return dispatch.remoteDataClient

@@ -7,7 +7,7 @@ import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import { Helmet } from "react-helmet"
 import { FilteredMenu } from "../../../../../../components/filtered-menu/FilteredMenu"
-import { Query, QueryProps } from "../../../../../../components/query/Query"
+import { Query} from "../../../../../../components/query/Query"
 import { useRematch } from "../../../../../../hooks"
 import { PartnerStatus } from "../../../../../../state/import-ingestion-report"
 import { WithRouteProps } from "../../../../../../state/navigation"
@@ -18,6 +18,7 @@ import { EXPORT_STATUS_QUERY_CONFIG_ID, INGESTION_STATUS_QUERY_CONFIG_ID, PARTNE
 import ImportIngestionTable from "./ImportIngestionTable"
 import ExportTable from "./ExportTable"
 import "./import-ingestion.scss"
+import { QueryProps } from "../../../../../../components/query/types"
 
 /* *************************
  * INTERFACES

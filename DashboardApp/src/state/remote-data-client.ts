@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
 import JSON5 from "json5"
@@ -10,6 +11,7 @@ import { QueryConfig } from "../data/Report"
 import { HttpError, Method, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
+import { ApiResponse } from "../data/AdminApi"
 
 declare module "./store.types" {
   interface AppModels {
@@ -82,6 +84,11 @@ export interface Effects {
     query: QueryConfig["query"]
     params: JSONRecord | JSONArray
   }): Promise<Either<HttpError, AdminApi.ApiResponse<Array<JSONRecord>>>>
+
+  reportQueryUpdate(payload: {
+    query: QueryConfig["query"]
+    params: JSONRecord | JSONArray
+  }): Promise<Either<HttpError, AdminApi.ApiResponse<JSONRecord>>>
 
   httpRequest(payload: {
     uri: string
@@ -418,6 +425,28 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       }).then((result) =>
         result.map(
           (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
+            const p = payload[query]
+            return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
+          }
+        )
+      )
+    },
+
+    async reportQueryUpdate({ query, params }, { remoteDataClient }) {
+      return request({
+        body: {
+          i: remoteDataClient.token,
+          [query]: params,
+        },
+        expect: AdminApi.reportResponsePayloadCodecs.update(query),
+        headers: {},
+        method: "POST",
+        timeout: none,
+        url: apiUrl,
+        withCredentials: false,
+      }).then((result) =>
+        result.map(
+          (payload): AdminApi.ApiResponse<JSONRecord> => {
             const p = payload[query]
             return p.r === 0 ? AdminApi.OK(p.result) : AdminApi.mkAdminApiError(p.r)
           }

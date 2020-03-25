@@ -17,6 +17,7 @@ export const createUIContext = (
   configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
 ): AdminUserInterfaceContextManager => ({
   executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
+  executeQueryUpdate: dispatch.reports.executeQueryUpdate.bind(dispatch.reports),
   reportDataByQuery,
   loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
     return configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []

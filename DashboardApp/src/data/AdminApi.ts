@@ -99,6 +99,15 @@ export const reportResponsePayloadCodecs = {
         ErrorPayload,
       ]),
     }),
+  update: (query: string) =>
+    iots.type({
+      [query]: iots.type({
+        r: iots.literal(0),
+        result: iots.type({
+          result: iots.literal("success")
+        }),
+      }),
+    }),
 }
 
 export const genericArrayPayloadCodec = iots.array(JSONRecordCodec)

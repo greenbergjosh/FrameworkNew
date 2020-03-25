@@ -2,7 +2,7 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import React from "react"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { QueryConfig } from "../../../data/Report"
-import { Query, QueryChildProps, QueryProps } from "../../query/Query"
+import { Query} from "../../query/Query"
 import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
@@ -13,6 +13,7 @@ import {
   UserInterfaceContext,
   UserInterfaceProps,
 } from "@opg/interface-builder"
+import { QueryChildProps, QueryProps } from "../../query/types"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
@@ -123,6 +124,8 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
     )
 
     return this.props.queryType === "remote-config" ? (
+      <fieldset style={{ color: "violet", border: "dotted 2px violet", padding: 10}}>
+        <legend>QueryInterfaceComponent: remote-config</legend>
       <Query
         dataKey={valueKey}
         inputData={userInterfaceData}
@@ -132,7 +135,10 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         remoteDataFilter={remoteDataFilter}>
         {children}
       </Query>
+      </fieldset>
     ) : (
+      <fieldset style={{ color: "violet", border: "dotted 2px violet", padding: 10}}>
+        <legend>QueryInterfaceComponent: remote-query</legend>
       <Query
         dataKey={valueKey}
         inputData={userInterfaceData}
@@ -141,6 +147,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         remoteQuery={this.props.remoteQuery}>
         {children}
       </Query>
+      </fieldset>
     )
   }
 }

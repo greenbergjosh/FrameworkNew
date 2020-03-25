@@ -5,5 +5,6 @@ import { PersistedConfig } from "./GlobalConfig.Config"
 export interface AdminUserInterfaceContextManager
   extends UserInterfaceContextManager<PersistedConfig> {
   executeQuery: AppDispatch["reports"]["executeQuery"]
+  executeQueryUpdate: AppDispatch["reports"]["executeQueryUpdate"]
   reportDataByQuery: AppState["reports"]["reportDataByQuery"]
 }
