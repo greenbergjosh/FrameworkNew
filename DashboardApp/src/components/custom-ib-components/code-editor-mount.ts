@@ -1,6 +1,5 @@
 import { store } from "../../state/store"
-import { IDisposable, IPosition, Range } from "monaco-editor"
-import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
+import { editor, languages, IDisposable, IPosition, Range, CancellationToken } from "monaco-editor"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 
@@ -9,25 +8,25 @@ type guidRangeItem = {
   guid: string
 }
 
-export const getCustomEditorConstructionOptions = (monaco: typeof monacoEditor): IDisposable[] => {
+export const getCustomEditorConstructionOptions = (monaco: editor.IStandaloneCodeEditor): IDisposable[] => {
   const adapter = new GUIDEditorServiceAdapter(monaco, store)
-  const linkDisposable = monaco.languages.registerLinkProvider("json", adapter)
-  const hoverDisposable = monaco.languages.registerHoverProvider("json", adapter)
+  const linkDisposable = languages.registerLinkProvider("json", adapter)
+  const hoverDisposable = languages.registerHoverProvider("json", adapter)
   return [linkDisposable, hoverDisposable]
 }
 
 class GUIDEditorServiceAdapter
-  implements monacoEditor.languages.LinkProvider, monacoEditor.languages.HoverProvider {
-  constructor(private monaco: typeof monacoEditor, private applicationStore: typeof store) {}
+  implements languages.LinkProvider, languages.HoverProvider {
+  constructor(private monaco: editor.IStandaloneCodeEditor, private applicationStore: typeof store) {}
 
   provideLinks(
-    model: monacoEditor.editor.ITextModel,
-    token: monacoEditor.CancellationToken
-  ): monacoEditor.languages.ProviderResult<monacoEditor.languages.ILinksList> {
+    model: editor.ITextModel,
+    token: CancellationToken
+  ): languages.ProviderResult<languages.ILinksList> {
     return { links: extractGuidRangeItems(model).map((item) => item.link)}
   }
 
-  provideHover(model: monacoEditor.editor.ITextModel, position: IPosition) {
+  provideHover(model: editor.ITextModel, position: IPosition) {
     const hoveredGuid = extractGuidRangeItems(model).find(({ link, guid }) =>
       link.range.containsPosition(position)
     )
@@ -57,7 +56,7 @@ class GUIDEditorServiceAdapter
   }
 }
 
-function extractGuidRangeItems(model: monacoEditor.editor.ITextModel): guidRangeItem[] {
+function extractGuidRangeItems(model: editor.ITextModel): guidRangeItem[] {
   const guidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi
   const text = model.getValue()
   let match

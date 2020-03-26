@@ -3,11 +3,34 @@ import { Button, Card, Icon } from "antd"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import { editor, IDisposable, MarkerSeverity } from "monaco-editor"
-import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
-import MonacoEditor, { MonacoDiffEditor, MonacoEditorProps } from "react-monaco-editor"
+import MonacoEditor, { DiffEditor, EditorProps, ControlledEditor } from "@monaco-editor/react"
 import { None, Some } from "../../../lib/Option"
 // import { pathTypeLib } from "./pathTypeLib"
+
+/* ########################################################################
+ *
+ * ABOUT @monaco-editor/react and service workers
+ *
+ * We use @monaco-editor/react instead of react-monaco-editor because
+ * this lib does not require a webpack plugin, and this repo uses rollup.
+ * https://github.com/suren-atoyan/monaco-react
+ *
+ * Register language service workers (below) using the "manual" method.
+ * https://github.com/Microsoft/monaco-editor/blob/master/docs/integrate-esm.md#option-2-using-plain-webpack
+ * https://github.com/microsoft/monaco-editor-samples/blob/master/browser-esm-webpack-small/webpack.config.js
+ */
+;(window as any).MonacoEnvironment = {
+  getWorkerUrl: function(moduleId: string, label: string) {
+    if (label === "json") {
+      return "/monaco/json.worker.js"
+    }
+    if (label === "typescript" || label === "javascript") {
+      return "/monaco/ts.worker.js"
+    }
+    return "/monaco/editor.worker.js"
+  },
+}
 
 /*******************************
  * Types & Interfaces
@@ -25,7 +48,7 @@ export const editorLanguages = {
 }
 export const EditorLangCodec = iots.keyof(editorLanguages)
 
-interface Props extends Required<Pick<MonacoEditorProps, "height" | "width">> {
+interface Props extends Required<Pick<EditorProps, "height" | "width">> {
   /** the read-only code to display */
   content: string
   /** the text being edited */
@@ -35,7 +58,7 @@ interface Props extends Required<Pick<MonacoEditorProps, "height" | "width">> {
   onChange?: (x: { value: string; errors: Option<string[]> }) => void
 }
 
-export type CustomEditorWillMount = (monaco: typeof monacoEditor) => IDisposable[]
+export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => IDisposable[]
 
 /*******************************
  * Constants
@@ -109,7 +132,7 @@ const diffEditorSettings = {
 export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Element {
   const [state, setState] = React.useState({
     showDiff: false,
-    monaco: null as typeof monacoEditor | null,
+    monaco: null as editor.IStandaloneCodeEditor | null,
   })
 
   const editorProps = React.useMemo(() => {
@@ -129,14 +152,15 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
     )
   }, [props.content, props.contentDraft])
 
-  const onChange = (draft: string) => {
+  //type ControlledEditorOnChange = (ev: monacoEditor.editor.IModelContentChangedEvent, value: string | undefined) => string | void
+  const onChange = (ev: editor.IModelContentChangedEvent, value: string | undefined) => {
     if (props.onChange) {
-      return props.onChange({ value: draft, errors: none })
+      return props.onChange({ value: value!, errors: none })
     }
   }
 
   const handleEditorWillMount = React.useCallback(
-    (monaco: typeof monacoEditor, setLocalState) => {
+    (monaco: editor.IStandaloneCodeEditor, setLocalState) => {
       const disposables = willMountRegistry.reduce(
         (acc: IDisposable[], customEditorWillMount: CustomEditorWillMount) => [
           ...acc,
@@ -167,10 +191,10 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
        * Monkey patch setModelMarkers
        */
       //@ts-ignore
-      if (!monaco.editor.setModelMarkers._monkeyPatched) {
-        const oldSetModelMarkers = monaco.editor.setModelMarkers
-        monaco.editor.setModelMarkers = (model, language, markers) => {
-          oldSetModelMarkers.call(monaco.editor, model, language, markers)
+      if (!editor.setModelMarkers._monkeyPatched) {
+        const oldSetModelMarkers = editor.setModelMarkers
+        editor.setModelMarkers = (model, language, markers) => {
+          oldSetModelMarkers.call(editor, model, language, markers)
           const errors = markers
             .filter((marker) => marker.severity === MarkerSeverity.Error)
             .map(
@@ -185,7 +209,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
           }
         }
         //@ts-ignore
-        monaco.editor.setModelMarkers._monkeyPatched = true
+        editor.setModelMarkers._monkeyPatched = true
       }
       setLocalState({ disposables })
       setState({ ...state, monaco })
@@ -210,18 +234,22 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
               <Button disabled>{props.language}</Button>
             </Button.Group>
             {state.showDiff ? (
-              <MonacoDiffEditor theme="vs-dark" {...props} {...editorProps} onChange={onChange} />
+              // @ts-ignore
+              <DiffEditor theme="vs-dark" {...props} {...editorProps} onChange={onChange} />
             ) : (
               <Component
                 initialState={{ disposables: [] as IDisposable[] }}
                 willUnmount={({ state }) => state.disposables.forEach((f) => f.dispose())}>
                 {({ setState: setLocalState }) => (
-                  <MonacoEditor
+                  <ControlledEditor
                     theme="vs-dark"
                     {...props}
                     {...editorProps}
                     onChange={onChange}
-                    editorWillMount={(monaco) => handleEditorWillMount(monaco, setLocalState)}
+                    editorDidMount={(
+                      getEditorValue: () => string,
+                      editor: editor.IStandaloneCodeEditor
+                    ) => handleEditorWillMount(editor, setLocalState)}
                   />
                 )}
               </Component>
