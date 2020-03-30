@@ -13,6 +13,7 @@ import { JSONRecord } from "../../../data/JSON"
 import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
 import { cheapHash } from "../../../lib/json"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { set } from "lodash/fp"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -77,15 +78,31 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     )
     const { queryConfig, parameterValues } = this.state
 
-    return remoteQuery_executeQuery(queryConfig, parameterValues, queryFormValues, this.context).then(
-      (newState) => {
-        debugger
-        this.setState((state) => ({
-          ...state,
-          ...newState,
-        }))
+    return remoteQuery_executeQuery(
+      queryConfig,
+      parameterValues,
+      queryFormValues,
+      this.context
+    ).then((newState) => {
+      this.setState((state) => ({
+        ...state,
+        ...newState,
+      }))
+      this.handleChangeData(queryFormValues)
+    })
+  }
+
+  handleChangeData = (newData: any) => {
+    const { onChangeData, userInterfaceData, valueKey } = this.props
+    if (onChangeData) {
+      // If there's a valueKey, nest the data
+      if (valueKey) {
+        onChangeData(set(valueKey, newData, userInterfaceData))
+      } else {
+        // If there's not a valueKey, merge the data at the top level
+        onChangeData({ ...userInterfaceData, ...newData })
       }
-    )
+    }
   }
 
   render(): JSX.Element {
@@ -100,16 +117,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     } = this.state
 
     return (
-      <fieldset style={{ color: "violet", border: "dotted 2px violet", padding: 10 }}>
-        <legend>ExecuteInterfaceComponent: remote-query</legend>
-        <QueryForm
-          layout={promptLayout}
-          parameters={promptParameters}
-          parameterValues={parameterValues}
-          onSubmit={(queryFormValues) => this.handleSubmit(queryFormValues /*dispatch*/)}
-          submitButtonLabel={submitButtonLabel || "Save"}
-        />
-      </fieldset>
+      <QueryForm
+        layout={promptLayout}
+        parameters={promptParameters}
+        parameterValues={parameterValues}
+        onSubmit={(queryFormValues) => this.handleSubmit(queryFormValues /*dispatch*/)}
+        submitButtonLabel={submitButtonLabel || "Save"}
+      />
     )
   }
 
@@ -126,7 +140,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       /*
        * Remote Config
        */
-      // TODO: enable remote configs
       // this.loadRemoteConfig(loadById, remoteDataFilter, loadByFilter, this.props.remoteConfigType)
     } else if (this.props.queryType === "remote-query") {
       /*

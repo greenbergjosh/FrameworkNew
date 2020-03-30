@@ -11,7 +11,7 @@ import { JSONRecord } from "../../data/JSON"
 import { LocalReportConfig, QueryConfig } from "../../data/Report"
 import { none, Option, some } from "fp-ts/lib/Option"
 import { QueryForm } from "./QueryForm"
-import { sortBy } from "lodash/fp"
+import { sortBy, matches } from "lodash/fp"
 import { store } from "../../state/store"
 import { useRematch } from "../../hooks"
 import {
@@ -150,12 +150,25 @@ export const ReportBody = React.memo(
       fromStore.isExecutingQuery,
     ])
 
+    const onChangeData = (oldData: JSONRecord, newData: JSONRecord) => {
+      if (grid && grid.current) {
+        const ds = grid.current.dataSource as []
+        const idx = ds.findIndex((item) => matches(item)(oldData))
+        if (idx && idx > -1) {
+          // @ts-ignore
+          ds[idx] = { ...newData }
+          grid.current.refresh()
+        }
+      }
+    }
+
     const getMemoizedDetailTemplate = React.useMemo(() => {
       return getDetailTemplate(
         dispatch,
         reportConfig.details,
         parameterValues.toUndefined(),
-        parentData
+        parentData,
+        onChangeData
       )
     }, [reportConfig.details, parameterValues.toUndefined(), parentData])
 
@@ -192,56 +205,51 @@ export const ReportBody = React.memo(
     )
 
     return (
-      <fieldset style={{ color: "green", border: "dotted 2px green", padding: 10 }}>
-        <legend>ReportBody</legend>
-        <>
-          {!isChildReport && (
-            <Helmet>
-              <title>{title || "Unknown Report"} | Reports | Channel Admin | OPG</title>
-            </Helmet>
+      <>
+        {!isChildReport && (
+          <Helmet>
+            <title>{title || "Unknown Report"} | Reports | Channel Admin | OPG</title>
+          </Helmet>
+        )}
+        {withoutHeader !== true &&
+          (reportId.isSome() ||
+            typeof title !== "undefined" ||
+            !isEmpty(unsatisfiedByParentParams)) && (
+            <PageHeader
+              extra={reportId.fold(null, (id) => (
+                <Button.Group size="small">
+                  <Button>
+                    <Reach.Link to={`${fromStore.globalConfigPath}/${id}`}>View Config</Reach.Link>
+                  </Button>
+                </Button.Group>
+              ))}
+              style={{ padding: "15px" }}
+              title={title && `Report: ${title}`}>
+              <QueryForm
+                layout={queryConfig.layout}
+                parameters={unsatisfiedByParentParams}
+                parameterValues={parameterValues.getOrElse(record.empty)}
+                onSubmit={handleQueryFormSubmit}
+              />
+            </PageHeader>
           )}
-          {withoutHeader !== true &&
-            (reportId.isSome() ||
-              typeof title !== "undefined" ||
-              !isEmpty(unsatisfiedByParentParams)) && (
-              <PageHeader
-                extra={reportId.fold(null, (id) => (
-                  <Button.Group size="small">
-                    <Button>
-                      <Reach.Link to={`${fromStore.globalConfigPath}/${id}`}>
-                        View Config
-                      </Reach.Link>
-                    </Button>
-                  </Button.Group>
-                ))}
-                style={{ padding: "15px" }}
-                title={title && `Report: ${title}`}>
-                <QueryForm
-                  layout={queryConfig.layout}
-                  parameters={unsatisfiedByParentParams}
-                  parameterValues={parameterValues.getOrElse(record.empty)}
-                  onSubmit={handleQueryFormSubmit}
-                />
-              </PageHeader>
-            )}
 
-          <div>
-            <StandardGrid
-              key={reportId.getOrElse("no-report-id")}
-              ref={grid}
-              columns={reportConfig.columns as ColumnModel[]}
-              contextData={contextData}
-              data={queryResultData.getOrElse(emptyArray)}
-              detailTemplate={getMemoizedDetailTemplate}
-              loading={fromStore.isExecutingQuery}
-              sortSettings={sortSettings}
-              groupSettings={groupSettings}
-              pageSettings={pageSettings}
-              defaultCollapseAll={reportConfig.defaultCollapseAll}
-            />
-          </div>
-        </>
-      </fieldset>
+        <div>
+          <StandardGrid
+            key={reportId.getOrElse("no-report-id")}
+            ref={grid}
+            columns={reportConfig.columns as ColumnModel[]}
+            contextData={contextData}
+            data={queryResultData.getOrElse(emptyArray)}
+            detailTemplate={getMemoizedDetailTemplate}
+            loading={fromStore.isExecutingQuery}
+            sortSettings={sortSettings}
+            groupSettings={groupSettings}
+            pageSettings={pageSettings}
+            defaultCollapseAll={reportConfig.defaultCollapseAll}
+          />
+        </div>
+      </>
     )
   }
 )

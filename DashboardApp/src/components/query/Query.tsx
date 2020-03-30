@@ -147,28 +147,25 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     return loadStatus === "error" ? (
       <Alert type="error" message={loadError || "An error occurred during data loading"} />
     ) : (
-      <fieldset name="Query" style={{ color: "red", border: "dotted 2px red", padding: 10 }}>
-        <legend>Query</legend>
-        <Spin spinning={loadStatus === "loading"}>
-          {/* <TempComponent /> */}
-          {queryType === "remote-query" &&
-            !!promptParameters.length &&
-            promptParameters.some(({ required }) => required === true) && (
-              <QueryForm
-                layout={promptLayout}
-                parameters={promptParameters}
-                parameterValues={parameterValues}
-                onSubmit={(formProps) => {
-                  console.log("Submitted Form Data", formProps)
-                }}
-                submitButtonLabel={submitButtonLabel}
-              />
-            )}
-          {renderedChildren}
+      <Spin spinning={loadStatus === "loading"}>
+        {/* <TempComponent /> */}
+        {queryType === "remote-query" &&
+          !!promptParameters.length &&
+          promptParameters.some(({ required }) => required === true) && (
+            <QueryForm
+              layout={promptLayout}
+              parameters={promptParameters}
+              parameterValues={parameterValues}
+              onSubmit={(formProps) => {
+                console.log("Submitted Form Data", formProps)
+              }}
+              submitButtonLabel={submitButtonLabel}
+            />
+          )}
+        {renderedChildren}
 
-          {/* <Alert type="warning" message={<pre>{JSON.stringify({ [dataKey]: data }, null, 2)}</pre>} /> */}
-        </Spin>
-      </fieldset>
+        {/* <Alert type="warning" message={<pre>{JSON.stringify({ [dataKey]: data }, null, 2)}</pre>} /> */}
+      </Spin>
     )
   }
 

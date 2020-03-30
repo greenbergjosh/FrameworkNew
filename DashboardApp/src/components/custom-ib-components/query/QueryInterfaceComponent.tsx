@@ -124,8 +124,6 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
     )
 
     return this.props.queryType === "remote-config" ? (
-      <fieldset style={{ color: "violet", border: "dotted 2px violet", padding: 10}}>
-        <legend>QueryInterfaceComponent: remote-config</legend>
       <Query
         dataKey={valueKey}
         inputData={userInterfaceData}
@@ -135,10 +133,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         remoteDataFilter={remoteDataFilter}>
         {children}
       </Query>
-      </fieldset>
     ) : (
-      <fieldset style={{ color: "violet", border: "dotted 2px violet", padding: 10}}>
-        <legend>QueryInterfaceComponent: remote-query</legend>
       <Query
         dataKey={valueKey}
         inputData={userInterfaceData}
@@ -147,7 +142,6 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         remoteQuery={this.props.remoteQuery}>
         {children}
       </Query>
-      </fieldset>
     )
   }
 }

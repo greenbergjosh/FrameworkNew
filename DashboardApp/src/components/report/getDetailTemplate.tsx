@@ -2,6 +2,7 @@ import { AppDispatch } from "../../state/store.types"
 import {
   DataMappingItem,
   GlobalConfigReference,
+  IReportDetailsAsReport,
   LocalReportConfig,
   ReportDetailsAsConfigReport,
   ReportDetailsAsInlineReport,
@@ -34,7 +35,8 @@ export const getDetailTemplate = (
   dispatch: AppDispatch,
   details: string | ReportDetailsType | LocalReportConfig,
   parameterValues?: JSONRecord,
-  parentData?: JSONRecord
+  parentData?: JSONRecord,
+  handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
 ) => {
   const resolved = resolveDetails(details)
   if (!resolved) return null
@@ -57,6 +59,9 @@ export const getDetailTemplate = (
         parameterValues={parameterValues}
         parentData={parentData}
         layout={resolved.layout}
+        onChangeData={(newData: any) =>
+          handleChangeDataFromChildren(details, rowData, newData, handleChangeData)
+        }
       />
     )
   }
@@ -67,6 +72,16 @@ export const mapData = (dataMapping: DataMappingItem[], data: JSONRecord) => {
   if (dataMapping) {
     return dataMapping.reduce(
       (acc, { originalKey, mappedKey }) => ({ ...acc, [mappedKey]: acc[originalKey] }),
+      data
+    )
+  }
+  return data
+}
+
+export const unMapData = (dataMapping: DataMappingItem[], data: JSONRecord) => {
+  if (dataMapping) {
+    return dataMapping.reduce(
+      (acc, { originalKey, mappedKey }) => ({ ...acc, [originalKey]: acc[mappedKey] }),
       data
     )
   }
@@ -127,13 +142,47 @@ function getData(
   parameterValues: JSONRecord | undefined,
   rowData: JSONRecord
 ) {
-  return (typeof details === "object" &&
-    (details.type === "report" || details.type === "layout" || details.type === "ReportConfig") &&
-    !!details.dataMapping
-    ? mapData.bind(null, details.dataMapping)
-    : (rowData: JSONRecord) => ({ ...(parentData || record.empty), ...rowData }))({
+  const map = getDataMapper(details as IReportDetailsAsReport, parentData)
+  return map({
     ...(parentData || record.empty),
     ...(parameterValues || record.empty),
     ...rowData,
   })
+
+  function getDataMapper(details: IReportDetailsAsReport, parentData: JSONRecord | undefined) {
+    return isDetailsValidType(details) && !!details.dataMapping
+      ? mapData.bind(null, details.dataMapping)
+      : (rowData: JSONRecord) => ({ ...(parentData || record.empty), ...rowData })
+  }
+}
+
+function handleChangeDataFromChildren(
+  details: ReportDetailsProps["details"],
+  rowData: JSONRecord,
+  newData: JSONRecord,
+  handleChangeData?: (rowData: JSONRecord, newData: JSONRecord) => void
+) {
+  if (!handleChangeData) {
+    // No point in calculating return value
+    return
+  }
+  const map = getDataUnMapper(details as IReportDetailsAsReport)
+  const mappedData = map({
+    ...rowData,
+    ...newData,
+  })
+  handleChangeData(rowData, mappedData)
+
+  function getDataUnMapper(details: IReportDetailsAsReport) {
+    return isDetailsValidType(details) && !!details.dataMapping
+      ? unMapData.bind(null, details.dataMapping)
+      : (rowData: JSONRecord) => ({ ...rowData })
+  }
+}
+
+function isDetailsValidType(details: IReportDetailsAsReport) {
+  return (
+    typeof details === "object" &&
+    (details.type === "report" || details.type === "layout" || details.type === "ReportConfig")
+  )
 }

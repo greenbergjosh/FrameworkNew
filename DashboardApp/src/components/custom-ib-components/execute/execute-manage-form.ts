@@ -47,11 +47,10 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                       label: "Remote (Query)",
                       value: "remote-query",
                     },
-                    {
-                      label: "Remote (Config)",
-                      value: "remote-config",
-                    },
-
+                    // {
+                    //   label: "Remote (Config)",
+                    //   value: "remote-config",
+                    // },
                     // {
                     //   label: "Remote (URL)",
                     //   value: "remote-url",

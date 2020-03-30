@@ -8,7 +8,7 @@ import { Identity } from "fp-ts/lib/Identity"
 import { isWhitespace } from "../../lib/string"
 import { JSONRecord } from "../../data/JSON"
 import { none, Option, some, tryCatch } from "fp-ts/lib/Option"
-import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
+import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
 import { InProgressRemoteUpdateDraft } from "../../data/GlobalConfig.Config"
 import { mapData, ReportDetailsType } from "./getDetailTemplate"
 
@@ -23,6 +23,7 @@ export interface ReportDetailsProps {
   details: ReportDetailsType
   dispatch: AppDispatch
   rowData: JSONRecord
+  onChangeData: UserInterfaceProps["onChangeData"]
   parameterValues?: JSONRecord
   parentData?: JSONRecord
   layout: ComponentDefinition[]
@@ -32,6 +33,7 @@ export const ReportDetails = ({
   details,
   dispatch,
   rowData,
+  onChangeData,
   parameterValues,
   parentData,
   layout,
@@ -94,10 +96,14 @@ export const ReportDetails = ({
     //   .then(() => setSubmitting(false))
   }
 
-  const changeDataHandler = (form: Formik.FormikProps<Values>) => (value: any) => {
+  const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (value: JSONRecord) => {
     console.log("ReportBody.handleChangeData!", value)
     form.setFieldValue("config", JSON.stringify(value, null, 2))
     form.setFieldTouched("config", true)
+    if (onChangeData) {
+      // Call parent's callback
+      onChangeData(value)
+    }
   }
 
   /****************************************************************
@@ -105,40 +111,37 @@ export const ReportDetails = ({
    */
 
   return (
-    <fieldset style={{ color: "aqua", border: "dotted 2px aqua", padding: 10 }}>
-      <legend>ReportDetails</legend>
-      <AdminUserInterfaceContextManagerProvider>
-        {(userInterfaceContextManager) => (
-          <Formik.Formik
-            initialValues={initialFormState}
-            enableReinitialize
-            validate={validateHandler}
-            onSubmit={submitHandler}>
-            {(form) => (
-              <Form
-                id="edit-config-form"
-                labelAlign="left"
-                layout="horizontal"
-                onSubmit={form.handleSubmit}
-                {...formItemLayout}
-                style={{ width: "100%" }}>
-                <UserInterface
-                  mode="display"
-                  contextManager={userInterfaceContextManager}
-                  components={layout}
-                  onChangeData={changeDataHandler(form)}
-                  data={dataResolver({
-                    ...(parentData || record.empty),
-                    ...(parameterValues || record.empty),
-                    ...parseConfig(form.values.config),
-                  })}
-                />
-              </Form>
-            )}
-          </Formik.Formik>
-        )}
-      </AdminUserInterfaceContextManagerProvider>
-    </fieldset>
+    <AdminUserInterfaceContextManagerProvider>
+      {(userInterfaceContextManager) => (
+        <Formik.Formik
+          initialValues={initialFormState}
+          enableReinitialize
+          validate={validateHandler}
+          onSubmit={submitHandler}>
+          {(form) => (
+            <Form
+              id="edit-config-form"
+              labelAlign="left"
+              layout="horizontal"
+              onSubmit={form.handleSubmit}
+              {...formItemLayout}
+              style={{ width: "100%" }}>
+              <UserInterface
+                mode="display"
+                contextManager={userInterfaceContextManager}
+                components={layout}
+                onChangeData={handleChangeDataFromChildren(form)}
+                data={dataResolver({
+                  ...(parentData || record.empty),
+                  ...(parameterValues || record.empty),
+                  ...parseConfig(form.values.config),
+                })}
+              />
+            </Form>
+          )}
+        </Formik.Formik>
+      )}
+    </AdminUserInterfaceContextManagerProvider>
   )
 
   return null

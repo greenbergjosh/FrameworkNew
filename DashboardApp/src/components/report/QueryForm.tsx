@@ -116,8 +116,7 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
 
   if (layout) {
     return (
-      <fieldset name="QueryForm" style={{ color: "orange", border: "dotted 2px orange", padding: 10}}>
-        <legend>QueryForm</legend>
+      <>
         <UserInterface
           mode="display"
           components={(layout as unknown) as ComponentDefinition[]}
@@ -125,10 +124,12 @@ export const QueryForm = React.memo(({ layout, parameters, parameterValues, onSu
           onChangeData={updateFormState}
           contextManager={fromStore.userInterfaceContextManager}
         />
-        <div style={{ marginTop: "10px" }}>
-          <Button loading={loading} onClick={handleSubmit}>{submitButtonLabel ? submitButtonLabel : "Generate Report"}</Button>
+        <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+          <Button loading={loading} onClick={handleSubmit}>
+            {submitButtonLabel ? submitButtonLabel : "Generate Report"}
+          </Button>
         </div>
-      </fieldset>
+      </>
     )
   }
 
