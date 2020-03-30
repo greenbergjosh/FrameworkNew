@@ -18,8 +18,6 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   dispatch?: AppDispatch
 }
 
-export
-
 interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
   mode: "display"
 }

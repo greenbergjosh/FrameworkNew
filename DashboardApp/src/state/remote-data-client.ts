@@ -11,7 +11,6 @@ import { QueryConfig } from "../data/Report"
 import { HttpError, Method, request } from "../lib/http"
 import { prettyPrint } from "../lib/json"
 import * as Store from "./store.types"
-import { ApiResponse } from "../data/AdminApi"
 
 declare module "./store.types" {
   interface AppModels {

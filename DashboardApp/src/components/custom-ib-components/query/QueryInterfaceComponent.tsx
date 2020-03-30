@@ -2,7 +2,8 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import React from "react"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { QueryConfig } from "../../../data/Report"
-import { Query} from "../../query/Query"
+import { Query } from "../../query/Query"
+import { QueryChildProps, QueryProps } from "../../query/types"
 import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
@@ -13,7 +14,6 @@ import {
   UserInterfaceContext,
   UserInterfaceProps,
 } from "@opg/interface-builder"
-import { QueryChildProps, QueryProps } from "../../query/types"
 
 export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
