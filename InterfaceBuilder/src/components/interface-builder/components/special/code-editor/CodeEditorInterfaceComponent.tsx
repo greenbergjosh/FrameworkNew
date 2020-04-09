@@ -2,20 +2,17 @@ import { some } from "fp-ts/lib/Option"
 import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
-import { CodeEditor } from "./code-editor"
+import { CodeEditor, EditorTheme, EditorLang } from "./code-editor"
 import { codeEditorManageForm } from "./code-editor-manage-form"
 import {
   ComponentDefinitionNamedProps,
   BaseInterfaceComponent,
 } from "../../base/BaseInterfaceComponent"
 
-type SupportedEditorLang = "csharp" | "javascript" | "json" | "typescript" | "sql"
-type SupportedEditorTheme = "vs" | "vs-dark" | "hc-black"
-
 export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "code-editor"
-  defaultLanguage: SupportedEditorLang
-  defaultTheme: SupportedEditorTheme
+  defaultLanguage: EditorLang
+  defaultTheme: EditorTheme
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
