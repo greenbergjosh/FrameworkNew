@@ -75,7 +75,28 @@ namespace TheGreatWallOfDataLib.Routing
             {
                 await Authentication.CheckPermissions(scope, funcName, identity, ip);
 
-                var res = await Data.CallFn(scope, funcName, requestArgs);
+                // Check if requestArgs is JSON (which is should be since we're passing it to CallFn
+                // If it is JSON and have only 2 properties (args, payload), then grab them and pass
+                // them both to CallFn in the matching parameters.
+                // Otherwise, continue to just pass the entire requestArgs in as args.
+                var args = requestArgs;
+                string payload = null;
+                try
+                {
+                    var request = JToken.Parse(requestArgs);
+                    if (request is JObject obj
+                        && obj.Count == 2
+                        && obj["args"] != null
+                        && obj["payload"] != null
+                    )
+                    {
+                        args = obj["args"].ToString();
+                        payload = obj["payload"].ToString();
+                    }
+                }
+                catch { }
+
+                var res = await Data.CallFn(scope, funcName, args, payload);
                 var resStr = res?.GetS("");
 
                 if (resStr?.IsNullOrWhitespace() != false) throw new FunctionException(100, "Empty DB response");
