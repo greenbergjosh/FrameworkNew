@@ -1,7 +1,7 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
 
-const supportedEditorLang = [
+export const supportedEditorLang = [
   { label: "C#", value: "csharp" },
   { label: "JavaScript", value: "javascript" },
   { label: "JSON", value: "json" },
@@ -9,7 +9,7 @@ const supportedEditorLang = [
   { label: "SQL", value: "sql" },
 ]
 
-const supportedEditorTheme = [
+export const supportedEditorTheme = [
   { label: "VS", value: "vs" },
   { label: "VS Dark", value: "vs-dark" },
   { label: "High Contrast Dark", value: "hc-black" },
@@ -81,7 +81,7 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "defaultTheme",
                 valueKey: "defaultTheme",
                 component: "select",
-                defaultValue: "vs",
+                defaultValue: "vs-dark",
                 label: "Default Theme",
                 help: "Select the highlighting theme to initially set for this code editor",
                 dataHandlerType: "local",

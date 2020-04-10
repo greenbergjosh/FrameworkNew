@@ -50,10 +50,10 @@
   },
   "scripts": {
     "start": "concurrently \"npm:start-rewired\"  \"npm:watch-*\"",
-    "start-win": "concurrently \"npm:start-rewired-win\"  \"npm:watch-*\"",
+    "start-win": "yarn start",
     "watch-css": "tcm --watch -p src/**/*.module.css",
     "watch-scss": "tsm --watch src/**/*.module.scss",
-    "start-rewired": "cross-env NODE_OPTIONS=--max_old_space_size=4096&&cross-env HTTPS=true&&cross-env HTTPS=true&&react-app-rewired --max_old_space_size=4096 start",
+    "start-rewired": "react-app-rewired start",
     "build": "react-app-rewired --max_old_space_size=4096 build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",

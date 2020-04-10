@@ -21,6 +21,9 @@ export {
   editorLanguages,
   EditorLangCodec,
   registerMonacoEditorMount,
+  supportedEditorTheme,
+  EditorLang,
+  EditorTheme,
 } from "./components/interface-builder/components/special/code-editor/code-editor"
 export { ComponentRenderer } from "./components/interface-builder/ComponentRenderer"
 export { DataPathContext } from "./components/interface-builder/util/DataPathContext"

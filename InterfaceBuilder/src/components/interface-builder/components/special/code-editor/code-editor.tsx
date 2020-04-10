@@ -3,10 +3,11 @@ import { Button, Card, Icon } from "antd"
 import { none, Option, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import { editor, IDisposable, MarkerSeverity } from "monaco-editor"
+import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
-import MonacoEditor, { DiffEditor, EditorProps, ControlledEditor } from "@monaco-editor/react"
+import { monaco, DiffEditor, EditorProps, ControlledEditor } from "@monaco-editor/react"
 import { None, Some } from "../../../lib/Option"
-// import { pathTypeLib } from "./pathTypeLib"
+export { supportedEditorTheme } from "./code-editor-manage-form"
 
 /* ########################################################################
  *
@@ -56,6 +57,8 @@ interface Props extends Required<Pick<EditorProps, "height" | "width">> {
   theme?: EditorTheme
   language: EditorLang
   onChange?: (x: { value: string; errors: Option<string[]> }) => void
+  onMonacoInit?: (monacoInstance: typeof monacoEditor) => void
+  editorDidMount?: (getEditorValue: () => string, editor: monacoEditor.editor.IStandaloneCodeEditor) => void
 }
 
 export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => IDisposable[]
@@ -152,6 +155,20 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
     )
   }, [props.content, props.contentDraft])
 
+  /**
+   * Monaco Instance
+   * https://github.com/suren-atoyan/monaco-react#monaco-instance
+   */
+  if (props.onMonacoInit) {
+    monaco
+      .init()
+      .then((monacoInstance) => {
+        /* here is the instance of monaco, so you can use the `monaco.languages` or whatever you want */
+        props.onMonacoInit!(monacoInstance)
+      })
+      .catch((error) => console.error("An error occurred during initialization of Monaco: ", error))
+  }
+
   //type ControlledEditorOnChange = (ev: monacoEditor.editor.IModelContentChangedEvent, value: string | undefined) => string | void
   const onChange = (ev: editor.IModelContentChangedEvent, value: string | undefined) => {
     if (props.onChange) {
@@ -159,8 +176,8 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
     }
   }
 
-  const handleEditorWillMount = React.useCallback(
-    (monaco: editor.IStandaloneCodeEditor, setLocalState) => {
+  const handleEditorDidMount = React.useCallback(
+    (monaco: editor.IStandaloneCodeEditor, setLocalState, getEditorValue) => {
       const disposables = willMountRegistry.reduce(
         (acc: IDisposable[], customEditorWillMount: CustomEditorWillMount) => [
           ...acc,
@@ -168,24 +185,6 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
         ],
         []
       )
-
-      /*
-      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: false,
-        noSyntaxValidation: false,
-      })
-
-      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-        target: monaco.languages.typescript.ScriptTarget.ES2015,
-        allowNonTsExtensions: true,
-        noLib: true,
-      })
-
-      monaco.languages.typescript.javascriptDefaults.addExtraLib(
-        pathTypeLib,
-        "ts:filename/pathTypeLib.d.ts"
-      )
-      */
 
       /**
        * Monkey patch setModelMarkers
@@ -213,6 +212,9 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
       }
       setLocalState({ disposables })
       setState({ ...state, monaco })
+      if (props.editorDidMount) {
+        props.editorDidMount!(getEditorValue, monaco)
+      }
     },
     [willMountRegistry, state, setState]
   )
@@ -245,11 +247,11 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
                     theme="vs-dark"
                     {...props}
                     {...editorProps}
-                    onChange={onChange}
+                    onChange={onChange} // <-- onChange provided by <ControlledEditor> but not <Editor>
                     editorDidMount={(
                       getEditorValue: () => string,
                       editor: editor.IStandaloneCodeEditor
-                    ) => handleEditorWillMount(editor, setLocalState)}
+                    ) => handleEditorDidMount(editor, setLocalState, getEditorValue)}
                   />
                 )}
               </Component>

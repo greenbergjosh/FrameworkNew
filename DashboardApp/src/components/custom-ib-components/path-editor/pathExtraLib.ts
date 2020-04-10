@@ -1,7 +1,7 @@
 /**
  * Type definitions for COREG PATH
  */
-export const pathTypeLib = `
+export const content = `
 function $RegistrationOfferActionedWithDayDuration(value: string): string
 
 function $Replace(value: string): string
@@ -649,3 +649,8 @@ const $PathNavigator: {
   readonly PostUrlPostRequestId: string
 }
 `
+
+export const pathExtraLib = {
+  content,
+  filePath: "ts:filename/pathTypeLib.d.ts",
+}
