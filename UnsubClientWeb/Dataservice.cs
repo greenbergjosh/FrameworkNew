@@ -48,6 +48,9 @@ namespace UnsubClientWeb
                     case "GetCampaigns":
                         result = (await unsub.GetCampaigns())?.GetS("") ?? result;
                         break;
+                    case "RunCampaign":
+                        result = await unsub.RunCampaign(dtv);
+                        break;
                     case "ForceUnsub":
                         result = await unsub.ForceUnsub(dtv);
                         break;

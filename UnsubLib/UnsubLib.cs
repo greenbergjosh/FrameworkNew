@@ -49,6 +49,7 @@ namespace UnsubLib
         public string FileCacheFtpServerPath;
         public string SortBufferSize;
         public int FileCopyTimeout;
+
         private readonly FrameworkWrapper _fw;
 
         public RoslynWrapper RosWrap;
@@ -177,6 +178,39 @@ namespace UnsubLib
             await _fw.Log(nameof(ForceUnsub), $"Completed ForceUnsub: {forceName}");
 
             return Jw.Serialize(new { Result = "Success" });
+        }
+
+        public async Task<string> RunCampaign(IGenericEntity dtve)
+        {
+            try
+            {
+                var networkName = dtve.GetS("networkName");
+                var networkCampaignId = dtve.GetS("networkCampaignId");
+                await _fw.Err(ErrorSeverity.Log, nameof(RunCampaign), ErrorDescriptor.Log, $"Starting RunCampaign. Network: [{networkName}] Campaign: [{networkCampaignId}]");
+
+                var networks = await Data.CallFn(Conn, "SelectNetwork", Jw.Serialize(new { NetworkName = networkName }), "");
+
+                var network = networks?.GetL("").FirstOrDefault();
+                if (network == null || string.IsNullOrWhiteSpace(network.GetS("Name")))
+                {
+                    await _fw.Error(nameof(RunCampaign), $"RunCampaign: Network {networkName} not found");
+                    return Jw.Serialize(new { ServerException = new { reason = $"Network [{networkName}] not found" } });
+                }
+
+                if (string.IsNullOrWhiteSpace(networkCampaignId))
+                {
+                    return Jw.Serialize(new { ServerException = new { reason = $"networkCampaignId is required" } });
+                }
+
+                _ = Task.Run(async () => await ScheduledUnsubJob(network, networkCampaignId, true));
+
+                return Jw.Serialize(new { OK = true });
+            }
+            catch (Exception ex)
+            {
+                await _fw.Error(nameof(RunCampaign), $"Exception: {ex}");
+                return Jw.Serialize(new { ServerException = new { reason = ex.Message } });
+            }
         }
 
         public async Task ForceDirectory(string forceDirName, IGenericEntity network)
@@ -1042,18 +1076,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+            }
 #if DEBUG
             }
 #endif
