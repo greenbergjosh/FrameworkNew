@@ -6,5 +6,6 @@ export interface AdminUserInterfaceContextManager
   extends UserInterfaceContextManager<PersistedConfig> {
   executeQuery: AppDispatch["reports"]["executeQuery"]
   executeQueryUpdate: AppDispatch["reports"]["executeQueryUpdate"]
+  executeHTTPRequestQuery: AppDispatch["reports"]["executeHTTPRequestQuery"]
   reportDataByQuery: AppState["reports"]["reportDataByQuery"]
 }

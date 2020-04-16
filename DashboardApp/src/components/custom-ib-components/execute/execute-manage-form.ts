@@ -44,28 +44,26 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 data: {
                   values: [
                     {
-                      label: "Remote (Query)",
+                      label: "Remote Query",
                       value: "remote-query",
                     },
-                    // {
-                    //   label: "Remote (Config)",
-                    //   value: "remote-config",
-                    // },
-                    // {
-                    //   label: "Remote (URL)",
-                    //   value: "remote-url",
-                    // },
+                    {
+                      label: "Remote Config",
+                      value: "remote-config",
+                    },
+                    {
+                      label: "Remote URL",
+                      value: "remote-url",
+                    },
                   ],
                 },
                 defaultValue: "remote-query",
               },
-
               {
                 key: "remoteQuery",
                 valueKey: "remoteQuery",
                 label: "Remote Query",
                 component: "select",
-                help: "Only queries without parameters can be used as Select box options.",
                 dataHandlerType: "remote-config",
                 // remoteDataFilter: {
                 //   // Set of both
@@ -90,7 +88,6 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
-
               {
                 key: "remoteQueryMapping",
                 valueKey: "remoteQueryMapping",
@@ -113,7 +110,6 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                   component: "input",
                   valueKey: "value",
                 },
-
                 visibilityConditions: {
                   "===": [
                     "remote-query",
@@ -139,7 +135,35 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
+              {
+                key: "remoteUrl",
+                valueKey: "remoteUrl",
+                label: "Remote Url",
+                component: "select",
+                dataHandlerType: "remote-config",
+                remoteConfigType: "Report.Query",
+                visibilityConditions: {
+                  "===": [
+                    "remote-url",
+                    {
+                      var: ["queryType"],
+                    },
+                  ],
+                },
+              },
             ],
+          },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "buttonLabel",
+                valueKey: "buttonLabel",
+                label: "Button Label",
+                component: "input",
+                defaultValue: "Save",
+              },
+            ]
           },
         ],
       },

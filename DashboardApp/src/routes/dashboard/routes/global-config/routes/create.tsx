@@ -103,6 +103,7 @@ export function CreateGlobalConfig({
   const userInterfaceContextManager: AdminUserInterfaceContextManager = {
     executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
     executeQueryUpdate: dispatch.reports.executeQueryUpdate.bind(dispatch.reports),
+    executeHTTPRequestQuery: dispatch.reports.executeHTTPRequestQuery.bind(dispatch.reports),
     reportDataByQuery: fromStore.reportDataByQuery,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
       return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
