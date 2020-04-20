@@ -1,4 +1,4 @@
-import { SectionDefinition } from "../collapse/CollapseInterfaceComponent"
+import { SectionDefinition } from "../../collapse/CollapseInterfaceComponent"
 
 export const tableAdvancedForm = {
   title: "Advanced",
