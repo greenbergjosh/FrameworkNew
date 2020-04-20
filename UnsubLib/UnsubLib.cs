@@ -2106,6 +2106,8 @@ namespace UnsubLib
                 var response = await new HttpClient().PostAsync(_queuedCampaignsUrl, _queuedCampaignsBody == null ? null : new StringContent(_queuedCampaignsBody));
                 var result = await response.Content.ReadAsStringAsync();
 
+                await _fw.Log(nameof(LoadQueuedCampaigns), result);
+
                 dynamic queued = JsonConvert.DeserializeObject(result);
 
                 _queuedCampaigns = new HashSet<string>();

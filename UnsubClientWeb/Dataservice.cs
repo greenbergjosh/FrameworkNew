@@ -34,8 +34,10 @@ namespace UnsubClientWeb
                 var unsub = new UnsubLib.UnsubLib(_fw);
                 var method = dtv.GetS("m");
 
+                var requestId = Guid.NewGuid();
+
                 // Leaving out the await was on purpose, let's not hold up the call for trace logging
-                _ = _fw.Trace($"Router:{method}", dtv.GetS(""));
+                _ = _fw.Trace($"Router:{method} RequestId: {requestId}", dtv.GetS(""));
 
                 switch (method)
                 {
@@ -110,6 +112,8 @@ namespace UnsubClientWeb
                         File.AppendAllText("UnsubClient.log", $"{DateTime.Now}::{requestFromPost}::Unknown method{Environment.NewLine}");
                         break;
                 }
+
+                _ = _fw.Trace($"Router:{method} RequestId: {requestId} Response", result);
             }
             catch (Exception ex)
             {
