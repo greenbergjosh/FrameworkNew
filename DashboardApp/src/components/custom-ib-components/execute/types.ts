@@ -1,7 +1,10 @@
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
+import {
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { QueryProps, IQueryProps } from "../../query/types"
 import { QueryConfig } from "../../../data/Report"
 import { JSONRecord } from "../../../data/JSON"
 import { AppDispatch } from "../../../state/store.types"
@@ -11,11 +14,12 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   components: ComponentDefinition[]
   loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
-  queryType: QueryProps["queryType"]
+  queryType: "remote-query" | "remote-config" | "remote-url"
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
   fromStore?: any
   dispatch?: AppDispatch
+  buttonLabel?: string
 }
 
 interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
@@ -32,7 +36,6 @@ interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInterfaceCom
   queryType: "remote-query"
   remoteQuery?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
-  // remoteQueryMapping?: [{ label: "label"; value: string }, { label: "value"; value: string }]
 }
 
 interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
@@ -41,20 +44,31 @@ interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceCo
   remoteDataFilter?: JSONObject
 }
 
+interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
+  queryType: "remote-url"
+  remoteUrl?: PersistedConfig["id"] //<-- possibly should be remoteConfigType?
+  remoteDataFilter?: JSONObject
+}
+
 export type ExecuteInterfaceComponentProps = (
   | ExecuteRemoteQueryInterfaceComponentProps
   | ExecuteRemoteConfigInterfaceComponentProps
-  ) &
+  | ExecuteRemoteUrlInterfaceComponentProps
+) &
   (ExecuteInterfaceComponentDisplayModeProps | ExecuteInterfaceComponentEditModeProps)
 
 export interface ExecuteInterfaceComponentState {
   data: any[]
   loadError: string | null
   loadStatus: "none" | "loading" | "loaded" | "error"
-  parameterValues: JSONRecord //{ [key: string]: any }
+  parameterValues: JSONRecord
   promptLayout: QueryConfig["layout"]
   promptParameters: QueryConfig["parameters"]
   formState: any
-  queryConfig: any
-  submitButtonLabel?: string
+  /**
+   * QueryConfig is type of taggedUnion:
+   * ( HTTPRequestQueryConfigCodec | SQLQueryConfigCodec | StoredProcQueryConfigCodec )
+   * from Reports.ts
+   */
+  queryConfig: QueryConfig | null
 }

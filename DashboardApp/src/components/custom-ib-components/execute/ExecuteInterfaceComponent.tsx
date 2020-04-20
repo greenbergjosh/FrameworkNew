@@ -1,19 +1,21 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import React from "react"
-import { executeManageForm } from "./execute-manage-form"
-import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
-import { ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState } from "./types"
-import { QueryForm } from "../../report/QueryForm"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
-import { QueryConfig, QueryConfigCodec } from "../../../data/Report"
-import JSON5 from "json5"
-import { reporter } from "io-ts-reporters"
-import { Right } from "../../../data/Either"
-import { JSONRecord } from "../../../data/JSON"
-import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
-import { cheapHash } from "../../../lib/json"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { set } from "lodash/fp"
+import {
+  BaseInterfaceComponent,
+  UserInterfaceContext,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
+import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
+import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
+import { JSONRecord } from "../../../data/JSON"
+import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { QueryForm } from "../../report/QueryForm"
+import { executeManageForm } from "./execute-manage-form"
+import { ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState } from "./types"
+import { getQueryConfig, hasContext } from "./queryConfig"
+import { remoteQuery_executeQuery } from "./remoteQuery"
+import { remoteUrl_executeQuery } from "./remoteUrl"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -50,7 +52,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       parameterValues: {},
       promptLayout: [],
       promptParameters: [],
-      queryConfig: {},
+      queryConfig: null,
     }
   }
 
@@ -61,13 +63,18 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   /* From Query.tsx */
   componentDidMount() {
     if (!hasContext(this.context)) return
-    if (this.props.paused) return
-    if (this.props.queryType) {
-      this.loadFromGlobalConfigStore()
+    if (this.props.queryType && this.props.remoteQuery) {
+      const { loadById } = this.context
+      const { remoteQuery, userInterfaceData } = this.props
+      this.loadFromGlobalConfigStore(
+        loadById,
+        remoteQuery as PersistedConfig["id"],
+        userInterfaceData
+      )
     }
   }
 
-  /* From ReportBody.tsx */
+  /* Originally from ReportBody.tsx */
   handleSubmit = (queryFormValues: JSONRecord /*dispatch: AppDispatch*/) => {
     console.log(
       "ExecuteInterfaceComponent.handleSubmit",
@@ -77,19 +84,42 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       queryFormValues
     )
     const { queryConfig, parameterValues } = this.state
+    if (!queryConfig) {
+      return
+    }
 
-    return remoteQuery_executeQuery(
-      queryConfig,
-      parameterValues,
-      queryFormValues,
-      this.context
-    ).then((newState) => {
-      this.setState((state) => ({
-        ...state,
-        ...newState,
-      }))
-      this.handleChangeData(queryFormValues)
-    })
+    switch (this.props.queryType) {
+      case "remote-config":
+        break
+      case "remote-query":
+        return remoteQuery_executeQuery(
+          queryConfig,
+          parameterValues,
+          queryFormValues,
+          this.context
+        ).then((newState) => {
+          this.setState((state) => ({
+            ...state,
+            ...newState,
+          }))
+          this.handleChangeData(queryFormValues)
+        })
+      case "remote-url":
+        return remoteUrl_executeQuery(
+          queryConfig,
+          parameterValues,
+          queryFormValues,
+          this.context,
+        ).then((newState) => {
+          this.setState((state) => ({
+            ...state,
+            ...newState,
+          }))
+          this.handleChangeData(queryFormValues)
+        })
+        break
+      default:
+    }
   }
 
   handleChangeData = (newData: any) => {
@@ -105,7 +135,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
+  /****************************************************************************
+   * RENDER METHOD
+   */
+
   render(): JSX.Element {
+    const { buttonLabel } = this.props
     const {
       data,
       loadError,
@@ -113,7 +148,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       parameterValues,
       promptLayout,
       promptParameters,
-      submitButtonLabel,
     } = this.state
 
     return (
@@ -122,7 +156,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
         parameters={promptParameters}
         parameterValues={parameterValues}
         onSubmit={(queryFormValues) => this.handleSubmit(queryFormValues /*dispatch*/)}
-        submitButtonLabel={submitButtonLabel || "Save"}
+        submitButtonLabel={buttonLabel || "Save"}
       />
     )
   }
@@ -132,122 +166,31 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
    */
 
   /* From Query.tsx */
-  private loadFromGlobalConfigStore() {
-    const { remoteDataFilter, userInterfaceData } = this.props
-    const { loadById, loadByFilter } = this.context as AdminUserInterfaceContextManager
-
-    if (this.props.queryType === "remote-config") {
-      /*
-       * Remote Config
-       */
-      // this.loadRemoteConfig(loadById, remoteDataFilter, loadByFilter, this.props.remoteConfigType)
-    } else if (this.props.queryType === "remote-query") {
-      /*
-       * Remote Query
-       */
-      if (this.props.remoteQuery) {
-        const queryGlobalConfig = loadById(this.props.remoteQuery)
-        if (queryGlobalConfig) {
-          const newState = remoteQuery_getQueryConfig(queryGlobalConfig)
-          const { queryConfig } = newState
-          this.setState((state) => ({
-            ...state,
-            ...newState,
-          }))
-          if (queryConfig) {
-            const { satisfiedByParentParams } = queryConfig.parameters
-              ? determineSatisfiedParameters(queryConfig.parameters, userInterfaceData || {}, true)
-              : { satisfiedByParentParams: {} }
-            this.setState((state) => ({
-              ...state,
-              promptLayout: queryConfig.layout,
-              promptParameters: queryConfig.parameters,
-              submitButtonLabel: queryConfig.submitButtonLabel,
-              parameterValues: satisfiedByParentParams,
-            }))
-          }
-        }
-      }
+  private loadFromGlobalConfigStore(
+    loadById: AdminUserInterfaceContextManager["loadById"],
+    remoteQuery: PersistedConfig["id"],
+    userInterfaceData: UserInterfaceProps["data"]
+  ) {
+    const queryGlobalConfig = loadById(remoteQuery) as PersistedConfig
+    if (!queryGlobalConfig) {
+      console.warn("queryGlobalConfig not found!")
+    }
+    const newState = getQueryConfig(queryGlobalConfig)
+    const { queryConfig } = newState
+    this.setState((state) => ({
+      ...state,
+      ...newState,
+    }))
+    if (queryConfig) {
+      const { satisfiedByParentParams } = queryConfig.parameters
+        ? determineSatisfiedParameters(queryConfig.parameters, userInterfaceData || {}, true)
+        : { satisfiedByParentParams: {} }
+      this.setState((state) => ({
+        ...state,
+        promptLayout: queryConfig.layout,
+        promptParameters: queryConfig.parameters,
+        parameterValues: satisfiedByParentParams,
+      }))
     }
   }
-}
-
-/**************************************************************************************
- *
- * PRIVATE FUNCTIONS
- */
-
-/* From Query.tsx */
-function remoteQuery_getQueryConfig(queryGlobalConfig: PersistedConfig) {
-  const queryConfig = QueryConfigCodec.decode(JSON5.parse(queryGlobalConfig.config.getOrElse("")))
-  return queryConfig.fold(
-    (errors) => {
-      console.error(
-        "ExecuteInterfaceComponent.remoteQuery_getQueryConfig",
-        "Invalid Query",
-        reporter(queryConfig)
-      )
-      return ({
-        loadStatus: "error",
-        loadError: "Query was invalid. Check developer tools for details.",
-      } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
-    },
-    Right((queryConfig) => {
-      console.log(
-        "ExecuteInterfaceComponent.remoteQuery_getQueryConfig",
-        "queryConfig",
-        queryConfig
-      )
-      return ({
-        queryConfig,
-      } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
-    })
-  )
-}
-
-/* From Query.tsx */
-async function remoteQuery_executeQuery(
-  queryConfig: QueryConfig,
-  parameterValues: JSONRecord,
-  queryFormValues: JSONRecord,
-  context: AdminUserInterfaceContextManager
-): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
-  const { executeQueryUpdate, reportDataByQuery } = context
-  const queryResultURI = cheapHash(queryConfig.query, {
-    ...parameterValues,
-    ...queryFormValues,
-  })
-
-  return Promise.resolve(({
-    remoteQueryLoggingName: queryConfig.query,
-    loadStatus: "loading",
-  } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() =>
-    executeQueryUpdate({
-      resultURI: queryResultURI,
-      query: queryConfig,
-      params: { ...parameterValues, ...queryFormValues },
-    })
-      .then(() => {
-        return ({
-          loadStatus: "none",
-        } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
-      })
-      .catch((e: Error) => {
-        console.error("Query.remoteQuery_executeQuery", queryConfig.query, e)
-        return ({ loadStatus: "error", loadError: e.message } as unknown) as Readonly<
-          Partial<ExecuteInterfaceComponentState>
-        >
-      })
-  )
-}
-
-function hasContext(context: any): boolean {
-  if (!context) {
-    console.warn(
-      "ExecuteInterfaceComponent.hasContext",
-      "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
-    )
-    return false
-  }
-  return true
 }

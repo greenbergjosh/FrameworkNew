@@ -1,4 +1,5 @@
 /* eslint-disable dot-notation */
+import { isArray } from "lodash/fp"
 import { Either } from "fp-ts/lib/Either"
 import { none } from "fp-ts/lib/Option"
 import JSON5 from "json5"
@@ -474,7 +475,7 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
           body && params && typeof body === "object" && method && method.toLowerCase() !== "get"
             ? { ...body, ...params }
             : body || (params && Object.keys(params).length ? params : null),
-        expect: AdminApi.genericArrayPayloadCodec,
+        expect: AdminApi.genericRecordOrArrayPayloadCodec,
         headers,
         method: (method as Method) || "GET",
         timeout: none,
@@ -483,7 +484,8 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       }).then((result) =>
         result.map(
           (payload): AdminApi.ApiResponse<Array<JSONRecord>> => {
-            return payload ? AdminApi.OK(payload) : AdminApi.mkAdminApiError(1)
+            const payloadArray = isArray(payload) ? payload : [payload]
+            return payload ? AdminApi.OK(payloadArray) : AdminApi.mkAdminApiError(1)
           }
         )
       )

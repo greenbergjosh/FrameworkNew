@@ -43,6 +43,7 @@ export { evalExpression } from "./components/interface-builder/lib/eval-expressi
 export { Right } from "./components/interface-builder/lib/Either"
 export { sanitizeText } from "./components/interface-builder/lib/sanitize-text"
 export { shallowPropCheck } from "./components/interface-builder/dnd"
+export { getIconSelectConfig } from "./components/interface-builder/components/form/_shared/icon-select-form-config"
 
 /**
  * Non-Framework Components
