@@ -408,12 +408,11 @@ namespace UnsubLib
 
                 if (res == null || res.GetS("result") == "failed")
                 {
-                    await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"Campaign lookup failed. Response: {res?.GetS("") ?? "[null]"}");
+                    await _fw.Error($"{nameof(ScheduledUnsubJob)}-{networkName}", $"Campaigns lookup failed. Response: {res?.GetS("") ?? "[null]"}");
                     return;
                 }
 
-                var campaign = res
-                    .GetL("")?.FirstOrDefault(c => c.GetS("NetworkCampaignId") == networkCampaignId);
+                var campaign = res.GetL("")?.FirstOrDefault(c => c.GetS("NetworkCampaignId") == networkCampaignId);
 
                 if (campaign == null)
                 {
@@ -428,8 +427,7 @@ namespace UnsubLib
                     }
                 }
 
-                var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider,
-                    network.GetS("Credentials/Parallelism").ParseInt() ?? 5, null);
+                var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider, network.GetS("Credentials/Parallelism").ParseInt() ?? 5, null);
 
                 if (uri.IsNullOrWhitespace())
                 {
@@ -441,13 +439,13 @@ namespace UnsubLib
                 uris.Add(uri, new List<IGenericEntity>() { campaign });
             }
 
-            await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Calling ProcessUnsubFiles");
+            await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}, {networkCampaignId}) Calling ProcessUnsubFiles");
 
             var bad = uris.Where(u => u.Value?.Any() != true).ToArray();
 
             await ProcessUnsubFiles(uris, network, cse.ToArray(), false);
 
-            await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}) Completed ProcessUnsubFiles");
+            await _fw.Log($"{nameof(ScheduledUnsubJob)}-{networkName}", $"ScheduledUnsubJob({networkName}, {networkCampaignId}) Completed ProcessUnsubFiles");
         }
 
         public async Task ProcessUnsubFiles(IDictionary<string, List<IGenericEntity>> uris, IGenericEntity network, IEnumerable<IGenericEntity> cse, bool isManual)
@@ -1076,18 +1074,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+                }
 #if DEBUG
             }
 #endif
@@ -1682,14 +1680,18 @@ namespace UnsubLib
             try
             {
                 (var fileId, var type, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                if ((DateTime.Now - mostRecentFileDate).TotalDays > (unsubRefreshPeriod ?? _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10))
+                unsubRefreshPeriod ??= _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
+                if ((DateTime.Now - mostRecentFileDate).TotalDays > unsubRefreshPeriod)
                 {
-                    throw new InvalidOperationException("File is greater than 10 days old.");
+                    throw new InvalidOperationException($"File is greater than {unsubRefreshPeriod} days old.");
                 }
 
                 var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
 
-                if (!email.IsNullOrWhitespace()) digest = Hashing.CalculateMD5Hash(email.ToLower());
+                if (!email.IsNullOrWhitespace())
+                {
+                    digest = Hashing.CalculateMD5Hash(email.ToLower());
+                }
                 else if (digest?.Contains("@") == true)
                 {
                     email = digest;
@@ -1707,7 +1709,20 @@ namespace UnsubLib
 
                 if (!isUnsub && globalSupp)
                 {
-                    var res = await Data.CallFn("Signal", "inSignalGroups", Jw.Serialize(new { group = globalSuppGroup, emailMd5 = email.IfNullOrWhitespace(digest) }));
+                    var input = new Dictionary<string, object>
+                    {
+                        {"SignalGroups", new[] { globalSuppGroup } }
+                    };
+                    if (!string.IsNullOrWhiteSpace(email))
+                    {
+                        input["Emails"] = new[] { email };
+                    }
+                    if (type == "md5" && !string.IsNullOrWhiteSpace(digest))
+                    {
+                        input["EmailMd5s"] = new[] { digest };
+                    }
+
+                    var res = await Data.CallFn("Signal", "inSignalGroupsNew", Jw.Serialize(input));
 
                     isUnsub = res?.GetL("in").Any() ?? true;
                 }
@@ -1838,13 +1853,22 @@ namespace UnsubLib
             {
                 try
                 {
-                    var args = Jw.Serialize(new { group = globalSuppGroup, emailMd5 = emailsNotFound });
+                    for(var i = 0; i < globalSuppGroup.Count; i++)
+                    {
+                        if (globalSuppGroup[i].Value<string>() == "Tier1")
+                        {
+                            await _fw.Trace($"{nameof(IsUnsubList)}-Tier1", $"Received request with Tier1: {dtve.GetS("")}");
+                            globalSuppGroup[i] = "Tier1 Suppression";
+                        }
+                    }
+
+                    var args = Jw.Serialize(new { SignalGroups = globalSuppGroup, Emails = emailsNotFound.Where(e => e.Contains("@")).ToArray(), EmailMd5s = emailsNotFound.Where(e => !e.Contains("@")).ToArray() });
 
                     await _fw.Trace(nameof(IsUnsubList), $"Checking global suppression\n{args}");
 
-                    var res = await Data.CallFn("Signal", "inSignalGroups", args);
+                    var res = await Data.CallFn("Signal", "inSignalGroupsNew", args);
 
-                    emailsNotFound = emailsNotFound.Except(res?.GetL("in").Select(g => g.GetS(""))).ToList();
+                    emailsNotFound = emailsNotFound.Except(res?.GetL("emails_in").Select(g => g.GetS(""))).ToList();
                 }
                 catch (Exception e)
                 {
