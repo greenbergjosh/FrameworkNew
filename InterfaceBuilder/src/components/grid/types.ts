@@ -13,6 +13,7 @@ export interface StandardGridComponentProps {
   allowAdding?: boolean
   allowDeleting?: boolean
   allowEditing?: boolean
+  autoFitColumns?: boolean
   columns: ColumnModel[]
   contextData?: JSONRecord
   data: JSONRecord[]

@@ -33,6 +33,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       allowEditing,
       columns,
       defaultCollapseAll,
+      autoFitColumns,
       defaultPageSize,
       loadingKey = "loading",
       onChangeData,
@@ -48,9 +49,10 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
 
           if (abstract) {
             /*
-             * Table is Abstract so show the config user interface
-             * so the user can define an instance based on
-             * the abstract's settings.
+             * Abstract Table
+             * Defines a table to be used on child configs. Child configs
+             * that use this table cannot edit the abstract table's
+             * basic settings (settings popup), but may edit its columns.
              */
             return (
               <AbstractTable
@@ -63,6 +65,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
             switch (this.props.mode) {
               case "edit": {
                 /*
+                 * Edit Mode
                  * User defines columns with data types, etc.
                  */
                 return (
@@ -77,12 +80,17 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                 )
               }
               case "display": {
+                /*
+                 * Display Mode
+                 * View the actual grid with data.
+                 */
                 return (
                   <DisplayTable
                     allowAdding={allowAdding}
                     allowEditing={allowEditing}
                     columns={columns}
                     defaultCollapseAll={defaultCollapseAll}
+                    autoFitColumns={autoFitColumns}
                     defaultPageSize={defaultPageSize}
                     loadingKey={loadingKey}
                     onChangeData={onChangeData}

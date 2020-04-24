@@ -11,6 +11,10 @@ interface EditTableProps extends Partial<TableInterfaceComponentEditModeProps> {
   userInterfaceData: JSONRecord
 }
 
+/**
+ * Edit Table
+ * User may define the columns with data types, etc.
+ */
 export function EditTable({
   onChangeData,
   onChangeSchema,

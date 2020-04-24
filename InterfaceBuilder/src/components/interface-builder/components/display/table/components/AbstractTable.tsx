@@ -9,6 +9,12 @@ interface AbstractTableProps extends Partial<TableInterfaceComponentEditModeProp
   userInterfaceData: JSONRecord
 }
 
+/**
+ * Abstract Table
+ * Defines a table to be used on child configs. Child configs
+ * that use this table cannot edit the abstract table's
+ * basic settings (settings popup), but may edit its columns.
+ */
 export function AbstractTable({
   onChangeData,
   userInterfaceData,

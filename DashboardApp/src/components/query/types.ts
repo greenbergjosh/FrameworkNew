@@ -26,7 +26,7 @@ export interface IQueryProps<T> {
   dataKey?: string
   inputData?: JSONObject
   paused?: boolean
-  queryType: "remote-query" | "remote-config"
+  queryType: "remote-query" | "remote-config" | "remote-url"
   refresh?: QueryRefreshOptions
 }
 
@@ -37,13 +37,19 @@ interface QueryRemoteQueryProps<T> extends IQueryProps<T> {
   // remoteQueryMapping?: [{ label: "label"; value: string }, { label: "value"; value: string }]
 }
 
+interface QueryRemoteUrlProps<T> extends IQueryProps<T> {
+  queryType: "remote-url"
+  remoteUrl?: PersistedConfig["id"]
+  remoteDataFilter?: JSONObject
+}
+
 interface QueryRemoteConfigProps<T> extends IQueryProps<T> {
   queryType: "remote-config"
   remoteConfigType?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
 }
 
-export type QueryProps<T = any> = QueryRemoteQueryProps<T> | QueryRemoteConfigProps<T>
+export type QueryProps<T = any> = QueryRemoteQueryProps<T> | QueryRemoteUrlProps<T> | QueryRemoteConfigProps<T>
 
 export interface QueryState<T> {
   runCount: number

@@ -1,19 +1,19 @@
-import { StandardGrid } from "@opg/interface-builder"
+import React from "react"
+import { Helmet } from "react-helmet"
 import * as Reach from "@reach/router"
 import * as record from "fp-ts/lib/Record"
-import React from "react"
-import { Button, PageHeader } from "antd"
-import { cheapHash } from "../../lib/json"
-import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
-import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
-import { Helmet } from "react-helmet"
-import { JSONRecord } from "../../data/JSON"
-import { LocalReportConfig, QueryConfig } from "../../data/Report"
 import { none, Option, some } from "fp-ts/lib/Option"
+import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
+import { matches, sortBy } from "lodash/fp"
+import { Button, PageHeader } from "antd"
+import { EnrichedColumnDefinition, StandardGrid } from "@opg/interface-builder"
+import { cheapHash } from "../../../lib/json"
+import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
+import { JSONRecord } from "../../../data/JSON"
+import { LocalReportConfig, QueryConfig } from "../../../data/Report"
 import { QueryForm } from "./QueryForm"
-import { sortBy, matches } from "lodash/fp"
-import { store } from "../../state/store"
-import { useRematch } from "../../hooks"
+import { store } from "../../../state/store"
+import { useRematch } from "../../../hooks"
 import {
   ColumnModel,
   GridComponent,
@@ -22,7 +22,8 @@ import {
   SortDescriptorModel,
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
-import { getDetailTemplate } from "./getDetailTemplate"
+import { getDetailTemplate } from "../templates/getDetailTemplate"
+import { ColumnConfig } from "../templates/types"
 
 export interface ReportBodyProps {
   isChildReport?: boolean
@@ -204,6 +205,30 @@ export const ReportBody = React.memo(
       [parentData, parameterValues.getOrElse(record.empty)]
     )
 
+    /**
+     * COMPONENT COLUMNS
+     * Provide components to type "layout" columns
+     */
+    const columns: EnrichedColumnDefinition[] = React.useMemo(() => {
+      const _columns = (reportConfig.columns as unknown) as ColumnConfig[]
+      return _columns.map((columnConfig) => {
+        if (columnConfig.type === "layout") {
+          /*
+           * Syncfusion grid does not type or document that "template"
+           * accepts React components, so we up-cast as any type.
+           */
+          columnConfig.template = getDetailTemplate(
+            dispatch,
+            columnConfig.details,
+            parameterValues.toUndefined(),
+            parentData,
+            onChangeData
+          ) as any
+        }
+        return columnConfig
+      })
+    }, [reportConfig.columns, parameterValues.toUndefined(), parentData])
+
     return (
       <>
         {!isChildReport && (
@@ -238,7 +263,7 @@ export const ReportBody = React.memo(
           <StandardGrid
             key={reportId.getOrElse("no-report-id")}
             ref={grid}
-            columns={reportConfig.columns as ColumnModel[]}
+            columns={columns}
             contextData={contextData}
             data={queryResultData.getOrElse(emptyArray)}
             detailTemplate={getMemoizedDetailTemplate}
@@ -247,6 +272,7 @@ export const ReportBody = React.memo(
             groupSettings={groupSettings}
             pageSettings={pageSettings}
             defaultCollapseAll={reportConfig.defaultCollapseAll}
+            autoFitColumns={reportConfig.autoFitColumns}
           />
         </div>
       </>

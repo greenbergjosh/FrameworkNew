@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { QueryConfig } from "../../../data/Report"
-import { JSONRecord } from "../../../data/JSON"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
-import { ExecuteInterfaceComponentState } from "./types"
-import { cheapHash } from "../../../lib/json"
+import { QueryConfig } from "../../../../data/Report"
+import { JSONRecord } from "../../../../data/JSON"
+import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
+import { ExecuteInterfaceComponentState } from "../types"
+import { cheapHash } from "../../../../lib/json"
 import { notification } from "antd"
 
 export async function remoteUrl_executeQuery(

@@ -1,10 +1,11 @@
-import { ColumnModel } from "@syncfusion/ej2-react-grids"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
-import { cloneDeep, merge, sortBy } from "lodash/fp"
+import React from "react"
 import moment from "moment"
 import { tryCatch } from "fp-ts/lib/Either"
+import { cloneDeep, merge, sortBy } from "lodash/fp"
+import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import { evalExpression } from "components/interface-builder/lib/eval-expression"
-import { EnrichedColumnDefinition } from "components/grid/types"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { EnrichedColumnDefinition } from "./types"
 
 /**
  * Some data may have to be pre-processed in order not to cause the table to fail to render
@@ -73,11 +74,13 @@ export function getUsableColumns(columns: ColumnModel[]) {
     if (typeof col.disableHtmlEncode === "undefined" || col.disableHtmlEncode === null) {
       col.disableHtmlEncode = !col.allowHTMLText
     }
+
     // Remove cell padding option
     if (col.removeCellPadding) {
       col.customAttributes = merge({ class: "-remove-cell-padding" }, col.customAttributes || {})
     }
 
+    // DATE COLUMN
     // Managing custom formatting options for Dates
     if (["date", "dateTime"].includes(col.type || "")) {
       col.format =
@@ -87,6 +90,7 @@ export function getUsableColumns(columns: ColumnModel[]) {
       delete col.type
     }
 
+    // NUMBER COLUMN
     // Managing custom formatting options for number types
     else if (["number"].includes(col.type || "")) {
       col.textAlign = "Right"

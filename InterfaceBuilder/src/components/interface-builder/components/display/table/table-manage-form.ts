@@ -98,6 +98,14 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Start with all groups collapsed.",
               },
               {
+                key: "autoFitColumns",
+                valueKey: "autoFitColumns",
+                label: "Auto Fit Columns",
+                component: "toggle",
+                defaultValue: false,
+                help: "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
+              },
+              {
                 key: "defaultPageSize",
                 valueKey: "defaultPageSize",
                 component: "select",

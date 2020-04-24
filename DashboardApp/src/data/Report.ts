@@ -35,6 +35,7 @@ export type LocalReportConfig = {
   details: string | ReportDetails | LocalReportConfig
   dataMapping?: DataMappingItem[]
   defaultCollapseAll?: boolean
+  autoFitColumns?: boolean
   defaultPageSize?: number | string
 }
 export const ReportConfigCodec = iots.recursion<

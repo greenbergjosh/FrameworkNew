@@ -17,11 +17,16 @@ export interface DisplayTableProps extends Partial<TableInterfaceComponentDispla
   userInterfaceData: JSONRecord
 }
 
+/**
+ * Display Table
+ * View the actual grid with data.
+ */
 export function DisplayTable({
   allowAdding,
   allowEditing,
   columns,
   defaultCollapseAll,
+  autoFitColumns,
   defaultPageSize,
   loadingKey,
   onChangeData,
@@ -42,6 +47,7 @@ export function DisplayTable({
       contextData={userInterfaceData}
       data={dataArray}
       defaultCollapseAll={defaultCollapseAll}
+      autoFitColumns={autoFitColumns}
       groupSettings={groupSettings}
       loading={!!loading}
       pageSettings={pageSettings}

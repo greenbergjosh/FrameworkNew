@@ -6,6 +6,7 @@ import { ComponentRenderMetaProps as _ComponentRenderMetaProps } from "./compone
 import { FormInterfaceComponentProps as _FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
 import { UserInterfaceProps as _UserInterfaceProps } from "./components/interface-builder/UserInterface"
 import { UserInterfaceContextManager as _UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
+import { EnrichedColumnDefinition as _EnrichedColumnDefinition } from "./components/grid/types"
 import "./styles/index.scss"
 
 /**
@@ -63,3 +64,4 @@ export type JSONRecord = _JSONRecord
 export type TSEnum<T extends string | undefined> = _TSEnum<T>
 export type UserInterfaceContextManager<T> = _UserInterfaceContextManager<T>
 export type UserInterfaceProps = _UserInterfaceProps
+export type EnrichedColumnDefinition = _EnrichedColumnDefinition

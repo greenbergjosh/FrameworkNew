@@ -84,9 +84,56 @@ export const tableDataTypes = [
   },
   {
     option: {
-      label: "Component",
-      value: "component",
+      label: "Layout",
+      value: "layout",
     },
-    form: [],
+    form: [
+      {
+        "hidden": true,
+        "maxLength": null,
+        "valueKey": "details.type",
+        "label": "Hidden required value",
+        "hideLabel": true,
+        "component": "input",
+        "defaultValue": "layout"
+      },
+      {
+        "hideLabel": false,
+        "label": "Data Property Mapping",
+        "valueKey": "details.dataMapping",
+        "hidden": false,
+        "component": "data-map",
+        "keyComponent": {
+          "hideLabel": false,
+          "label": "Original Property Key",
+          "component": "input",
+          "valueKey": "originalKey"
+        },
+        "valueComponent": {
+          "hideLabel": false,
+          "label": "Adjusted Property Key",
+          "component": "input",
+          "valueKey": "mappedKey"
+        },
+        "multiple": true,
+      },
+      {
+        "hidden": false,
+        "dashed": false,
+        "orientation": "horizontal",
+        "textAlignment": "center",
+        "text": "",
+        "valueKey": "",
+        "label": "",
+        "hideLabel": false,
+        "component": "divider"
+      },
+      {
+        "hideLabel": true,
+        "label": "",
+        "valueKey": "details.layout",
+        "component": "user-interface",
+      },
+    ],
   },
 ]

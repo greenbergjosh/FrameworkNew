@@ -8,6 +8,34 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"
 import { JSONRecord } from "../../../data/JSON"
 import { AppDispatch } from "../../../state/store.types"
+import { confirmationType } from "../../report/reportBody/SubmitButton"
+
+export type shapeType = "circle" | "circle-outline" | "round" | undefined
+export type sizeType = "small" | "large" | undefined
+export type buttonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
+
+export type buttonProps = {
+  component: "button"
+  requireConfirmation: boolean
+  confirmation?: confirmationType
+  defaultValue?: string
+  onChangeData: UserInterfaceProps["onChangeData"]
+  placeholder: string
+  userInterfaceData: UserInterfaceProps["data"]
+  valueKey: string
+  buttonLabel: string
+  icon: string
+  hideButtonLabel: boolean
+  shape: shapeType
+  size: sizeType
+  displayType: buttonDisplayType
+  block: boolean
+  ghost: boolean
+}
+
+interface ExecuteButtonProps {
+  buttonProps: buttonProps
+}
 
 export interface IExecuteInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
@@ -46,7 +74,7 @@ interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceCo
 
 interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-url"
-  remoteUrl?: PersistedConfig["id"] //<-- possibly should be remoteConfigType?
+  remoteUrl?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
 }
 
@@ -55,7 +83,8 @@ export type ExecuteInterfaceComponentProps = (
   | ExecuteRemoteConfigInterfaceComponentProps
   | ExecuteRemoteUrlInterfaceComponentProps
 ) &
-  (ExecuteInterfaceComponentDisplayModeProps | ExecuteInterfaceComponentEditModeProps)
+  (ExecuteInterfaceComponentDisplayModeProps | ExecuteInterfaceComponentEditModeProps) &
+  ExecuteButtonProps
 
 export interface ExecuteInterfaceComponentState {
   data: any[]

@@ -25,9 +25,6 @@ import {
   Sort,
   Toolbar,
 } from "@syncfusion/ej2-react-grids"
-import { StandardGridComponentProps } from "./types"
-import { PureGridComponent } from "./PureGridComponent"
-import { getUsableColumns, getUsableData } from "components/grid/utils"
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { tryCatch } from "fp-ts/lib/Either"
 import jsonLogic from "json-logic-js"
@@ -38,9 +35,13 @@ import {
   getCustomAverageAggregate,
   getCustomNullCountAggregate,
   getCustomValueCountAggregate,
-} from "components/grid/aggregates"
+} from "./aggregates"
+import { PureGridComponent } from "./PureGridComponent"
+import { StandardGridComponentProps } from "./types"
+import { getUsableColumns, getUsableData } from "./utils"
 
 /**
+ * Event Handler
  * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
  * @param arg
  */
@@ -59,6 +60,7 @@ export const StandardGrid = React.forwardRef(
       allowAdding,
       allowDeleting,
       allowEditing,
+      autoFitColumns,
       columns,
       contextData,
       data,
@@ -228,11 +230,15 @@ export const StandardGrid = React.forwardRef(
      * @param usableData
      */
     const handleDataBound = React.useCallback(() => {
-      //   typeof grid === "object" && grid!.current!.autoFitColumns()
-      if (defaultCollapseAll) {
-        typeof ref === "object" && ref!.current!.groupModule.collapseAll()
+      if (ref && typeof ref === "object" && ref.current) {
+        if (autoFitColumns) {
+          ref.current.autoFitColumns()
+        }
+        if (defaultCollapseAll) {
+          ref.current.groupModule.collapseAll()
+        }
       }
-    }, [ref, usableData, defaultCollapseAll])
+    }, [ref, usableData, defaultCollapseAll, autoFitColumns])
 
     // Helper function to handleToolbarClick
     const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
@@ -285,6 +291,7 @@ export const StandardGrid = React.forwardRef(
     return (
       <Spin spinning={loading}>
         <PureGridComponent
+          // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
           ref={ref}
           // Event Handlers
           actionComplete={handleActionComplete}

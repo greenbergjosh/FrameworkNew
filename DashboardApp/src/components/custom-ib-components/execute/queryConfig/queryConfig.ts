@@ -1,10 +1,10 @@
 /* From Query.tsx */
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
-import { QueryConfigCodec } from "../../../data/Report"
+import { QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ExecuteInterfaceComponentState } from "./types"
-import { Right } from "../../../data/Either"
+import { ExecuteInterfaceComponentState } from "../types"
+import { Right } from "../../../../data/Either"
 
 export function getQueryConfig(queryGlobalConfig: PersistedConfig) {
   const unparsedConfig = queryGlobalConfig.config.getOrElse("")
@@ -23,11 +23,11 @@ export function getQueryConfig(queryGlobalConfig: PersistedConfig) {
       } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
     },
     Right((queryConfig) => {
-      console.log(
-        "ExecuteInterfaceComponent.remoteQuery_getQueryConfig",
-        "queryConfig",
-        queryConfig
-      )
+      // console.log(
+      //   "ExecuteInterfaceComponent.remoteQuery_getQueryConfig",
+      //   "queryConfig",
+      //   queryConfig
+      // )
       return ({
         queryConfig,
       } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>

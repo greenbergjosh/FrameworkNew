@@ -34,6 +34,14 @@ export const editComponents: ComponentDefinition[] = [
             valueKey: "field",
             label: "Field",
             component: "input",
+            "visibilityConditions": {
+              "!==": [
+                "layout",
+                {
+                  "var": "type"
+                }
+              ]
+            },
           },
           {
             key: "type",

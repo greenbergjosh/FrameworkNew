@@ -6,13 +6,13 @@ import * as these from "fp-ts/lib/These"
 import { Errors } from "io-ts"
 import { reporter } from "io-ts-reporters"
 import React from "react"
-import { None, Some } from "../../data/Option"
-import { LocalReportConfig, QueryConfig } from "../../data/Report"
-import { Both, That, This } from "../../data/These"
-import { useRematch } from "../../hooks"
+import { None, Some } from "../../../data/Option"
+import { LocalReportConfig, QueryConfig } from "../../../data/Report"
+import { Both, That, This } from "../../../data/These"
+import { useRematch } from "../../../hooks"
 import styles from "./ReportOrErrors.module.scss"
 
-interface Props {
+interface ReportOrErrorsProps {
   children: (reportConfig: LocalReportConfig, queryConfig: QueryConfig) => JSX.Element
   reportConfig: Option<Either<Errors, LocalReportConfig>>
   reportId: Option<string>
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export const ReportOrErrors = React.memo(
-  ({ children, reportConfig, reportId, queryConfig }: Props) => {
+  ({ children, reportConfig, reportId, queryConfig }: ReportOrErrorsProps) => {
     const [fromStore, dispatch] = useRematch((state) => ({
       globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
     }))

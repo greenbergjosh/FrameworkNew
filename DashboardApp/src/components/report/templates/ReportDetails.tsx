@@ -1,23 +1,17 @@
 import * as Formik from "formik"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
-import { AdminUserInterfaceContextManagerProvider } from "../../data/AdminUserInterfaceContextManager"
-import { AppDispatch } from "../../state/store.types"
+import { AdminUserInterfaceContextManagerProvider } from "../../../data/AdminUserInterfaceContextManager"
+import { AppDispatch } from "../../../state/store.types"
 import { Form } from "antd"
 import { Identity } from "fp-ts/lib/Identity"
-import { isWhitespace } from "../../lib/string"
-import { JSONRecord } from "../../data/JSON"
+import { isWhitespace } from "../../../lib/string"
+import { JSONRecord } from "../../../data/JSON"
 import { none, Option, some, tryCatch } from "fp-ts/lib/Option"
 import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
-import { InProgressRemoteUpdateDraft } from "../../data/GlobalConfig.Config"
-import { mapData, ReportDetailsType } from "./getDetailTemplate"
-
-export type Values = {
-  config: string
-  name?: string //Branded<string, NonEmptyStringBrand>
-  id?: string
-  type?: string
-}
+import { InProgressRemoteUpdateDraft } from "../../../data/GlobalConfig.Config"
+import { mapData } from "./mapData"
+import { ReportDetailsType, Values } from "./types"
 
 export interface ReportDetailsProps {
   details: ReportDetailsType
@@ -96,7 +90,9 @@ export const ReportDetails = ({
     //   .then(() => setSubmitting(false))
   }
 
-  const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (value: JSONRecord) => {
+  const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (
+    value: JSONRecord
+  ) => {
     console.log("ReportBody.handleChangeData!", value)
     form.setFieldValue("config", JSON.stringify(value, null, 2))
     form.setFieldTouched("config", true)
@@ -120,7 +116,6 @@ export const ReportDetails = ({
           onSubmit={submitHandler}>
           {(form) => (
             <Form
-              id="edit-config-form"
               labelAlign="left"
               layout="horizontal"
               onSubmit={form.handleSubmit}
@@ -143,8 +138,6 @@ export const ReportDetails = ({
       )}
     </AdminUserInterfaceContextManagerProvider>
   )
-
-  return null
 }
 
 /***************************************************************************
