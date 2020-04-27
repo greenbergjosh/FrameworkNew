@@ -34,6 +34,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       columns,
       defaultCollapseAll,
       autoFitColumns,
+      enableVirtualization,
+      height,
       defaultPageSize,
       loadingKey = "loading",
       onChangeData,
@@ -91,6 +93,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     columns={columns}
                     defaultCollapseAll={defaultCollapseAll}
                     autoFitColumns={autoFitColumns}
+                    enableVirtualization={enableVirtualization}
+                    height={height}
                     defaultPageSize={defaultPageSize}
                     loadingKey={loadingKey}
                     onChangeData={onChangeData}

@@ -106,6 +106,29 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
               },
               {
+                key: "enableVirtualization",
+                valueKey: "enableVirtualization",
+                label: "Enable Virtualization",
+                component: "toggle",
+                defaultValue: false,
+                help: "Load and render rows as they scroll into view to improve performance in some cases.",
+              },
+              {
+                key: "height",
+                valueKey: "height",
+                label: "Table Height",
+                component: "number",
+                help: "A table height is required when Enable Virtualization is enabled.",
+                visibilityConditions: {
+                  "===": [
+                    true,
+                    {
+                      var: ["enableVirtualization"],
+                    },
+                  ],
+                },
+              },
+              {
                 key: "defaultPageSize",
                 valueKey: "defaultPageSize",
                 component: "select",

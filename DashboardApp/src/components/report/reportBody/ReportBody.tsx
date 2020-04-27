@@ -273,6 +273,8 @@ export const ReportBody = React.memo(
             pageSettings={pageSettings}
             defaultCollapseAll={reportConfig.defaultCollapseAll}
             autoFitColumns={reportConfig.autoFitColumns}
+            enableVirtualization={reportConfig.enableVirtualization}
+            height={reportConfig.height}
           />
         </div>
       </>

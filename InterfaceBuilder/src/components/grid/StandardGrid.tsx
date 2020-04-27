@@ -24,6 +24,7 @@ import {
   Resize,
   Sort,
   Toolbar,
+  VirtualScroll,
 } from "@syncfusion/ej2-react-grids"
 import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { tryCatch } from "fp-ts/lib/Either"
@@ -61,6 +62,8 @@ export const StandardGrid = React.forwardRef(
       allowDeleting,
       allowEditing,
       autoFitColumns,
+      enableVirtualization,
+      height,
       columns,
       contextData,
       data,
@@ -112,11 +115,6 @@ export const StandardGrid = React.forwardRef(
       }),
       [columnAverages, columnCounts]
     )
-
-    const aggregates = React.useMemo(getAggregates(usableColumns, customAggregateFunctions), [
-      usableColumns,
-      customAggregateFunctions, //<-- RWB added customAggregateFunctions
-    ])
 
     //**********************************
     // Settings
@@ -298,7 +296,7 @@ export const StandardGrid = React.forwardRef(
           toolbarClick={handleToolbarClick}
           dataBound={handleDataBound}
           // Attributes
-          aggregates={aggregates}
+          aggregates={getAggregates(usableColumns, customAggregateFunctions)}
           allowExcelExport={true}
           allowFiltering={true}
           allowGrouping={
@@ -315,9 +313,10 @@ export const StandardGrid = React.forwardRef(
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
+          enableVirtualization={enableVirtualization}
           filterSettings={{ type: "Menu" }}
           groupSettings={{ disablePageWiseAggregates: true, ...groupSettings }}
-          height="100%"
+          height={enableVirtualization ? height || "100%" : "100%"}
           width="100%"
           pageSettings={defaultedPageSettings}
           showColumnChooser={true}
@@ -338,6 +337,7 @@ export const StandardGrid = React.forwardRef(
               Freeze,
               Aggregate,
               Edit,
+              VirtualScroll,
             ]}
           />
         </PureGridComponent>

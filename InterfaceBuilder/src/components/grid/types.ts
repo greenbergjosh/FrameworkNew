@@ -14,6 +14,8 @@ export interface StandardGridComponentProps {
   allowDeleting?: boolean
   allowEditing?: boolean
   autoFitColumns?: boolean
+  enableVirtualization?: boolean
+  height?: number
   columns: ColumnModel[]
   contextData?: JSONRecord
   data: JSONRecord[]

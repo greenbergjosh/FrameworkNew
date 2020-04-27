@@ -27,6 +27,8 @@ export function DisplayTable({
   columns,
   defaultCollapseAll,
   autoFitColumns,
+  enableVirtualization,
+  height,
   defaultPageSize,
   loadingKey,
   onChangeData,
@@ -48,6 +50,8 @@ export function DisplayTable({
       data={dataArray}
       defaultCollapseAll={defaultCollapseAll}
       autoFitColumns={autoFitColumns}
+      enableVirtualization={enableVirtualization}
+      height={height}
       groupSettings={groupSettings}
       loading={!!loading}
       pageSettings={pageSettings}

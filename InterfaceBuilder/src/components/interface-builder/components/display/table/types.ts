@@ -27,6 +27,8 @@ interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "table"
   defaultCollapseAll?: boolean
   autoFitColumns?: boolean
+  enableVirtualization?: boolean
+  height?: number
   defaultPageSize?: number | string
   loadingKey?: string
   mode: UserInterfaceProps["mode"]
