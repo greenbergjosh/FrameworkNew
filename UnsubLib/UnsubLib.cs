@@ -1674,8 +1674,11 @@ namespace UnsubLib
             var campaignId = dtve.GetS("CampaignId");
             var digest = dtve.GetS("EmailMd5");
             var email = dtve.GetS("Email");
-            var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
             var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+            if (globalSuppGroup.Count == 0)
+            {
+                globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+            }
 
             try
             {
@@ -1707,11 +1710,11 @@ namespace UnsubLib
                 await _fw.Trace(nameof(IsUnsub), $"Preparing to search {fileName} in {SearchDirectory} with digest type '{type ?? string.Empty}' returned from campaign record (md5 if empty)");
                 var isUnsub = await UnixWrapper.BinarySearchSortedFile(Path.Combine(SearchDirectory, fileName), (type.IsNullOrWhitespace() || type == "md5" ? Hashing.Md5StringLength : Hashing.HexSHA512StringLength), digest);
 
-                if (!isUnsub && globalSupp)
+                if (!isUnsub)
                 {
                     var input = new Dictionary<string, object>
                     {
-                        {"SignalGroups", new[] { globalSuppGroup } }
+                        {"SignalGroups", globalSuppGroup.Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression": sg) }
                     };
                     if (!string.IsNullOrWhiteSpace(email))
                     {
@@ -1762,8 +1765,11 @@ namespace UnsubLib
         public async Task<string> IsUnsubList(IGenericEntity dtve)
         {
             var campaignId = dtve.GetS("CampaignId");
-            var globalSupp = dtve.GetS("GlobalSuppression").ParseBool() ?? false;
             var globalSuppGroup = FlexStringArray(dtve, "Groups") ?? FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+            if (globalSuppGroup.Count == 0)
+            {
+                globalSuppGroup = FlexStringArray(_fw.StartupConfiguration, "Config/DefaultSignalGroup");
+            }
 
             List<string> emailsNotFound = null;
 
@@ -1849,20 +1855,11 @@ namespace UnsubLib
                 throw new Exception("Search failed.");
             }
 
-            if (globalSupp)
+            if (emailsNotFound.Any())
             {
                 try
                 {
-                    for(var i = 0; i < globalSuppGroup.Count; i++)
-                    {
-                        if (globalSuppGroup[i].Value<string>() == "Tier1")
-                        {
-                            await _fw.Trace($"{nameof(IsUnsubList)}-Tier1", $"Received request with Tier1: {dtve.GetS("")}");
-                            globalSuppGroup[i] = "Tier1 Suppression";
-                        }
-                    }
-
-                    var args = Jw.Serialize(new { SignalGroups = globalSuppGroup, Emails = emailsNotFound.Where(e => e.Contains("@")).ToArray(), EmailMd5s = emailsNotFound.Where(e => !e.Contains("@")).ToArray() });
+                    var args = Jw.Serialize(new { SignalGroups = globalSuppGroup.Select(sg => sg.ToString() == "Tier1" ? "Tier1 Suppression" : sg), Emails = emailsNotFound.Where(e => e.Contains("@")).ToArray(), EmailMd5s = emailsNotFound.Where(e => !e.Contains("@")).ToArray() });
 
                     await _fw.Trace(nameof(IsUnsubList), $"Checking global suppression\n{args}");
 
