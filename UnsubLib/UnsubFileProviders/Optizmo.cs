@@ -46,10 +46,10 @@ namespace UnsubLib.UnsubFileProviders
             }).Where(rx => rx != null).ToArray();
         }
 
-        public bool CanHandle(IGenericEntity network, Uri uri) =>
-            uri.ToString().Contains("mailer-api.optizmo.net") || (uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace());
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) =>
+            uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || (uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace());
 
-        public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
+        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             if (uri.ToString().Contains("mailer-api.optizmo.net/accesskey/getfile/"))
                 return uri.ToString();
@@ -128,7 +128,7 @@ namespace UnsubLib.UnsubFileProviders
             return null;
         }
 
-        public async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
+        private async Task<string> GetOptizmoUnsubFileUri(string url, string optizmoToken)
         {
             try
             {
@@ -177,7 +177,5 @@ namespace UnsubLib.UnsubFileProviders
                 return null;
             }
         }
-
     }
-
 }

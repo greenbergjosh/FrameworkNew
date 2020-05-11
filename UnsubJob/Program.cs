@@ -98,7 +98,9 @@ namespace UnsubJob
                         {
                             try
                             {
+                                await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({n.GetS("Name")}, {c})...");
                                 await nw.ScheduledUnsubJob(n, c, skipQueuedCheck);
+                                await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({n.GetS("Name")}, {c})...");
                             }
                             catch (Exception e)
                             {
@@ -132,9 +134,9 @@ namespace UnsubJob
                     {
                         try
                         {
-                            await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name})...");
+                            await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name}, {networkCampaignId})...");
                             await nw.ScheduledUnsubJob(n, networkCampaignId, skipQueuedCheck);
-                            await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name})...");
+                            await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name}, {networkCampaignId})...");
                         }
                         catch (HaltingException e)
                         {

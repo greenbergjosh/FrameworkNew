@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using HtmlAgilityPack;
@@ -20,14 +19,10 @@ namespace UnsubLib.UnsubFileProviders
             _fw = fw;
         }
 
-        public bool CanHandle(IGenericEntity network, Uri uri)
-        {
-            return uri.ToString().Contains("unsubly.com");
-        }
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("unsubly.com");
 
-        public Task<string> GetFileUrl(IGenericEntity network, Uri uri)
+        public Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
-            
             var web = new HtmlWeb();
             var doc = web.Load(uri);
             var form = doc.DocumentNode.Descendants("form").Single();

@@ -112,9 +112,6 @@ namespace UnsubLib.NetworkProviders
 
                     await _fw.Trace("UV2C", $"GetSuppressionLocationUrl {url} {unsubRelationshipId}");
 
-                    if (url.Contains("unsubcentral"))
-                        url += $"|cid={unsubRelationshipId}";
-
                     return new Uri(url);
                 }
                 catch (HttpRequestException e)

@@ -427,7 +427,7 @@ namespace UnsubLib
                     }
                 }
 
-                var uri = await GetSuppressionFileUri(network, campaign.GetS("NetworkUnsubRelationshipId"), networkProvider, network.GetS("Credentials/Parallelism").ParseInt() ?? 5, null);
+                var uri = await GetSuppressionFileUri(network, campaign, networkProvider, network.GetS("Credentials/Parallelism").ParseInt() ?? 5, null);
 
                 if (uri.IsNullOrWhitespace())
                 {
@@ -469,11 +469,12 @@ namespace UnsubLib
 
                 if (networkCampaignFiles.ContainsKey(campId))
                 {
-                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Checking size of {networkCampaignFiles[campId]}");
+                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Checking size of {networkCampaignFiles[campId]} for campaign {campId}");
                     var newFileId = networkCampaignFiles[campId].ToLower();
                     var newFileName = newFileId + ".txt.srt";
-                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"File exists? {File.Exists(newFileName)} {newFileName}");
+                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"File exists? {File.Exists(FileCacheDirectory + "\\" + newFileName)} {newFileName} for campaign {campId}");
                     var newFileSize = await GetFileSize(newFileName);
+                    await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"File size: {newFileSize} {newFileName} for campaign {campId}");
 
                     if (!newFileSize.HasValue)
                     {
@@ -493,6 +494,8 @@ namespace UnsubLib
                             continue;
                         }
 
+                        await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Old File size: {oldFileSize} {oldFileName} for campaign {campId}");
+
                         // avoid diffs on sha512 unsub files fow now
                         if (c.GetS("SuppressionDigestType") != "sha512" && c.GetS("MostRecentUnsubFileId").Length == 36 && newFileSize.Value > oldFileSize.Value)
                         {
@@ -501,6 +504,8 @@ namespace UnsubLib
 
                         if (newFileSize.Value < oldFileSize.Value)
                         {
+                            await _fw.Trace($"{nameof(ProcessUnsubFiles)}-{networkName}", $"New file is smaller than old file for campaign {campId} old file: {oldFileName} new file: {newFileName}, deleting new file");
+
                             campaignsWithNegativeDelta.Add(campId);
 
                             Fs.TryDeleteFile(ServerWorkingDirectory + "\\" + newFileName);
@@ -615,11 +620,10 @@ namespace UnsubLib
 
             try
             {
-                task = campaigns.ForEachAsync(parallelism, cancelToken.Token, async c =>
+                task = campaigns.ForEachAsync(parallelism, cancelToken.Token, async campaign =>
                 {
-                    var campaignId = c.GetS("NetworkCampaignId");
-                    var unsubRelationshipId = c.GetS("NetworkUnsubRelationshipId");
-                    var fileDownloadUri = c.GetS("UnsubFileDownloadUri");
+                    var campaignId = campaign.GetS("NetworkCampaignId");
+                    var fileDownloadUri = campaign.GetS("UnsubFileDownloadUri");
 
                     string uri = null;
 
@@ -629,7 +633,7 @@ namespace UnsubLib
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Getting file url for {networkName} campaign {campaignId}");
 
-                        uri = await GetSuppressionFileUri(network, unsubRelationshipId, networkProvider, parallelism, fileDownloadUri);
+                        uri = await GetSuppressionFileUri(network, campaign, networkProvider, parallelism, fileDownloadUri);
 
                         await _fw.Trace($"{nameof(GetUnsubUris)}-{networkName}", $"Retrieved file url for {networkName} campaign {campaignId}");
                     }
@@ -645,9 +649,9 @@ namespace UnsubLib
 
                     if (!string.IsNullOrEmpty(uri))
                     {
-                        uris.AddOrUpdate(uri, _ => new List<IGenericEntity>() { c }, (_, list) =>
+                        uris.AddOrUpdate(uri, _ => new List<IGenericEntity>() { campaign }, (_, list) =>
                         {
-                            list.Add(c);
+                            list.Add(campaign);
                             return list;
                         });
                     }
@@ -1622,13 +1626,19 @@ namespace UnsubLib
             await tcs.Task;
         }
 
-        public async Task<(string fileId, string type, DateTime mostRecentFileDate, int? unsubRefreshPeriod)> GetFileIdAndTypeFromCampaignId(string campaignId)
+        public async Task<(bool? foundCampaign, string fileId, string type, DateTime mostRecentFileDate, int? unsubRefreshPeriod)> GetFileIdAndTypeFromCampaignId(string campaignId)
         {
             var args = Jw.Json(new { CId = campaignId });
 
             try
             {
                 var c = await Data.CallFn(Conn, "SelectNetworkCampaign", args);
+                if (string.IsNullOrWhiteSpace(c.GetS("Id")))
+                {
+                    await _fw.Error(nameof(GetFileIdAndTypeFromCampaignId), $"Invalid campaignId: {campaignId}");
+                    return (false, null, null, default, null);
+                }
+
                 var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
                 var type = c.GetS("SuppressionDigestType");
                 var mostRecentFileDateString = c.GetS("MostRecentUnsubFileDate");
@@ -1638,15 +1648,15 @@ namespace UnsubLib
                 if (fileId == null)
                 {
                     await _fw.Trace(nameof(GetFileIdAndTypeFromCampaignId), $"Missing unsub file id for campaign {campaignId} Response: {c.GetS("") ?? "[null]"}");
-                    return (fileId: null, type, mostRecentFileDate, unsubRefreshPeriod);
+                    return (true, fileId: null, type, mostRecentFileDate, unsubRefreshPeriod);
                 }
 
-                return (fileId, type, mostRecentFileDate, unsubRefreshPeriod);
+                return (true, fileId, type, mostRecentFileDate, unsubRefreshPeriod);
             }
             catch (Exception e)
             {
                 await _fw.Error(nameof(GetFileIdAndTypeFromCampaignId), $"Failed to retrieve file id: {args} {e.UnwrapForLog()}");
-                throw;
+                return default;
             }
         }
 
@@ -1682,11 +1692,21 @@ namespace UnsubLib
 
             try
             {
-                (var fileId, var type, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                (var foundCampaign, var fileId, var type, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                if (foundCampaign == false)
+                {
+                    return Jw.Serialize(new { Error = $"Invalid campaignId {campaignId}." });
+                }
+                else if (string.IsNullOrWhiteSpace(fileId))
+                {
+                    return Jw.Serialize(new { Error = $"No file for campaign {campaignId}." });
+                }
+
                 unsubRefreshPeriod ??= _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
                 if ((DateTime.Now - mostRecentFileDate).TotalDays > unsubRefreshPeriod)
                 {
-                    throw new InvalidOperationException($"File is greater than {unsubRefreshPeriod} days old.");
+                    await _fw.Error(nameof(IsUnsubList), $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old.");
+                    return Jw.Serialize(new { Error = $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old." });
                 }
 
                 var fileName = await GetFileFromFileId(fileId, ".txt.srt", SearchDirectory, SearchFileCacheSize);
@@ -1775,10 +1795,21 @@ namespace UnsubLib
 
             try
             {
-                (var fileId, var fileType, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
-                if ((DateTime.Now - mostRecentFileDate).TotalDays > (unsubRefreshPeriod ?? _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10))
+                (var foundCampaign, var fileId, var fileType, var mostRecentFileDate, var unsubRefreshPeriod) = await GetFileIdAndTypeFromCampaignId(campaignId);
+                if (foundCampaign == false)
                 {
-                    throw new InvalidOperationException("File is greater than 14 days old.");
+                    return Jw.Serialize(new { Error = $"Invalid campaignId {campaignId}." });
+                }
+                else if (string.IsNullOrWhiteSpace(fileId))
+                {
+                    return Jw.Serialize(new { Error = $"No file for campaign {campaignId}." });
+                }
+
+                unsubRefreshPeriod ??= _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
+                if ((DateTime.Now - mostRecentFileDate).TotalDays > unsubRefreshPeriod)
+                {
+                    await _fw.Error(nameof(IsUnsubList), $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old.");
+                    return Jw.Serialize(new { Error = $"File for campaign {campaignId} is greater than {unsubRefreshPeriod} days old." });
                 }
 
                 await _fw.Trace(nameof(IsUnsubList), $"Preparing to search {fileId} in database with digest type '{fileType ?? string.Empty}' returned from campaign record (md5 if empty)");
@@ -1877,8 +1908,9 @@ namespace UnsubLib
             return Jw.Serialize(new { NotUnsub = emailsNotFound });
         }
 
-        public async Task<string> GetSuppressionFileUri(IGenericEntity network, string unsubRelationshipId, INetworkProvider networkProvider, int maxConnections, string fileDownloadUri)
+        public async Task<string> GetSuppressionFileUri(IGenericEntity network, IGenericEntity campaign, INetworkProvider networkProvider, int maxConnections, string fileDownloadUri)
         {
+            var unsubRelationshipId = campaign.GetS("NetworkUnsubRelationshipId");
             if (unsubRelationshipId.IsNullOrWhitespace())
             {
                 await _fw.Error(nameof(GetSuppressionFileUri), $"Empty unsubRelationshipId");
@@ -1913,12 +1945,12 @@ namespace UnsubLib
 
                 if (locationUrl != null)
                 {
-                    var providers = fileLocationProviders.Where(p => p.CanHandle(network, locationUrl)).ToArray();
+                    var providers = fileLocationProviders.Where(p => p.CanHandle(network, unsubRelationshipId, locationUrl)).ToArray();
 
                     if (providers.Any())
                     {
 
-                        uri = providers.Select(p => p.GetFileUrl(network, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
+                        uri = providers.Select(p => p.GetFileUrl(network, unsubRelationshipId, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                         if (uri.IsNullOrWhitespace())
                         {

@@ -8,16 +8,16 @@ namespace UnsubLib.UnsubFileProviders
     public class MidEnity : IUnsubLocationProvider
     {
         private readonly FrameworkWrapper _fw;
-        private string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(MidEnity)}";
+        private readonly string _logMethod = $"{nameof(UnsubFileProviders)}.{nameof(MidEnity)}";
 
         public MidEnity(FrameworkWrapper fw)
         {
             _fw = fw;
         }
 
-        public bool CanHandle(IGenericEntity network, Uri uri) => uri.ToString().Contains("api.midenity.com");
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("api.midenity.com");
 
-        public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
+        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             var res = uri.ToString();
 

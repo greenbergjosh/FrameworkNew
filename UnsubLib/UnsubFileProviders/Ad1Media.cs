@@ -6,14 +6,8 @@ namespace UnsubLib.UnsubFileProviders
 {
     class Ad1Media : IUnsubLocationProvider
     {
-        public bool CanHandle(IGenericEntity network, Uri uri)
-        {
-            return uri.ToString().Contains("api.adgtracker.com");
-        }
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("api.adgtracker.com");
 
-        public Task<string> GetFileUrl(IGenericEntity network, Uri uri)
-        {
-            return Task.FromResult(uri.ToString());
-        }
+        public Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri) => Task.FromResult(uri.ToString());
     }
 }

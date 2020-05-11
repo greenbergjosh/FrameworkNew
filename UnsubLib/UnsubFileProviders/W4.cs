@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Web;
 using Utility;
 using Utility.GenericEntity;
 
@@ -16,12 +15,9 @@ namespace UnsubLib.UnsubFileProviders
             _fw = fw;
         }
 
-        public bool CanHandle(IGenericEntity network, Uri uri)
-        {
-            return uri.ToString().Contains("w4api.com");
-        }
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("w4api.com");
 
-        public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
+        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             if (uri.ToString().Contains("/pub/unsub_list/get/"))
                 return uri.ToString();

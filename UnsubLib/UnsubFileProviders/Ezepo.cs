@@ -18,9 +18,9 @@ namespace UnsubLib.UnsubFileProviders
             _fw = fw;
         }
 
-        public bool CanHandle(IGenericEntity network, Uri uri) => uri.ToString().Contains("ezepo.net");
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("ezepo.net");
 
-        public async Task<string> GetFileUrl(IGenericEntity network, Uri uri)
+        public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
             await _fw.Trace(_logMethod, $"Getting Unsub location: {uri}");
 
@@ -28,7 +28,10 @@ namespace UnsubLib.UnsubFileProviders
 
             await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {ezepoUnsubUrl}");
 
-            if (ezepoUnsubUrl != "") return ezepoUnsubUrl;
+            if (!string.IsNullOrWhiteSpace(ezepoUnsubUrl))
+            {
+                return ezepoUnsubUrl;
+            }
 
             await _fw.Error(_logMethod, $"Empty Ezepo url: {uri}");
 
@@ -67,18 +70,18 @@ namespace UnsubLib.UnsubFileProviders
                 if (result.success && result.body == "1")
                 {
                     var jobKey = jobId.Split('_');
-                    var downloadFileUrl = urlPrefix + 
-                                          "ezepo.net/download/files/" + 
-                                          affiliate + '/' + 
-                                          listId + '/' + 
-                                          source + '/' + 
-                                          authorizationCode + '/' + 
+                    var downloadFileUrl = urlPrefix +
+                                          "ezepo.net/download/files/" +
+                                          affiliate + '/' +
+                                          listId + '/' +
+                                          source + '/' +
+                                          authorizationCode + '/' +
                                           jobKey[1];
 
                     doc = web.Load(downloadFileUrl);
                     var lastScript = doc.DocumentNode.Descendants("script")
                         .Single(node => string.IsNullOrEmpty(node.GetAttributeValue("src", null)));
-                    
+
                     string bucket = null;
                     using (var sr = new StringReader(lastScript.InnerText))
                     {
@@ -120,13 +123,17 @@ namespace UnsubLib.UnsubFileProviders
                         }
 
                         if (DateTime.UtcNow.Subtract(startTime).TotalMinutes > 15)
+                        {
                             throw new TimeoutException();
+                        }
 
                         await Task.Delay(10000);
                     }
 
                     if (file != null)
+                    {
                         fileUrl = "https://s3.amazonaws.com/" + bucket + "/" + file;
+                    }
                 }
             }
             catch (Exception e)
@@ -139,7 +146,5 @@ namespace UnsubLib.UnsubFileProviders
 
             return fileUrl;
         }
-
     }
-
 }
