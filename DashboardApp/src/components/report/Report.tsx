@@ -5,19 +5,12 @@ import * as record from "fp-ts/lib/Record"
 import { Errors } from "io-ts"
 import React from "react"
 import { Left, Right, right } from "../../data/Either"
-import { JSONRecord } from "../../data/JSON"
 import { GlobalConfigReference, LocalReportConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
 import { store } from "../../state/store"
-import { ReportBody } from "./ReportBody"
-import { ReportOrErrors } from "./ReportOrErrors"
-
-export interface ReportProps {
-  data?: JSONRecord
-  isChildReport?: boolean
-  report: GlobalConfigReference | LocalReportConfig
-  withoutHeader?: boolean
-}
+import { ReportBody } from "./reportBody/ReportBody"
+import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
+import { ReportProps } from "./types"
 
 export const Report = (props: ReportProps): JSX.Element => {
   const [fromStore, dispatch] = useRematch((state) => ({

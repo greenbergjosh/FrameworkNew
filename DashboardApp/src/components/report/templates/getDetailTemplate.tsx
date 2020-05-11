@@ -1,30 +1,18 @@
-import { AppDispatch } from "../../state/store.types"
+import { AppDispatch } from "../../../state/store.types"
 import {
-  DataMappingItem,
   GlobalConfigReference,
   IReportDetailsAsReport,
   LocalReportConfig,
-  ReportDetailsAsConfigReport,
-  ReportDetailsAsInlineReport,
-  ReportDetailsAsLayout,
-  ReportDetailsAsNone,
   ReportDetailsAsReport,
   SimpleLayoutConfig,
-} from "../../data/Report"
-import { JSONRecord } from "../../data/JSON"
-import { Report } from "./Report"
+} from "../../../data/Report"
+import { JSONRecord } from "../../../data/JSON"
+import { Report } from "../Report"
 import React from "react"
 import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
-
-export type ReportDetailsType =
-  | string
-  | LocalReportConfig
-  | ReportDetailsAsInlineReport
-  | ReportDetailsAsConfigReport
-  | ReportDetailsAsLayout
-  | ReportDetailsAsNone
-  | SimpleLayoutConfig
+import { mapData, unMapData } from "./mapData"
+import { ReportDetailsType } from "./types"
 
 /***************************************************************************
  *
@@ -66,26 +54,6 @@ export const getDetailTemplate = (
     )
   }
   return null
-}
-
-export const mapData = (dataMapping: DataMappingItem[], data: JSONRecord) => {
-  if (dataMapping) {
-    return dataMapping.reduce(
-      (acc, { originalKey, mappedKey }) => ({ ...acc, [mappedKey]: acc[originalKey] }),
-      data
-    )
-  }
-  return data
-}
-
-export const unMapData = (dataMapping: DataMappingItem[], data: JSONRecord) => {
-  if (dataMapping) {
-    return dataMapping.reduce(
-      (acc, { originalKey, mappedKey }) => ({ ...acc, [originalKey]: acc[mappedKey] }),
-      data
-    )
-  }
-  return data
 }
 
 /***************************************************************************

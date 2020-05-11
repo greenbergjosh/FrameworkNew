@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { QueryConfig } from "../../../data/Report"
-import { ExecuteInterfaceComponentState } from "./types"
-import { JSONRecord } from "../../../data/JSON"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
-import { cheapHash } from "../../../lib/json"
+import { QueryConfig } from "../../../../data/Report"
+import { ExecuteInterfaceComponentState } from "../types"
+import { JSONRecord } from "../../../../data/JSON"
+import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
+import { cheapHash } from "../../../../lib/json"
 
 /* From Query.tsx */
 export async function remoteQuery_executeQuery(
