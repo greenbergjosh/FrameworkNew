@@ -23,6 +23,8 @@ namespace UnsubClientWeb
         {
             var requestFromPost = "";
             var result = Jw.Json(new { Error = "SeeLogs" });
+            var requestId = Guid.NewGuid();
+            var method = string.Empty;
 
             try
             {
@@ -32,9 +34,7 @@ namespace UnsubClientWeb
                 var dtv = Jw.JsonToGenericEntity(requestFromPost);
 
                 var unsub = new UnsubLib.UnsubLib(_fw);
-                var method = dtv.GetS("m");
-
-                var requestId = Guid.NewGuid();
+                method = dtv.GetS("m");
 
                 // Leaving out the await was on purpose, let's not hold up the call for trace logging
                 _ = _fw.Trace($"Router:{method} RequestId: {requestId}", dtv.GetS(""));
@@ -112,13 +112,13 @@ namespace UnsubClientWeb
                         File.AppendAllText("UnsubClient.log", $"{DateTime.Now}::{requestFromPost}::Unknown method{Environment.NewLine}");
                         break;
                 }
-
-                _ = _fw.Trace($"Router:{method} RequestId: {requestId} Response", result);
             }
             catch (Exception ex)
             {
                 File.AppendAllText("UnsubClient.log", $"{DateTime.Now}::{requestFromPost}::{ex.UnwrapForLog()}{Environment.NewLine}");
             }
+
+            _ = _fw.Trace($"Router:{method} RequestId: {requestId} Response", result);
 
             await context.WriteSuccessRespAsync(result);
         }
