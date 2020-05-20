@@ -311,8 +311,9 @@ namespace Utility.DataLayer
         {
             try
             {
-                var conn = Connections.GetValueOrDefault(conName);
-                var sp = conn?.Functions.GetValueOrDefault(method);
+                var conn = Connections.GetValueOrDefault(conName) ?? throw new ArgumentException($"Unknown connection name {conName}.", nameof(conName));
+                
+                var sp = conn.Functions.GetValueOrDefault(method);
 
                 if (sp.IsNullOrWhitespace())
                 {
