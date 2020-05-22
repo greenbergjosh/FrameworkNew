@@ -64,11 +64,19 @@ export function getUsableData(data: JSONRecord[], columns: ColumnModel[]) {
  * or else we'll get tons of exceptions in the grid.
  * @param columns
  */
-export function getUsableColumns(columns: ColumnModel[]) {
+export function getUsableColumns(columns: ColumnModel[], useSmallFont?: boolean) {
   // const destructureFunction = (content: string) => `({${fields.join(", ")}}) => ${content}`
+  /* #################################################################
+   *
+   * ITERATING THROUGH COLUMNS
+   * Add any per-column logic here so we only traverse columns once.
+   *
+   * #################################################################
+   */
   return cloneDeep(columns).map((column) => {
     const col = column as EnrichedColumnDefinition
-    // Intentionally mutating a clone
+    const classNames: string[] = []
+    // Intentionally mutating a clon e
 
     // Default should be to NOT allow HTML rendering. That's a terrible practice.
     if (typeof col.disableHtmlEncode === "undefined" || col.disableHtmlEncode === null) {
@@ -77,8 +85,22 @@ export function getUsableColumns(columns: ColumnModel[]) {
 
     // Remove cell padding option
     if (col.removeCellPadding) {
-      col.customAttributes = merge({ class: "-remove-cell-padding" }, col.customAttributes || {})
+      classNames.push("opg-remove-cell-padding")
     }
+
+    // Narrow width columns
+    if (col.maxWidth) {
+      // col.headerText = col.headerText && col.headerText.replace(/(\sw\/)|(\/)/g, "$1 $2")
+      classNames.push("opg-narrow-header")
+    }
+
+    // Small Font
+    if (useSmallFont) {
+      classNames.push("opg-small-font")
+    }
+
+    // Add CSS Classes
+    col.customAttributes = merge({ class: classNames }, col.customAttributes || {})
 
     // DATE COLUMN
     // Managing custom formatting options for Dates
@@ -115,4 +137,77 @@ export function getUsableColumns(columns: ColumnModel[]) {
 
     return col
   })
+}
+
+/**
+ *
+ * @param columns
+ * @param data
+ */
+export const count = (columns: EnrichedColumnDefinition[], data: JSONRecord[]) => {
+  return columns.reduce((acc, column) => {
+    if (column.field) {
+      data.forEach((row) => {
+        if (column.field) {
+          const rowValue = row[column.field]
+          if (
+            (column.type === "number" && typeof rowValue === "number" && !isNaN(rowValue)) ||
+            (column.type === "string" && typeof rowValue === "string" && rowValue) ||
+            (column.type === "boolean" && typeof rowValue === "boolean") ||
+            (column.type === "date" && rowValue) ||
+            (column.type === "datetime" && rowValue)
+          ) {
+            if (!acc[column.field]) {
+              acc[column.field] = 0
+            }
+            acc[column.field]++
+          }
+        }
+      })
+    }
+
+    return acc
+  }, {} as { [key: string]: number })
+}
+
+/**
+ *
+ * @param columns
+ * @param data
+ * @param counts
+ */
+export const average = (
+  columns: EnrichedColumnDefinition[],
+  data: JSONRecord[],
+  counts?: { [key: string]: number }
+) => {
+  const dataCounts = counts || count(columns, data)
+
+  return columns.reduce((acc, column) => {
+    if (column.field) {
+      data.forEach((row) => {
+        if (column.field) {
+          const rowValue = row[column.field]
+          if (typeof rowValue === "number" && !isNaN(rowValue)) {
+            if (!acc[column.field]) {
+              acc[column.field] = 0
+            }
+            acc[column.field] += rowValue / dataCounts[column.field]
+          }
+        }
+      })
+    }
+
+    return acc
+  }, {} as { [key: string]: number })
+}
+
+/**
+ *
+ * @param data
+ */
+export const flattenDataItems = (data: any[] | { items: any[] } | any) => {
+  if (Array.isArray(data) || Array.isArray(data.items)) {
+    return (Array.isArray(data) ? data : data.items).flatMap(flattenDataItems)
+  } else return data
 }

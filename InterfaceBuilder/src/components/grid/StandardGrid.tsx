@@ -7,7 +7,6 @@ import {
   AggregateRowModel,
   ColumnChooser,
   ColumnModel,
-  CustomSummaryType,
   DetailRow,
   DialogEditEventArgs,
   Edit,
@@ -30,16 +29,16 @@ import { ClickEventArgs } from "@syncfusion/ej2-navigations"
 import { tryCatch } from "fp-ts/lib/Either"
 import jsonLogic from "json-logic-js"
 import {
-  average,
-  count,
-  getAggregates,
+  getAggregateRows,
+  getCustomAggregateFunction,
   getCustomAverageAggregate,
   getCustomNullCountAggregate,
   getCustomValueCountAggregate,
 } from "./aggregates"
 import { PureGridComponent } from "./PureGridComponent"
-import { StandardGridComponentProps } from "./types"
-import { getUsableColumns, getUsableData } from "./utils"
+import { CustomAggregateFunctions, StandardGridComponentProps } from "./types"
+import { average, count, getUsableColumns, getUsableData } from "./utils"
+import { getCustomAggregateFunctionKey } from "components/grid/aggregates/getAggregateRows"
 
 /**
  * Event Handler
@@ -62,6 +61,8 @@ export const StandardGrid = React.forwardRef(
       allowDeleting,
       allowEditing,
       autoFitColumns,
+      useSmallFont,
+      enableAltRow,
       enableVirtualization,
       height,
       columns,
@@ -82,7 +83,7 @@ export const StandardGrid = React.forwardRef(
      */
 
     // Columns and Data
-    const usableColumns = React.useMemo(() => getUsableColumns(columns), [])
+    const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [])
     const usableData = React.useMemo(() => getUsableData(data, columns), [data])
 
     //**********************************
@@ -107,13 +108,39 @@ export const StandardGrid = React.forwardRef(
       getCustomNullCountAggregate(usableColumns, columnCounts),
       [columnCounts]
     )
-    const customAggregateFunctions: { [key: string]: CustomSummaryType } = React.useMemo(
-      () => ({
+
+    const remoteFunctions = React.useMemo(() => {
+      const fns: CustomAggregateFunctions = {}
+      usableColumns.map((col) => {
+        // Custom Aggregate Functions
+        if (
+          col.aggregationFunction === "Custom" &&
+          col.customAggregateFunction &&
+          col.customAggregateId
+        ) {
+          fns[getCustomAggregateFunctionKey(col)] = col.customAggregateFunction(
+            usableColumns,
+            columnCounts,
+            col.customAggregateOptions
+          )
+        }
+      })
+      return fns
+    }, [])
+
+    // Reference-safe collection of aggregate functions
+    const customAggregateFunctions: CustomAggregateFunctions = React.useMemo(() => {
+      return {
+        ...remoteFunctions,
         CustomIgnoreBlankAverage: customAverageAggregate,
         CustomValueCount: customValueCountAggregate,
         CustomNullCount: customNullCountAggregate,
-      }),
-      [columnAverages, columnCounts]
+      }
+    }, [columnAverages, columnCounts])
+
+    const aggregates = React.useMemo(
+      () => getAggregateRows(usableColumns, customAggregateFunctions),
+      [usableColumns, customAggregateFunctions]
     )
 
     //**********************************
@@ -196,7 +223,10 @@ export const StandardGrid = React.forwardRef(
             columns.forEach((column) => {
               const usableColumn = usableColumns.find(({ field }) => field === column.field)
               if (usableColumn && usableColumn.aggregationFunction) {
-                column.customAggregate = customAggregateFunctions[usableColumn.aggregationFunction]
+                column.customAggregate = getCustomAggregateFunction(
+                  usableColumn,
+                  customAggregateFunctions
+                )
               }
             })
         })
@@ -296,7 +326,7 @@ export const StandardGrid = React.forwardRef(
           toolbarClick={handleToolbarClick}
           dataBound={handleDataBound}
           // Attributes
-          aggregates={getAggregates(usableColumns, customAggregateFunctions)}
+          aggregates={aggregates}
           allowExcelExport={true}
           allowFiltering={true}
           allowGrouping={
@@ -308,11 +338,13 @@ export const StandardGrid = React.forwardRef(
           allowReordering={true}
           allowResizing={true}
           allowSorting={true}
+          allowTextWrap={true}
           columnMenuItems={["SortAscending", "SortDescending"]}
           columns={usableColumns}
           dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
+          enableAltRow={enableAltRow}
           enableVirtualization={enableVirtualization}
           filterSettings={{ type: "Menu" }}
           groupSettings={{ disablePageWiseAggregates: true, ...groupSettings }}
@@ -321,7 +353,8 @@ export const StandardGrid = React.forwardRef(
           pageSettings={defaultedPageSettings}
           showColumnChooser={true}
           sortSettings={sortSettings}
-          toolbar={[...editingToolbarItems, ...toolbar]}>
+          toolbar={[...editingToolbarItems, ...toolbar]}
+        >
           <Inject
             services={[
               Toolbar,

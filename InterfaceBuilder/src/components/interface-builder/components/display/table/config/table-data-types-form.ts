@@ -46,26 +46,6 @@ export const tableDataTypes = [
         component: "number-input",
         defaultValue: 2,
       },
-      {
-        key: "negative",
-        valueKey: "negative",
-        component: "select",
-        label: "Negative",
-        defaultValue: "black",
-        dataHandlerType: "local",
-        data: {
-          values: [
-            {
-              label: "Black",
-              value: "black",
-            },
-            // {
-            //   label: "Red",
-            //   value: "red",
-            // },
-          ],
-        },
-      },
     ],
   },
   {

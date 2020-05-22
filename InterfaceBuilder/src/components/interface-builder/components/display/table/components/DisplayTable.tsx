@@ -27,6 +27,8 @@ export function DisplayTable({
   columns,
   defaultCollapseAll,
   autoFitColumns,
+  useSmallFont,
+  enableAltRow,
   enableVirtualization,
   height,
   defaultPageSize,
@@ -50,6 +52,8 @@ export function DisplayTable({
       data={dataArray}
       defaultCollapseAll={defaultCollapseAll}
       autoFitColumns={autoFitColumns}
+      useSmallFont={useSmallFont}
+      enableAltRow={enableAltRow}
       enableVirtualization={enableVirtualization}
       height={height}
       groupSettings={groupSettings}
