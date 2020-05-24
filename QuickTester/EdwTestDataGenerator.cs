@@ -44,8 +44,8 @@ namespace QuickTester
 
                             var rss = new Dictionary<string, object>()
                             {
-                                {"rs1", rs1Id },
-                                {"rs2", rs2Id }
+                                {rs1ConfigId.ToString(), rs1Id },
+                                {rs2ConfigId.ToString(), rs2Id }
                             };
 
                             var e = new EdwBulkEvent();
