@@ -5,7 +5,7 @@ import {
   ColumnsDirective,
   GridComponent,
   Inject,
-  Page,
+  PagerComponent as Page,
   PageSettingsModel,
   RowDataBoundEventArgs,
 } from "@syncfusion/ej2-react-grids"

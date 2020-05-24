@@ -4,7 +4,7 @@ import * as Reach from "@reach/router"
 import * as record from "fp-ts/lib/Record"
 import { none, Option, some } from "fp-ts/lib/Option"
 import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
-import { matches, sortBy } from "lodash/fp"
+import { cloneDeep, matches, sortBy } from "lodash/fp"
 import { Button, PageHeader } from "antd"
 import { EnrichedColumnDefinition, StandardGrid } from "@opg/interface-builder"
 import { cheapHash } from "../../../lib/json"
@@ -15,7 +15,6 @@ import { QueryForm } from "./QueryForm"
 import { store } from "../../../state/store"
 import { useRematch } from "../../../hooks"
 import {
-  ColumnModel,
   GridComponent,
   GroupSettingsModel,
   PageSettingsModel,
@@ -24,6 +23,8 @@ import {
 } from "@syncfusion/ej2-react-grids"
 import { getDetailTemplate } from "../templates/getDetailTemplate"
 import { ColumnConfig } from "../templates/types"
+import { getCustomAggregateFunction } from "../templates/customAggregateFunction"
+import { getCellFormatter } from "../templates/cellFormatter"
 
 export interface ReportBodyProps {
   isChildReport?: boolean
@@ -205,18 +206,19 @@ export const ReportBody = React.memo(
       [parentData, parameterValues.getOrElse(record.empty)]
     )
 
-    /**
-     * COMPONENT COLUMNS
-     * Provide components to type "layout" columns
+    /*
+     * COLUMN TEMPLATES
+     * Provide layout components and formatters to columns
      */
     const columns: EnrichedColumnDefinition[] = React.useMemo(() => {
-      const _columns = (reportConfig.columns as unknown) as ColumnConfig[]
-      return _columns.map((columnConfig) => {
+      // Intentionally mutating a clone
+      return cloneDeep(reportConfig.columns).map((column) => {
+        const columnConfig = (column as unknown) as ColumnConfig
+
+        // Render a UserInterface (with JSX Elements) into a cell.
         if (columnConfig.type === "layout") {
-          /*
-           * Syncfusion grid does not type or document that "template"
-           * accepts React components, so we up-cast as any type.
-           */
+          // NOTE: Syncfusion grid does not type or document that "template"
+          // accepts React JSX Elements, so we up-cast as "any" type.
           columnConfig.template = getDetailTemplate(
             dispatch,
             columnConfig.details,
@@ -225,6 +227,32 @@ export const ReportBody = React.memo(
             onChangeData
           ) as any
         }
+
+        // Render a formatted string (that may include HTML) into a cell.
+        // NOTE: A cell can have either a "layout" or a "formatter" but not both.
+        if (columnConfig.cellFormatter && columnConfig.type !== "layout") {
+          const formatter = getCellFormatter(
+            columnConfig.cellFormatter,
+            columnConfig.cellFormatterOptions,
+            fromStore.configsById
+          )
+          if (typeof formatter === "function") {
+            columnConfig.formatter = formatter
+            columnConfig.disableHtmlEncode = false
+          }
+        }
+
+        // Render a formatted string (that may include HTML) into a summary row cell.
+        if (columnConfig.aggregationFunction === "Custom" && columnConfig.customAggregateId) {
+          const customAggregateFunction = getCustomAggregateFunction(
+            columnConfig.customAggregateId,
+            fromStore.configsById
+          )
+          if (typeof customAggregateFunction === "function") {
+            columnConfig.customAggregateFunction = customAggregateFunction
+          }
+        }
+
         return columnConfig
       })
     }, [reportConfig.columns, parameterValues.toUndefined(), parentData])
@@ -273,6 +301,8 @@ export const ReportBody = React.memo(
             pageSettings={pageSettings}
             defaultCollapseAll={reportConfig.defaultCollapseAll}
             autoFitColumns={reportConfig.autoFitColumns}
+            useSmallFont={reportConfig.useSmallFont}
+            enableAltRow={reportConfig.enableAltRow}
             enableVirtualization={reportConfig.enableVirtualization}
             height={reportConfig.height}
           />

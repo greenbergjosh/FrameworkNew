@@ -106,6 +106,20 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
               },
               {
+                key: "useSmallFont",
+                valueKey: "useSmallFont",
+                label: "Small Font Size",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
+                key: "enableAltRow",
+                valueKey: "enableAltRow",
+                label: "Enable Alt Row Color",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
                 key: "enableVirtualization",
                 valueKey: "enableVirtualization",
                 label: "Enable Virtualization",
@@ -117,7 +131,7 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "height",
                 valueKey: "height",
                 label: "Table Height",
-                component: "number",
+                component: "number-input",
                 help: "A table height is required when Enable Virtualization is enabled.",
                 visibilityConditions: {
                   "===": [

@@ -34,6 +34,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       columns,
       defaultCollapseAll,
       autoFitColumns,
+      useSmallFont,
+      enableAltRow,
       enableVirtualization,
       height,
       defaultPageSize,
@@ -93,6 +95,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                     columns={columns}
                     defaultCollapseAll={defaultCollapseAll}
                     autoFitColumns={autoFitColumns}
+                    useSmallFont={useSmallFont}
+                    enableAltRow={enableAltRow}
                     enableVirtualization={enableVirtualization}
                     height={height}
                     defaultPageSize={defaultPageSize}

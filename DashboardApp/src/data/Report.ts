@@ -36,6 +36,8 @@ export type LocalReportConfig = {
   dataMapping?: DataMappingItem[]
   defaultCollapseAll?: boolean
   autoFitColumns?: boolean
+  useSmallFont?: boolean
+  enableAltRow?: boolean
   enableVirtualization?: boolean
   height?: number
   defaultPageSize?: number | string
