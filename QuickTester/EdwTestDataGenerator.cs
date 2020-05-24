@@ -162,7 +162,7 @@ namespace QuickTester
             }
         }
 
-        private static string SerializeEdwEvents(IEnumerable<EdwBulkEvent> events) => JsonConvert.SerializeObject(events.Select(e => JsonConvert.DeserializeObject(e.ToString())));
+        private static string SerializeEdwEvents(IEnumerable<EdwBulkEvent> events) => JsonConvert.SerializeObject(events.Select(e => JsonConvert.DeserializeObject(e.ToString())), Formatting.Indented);
 
         private static string GetFolder(string folderName)
         {
