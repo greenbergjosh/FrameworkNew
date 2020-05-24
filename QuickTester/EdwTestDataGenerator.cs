@@ -49,11 +49,11 @@ namespace QuickTester
                             };
 
                             var e = new EdwBulkEvent();
-                            e.AddRS(EdwBulkEvent.EdwType.Immediate, rs1Id, targetDate, PL.O(new { ts = targetDate, s = subCampaign }), rs1ConfigId); // file export type = RS1
+                            e.AddRS(EdwBulkEvent.EdwType.Immediate, rs1Id, targetDate, PL.O(new { s = subCampaign }), rs1ConfigId); // file export type = RS1
                             events.Add(e);
 
                             e = new EdwBulkEvent();
-                            e.AddRS(EdwBulkEvent.EdwType.Checked, rs2Id, targetDate, PL.O(new { ts = targetDate, s = subCampaign }), rs2ConfigId); // file export type = RS2 - 1
+                            e.AddRS(EdwBulkEvent.EdwType.Checked, rs2Id, targetDate, PL.O(new {s = subCampaign }), rs2ConfigId); // file export type = RS2 - 1
                             events.Add(e);
 
                             e = new EdwBulkEvent();
