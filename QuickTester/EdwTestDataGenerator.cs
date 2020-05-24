@@ -53,7 +53,7 @@ namespace QuickTester
                             events.Add(e);
 
                             e = new EdwBulkEvent();
-                            e.AddRS(EdwBulkEvent.EdwType.Immediate, rs2Id, targetDate, PL.O(new { ts = targetDate, s = subCampaign }), rs2ConfigId); // file export type = RS2 - 1
+                            e.AddRS(EdwBulkEvent.EdwType.Checked, rs2Id, targetDate, PL.O(new { ts = targetDate, s = subCampaign }), rs2ConfigId); // file export type = RS2 - 1
                             events.Add(e);
 
                             e = new EdwBulkEvent();
@@ -84,10 +84,9 @@ namespace QuickTester
                             e.AddEvent(eventGuids[8], targetDate, rss, null, PL.O(new { et = "Survey", age }));
                             events.Add(e);
 
-                            //e = new EdwBulkEvent();
-                            // TODO: I don't know what this line means
-                            //rss.add(g[1], { age: < age >})  --file export type = RS2 - 2
-                            //events.Add(e);
+                            e = new EdwBulkEvent();
+                            e.AddRS(EdwBulkEvent.EdwType.CheckedDetail, rs2Id, targetDate, PL.O(new { age }), rs2ConfigId); // file export type = RS2 - 1
+                            events.Add(e);
 
                             e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[9], targetDate, rss, null, PL.O(new { et = "Action" }));
@@ -116,14 +115,14 @@ namespace QuickTester
 
             foreach (var eventTypeGroup in events.GroupBy(e =>
             {
-                if (e.RsTypes[EdwBulkEvent.EdwType.Immediate].Any())
+                if (e.RsTypes[EdwBulkEvent.EdwType.Event].Any())
                 {
-                    return "RS";
+                    var payload = JObject.Parse(e.RsTypes[EdwBulkEvent.EdwType.Event][0].ps.Single(t => t.Item1 == "payload").Item2);
+
+                    return payload["et"].Value<string>();
                 }
 
-                var payload = JObject.Parse(e.RsTypes[EdwBulkEvent.EdwType.Event][0].ps.Single(t => t.Item1 == "payload").Item2);
-
-                return payload["et"].Value<string>();
+                return "RS";
             }))
             {
                 var file = Path.Combine(folder, $"{eventTypeGroup.Key}.txt");
