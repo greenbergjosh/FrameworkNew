@@ -26,13 +26,23 @@ namespace Utility.EDW.Reporting
               { EdwType.Checked, new List<PL>()}, { EdwType.CheckedDetail, new List<PL>()} };
 
         public void AddEvent(Guid uid, DateTime tms, Dictionary<string, object> rsid,
-            List<string> whep, PL payload)
+            IEnumerable<string> whep, PL payload)
         {
             RsTypes[EdwType.Event].Add(
                  PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
                      .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))  // this rsid is the instance id
                                                        .Add(PL.N("whep", SL.C(whep))))));
         }
+
+        public void AddEventWhepD(Guid uid, DateTime tms, Dictionary<string, object> rsid,
+            IDictionary<string, object> whep, PL payload)
+        {
+            RsTypes[EdwType.Event].Add(
+                 PL.O(new { id = uid, ts = tms.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss.fff") })
+                     .Add(PL.N("payload", PL.C(payload).Add(PL.N("rsid", PL.D(rsid)))  // this rsid is the instance id
+                                                       .Add(PL.N("whep", PL.D(whep))))));
+        }
+
 
         public void AddRS(EdwType t, Guid uid, DateTime tms, PL payload, Guid configId)
         {

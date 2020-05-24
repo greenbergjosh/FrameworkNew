@@ -1,19 +1,21 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
+using MimeKit;
+using Newtonsoft.Json;
+using Utility;
+using Utility.DataLayer;
 
 namespace QuickTester
 {
     internal class Program
     {
-        private static async Task Main(string[] _args)
+        private static void Main(string[] _args)
         {
-            //await DataFlowTester.TestDynamicDataFlow();
-            //await DataFlowTester.TestDynamicBlockCreator();
-            //await DataFlowTester.TestRoslyn();
-            await DataFlowTester.TestDynamicDataflow();
-
-            Console.WriteLine("Complete");
-            Console.ReadLine();
+            EdwTestDataGenerator.GenerateTestData();
         }
     }
 }
