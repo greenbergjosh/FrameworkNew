@@ -84,8 +84,10 @@ namespace QuickTester
                             e.AddEvent(eventGuids[8], targetDate, rss, null, PL.O(new { et = "Survey", age }));
                             events.Add(e);
 
-                            // I don't know what this line means
+                            //e = new EdwBulkEvent();
+                            // TODO: I don't know what this line means
                             //rss.add(g[1], { age: < age >})  --file export type = RS2 - 2
+                            //events.Add(e);
 
                             e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[9], targetDate, rss, null, PL.O(new { et = "Action" }));
