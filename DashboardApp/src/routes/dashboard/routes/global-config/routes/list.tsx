@@ -14,6 +14,7 @@ import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
 import { delay, Task, task } from "fp-ts/lib/Task"
 import { Branded } from "io-ts"
+// eslint-disable-next-line no-duplicate-imports
 import * as iots from "io-ts"
 import { reporter } from "io-ts-reporters"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
@@ -378,7 +379,9 @@ function ConfigTable({ configs }: ConfigTableProps) {
               dispatch.logger.logError(`No filters exist on table for Config.Type`)
             },
             function Some(typeFilters) {
-              setConfigTypeFilters(typeFilters)
+              if (typeFilters) {
+                setConfigTypeFilters(typeFilters)
+              }
             }
           )
         }}

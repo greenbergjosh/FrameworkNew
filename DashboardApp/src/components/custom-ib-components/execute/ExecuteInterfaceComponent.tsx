@@ -65,7 +65,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     const { queryType, remoteQuery, remoteUrl, remoteConfigType, userInterfaceData } = this.props
     if (!hasContext(this.context)) return
     if (queryType) {
-      const { loadById } = this.context
+      const { loadById } = this.context as AdminUserInterfaceContextManager
       let persistedConfigId: PersistedConfig["id"]
       switch (queryType) {
         case "remote-query":
@@ -104,7 +104,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           queryConfig,
           parameterValues,
           queryFormValues,
-          this.context
+          this.context as AdminUserInterfaceContextManager
         ).then((newState) => {
           this.setState((state) => ({
             ...state,
@@ -117,7 +117,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           queryConfig,
           parameterValues,
           queryFormValues,
-          this.context,
+          this.context as AdminUserInterfaceContextManager,
         ).then((newState) => {
           this.setState((state) => ({
             ...state,

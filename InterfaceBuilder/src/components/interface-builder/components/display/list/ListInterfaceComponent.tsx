@@ -2,14 +2,9 @@ import { Button, Empty } from "antd"
 import classNames from "classnames"
 import { get, set } from "lodash/fp"
 import React from "react"
-import uuid from "uuid/v4"
+import { v4 as uuid } from "uuid"
 import { ComponentRenderer, ComponentRendererModeContext } from "../../../ComponentRenderer"
-import {
-  Draggable,
-  DraggedItemProps,
-  Droppable,
-  DroppableTargetProps
-  } from "../../../dnd"
+import { Draggable, DraggedItemProps, Droppable, DroppableTargetProps } from "../../../dnd"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { listManageForm } from "./list-manage-form"
