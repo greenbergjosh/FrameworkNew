@@ -67,14 +67,12 @@ const resolveDetails = (
   if (!details) {
     return null
   } else if (typeof details === "string") {
-    // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
     return { type: "GlobalConfigReference", id: details } as GlobalConfigReference
   }
   switch (details.type) {
     case "report":
       return getReportConfig(details)
     case "layout":
-      // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
       return { type: "SimpleLayoutConfig", layout: details.layout } as SimpleLayoutConfig
     case "ReportConfig":
       return details
@@ -88,10 +86,8 @@ const resolveDetails = (
 function getReportConfig(reportDetails: ReportDetailsAsReport) {
   switch (reportDetails.reportType) {
     case "config":
-      // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
       return { type: "GlobalConfigReference", id: reportDetails.report } as GlobalConfigReference
     case "inline":
-      // eslint-disable-next-line @typescript-eslint/no-object-literal-type-assertion
       return {
         type: "ReportConfig",
         columns: reportDetails.data.columns,
