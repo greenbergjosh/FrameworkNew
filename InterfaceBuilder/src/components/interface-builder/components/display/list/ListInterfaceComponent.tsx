@@ -14,7 +14,6 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
     allowReorder: true,
     orientation: "vertical",
     interleave: "none",
-    unwrappedList: false,
     unwrapped: false,
     userInterfaceData: {},
     valueKey: "data",
@@ -44,7 +43,6 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       onChangeData,
       orientation,
       preconfigured,
-      unwrappedList,
       unwrapped,
       userInterfaceData,
       valueKey,
@@ -68,7 +66,6 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   onChangeData={onChangeData}
                   orientation={orientation}
                   unwrapped={unwrapped}
-                  unwrappedList={unwrappedList}
                   userInterfaceData={userInterfaceData}
                   valueKey={valueKey}
                 />

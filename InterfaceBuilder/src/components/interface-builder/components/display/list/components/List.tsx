@@ -64,6 +64,7 @@ export function List({
       {() =>
         components.map((component, index) => (
           <ListItem
+            key={`ListItem${index}`}
             data={data}
             onChangeData={onChangeData}
             valueKey={valueKey}

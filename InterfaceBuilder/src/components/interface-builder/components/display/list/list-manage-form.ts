@@ -28,15 +28,6 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "components",
               },
               {
-                key: "unwrappedList",
-                valueKey: "unwrappedList",
-                label: "List Unwrapped?",
-                help:
-                  "Normally, the list is wrapped in a JSON object. Unwrapping allows the list to be a bare array.",
-                component: "toggle",
-                defaultValue: false,
-              },
-              {
                 key: "unwrapped",
                 valueKey: "unwrapped",
                 label: "Unwrapped Values?",

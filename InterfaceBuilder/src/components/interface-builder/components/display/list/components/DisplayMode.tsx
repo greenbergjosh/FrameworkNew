@@ -16,7 +16,6 @@ export function DisplayMode({
   valueKey,
   orientation,
   unwrapped,
-  unwrappedList,
   addItemLabel,
   description,
 }: DisplayModeProps) {

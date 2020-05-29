@@ -9,14 +9,13 @@ export function ListItem({
   interleave,
   onChangeData,
   unwrapped,
-  unwrappedList,
   userInterfaceData,
   valueKey,
   component,
   index,
   listId,
 }: ListItemProps) {
-  const foo = React.useMemo(() => {
+  const unwrappedData = React.useMemo(() => {
     return data[index]
       ? unwrapped
         ? {
@@ -93,7 +92,7 @@ export function ListItem({
           key={index}
           components={[component]}
           componentLimit={interleave === "none" ? 1 : 0}
-          data={foo}
+          data={unwrappedData}
           onChangeData={handleChangeData(index)}
           onChangeSchema={handleSchemaChange}
         />

@@ -28,7 +28,6 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
   preconfigured?: boolean
-  unwrappedList?: boolean
   unwrapped?: boolean
 }
 
@@ -40,7 +39,6 @@ export interface ModeProps {
   valueKey: string
   orientation?: OrientationType
   unwrapped?: boolean
-  unwrappedList?: boolean
 }
 
 export interface ListProps extends ModeProps {

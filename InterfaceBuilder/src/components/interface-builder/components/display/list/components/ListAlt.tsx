@@ -1,3 +1,6 @@
+/* NOTE:
+ * This is a draft that Patrick started when he wrote this component.
+*/
 /*
   <br />
   <ComponentRenderer
