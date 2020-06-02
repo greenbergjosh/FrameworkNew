@@ -1,6 +1,6 @@
 const path = require("path")
 const { override, fixBabelImports } = require("customize-cra")
-const  WebpackNotifierPlugin = require('webpack-notifier')
+const  WebpackBuildNotifierPlugin = require('webpack-build-notifier')
 
 /**
  * See for more info:
@@ -36,6 +36,6 @@ module.exports = function customizeCRA(config, env) {
   //   use: ["style-loader", "css-loader"],
   // })
 
-  config.plugins.push(new WebpackNotifierPlugin())
+  config.plugins.push(new WebpackBuildNotifierPlugin())
   return override(...overrides)(config, env)
 }
