@@ -16,6 +16,7 @@ export interface ISelectProps {
   allowClear: boolean
   placeholder: string
   multiple?: boolean
+  size: AntdSelectProps["size"],
 }
 export type SelectProps = SelectableProps & ISelectProps
 export const MODES: TSEnum<AntdSelectProps["mode"]> = {
@@ -112,7 +113,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     loadStatus,
     options,
   }: SelectableChildProps) => {
-    const { placeholder, allowClear, multiple } = this.props as ISelectProps
+    const { placeholder, allowClear, multiple, size } = this.props as ISelectProps
 
     const getKeyFromValue = () => {
       const value = getCleanValue()
@@ -131,7 +132,9 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
         onChange={this.handleChange}
         optionFilterProp="label"
         placeholder={placeholder}
-        showSearch>
+        showSearch
+        size={size}
+      >
         {options.map((option) => (
           <Select.Option key={`${option.value}`} value={option.value}>
             {typeof option.icon !== "undefined" ? (

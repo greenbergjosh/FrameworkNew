@@ -13,6 +13,7 @@ import { DownloadInterfaceComponent } from "../components/interface-builder/comp
 import { EmptyInterfaceComponent } from "../components/interface-builder/components/display/empty/EmptyInterfaceComponent"
 import { FormInterfaceComponent } from "../components/interface-builder/components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "../components/interface-builder/components/form/input/InputInterfaceComponent"
+import { RepeaterInterfaceComponent } from "../components/interface-builder/components/display/repeater/RepeaterInterfaceComponent"
 import { ListInterfaceComponent } from "../components/interface-builder/components/display/list/ListInterfaceComponent"
 import { NumberInputInterfaceComponent } from "../components/interface-builder/components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "../components/interface-builder/components/form/number-range/NumberRangeInterfaceComponent"
@@ -55,6 +56,7 @@ export default {
   form: FormInterfaceComponent,
   input: InputInterfaceComponent,
   list: ListInterfaceComponent,
+  repeater: RepeaterInterfaceComponent,
   "number-input": NumberInputInterfaceComponent,
   "number-range": NumberRangeInterfaceComponent,
   password: PasswordInterfaceComponent,

@@ -44,6 +44,31 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
               },
+              {
+                key: "size",
+                valueKey: "size",
+                ordinal: 10,
+                defaultValue: "default",
+                label: "Size",
+                component: "select",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "Small",
+                      value: "small",
+                    },
+                    {
+                      label: "Default",
+                      value: "default",
+                    },
+                    {
+                      label: "Large",
+                      value: "large",
+                    },
+                  ],
+                },
+              },
             ]
           }
         ],

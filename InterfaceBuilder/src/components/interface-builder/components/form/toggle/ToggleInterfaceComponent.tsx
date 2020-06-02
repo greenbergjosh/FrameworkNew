@@ -1,4 +1,5 @@
 import { Switch } from "antd"
+import { SwitchProps } from "antd/lib/switch"
 import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -16,6 +17,7 @@ export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+  size: SwitchProps["size"]
 }
 
 export class ToggleInterfaceComponent extends BaseInterfaceComponent<
@@ -47,10 +49,10 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { defaultValue, inverted, userInterfaceData, valueKey } = this.props
+    const { defaultValue, inverted, userInterfaceData, valueKey, size } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const realValue = (typeof rawValue !== "undefined" ? rawValue : defaultValue) || false
     const finalValue = inverted ? !realValue : realValue
-    return <Switch onChange={this.handleChange} checked={finalValue} />
+    return <Switch onChange={this.handleChange} checked={finalValue} size={size} />
   }
 }

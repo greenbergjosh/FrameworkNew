@@ -57,9 +57,9 @@
     js-tokens "^4.0.0"
 
 "@babel/runtime-corejs3@^7.8.3":
-  version "7.10.1"
-  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.10.1.tgz#ae8a85a04029d94ab8c3b5237a1031a9d631b515"
-  integrity sha512-/NLH0a34E/moPbqB1C/72I2gvMOmOly2JQARcRE1+PWCdHwMQ3la4sz7WnlK/EVHiBjQruH2WqE8YufL632Y8w==
+  version "7.10.2"
+  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.10.2.tgz#3511797ddf9a3d6f3ce46b99cc835184817eaa4e"
+  integrity sha512-+a2M/u7r15o3dV1NEizr9bRi+KUVnrs/qYxF0Z06DAPx/4VCWaz1WA7EcbE+uqGgt39lp5akWGmHsTseIkHkHg==
   dependencies:
     core-js-pure "^3.0.0"
     regenerator-runtime "^0.13.4"
@@ -130,17 +130,24 @@
   dependencies:
     "@syncfusion/ej2-base" "~18.1.52"
 
-"@syncfusion/ej2-dropdowns@~18.1.54":
-  version "18.1.54"
-  resolved "https://registry.yarnpkg.com/@syncfusion/ej2-dropdowns/-/ej2-dropdowns-18.1.54.tgz#3fd0b2b0f42d52e22daaaad09b0d77525aed6680"
-  integrity sha512-oapgCRAk5uqjaj483bM3SPfHeJPRCuv92U05QmKH6nl5gitdm0H6R04hQqlhUQWgQmU79PHWqB1qBhgZItyLiA==
+"@syncfusion/ej2-data@~18.1.55":
+  version "18.1.55"
+  resolved "https://registry.yarnpkg.com/@syncfusion/ej2-data/-/ej2-data-18.1.55.tgz#bf4f62db531447c654e8e2cabfeb6b3eeb90be59"
+  integrity sha512-sTz4k3diSgy/7dwQjb9MByZyVDD+uzgjaKVO6xocDTcZpYSvcg+J/p+ORhahQULC0aHBd/qZv7ctiQ1acNrImw==
   dependencies:
     "@syncfusion/ej2-base" "~18.1.53"
-    "@syncfusion/ej2-data" "~18.1.52"
-    "@syncfusion/ej2-inputs" "~18.1.54"
+
+"@syncfusion/ej2-dropdowns@~18.1.54":
+  version "18.1.55"
+  resolved "https://registry.yarnpkg.com/@syncfusion/ej2-dropdowns/-/ej2-dropdowns-18.1.55.tgz#160896fb94dc864e834dc3ed4ad4418c15707374"
+  integrity sha512-R4kgF3wRcoY+qCPyHxDNHQWnJbyR6Il9QuLbbPkuZfg2M49iZgkQi+QJHZIb3eEz+l3Spt92V/CHQbBVZrMwtw==
+  dependencies:
+    "@syncfusion/ej2-base" "~18.1.53"
+    "@syncfusion/ej2-data" "~18.1.55"
+    "@syncfusion/ej2-inputs" "~18.1.55"
     "@syncfusion/ej2-lists" "~18.1.53"
-    "@syncfusion/ej2-navigations" "~18.1.54"
-    "@syncfusion/ej2-popups" "~18.1.53"
+    "@syncfusion/ej2-navigations" "~18.1.55"
+    "@syncfusion/ej2-popups" "~18.1.55"
 
 "@syncfusion/ej2-excel-export@~18.1.53":
   version "18.1.53"
@@ -180,7 +187,7 @@
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-icons/-/ej2-icons-18.1.52.tgz#3aac373083d60338aa65a0cb44d0db3472c409ba"
   integrity sha512-G7TQ+1Y7BVUGR8qlo/NOx7IxQ/WkR9qoAyWVSs3sNNxnpM8HXP16N0BiexPwxkNEgoRmdByngtWPddHax9cdbA==
 
-"@syncfusion/ej2-inputs@18.1.54", "@syncfusion/ej2-inputs@~18.1.53", "@syncfusion/ej2-inputs@~18.1.54":
+"@syncfusion/ej2-inputs@18.1.54", "@syncfusion/ej2-inputs@~18.1.53":
   version "18.1.54"
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-inputs/-/ej2-inputs-18.1.54.tgz#1c8a755fbd80601dcaa9da40e1902567ba7d11fa"
   integrity sha512-tbJp0NV5uW33A2GOsuY46mKuJipd9Y0xYo4TJH5Hn7gzpWrZrkx4afGNw/wDL4lRc/p3o1fOaxTMQYw2J7XheQ==
@@ -188,6 +195,16 @@
     "@syncfusion/ej2-base" "~18.1.53"
     "@syncfusion/ej2-buttons" "~18.1.52"
     "@syncfusion/ej2-popups" "~18.1.53"
+    "@syncfusion/ej2-splitbuttons" "~18.1.52"
+
+"@syncfusion/ej2-inputs@~18.1.54", "@syncfusion/ej2-inputs@~18.1.55":
+  version "18.1.55"
+  resolved "https://registry.yarnpkg.com/@syncfusion/ej2-inputs/-/ej2-inputs-18.1.55.tgz#594d09bc5bb7c83fddbf74267030d1b683338cef"
+  integrity sha512-Zj8xTdOEEBxvom7DI5syRMzeQzabOTuZwW9I/8nmxixURjdlAUIckK07KKqrXkTCAUxcQ+I9dUpbV6ZLTivMvA==
+  dependencies:
+    "@syncfusion/ej2-base" "~18.1.53"
+    "@syncfusion/ej2-buttons" "~18.1.52"
+    "@syncfusion/ej2-popups" "~18.1.55"
     "@syncfusion/ej2-splitbuttons" "~18.1.52"
 
 "@syncfusion/ej2-lists@~18.1.53":
@@ -199,7 +216,7 @@
     "@syncfusion/ej2-buttons" "~18.1.52"
     "@syncfusion/ej2-data" "~18.1.52"
 
-"@syncfusion/ej2-navigations@18.1.54", "@syncfusion/ej2-navigations@~18.1.54":
+"@syncfusion/ej2-navigations@18.1.54":
   version "18.1.54"
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-navigations/-/ej2-navigations-18.1.54.tgz#7d27fb4c57e0c96f23fce5e89f94a0ca1a9fdbaf"
   integrity sha512-UF23bF6xU/LJVt5Fro2hb7Zn238defva33dSOA5U5+y+254Z2gHYhNpxV+LK0g+VZDZJV2mOPaM5qkzr+olKZQ==
@@ -210,6 +227,18 @@
     "@syncfusion/ej2-inputs" "~18.1.54"
     "@syncfusion/ej2-lists" "~18.1.53"
     "@syncfusion/ej2-popups" "~18.1.53"
+
+"@syncfusion/ej2-navigations@~18.1.54", "@syncfusion/ej2-navigations@~18.1.55":
+  version "18.1.55"
+  resolved "https://registry.yarnpkg.com/@syncfusion/ej2-navigations/-/ej2-navigations-18.1.55.tgz#482f166c5032749ef01144cf131657ab9eade26b"
+  integrity sha512-ALdT25XXJExTdFfgS9fQy7Pysv0ui2Gn0kfUVB28m3jjYeeHEkTEjSGqpEYX8RMMoX00PRiGwDOaWSoE/LmryA==
+  dependencies:
+    "@syncfusion/ej2-base" "~18.1.53"
+    "@syncfusion/ej2-buttons" "~18.1.52"
+    "@syncfusion/ej2-data" "~18.1.55"
+    "@syncfusion/ej2-inputs" "~18.1.55"
+    "@syncfusion/ej2-lists" "~18.1.53"
+    "@syncfusion/ej2-popups" "~18.1.55"
 
 "@syncfusion/ej2-pdf-export@~18.1.53":
   version "18.1.53"
@@ -222,6 +251,14 @@
   version "18.1.53"
   resolved "https://registry.yarnpkg.com/@syncfusion/ej2-popups/-/ej2-popups-18.1.53.tgz#6f37d22a20ea72e5399276ec59de2718e5d3e89b"
   integrity sha512-BdqEIDlJDdQan3M30JXXZf005dwQ71cAnptLiJ1T4P1WDi8EHgrCfhbXB+LsbUFSo63V0Wns8C0Z/wiDVRQgUg==
+  dependencies:
+    "@syncfusion/ej2-base" "~18.1.53"
+    "@syncfusion/ej2-buttons" "~18.1.52"
+
+"@syncfusion/ej2-popups@~18.1.55":
+  version "18.1.55"
+  resolved "https://registry.yarnpkg.com/@syncfusion/ej2-popups/-/ej2-popups-18.1.55.tgz#8bed2fa2137777a49d9154277b81db4e242b453a"
+  integrity sha512-QKtegfQbc1NenPqGWUIiS7sQ+Z0csjsDmhkFKTyQspF3OCpDDmvl62D3Xe7y+srrwNb3yTz/a2BB60UiyJxLgA==
   dependencies:
     "@syncfusion/ej2-base" "~18.1.53"
     "@syncfusion/ej2-buttons" "~18.1.52"
@@ -3882,10 +3919,21 @@ rc-upload@~2.9.1:
     prop-types "^15.5.7"
     warning "4.x"
 
-rc-util@^4.0.4, rc-util@^4.1.1, rc-util@^4.13.0, rc-util@^4.15.3, rc-util@^4.15.7, rc-util@^4.16.1, rc-util@^4.3.0, rc-util@^4.4.0, rc-util@^4.5.0, rc-util@^4.5.1, rc-util@^4.6.0:
+rc-util@^4.0.4, rc-util@^4.1.1, rc-util@^4.13.0, rc-util@^4.15.3, rc-util@^4.15.7, rc-util@^4.3.0, rc-util@^4.4.0, rc-util@^4.5.0, rc-util@^4.5.1, rc-util@^4.6.0:
   version "4.21.0"
   resolved "https://registry.yarnpkg.com/rc-util/-/rc-util-4.21.0.tgz#2b0dcadc8831f687c483ff2d4d23bd05f9450f00"
   integrity sha512-YmVCHYcJDUbS4+quk0HRwP0AlwumDQFeY74kyUFI0PSdOsKdVanVGiQZcaBB34oqPLocVPajk3x170FbXKiTQQ==
+  dependencies:
+    add-dom-event-listener "^1.1.0"
+    prop-types "^15.5.10"
+    react-is "^16.12.0"
+    react-lifecycles-compat "^3.0.4"
+    shallowequal "^1.1.0"
+
+rc-util@^4.16.1:
+  version "4.21.1"
+  resolved "https://registry.yarnpkg.com/rc-util/-/rc-util-4.21.1.tgz#88602d0c3185020aa1053d9a1e70eac161becb05"
+  integrity sha512-Z+vlkSQVc1l8O2UjR3WQ+XdWlhj5q9BMQNLk2iOBch75CqPfrJyGtcWMcnhRlNuDu0Ndtt4kLVO8JI8BrABobg==
   dependencies:
     add-dom-event-listener "^1.1.0"
     prop-types "^15.5.10"
