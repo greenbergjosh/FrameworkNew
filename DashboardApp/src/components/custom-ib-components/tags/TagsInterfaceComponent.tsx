@@ -1,9 +1,11 @@
 import React from "react"
-import { MODES, SelectInterfaceComponent, SelectProps } from "../select/SelectInterfaceComponent"
+import { SelectInterfaceComponent} from "../select/SelectInterfaceComponent"
 import { tagsManageForm } from "./tags-manage-form"
+import { TagsProps } from "./types"
+import { MODES } from "../_shared/selectable/types"
 
 export class TagsInterfaceComponent extends SelectInterfaceComponent {
-  constructor(props: SelectProps) {
+  constructor(props: TagsProps) {
     super(props)
   }
 

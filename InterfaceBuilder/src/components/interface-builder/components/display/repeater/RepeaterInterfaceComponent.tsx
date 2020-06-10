@@ -1,4 +1,4 @@
-import { get } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { repeaterManageForm } from "./repeater-manage-form"
@@ -39,15 +39,15 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<
       addItemLabel,
       components,
       emptyText,
+      hasInitialRecord,
+      hasLastItemComponents,
+      lastItemComponents,
       onChangeData,
       orientation,
       preconfigured,
       userInterfaceData,
       valueKey,
     } = this.props
-
-    // Get the repeater data from the data set
-    const data = get(valueKey, userInterfaceData) || []
 
     return (
       <ComponentRendererModeContext.Consumer>
@@ -58,8 +58,10 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<
                 <DisplayMode
                   addItemLabel={addItemLabel}
                   components={components}
-                  data={data}
                   description={emptyText}
+                  hasInitialRecord={hasInitialRecord}
+                  hasLastItemComponents={hasLastItemComponents}
+                  lastItemComponents={lastItemComponents}
                   onChangeData={onChangeData}
                   orientation={orientation}
                   userInterfaceData={userInterfaceData}
@@ -71,8 +73,9 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<
               // Repeat the component once per item in the repeater
               return (
                 <ConfigureMode
-                  data={data}
                   components={components}
+                  hasLastItemComponents={hasLastItemComponents}
+                  lastItemComponents={lastItemComponents}
                   onChangeData={onChangeData}
                   preconfigured={preconfigured}
                   userInterfaceData={userInterfaceData}

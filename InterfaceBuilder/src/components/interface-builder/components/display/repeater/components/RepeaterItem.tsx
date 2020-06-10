@@ -3,17 +3,23 @@ import { get, set } from "lodash/fp"
 import { Draggable, DraggableChildProps, DraggedItemProps } from "components/interface-builder/dnd"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import React from "react"
-import { Card } from "antd"
+import { Badge, Card, Icon } from "antd"
 import styles from "../styles.scss"
+import classNames from "classnames"
 
 export function RepeaterItem({
+  className,
+  components,
   data,
+  draganddropId,
+  hasInitialRecord,
+  hasLastItemComponents,
+  index,
+  isDraggable,
+  lastItemComponents,
   onChangeData,
   userInterfaceData,
   valueKey,
-  components,
-  index,
-  draganddropId,
 }: RepeaterItemProps) {
   /* *************************************
    *
@@ -37,8 +43,20 @@ export function RepeaterItem({
 
   function handleDelete({ index }: DraggedItemProps) {
     const prevState = get(valueKey, userInterfaceData) || []
-    const nextState = [...prevState.slice(0, index), ...prevState.slice(index + 1)]
 
+    /*
+     * Don't delete the last record when Initial Record is enabled.
+     * Don't delete the second to last when Last Item is enabled.
+     */
+    if (hasInitialRecord) {
+      const hasMinForInitialRecord = prevState.length > 1 // must be more than one record
+      const hasMinForLastItem = prevState.length > 2 // must be more than two records
+
+      if (!hasMinForInitialRecord) return
+      if (hasLastItemComponents && !hasMinForLastItem) return
+    }
+
+    const nextState = [...prevState.slice(0, index), ...prevState.slice(index + 1)]
     onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
   }
 
@@ -56,29 +74,50 @@ export function RepeaterItem({
    */
 
   return (
-    <Draggable
-      canCopy={false}
-      canEdit={false}
-      canPaste={false}
-      data={data}
-      draggableId={`REPEATER_${draganddropId}_ITEM_${index}`}
-      editable={true}
-      onDelete={handleDelete}
-      index={index}
-      title=""
-      type={`REPEATER_${draganddropId}_ITEM`}>
-      {({ isDragging }: DraggableChildProps) => (
-        <li key={`repeater-item-${index}-li`} className={styles.repeaterItem}>
-          <Card size="small" key={`repeater-item-${index}-card`}>
-            <ComponentRenderer
-              components={components}
-              data={data}
-              onChangeData={handleChangeData}
-              onChangeSchema={handleSchemaChange}
-            />
-          </Card>
+    <div className={className}>
+      {isDraggable ? (
+        <Draggable
+          canCopy={false}
+          canEdit={false}
+          canPaste={false}
+          data={data}
+          draggableId={`REPEATER_${draganddropId}_ITEM_${index}`}
+          editable={true}
+          onDelete={handleDelete}
+          index={index}
+          title=""
+          type={`REPEATER_${draganddropId}_ITEM`}>
+          {({ isDragging }: DraggableChildProps) => (
+            <li className={classNames(styles.repeaterItem, styles.topClearance)}>
+              <Card size="small">
+                <ComponentRenderer
+                  components={components}
+                  data={data}
+                  onChangeData={handleChangeData}
+                  onChangeSchema={handleSchemaChange}
+                />
+              </Card>
+            </li>
+          )}
+        </Draggable>
+      ) : (
+        /*
+         * Last Item layout when enabled.
+         * The last item is not draggable.
+         */
+        <li className={styles.repeaterItem}>
+          <Badge count={<Icon type="lock" />} className={styles.repeaterItemBadge}>
+            <Card size="small">
+              <ComponentRenderer
+                components={components}
+                data={data}
+                onChangeData={handleChangeData}
+                onChangeSchema={handleSchemaChange}
+              />
+            </Card>
+          </Badge>
         </li>
       )}
-    </Draggable>
+    </div>
   )
 }

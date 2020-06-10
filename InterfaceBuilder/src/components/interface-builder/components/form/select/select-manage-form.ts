@@ -1,6 +1,6 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
-import { baseSelectDataComponents } from "../../_shared/selectable"
+import { baseSelectDataComponents } from "../../_shared/selectable/selectable-manage-form"
 
 
 export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
@@ -13,7 +13,6 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
           {
             key: "data",
             components: [
-              ...baseSelectDataComponents.slice(0, 3), //TODO: Change when sorting by ordinal is implemented
               {
                 key: "multiple",
                 valueKey: "multiple",
@@ -22,7 +21,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
               },
-              ...baseSelectDataComponents.slice(3), //TODO: Remove when sorting by ordinal is implemented
+              ...baseSelectDataComponents
             ],
           },
           {

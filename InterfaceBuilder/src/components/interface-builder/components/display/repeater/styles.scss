@@ -40,7 +40,6 @@ li.repeaterItem {
       order: 0;
       flex: 1 1 auto;
       align-self: auto;
-      padding-top: 20px; // Clearance for delete icon
     }
 
     .ant-form-item {
@@ -55,6 +54,25 @@ li.repeaterItem {
 
     .ant-col.ant-form-item-control-wrapper {
       flex: 1 1 auto;
+    }
+  }
+
+  :local(.topClearance) {
+    > .ant-card {
+      padding-top: 20px; // Clearance for delete icon
+    }
+  }
+
+  :local(.repeaterItemBadge) {
+    &.ant-badge {
+      width: 100%;
+      > .anticon {
+        background-color: white;
+        padding: 4px;
+        color: gray;
+        border-radius: 1em;
+        border: solid 1px lightgray;
+      }
     }
   }
 }

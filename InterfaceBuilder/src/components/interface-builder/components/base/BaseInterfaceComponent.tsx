@@ -47,6 +47,7 @@ export type ComponentDefinition =
 export interface ComponentRenderMetaProps {
   mode?: UserInterfaceProps["mode"]
   userInterfaceData?: any
+  rootUserInterfaceData?: any
   onChangeData?: (newData: ChangeObject) => void
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition

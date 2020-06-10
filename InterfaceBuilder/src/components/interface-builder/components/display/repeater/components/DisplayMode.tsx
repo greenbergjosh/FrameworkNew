@@ -6,25 +6,74 @@ import { DisplayModeProps } from "../types"
 import { get, set } from "lodash/fp"
 
 export function DisplayMode({
-  data,
+  addItemLabel,
   components,
+  description,
+  hasInitialRecord,
+  hasLastItemComponents,
+  lastItemComponents,
   onChangeData,
+  orientation,
   userInterfaceData,
   valueKey,
-  orientation,
-  addItemLabel,
-  description,
 }: DisplayModeProps) {
-  /* Event Handlers */
+  /* *************************************
+   *
+   * INIT
+   */
+
+  const data = get(valueKey, userInterfaceData) || []
+
+  React.useEffect(() => {
+    const initRecords = []
+
+    // Add Initial Record when enabled.
+    if (hasInitialRecord && data.length === 0) {
+      initRecords.push({})
+    }
+    // Add Last Item when enabled and components provided.
+    if (hasLastItemComponents && lastItemComponents && lastItemComponents.length > 0) {
+      initRecords.push({})
+    }
+    if (initRecords.length > 0) {
+      const nextState = [...data, ...initRecords]
+      onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
+    }
+  }, [
+    valueKey,
+    // userInterfaceData,
+    hasInitialRecord,
+    hasLastItemComponents,
+    lastItemComponents,
+    // onChangeData,
+  ])
+
+  /* *************************************
+   *
+   * EVENT HANDLERS
+   */
 
   function handleAddClick() {
     const prevState = get(valueKey, userInterfaceData) || []
-    const nextState = [...prevState, {}]
+    let nextState
+
+    // Append new record as second to last if Last Item is enabled
+    if (hasLastItemComponents) {
+      const lastItemIndex = prevState.length - 1
+      const sortableData = hasLastItemComponents ? prevState.slice(0, lastItemIndex) : prevState
+      const lastItemData = hasLastItemComponents ? prevState[lastItemIndex] : {}
+      nextState = [...sortableData, {}, lastItemData]
+    } else {
+      nextState = [...prevState, {}]
+    }
 
     onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
   }
 
-  /* Render */
+  /* *************************************
+   *
+   * RENDER
+   */
 
   return (
     <>
@@ -35,8 +84,11 @@ export function DisplayMode({
         })}>
         {data.length ? (
           <Repeater
-            data={data}
             components={components}
+            data={data}
+            hasInitialRecord={hasInitialRecord}
+            hasLastItemComponents={hasLastItemComponents}
+            lastItemComponents={lastItemComponents}
             onChangeData={onChangeData}
             orientation={orientation}
             userInterfaceData={userInterfaceData}

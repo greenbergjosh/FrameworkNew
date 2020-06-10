@@ -8,40 +8,50 @@ import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 export type OrientationType = "horizontal" | "vertical"
 
 export interface RepeaterInterfaceComponentProps extends ComponentDefinitionNamedProps {
+  hasInitialRecord?: boolean
   addItemLabel: string
   allowDelete: boolean
   allowReorder: boolean
   component: "repeater"
-  emptyText?: string
-  orientation?: OrientationType
   components: ComponentDefinition[]
+  emptyText?: string
+  hasLastItemComponents?: boolean
+  lastItemComponents?: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
+  orientation?: OrientationType
+  preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
-  preconfigured?: boolean
 }
 
 export interface ModeProps {
-  data: JSONRecord
+  components: ComponentDefinition[]
+  hasInitialRecord?: boolean
+  hasLastItemComponents?: boolean
+  lastItemComponents?: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
+  orientation?: OrientationType
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
-  orientation?: OrientationType
-  components: ComponentDefinition[]
-}
-
-export interface RepeaterProps extends ModeProps {}
-
-export interface DisplayModeProps extends ModeProps {
-  addItemLabel: string
-  description?: string
 }
 
 export interface ConfigureModeProps extends ModeProps {
   preconfigured?: boolean
 }
 
+export interface DisplayModeProps extends ModeProps {
+  addItemLabel: string
+  description?: string
+}
+
+export interface RepeaterProps extends ModeProps {
+  data: JSONRecord
+}
+
 export interface RepeaterItemProps extends ModeProps {
-  index: number
+  data: JSONRecord
+  className?: string
   draganddropId: string
+  index: number
+  isDraggable: boolean
 }
