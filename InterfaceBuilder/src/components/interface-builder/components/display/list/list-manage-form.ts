@@ -30,7 +30,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "unwrapped",
                 valueKey: "unwrapped",
-                label: "Unwrapped Values?",
+                label: "Unwrapped?",
                 help:
                   "Normally, a list contains JSON objects, but unwrapping allows the list to contain scalar values",
                 component: "toggle",

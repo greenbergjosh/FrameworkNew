@@ -1,11 +1,12 @@
 import { get } from "lodash/fp"
 import React from "react"
+import { v4 as uuid } from "uuid"
 import { ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { listManageForm } from "./list-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
+import DisplayMode from "./components/DisplayMode"
+import EditMode from "./components/EditMode"
 import { ListInterfaceComponentProps } from "./types"
-import { EditMode } from "./components/EditMode"
-import { DisplayMode } from "./components/DisplayMode"
 
 export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterfaceComponentProps> {
   static defaultProps = {
@@ -34,6 +35,8 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
 
   static manageForm = listManageForm
 
+  listId = uuid()
+
   render() {
     const {
       addItemLabel,
@@ -50,6 +53,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
 
     // Get the list data from the data set
     const data = get(valueKey, userInterfaceData) || []
+    console.log("ListInterfaceComponent.render", { data })
 
     return (
       <ComponentRendererModeContext.Consumer>
@@ -63,6 +67,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   data={data}
                   description={emptyText}
                   interleave={interleave}
+                  listId={this.listId}
                   onChangeData={onChangeData}
                   orientation={orientation}
                   unwrapped={unwrapped}
@@ -75,8 +80,8 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
               // Repeat the component once per item in the list
               return (
                 <EditMode
-                  data={data}
                   components={components}
+                  data={data}
                   interleave={interleave}
                   onChangeData={onChangeData}
                   preconfigured={preconfigured}

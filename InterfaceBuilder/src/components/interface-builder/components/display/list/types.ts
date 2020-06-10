@@ -35,20 +35,17 @@ export interface ModeProps {
   data: any
   interleave?: InterleaveType
   onChangeData: UserInterfaceProps["onChangeData"]
+  unwrapped?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
-  orientation?: OrientationType
-  unwrapped?: boolean
-}
-
-export interface ListProps extends ModeProps {
-  components: ComponentDefinition[]
 }
 
 export interface DisplayModeProps extends ModeProps {
-  components: ComponentDefinition[]
   addItemLabel: string
+  components: ComponentDefinition[]
   description?: string
+  listId: string
+  orientation?: OrientationType
 }
 
 export interface EditModeProps extends ModeProps {
@@ -56,8 +53,13 @@ export interface EditModeProps extends ModeProps {
   preconfigured?: boolean
 }
 
-export interface ListItemProps extends ModeProps {
+export interface DraggableListItemProps extends ModeProps {
   index: number
   component: ComponentDefinition
   listId: string
+}
+
+export interface ListItemProps extends ModeProps {
+  index: number
+  component: ComponentDefinition
 }

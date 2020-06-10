@@ -1,28 +1,46 @@
-import { ComponentDefinition, getDefaultsFromComponentDefinitions } from "../../../base/BaseInterfaceComponent"
+import { getDefaultsFromComponentDefinitions } from "components/interface-builder/components/base/BaseInterfaceComponent"
+import { get, set } from "lodash/fp"
+import { DraggedItemProps, Droppable, DroppableTargetProps } from "components/interface-builder/dnd"
 import classNames from "classnames"
-import { List } from "./List"
 import { Button, Empty } from "antd"
 import React from "react"
-import { DisplayModeProps, InterleaveType } from "../types"
-import { get, set } from "lodash/fp"
-import { UserInterfaceProps } from "components/interface-builder/UserInterface"
+import { DisplayModeProps } from "../types"
+import DraggableListItem from "./DraggableListItem"
+import { repeatedInterleave } from "components/interface-builder/components/display/list/util"
 
-export function DisplayMode({
-  data,
+export default function DisplayMode({
+  addItemLabel,
   components,
+  data,
+  description,
   interleave,
+  listId,
   onChangeData,
-  userInterfaceData,
-  valueKey,
   orientation,
   unwrapped,
-  addItemLabel,
-  description,
+  userInterfaceData,
+  valueKey,
 }: DisplayModeProps) {
-  const finalComponents = repeatedInterleave(components, data.length, interleave)
+  const finalComponents = repeatedInterleave(interleave, components, data.length)
+
+  /********************************
+   *
+   * Event Handlers
+   */
 
   function handleAddClick() {
-    const entriesToAdd = getEntriesToAdd(interleave, components, valueKey, userInterfaceData)
+    const entriesToAdd =
+      interleave === "set"
+        ? components.map((component, index) => getDefaultsFromComponentDefinitions([component]))
+        : interleave === "none"
+        ? [getDefaultsFromComponentDefinitions([components[0]])]
+        : interleave === "round-robin"
+        ? [
+            getDefaultsFromComponentDefinitions([
+              components[(get(valueKey, userInterfaceData) || []) % components.length],
+            ]),
+          ]
+        : []
     onChangeData &&
       onChangeData(
         set(
@@ -36,6 +54,53 @@ export function DisplayMode({
       )
   }
 
+  function handleItemRearrange(draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps) {
+    console.log("ListInterfaceComponent.onDrop", {
+      draggedItem,
+      dropTarget,
+    })
+
+    const minIndex = Math.min(draggedItem.index, dropTarget.dropIndex)
+    const maxIndex = Math.max(draggedItem.index, dropTarget.dropIndex)
+
+    const existingData = get(valueKey, userInterfaceData) || []
+
+    if (onChangeData) {
+      if (draggedItem.index < dropTarget.dropIndex) {
+        onChangeData(
+          set(
+            valueKey,
+            [
+              ...existingData.slice(0, draggedItem.index),
+              ...existingData.slice(draggedItem.index + 1, dropTarget.dropIndex),
+              existingData[draggedItem.index],
+              ...existingData.slice(dropTarget.dropIndex),
+            ],
+            userInterfaceData
+          )
+        )
+      } else if (draggedItem.index > dropTarget.dropIndex) {
+        onChangeData(
+          set(
+            valueKey,
+            [
+              ...existingData.slice(0, dropTarget.dropIndex),
+              existingData[draggedItem.index],
+              ...existingData.slice(dropTarget.dropIndex, draggedItem.index),
+              ...existingData.slice(draggedItem.index + 1),
+            ],
+            userInterfaceData
+          )
+        )
+      }
+    }
+  }
+
+  /********************************
+   *
+   * Render
+   */
+
   return (
     <>
       <div
@@ -43,17 +108,32 @@ export function DisplayMode({
           "ui-list-horizontal": orientation === "horizontal",
           "ui-list-vertical": orientation === "vertical",
         })}>
-        {components.length ? (
-          <List
-            data={data}
-            components={finalComponents}
-            interleave={interleave}
-            onChangeData={onChangeData}
-            orientation={orientation}
-            unwrapped={unwrapped}
-            userInterfaceData={userInterfaceData}
-            valueKey={valueKey}
-          />
+        {finalComponents.length ? (
+          <>
+            <Droppable
+              data={finalComponents}
+              allowDrop
+              droppableId={`LIST_${listId}`}
+              onDrop={handleItemRearrange}
+              orientation={orientation}
+              type={`LIST_${listId}_ITEM`}>
+              {() =>
+                finalComponents.map((iteratedComponent, index) => (
+                  <DraggableListItem
+                    data={data}
+                    index={index}
+                    interleave={interleave}
+                    component={iteratedComponent}
+                    listId={listId}
+                    onChangeData={onChangeData}
+                    unwrapped={unwrapped}
+                    userInterfaceData={userInterfaceData}
+                    valueKey={valueKey}
+                  />
+                ))
+              }
+            </Droppable>
+          </>
         ) : (
           <Empty description={description} />
         )}
@@ -65,46 +145,4 @@ export function DisplayMode({
       </Button>
     </>
   )
-}
-
-function getEntriesToAdd(
-  interleave: "none" | "round-robin" | "set" | undefined,
-  components: ComponentDefinition[],
-  valueKey: string,
-  userInterfaceData?: UserInterfaceProps["data"]
-) {
-  return interleave === "set"
-    ? components.map((component, index) => getDefaultsFromComponentDefinitions([component]))
-    : interleave === "none"
-    ? [getDefaultsFromComponentDefinitions([components[0]])]
-    : interleave === "round-robin"
-    ? [
-        getDefaultsFromComponentDefinitions([
-          components[(get(valueKey, userInterfaceData) || []) % components.length],
-        ]),
-      ]
-    : []
-}
-
-function repeatedInterleave(
-  items: any[],
-  count: number,
-  interleave?: InterleaveType
-): ComponentDefinition[] {
-  switch (interleave) {
-    case "none": {
-      const singleItem = items[0]
-      return [...Array(count)].map(() => ({ ...singleItem }))
-    }
-    case "round-robin": {
-      return [...Array(count)].map((_, index) => ({ ...items[index % items.length] }))
-    }
-    case "set": {
-      const realCount = Math.ceil(count / (items.length || 1)) * items.length
-      return [...Array(realCount)].map((_, index) => ({ ...items[index % items.length] }))
-    }
-    default: {
-      return []
-    }
-  }
 }

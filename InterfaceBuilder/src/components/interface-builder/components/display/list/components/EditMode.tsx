@@ -1,18 +1,22 @@
-import React from "react"
-import { EditModeProps } from "components/interface-builder/components/display/list/types"
-import { set } from "lodash/fp"
-import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import { DataPathContext } from "components/interface-builder/util/DataPathContext"
+import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
+import { set } from "lodash/fp"
+import React from "react"
+import { EditModeProps } from "../types"
 
-export function EditMode({
-  data,
+export default function EditMode({
   components,
+  data,
   interleave,
   onChangeData,
   preconfigured,
   userInterfaceData,
   valueKey,
 }: EditModeProps) {
+  /* Event Handlers */
+
+  /* Render */
+
   return (
     <DataPathContext path="components">
       <ComponentRenderer
