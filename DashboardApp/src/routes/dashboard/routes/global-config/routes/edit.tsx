@@ -1,27 +1,11 @@
 import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Form,
-  Input,
-  Skeleton,
-  Tabs,
-  Typography
-  } from "antd"
+import { Alert, Button, Card, Empty, Form, Input, Skeleton, Tabs, Typography } from "antd"
 import * as Formik from "formik"
 import { array } from "fp-ts/lib/Array"
 import { findFirst } from "fp-ts/lib/Foldable2v"
 import { Identity } from "fp-ts/lib/Identity"
-import {
-  fromEither,
-  none,
-  Option,
-  some,
-  tryCatch
-  } from "fp-ts/lib/Option"
+import { fromEither, none, Option, some, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import { getStructSetoid, setoidString } from "fp-ts/lib/Setoid"
 import JSON5 from "json5"
@@ -36,16 +20,8 @@ import { useRematch } from "../../../../../hooks/use-rematch"
 import { isWhitespace } from "../../../../../lib/string"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
-import {
-  CodeEditor,
-  EditorLangCodec,
-  ComponentDefinition,
-  UserInterface,
-} from "@opg/interface-builder"
-import {
-  InProgressRemoteUpdateDraft,
-  PersistedConfig,
-} from "../../../../../data/GlobalConfig.Config"
+import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from "@opg/interface-builder"
+import { InProgressRemoteUpdateDraft, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 
 interface Props {
   configId: string
@@ -99,7 +75,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
     entityTypes: store.select.globalConfig.entityTypeConfigs(s),
     isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
-    isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
+    isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigs,
     reportDataByQuery: s.reports.reportDataByQuery,
   }))
 
@@ -286,8 +262,9 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           setUpdatedConfig(some({ ...props.config, ...values }))
           dispatch.globalConfig
             .updateRemoteConfig({
-              ...props.config,
-              ...values,
+              prevState: { ...props.config },
+              nextState: { ...props.config, ...values },
+              parent: record.lookup(props.config.type, fromStore.entityTypes).toUndefined(),
             })
             .then(() => setSubmitting(false))
         }}>
@@ -329,7 +306,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     loading={fromStore.isDeletingRemoteConfig}
                     size="small"
                     onDelete={() =>
-                      dispatch.globalConfig.deleteRemoteConfigsById([props.config.id])
+                      dispatch.globalConfig.deleteRemoteConfigs([
+                        {
+                          prevState: props.config,
+                          parent: record.lookup(props.config.type, fromStore.entityTypes).toUndefined(),
+                        },
+                      ])
                     }>
                     Delete
                   </ConfirmableDeleteButton>

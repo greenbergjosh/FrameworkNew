@@ -60,7 +60,7 @@ export const QueryForm = React.memo(
         defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
         entityTypes: store.select.globalConfig.entityTypeConfigs(s),
         isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
-        isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
+        isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigs,
         reportDataByQuery: s.reports.reportDataByQuery,
         userInterfaceContextManager,
       }

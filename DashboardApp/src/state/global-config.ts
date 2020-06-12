@@ -1,18 +1,5 @@
-import {
-  failure,
-  initial,
-  pending,
-  RemoteData,
-  success
-  } from "@devexperts/remote-data-ts"
-import {
-  array,
-  head,
-  mapOption,
-  snoc,
-  sort,
-  uniq
-  } from "fp-ts/lib/Array"
+import { failure, initial, pending, RemoteData, success } from "@devexperts/remote-data-ts"
+import { array, head, mapOption, snoc, sort, uniq } from "fp-ts/lib/Array"
 import { concat, identity, tuple } from "fp-ts/lib/function"
 import { fromNullable, some } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
@@ -26,9 +13,9 @@ import * as GC from "../data/GlobalConfig.Config"
 import { JSONRecordCodec } from "../data/JSON"
 import { None, Some } from "../data/Option"
 import { prettyPrint } from "../lib/json"
-import { guid } from "../lib/regexp"
 import { Config as mockGlobalConfigs } from "../mock-data/global-config.json"
 import * as Store from "./store.types"
+import { APITypeEventHandlerKey, executeParentTypeEventHandler } from "./globalConfigEvents"
 
 declare module "./store.types" {
   interface AppModels {
@@ -56,11 +43,32 @@ export interface Reducers {
   // insertOrUpdateLocalConfigs(updater: State["configs"]): void
 }
 
+export type DeleteConfigEventPayload = {
+  prevState: GC.PersistedConfig
+  parent?: GC.PersistedConfig
+}
+
+export type UpdateConfigEventPayload = {
+  prevState: GC.PersistedConfig
+  nextState: GC.InProgressRemoteUpdateDraft
+  parent?: GC.PersistedConfig
+}
+
+export type CreateConfigEventPayload = {
+  nextState: GC.InProgressLocalDraftConfig
+  parent?: GC.PersistedConfig
+}
+
+export type ConfigEventPayload =
+  | DeleteConfigEventPayload
+  | UpdateConfigEventPayload
+  | CreateConfigEventPayload
+
 export interface Effects {
-  createRemoteConfig(config: GC.InProgressLocalDraftConfig): Promise<void>
-  deleteRemoteConfigsById(id: Array<GC.PersistedConfig["id"]>): Promise<void>
+  createRemoteConfig(config: CreateConfigEventPayload): Promise<void>
+  deleteRemoteConfigs(configs: DeleteConfigEventPayload[]): Promise<void>
   loadRemoteConfigs(): Promise<void>
-  updateRemoteConfig(config: GC.InProgressRemoteUpdateDraft): Promise<void>
+  updateRemoteConfig(config: UpdateConfigEventPayload): Promise<void>
 }
 
 export interface Selectors {
@@ -109,7 +117,9 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
   },
 
   effects: (dispatch) => ({
-    async createRemoteConfig(draft) {
+    async createRemoteConfig(configPayload) {
+      const draft = configPayload.nextState
+
       return GC.mkCompleteLocalDraft(draft).fold(
         Left(async (errs) => {
           dispatch.logger.logError(
@@ -164,6 +174,11 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                       })
                     }),
                     Some((createdConfig) => {
+                      executeParentTypeEventHandler(
+                        dispatch,
+                        configPayload,
+                        APITypeEventHandlerKey.insertFunction
+                      )
                       dispatch.globalConfig.insertLocalConfig({
                         ...createdConfig,
                         config: some(draft.config),
@@ -184,7 +199,14 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
       )
     },
 
-    async deleteRemoteConfigsById(ids) {
+    async deleteRemoteConfigs(configPayloads) {
+      const ids = configPayloads.reduce((ary: Array<GC.PersistedConfig["id"]>, cfg) => {
+        if (cfg.prevState && cfg.prevState.id) {
+          ary.push(cfg.prevState.id)
+        }
+        return ary
+      }, [])
+
       const response = await dispatch.remoteDataClient.globalConfigsDeleteById(ids)
       return response.fold(
         Left((httpErr) => dispatch.remoteDataClient.defaultHttpErrorHandler(httpErr)),
@@ -227,6 +249,13 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               })
             },
             OK() {
+              configPayloads.map((configPayload) =>
+                executeParentTypeEventHandler(
+                  dispatch,
+                  configPayload,
+                  APITypeEventHandlerKey.deleteFunction
+                )
+              )
               dispatch.globalConfig.rmLocalConfigsById(ids)
               dispatch.feedback.notify({
                 type: "success",
@@ -274,7 +303,9 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         })
       )
     },
-    async updateRemoteConfig(draft) {
+    async updateRemoteConfig(configPayload) {
+      const draft = configPayload.nextState
+
       return GC.mkCompleteRemoteUpdateDraft(draft).fold(
         Left(async (errs) => {
           dispatch.logger.logError(
@@ -313,6 +344,11 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   })
                 },
                 OK() {
+                  executeParentTypeEventHandler(
+                    dispatch,
+                    configPayload,
+                    APITypeEventHandlerKey.updateFunction
+                  )
                   dispatch.globalConfig.updateLocalConfig({
                     ...completeDraft,
                     config: some(completeDraft.config),
@@ -413,7 +449,10 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
           return configs.map(arrToRecordGroupedByType).getOrElse({})
 
           function arrToRecordGroupedByType(cs: Array<GC.PersistedConfig>) {
-            return record.fromFoldable(array)(cs.map((c) => tuple(c.type, [c])), concat)
+            return record.fromFoldable(array)(
+              cs.map((c) => tuple(c.type, [c])),
+              concat
+            )
           }
         }
       )
@@ -422,7 +461,11 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
     configsById() {
       return createSelector(
         slice((state) => state.configs),
-        (cs) => record.fromFoldable(array)(cs.getOrElse([]).map((c) => tuple(c.id, c)), identity)
+        (cs) =>
+          record.fromFoldable(array)(
+            cs.getOrElse([]).map((c) => tuple(c.id, c)),
+            identity
+          )
       )
     },
 

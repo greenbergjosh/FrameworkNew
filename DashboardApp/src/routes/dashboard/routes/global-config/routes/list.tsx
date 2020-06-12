@@ -1,24 +1,17 @@
 import * as Reach from "@reach/router"
 import { ClickParam } from "antd/lib/menu"
 import { ColumnProps } from "antd/lib/table"
-import {
-  isEmpty,
-  mapOption,
-  range,
-  sort,
-  uniq
-  } from "fp-ts/lib/Array"
-import { none, tryCatch } from "fp-ts/lib/Option"
+import { isEmpty, mapOption, range, sort, uniq } from "fp-ts/lib/Array"
+import { tryCatch } from "fp-ts/lib/Option"
 import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
-import { delay, Task, task } from "fp-ts/lib/Task"
-import { Branded } from "io-ts"
+import { delay, task } from "fp-ts/lib/Task"
 // eslint-disable-next-line no-duplicate-imports
 import * as iots from "io-ts"
+import { Branded } from "io-ts"
 import { reporter } from "io-ts-reporters"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
-import JSON5 from "json5"
 import queryString from "query-string"
 import React from "react"
 import { Helmet } from "react-helmet"
@@ -35,7 +28,6 @@ import {
   Dropdown,
   Empty,
   Icon,
-  Input,
   List,
   Menu,
   Modal,
@@ -45,6 +37,7 @@ import {
   Tag,
   Typography,
 } from "antd"
+import { DeleteConfigEventPayload } from "../../../../../state/global-config"
 
 interface Props {}
 
@@ -88,7 +81,8 @@ function ConfigTable({ configs }: ConfigTableProps) {
   const [fromStore, dispatch] = useRematch((s) => ({
     configTypes: store.select.globalConfig.configTypes(s),
     configsById: store.select.globalConfig.configsById(s),
-    isDeletingConfigs: s.loading.effects.globalConfig.deleteRemoteConfigsById,
+    isDeletingConfigs: s.loading.effects.globalConfig.deleteRemoteConfigs,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
   }))
 
   const [potentiallyStaleSelectedRowKeys, setSelectedRowKeys] = React.useState<
@@ -100,6 +94,17 @@ function ConfigTable({ configs }: ConfigTableProps) {
       Record.lookup(k, fromStore.configsById).isSome()
     )
   }, [potentiallyStaleSelectedRowKeys, fromStore.configsById])
+
+  function getSelectedConfigs() {
+    return selectedRowKeys.reduce((cfgs: DeleteConfigEventPayload[], id) => {
+      const prevState = Record.lookup(id, fromStore.configsById).toNullable()
+      if (prevState) {
+        const parent = Record.lookup(prevState.type, fromStore.entityTypes).toUndefined()
+        cfgs.push({ prevState, parent })
+      }
+      return cfgs
+    }, [])
+  }
 
   const [configTypeFilters, setConfigTypeFilters] = React.useState<Array<string>>(() => {
     const decoded = iots
@@ -240,7 +245,14 @@ function ConfigTable({ configs }: ConfigTableProps) {
               confirmationMessage={`Are you sure want to delete?`}
               confirmationTitle={`Confirm Delete`}
               ghost={true}
-              onDelete={() => dispatch.globalConfig.deleteRemoteConfigsById([config.id])}
+              onDelete={() =>
+                dispatch.globalConfig.deleteRemoteConfigs([
+                  {
+                    prevState: config,
+                    parent: Record.lookup(config.type, fromStore.entityTypes).toUndefined(),
+                  },
+                ])
+              }
             />
           </Button.Group>
         ),
@@ -303,7 +315,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
                 title="Confirm Batch Delete"
                 visible={isConfirmBatchDelete}
                 onOk={() => {
-                  dispatch.globalConfig.deleteRemoteConfigsById(selectedRowKeys)
+                  dispatch.globalConfig.deleteRemoteConfigs(getSelectedConfigs())
                   setIsConfirmBatchDelete(false)
                 }}
                 onCancel={() => setIsConfirmBatchDelete(false)}
@@ -363,12 +375,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
         rowKey={(config) => config.id}
         rowSelection={{
           onChange: (keys, cs) => {
-            setSelectedRowKeys(
-              iots
-                .array(NonEmptyString)
-                .decode(keys)
-                .getOrElse([])
-            )
+            setSelectedRowKeys(iots.array(NonEmptyString).decode(keys).getOrElse([]))
           },
           selectedRowKeys,
         }}

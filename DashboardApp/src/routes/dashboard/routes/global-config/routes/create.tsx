@@ -210,7 +210,12 @@ export function CreateGlobalConfig({
         }
         onSubmit={(values, { setSubmitting }) => {
           setState({ createdConfig: some(values) })
-          dispatch.globalConfig.createRemoteConfig(values).then(() => setSubmitting(false))
+          dispatch.globalConfig
+            .createRemoteConfig({
+              nextState: values,
+              parent: record.lookup(values.type, fromStore.entityTypes).toUndefined(),
+            })
+            .then(() => setSubmitting(false))
         }}>
         {(form) => {
           const entityTypeConfig = record.lookup(form.values.type, fromStore.entityTypes)
@@ -437,6 +442,7 @@ function CreateEntityTypeModal(props: {
     configs: s.globalConfig.configs,
     configsByType: store.select.globalConfig.configsByType(s),
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
   }))
 
   const initialFormState = React.useMemo(() => ({ name: "", lang: "" }), [])
@@ -478,7 +484,7 @@ function CreateEntityTypeModal(props: {
   )
 
   const submitForm = React.useCallback(
-    async function(
+    async function (
       values: typeof initialFormState,
       form: Formik.FormikActions<typeof initialFormState>
     ): Promise<void> {
@@ -488,7 +494,10 @@ function CreateEntityTypeModal(props: {
         config: JSON.stringify({ lang: values.lang }),
       }
 
-      await dispatch.globalConfig.createRemoteConfig(draft)
+      await dispatch.globalConfig.createRemoteConfig({
+        nextState: draft,
+        parent: record.lookup(draft.type, fromStore.entityTypes).toUndefined(),
+      })
       setSubmittedDraft(some(draft))
       form.setSubmitting(false)
     },
