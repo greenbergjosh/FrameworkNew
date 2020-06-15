@@ -4,6 +4,7 @@ import JSON5 from "json5"
 import { Left, Right } from "../data/Either"
 import { ConfigEventPayload } from "./global-config"
 import { JSONRecord } from "../data/JSON"
+import * as GC from "../data/GlobalConfig.Config"
 
 export enum APITypeEventHandlerKey {
   deleteFunction = "deleteFunction",
@@ -15,6 +16,10 @@ export type TypeEventHandlers = {
   deleteFunction: APITypeEventHandlerKey.deleteFunction
   insertFunction: APITypeEventHandlerKey.insertFunction
   updateFunction: APITypeEventHandlerKey.updateFunction
+}
+
+function flattenPersistedConfig(config: GC.PersistedConfig) {
+  return { ...config, config: config.config.toNullable() }
 }
 
 /**
@@ -43,7 +48,7 @@ export function executeParentTypeEventHandler(
     return
   }
 
-  const oldState = "prevState" in config ? ((config.prevState as unknown) as JSONRecord) : null
+  const oldState = "prevState" in config ? flattenPersistedConfig(config.prevState) : null
   const newState = "nextState" in config ? ((config.nextState as unknown) as JSONRecord) : null
 
   dispatch.remoteDataClient
