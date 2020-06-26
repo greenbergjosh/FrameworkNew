@@ -13,6 +13,11 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
  * Misc Types & Interfaces
  */
 
+export type LocalFunctionType = (
+  userInterfaceData: any | undefined,
+  rootUserInterfaceData: any | undefined
+) => SelectableOption[]
+
 export interface KeyValuePair {
   key: string
   value: string
@@ -55,6 +60,7 @@ export interface ISelectableProps extends ComponentDefinitionNamedProps {
   valueSuffix?: string
 
   dataHandlerType: LocalDataHandlerType | RemoteDataHandlerType
+  // eslint-disable-next-line @typescript-eslint/ban-types
   data: {}
   localFunctionDataHandler?: string
   children: (props: SelectableChildProps) => JSX.Element | JSX.Element[] | null
@@ -102,7 +108,7 @@ export interface SelectableState {
   loadError: string | null
   loadStatus: LoadStatusType
   options: SelectableOption[]
-  localFunction?: Function
+  localFunction?: LocalFunctionType
 }
 
 export type SelectableProps = (
@@ -129,5 +135,5 @@ export interface SelectableChildProps {
   loadError: string | null
   loadStatus: LoadStatusType
   options: SelectableOption[]
-  handleFocus: () => void;
+  handleFocus: () => void
 }

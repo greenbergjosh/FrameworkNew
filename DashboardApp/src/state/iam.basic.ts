@@ -1,4 +1,4 @@
-import { Left, Right, Either } from "../data/Either"
+import { Either, Left, Right } from "../data/Either"
 import { Branded } from "io-ts"
 import { none, some } from "fp-ts/lib/Option"
 import * as Store from "./store.types"
@@ -6,10 +6,7 @@ import { HttpError } from "../lib/http"
 import { ApiResponse } from "../data/AdminApi"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 
-export function authViaBasicAuth(
-  dispatch: Store.AppDispatch,
-  loginData: { user: string; password: string }
-) {
+export function authViaBasicAuth(dispatch: Store.AppDispatch, loginData: { user: string; password: string }) {
   return dispatch.remoteDataClient
     .authLoginBasic(loginData)
     .then(

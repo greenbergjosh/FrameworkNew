@@ -6,13 +6,7 @@ import { WithRouteProps } from "../../../../state/navigation"
 
 interface Props {}
 
-export function GlobalConfigAdmin({
-  children,
-  location,
-  navigate,
-  path,
-  uri,
-}: WithRouteProps<Props>): JSX.Element {
+export function GlobalConfigAdmin({ children, location, navigate, path, uri }: WithRouteProps<Props>): JSX.Element {
   return (
     <Card bordered={false} size="small">
       <Helmet>
@@ -34,7 +28,10 @@ export const ROOT_CONFIG_COMPONENTS = [
     label: "Language",
     dataHandlerType: "local",
     data: {
-      values: [{ label: "JSON", value: "json" }, { label: "C#", value: "csharp" }],
+      values: [
+        { label: "JSON", value: "json" },
+        { label: "C#", value: "csharp" },
+      ],
     },
   },
   {

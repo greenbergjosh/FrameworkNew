@@ -8,6 +8,7 @@ import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
 import { delay, task } from "fp-ts/lib/Task"
 // eslint-disable-next-line no-duplicate-imports
+// eslint-disable-next-line no-duplicate-imports
 import * as iots from "io-ts"
 import { Branded } from "io-ts"
 import { reporter } from "io-ts-reporters"
@@ -41,13 +42,7 @@ import { DeleteConfigEventPayload } from "../../../../../state/global-config"
 
 interface Props {}
 
-export function ListGlobalConfig({
-  children,
-  location,
-  navigate,
-  path,
-  uri,
-}: WithRouteProps<Props>): JSX.Element {
+export function ListGlobalConfig({ children, location, navigate, path, uri }: WithRouteProps<Props>): JSX.Element {
   const [fromStore] = useRematch((s) => ({
     configs: s.globalConfig.configs,
   }))
@@ -90,9 +85,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
   >([])
 
   const selectedRowKeys = React.useMemo(() => {
-    return potentiallyStaleSelectedRowKeys.filter((k) =>
-      Record.lookup(k, fromStore.configsById).isSome()
-    )
+    return potentiallyStaleSelectedRowKeys.filter((k) => Record.lookup(k, fromStore.configsById).isSome())
   }, [potentiallyStaleSelectedRowKeys, fromStore.configsById])
 
   function getSelectedConfigs() {
@@ -120,8 +113,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
         })
         return []
       },
-      ({ configTypeFilters }) =>
-        Array.isArray(configTypeFilters) ? configTypeFilters : [configTypeFilters]
+      ({ configTypeFilters }) => (Array.isArray(configTypeFilters) ? configTypeFilters : [configTypeFilters])
     )
   })
 
@@ -235,9 +227,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
               <Reach.Link
                 to={`create?type=${encodeURIComponent(config.type)}&name=${encodeURIComponent(
                   config.name
-                )}&config=${tryCatch(() =>
-                  encodeURIComponent(config.config.getOrElse("{}"))
-                ).getOrElse("")}`}>
+                )}&config=${tryCatch(() => encodeURIComponent(config.config.getOrElse("{}"))).getOrElse("")}`}>
                 <Icon type="copy" />
               </Reach.Link>
             </Button>
@@ -295,9 +285,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
                     </Menu>
                   }>
                   <Button style={{ marginLeft: 8 }} disabled={isEmpty(selectedRowKeys)}>
-                    {isEmpty(selectedRowKeys)
-                      ? "Batch Actions"
-                      : `${selectedRowKeys.length} Selected`}{" "}
+                    {isEmpty(selectedRowKeys) ? "Batch Actions" : `${selectedRowKeys.length} Selected`}{" "}
                     <Icon type="down" />
                   </Button>
                 </Dropdown>
@@ -346,11 +334,7 @@ function ConfigTable({ configs }: ConfigTableProps) {
           <Col span={12}>
             <Row align="middle" justify="end" type="flex">
               <Reach.Link
-                to={
-                  configTypeFilters && configTypeFilters.length
-                    ? `create?type=${configTypeFilters[0]}`
-                    : "create"
-                }>
+                to={configTypeFilters && configTypeFilters.length ? `create?type=${configTypeFilters[0]}` : "create"}>
                 <Button size="small" type="primary">
                   <Icon type="plus" />
                   New Config

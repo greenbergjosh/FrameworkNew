@@ -50,9 +50,7 @@ export async function authViaGoogleOAuth(dispatch: Store.AppDispatch) {
 
     switch (errorCode) {
       case "access_denied": {
-        dispatch.logger.logError(
-          `User denied permission access for application: ${JSON.stringify(err, null, 2)}`
-        )
+        dispatch.logger.logError(`User denied permission access for application: ${JSON.stringify(err, null, 2)}`)
         dispatch.feedback.notify({
           type: "error",
           message: `You must allow permission for this app to access Google in order to use Google Sign In`,
@@ -61,9 +59,7 @@ export async function authViaGoogleOAuth(dispatch: Store.AppDispatch) {
         break
       }
       case "idpiframe_initialization_failed": {
-        dispatch.logger.logError(
-          `Error loading displaying gAuth sign in popup: ${JSON.stringify(err, null, 2)}`
-        )
+        dispatch.logger.logError(`Error loading displaying gAuth sign in popup: ${JSON.stringify(err, null, 2)}`)
         dispatch.feedback.notify({
           type: "error",
           message: `Application Error: Failed to open Google Sign In popup: ${err.details}`,
@@ -91,10 +87,7 @@ export async function authViaGoogleOAuth(dispatch: Store.AppDispatch) {
   }
 }
 
-export function handleGoogleAuthSignedIn(
-  dispatch: Store.AppDispatch,
-  currentUser: gapi.auth2.GoogleUser
-) {
+export function handleGoogleAuthSignedIn(dispatch: Store.AppDispatch, currentUser: gapi.auth2.GoogleUser) {
   if (!currentUser) return Promise.resolve() // Error Case?
 
   const user = extractUserFromProfile(currentUser)

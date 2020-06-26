@@ -1,12 +1,12 @@
 import { tryCatch } from "fp-ts/lib/Option"
 import { isEmpty } from "lodash/fp"
 import { UserInterfaceProps } from "@opg/interface-builder"
-import { LocalDataHandlerType, SelectableOption, SelectableProps, SelectableState } from "../types"
+import { LocalDataHandlerType, LocalFunctionType, SelectableOption, SelectableProps, SelectableState } from "../types"
 
 /**
  * Loads LBM script from config when component is configured to use "local-function"
  */
-export function loadLocalFunction(localFunctionDataHandler?: string): Function | undefined {
+export function loadLocalFunction(localFunctionDataHandler?: string) {
   if (typeof localFunctionDataHandler === "string" && localFunctionDataHandler.trim() !== "") {
     return tryCatch(() => new Function(localFunctionDataHandler)()).toNullable()
   }
@@ -15,7 +15,7 @@ export function loadLocalFunction(localFunctionDataHandler?: string): Function |
 export function getOptions(
   userInterfaceData: UserInterfaceProps["data"],
   rootUserInterfaceData: UserInterfaceProps["data"],
-  localFunction: Function
+  localFunction: LocalFunctionType
 ): SelectableOption[] {
   console.log(
     "Selectable.loadLocalFunctionOptions",
@@ -47,7 +47,7 @@ interface getUpdatedStateParams {
   userInterfaceData: UserInterfaceProps["data"]
   rootUserInterfaceData?: UserInterfaceProps["data"]
   localFunctionDataHandler?: string
-  localFunction?: Function
+  localFunction?: LocalFunctionType
 }
 
 export function getUpdatedState({

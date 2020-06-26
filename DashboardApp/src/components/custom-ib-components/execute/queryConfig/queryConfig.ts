@@ -12,11 +12,7 @@ export function getQueryConfig(queryGlobalConfig: PersistedConfig) {
   const queryConfig = QueryConfigCodec.decode(parsedConfig)
   return queryConfig.fold(
     (errors) => {
-      console.error(
-        "ExecuteInterfaceComponent.remoteQuery_getQueryConfig",
-        "Invalid Query",
-        reporter(queryConfig)
-      )
+      console.error("ExecuteInterfaceComponent.remoteQuery_getQueryConfig", "Invalid Query", reporter(queryConfig))
       return ({
         loadStatus: "error",
         loadError: "Query was invalid. Check developer tools for details.",

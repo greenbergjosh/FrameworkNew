@@ -1,7 +1,6 @@
 import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 import { baseSelectDataComponents } from "../_shared/selectable/selectable-manage-form"
 
-
 export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
@@ -11,9 +10,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
         tabs: [
           {
             key: "data",
-            components: [
-              ...baseSelectDataComponents,
-            ],
+            components: [...baseSelectDataComponents],
           },
           {
             key: "appearance",
@@ -59,8 +56,8 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
-            ]
-          }
+            ],
+          },
         ],
       },
     ],

@@ -59,10 +59,7 @@ export type CreateConfigEventPayload = {
   parent?: GC.PersistedConfig
 }
 
-export type ConfigEventPayload =
-  | DeleteConfigEventPayload
-  | UpdateConfigEventPayload
-  | CreateConfigEventPayload
+export type ConfigEventPayload = DeleteConfigEventPayload | UpdateConfigEventPayload | CreateConfigEventPayload
 
 export interface Effects {
   createRemoteConfig(config: CreateConfigEventPayload): Promise<void>
@@ -122,9 +119,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
 
       return GC.mkCompleteLocalDraft(draft).fold(
         Left(async (errs) => {
-          dispatch.logger.logError(
-            `createRemoteConfig error:\n${errs.join("\n")}\n\nInvalid config params:\n${draft}`
-          )
+          dispatch.logger.logError(`createRemoteConfig error:\n${errs.join("\n")}\n\nInvalid config params:\n${draft}`)
           dispatch.feedback.notify({
             type: "error",
             message: `Form contains invalid data and cannot be submitted.`,
@@ -146,9 +141,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               return GlobalConfigApiResponse({
                 ServerException({ reason }) {
                   dispatch.logger.logError(
-                    `A server exception occured while attempting to create config:\n${prettyPrint(
-                      draft
-                    )}`
+                    `A server exception occured while attempting to create config:\n${prettyPrint(draft)}`
                   )
                   dispatch.feedback.notify({
                     type: "error",
@@ -165,20 +158,14 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                 OK: (createdConfigs) => {
                   return head(createdConfigs).foldL(
                     None(() => {
-                      dispatch.logger.logError(
-                        `web service for state.globalConfig.createConfig returned nothing`
-                      )
+                      dispatch.logger.logError(`web service for state.globalConfig.createConfig returned nothing`)
                       dispatch.feedback.notify({
                         type: "error",
                         message: `Server Error: An unknown error occurred while processing this request.`,
                       })
                     }),
                     Some((createdConfig) => {
-                      executeParentTypeEventHandler(
-                        dispatch,
-                        configPayload,
-                        APITypeEventHandlerKey.insertFunction
-                      )
+                      executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.insertFunction)
                       dispatch.globalConfig.insertLocalConfig({
                         ...createdConfig,
                         config: some(draft.config),
@@ -221,25 +208,17 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               )
               dispatch.feedback.notify({
                 type: "error",
-                message: `Server Exception: Failed to delete global config${
-                  ids.length === 1 ? "" : "s"
-                }`,
+                message: `Server Exception: Failed to delete global config${ids.length === 1 ? "" : "s"}`,
               })
             },
             Unauthorized() {
               dispatch.globalConfig.update({
                 configs: failure(
-                  new Error(
-                    `Unauthorized to delete configs with the following ids:\n${ids.map(
-                      (id) => `${id}\n`
-                    )}`
-                  )
+                  new Error(`Unauthorized to delete configs with the following ids:\n${ids.map((id) => `${id}\n`)}`)
                 ),
               })
               dispatch.logger.logError(
-                `Unauthorized attempt to delete configs with the following ids:\n${ids.map(
-                  (id) => `${id}\n`
-                )}`
+                `Unauthorized attempt to delete configs with the following ids:\n${ids.map((id) => `${id}\n`)}`
               )
               dispatch.feedback.notify({
                 type: "error",
@@ -250,11 +229,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
             },
             OK() {
               configPayloads.map((configPayload) =>
-                executeParentTypeEventHandler(
-                  dispatch,
-                  configPayload,
-                  APITypeEventHandlerKey.deleteFunction
-                )
+                executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.deleteFunction)
               )
               dispatch.globalConfig.rmLocalConfigsById(ids)
               dispatch.feedback.notify({
@@ -278,9 +253,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
           return GlobalConfigApiResponse({
             ServerException({ reason }) {
               dispatch.globalConfig.update({ configs: failure(new Error(reason)) })
-              dispatch.logger.logError(
-                `ServerException "${reason}" occured while attempting to load remote configs`
-              )
+              dispatch.logger.logError(`ServerException "${reason}" occured while attempting to load remote configs`)
               dispatch.feedback.notify({
                 type: "error",
                 message: `Failed to load remote configs: ${reason}`,
@@ -309,9 +282,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
       return GC.mkCompleteRemoteUpdateDraft(draft).fold(
         Left(async (errs) => {
           dispatch.logger.logError(
-            `updateRemoteConfig argument error:\n${errs.join(
-              "\n"
-            )}\n\nInvalid update values:\n${prettyPrint(draft)}`
+            `updateRemoteConfig argument error:\n${errs.join("\n")}\n\nInvalid update values:\n${prettyPrint(draft)}`
           )
           dispatch.feedback.notify({
             type: "error",
@@ -335,20 +306,14 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
                   })
                 },
                 Unauthorized() {
-                  dispatch.logger.logError(
-                    `Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`
-                  )
+                  dispatch.logger.logError(`Error "Unauthorized"; could not update remote config ${prettyPrint(draft)}`)
                   dispatch.feedback.notify({
                     type: "error",
                     message: `You do not have permission to update this Global Config`,
                   })
                 },
                 OK() {
-                  executeParentTypeEventHandler(
-                    dispatch,
-                    configPayload,
-                    APITypeEventHandlerKey.updateFunction
-                  )
+                  executeParentTypeEventHandler(dispatch, configPayload, APITypeEventHandlerKey.updateFunction)
                   dispatch.globalConfig.updateLocalConfig({
                     ...completeDraft,
                     config: some(completeDraft.config),
@@ -375,21 +340,14 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
         (configs, configsById, entityTypeConfigs) => {
           return configs
             .map((globalConfigItems) => {
-              const associationsMap = record.fromFoldable(array)(
-                globalConfigItems.map(toAssociationsTuple),
-                identity
-              )
+              const associationsMap = record.fromFoldable(array)(globalConfigItems.map(toAssociationsTuple), identity)
 
               record.reduceWithKey(associationsMap, associationsMap, (guid, acc, associations) => {
                 associations.references.forEach((id) => {
-                  record
-                    .lookup(id, acc)
-                    .map((associatedRecord) => associatedRecord.referencedBy.push(guid))
+                  record.lookup(id, acc).map((associatedRecord) => associatedRecord.referencedBy.push(guid))
                 })
                 associations.uses.forEach((id) => {
-                  record
-                    .lookup(id, acc)
-                    .map((associatedRecord) => associatedRecord.usedBy.push(guid))
+                  record.lookup(id, acc).map((associatedRecord) => associatedRecord.usedBy.push(guid))
                 })
 
                 return acc
@@ -413,9 +371,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
               GC.Associations({
                 isTypeOf: [],
                 referencedBy: [],
-                references: uniq<NonEmptyString>(setoidString)(
-                  c.config.map(extractGuids).getOrElse([])
-                ), // String scan config for GUID via regex. Confirm GUID is real. Add to referenes
+                references: uniq<NonEmptyString>(setoidString)(c.config.map(extractGuids).getOrElse([])), // String scan config for GUID via regex. Confirm GUID is real. Add to referenes
                 usedBy: [],
                 uses: uniq<NonEmptyString>(setoidString)(c.config.map(extractUsing).getOrElse([])), // Parse JSON, if .using exists, .using -> .uses
               })
@@ -434,9 +390,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
           function extractGuids(config: string): Array<GC.PersistedConfig["id"]> {
             const guidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/gi
             const guids = config.match(guidPattern) || []
-            return mapOption(guids, (guid) =>
-              record.lookup(guid.toLowerCase(), configsById).map((c) => c.id)
-            )
+            return mapOption(guids, (guid) => record.lookup(guid.toLowerCase(), configsById).map((c) => c.id))
           }
         }
       )

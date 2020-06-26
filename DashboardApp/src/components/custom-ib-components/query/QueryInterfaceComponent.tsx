@@ -1,74 +1,14 @@
-import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import React from "react"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
-import { QueryConfig } from "../../../data/Report"
 import { Query } from "../../query/Query"
-import { QueryChildProps, QueryProps } from "../../query/types"
+import { QueryChildProps } from "../../query/types"
 import { queryManageForm } from "./query-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
   ComponentRenderer,
   DataPathContext,
   UserInterfaceContext,
-  UserInterfaceProps,
 } from "@opg/interface-builder"
-
-export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "query"
-  components: ComponentDefinition[]
-  loadingKey?: string
-  onChangeData: UserInterfaceProps["onChangeData"]
-  queryType: QueryProps["queryType"]
-  userInterfaceData?: UserInterfaceProps["data"]
-  valueKey: string
-}
-
-interface QueryInterfaceComponentDisplayModeProps extends IQueryInterfaceComponentProps {
-  mode: "display"
-}
-
-interface QueryInterfaceComponentEditModeProps extends IQueryInterfaceComponentProps {
-  mode: "edit"
-  onChangeSchema?: (newSchema: ComponentDefinition) => void
-  userInterfaceSchema?: ComponentDefinition
-}
-
-interface QueryRemoteQueryInterfaceComponentProps extends IQueryInterfaceComponentProps {
-  queryType: "remote-query"
-  remoteQuery?: PersistedConfig["id"]
-  remoteDataFilter?: JSONObject
-  // remoteQueryMapping?: [{ label: "label"; value: string }, { label: "value"; value: string }]
-}
-
-interface QueryRemoteUrlInterfaceComponentProps extends IQueryInterfaceComponentProps {
-  queryType: "remote-url"
-  remoteUrl?: PersistedConfig["id"]
-  remoteDataFilter?: JSONObject
-}
-
-interface QueryRemoteConfigInterfaceComponentProps extends IQueryInterfaceComponentProps {
-  queryType: "remote-config"
-  remoteConfigType?: PersistedConfig["id"]
-  remoteDataFilter?: JSONObject
-}
-
-type QueryInterfaceComponentProps = (
-  | QueryRemoteQueryInterfaceComponentProps
-  | QueryRemoteUrlInterfaceComponentProps
-  | QueryRemoteConfigInterfaceComponentProps
-) &
-  (QueryInterfaceComponentDisplayModeProps | QueryInterfaceComponentEditModeProps)
-
-interface QueryInterfaceComponentState {
-  data: any[]
-  loadError: string | null
-  loadStatus: "none" | "loading" | "loaded" | "error"
-  parameterValues: { [key: string]: any }
-  promptLayout: QueryConfig["layout"]
-  promptParameters: QueryConfig["parameters"]
-}
+import { QueryInterfaceComponentProps, QueryInterfaceComponentState } from "./types"
 
 export class QueryInterfaceComponent extends BaseInterfaceComponent<
   QueryInterfaceComponentProps,
@@ -131,35 +71,41 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       </DataPathContext>
     )
 
-    switch(this.props.queryType) {
+    switch (this.props.queryType) {
       case "remote-query":
-        return <Query
-          dataKey={valueKey}
-          inputData={userInterfaceData}
-          paused={mode === "edit"}
-          queryType={this.props.queryType}
-          remoteQuery={this.props.remoteQuery}>
-          {children}
-        </Query>
+        return (
+          <Query
+            dataKey={valueKey}
+            inputData={userInterfaceData}
+            paused={mode === "edit"}
+            queryType={this.props.queryType}
+            remoteQuery={this.props.remoteQuery}>
+            {children}
+          </Query>
+        )
       case "remote-url":
-        return <Query
-          dataKey={valueKey}
-          inputData={userInterfaceData}
-          paused={mode === "edit"}
-          queryType={this.props.queryType}
-          remoteUrl={this.props.remoteUrl}>
-          {children}
-        </Query>
+        return (
+          <Query
+            dataKey={valueKey}
+            inputData={userInterfaceData}
+            paused={mode === "edit"}
+            queryType={this.props.queryType}
+            remoteUrl={this.props.remoteUrl}>
+            {children}
+          </Query>
+        )
       case "remote-config":
-        return <Query
-          dataKey={valueKey}
-          inputData={userInterfaceData}
-          paused={mode === "edit"}
-          queryType={this.props.queryType}
-          remoteConfigType={this.props.remoteConfigType}
-          remoteDataFilter={remoteDataFilter}>
-          {children}
-        </Query>
+        return (
+          <Query
+            dataKey={valueKey}
+            inputData={userInterfaceData}
+            paused={mode === "edit"}
+            queryType={this.props.queryType}
+            remoteConfigType={this.props.remoteConfigType}
+            remoteDataFilter={remoteDataFilter}>
+            {children}
+          </Query>
+        )
     }
   }
 }

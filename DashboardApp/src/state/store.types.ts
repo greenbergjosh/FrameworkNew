@@ -1,5 +1,5 @@
 import * as Reselect from "reselect"
-import { Dispatch, AnyAction, Action } from "redux"
+import { Action, Dispatch } from "redux"
 
 /**
  * ------------ APP MODELS --------------
@@ -31,6 +31,7 @@ export type AppEffects = { [K in keyof AppModels]: AppModels[K]["effects"] }
  */
 export type AppSelectors = {
   [K in keyof AppModels]: AppModels[K] extends {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     selectors: object
   }
     ? AppModels[K]["selectors"]
@@ -66,6 +67,7 @@ export type Connect<
  * autocompletion againt the interfaces already defined
  * and registered
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export interface AppModel<S, R extends object, E extends object, PublicSelectors extends object> {
   state: S
   reducers: {
@@ -75,12 +77,11 @@ export interface AppModel<S, R extends object, E extends object, PublicSelectors
       ? (state: S, payload: P) => void
       : never
   }
-  effects:
-    | PublicEffects2EffectConfig<E>
-    | ((dispatch: AppDispatch) => PublicEffects2EffectConfig<E>)
+  effects: PublicEffects2EffectConfig<E> | ((dispatch: AppDispatch) => PublicEffects2EffectConfig<E>)
   selectors: AppModelToSelectorFactory<S, PublicSelectors>
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 type PublicEffects2EffectConfig<Effects extends object> = {
   [K in keyof Effects]: Effects[K] extends (payload: infer P, meta: infer M) => infer R
     ? (payload: P, rootState: AppState, meta: M) => R

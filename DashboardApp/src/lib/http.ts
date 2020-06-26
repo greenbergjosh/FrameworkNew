@@ -93,10 +93,7 @@ function axiosRespToHttpResponseOfString(res: AxiosResponse): HttpResponse<strin
   }
 }
 
-function axiosResponseToEither<A>(
-  res: AxiosResponse,
-  expect: Type<A, any, unknown>
-): Either<HttpError, A> {
+function axiosResponseToEither<A>(res: AxiosResponse, expect: Type<A, any, unknown>): Either<HttpError, A> {
   // console.log("res data >>>>>>", res.data)
   return expect
     .decode(res.data)

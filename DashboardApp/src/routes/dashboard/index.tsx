@@ -17,6 +17,7 @@ import {
   Avatar,
   Breadcrumb,
   Button,
+  Carousel,
   Col,
   Dropdown,
   Icon,
@@ -26,8 +27,6 @@ import {
   Row,
   Spin,
   Typography,
-  Carousel,
-  Tooltip,
 } from "antd"
 
 interface Props {
@@ -67,10 +66,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
   const businessAppId = isBusinessApp ? props.location.pathname.split("/")[3] : null
 
   const nestedNavigation = React.useMemo(
-    () =>
-      isBusinessApp
-        ? BusinessApplication.generateNavigation(businessAppId || "", fromStore.configsById)
-        : null,
+    () => (isBusinessApp ? BusinessApplication.generateNavigation(businessAppId || "", fromStore.configsById) : null),
     [isBusinessApp, businessAppId, fromStore.configsById]
   )
 
@@ -112,11 +108,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
         width={200}
         onCollapse={setSiderCollapsed}>
         <div style={{ position: identity<"relative">("relative") }}>
-          <Button
-            className={styles.trigger}
-            shape="circle-outline"
-            size="large"
-            onClick={toggleSiderCollapsed}>
+          <Button className={styles.trigger} shape="circle-outline" size="large" onClick={toggleSiderCollapsed}>
             <Icon type={siderCollapsed ? "menu-unfold" : "menu-fold"} />
           </Button>
         </div>
@@ -134,11 +126,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 </Button>
               </div>
             )}
-            <Menu
-              theme="dark"
-              mode="vertical"
-              defaultOpenKeys={activeMenuKeys}
-              selectedKeys={activeMenuKeys}>
+            <Menu theme="dark" mode="vertical" defaultOpenKeys={activeMenuKeys} selectedKeys={activeMenuKeys}>
               {renderNavEntriesAsMenu(fromStore.navigation || [])}
             </Menu>
           </div>
@@ -157,11 +145,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                   <Typography.Text>Admin Navigation</Typography.Text>
                 </Button>
               </div>
-              <Menu
-                theme="dark"
-                mode="vertical"
-                defaultOpenKeys={activeMenuKeys}
-                selectedKeys={activeMenuKeys}>
+              <Menu theme="dark" mode="vertical" defaultOpenKeys={activeMenuKeys} selectedKeys={activeMenuKeys}>
                 {renderNavEntriesAsMenu(nestedNavigation.routes || [])}
               </Menu>
             </div>
@@ -177,9 +161,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
                 <Reach.Match key={subroute.abs} path={`${subroute.path}/*`}>
                   {({ match }) => {
                     if (!match) return
-                    return (
-                      <HeaderTextLayout title={subroute.title} description={subroute.description} />
-                    )
+                    return <HeaderTextLayout title={subroute.title} description={subroute.description} />
                   }}
                 </Reach.Match>
               ))}
@@ -241,9 +223,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
               <Breadcrumb.Item key={parts.slice(0, idx + 1).join("/")}>
                 <Reach.Link to={parts.slice(0, idx + 1).join("/")}>{parts[idx]}</Reach.Link>
                 {guidRegex().exec(parts[idx]) && (
-                  <CopyToClipboard
-                    text={parts[idx].toLowerCase()}
-                    onCopy={() => message.success("Copied!")}>
+                  <CopyToClipboard text={parts[idx].toLowerCase()} onCopy={() => message.success("Copied!")}>
                     <Button size="small" style={{ margin: "0 5px", opacity: 0.75 }}>
                       <Icon type="copy" />
                     </Button>

@@ -4,7 +4,6 @@ import * as Store from "./store.types"
 import * as onelogin from "./iam.onelogin"
 import * as google from "./iam.google"
 import * as basic from "./iam.basic"
-import { SigninResponse } from "oidc-client"
 
 declare module "./store.types" {
   interface AppModels {
@@ -102,8 +101,7 @@ export const iam: Store.AppModel<State, Reducers, Effects, Selectors> = {
 
     // Google
     authViaGoogleOAuth: () => google.authViaGoogleOAuth(dispatch),
-    handleGoogleAuthSignedIn: (currentUser) =>
-      google.handleGoogleAuthSignedIn(dispatch, currentUser),
+    handleGoogleAuthSignedIn: (currentUser) => google.handleGoogleAuthSignedIn(dispatch, currentUser),
 
     // OneLogin
     authViaOneLoginOIDC: () => onelogin.authViaOneLoginOIDC(dispatch),

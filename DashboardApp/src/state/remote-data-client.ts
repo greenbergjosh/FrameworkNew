@@ -58,9 +58,7 @@ export interface Effects {
     accessToken: string
   }): Promise<Either<HttpError, AdminApi.ApiResponse<AdminApi.AuthLoginPayload>>>
 
-  globalConfigsDeleteById(
-    ids: Array<PersistedConfig["id"]>
-  ): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
+  globalConfigsDeleteById(ids: Array<PersistedConfig["id"]>): Promise<Either<HttpError, AdminApi.ApiResponse<void>>>
 
   globalConfigsInsert(
     c: CompleteLocalDraft
@@ -465,9 +463,10 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       // `)
       const url =
         params && (!method || method.toLowerCase() === "get")
-          ? qs.parseUrl(uri).url +
-            "?" +
-            qs.stringify({ ...(qs.parseUrl(uri).query || {}), ...(params || {}) })
+          ? `${qs.parseUrl(uri).url}?${qs.stringify({
+              ...(qs.parseUrl(uri).query || {}),
+              ...(params || {}),
+            })}`
           : uri
 
       return request({

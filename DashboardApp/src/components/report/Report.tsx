@@ -35,15 +35,21 @@ export const Report = (props: ReportProps): JSX.Element => {
     [fromStore.configsById, props.report]
   )
 
-  const reportId = React.useMemo(
-    () => (props.report.type === "GlobalConfigReference" ? some(props.report.id) : none),
-    [props.report]
-  )
+  const reportId = React.useMemo(() => (props.report.type === "GlobalConfigReference" ? some(props.report.id) : none), [
+    props.report,
+  ])
 
   const queryConfig = React.useMemo(
     () =>
       new Identity(reportConfig)
-        .map((a) => a.chain((b) => b.fold(Left((errs) => none), Right((rc) => some(rc.query)))))
+        .map((a) =>
+          a.chain((b) =>
+            b.fold(
+              Left((errs) => none),
+              Right((rc) => some(rc.query))
+            )
+          )
+        )
         .map((a) => a.chain((b) => record.lookup(b, fromStore.decodedQueryConfigsById)))
         .fold(identity),
     [fromStore.decodedQueryConfigsById, reportConfig]

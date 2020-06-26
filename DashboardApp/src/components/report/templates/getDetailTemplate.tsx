@@ -47,9 +47,7 @@ export const getDetailTemplate = (
         parameterValues={parameterValues}
         parentData={parentData}
         layout={resolved.layout}
-        onChangeData={(newData: any) =>
-          handleChangeDataFromChildren(details, rowData, newData, handleChangeData)
-        }
+        onChangeData={(newData: any) => handleChangeDataFromChildren(details, rowData, newData, handleChangeData)}
       />
     )
   }

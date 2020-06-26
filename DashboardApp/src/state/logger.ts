@@ -24,7 +24,6 @@ export interface Effects {
 
 export interface Selectors {}
 
-// eslint-disable-next-line @typescript-eslint/camelcase
 export const logger: Store.AppModel<State, Reducers, Effects, Selectors> = {
   state: {},
 

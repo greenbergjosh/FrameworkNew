@@ -1,18 +1,6 @@
 import { ROOT_CONFIG_COMPONENTS } from ".."
 import * as Reach from "@reach/router"
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Form,
-  Icon,
-  Skeleton,
-  Tabs,
-  Tag,
-  Tree,
-  Typography
-  } from "antd"
+import { Alert, Button, Card, Empty, Form, Icon, Skeleton, Tabs, Tag, Tree, Typography } from "antd"
 import { fromEither, none, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
@@ -25,19 +13,13 @@ import { None, Some } from "../../../../../data/Option"
 import { useRematch } from "../../../../../hooks/use-rematch"
 import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
-import {
-  CodeEditor,
-  ComponentDefinition,
-  EditorLangCodec,
-  UserInterface,
-} from "@opg/interface-builder"
+import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from "@opg/interface-builder"
 
 interface Props {
   configId: string
 }
 
-const normalizeURLParams = (param: string) =>
-  typeof param === "string" ? param.toLowerCase() : param
+const normalizeURLParams = (param: string) => (typeof param === "string" ? param.toLowerCase() : param)
 
 export function ShowGlobalConfig({
   children,
@@ -77,9 +59,7 @@ export function ShowGlobalConfig({
 
   const { focusedConfig, entityTypeConfig, editorLanguage } = React.useMemo(() => {
     const focusedConfig = record.lookup(normalizeURLParams(configId), fromStore.configsById)
-    const entityTypeConfig = focusedConfig.chain((c) =>
-      record.lookup(c.type, fromStore.entityTypes)
-    )
+    const entityTypeConfig = focusedConfig.chain((c) => record.lookup(c.type, fromStore.entityTypes))
     const editorLanguage = entityTypeConfig
       .chain((etc) => etc.config)
       .chain(fromStrToJSONRec)
@@ -88,12 +68,7 @@ export function ShowGlobalConfig({
       .getOrElse(fromStore.defaultEntityTypeConfig.lang)
 
     return { focusedConfig, entityTypeConfig, editorLanguage }
-  }, [
-    configId,
-    fromStore.configsById,
-    fromStore.entityTypes,
-    fromStore.defaultEntityTypeConfig.lang,
-  ])
+  }, [configId, fromStore.configsById, fromStore.entityTypes, fromStore.defaultEntityTypeConfig.lang])
 
   const isRootConfig = entityTypeConfig.map(({ id }) => id === configId).getOrElse(false)
   const configComponents = isRootConfig
@@ -106,19 +81,14 @@ export function ShowGlobalConfig({
           .map((layoutMappings) =>
             layoutMappings.reduce(
               (result, layoutMapping) => {
-                const configOption = tryCatch(() =>
-                  JSON5.parse(layoutMapping.config.getOrElse("{}"))
-                )
+                const configOption = tryCatch(() => JSON5.parse(layoutMapping.config.getOrElse("{}")))
 
                 configOption.map(({ layout, entityTypes, configs }) => {
                   if (layout) {
                     if (configs && configs.includes(configId)) {
                       result.byConfigId.push(layout)
                     }
-                    if (
-                      entityTypes &&
-                      entityTypeConfig.map(({ id }) => entityTypes.includes(id)).getOrElse(false)
-                    ) {
+                    if (entityTypes && entityTypeConfig.map(({ id }) => entityTypes.includes(id)).getOrElse(false)) {
                       result.byEntityType.push(layout)
                     }
                   }
@@ -145,7 +115,6 @@ export function ShowGlobalConfig({
             if (layout) {
               return layout
             }
-          } else if (collectedLayoutOverrides.byConfigId.length) {
           }
         }
 
@@ -202,15 +171,9 @@ export function ShowGlobalConfig({
                   ))}
                   <Button size="small">
                     <Reach.Link
-                      to={`../create?type=${encodeURIComponent(
-                        config.type
-                      )}&name=${encodeURIComponent(
-                        fromStore.configNames
-                          ? generateUniqueCopyName(config.name, fromStore.configNames)
-                          : config.name
-                      )}&config=${tryCatch(() =>
-                        encodeURIComponent(config.config.getOrElse("{}"))
-                      ).getOrElse("")}`}>
+                      to={`../create?type=${encodeURIComponent(config.type)}&name=${encodeURIComponent(
+                        fromStore.configNames ? generateUniqueCopyName(config.name, fromStore.configNames) : config.name
+                      )}&config=${tryCatch(() => encodeURIComponent(config.config.getOrElse("{}"))).getOrElse("")}`}>
                       <Icon type="copy" /> Copy to New
                     </Reach.Link>
                   </Button>
@@ -223,11 +186,7 @@ export function ShowGlobalConfig({
                 </Button.Group>
               }
               title={`Config Details`}>
-              <Form
-                labelAlign="left"
-                layout="horizontal"
-                {...formItemLayout}
-                style={{ width: "100%" }}>
+              <Form labelAlign="left" layout="horizontal" {...formItemLayout} style={{ width: "100%" }}>
                 {/* ---------- Config.Type Input ---------------- */}
                 <Form.Item label="Type" style={{ width: "100%" }}>
                   <Typography.Text>
@@ -247,9 +206,7 @@ export function ShowGlobalConfig({
                 <Form.Item label="Config">
                   <Tabs
                     defaultActiveKey={
-                      configComponents && configComponents.length && !jsonHasErrors
-                        ? "form"
-                        : "editor"
+                      configComponents && configComponents.length && !jsonHasErrors ? "form" : "editor"
                     }>
                     <Tabs.TabPane
                       key={"form"}
@@ -297,10 +254,7 @@ export function ShowGlobalConfig({
                       {config.name}
                       <Tree.DirectoryTree>
                         {record.toArray(assoc).map(([key, guidArray]) => (
-                          <Tree.TreeNode
-                            selectable={false}
-                            title={`${key} (${guidArray.length})`}
-                            key={key}>
+                          <Tree.TreeNode selectable={false} title={`${key} (${guidArray.length})`} key={key}>
                             {guidArray.map((guid) => {
                               const associatedRecord = record.lookup(guid, fromStore.configsById)
                               return associatedRecord.foldL(
@@ -311,8 +265,8 @@ export function ShowGlobalConfig({
                                     title={
                                       <>
                                         <Tag>Unknown GUID</Tag>
-                                        <Reach.Link to={`../${guid}`}>{guid}</Reach.Link> is not a
-                                        known Global Config ID
+                                        <Reach.Link to={`../${guid}`}>{guid}</Reach.Link> is not a known Global Config
+                                        ID
                                       </>
                                     }
                                     key={guid}

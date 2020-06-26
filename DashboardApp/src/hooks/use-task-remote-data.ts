@@ -15,10 +15,7 @@ export function useTaskRemoteData<Args extends VariadicTuple, L, A>(
   getTask: (...args: Args) => Task<RemoteData<L, A>>,
   ...args: Args
 ): UseTaskRemoteDataReturn<L, A> {
-  const [[prev, current], setRD] = React.useState<[RemoteData<L, A>, RemoteData<L, A>]>([
-    initial,
-    initial,
-  ])
+  const [[prev, current], setRD] = React.useState<[RemoteData<L, A>, RemoteData<L, A>]>([initial, initial])
 
   const run = React.useCallback(() => {
     if (current.isPending()) return
@@ -49,10 +46,7 @@ interface RemoteProps<L, A> {
   }
 }
 
-function withRemoteData<L, A>(
-  current: RemoteData<L, A>,
-  prev: RemoteData<L, A>
-): React.FC<RemoteProps<L, A>> {
+function withRemoteData<L, A>(current: RemoteData<L, A>, prev: RemoteData<L, A>): React.FC<RemoteProps<L, A>> {
   return function Remote(props: RemoteProps<L, A>): React.ReactElement {
     return current.fold(
       props.children.Initial(),

@@ -8,5 +8,4 @@ const badChars = {
   "\n": "#13",
 } as { [key: string]: string }
 
-export const sanitizeText = (text: string) =>
-  String(text).replace(/[<>"'\r\n&]/g, (chr) => `&${badChars[chr]};`)
+export const sanitizeText = (text: string) => String(text).replace(/[<>"'\r\n&]/g, (chr) => `&${badChars[chr]};`)

@@ -15,8 +15,11 @@ declare module "./store.types" {
   interface AppModels {
     loading: {
       state: { effects: EffsLoading; models: ModelsLoading }
+      // eslint-disable-next-line @typescript-eslint/ban-types
       reducers: {}
+      // eslint-disable-next-line @typescript-eslint/ban-types
       effects: {}
+      // eslint-disable-next-line @typescript-eslint/ban-types
       selectors: {}
     }
   }

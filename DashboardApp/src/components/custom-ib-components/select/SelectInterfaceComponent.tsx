@@ -69,11 +69,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
       return true
     } else if (Array.isArray(option.props.children)) {
       return !!option.props.children.find((item: any) => {
-        if (
-          item &&
-          typeof item.toLowerCase === "function" &&
-          item.toLowerCase().indexOf(input.toLowerCase()) >= 0
-        ) {
+        if (item && typeof item.toLowerCase === "function" && item.toLowerCase().indexOf(input.toLowerCase()) >= 0) {
           return true
         }
       })
@@ -120,9 +116,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
         size={size}>
         {options.map((option) => (
           <Select.Option key={`${option.value}`} value={option.value}>
-            {typeof option.icon !== "undefined" ? (
-              <Icon type={option.icon} style={{ marginRight: "8px" }} />
-            ) : null}
+            {typeof option.icon !== "undefined" ? <Icon type={option.icon} style={{ marginRight: "8px" }} /> : null}
             {option.label}
           </Select.Option>
         ))}

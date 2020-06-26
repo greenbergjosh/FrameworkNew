@@ -8,12 +8,7 @@ import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { None, Some } from "../data/Option"
 import * as Store from "./store.types"
-import {
-  QueryConfig,
-  QueryConfigCodec,
-  ReportConfigCodec,
-  HTTPRequestQueryConfig,
-} from "../data/Report"
+import { HTTPRequestQueryConfig, QueryConfig, QueryConfigCodec, ReportConfigCodec } from "../data/Report"
 
 declare module "./store.types" {
   interface AppModels {
@@ -36,17 +31,9 @@ export interface Reducers {
 }
 
 export interface Effects {
-  executeQuery(payload: {
-    resultURI: string
-    query: QueryConfig
-    params: JSONRecord | JSONArray
-  }): Promise<any>
+  executeQuery(payload: { resultURI: string; query: QueryConfig; params: JSONRecord | JSONArray }): Promise<any>
 
-  executeQueryUpdate(payload: {
-    resultURI: string
-    query: QueryConfig
-    params: JSONRecord | JSONArray
-  }): Promise<any>
+  executeQueryUpdate(payload: { resultURI: string; query: QueryConfig; params: JSONRecord | JSONArray }): Promise<any>
 
   executeHTTPRequestQuery(payload: {
     resultURI: string
@@ -86,46 +73,45 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
           query,
           params,
         })
-      } else {
-        return dispatch.remoteDataClient
-          .reportQueryGet({
-            query: query.query,
-            params,
-          })
-          .then((x) =>
-            x.fold(
-              Left((error) => {
-                dispatch.remoteDataClient.defaultHttpErrorHandler(error)
-                throw error
-              }),
-              Right((ApiResponse) =>
-                ApiResponse({
-                  OK(payload) {
-                    dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
-                  },
-                  Unauthorized() {
-                    dispatch.logger.logError("unauthed")
-                    const error = {
-                      type: "error" as "error" | "success" | "info" | "warning",
-                      message: `You do not have permission to run this report`,
-                    }
-                    dispatch.feedback.notify(error)
-                    throw new Error(error.message)
-                  },
-                  ServerException(err) {
-                    dispatch.logger.logError(err.reason)
-                    const error = {
-                      type: "error" as "error" | "success" | "info" | "warning",
-                      message: `An error occurred while running this report: ${err.reason}`,
-                    }
-                    dispatch.feedback.notify(error)
-                    throw new Error(error.message)
-                  },
-                })
-              )
+      }
+      return dispatch.remoteDataClient
+        .reportQueryGet({
+          query: query.query,
+          params,
+        })
+        .then((x) =>
+          x.fold(
+            Left((error) => {
+              dispatch.remoteDataClient.defaultHttpErrorHandler(error)
+              throw error
+            }),
+            Right((ApiResponse) =>
+              ApiResponse({
+                OK(payload) {
+                  dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
+                },
+                Unauthorized() {
+                  dispatch.logger.logError("unauthed")
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
+                    message: `You do not have permission to run this report`,
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
+                },
+                ServerException(err) {
+                  dispatch.logger.logError(err.reason)
+                  const error = {
+                    type: "error" as "error" | "success" | "info" | "warning",
+                    message: `An error occurred while running this report: ${err.reason}`,
+                  }
+                  dispatch.feedback.notify(error)
+                  throw new Error(error.message)
+                },
+              })
             )
           )
-      }
+        )
     },
     executeQueryUpdate({ resultURI: lookupKey, query, params }) {
       return dispatch.remoteDataClient
@@ -144,7 +130,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                 OK(payload) {
                   dispatch.feedback.notify({
                     type: "success",
-                    message: "Successfully saved your changes"
+                    message: "Successfully saved your changes",
                   })
                 },
                 Unauthorized() {
@@ -169,7 +155,6 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
             )
           )
         )
-
     },
     executeHTTPRequestQuery({ resultURI: lookupKey, query, params }) {
       return dispatch.remoteDataClient
@@ -235,9 +220,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
               c.id,
               c.config.foldL(
                 None(() => ReportConfigCodec.decode(null)),
-                Some((config) =>
-                  JSONFromString.decode(config).chain((c) => ReportConfigCodec.decode(c))
-                )
+                Some((config) => JSONFromString.decode(config).chain((c) => ReportConfigCodec.decode(c)))
               )
             )
           }
@@ -260,9 +243,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
               c.id,
               c.config.foldL(
                 None(() => QueryConfigCodec.decode(null)),
-                Some((config) =>
-                  JSONFromString.decode(config).chain((c) => QueryConfigCodec.decode(c))
-                )
+                Some((config) => JSONFromString.decode(config).chain((c) => QueryConfigCodec.decode(c)))
               )
             )
           }
@@ -272,5 +253,4 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
   }),
 }
 
-const prepareQueryBody = (lang: "json" | string, body: string) =>
-  body && lang === "json" ? json5.parse(body) : body
+const prepareQueryBody = (lang: "json" | string, body: string) => (body && lang === "json" ? json5.parse(body) : body)

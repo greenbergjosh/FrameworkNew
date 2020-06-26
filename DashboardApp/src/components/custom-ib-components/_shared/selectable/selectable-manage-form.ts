@@ -80,7 +80,8 @@ export const baseSelectDataComponents = [
     defaultTheme: "vs-dark",
     hidden: false,
     hideLabel: false,
-    defaultValue: "return function getOptions(data) {\n    const options = [\n        { label: \"Example 1\", value: \"example1\" },\n        { label: \"Example 2\", value: \"example2\" },\n        { label: \"Example 3\", value: \"example3\" },\n    ]\n    return options\n}",
+    defaultValue:
+      'return function getOptions(data) {\n    const options = [\n        { label: "Example 1", value: "example1" },\n        { label: "Example 2", value: "example2" },\n        { label: "Example 3", value: "example3" },\n    ]\n    return options\n}',
     visibilityConditions: {
       "===": [
         "local-function",
@@ -147,7 +148,10 @@ export const baseSelectDataComponents = [
     label: "Query Mapping",
     component: "data-map",
     count: 2,
-    defaultValue: [{ label: "label", value: "" }, { label: "value", value: "" }],
+    defaultValue: [
+      { label: "label", value: "" },
+      { label: "value", value: "" },
+    ],
     keyComponent: {
       label: "Property",
       unique: true,
@@ -197,8 +201,7 @@ export const baseSelectDataComponents = [
     key: "allowCreateNew",
     valueKey: "allowCreateNew",
     label: "Create New Option?",
-    help:
-      "Allow the user to select 'Create New...' to create an option that doesn't currently exist.",
+    help: "Allow the user to select 'Create New...' to create an option that doesn't currently exist.",
     component: "toggle",
     defaultValue: false,
     hidden: true,

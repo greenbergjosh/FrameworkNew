@@ -22,13 +22,10 @@ export const determineLayoutComponents = (
 
           configOption.map(({ layout, entityTypes, configs }) => {
             if (layout) {
-              const entityTypesLower =
-                entityTypes && entityTypes.map((entityType: string) => entityType.toLowerCase())
+              const entityTypesLower = entityTypes && entityTypes.map((entityType: string) => entityType.toLowerCase())
               if (
                 entityTypesLower &&
-                entityTypeConfig
-                  .map(({ id }) => entityTypesLower.includes(id.toLowerCase()))
-                  .getOrElse(false)
+                entityTypeConfig.map(({ id }) => entityTypesLower.includes(id.toLowerCase())).getOrElse(false)
               ) {
                 result.byEntityType.push(layout)
               }
@@ -48,23 +45,18 @@ export const determineLayoutComponents = (
       // TODO: Eventually merge these layouts, perhaps?
       const layout = record
         .lookup(collectedLayoutOverrides.byConfigId[0].toLowerCase(), configsById)
-        .chain(({ config }) =>
-          tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
-        )
+        .chain(({ config }) => tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]))
         .toNullable()
 
       if (layout) {
         return layout
       }
-    } else if (collectedLayoutOverrides.byConfigId.length) {
     }
   }
 
   return entityTypeConfig
     .map((parentType) => {
-      return tryCatch(() => JSON5.parse(parentType.config.getOrElse("{}")).layout).getOrElse(
-        ROOT_CONFIG_COMPONENTS
-      )
+      return tryCatch(() => JSON5.parse(parentType.config.getOrElse("{}")).layout).getOrElse(ROOT_CONFIG_COMPONENTS)
     })
     .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
 }

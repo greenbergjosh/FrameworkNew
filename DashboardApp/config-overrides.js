@@ -1,6 +1,6 @@
 const path = require("path")
 const { override, fixBabelImports } = require("customize-cra")
-const  WebpackBuildNotifierPlugin = require('webpack-build-notifier')
+const WebpackBuildNotifierPlugin = require("webpack-build-notifier")
 
 /**
  * See for more info:

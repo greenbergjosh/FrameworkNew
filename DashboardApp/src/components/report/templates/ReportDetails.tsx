@@ -32,9 +32,7 @@ export const ReportDetails = ({
   parentData,
   layout,
 }: ReportDetailsProps) => {
-  const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(
-    none
-  )
+  const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
   const initialFormState = { config: JSON.stringify(rowData) }
   const dataResolver = getDataResolver(details, parentData)
 
@@ -77,10 +75,7 @@ export const ReportDetails = ({
       .map(record.compact)
       .extract()
 
-  const submitHandler = (
-    values: Values,
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
-  ) => {
+  const submitHandler = (values: Values, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }) => {
     // setUpdatedConfig(some({ ...rowData, ...values }))
     // dispatch.globalConfig
     //   .updateRemoteConfig({
@@ -90,9 +85,7 @@ export const ReportDetails = ({
     //   .then(() => setSubmitting(false))
   }
 
-  const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (
-    value: JSONRecord
-  ) => {
+  const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (value: JSONRecord) => {
     console.log("ReportBody.handleChangeData!", value)
     form.setFieldValue("config", JSON.stringify(value, null, 2))
     form.setFieldTouched("config", true)
@@ -145,10 +138,7 @@ export const ReportDetails = ({
  * Private Functions
  */
 
-function getDataResolver(
-  details: ReportDetailsProps["details"],
-  parentData: JSONRecord | undefined
-) {
+function getDataResolver(details: ReportDetailsProps["details"], parentData: JSONRecord | undefined) {
   return typeof details === "object" &&
     (details.type === "report" || details.type === "layout" || details.type === "ReportConfig") &&
     !!details.dataMapping

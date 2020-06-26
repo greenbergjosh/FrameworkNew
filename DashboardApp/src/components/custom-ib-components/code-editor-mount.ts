@@ -1,5 +1,5 @@
 import { store } from "../../state/store"
-import { editor, languages, IDisposable, IPosition, Range, CancellationToken } from "monaco-editor"
+import { CancellationToken, editor, IDisposable, IPosition, languages, Range } from "monaco-editor"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 
@@ -15,26 +15,18 @@ export const getCustomEditorConstructionOptions = (monaco: editor.IStandaloneCod
   return [linkDisposable, hoverDisposable]
 }
 
-class GUIDEditorServiceAdapter
-  implements languages.LinkProvider, languages.HoverProvider {
+class GUIDEditorServiceAdapter implements languages.LinkProvider, languages.HoverProvider {
   constructor(private monaco: editor.IStandaloneCodeEditor, private applicationStore: typeof store) {}
 
-  provideLinks(
-    model: editor.ITextModel,
-    token: CancellationToken
-  ): languages.ProviderResult<languages.ILinksList> {
-    return { links: extractGuidRangeItems(model).map((item) => item.link)}
+  provideLinks(model: editor.ITextModel, token: CancellationToken): languages.ProviderResult<languages.ILinksList> {
+    return { links: extractGuidRangeItems(model).map((item) => item.link) }
   }
 
   provideHover(model: editor.ITextModel, position: IPosition) {
-    const hoveredGuid = extractGuidRangeItems(model).find(({ link, guid }) =>
-      link.range.containsPosition(position)
-    )
+    const hoveredGuid = extractGuidRangeItems(model).find(({ link, guid }) => link.range.containsPosition(position))
 
     if (hoveredGuid) {
-      const configsById = this.applicationStore.select.globalConfig.configsById(
-        this.applicationStore.getState()
-      )
+      const configsById = this.applicationStore.select.globalConfig.configsById(this.applicationStore.getState())
       return record
         .lookup(hoveredGuid.guid.toLowerCase(), configsById)
         .map((config) => ({

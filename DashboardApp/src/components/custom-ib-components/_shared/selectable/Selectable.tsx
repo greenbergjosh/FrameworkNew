@@ -9,13 +9,7 @@ import React from "react"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import { QueryConfigCodec } from "../../../../data/Report"
-import {
-  BaseInterfaceComponent,
-  cheapHash,
-  JSONRecord,
-  Right,
-  UserInterfaceContext,
-} from "@opg/interface-builder"
+import { BaseInterfaceComponent, cheapHash, JSONRecord, Right, UserInterfaceContext } from "@opg/interface-builder"
 import {
   KeyValuePairConfig,
   RemoteDataHandlerType,
@@ -119,10 +113,8 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
    * @param values
    */
   updateOptionsFromValues = (values: JSONRecord[]) => {
-    const remoteQueryMapping =
-      (this.props.dataHandlerType === "remote-query" && this.props.remoteQueryMapping) || []
-    const remoteDataFilter =
-      (this.props.dataHandlerType === "remote-query" && this.props.remoteDataFilter) || null
+    const remoteQueryMapping = (this.props.dataHandlerType === "remote-query" && this.props.remoteQueryMapping) || []
+    const remoteDataFilter = (this.props.dataHandlerType === "remote-query" && this.props.remoteDataFilter) || null
     const labelKey =
       (
         remoteQueryMapping.find(({ label }) => label === "label") || {
@@ -185,16 +177,12 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
             ? (config: PersistedConfig) => {
                 const parsedConfig = {
                   ...config,
-                  config: config.config
-                    .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
-                    .toNullable(),
+                  config: config.config.chain((cfg) => tryCatch(() => JSON5.parse(cfg))).toNullable(),
                 }
 
                 const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
                 return remoteConfigType
-                  ? (config.type === remoteConfigType ||
-                      config.type === remoteConfigTypeParentName) &&
-                      dataFilterResult
+                  ? (config.type === remoteConfigType || config.type === remoteConfigTypeParentName) && dataFilterResult
                   : dataFilterResult
               }
             : remoteConfigType
@@ -215,9 +203,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           if (!hidden && remoteQuery) {
             const queryGlobalConfig = loadById(remoteQuery)
             if (queryGlobalConfig) {
-              const queryConfig = QueryConfigCodec.decode(
-                JSON5.parse(queryGlobalConfig.config.getOrElse(""))
-              )
+              const queryConfig = QueryConfigCodec.decode(JSON5.parse(queryGlobalConfig.config.getOrElse("")))
               queryConfig.fold(
                 (errors) => {
                   console.error("Selectable.render", "Invalid Query", reporter(queryConfig))
@@ -230,9 +216,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
                   // )
 
                   const parameterValues = queryConfig.parameters.reduce(
-                    (acc, { name, defaultValue }) => (
-                      (acc[name] = defaultValue && defaultValue.toNullable()), acc
-                    ),
+                    (acc, { name, defaultValue }) => ((acc[name] = defaultValue && defaultValue.toNullable()), acc),
                     {} as JSONObject
                   )
                   const queryResultURI = cheapHash(queryConfig.query, parameterValues)
@@ -273,8 +257,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
             const keyValuePairGlobalConfig = loadById(this.props.remoteKeyValuePair)
             if (keyValuePairGlobalConfig) {
               const keyValuePairConfig = tryCatch(
-                () =>
-                  JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig
+                () => JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig
               ).toNullable()
 
               if (keyValuePairConfig) {
@@ -305,7 +288,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     if (this.props.dataHandlerType === "local-function") {
       const nextState = localFunctionDataHandler.getUpdatedState({
         dataHandlerType: this.props.dataHandlerType,
-        prevProps: prevProps,
+        prevProps,
         userInterfaceData: this.props.userInterfaceData,
         rootUserInterfaceData: this.props.rootUserInterfaceData,
         localFunctionDataHandler: this.props.localFunctionDataHandler,
@@ -386,8 +369,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           options.find(
             ({ value }) =>
               value === anyCaseResult ||
-              (typeof value === "string" && value.toLowerCase()) ===
-                (anyCaseResult && anyCaseResult.toLowerCase())
+              (typeof value === "string" && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
           ) || { value: anyCaseResult }
         ).value
       )
@@ -399,8 +381,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
               options.find(
                 ({ value }) =>
                   value === resultItem ||
-                  (typeof value === "string" && value.toLowerCase()) ===
-                    (resultItem && resultItem.toLowerCase())
+                  (typeof value === "string" && value.toLowerCase()) === (resultItem && resultItem.toLowerCase())
               ) || { value: resultItem }
             ).value
         )
@@ -428,9 +409,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 const cleanText = (text: string, prefix?: string, suffix?: string) => {
   const noPrefix = text && prefix && text.startsWith(prefix) ? text.substring(prefix.length) : text
   const noSuffix =
-    noPrefix && suffix && noPrefix.endsWith(suffix)
-      ? noPrefix.substr(0, noPrefix.length - suffix.length)
-      : noPrefix
+    noPrefix && suffix && noPrefix.endsWith(suffix) ? noPrefix.substr(0, noPrefix.length - suffix.length) : noPrefix
 
   return noSuffix
 }

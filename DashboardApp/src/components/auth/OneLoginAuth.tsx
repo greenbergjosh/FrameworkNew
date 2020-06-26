@@ -1,8 +1,8 @@
-import { Button, Icon } from "antd"
+import { Button } from "antd"
 import React, { useState } from "react"
 import { useRematch } from "../../hooks/use-rematch"
 
-const OneLoginIcon = ({color = "currentColor"}) => (
+const OneLoginIcon = ({ color = "currentColor" }) => (
   <i aria-label="icon: onelogin" className="anticon">
     <svg
       data-icon="onelogin"

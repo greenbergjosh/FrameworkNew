@@ -19,9 +19,9 @@ import { IngestionStatus } from "./index"
  */
 
 interface ExportTableProps<T> {
-  data: T[],
-  title?: string,
-  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined,
+  data: T[]
+  title?: string
+  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined
 }
 
 interface SucceededColProps {
@@ -51,23 +51,14 @@ function SucceededCol(props: SucceededColProps): JSX.Element {
 }
 
 function RuntimeCol(props: RuntimeColProps): JSX.Element {
-  return (
-    <span>
-      {typeof props.runtime === "number" ? `${props.runtime}s` : "-"}
-    </span>
-  )
+  return <span>{typeof props.runtime === "number" ? `${props.runtime}s` : "-"}</span>
 }
 
 function RowsProcessedCol(props: RowsProcessedColProps): JSX.Element {
-  return (
-    <span>
-      {typeof props.rows_processed === "number" ? `${props.rows_processed.toLocaleString()}` : "-"}
-    </span>
-  )
+  return <span>{typeof props.rows_processed === "number" ? `${props.rows_processed.toLocaleString()}` : "-"}</span>
 }
 
 export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTableProps<IngestionStatus>): JSX.Element {
-
   const pageSettings: PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
     pageSizes: false,
@@ -75,33 +66,20 @@ export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTable
 
   return (
     <>
-      <Typography.Text strong={true} className={"table-title"}>{title}</Typography.Text>
+      <Typography.Text strong={true} className={"table-title"}>
+        {title}
+      </Typography.Text>
       <GridComponent
         dataSource={data}
         rowDataBound={onRowDataBind}
         allowPaging={data.length > DEFAULT_PAGE_SIZE}
         allowSelection={false}
         pageSettings={pageSettings}
-        className="import-ingestion-table"
-      >
+        className="import-ingestion-table">
         <ColumnsDirective>
-          <ColumnDirective
-            field="succeeded"
-            headerText=""
-            template={SucceededCol}
-            width={30}
-          />
-          <ColumnDirective
-            field="table_name"
-            headerText="Table"
-          />
-          <ColumnDirective
-            field="runtime"
-            headerText="Time"
-            template={RuntimeCol}
-            textAlign={"Right"}
-            width={70}
-          />
+          <ColumnDirective field="succeeded" headerText="" template={SucceededCol} width={30} />
+          <ColumnDirective field="table_name" headerText="Table" />
+          <ColumnDirective field="runtime" headerText="Time" template={RuntimeCol} textAlign={"Right"} width={70} />
           <ColumnDirective
             field="rows_processed"
             headerText="Rows"
@@ -110,7 +88,7 @@ export function ImportIngestionTable({ data, title, onRowDataBind }: ExportTable
             width={70}
           />
         </ColumnsDirective>
-        <Inject services={[Page]}/>
+        <Inject services={[Page]} />
       </GridComponent>
     </>
   )

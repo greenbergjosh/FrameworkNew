@@ -7,7 +7,7 @@ import * as record from "fp-ts/lib/Record"
 import { sortBy } from "lodash/fp"
 import { Helmet } from "react-helmet"
 import { FilteredMenu } from "../../../../../../components/filtered-menu/FilteredMenu"
-import { Query} from "../../../../../../components/query/Query"
+import { Query } from "../../../../../../components/query/Query"
 import { QueryProps } from "../../../../../../components/query/types"
 import { useRematch } from "../../../../../../hooks"
 import { PartnerStatus } from "../../../../../../state/import-ingestion-report"
@@ -30,23 +30,19 @@ interface Props {
 
 export type IngestionStatus = iots.TypeOf<typeof IngestionStatusCodec>
 export const IngestionStatusCodec = iots.type({
-  /* eslint-disable @typescript-eslint/camelcase */
   last_id_processed: iots.number,
   rows_processed: iots.number,
   runtime: iots.number,
   succeeded: iots.boolean,
   table_name: iots.string,
-  /* eslint-enable @typescript-eslint/camelcase */
 })
 
 export type ExportStatus = iots.TypeOf<typeof ExportStatusCodec>
 export const ExportStatusCodec = iots.type({
-  /* eslint-disable @typescript-eslint/camelcase */
   partner: iots.string,
   rowcount: iots.number,
   export_date: iots.string,
   export_name: iots.string,
-  /* eslint-enable @typescript-eslint/camelcase */
 })
 
 /* *************************
@@ -67,9 +63,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
   // setTimeout return a cleanup fn for unmount, call and reset the interval
   // increment counter (React.useState) | or lastRequestedTS
 
-  const partnerQueryConfig = record
-    .lookup(PARTNER_QUERY_CONFIG_ID, fromStore.configsById)
-    .toUndefined()
+  const partnerQueryConfig = record.lookup(PARTNER_QUERY_CONFIG_ID, fromStore.configsById).toUndefined()
   const partnerQueryId = partnerQueryConfig && partnerQueryConfig.id
 
   const ingestionStatusQueryConfig = record
@@ -77,19 +71,11 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     .toUndefined()
   const ingestionStatusQueryConfigId = ingestionStatusQueryConfig && ingestionStatusQueryConfig.id
 
-  const exportStatusQueryConfig = record
-    .lookup(EXPORT_STATUS_QUERY_CONFIG_ID, fromStore.configsById)
-    .toUndefined()
+  const exportStatusQueryConfig = record.lookup(EXPORT_STATUS_QUERY_CONFIG_ID, fromStore.configsById).toUndefined()
   const exportStatusQueryConfigId = exportStatusQueryConfig && exportStatusQueryConfig.id
 
   const contextManager = React.useMemo(
-    () =>
-      createUIContext(
-        dispatch,
-        fromStore.reportDataByQuery,
-        fromStore.configs,
-        fromStore.configsById
-      ),
+    () => createUIContext(dispatch, fromStore.reportDataByQuery, fromStore.configs, fromStore.configsById),
     [dispatch, fromStore.reportDataByQuery, fromStore.configs, fromStore.configsById]
   )
 
@@ -128,18 +114,12 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
     }
     // We're using sortBy to move the items of the selected table to the front
     // without re-arranging anything else
-    const sorted = sortBy(
-      (
-        item //eslint-disable-line @typescript-eslint/camelcase
-      ) => (comparator(item) ? 1 : 2),
-      data
-    )
+    const sorted = sortBy((item) => (comparator(item) ? 1 : 2), data)
     return sorted as T[]
   }
 
-  const isSelectedPartnerImportIngestion = (selectedPartnerTables: string[]) => (
-    item: IngestionStatus
-  ) => selectedPartnerTables.includes(item.table_name)
+  const isSelectedPartnerImportIngestion = (selectedPartnerTables: string[]) => (item: IngestionStatus) =>
+    selectedPartnerTables.includes(item.table_name)
 
   const isSelectedPartnerExport = (selectedPartner: PartnerStatus | null) => (item: ExportStatus) =>
     !!selectedPartner && selectedPartner.name.toLowerCase() === item.partner.toLowerCase()
@@ -227,10 +207,7 @@ export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Ele
                 {({ data }) => (
                   <ImportIngestionTable
                     title="Ingestion"
-                    data={sortByPartner(
-                      data,
-                      isSelectedPartnerImportIngestion(selectedPartnerTables)
-                    )}
+                    data={sortByPartner(data, isSelectedPartnerImportIngestion(selectedPartnerTables))}
                     onRowDataBind={importIngestionRowDataBound}
                   />
                 )}

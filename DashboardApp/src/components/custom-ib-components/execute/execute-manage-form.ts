@@ -92,8 +92,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "remoteQueryMapping",
                 valueKey: "remoteQueryMapping",
                 label: "Query Mapping",
-                help:
-                  "Forfields that need property name transformations applied, describe these here",
+                help: "Forfields that need property name transformations applied, describe these here",
                 component: "data-map",
                 count: 2,
                 defaultValue: [
@@ -238,10 +237,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Hide Button Text",
                 visibilityConditions: {
-                  and: [
-                    { "!==": ["circle", { var: ["shape"] }] },
-                    { "!==": ["circle-outline", { var: ["shape"] }] },
-                  ],
+                  and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
                 },
               },
               {
@@ -285,10 +281,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Full Width",
                 visibilityConditions: {
-                  and: [
-                    { "!==": ["circle", { var: ["shape"] }] },
-                    { "!==": ["circle-outline", { var: ["shape"] }] },
-                  ],
+                  and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
                 },
               },
               {

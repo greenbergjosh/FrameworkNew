@@ -95,14 +95,12 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
     },
   }
 
-  const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(
-    none
-  )
+  const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
 
-  const entityTypeConfig = React.useMemo(
-    () => record.lookup(props.config.type, fromStore.entityTypes),
-    [fromStore.entityTypes, props.config.type]
-  )
+  const entityTypeConfig = React.useMemo(() => record.lookup(props.config.type, fromStore.entityTypes), [
+    fromStore.entityTypes,
+    props.config.type,
+  ])
 
   const isRootConfig = entityTypeConfig.map(({ id }) => id === props.config.id).getOrElse(false)
   const configComponents = isRootConfig
@@ -115,19 +113,14 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           .map((layoutMappings) =>
             layoutMappings.reduce(
               (result, layoutMapping) => {
-                const configOption = tryCatch(() =>
-                  JSON5.parse(layoutMapping.config.getOrElse("{}"))
-                )
+                const configOption = tryCatch(() => JSON5.parse(layoutMapping.config.getOrElse("{}")))
 
                 configOption.map(({ layout, entityTypes, configs }) => {
                   if (layout) {
                     if (configs && configs.includes(props.config.id)) {
                       result.byConfigId.push(layout)
                     }
-                    if (
-                      entityTypes &&
-                      entityTypeConfig.map(({ id }) => entityTypes.includes(id)).getOrElse(false)
-                    ) {
+                    if (entityTypes && entityTypeConfig.map(({ id }) => entityTypes.includes(id)).getOrElse(false)) {
                       result.byEntityType.push(layout)
                     }
                   }
@@ -148,9 +141,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
             const layout = record
               .lookup(collectedLayoutOverrides.byConfigId[0], fromStore.configsById)
               .chain(({ config }) => {
-                const parseResult = tryCatch(
-                  () => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[]
-                )
+                const parseResult = tryCatch(() => JSON5.parse(config.getOrElse("{}")).layout as ComponentDefinition[])
 
                 if (!parseResult) {
                   console.warn("GlobalConfig.edit", "Failed to parse", config.getOrElse("null"))
@@ -163,7 +154,6 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
             if (layout) {
               return layout
             }
-          } else if (collectedLayoutOverrides.byConfigId.length) {
           }
         }
 
@@ -201,6 +191,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
   /* afterCreate */
   React.useEffect(() => {
     updatedConfig.chain(findInStore).foldL(
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       None(() => {}),
       Some((c) => {
         dispatch.navigation.showGlobalConfigById({ id: c.id, navOpts: { replace: true } })
@@ -330,9 +321,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                   <Typography.Text>
                     {entityTypeConfig.foldL(
                       None(() => <>{props.config.type}</>),
-                      Some((etc) => (
-                        <Reach.Link to={`../../${etc.id}`}>{props.config.type}</Reach.Link>
-                      ))
+                      Some((etc) => <Reach.Link to={`../../${etc.id}`}>{props.config.type}</Reach.Link>)
                     )}
                   </Typography.Text>
                 </Form.Item>
@@ -360,16 +349,11 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                   label="Config"
                   required={true}
                   validateStatus={form.errors.config ? "error" : "success"}>
-                  <Tabs
-                    defaultActiveKey={
-                      configComponents && configComponents.length ? "form" : "editor"
-                    }>
+                  <Tabs defaultActiveKey={configComponents && configComponents.length ? "form" : "editor"}>
                     <Tabs.TabPane
                       key={"form"}
                       tab={"Properties"}
-                      disabled={
-                        !configComponents || !configComponents.length || !!form.errors.config
-                      }>
+                      disabled={!configComponents || !configComponents.length || !!form.errors.config}>
                       {form.errors.config ? (
                         <Alert
                           type="error"
@@ -394,9 +378,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     <Tabs.TabPane
                       key={"display"}
                       tab={"Preview"}
-                      disabled={
-                        !configComponents || !configComponents.length || !!form.errors.config
-                      }>
+                      disabled={!configComponents || !configComponents.length || !!form.errors.config}>
                       {form.errors.config ? (
                         <Alert
                           type="error"
@@ -408,12 +390,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                           contextManager={userInterfaceContextManager}
                           data={previewData}
                           onChangeData={(value) => {
-                            console.log(
-                              "edit",
-                              "UserInterface.onChangeData",
-                              "display config",
-                              value
-                            )
+                            console.log("edit", "UserInterface.onChangeData", "display config", value)
                             setPreviewData(value)
                             // form.setFieldValue("config", JSON.stringify(value, null, 2))
                             // form.setFieldTouched("config", true)

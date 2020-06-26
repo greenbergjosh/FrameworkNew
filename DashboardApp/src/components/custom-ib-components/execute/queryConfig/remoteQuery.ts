@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { QueryConfig } from "../../../../data/Report"
 import { ExecuteInterfaceComponentState } from "../types"
 import { JSONRecord } from "../../../../data/JSON"

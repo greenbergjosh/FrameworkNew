@@ -31,7 +31,25 @@ export function getCellFormatter(
         return { ...acc, [item.key]: item.value }
       }, {})
 
-    // Partially apply formatter with options
-    return (data, column) => formatter(data, column, options)
+    if (typeof formatter === "function") {
+      // Partially apply formatter with options
+      const expandedFormatter: CustomSummaryType = (data, column) => formatter(data, column, options)
+
+      /*
+       * Wrap the LBM with a try-catch because the LBM may have a bug,
+       * and also LBMs use column.formatFn(value) which will throw
+       * if the value is null.
+       */
+      return (data, column) => {
+        try {
+          return expandedFormatter(data, column)
+        } catch (e) {
+          return ""
+        }
+      }
+    }
+
+    // LBM formatter is not a valid function, so provide a default
+    return () => ""
   }
 }

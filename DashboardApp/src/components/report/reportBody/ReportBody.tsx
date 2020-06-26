@@ -25,6 +25,7 @@ import { getDetailTemplate } from "../templates/getDetailTemplate"
 import { ColumnConfig } from "../templates/types"
 import { getCustomAggregateFunction } from "../templates/customAggregateFunction"
 import { getCellFormatter } from "../templates/cellFormatter"
+import queryString from "query-string"
 
 export interface ReportBodyProps {
   isChildReport?: boolean
@@ -37,15 +38,7 @@ export interface ReportBodyProps {
 }
 
 export const ReportBody = React.memo(
-  ({
-    isChildReport,
-    parentData,
-    queryConfig,
-    reportConfig,
-    reportId,
-    title,
-    withoutHeader,
-  }: ReportBodyProps) => {
+  ({ isChildReport, parentData, queryConfig, reportConfig, reportId, title, withoutHeader }: ReportBodyProps) => {
     const [fromStore, dispatch] = useRematch((state) => ({
       configs: state.globalConfig.configs,
       configsById: store.select.globalConfig.configsById(state),
@@ -56,8 +49,15 @@ export const ReportBody = React.memo(
 
     const grid = React.useRef<GridComponent>(null)
 
+    const querystringParams = React.useMemo(() => {
+      return queryString.parse(window.location.search)
+    }, [window.location.search])
+
+    /**
+     * Sort parameters
+     */
     const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
-      () => determineSatisfiedParameters(queryConfig.parameters, parentData || {}, true),
+      () => determineSatisfiedParameters(queryConfig.parameters, { ...parentData, ...querystringParams } || {}, true),
       [parentData, queryConfig.parameters]
     )
 
@@ -65,14 +65,17 @@ export const ReportBody = React.memo(
     const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
     const [automaticQueryErrorState, setAutomaticQueryErrorState] = React.useState<any>(null)
 
+    /**
+     * Set QueryForm with initial parameters
+     */
+    React.useEffect(() => {
+      setParameterValues(some(satisfiedByParentParams))
+    }, [parentData, querystringParams])
+
     const queryResultData = React.useMemo(
       () =>
         parameterValues.foldL(
-          () =>
-            record.lookup(
-              cheapHash(queryConfig.query, satisfiedByParentParams),
-              fromStore.reportDataByQuery
-            ),
+          () => record.lookup(cheapHash(queryConfig.query, satisfiedByParentParams), fromStore.reportDataByQuery),
 
           (params) =>
             record.lookup(
@@ -157,6 +160,7 @@ export const ReportBody = React.memo(
         const ds = grid.current.dataSource as []
         const idx = ds.findIndex((item) => matches(item)(oldData))
         if (idx && idx > -1) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           ds[idx] = { ...newData }
           grid.current.refresh()
@@ -165,13 +169,7 @@ export const ReportBody = React.memo(
     }
 
     const getMemoizedDetailTemplate = React.useMemo(() => {
-      return getDetailTemplate(
-        dispatch,
-        reportConfig.details,
-        parameterValues.toUndefined(),
-        parentData,
-        onChangeData
-      )
+      return getDetailTemplate(dispatch, reportConfig.details, parameterValues.toUndefined(), parentData, onChangeData)
     }, [reportConfig.details, parameterValues.toUndefined(), parentData])
 
     const sortSettings: SortSettingsModel = {
@@ -201,10 +199,10 @@ export const ReportBody = React.memo(
       }, [] as string[]),
     }
 
-    const contextData = React.useMemo(
-      () => ({ ...parentData, ...parameterValues.getOrElse(record.empty) }),
-      [parentData, parameterValues.getOrElse(record.empty)]
-    )
+    const contextData = React.useMemo(() => ({ ...parentData, ...parameterValues.getOrElse(record.empty) }), [
+      parentData,
+      parameterValues.getOrElse(record.empty),
+    ])
 
     /*
      * COLUMN TEMPLATES
@@ -265,9 +263,7 @@ export const ReportBody = React.memo(
           </Helmet>
         )}
         {withoutHeader !== true &&
-          (reportId.isSome() ||
-            typeof title !== "undefined" ||
-            !isEmpty(unsatisfiedByParentParams)) && (
+          (reportId.isSome() || typeof title !== "undefined" || !isEmpty(unsatisfiedByParentParams)) && (
             <PageHeader
               extra={reportId.fold(null, (id) => (
                 <Button.Group size="small">
