@@ -7,10 +7,8 @@ import { ordString } from "fp-ts/lib/Ord"
 import * as Record from "fp-ts/lib/Record"
 import { setoidString } from "fp-ts/lib/Setoid"
 import { delay, task } from "fp-ts/lib/Task"
-// eslint-disable-next-line no-duplicate-imports
-// eslint-disable-next-line no-duplicate-imports
 import * as iots from "io-ts"
-import { Branded } from "io-ts"
+import { Branded } from "io-ts" // eslint-disable-line no-duplicate-imports
 import { reporter } from "io-ts-reporters"
 import { NonEmptyString, NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import queryString from "query-string"
