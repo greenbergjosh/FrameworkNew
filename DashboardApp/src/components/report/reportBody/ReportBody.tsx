@@ -57,7 +57,7 @@ export const ReportBody = React.memo(
      * Sort parameters
      */
     const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
-      () => determineSatisfiedParameters(queryConfig.parameters, { ...parentData, ...querystringParams } || {}, true),
+      () => determineSatisfiedParameters(queryConfig.parameters, { ...querystringParams, ...parentData } || {}, true),
       [parentData, queryConfig.parameters]
     )
 
