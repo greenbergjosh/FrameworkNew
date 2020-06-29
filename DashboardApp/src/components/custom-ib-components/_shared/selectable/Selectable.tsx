@@ -18,7 +18,7 @@ import {
   SelectableProps,
   SelectableState,
 } from "./types"
-import localFunctionDataHandler from "./dataHandlers/localFunctionDataHandler"
+import * as remoteFunctionDataHandler from "./dataHandlers/remoteFunction"
 
 export class Selectable extends BaseInterfaceComponent<SelectableProps, SelectableState> {
   static defaultProps = {
@@ -95,7 +95,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   /**
-   * Determines if dataHandlerType is Remote Data ("remote-config", "remote-kvp", "remote-query")
+   * Determines if dataHandlerType is Remote Data ("remote-config", "remote-kvp", "remote-query", "remote-function")
    * @param dataHandlerType
    */
   static isRemoteDataType = (dataHandlerType: string): dataHandlerType is RemoteDataHandlerType => {
@@ -104,7 +104,8 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       dataHandlerType === "remote-config" ||
       dataHandlerType === "remote-kvp" ||
       dataHandlerType === "remote-query" ||
-      dataHandlerType === "remote-url"
+      dataHandlerType === "remote-url" ||
+      dataHandlerType === "remote-function"
     )
   }
 
@@ -152,13 +153,15 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   /**
-   * Loads data when component is configured to use Remote Data ("remote-config", "remote-kvp", "remote-query")
+   * Loads data when component is configured to use Remote Data
+   * ("remote-config", "remote-kvp", "remote-query", "remote-function")
    */
-  loadRemoteData = () => {
+  loadRemoteData = (eventType?: string) => {
     if (
       (this.props.dataHandlerType === "remote-config" ||
         this.props.dataHandlerType === "remote-kvp" ||
-        this.props.dataHandlerType === "remote-query") &&
+        this.props.dataHandlerType === "remote-query" ||
+        this.props.dataHandlerType === "remote-function") &&
       this.context
     ) {
       const { loadById, loadByFilter, executeQuery, reportDataByQuery } = this
@@ -270,6 +273,17 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           }
           return
         }
+        case "remote-function": {
+          /*
+           * Reset state.remoteFunction so that it will refresh in the onFocus handler.
+           * We don't fetch the remote-function options until the user interacts
+           * with the component because it can be an expensive operation.
+           */
+          if (eventType === "changedRemoteDataHandlerType" && this.state.remoteFunction) {
+            this.setState({ remoteFunction: undefined })
+          }
+          return
+        }
       }
 
       console.warn("Failed to load remote data for", this.props)
@@ -280,64 +294,73 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   componentDidMount() {
     // If the data type is remote, load the data
     if (Selectable.isRemoteDataType(this.props.dataHandlerType)) {
-      this.loadRemoteData()
+      this.loadRemoteData("componentDidMount")
     }
   }
 
   componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
-    if (this.props.dataHandlerType === "local-function") {
-      const nextState = localFunctionDataHandler.getUpdatedState({
-        dataHandlerType: this.props.dataHandlerType,
-        prevProps,
-        userInterfaceData: this.props.userInterfaceData,
-        rootUserInterfaceData: this.props.rootUserInterfaceData,
-        localFunctionDataHandler: this.props.localFunctionDataHandler,
-        localFunction: this.state.localFunction,
-      })
-      if (nextState) this.setState(nextState as any)
-    }
+    const isRemoteConfigUpdated = () =>
+      this.props.dataHandlerType === "remote-config" &&
+      prevProps.dataHandlerType === "remote-config" &&
+      this.props.remoteConfigType !== prevProps.remoteConfigType
+
+    const isRemoteQueryUpdated = () =>
+      this.props.dataHandlerType === "remote-query" &&
+      prevProps.dataHandlerType === "remote-query" &&
+      this.props.remoteQuery !== prevProps.remoteQuery
+
+    const isRemoteKVPUpdated = () =>
+      this.props.dataHandlerType === "remote-kvp" &&
+      prevProps.dataHandlerType === "remote-kvp" &&
+      this.props.remoteKeyValuePair !== prevProps.remoteKeyValuePair
+
+    const isRemoteFunctionUpdated = () =>
+      this.props.dataHandlerType === "remote-function" &&
+      prevProps.dataHandlerType === "remote-function" &&
+      this.props.remoteFunctionType !== prevProps.remoteFunctionType
+
+    const isRemoteDataHandlerTypeChanged = () =>
+      this.props.dataHandlerType !== prevProps.dataHandlerType ||
+      isRemoteConfigUpdated() ||
+      isRemoteQueryUpdated() ||
+      isRemoteKVPUpdated() ||
+      isRemoteFunctionUpdated()
 
     // console.log("Selectable.componentDidUpdate", {
     //   was: prevState.loadStatus,
     //   is: this.state.loadStatus,
     // })
-    // If the data handler type has changed, and the new type is remote
-    // or if the remote config type has changed
-    // or if the remote query has changed
-    if (
-      (this.props.dataHandlerType !== prevProps.dataHandlerType ||
-        (this.props.dataHandlerType === "remote-config" &&
-          prevProps.dataHandlerType === "remote-config" &&
-          this.props.remoteConfigType !== prevProps.remoteConfigType) ||
-        (this.props.dataHandlerType === "remote-query" &&
-          prevProps.dataHandlerType === "remote-query" &&
-          this.props.remoteQuery !== prevProps.remoteQuery) ||
-        (this.props.dataHandlerType === "remote-kvp" &&
-          prevProps.dataHandlerType === "remote-kvp" &&
-          this.props.remoteKeyValuePair !== prevProps.remoteKeyValuePair)) &&
-      Selectable.isRemoteDataType(this.props.dataHandlerType)
-    ) {
-      this.loadRemoteData()
+
+    if (isRemoteDataHandlerTypeChanged() && Selectable.isRemoteDataType(this.props.dataHandlerType)) {
+      // The data handler type has changed and the new type is remote
+      this.loadRemoteData("changedRemoteDataHandlerType")
     } else if (
       Selectable.isRemoteDataType(this.props.dataHandlerType) &&
       this.state.loadStatus === "none" &&
       prevState.loadStatus === "loading"
     ) {
-      this.loadRemoteData()
+      this.loadRemoteData("loaded")
     }
   }
 
   handleFocus() {
-    // Local Function
-    // Only run the first time the select is focused
-    // by checking if we don't have the localFunction yet.
-    if (!this.state.localFunction && this.props.dataHandlerType === "local-function") {
-      const nextState = localFunctionDataHandler.getInitialState(
-        this.props.userInterfaceData,
-        this.props.rootUserInterfaceData,
-        this.props.localFunctionDataHandler
+    /*
+     * We fetch the remote-function options onFocus because it can be an expensive operation
+     * on a form with many Selectable components.
+     */
+    if (this.props.dataHandlerType === "remote-function" && !this.state.remoteFunction) {
+      const remoteFunction = remoteFunctionDataHandler.loadRemoteFunction(
+        (this.context as AdminUserInterfaceContextManager).loadById,
+        this.props.remoteFunctionType
       )
-      if (nextState) this.setState(nextState as any)
+      const options = remoteFunction
+        ? remoteFunctionDataHandler.getOptions(
+            this.props.userInterfaceData,
+            this.props.rootUserInterfaceData,
+            remoteFunction
+          )
+        : []
+      this.setState({ options, remoteFunction })
     }
   }
 

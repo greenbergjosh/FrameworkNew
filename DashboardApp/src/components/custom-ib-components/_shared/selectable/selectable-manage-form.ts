@@ -22,10 +22,6 @@ export const baseSelectDataComponents = [
           value: "local",
         },
         {
-          label: "Local Function",
-          value: "local-function",
-        },
-        {
           label: "Remote (Config)",
           value: "remote-config",
         },
@@ -36,6 +32,10 @@ export const baseSelectDataComponents = [
         {
           label: "Remote (Query)",
           value: "remote-query",
+        },
+        {
+          label: "Remote (Function)",
+          value: "remote-function",
         },
         // {
         //   label: "Remote (URL)",
@@ -72,19 +72,16 @@ export const baseSelectDataComponents = [
     },
   },
   {
-    key: "localFunctionDataHandler",
-    valueKey: "localFunctionDataHandler",
-    label: "Local Function",
-    component: "code-editor",
-    defaultLanguage: "javascript",
-    defaultTheme: "vs-dark",
-    hidden: false,
-    hideLabel: false,
-    defaultValue:
-      'return function getOptions(data) {\n    const options = [\n        { label: "Example 1", value: "example1" },\n        { label: "Example 2", value: "example2" },\n        { label: "Example 3", value: "example3" },\n    ]\n    return options\n}',
+    key: "remoteFunctionType",
+    valueKey: "remoteFunctionType",
+    label: "Remote Function",
+    component: "select",
+    help: "Provide a function that returns the options (Advanced).",
+    dataHandlerType: "remote-config",
+    remoteConfigType: "Select.RemoteFunction",
     visibilityConditions: {
       "===": [
-        "local-function",
+        "remote-function",
         {
           var: ["dataHandlerType"],
         },

@@ -13,7 +13,7 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
  * Misc Types & Interfaces
  */
 
-export type LocalFunctionType = (
+export type RemoteFunctionType = (
   userInterfaceData: any | undefined,
   rootUserInterfaceData: any | undefined
 ) => SelectableOption[]
@@ -27,8 +27,8 @@ export interface KeyValuePairConfig {
   items: KeyValuePair[]
 }
 
-export type LocalDataHandlerType = "local" | "local-function"
-export type RemoteDataHandlerType = "remote-config" | "remote-kvp" | "remote-query" | "remote-url"
+export type LocalDataHandlerType = "local"
+export type RemoteDataHandlerType = "remote-config" | "remote-kvp" | "remote-query" | "remote-url" | "remote-function"
 export type LoadStatusType = "none" | "loading" | "loaded" | "error"
 
 export const MODES: TSEnum<AntdSelectProps["mode"]> = {
@@ -62,7 +62,7 @@ export interface ISelectableProps extends ComponentDefinitionNamedProps {
   dataHandlerType: LocalDataHandlerType | RemoteDataHandlerType
   // eslint-disable-next-line @typescript-eslint/ban-types
   data: {}
-  localFunctionDataHandler?: string
+  remoteFunctionType?: string
   children: (props: SelectableChildProps) => JSX.Element | JSX.Element[] | null
 }
 
@@ -73,11 +73,10 @@ export interface SelectablePropsLocalData extends ISelectableProps {
   }
 }
 
-export interface SelectablePropsLocalFunctionData extends ISelectableProps {
-  dataHandlerType: "local-function"
-  data: {
-    values: SelectableOption[]
-  }
+export interface SelectablePropsRemoteFunctionData extends ISelectableProps {
+  dataHandlerType: "remote-function"
+  remoteFunctionType?: PersistedConfig["id"]
+  remoteDataFilter?: JSONObject
 }
 
 export interface SelectablePropsRemoteConfigData extends ISelectableProps {
@@ -108,12 +107,12 @@ export interface SelectableState {
   loadError: string | null
   loadStatus: LoadStatusType
   options: SelectableOption[]
-  localFunction?: LocalFunctionType
+  remoteFunction?: RemoteFunctionType
 }
 
 export type SelectableProps = (
   | SelectablePropsLocalData
-  | SelectablePropsLocalFunctionData
+  | SelectablePropsRemoteFunctionData
   | SelectablePropsRemoteConfigData
   | SelectablePropsRemoteKeyValueData
   | SelectablePropsRemoteQueryData
