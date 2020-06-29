@@ -125,25 +125,27 @@ export const ReportBody = React.memo(
         queryResultData.isNone() &&
         (!unsatisfiedByParentParams.length || withoutHeader)
       ) {
-        dispatch.reports
-          .executeQuery({
-            resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
-            query: queryConfig,
-            params: satisfiedByParentParams,
-          })
-          .catch((ex) => {
-            console.error(
-              "ReportBody.tsx",
-              "Server failure executing query",
-              {
-                resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
-                query: queryConfig.query,
-                params: satisfiedByParentParams,
-              },
-              ex
-            )
-            setAutomaticQueryErrorState(typeof ex === "function" ? () => ex : ex)
-          })
+        if (queryConfig.executeImmediately === undefined || queryConfig.executeImmediately) {
+          dispatch.reports
+            .executeQuery({
+              resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+              query: queryConfig,
+              params: satisfiedByParentParams,
+            })
+            .catch((ex) => {
+              console.error(
+                "ReportBody.tsx",
+                "Server failure executing query",
+                {
+                  resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
+                  query: queryConfig.query,
+                  params: satisfiedByParentParams,
+                },
+                ex
+              )
+              setAutomaticQueryErrorState(typeof ex === "function" ? () => ex : ex)
+            })
+        }
       }
     }, [
       automaticQueryErrorState,

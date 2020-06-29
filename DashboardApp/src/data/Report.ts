@@ -187,6 +187,7 @@ export const HTTPRequestQueryConfigCodec = iots.type({
   parameters: iots.array(ParameterItemCodec),
   query: iots.string,
   submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
 export type SQLQueryConfig = iots.TypeOf<typeof SQLQueryConfigCodec>
@@ -196,6 +197,7 @@ export const SQLQueryConfigCodec = iots.type({
   parameters: iots.array(ParameterItemCodec),
   layout: iots.array(iots.UnknownRecord),
   submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
 export type StoredProcQueryConfig = iots.TypeOf<typeof StoredProcQueryConfigCodec>
@@ -205,6 +207,7 @@ export const StoredProcQueryConfigCodec = iots.type({
   parameters: iots.array(ParameterItemCodec),
   layout: iots.array(iots.UnknownRecord),
   submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
 export type QueryLayoutItem = JSONRecord
