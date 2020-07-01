@@ -25,7 +25,7 @@ import { getDetailTemplate } from "../templates/getDetailTemplate"
 import { ColumnConfig } from "../templates/types"
 import { getCustomAggregateFunction } from "../templates/customAggregateFunction"
 import { getCellFormatter } from "../templates/cellFormatter"
-import queryString from "query-string"
+import queryString, { ParsedQuery } from "query-string"
 
 export interface ReportBodyProps {
   isChildReport?: boolean
@@ -45,19 +45,43 @@ export const ReportBody = React.memo(
       globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
       isExecutingQuery: state.loading.effects.reports.executeQuery,
       reportDataByQuery: state.reports.reportDataByQuery,
+      queryParamsByQuery: state.queries.queryParamsByQuery,
+      queryGlobalParams: state.queries.queryGlobalParams,
     }))
 
     const grid = React.useRef<GridComponent>(null)
 
+    /**
+     * Get querystring params
+     */
     const querystringParams = React.useMemo(() => {
       return queryString.parse(window.location.search)
     }, [window.location.search])
 
     /**
-     * Sort parameters
+     * Get persisted global params
+     */
+    const persistedGlobalParams = React.useMemo(() => {
+      return fromStore.queryGlobalParams as ParsedQuery
+    }, [fromStore.queryGlobalParams])
+
+    /**
+     * Get persisted params by query
+     */
+    const persistedParams = React.useMemo(() => {
+      return record.lookup(queryConfig.query, fromStore.queryParamsByQuery).toUndefined() as ParsedQuery
+    }, [queryConfig.query, fromStore.queryParamsByQuery])
+
+    /**
+     * Combine param sources, and then sort them
      */
     const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
-      () => determineSatisfiedParameters(queryConfig.parameters, { ...querystringParams, ...parentData } || {}, true),
+      () =>
+        determineSatisfiedParameters(
+          queryConfig.parameters,
+          { ...persistedParams, ...persistedGlobalParams, ...querystringParams, ...parentData } || {},
+          true
+        ),
       [parentData, queryConfig.parameters]
     )
 
@@ -72,6 +96,10 @@ export const ReportBody = React.memo(
       setParameterValues(some(satisfiedByParentParams))
     }, [parentData, querystringParams])
 
+    /**
+     * Get report data by hash key (query route + params)
+     * example hash key: '"edwLab:pathExpenseReport1SessionDate"{"startDate":"","endDate":""}'
+     */
     const queryResultData = React.useMemo(
       () =>
         parameterValues.foldL(

@@ -89,6 +89,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
               ApiResponse({
                 OK(payload) {
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
+                  dispatch.queries.updateQueryGlobalParams(params)
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
@@ -178,6 +179,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
               ApiResponse({
                 OK(payload) {
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
+                  dispatch.queries.updateQueryGlobalParams(params)
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
