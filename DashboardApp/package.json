@@ -39,7 +39,7 @@
     "monocle-ts": "1.7.2",
     "newtype-ts": "0.3.4",
     "oidc-client": "1.9.1",
-    "query-string": "6.9.0",
+    "query-string": "6.13.1",
     "react": "16.8.6",
     "react-copy-to-clipboard": "5.0.2",
     "react-dom": "16.8.6",

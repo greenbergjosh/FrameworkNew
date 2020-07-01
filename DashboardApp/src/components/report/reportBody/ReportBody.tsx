@@ -55,7 +55,11 @@ export const ReportBody = React.memo(
      * Get querystring params
      */
     const querystringParams = React.useMemo(() => {
-      return queryString.parse(window.location.search)
+      return queryString.parse(window.location.search, {
+        parseBooleans: true,
+        parseNumbers: true,
+        arrayFormat: "comma",
+      })
     }, [window.location.search])
 
     /**
