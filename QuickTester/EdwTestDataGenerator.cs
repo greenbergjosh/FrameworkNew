@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1.X509;
 using Utility;
 using Utility.EDW.Reporting;
 
@@ -48,56 +49,56 @@ namespace QuickTester
                             var rs1Id = eventGuids[0];
                             var rs2Id = eventGuids[1];
 
-                            var rss = new Dictionary<string, object>()
+                            var rss = new Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)>
                             {
-                                {rs1ConfigId.ToString(), rs1Id },
-                                {rs2ConfigId.ToString(), rs2Id }
+                                [rs1ConfigId] = (rs1Id, targetDate),
+                                [rs2ConfigId] = (rs1Id, targetDate)
                             };
 
                             var e = new EdwBulkEvent();
-                            e.AddRS(EdwBulkEvent.EdwType.Immediate, rs1Id, targetDate, PL.O(new { s = subCampaign }), rs1ConfigId); // file export type = RS1
+                            e.AddReportingSequence(rs1Id, targetDate, new { s = subCampaign }, rs1ConfigId); // file export type = RS1
                             if (i == 0) sb.Append(e.ToString());
                             else sb.Append("|" + e.ToString());
                             i++;
 
                             e = new EdwBulkEvent();
-                            e.AddRS(EdwBulkEvent.EdwType.Checked, rs2Id, targetDate, PL.O(new {s = subCampaign }), rs2ConfigId); // file export type = RS2 - 1
+                            e.AddCheckedReportingSequence(rs2Id, targetDate, new { s = subCampaign }, rs2ConfigId); // file export type = RS2 - 1
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[2], targetDate, rss, null, PL.O(new { et = "GPImpression", p1 = 1, p4 = 4, p6 = 6, p8 = 8 }));
+                            e.AddEvent(eventGuids[2], targetDate, rss, new { et = "GPImpression", p1 = 1, p4 = 4, p6 = 6, p8 = 8 });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[3], targetDate, rss, null, PL.O(new { et = "PImpression", p2 = 2, p5 = 5, p7 = 7, p8 = 80 }));
+                            e.AddEvent(eventGuids[3], targetDate, rss, new { et = "PImpression", p2 = 2, p5 = 5, p7 = 7, p8 = 80 });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[4], targetDate, rss, new[] { eventGuids[3].ToString(), eventGuids[2].ToString() }, PL.O(new { et = "Impression", p3 = 3, p6 = 60, p7 = 70, p8 = 800 }));
+                            e.AddEvent(eventGuids[4], targetDate, rss, new { et = "Impression", p3 = 3, p6 = 60, p7 = 70, p8 = 800 }, new[] { (eventGuids[3], targetDate), (eventGuids[2], targetDate) });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[5], targetDate, rss, null, PL.O(new { et = "GPClick", q1 = 1, q4 = 4, q5 = 5, q7 = 7 }));
+                            e.AddEvent(eventGuids[5], targetDate, rss, new { et = "GPClick", q1 = 1, q4 = 4, q5 = 5, q7 = 7 });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[6], targetDate, rss, null, PL.O(new { et = "PClick", q2 = 2, q4 = 40, q6 = 6, q7 = 70 }));
+                            e.AddEvent(eventGuids[6], targetDate, rss, new { et = "PClick", q2 = 2, q4 = 40, q6 = 6, q7 = 70 });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEventWhepD(eventGuids[7], targetDate, rss, new Dictionary<string, object>() { { "bob", eventGuids[5] }, { "tom", eventGuids[6] } }, PL.O(new { et = "Click", q3 = 3, q5 = 50, q6 = 60, q7 = 700 }));
+                            e.AddEvent(eventGuids[7], targetDate, rss, new { et = "Click", q3 = 3, q5 = 50, q6 = 60, q7 = 700 }, new Dictionary<string, (Guid eventId, DateTime eventTimestamp)> { ["bob"] = (eventGuids[5], targetDate), ["tom"] = (eventGuids[6], targetDate) });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[8], targetDate, rss, null, PL.O(new { et = "Survey", age }));
+                            e.AddEvent(eventGuids[8], targetDate, rss, new { et = "Survey", age });
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddRS(EdwBulkEvent.EdwType.CheckedDetail, rs2Id, targetDate, PL.O(new { age }), rs2ConfigId); // file export type = RS2 - 1
+                            e.AddCheckedReportingSequenceDetail(rs2Id, targetDate, targetDate, new { age }, rs2ConfigId); // file export type = RS2 - 1
                             sb.Append("|" + e.ToString());
 
                             e = new EdwBulkEvent();
-                            e.AddEvent(eventGuids[9], targetDate, rss, null, PL.O(new { et = "Action" }));
+                            e.AddEvent(eventGuids[9], targetDate, rss, new { et = "Action" });
                             sb.Append("|" + e.ToString());
 
                             sw.Write(sb.ToString());
@@ -128,7 +129,7 @@ namespace QuickTester
             {
                 if (e.RsTypes[EdwBulkEvent.EdwType.Event].Any())
                 {
-                    var payload = JObject.Parse(e.RsTypes[EdwBulkEvent.EdwType.Event][0].ps.Single(t => t.Item1 == "payload").Item2);
+                    var payload = JObject.FromObject(e.RsTypes[EdwBulkEvent.EdwType.Event][0])["payload"];
 
                     return payload["et"].Value<string>();
                 }

@@ -39,7 +39,7 @@ namespace VisitorIdLib
         public EdwBulkEvent ReportingSequenceEvent(PL addlPayLoad = null)
         {
             var be = new EdwBulkEvent();
-            be.AddRS(EdwBulkEvent.EdwType.Immediate, ReportingSequenceId, VisitDateTime, addlPayLoad == null ? ReportingSequencePayload() : ReportingSequencePayload().Add(addlPayLoad), RsConfigId);
+            //be.AddRS(EdwBulkEvent.EdwType.Immediate, ReportingSequenceId, VisitDateTime, addlPayLoad == null ? ReportingSequencePayload() : ReportingSequencePayload().Add(addlPayLoad), RsConfigId);
             return be;
         }
 
@@ -50,7 +50,7 @@ namespace VisitorIdLib
             var be = new EdwBulkEvent();
             var eventPayload = PL.O(new { et = EventName });
             eventPayload.Add(payload);
-            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, siblingRsids, null, eventPayload);
+            //be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, siblingRsids, null, eventPayload);
 
             return be;
         }

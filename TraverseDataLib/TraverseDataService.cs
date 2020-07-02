@@ -67,12 +67,12 @@ namespace TraverseDataLib
                         case "TraverseResponse":
                             var (fullBodyGe, opaqueGe) = await TraverseResponseAsGe(context);
                             var (sid, slot, page, md5pid, isAsync, vieps, md5, eml, rsids, host, uri, afid, tpid, qstr, lst, vft, tjsv, pfail, pfailslot, pfailpage, lv, _, _) = VisitorIdDataService.ValsFromOpaque(opaqueGe);
-                            var pidSidMd5 = new PidSidMd5() { Pid = md5pid, Sid = (string)rsids[sessionCacheKey], Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
+                            var pidSidMd5 = new PidSidMd5() { Pid = md5pid, Sid = rsids[sessionCacheKey].rsId.ToString(), Md5 = fullBodyGe.GetS(responseMd5Key), FirstSeen = DateTime.UtcNow };
 
                             var vidResp = new VisitorIdResponse("", "", "", "","", null);
                             try
                             {
-                                await WriteResponseEvent(md5pid, slot, page, lst, host, lv, vft, rsids, fullBodyGe.GetS(responseMd5Key));
+                                //await WriteResponseEvent(md5pid, slot, page, lst, host, lv, vft, rsids, fullBodyGe.GetS(responseMd5Key));
                                 if (!ExistsOrAddToMemoryCache(pidSidMd5, excludeSpanDays) &&
                                     !await ExistsOrAddToDbCache(pidSidMd5))
                                 {
@@ -81,7 +81,7 @@ namespace TraverseDataLib
                                 }
                                 else
                                 {
-                                    await WriteResponseEvent(md5pid, slot, page, lst, host, lv, vft, rsids, fullBodyGe.GetS(responseMd5Key), dupe: true);
+                                    //await WriteResponseEvent(md5pid, slot, page, lst, host, lv, vft, rsids, fullBodyGe.GetS(responseMd5Key), dupe: true);
                                 }
                                 result = JsonConvert.SerializeObject(vidResp);
                                 resultHttpStatus = StatusCodes.Status202Accepted;
@@ -112,7 +112,7 @@ namespace TraverseDataLib
 
         }
 
-        public async Task WriteResponseEvent(string pid, int slot, int page, string lastSeenTime, string host, string lastVisit, bool veryFirstTime, Dictionary<string, object> rsids, string md5, bool dupe = false)
+        public async Task WriteResponseEvent(string pid, int slot, int page, string lastSeenTime, string host, string lastVisit, bool veryFirstTime, Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)> rsids, string md5, bool dupe = false)
         {
             var rsidDict = new Dictionary<string, object>();
             if (rsids == null)
@@ -134,7 +134,7 @@ namespace TraverseDataLib
                 dupe = dupe ? "1" : "0",
                 succ = 1 // Traverse only responds with Md5s
             });
-            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, null, payload);
+            be.AddEvent(Guid.NewGuid(), DateTime.UtcNow, rsids, payload);
             await Fw.EdwWriter.Write(be);
         }
 

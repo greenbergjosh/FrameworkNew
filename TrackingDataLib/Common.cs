@@ -21,7 +21,7 @@ namespace TrackingDataLib
 #if DEBUG
             System.Diagnostics.Debug.WriteLine($"Writing event: {eventId}");
 #endif
-            edwEvent.AddEvent(eventId, timestamp, rsIds, null, payload);
+            //edwEvent.AddEvent(eventId, timestamp, rsIds, null, payload);
             return fw.EdwWriter.Write(edwEvent);
         }
 
