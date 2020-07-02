@@ -1,19 +1,10 @@
 import { get, intersectionWith, isEqual, set } from "lodash/fp"
 import React from "react"
-import { JSONRecord } from "../../../@types/JSONTypes"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { UserInterfaceContext } from "../../../UserInterfaceContextManager"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { SelectableOption, SelectableState } from "./Selectable.interfaces"
-import { SelectableProps } from "./Selectable.types"
-import { SelectableChildProps } from "./SelectableChild.interfaces"
-
-export interface KeyValuePair {
-  key: string
-  value: string
-}
-export interface KeyValuePairConfig {
-  items: KeyValuePair[]
-}
+import { SelectableChildProps, SelectableOption, SelectableProps, SelectableState } from "./types"
+import { default as localFunctionDataHandler } from "./dataHandlers/localFunctionDataHandler"
 
 export class Selectable extends BaseInterfaceComponent<SelectableProps, SelectableState> {
   static defaultProps = {
@@ -79,7 +70,6 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 
   handleChange = (value: string | string[]) => {
     const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
-
     const newValue =
       valuePrefix || valueSuffix
         ? Array.isArray(value)
@@ -116,6 +106,36 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
         })),
       loadStatus: "loaded",
     })
+  }
+
+  // componentDidMount() {}
+
+  componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
+    if (this.props.dataHandlerType === "local-function") {
+      const nextState = localFunctionDataHandler.getUpdatedState({
+        dataHandlerType: this.props.dataHandlerType,
+        prevProps: prevProps,
+        userInterfaceData: this.props.userInterfaceData,
+        rootUserInterfaceData: this.props.rootUserInterfaceData,
+        localFunctionDataHandler: this.props.localFunctionDataHandler,
+        localFunction: this.state.localFunction,
+      })
+      if (nextState) this.setState(nextState as any)
+    }
+  }
+
+  handleFocus() {
+    // Local Function
+    // Only run the first time the select is focused
+    // by checking if we don't have the localFunction yet.
+    if (!this.state.localFunction && this.props.dataHandlerType === "local-function") {
+      const nextState = localFunctionDataHandler.getInitialState(
+        this.props.userInterfaceData,
+        this.props.rootUserInterfaceData,
+        this.props.localFunctionDataHandler
+      )
+      if (nextState) this.setState(nextState as any)
+    }
   }
 
   /**
@@ -178,6 +198,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       getCleanValue: this.getCleanValue,
       loadStatus,
       loadError,
+      handleFocus: this.handleFocus.bind(this),
     }
 
     return <>{this.props.children && this.props.children(selectableChildProps)}</>

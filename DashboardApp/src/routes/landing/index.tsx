@@ -45,11 +45,7 @@ export function Landing(props: WithRouteProps<Props>) {
       <Layout.Content>
         <Row className={styles.fullHeight}>
           <Col className={styles.fullHeight} xs={0} md={12} lg={16}>
-            <img
-              className={styles.image}
-              src={image}
-              alt="a mug of hot coffee showing the words 'Go get em'"
-            />
+            <img className={styles.image} src={image} alt="a mug of hot coffee showing the words 'Go get em'" />
           </Col>
 
           <Col className={styles.fullHeight} xs={24} md={12} lg={8}>
@@ -76,9 +72,7 @@ export function Landing(props: WithRouteProps<Props>) {
                         className={styles.loginFormArea}>
                         <Form.Item>
                           <Input
-                            onChange={(evt) =>
-                              setFormState({ ...formState, user: evt.target.value })
-                            }
+                            onChange={(evt) => setFormState({ ...formState, user: evt.target.value })}
                             prefix={<Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />}
                             placeholder="Username"
                             value={formState.user}
@@ -86,9 +80,7 @@ export function Landing(props: WithRouteProps<Props>) {
                         </Form.Item>
                         <Form.Item>
                           <Input
-                            onChange={(evt) =>
-                              setFormState({ ...formState, password: evt.target.value })
-                            }
+                            onChange={(evt) => setFormState({ ...formState, password: evt.target.value })}
                             prefix={<Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />}
                             type="password"
                             placeholder="Password"
@@ -137,9 +129,8 @@ export function Landing(props: WithRouteProps<Props>) {
                         <Space.Horizontal height={25} />
 
                         <div>
-                          <Typography.Text className={styles.welcomeBackText}>{`Welcome back, ${
-                            profile.Name
-                          }!`}</Typography.Text>
+                          <Typography.Text
+                            className={styles.welcomeBackText}>{`Welcome back, ${profile.Name}!`}</Typography.Text>
                         </div>
                       </Row>
 

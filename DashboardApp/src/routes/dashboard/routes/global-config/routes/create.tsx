@@ -26,33 +26,9 @@ import {
   getDefaultsFromComponentDefinitions,
   UserInterface,
 } from "@opg/interface-builder"
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Form,
-  Icon,
-  Input,
-  Modal,
-  Row,
-  Select,
-  Skeleton,
-  Tabs,
-} from "antd"
-import {
-  fromEither,
-  getSetoid as getOptionSetoid,
-  none,
-  Option,
-  option,
-  some,
-  tryCatch,
-} from "fp-ts/lib/Option"
-import {
-  InProgressLocalDraftConfig,
-  PersistedConfig,
-} from "../../../../../data/GlobalConfig.Config"
+import { Alert, Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton, Tabs } from "antd"
+import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, tryCatch } from "fp-ts/lib/Option"
+import { InProgressLocalDraftConfig, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 
 interface Props {
   configId: "create"
@@ -139,18 +115,14 @@ export function CreateGlobalConfig({
     }
 
     return formState
-  }, [
-    window.location.search,
-    fromStore.entityTypes,
-    fromStore.configsByType,
-    fromStore.configsById,
-  ])
+  }, [window.location.search, fromStore.entityTypes, fromStore.configsByType, fromStore.configsById])
 
   const [previewData, setPreviewData] = React.useState({})
 
   /* afterCreate */
   React.useEffect(() => {
     state.createdConfig.chain(findInStore).foldL(
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       None(() => {}),
       Some((c) => {
         dispatch.navigation.showGlobalConfigById({ id: c.id, navOpts: { replace: true } })
@@ -210,7 +182,12 @@ export function CreateGlobalConfig({
         }
         onSubmit={(values, { setSubmitting }) => {
           setState({ createdConfig: some(values) })
-          dispatch.globalConfig.createRemoteConfig(values).then(() => setSubmitting(false))
+          dispatch.globalConfig
+            .createRemoteConfig({
+              nextState: values,
+              parent: record.lookup(values.type, fromStore.entityTypes).toUndefined(),
+            })
+            .then(() => setSubmitting(false))
         }}>
         {(form) => {
           const entityTypeConfig = record.lookup(form.values.type, fromStore.entityTypes)
@@ -224,9 +201,7 @@ export function CreateGlobalConfig({
           return (
             <>
               <Helmet>
-                <title>
-                  {form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG
-                </title>
+                <title>{form.values.name || "New Item"} | Create Configuration | Channel Admin | OPG</title>
               </Helmet>
 
               <Card
@@ -265,11 +240,7 @@ export function CreateGlobalConfig({
                       dropdownRender={(menu) => (
                         <>
                           {menu}
-                          <Button
-                            block
-                            ghost
-                            type="primary"
-                            onMouseDown={toggleCreateEntityTypeModal}>
+                          <Button block ghost type="primary" onMouseDown={toggleCreateEntityTypeModal}>
                             <Icon type="plus-circle" /> New Entity Type
                           </Button>
                         </>
@@ -326,16 +297,11 @@ export function CreateGlobalConfig({
                     label="Config"
                     required={true}
                     validateStatus={form.errors.config ? "error" : "success"}>
-                    <Tabs
-                      defaultActiveKey={
-                        configComponents && configComponents.length ? "form" : "editor"
-                      }>
+                    <Tabs defaultActiveKey={configComponents && configComponents.length ? "form" : "editor"}>
                       <Tabs.TabPane
                         key={"form"}
                         tab={"Properties"}
-                        disabled={
-                          !configComponents || !configComponents.length || !!form.errors.config
-                        }>
+                        disabled={!configComponents || !configComponents.length || !!form.errors.config}>
                         {form.errors.config ? (
                           <Alert
                             type="error"
@@ -369,12 +335,7 @@ export function CreateGlobalConfig({
                             contextManager={userInterfaceContextManager}
                             data={previewData}
                             onChangeData={(value) => {
-                              console.log(
-                                "edit",
-                                "UserInterface.onChangeData",
-                                "display config",
-                                value
-                              )
+                              console.log("edit", "UserInterface.onChangeData", "display config", value)
                               setPreviewData(value)
                               // form.setFieldValue("config", JSON.stringify(value, null, 2))
                               // form.setFieldTouched("config", true)
@@ -437,13 +398,12 @@ function CreateEntityTypeModal(props: {
     configs: s.globalConfig.configs,
     configsByType: store.select.globalConfig.configsByType(s),
     isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
   }))
 
   const initialFormState = React.useMemo(() => ({ name: "", lang: "" }), [])
 
-  const [submittedDraft, setSubmittedDraft] = React.useState<Option<InProgressLocalDraftConfig>>(
-    none
-  )
+  const [submittedDraft, setSubmittedDraft] = React.useState<Option<InProgressLocalDraftConfig>>(none)
 
   const resetState = React.useCallback(() => setSubmittedDraft(none), [])
 
@@ -478,7 +438,7 @@ function CreateEntityTypeModal(props: {
   )
 
   const submitForm = React.useCallback(
-    async function(
+    async function (
       values: typeof initialFormState,
       form: Formik.FormikActions<typeof initialFormState>
     ): Promise<void> {
@@ -488,7 +448,10 @@ function CreateEntityTypeModal(props: {
         config: JSON.stringify({ lang: values.lang }),
       }
 
-      await dispatch.globalConfig.createRemoteConfig(draft)
+      await dispatch.globalConfig.createRemoteConfig({
+        nextState: draft,
+        parent: record.lookup(draft.type, fromStore.entityTypes).toUndefined(),
+      })
       setSubmittedDraft(some(draft))
       form.setSubmitting(false)
     },
@@ -503,6 +466,7 @@ function CreateEntityTypeModal(props: {
         .done()
         .chain(({ configs, draft }) => findFirst(array)(configs, (c) => isSame(c, draft)))
         .foldL(
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
           None(() => {}),
           Some((c) => {
             props.onDidCreate(c)
@@ -562,9 +526,7 @@ function CreateEntityTypeModal(props: {
               validateStatus={form.errors.lang ? "error" : "success"}>
               <Select
                 placeholder={
-                  form.values.name
-                    ? `Select the config language for ${form.values.name}`
-                    : `Select the config language`
+                  form.values.name ? `Select the config language for ${form.values.name}` : `Select the config language`
                 }
                 onBlur={() => form.handleBlur({ target: { name: "lang" } })}
                 onChange={(val) => {
@@ -583,10 +545,7 @@ function CreateEntityTypeModal(props: {
               <Col span={12} />
               <Col span={12}>
                 <Row align="middle" justify="end" type="flex">
-                  <Button
-                    disabled={fromStore.isCreatingConfig}
-                    icon="close-circle"
-                    onClick={form.handleReset}>
+                  <Button disabled={fromStore.isCreatingConfig} icon="close-circle" onClick={form.handleReset}>
                     Cancel
                   </Button>
                   <Space.Vertical width={8} />
@@ -636,9 +595,7 @@ const determineConfigDefaults = (
   return newComponents
     ? JSON.stringify(getDefaultsFromComponentDefinitions(newComponents))
     : newEntityTypeConfig
-        .chain(({ config }) =>
-          config.chain((cfg) => tryCatch(() => JSON5.parse(cfg).lang as string))
-        )
+        .chain(({ config }) => config.chain((cfg) => tryCatch(() => JSON5.parse(cfg).lang as string)))
         .map((lang) => (lang === "json" ? JSON.stringify({ lang: "json" }) : ""))
         .getOrElse("")
 }

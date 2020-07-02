@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import React from "react"
 import { pathEditorManageForm } from "./path-editor-manage-form"
-import { BaseInterfaceComponent, CodeEditor, UserInterfaceContext } from "@opg/interface-builder"
+import { BaseInterfaceComponent, CodeEditor } from "@opg/interface-builder"
 import { PathEditorInterfaceComponentProps, PathEditorInterfaceComponentState } from "./types"
 import { some } from "fp-ts/lib/Option"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
@@ -45,10 +44,7 @@ export class PathEditorInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  handleEditorDidMount(
-    getEditorValue: () => string,
-    editor: monacoEditor.editor.IStandaloneCodeEditor
-  ) {
+  handleEditorDidMount(getEditorValue: () => string, editor: monacoEditor.editor.IStandaloneCodeEditor) {
     /*
      * Add blur and focus event handlers so that when the editor is blurred,
      * we restore normal Typescript behavior in case there is another

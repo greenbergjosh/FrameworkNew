@@ -4,36 +4,21 @@ import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
-import {
-  get,
-  intersectionWith,
-  isEqual,
-  set
-  } from "lodash/fp"
+import { get, intersectionWith, isEqual, set } from "lodash/fp"
 import React from "react"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import { QueryConfigCodec } from "../../../../data/Report"
-import { SelectableOption, SelectableState } from "./Selectable.interfaces"
-import { RemoteDataHandlerType, SelectableProps } from "./Selectable.types"
-import { SelectableChildProps } from "./SelectableChild.interfaces"
+import { BaseInterfaceComponent, cheapHash, JSONRecord, Right, UserInterfaceContext } from "@opg/interface-builder"
 import {
-  BaseInterfaceComponent,
-  cheapHash,
-  JSONRecord,
-  Right,
-  UserInterfaceContext,
-} from "@opg/interface-builder"
-
-// import { selectManageForm } from "../../select/select-manage-form"
-
-export interface KeyValuePair {
-  key: string
-  value: string
-}
-export interface KeyValuePairConfig {
-  items: KeyValuePair[]
-}
+  KeyValuePairConfig,
+  RemoteDataHandlerType,
+  SelectableChildProps,
+  SelectableOption,
+  SelectableProps,
+  SelectableState,
+} from "./types"
+import * as remoteFunctionDataHandler from "./dataHandlers/remoteFunction"
 
 export class Selectable extends BaseInterfaceComponent<SelectableProps, SelectableState> {
   static defaultProps = {
@@ -99,7 +84,6 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 
   handleChange = (value: string | string[]) => {
     const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
-
     const newValue =
       valuePrefix || valueSuffix
         ? Array.isArray(value)
@@ -111,7 +95,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   /**
-   * Determines if dataHandlerType is Remote Data ("remote-config", "remote-kvp", "remote-query")
+   * Determines if dataHandlerType is Remote Data ("remote-config", "remote-kvp", "remote-query", "remote-function")
    * @param dataHandlerType
    */
   static isRemoteDataType = (dataHandlerType: string): dataHandlerType is RemoteDataHandlerType => {
@@ -120,7 +104,8 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       dataHandlerType === "remote-config" ||
       dataHandlerType === "remote-kvp" ||
       dataHandlerType === "remote-query" ||
-      dataHandlerType === "remote-url"
+      dataHandlerType === "remote-url" ||
+      dataHandlerType === "remote-function"
     )
   }
 
@@ -129,10 +114,8 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
    * @param values
    */
   updateOptionsFromValues = (values: JSONRecord[]) => {
-    const remoteQueryMapping =
-      (this.props.dataHandlerType === "remote-query" && this.props.remoteQueryMapping) || []
-    const remoteDataFilter =
-      (this.props.dataHandlerType === "remote-query" && this.props.remoteDataFilter) || null
+    const remoteQueryMapping = (this.props.dataHandlerType === "remote-query" && this.props.remoteQueryMapping) || []
+    const remoteDataFilter = (this.props.dataHandlerType === "remote-query" && this.props.remoteDataFilter) || null
     const labelKey =
       (
         remoteQueryMapping.find(({ label }) => label === "label") || {
@@ -170,13 +153,15 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   /**
-   * Loads data when component is configured to use Remote Data ("remote-config", "remote-kvp", "remote-query")
+   * Loads data when component is configured to use Remote Data
+   * ("remote-config", "remote-kvp", "remote-query", "remote-function")
    */
-  loadRemoteData = () => {
+  loadRemoteData = (eventType?: string) => {
     if (
       (this.props.dataHandlerType === "remote-config" ||
         this.props.dataHandlerType === "remote-kvp" ||
-        this.props.dataHandlerType === "remote-query") &&
+        this.props.dataHandlerType === "remote-query" ||
+        this.props.dataHandlerType === "remote-function") &&
       this.context
     ) {
       const { loadById, loadByFilter, executeQuery, reportDataByQuery } = this
@@ -195,16 +180,12 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
             ? (config: PersistedConfig) => {
                 const parsedConfig = {
                   ...config,
-                  config: config.config
-                    .chain((cfg) => tryCatch(() => JSON5.parse(cfg)))
-                    .toNullable(),
+                  config: config.config.chain((cfg) => tryCatch(() => JSON5.parse(cfg))).toNullable(),
                 }
 
                 const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
                 return remoteConfigType
-                  ? (config.type === remoteConfigType ||
-                      config.type === remoteConfigTypeParentName) &&
-                      dataFilterResult
+                  ? (config.type === remoteConfigType || config.type === remoteConfigTypeParentName) && dataFilterResult
                   : dataFilterResult
               }
             : remoteConfigType
@@ -225,9 +206,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           if (!hidden && remoteQuery) {
             const queryGlobalConfig = loadById(remoteQuery)
             if (queryGlobalConfig) {
-              const queryConfig = QueryConfigCodec.decode(
-                JSON5.parse(queryGlobalConfig.config.getOrElse(""))
-              )
+              const queryConfig = QueryConfigCodec.decode(JSON5.parse(queryGlobalConfig.config.getOrElse("")))
               queryConfig.fold(
                 (errors) => {
                   console.error("Selectable.render", "Invalid Query", reporter(queryConfig))
@@ -240,9 +219,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
                   // )
 
                   const parameterValues = queryConfig.parameters.reduce(
-                    (acc, { name, defaultValue }) => (
-                      (acc[name] = defaultValue && defaultValue.toNullable()), acc
-                    ),
+                    (acc, { name, defaultValue }) => ((acc[name] = defaultValue && defaultValue.toNullable()), acc),
                     {} as JSONObject
                   )
                   const queryResultURI = cheapHash(queryConfig.query, parameterValues)
@@ -283,8 +260,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
             const keyValuePairGlobalConfig = loadById(this.props.remoteKeyValuePair)
             if (keyValuePairGlobalConfig) {
               const keyValuePairConfig = tryCatch(
-                () =>
-                  JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig
+                () => JSON5.parse(keyValuePairGlobalConfig.config.getOrElse("")) as KeyValuePairConfig
               ).toNullable()
 
               if (keyValuePairConfig) {
@@ -294,6 +270,17 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
                 this.setState({ options })
               }
             }
+          }
+          return
+        }
+        case "remote-function": {
+          /*
+           * Reset state.remoteFunction so that it will refresh in the onFocus handler.
+           * We don't fetch the remote-function options until the user interacts
+           * with the component because it can be an expensive operation.
+           */
+          if (eventType === "changedRemoteDataHandlerType" && this.state.remoteFunction) {
+            this.setState({ remoteFunction: undefined })
           }
           return
         }
@@ -307,38 +294,73 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   componentDidMount() {
     // If the data type is remote, load the data
     if (Selectable.isRemoteDataType(this.props.dataHandlerType)) {
-      this.loadRemoteData()
+      this.loadRemoteData("componentDidMount")
     }
   }
 
   componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
+    const isRemoteConfigUpdated = () =>
+      this.props.dataHandlerType === "remote-config" &&
+      prevProps.dataHandlerType === "remote-config" &&
+      this.props.remoteConfigType !== prevProps.remoteConfigType
+
+    const isRemoteQueryUpdated = () =>
+      this.props.dataHandlerType === "remote-query" &&
+      prevProps.dataHandlerType === "remote-query" &&
+      this.props.remoteQuery !== prevProps.remoteQuery
+
+    const isRemoteKVPUpdated = () =>
+      this.props.dataHandlerType === "remote-kvp" &&
+      prevProps.dataHandlerType === "remote-kvp" &&
+      this.props.remoteKeyValuePair !== prevProps.remoteKeyValuePair
+
+    const isRemoteFunctionUpdated = () =>
+      this.props.dataHandlerType === "remote-function" &&
+      prevProps.dataHandlerType === "remote-function" &&
+      this.props.remoteFunctionType !== prevProps.remoteFunctionType
+
+    const isRemoteDataHandlerTypeChanged = () =>
+      this.props.dataHandlerType !== prevProps.dataHandlerType ||
+      isRemoteConfigUpdated() ||
+      isRemoteQueryUpdated() ||
+      isRemoteKVPUpdated() ||
+      isRemoteFunctionUpdated()
+
     // console.log("Selectable.componentDidUpdate", {
     //   was: prevState.loadStatus,
     //   is: this.state.loadStatus,
     // })
-    // If the data handler type has changed, and the new type is remote
-    // or if the remote config type has changed
-    // or if the remote query has changed
-    if (
-      (this.props.dataHandlerType !== prevProps.dataHandlerType ||
-        (this.props.dataHandlerType === "remote-config" &&
-          prevProps.dataHandlerType === "remote-config" &&
-          this.props.remoteConfigType !== prevProps.remoteConfigType) ||
-        (this.props.dataHandlerType === "remote-query" &&
-          prevProps.dataHandlerType === "remote-query" &&
-          this.props.remoteQuery !== prevProps.remoteQuery) ||
-        (this.props.dataHandlerType === "remote-kvp" &&
-          prevProps.dataHandlerType === "remote-kvp" &&
-          this.props.remoteKeyValuePair !== prevProps.remoteKeyValuePair)) &&
-      Selectable.isRemoteDataType(this.props.dataHandlerType)
-    ) {
-      this.loadRemoteData()
+
+    if (isRemoteDataHandlerTypeChanged() && Selectable.isRemoteDataType(this.props.dataHandlerType)) {
+      // The data handler type has changed and the new type is remote
+      this.loadRemoteData("changedRemoteDataHandlerType")
     } else if (
       Selectable.isRemoteDataType(this.props.dataHandlerType) &&
       this.state.loadStatus === "none" &&
       prevState.loadStatus === "loading"
     ) {
-      this.loadRemoteData()
+      this.loadRemoteData("loaded")
+    }
+  }
+
+  handleFocus() {
+    /*
+     * We fetch the remote-function options onFocus because it can be an expensive operation
+     * on a form with many Selectable components.
+     */
+    if (this.props.dataHandlerType === "remote-function" && !this.state.remoteFunction) {
+      const remoteFunction = remoteFunctionDataHandler.loadRemoteFunction(
+        (this.context as AdminUserInterfaceContextManager).loadById,
+        this.props.remoteFunctionType
+      )
+      const options = remoteFunction
+        ? remoteFunctionDataHandler.getOptions(
+            this.props.userInterfaceData,
+            this.props.rootUserInterfaceData,
+            remoteFunction
+          )
+        : []
+      this.setState({ options, remoteFunction })
     }
   }
 
@@ -370,8 +392,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           options.find(
             ({ value }) =>
               value === anyCaseResult ||
-              (typeof value === "string" && value.toLowerCase()) ===
-                (anyCaseResult && anyCaseResult.toLowerCase())
+              (typeof value === "string" && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
           ) || { value: anyCaseResult }
         ).value
       )
@@ -383,8 +404,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
               options.find(
                 ({ value }) =>
                   value === resultItem ||
-                  (typeof value === "string" && value.toLowerCase()) ===
-                    (resultItem && resultItem.toLowerCase())
+                  (typeof value === "string" && value.toLowerCase()) === (resultItem && resultItem.toLowerCase())
               ) || { value: resultItem }
             ).value
         )
@@ -402,6 +422,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       getCleanValue: this.getCleanValue,
       loadStatus,
       loadError,
+      handleFocus: this.handleFocus.bind(this),
     }
 
     return <>{this.props.children && this.props.children(selectableChildProps)}</>
@@ -411,9 +432,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 const cleanText = (text: string, prefix?: string, suffix?: string) => {
   const noPrefix = text && prefix && text.startsWith(prefix) ? text.substring(prefix.length) : text
   const noSuffix =
-    noPrefix && suffix && noPrefix.endsWith(suffix)
-      ? noPrefix.substr(0, noPrefix.length - suffix.length)
-      : noPrefix
+    noPrefix && suffix && noPrefix.endsWith(suffix) ? noPrefix.substr(0, noPrefix.length - suffix.length) : noPrefix
 
   return noSuffix
 }

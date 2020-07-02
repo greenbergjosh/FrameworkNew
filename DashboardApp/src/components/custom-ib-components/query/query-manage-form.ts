@@ -96,8 +96,7 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "remoteQueryMapping",
                 valueKey: "remoteQueryMapping",
                 label: "Query Mapping",
-                help:
-                  "Forfields that need property name transformations applied, describe these here",
+                help: "Forfields that need property name transformations applied, describe these here",
                 component: "data-map",
                 count: 2,
                 defaultValue: [

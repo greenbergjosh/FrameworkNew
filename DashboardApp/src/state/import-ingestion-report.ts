@@ -1,4 +1,3 @@
-import { JSONRecord } from "../data/JSON"
 import * as Store from "./store.types"
 
 declare module "./store.types" {
@@ -21,10 +20,10 @@ export interface IngestionStatus {
 }
 
 export interface ExportStatus {
-  partner: string,
-  rowcount: number,
-  export_date: string,
-  export_name: string,
+  partner: string
+  rowcount: number
+  export_date: string
+  export_name: string
 }
 
 export interface PartnerStatus {

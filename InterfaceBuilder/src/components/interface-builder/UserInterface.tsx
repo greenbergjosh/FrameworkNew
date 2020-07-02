@@ -1,12 +1,4 @@
-import {
-  Button,
-  Col,
-  Divider,
-  Layout,
-  Row,
-  Tooltip,
-  Typography
-  } from "antd"
+import { Button, Col, Divider, Layout, Row, Tooltip, Typography } from "antd"
 import classNames from "classnames"
 import { get, getOr, set } from "lodash/fp"
 import React from "react"
@@ -23,6 +15,7 @@ import { ComponentRegistryContext, registry } from "./registry"
 import "./user-interface.module.scss"
 import { UserInterfaceContext, UserInterfaceContextManager } from "./UserInterfaceContextManager"
 import { DataPathContext } from "./util/DataPathContext"
+import { RootUserInterfaceDataContext } from "./util/RootUserInterfaceDataContext"
 // eslint-disable-line @typescript-eslint/camelcase
 
 interface IUserInterfaceProps {
@@ -96,25 +89,27 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     }
 
     const content = (
-      <ComponentRenderer
-        components={components}
-        data={data}
-        mode={mode}
-        onChangeData={onChangeData}
-        onChangeSchema={
-          this.props.mode === "edit"
-            ? this.props.onChangeSchema
-            : (newSchema) => {
-                console.warn(
-                  "UserInterface.render",
-                  "ComponentRenderer/onChangeSchema",
-                  "Cannot invoke onChangeSchema when UserInterface is not in 'edit' mode",
-                  { newSchema }
-                )
-              }
-        }
-        onDrop={this.handleDrop}
-      />
+      <RootUserInterfaceDataContext.Provider value={data}>
+        <ComponentRenderer
+          components={components}
+          data={data}
+          mode={mode}
+          onChangeData={onChangeData}
+          onChangeSchema={
+            this.props.mode === "edit"
+              ? this.props.onChangeSchema
+              : (newSchema) => {
+                  console.warn(
+                    "UserInterface.render",
+                    "ComponentRenderer/onChangeSchema",
+                    "Cannot invoke onChangeSchema when UserInterface is not in 'edit' mode",
+                    { newSchema }
+                  )
+                }
+          }
+          onDrop={this.handleDrop}
+        />
+      </RootUserInterfaceDataContext.Provider>
     )
 
     const draggableContextHandlers: DraggableContextProps = {

@@ -1,4 +1,5 @@
 import { Form, Input, InputNumber } from "antd"
+import { InputNumberProps } from "antd/lib/input-number"
 import { get, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -15,6 +16,7 @@ export interface NumberInputInterfaceComponentProps extends ComponentDefinitionN
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
+  size: InputNumberProps["size"]
 }
 
 export class NumberInputInterfaceComponent extends BaseInterfaceComponent<
@@ -51,9 +53,9 @@ export class NumberInputInterfaceComponent extends BaseInterfaceComponent<
     onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
   }
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey } = this.props
+    const { defaultValue, userInterfaceData, valueKey, size } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
-    return <InputNumber onChange={this.handleChange} value={value} />
+    return <InputNumber onChange={this.handleChange} value={value} size={size} />
   }
 }

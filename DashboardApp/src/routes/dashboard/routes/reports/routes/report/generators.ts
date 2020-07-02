@@ -1,12 +1,4 @@
-import { SelectParam } from "antd/lib/menu"
-import { assertNever } from "../../../../../../lib/assert-never"
-import {
-  QueryConfig,
-  ParameterItem,
-  QueryLayoutItem,
-  DateRangeParameterItem,
-  SelectParameterItem,
-} from "../../../../../../data/Report"
+import { ParameterItem, QueryConfig, QueryLayoutItem, SelectParameterItem } from "../../../../../../data/Report"
 
 export const generators = {
   string: (parameter: ParameterItem): QueryLayoutItem => ({}),
@@ -113,8 +105,10 @@ export const generators = {
       selectThreshold: 0.3,
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (typeof parameter.options.items !== "undefined") {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       layoutItem.data = { values: parameter.options.items }
     }
@@ -123,9 +117,7 @@ export const generators = {
   },
 }
 
-export const generateLayoutFromParameters = (
-  parameters: QueryConfig["parameters"]
-): QueryConfig["layout"] =>
+export const generateLayoutFromParameters = (parameters: QueryConfig["parameters"]): QueryConfig["layout"] =>
   parameters.map((parameter) => {
     switch (parameter.type) {
       case "boolean":

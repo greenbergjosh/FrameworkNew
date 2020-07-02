@@ -6,9 +6,7 @@ import { AppDispatch, AppSelectors, AppState } from "../state/store.types"
 import { AdminUserInterfaceContextManager } from "./AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "./GlobalConfig.Config"
 
-export const AdminUserInterfaceContext = React.createContext<AdminUserInterfaceContextManager | null>(
-  null
-)
+export const AdminUserInterfaceContext = React.createContext<AdminUserInterfaceContextManager | null>(null)
 
 export const createUIContext = (
   dispatch: AppDispatch,
@@ -32,9 +30,7 @@ export const createUIContext = (
 })
 
 export interface AdminUserInterfaceContextManagerProviderProps {
-  children: (
-    userInterfaceContextManager: AdminUserInterfaceContextManager
-  ) => React.ReactElement<any> | null
+  children: (userInterfaceContextManager: AdminUserInterfaceContextManager) => React.ReactElement<any> | null
 }
 
 export const AdminUserInterfaceContextManagerProvider = ({
@@ -47,13 +43,7 @@ export const AdminUserInterfaceContextManagerProvider = ({
   }))
 
   const userInterfaceContextManager = React.useMemo(
-    () =>
-      createUIContext(
-        dispatch,
-        fromStore.reportDataByQuery,
-        fromStore.configs,
-        fromStore.configsById
-      ),
+    () => createUIContext(dispatch, fromStore.reportDataByQuery, fromStore.configs, fromStore.configsById),
     [dispatch.reports, fromStore.configs, fromStore.configsById, fromStore.reportDataByQuery]
   )
 

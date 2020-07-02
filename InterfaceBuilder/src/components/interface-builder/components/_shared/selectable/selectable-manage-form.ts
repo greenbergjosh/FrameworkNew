@@ -10,7 +10,7 @@ export const baseSelectDataComponents = [
   {
     key: "dataHandlerType",
     valueKey: "dataHandlerType",
-    label: "Data Source Location",
+    label: "Data Source",
     ordinal: 10,
     component: "select",
     help: "Where to fetch the data for this Select box from",
@@ -21,10 +21,13 @@ export const baseSelectDataComponents = [
           label: "Local",
           value: "local",
         },
+        {
+          label: "Local Function",
+          value: "local-function",
+        },
       ],
     },
     defaultValue: "local",
-    hidden: true,
   },
   {
     key: "data",
@@ -46,6 +49,25 @@ export const baseSelectDataComponents = [
     visibilityConditions: {
       "===": [
         "local",
+        {
+          var: ["dataHandlerType"],
+        },
+      ],
+    },
+  },
+  {
+    key: "localFunctionDataHandler",
+    valueKey: "localFunctionDataHandler",
+    label: "Local Function",
+    component: "code-editor",
+    defaultLanguage: "javascript",
+    defaultTheme: "vs-dark",
+    hidden: false,
+    hideLabel: false,
+    defaultValue: "return function getOptions(data) {\n    const options = [\n        { label: \"Example 1\", value: \"example1\" },\n        { label: \"Example 2\", value: \"example2\" },\n        { label: \"Example 3\", value: \"example3\" },\n    ]\n    return options\n}",
+    visibilityConditions: {
+      "===": [
+        "local-function",
         {
           var: ["dataHandlerType"],
         },

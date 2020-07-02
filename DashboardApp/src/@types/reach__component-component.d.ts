@@ -3,9 +3,7 @@ declare module "@reach/component-component" {
     props: P
     state: S
     setState<K extends keyof S>(
-      state:
-        | ((prevState: Readonly<S>, props: P) => Pick<S, K> | S | null)
-        | (Pick<S, K> | S | null),
+      state: ((prevState: Readonly<S>, props: P) => Pick<S, K> | S | null) | (Pick<S, K> | S | null),
       callback?: () => void
     ): void
     forceUpdate(callBack?: () => void): void
@@ -25,12 +23,13 @@ declare module "@reach/component-component" {
     willUnmount?(args: StateProps<P, S> & Refs): void
     getSnapshotBeforeUpdate?(args: StateProps<P, S> & Refs & { prevProps: P; prevState: S }): any
     shouldUpdate?(args: StateProps<P, S> & { nextProps: P; nextState: S }): boolean
-    children?(args: Args<P, S> & Refs): Args<P, S> & Refs | React.ReactNode | null
+    children?(args: Args<P, S> & Refs): (Args<P, S> & Refs) | React.ReactNode | null
     render?(args: Args<P, S>): void
   }
 
   class Component<P extends ComponentProps<P, S>, S = any> extends React.Component<
     ComponentProps<P, S>,
+    // eslint-disable-next-line @typescript-eslint/ban-types
     {}
   > {}
 

@@ -1,0 +1,78 @@
+ol.repeater {
+  list-style: none;
+  counter-reset: item;
+  padding-inline-start: 0;
+  margin-bottom: 0;
+}
+li.repeaterItem {
+  counter-increment: item;
+  margin-bottom: -1px;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  align-items: flex-start;
+
+  &:before {
+    content: counter(item);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    text-align: center;
+    display: inline-block;
+    margin-right: -1px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+  }
+}
+
+:global {
+  :local(.repeaterItem) {
+    > .ant-card {
+      order: 0;
+      flex: 1 1 auto;
+      align-self: auto;
+    }
+
+    .ant-form-item {
+      display: flex;
+      margin-bottom: 5px !important;
+    }
+
+    .ant-col.ant-form-item-label {
+      flex: 0 1 100px;
+      line-height: 12px !important;
+    }
+
+    .ant-col.ant-form-item-control-wrapper {
+      flex: 1 1 auto;
+    }
+  }
+
+  :local(.topClearance) {
+    > .ant-card {
+      padding-top: 20px; // Clearance for delete icon
+    }
+  }
+
+  :local(.repeaterItemBadge) {
+    &.ant-badge {
+      width: 100%;
+      > .anticon {
+        background-color: white;
+        padding: 4px;
+        color: gray;
+        border-radius: 1em;
+        border: solid 1px lightgray;
+      }
+    }
+  }
+}

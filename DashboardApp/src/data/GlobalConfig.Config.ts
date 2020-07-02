@@ -106,9 +106,7 @@ export const CompleteLocalDraftCodec = iots.type({
   type: NonEmptyString,
 })
 
-export function mkCompleteLocalDraft(
-  draft: InProgressLocalDraftConfig
-): Either<Array<string>, CompleteLocalDraft> {
+export function mkCompleteLocalDraft(draft: InProgressLocalDraftConfig): Either<Array<string>, CompleteLocalDraft> {
   return CompleteLocalDraftCodec.decode(draft).mapLeft(failure)
 }
 

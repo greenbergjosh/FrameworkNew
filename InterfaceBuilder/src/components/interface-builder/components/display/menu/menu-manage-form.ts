@@ -1,6 +1,6 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
-import { baseSelectDataComponents } from "../../_shared/selectable"
+import { baseSelectDataComponents } from "../../_shared/selectable/selectable-manage-form"
 
 export const menuManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...menuManageFormDefinition, ...extend)

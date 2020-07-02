@@ -1,5 +1,5 @@
 import React from "react"
-import { Icon, Typography } from "antd"
+import { Typography } from "antd"
 import {
   ColumnDirective,
   ColumnsDirective,
@@ -19,9 +19,9 @@ import { ExportStatus } from "./index"
  */
 
 interface ExportTableProps<T> {
-  data: T[],
-  title?: string,
-  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined,
+  data: T[]
+  title?: string
+  onRowDataBind?: EmitType<RowDataBoundEventArgs> | undefined
 }
 
 interface RowCountColProps {
@@ -33,15 +33,10 @@ interface RowCountColProps {
  */
 
 function RowCountCol(props: RowCountColProps): JSX.Element {
-  return (
-    <span>
-      {typeof props.rowcount === "number" ? `${props.rowcount.toLocaleString()}` : "-"}
-    </span>
-  )
+  return <span>{typeof props.rowcount === "number" ? `${props.rowcount.toLocaleString()}` : "-"}</span>
 }
 
 export function ExportTable({ data, title, onRowDataBind }: ExportTableProps<ExportStatus>): JSX.Element {
-
   const pageSettings: PageSettingsModel = {
     pageSize: DEFAULT_PAGE_SIZE,
     pageSizes: false,
@@ -49,37 +44,23 @@ export function ExportTable({ data, title, onRowDataBind }: ExportTableProps<Exp
 
   return (
     <>
-      <Typography.Text strong={true} className={"table-title"}>{title}</Typography.Text>
+      <Typography.Text strong={true} className={"table-title"}>
+        {title}
+      </Typography.Text>
       <GridComponent
         dataSource={data}
         rowDataBound={onRowDataBind}
         allowPaging={data.length > DEFAULT_PAGE_SIZE}
         allowSelection={false}
         pageSettings={pageSettings}
-        className="import-ingestion-table"
-      >
+        className="import-ingestion-table">
         <ColumnsDirective>
-          <ColumnDirective
-            field="partner"
-            headerText="Partner"
-          />
-          <ColumnDirective
-            field="export_name"
-            headerText="Export Name"
-          />
-          <ColumnDirective
-            field="export_date"
-            headerText="Date"
-          />
-          <ColumnDirective
-            field="rowcount"
-            headerText="Rows"
-            template={RowCountCol}
-            textAlign={"Right"}
-            width={70}
-          />
+          <ColumnDirective field="partner" headerText="Partner" />
+          <ColumnDirective field="export_name" headerText="Export Name" />
+          <ColumnDirective field="export_date" headerText="Date" />
+          <ColumnDirective field="rowcount" headerText="Rows" template={RowCountCol} textAlign={"Right"} width={70} />
         </ColumnsDirective>
-        <Inject services={[Page]}/>
+        <Inject services={[Page]} />
       </GridComponent>
     </>
   )

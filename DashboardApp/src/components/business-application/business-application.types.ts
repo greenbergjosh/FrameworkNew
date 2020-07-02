@@ -36,7 +36,7 @@ export interface BusinessApplicationConfig {
   report: PersistedConfig["id"][]
 
   // Pages
-  navigation: (BusinessAppNavigationItem)[]
+  navigation: BusinessAppNavigationItem[]
 }
 
 export interface BusinessApplicationPageConfig {

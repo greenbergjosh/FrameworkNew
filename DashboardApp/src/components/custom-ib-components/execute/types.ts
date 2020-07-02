@@ -1,8 +1,4 @@
-import {
-  ComponentDefinition,
-  ComponentDefinitionNamedProps,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"

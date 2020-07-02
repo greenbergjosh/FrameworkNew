@@ -1,6 +1,6 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
-import { baseSelectDataComponents } from "../../_shared/selectable"
+import { baseSelectDataComponents } from "../../_shared/selectable/selectable-manage-form"
 
 
 export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
@@ -34,6 +34,31 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Allow the user to clear the selection.",
                 component: "toggle",
                 defaultValue: true,
+              },
+              {
+                key: "size",
+                valueKey: "size",
+                ordinal: 10,
+                defaultValue: "default",
+                label: "Size",
+                component: "select",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "Small",
+                      value: "small",
+                    },
+                    {
+                      label: "Default",
+                      value: "default",
+                    },
+                    {
+                      label: "Large",
+                      value: "large",
+                    },
+                  ],
+                },
               },
             ]
           }

@@ -1,14 +1,14 @@
 import { Left, Right } from "../data/Either"
 import { none, some } from "fp-ts/lib/Option"
 import * as Store from "./store.types"
-import { UserManager, SigninResponse, UserManagerSettings } from "oidc-client"
+import { SigninResponse, UserManager, UserManagerSettings } from "oidc-client"
 import { globalHistory } from "@reach/router"
 
 const ONELOGIN_CONFIG: UserManagerSettings = {
   authority: "https://onpoint.onelogin.com/oidc",
-  client_id: "2d4a9f30-dd76-0137-cba6-0265d75027d4148697", // eslint-disable-line @typescript-eslint/camelcase
-  redirect_uri: window.location.origin, // eslint-disable-line @typescript-eslint/camelcase
-  response_type: "id_token token", // eslint-disable-line @typescript-eslint/camelcase
+  client_id: "2d4a9f30-dd76-0137-cba6-0265d75027d4148697",
+  redirect_uri: window.location.origin,
+  response_type: "id_token token",
   scope: "openid profile",
 
   filterProtocolClaims: true,
@@ -41,7 +41,7 @@ const dispatchError = {
 }
 
 function arrayToObject(hashAry: string[][]) {
-  return hashAry.reduce((obj, item) => obj = { ...obj, [item[0]]: item[1] }, {})
+  return hashAry.reduce((obj, item) => (obj = { ...obj, [item[0]]: item[1] }), {})
 }
 
 /**
@@ -131,9 +131,7 @@ export const extractUserFromProfile = (user: SigninResponse) => {
 
 export async function authViaOneLoginOIDC(dispatch: Store.AppDispatch) {
   const userManager = new UserManager(ONELOGIN_CONFIG)
-  return userManager
-    .signinRedirect()
-    .then(() => console.log("authViaOneLoginOIDC", "signinRedirect redirecting..."))
+  return userManager.signinRedirect().then(() => console.log("authViaOneLoginOIDC", "signinRedirect redirecting..."))
 }
 
 /**
@@ -150,11 +148,11 @@ export async function checkOneLoginAuthSignedIn(dispatch: Store.AppDispatch) {
   const userManager = new UserManager(ONELOGIN_CONFIG)
   const currentUser = await userManager
     .signinRedirectCallback()
-    .then(function(user) {
+    .then(function (user) {
       console.log("handleOneLoginAuthSignedIn", "Signed In!", user)
       return user
     })
-    .catch(function(err) {
+    .catch(function (err) {
       console.log("handleOneLoginAuthSignedIn", "ERROR!", err)
       return err
     })
@@ -166,10 +164,7 @@ export async function checkOneLoginAuthSignedIn(dispatch: Store.AppDispatch) {
  * @param dispatch
  * @param currentUser
  */
-export function handleOneLoginAuthSignedIn(
-  dispatch: Store.AppDispatch,
-  currentUser: SigninResponse
-) {
+export function handleOneLoginAuthSignedIn(dispatch: Store.AppDispatch, currentUser: SigninResponse) {
   const appUser = extractUserFromProfile(currentUser)
   if (!appUser) {
     dispatchError.profileEmpty(dispatch)

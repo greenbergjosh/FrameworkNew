@@ -6,7 +6,6 @@ import { toArray } from "fp-ts/lib/Record"
 import React from "react"
 import { Helmet } from "react-helmet"
 import * as ReactRedux from "react-redux"
-import { CSSTransition, TransitionGroup } from "react-transition-group"
 import { PersistGate } from "redux-persist/integration/react"
 import styles from "./App.module.css"
 import "./App.scss"
@@ -16,7 +15,7 @@ import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
-import { registry, registerMonacoEditorMount, antComponents } from "@opg/interface-builder"
+import { antComponents, registerMonacoEditorMount, registry } from "@opg/interface-builder"
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
 import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
@@ -40,7 +39,7 @@ function AppLoadingScreen({ title }: AppLoadingScreenProps) {
       </Helmet>
 
       <div className={`${styles.appLoadingIndicator}`}>
-        <Spin size="large" tip={`Initializing OnPoint Admin${  title ? `... ${title}` : ""}`} />
+        <Spin size="large" tip={`Initializing OnPoint Admin${title ? `... ${title}` : ""}`} />
       </div>
     </>
   )
@@ -58,20 +57,18 @@ export function App(): JSX.Element {
 
   React.useEffect(() => {
     registry.register(antComponents)
-    registry.register({query: QueryInterfaceComponent})
-    registry.register({execute: ExecuteInterfaceComponent})
-    registry.register({"path-editor": PathEditorInterfaceComponent})
-    registry.register({"remote-component": RemoteComponentInterfaceComponent})
-    registry.register({"slot-config": SlotConfigInterfaceComponent})
-    registry.register({select: SelectInterfaceComponent})
-    registry.register({tags: TagsInterfaceComponent})
+    registry.register({ query: QueryInterfaceComponent })
+    registry.register({ execute: ExecuteInterfaceComponent })
+    registry.register({ "path-editor": PathEditorInterfaceComponent })
+    registry.register({ "remote-component": RemoteComponentInterfaceComponent })
+    registry.register({ "slot-config": SlotConfigInterfaceComponent })
+    registry.register({ select: SelectInterfaceComponent })
+    registry.register({ tags: TagsInterfaceComponent })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
   }, [])
 
   return (
-    <PersistGate
-      persistor={persistor}
-      loading={<AppLoadingScreen title="Restoring Application State" />}>
+    <PersistGate persistor={persistor} loading={<AppLoadingScreen title="Restoring Application State" />}>
       <div className={`${styles.app}`}>
         <ReactRedux.Provider store={store}>
           {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
@@ -123,9 +120,7 @@ function Routes() {
         return flatten(
           toArray(routes).map(([k, route]) => {
             return route.redirectFrom
-              .map((url) => (
-                <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />
-              ))
+              .map((url) => <Reach.Redirect key={url.concat(route.abs)} noThrow from={url} to={route.abs} />)
               .concat(renderRedirects(route.subroutes))
           })
         )

@@ -1,6 +1,5 @@
-import { Divider } from "antd"
 import React from "react"
-import Helmet from "react-helmet"
+import { Helmet } from "react-helmet"
 import { BusinessApplicationPageId } from "../../../../../components/business-application/business-application.types"
 import { BusinessApplication } from "../../../../../components/business-application/BusinessApplication"
 import { WithRouteProps } from "../../../../../state/navigation"

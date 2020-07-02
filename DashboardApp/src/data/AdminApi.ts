@@ -112,10 +112,7 @@ export const reportResponsePayloadCodecs = {
 
 export const genericArrayPayloadCodec = iots.array(JSONRecordCodec)
 
-export const genericRecordOrArrayPayloadCodec = iots.union([
-  JSONRecordCodec,
-  iots.array(JSONRecordCodec),
-])
+export const genericRecordOrArrayPayloadCodec = iots.union([JSONRecordCodec, iots.array(JSONRecordCodec)])
 
 export function mkAdminApiError<T>(r: Exclude<ResponseCode, 0>): ApiResponse<T> {
   switch (r) {

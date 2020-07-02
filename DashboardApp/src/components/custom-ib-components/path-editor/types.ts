@@ -1,8 +1,4 @@
-import {
-  ComponentDefinitionNamedProps,
-  EditorTheme,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { ComponentDefinitionNamedProps, EditorTheme, UserInterfaceProps } from "@opg/interface-builder"
 
 export interface PathEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "path-editor"

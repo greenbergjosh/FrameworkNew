@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { shallowPropCheck, UserInterfaceContext } from "@opg/interface-builder"
 import { Alert, Spin } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
@@ -94,11 +93,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
         }),
         () => this.loadRemoteData()
       )
-    } else if (
-      this.props.queryType &&
-      this.state.loadStatus === "none" &&
-      prevState.loadStatus === "loading"
-    ) {
+    } else if (this.props.queryType && this.state.loadStatus === "none" && prevState.loadStatus === "loading") {
       // Data has finished loading, so start the timeout.
       // NOTE: only remoteQuery uses this timeout (remoteConfig does not refresh)
       setTimeout(() => this.loadRemoteData(), 0)
@@ -129,8 +124,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   }
 
   render(): JSX.Element {
-    const { children, dataKey, queryType } = this.props as QueryProps<T> &
-      typeof Query["defaultProps"]
+    const { children, dataKey, queryType } = this.props as QueryProps<T> & typeof Query["defaultProps"]
     const {
       data,
       loadError,
@@ -220,11 +214,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     if (remoteConfigType) {
       const remoteConfigTypeParent = remoteConfigType && loadById(remoteConfigType)
       const remoteConfigTypeParentName = remoteConfigTypeParent && remoteConfigTypeParent.name
-      const predicate = this.getRemoteConfigPredicate(
-        remoteDataFilter,
-        remoteConfigType,
-        remoteConfigTypeParentName
-      )
+      const predicate = this.getRemoteConfigPredicate(remoteDataFilter, remoteConfigType, remoteConfigTypeParentName)
 
       this.setState({
         data: (loadByFilter(predicate) as unknown) as T[],
@@ -248,13 +238,11 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
 
           const dataFilterResult = jsonLogic.apply(remoteDataFilter, parsedConfig)
           return remoteConfigType
-            ? (config.type === remoteConfigType || config.type === remoteConfigTypeParentName) &&
-                dataFilterResult
+            ? (config.type === remoteConfigType || config.type === remoteConfigTypeParentName) && dataFilterResult
             : dataFilterResult
         }
       : remoteConfigType
-      ? (config: PersistedConfig) =>
-          config.type === remoteConfigType || config.type === remoteConfigTypeParentName
+      ? (config: PersistedConfig) => config.type === remoteConfigType || config.type === remoteConfigTypeParentName
       : (config: PersistedConfig) => true
   }
 
@@ -320,19 +308,13 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     //------
 
     // These are the parameters we're using to determine the actual decision to load the data
-    const {
-      satisfiedByParentParams: satisfiedParams,
-      unsatisfiedByParentParams,
-    } = determineSatisfiedParameters(
+    const { satisfiedByParentParams: satisfiedParams, unsatisfiedByParentParams } = determineSatisfiedParameters(
       queryConfig.parameters,
       { ...inputData, ...parameterValues },
       true
     )
 
-    if (
-      !unsatisfiedByParentParams.length ||
-      unsatisfiedByParentParams.every(({ required }) => required !== true)
-    ) {
+    if (!unsatisfiedByParentParams.length || unsatisfiedByParentParams.every(({ required }) => required !== true)) {
       const queryResultURI = cheapHash(queryConfig.query, satisfiedParams)
       const queryResult = record.lookup<JSONRecord[]>(queryResultURI, reportDataByQuery)
 
@@ -356,11 +338,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
             data: (resultValues as unknown) as T[],
             loadStatus: "loaded",
           }))
-          if (
-            this.props.refresh &&
-            this.props.refresh.interval &&
-            this.state.refreshTimeout === null
-          ) {
+          if (this.props.refresh && this.props.refresh.interval && this.state.refreshTimeout === null) {
             this.remoteQuery_queueNextLoad(this.props.refresh.interval, {
               dispatchExecuteQuery: executeQuery,
               queryResultURI,
@@ -388,11 +366,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     return () => {
       this.remoteQuery_dispatchExecuteQuery(loadDataParams)
         .then(() => {
-          if (
-            this.props.refresh &&
-            this.props.refresh.interval &&
-            this.state.refreshTimeout === null
-          ) {
+          if (this.props.refresh && this.props.refresh.interval && this.state.refreshTimeout === null) {
             // console.log(
             //   "Query.loadRemoteWithRefresh",
             //   loadDataParams.queryConfig.query,
@@ -400,16 +374,10 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
             // )
             this.remoteQuery_queueNextLoad(this.props.refresh.interval, loadDataParams)
           } else {
-            console.debug(
-              "Query.loadRemoteWithRefresh",
-              loadDataParams.queryConfig.query,
-              "Next refresh already set"
-            )
+            console.debug("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, "Next refresh already set")
           }
         })
-        .catch((e: Error) =>
-          console.error("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, e)
-        )
+        .catch((e: Error) => console.error("Query.loadRemoteWithRefresh", loadDataParams.queryConfig.query, e))
     }
   }
 

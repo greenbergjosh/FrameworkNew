@@ -20,9 +20,7 @@ export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNa
   valueKey: string
 }
 
-export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
-  SlotConfigInterfaceComponentProps
-> {
+export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotConfigInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "seqs",
     defaultValue: [],
@@ -45,14 +43,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = slotConfigManageForm
 
   render(): JSX.Element {
-    const {
-      actionType,
-      defaultValue,
-      onChangeData,
-      providerType,
-      userInterfaceData,
-      valueKey,
-    } = this.props
+    const { actionType, defaultValue, onChangeData, providerType, userInterfaceData, valueKey } = this.props
 
     const dataArray = get(valueKey, userInterfaceData) || defaultValue || []
 

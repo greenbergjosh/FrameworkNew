@@ -3,18 +3,17 @@ import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import React from "react"
 import { useRematch } from "../../hooks"
-import { NavigationGroupWithChildren, NavigationItem, RoutesMap } from "../../state/navigation"
+import { NavigationGroupWithChildren, NavigationItem } from "../../state/navigation"
 import { store } from "../../state/store"
 import { AppSelectors } from "../../state/store.types"
-import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import { BusinessApplicationPage } from "./BusinessApplicationPage"
 import { DefaultBusinessApplication } from "./DefaultBusinessApplication"
 import {
   BusinessApplicationConfig,
   BusinessApplicationId,
-  BusinessAppNavigationItem,
-  BusinessApplicationPageId,
   BusinessApplicationPageConfig,
+  BusinessApplicationPageId,
+  BusinessAppNavigationItem,
 } from "./business-application.types"
 
 export interface BusinessApplicationProps {
@@ -35,15 +34,11 @@ export const DEFAULT_BUSINESS_APPLICATION_CONFIG: BusinessApplicationConfig = {
 }
 
 /** Page style rendering of a business application */
-export const BusinessApplication = ({
-  applicationId,
-  pageId,
-  title,
-}: BusinessApplicationProps): JSX.Element => {
+export const BusinessApplication = ({ applicationId, pageId, title }: BusinessApplicationProps): JSX.Element => {
   const [fromStore, dispatch] = useRematch((s) => ({
     configsById: store.select.globalConfig.configsById(s),
     globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
-    businessApplicationPath: s.navigation.routes.dashboard.subroutes["apps"].abs,
+    businessApplicationPath: s.navigation.routes.dashboard.subroutes.apps.abs,
   }))
 
   const { businessApplicationRecord, businessApplicationConfig } = BusinessApplication.getAppConfig(
@@ -51,10 +46,7 @@ export const BusinessApplication = ({
     fromStore.configsById
   )
 
-  const businessApplicationPageRecord = record.lookup(
-    (pageId || "").toLowerCase(),
-    fromStore.configsById
-  )
+  const businessApplicationPageRecord = record.lookup((pageId || "").toLowerCase(), fromStore.configsById)
   const businessApplicationPageConfig = businessApplicationPageRecord
     .chain((appRecord) =>
       appRecord.config.chain((cfg) => {

@@ -10,7 +10,7 @@ export const baseSelectDataComponents = [
   {
     key: "dataHandlerType",
     valueKey: "dataHandlerType",
-    label: "Data Source Location",
+    label: "Data Source",
     ordinal: 10,
     component: "select",
     help: "Where to fetch the data for this Select box from",
@@ -32,6 +32,10 @@ export const baseSelectDataComponents = [
         {
           label: "Remote (Query)",
           value: "remote-query",
+        },
+        {
+          label: "Remote (Function)",
+          value: "remote-function",
         },
         // {
         //   label: "Remote (URL)",
@@ -61,6 +65,23 @@ export const baseSelectDataComponents = [
     visibilityConditions: {
       "===": [
         "local",
+        {
+          var: ["dataHandlerType"],
+        },
+      ],
+    },
+  },
+  {
+    key: "remoteFunctionType",
+    valueKey: "remoteFunctionType",
+    label: "Remote Function",
+    component: "select",
+    help: "Provide a function that returns the options (Advanced).",
+    dataHandlerType: "remote-config",
+    remoteConfigType: "Select.RemoteFunction",
+    visibilityConditions: {
+      "===": [
+        "remote-function",
         {
           var: ["dataHandlerType"],
         },
@@ -124,7 +145,10 @@ export const baseSelectDataComponents = [
     label: "Query Mapping",
     component: "data-map",
     count: 2,
-    defaultValue: [{ label: "label", value: "" }, { label: "value", value: "" }],
+    defaultValue: [
+      { label: "label", value: "" },
+      { label: "value", value: "" },
+    ],
     keyComponent: {
       label: "Property",
       unique: true,
@@ -174,8 +198,7 @@ export const baseSelectDataComponents = [
     key: "allowCreateNew",
     valueKey: "allowCreateNew",
     label: "Create New Option?",
-    help:
-      "Allow the user to select 'Create New...' to create an option that doesn't currently exist.",
+    help: "Allow the user to select 'Create New...' to create an option that doesn't currently exist.",
     component: "toggle",
     defaultValue: false,
     hidden: true,

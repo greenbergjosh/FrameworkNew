@@ -1,11 +1,6 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import React from "react"
 import { set } from "lodash/fp"
-import {
-  BaseInterfaceComponent,
-  UserInterfaceContext,
-  UserInterfaceProps,
-} from "@opg/interface-builder"
+import { BaseInterfaceComponent, UserInterfaceContext, UserInterfaceProps } from "@opg/interface-builder"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
 import { JSONRecord } from "../../../data/JSON"
@@ -65,7 +60,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     const { queryType, remoteQuery, remoteUrl, remoteConfigType, userInterfaceData } = this.props
     if (!hasContext(this.context)) return
     if (queryType) {
-      const { loadById } = this.context
+      const { loadById } = this.context as AdminUserInterfaceContextManager
       let persistedConfigId: PersistedConfig["id"]
       switch (queryType) {
         case "remote-query":
@@ -84,13 +79,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
 
   /* Originally from ReportBody.tsx */
   handleSubmit = (queryFormValues: JSONRecord /*dispatch: AppDispatch*/) => {
-    console.log(
-      "ExecuteInterfaceComponent.handleSubmit",
-      this.props,
-      this.state,
-      "formValues",
-      queryFormValues
-    )
+    console.log("ExecuteInterfaceComponent.handleSubmit", this.props, this.state, "formValues", queryFormValues)
     const { queryConfig, parameterValues } = this.state
     if (!queryConfig) {
       return
@@ -104,7 +93,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           queryConfig,
           parameterValues,
           queryFormValues,
-          this.context
+          this.context as AdminUserInterfaceContextManager
         ).then((newState) => {
           this.setState((state) => ({
             ...state,
@@ -117,7 +106,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           queryConfig,
           parameterValues,
           queryFormValues,
-          this.context,
+          this.context as AdminUserInterfaceContextManager
         ).then((newState) => {
           this.setState((state) => ({
             ...state,

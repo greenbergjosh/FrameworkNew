@@ -26,18 +26,12 @@ interface QueryFormProps {
 }
 
 export const QueryForm = React.memo(
-  ({
-    layout,
-    parameters,
-    parameterValues,
-    onSubmit,
-    submitButtonLabel,
-    submitButtonProps,
-  }: QueryFormProps) => {
+  ({ layout, parameters, parameterValues, onSubmit, submitButtonLabel, submitButtonProps }: QueryFormProps) => {
     const [fromStore, dispatch] = useRematch((s) => {
       const executeQuery = store.dispatch.reports.executeQuery.bind(store.dispatch.reports)
       const userInterfaceContextManager: UserInterfaceContextManager<PersistedConfig> = {
         // TODO: BUG: executeQuery does not exist on type UserInterfaceContextManager
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore vvv DEFECT!
         executeQuery,
         reportDataByQuery: s.reports.reportDataByQuery,
@@ -60,7 +54,7 @@ export const QueryForm = React.memo(
         defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
         entityTypes: store.select.globalConfig.entityTypeConfigs(s),
         isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
-        isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigsById,
+        isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigs,
         reportDataByQuery: s.reports.reportDataByQuery,
         userInterfaceContextManager,
       }
@@ -70,13 +64,10 @@ export const QueryForm = React.memo(
       const emptyComponentValues: JSONRecord = {}
       const emptyParameters: { [key: string]: any } = {}
       const layoutOrEmptySet = (layout || []) as ComponentDefinition[]
-      const defaultComponentValues = layoutOrEmptySet.reduce(
-        (acc, layoutItem: ComponentDefinition) => {
-          const defaults = getDefaultsFromComponentDefinitions([layoutItem])
-          return merge(acc, defaults)
-        },
-        emptyComponentValues
-      )
+      const defaultComponentValues = layoutOrEmptySet.reduce((acc, layoutItem: ComponentDefinition) => {
+        const defaults = getDefaultsFromComponentDefinitions([layoutItem])
+        return merge(acc, defaults)
+      }, emptyComponentValues)
       const defaultParameters =
         parameters &&
         parameters.reduce((acc: { [key: string]: any }, parameter: ParameterItem) => {

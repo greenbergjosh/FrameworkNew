@@ -1,9 +1,8 @@
 import * as Reach from "@reach/router"
-import { Option, some, tryCatch } from "fp-ts/lib/Option"
+import { Option, tryCatch } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import * as iots from "io-ts"
 import { reporter } from "io-ts-reporters"
-import * as iotst from "io-ts-types"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import JSON5 from "json5"
 import { groupBy, sortBy } from "lodash/fp"
@@ -26,14 +25,9 @@ import { Landing } from "../routes/landing"
 import { Profile } from "./iam"
 import * as Store from "./store.types"
 // import { FormEditorTest } from "../routes/dashboard/routes/form-editor-test"
-import {
-  BusinessApplications,
-  BusinessApplicationView,
-} from "../routes/dashboard/routes/business-application"
+import { BusinessApplications, BusinessApplicationView } from "../routes/dashboard/routes/business-application"
 
-export type NavigationGroupAutomaticChildType = iots.TypeOf<
-  typeof NavigationGroupAutomaticChildTypeCodec
->
+export type NavigationGroupAutomaticChildType = iots.TypeOf<typeof NavigationGroupAutomaticChildTypeCodec>
 const NavigationGroupAutomaticChildTypeCodec = iots.type({
   icon: iots.union([iots.undefined, iots.string]),
   ordinal: iots.union([iots.undefined, iots.number]),
@@ -48,10 +42,7 @@ export const NavigationGroupCodec = iots.type({
   type: iots.literal("Navigation.Group"),
 
   active: iots.boolean,
-  automaticChildTypes: iots.union([
-    iots.undefined,
-    iots.array(NavigationGroupAutomaticChildTypeCodec),
-  ]),
+  automaticChildTypes: iots.union([iots.undefined, iots.array(NavigationGroupAutomaticChildTypeCodec)]),
   description: iots.union([iots.undefined, iots.string]),
   group: iots.union([iots.undefined, iots.array(NonEmptyString)]),
   icon: iots.union([iots.undefined, iots.string]),
@@ -87,6 +78,7 @@ declare module "./store.types" {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export interface State<RouteMap extends object> {
   routes: { [K in keyof RouteMap]: RouteMap[K] }
 }
@@ -103,6 +95,7 @@ export interface Effects {
 
   showGlobalConfigById(params: {
     id: PersistedConfig["id"]
+    // eslint-disable-next-line @typescript-eslint/ban-types
     navOpts?: Reach.NavigateOptions<object>
   }): void
 
@@ -515,6 +508,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
     goToDashboard: (opts, { navigation: { routes } }) =>
       opts.foldL(
         None(() => Reach.navigate(routes.dashboard.abs)),
+        // eslint-disable-next-line @typescript-eslint/ban-types
         Some((opts) => Reach.navigate(routes.dashboard.abs, opts as Reach.NavigateOptions<{}>))
       ),
 
@@ -525,16 +519,24 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
     goToGlobalConfigs: (opts, { navigation: { routes } }) =>
       opts.foldL(
         None(() => Reach.navigate(routes.dashboard.subroutes["global-config"].abs)),
-        Some((opts) => Reach.navigate(routes.dashboard.subroutes["global-config"].abs, opts as Reach.NavigateOptions<{}>))
+        Some((opts) =>
+          Reach.navigate(
+            routes.dashboard.subroutes["global-config"].abs,
+            // eslint-disable-next-line @typescript-eslint/ban-types
+            opts as Reach.NavigateOptions<{}>
+          )
+        )
       ),
 
     goToLanding: (opts, { navigation: { routes } }) =>
       opts.foldL(
         None(() => Reach.navigate(routes.login.abs)),
+        // eslint-disable-next-line @typescript-eslint/ban-types
         Some((opts) => Reach.navigate(routes.login.abs, opts as Reach.NavigateOptions<{}>))
       ),
 
     navigate(path, rootState, navOptions) {
+      // eslint-disable-next-line @typescript-eslint/ban-types
       return Reach.navigate(String(path), navOptions as Reach.NavigateOptions<{}>)
     },
   }),
@@ -557,7 +559,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
 
           const topLevelNavigation = sortBy(
             ["ordinal", "name"],
-            [...(groupedItems["undefined"] || []), ...(groupedGroups["undefined"] || [])]
+            [...(groupedItems.undefined || []), ...(groupedGroups.undefined || [])]
           )
 
           const automaticChildTypeToNavigationItem = (
@@ -572,11 +574,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
               (result) => result
             )
 
-            console.log(
-              "navigation.automaticChildTypeToNavigationItem",
-              automaticChildType,
-              childTypeRecords
-            )
+            console.log("navigation.automaticChildTypeToNavigationItem", automaticChildType, childTypeRecords)
 
             return childTypeRecords.map((record) => ({
               active: true,
@@ -597,9 +595,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
             }))
           }
 
-          const resolveNavigationGroupChildren = (
-            navigationGroup: NavigationGroup
-          ): NavigationGroupWithChildren => {
+          const resolveNavigationGroupChildren = (navigationGroup: NavigationGroup): NavigationGroupWithChildren => {
             return {
               ...navigationGroup,
               children: sortBy(
@@ -607,18 +603,14 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
                 [
                   ...(groupedItems[navigationGroup.id] || []),
                   ...(groupedGroups[navigationGroup.id] || []).map(resolveNavigationGroupChildren),
-                  ...(navigationGroup.automaticChildTypes || []).flatMap(
-                    automaticChildTypeToNavigationItem
-                  ),
+                  ...(navigationGroup.automaticChildTypes || []).flatMap(automaticChildTypeToNavigationItem),
                 ]
               ),
             }
           }
 
           const returnMap = topLevelNavigation.map((navEntry) =>
-            navEntry.type === "Navigation.Item"
-              ? navEntry
-              : resolveNavigationGroupChildren(navEntry)
+            navEntry.type === "Navigation.Item" ? navEntry : resolveNavigationGroupChildren(navEntry)
           )
 
           return returnMap
@@ -673,12 +665,7 @@ export const navigation: Store.AppModel<State<RoutesMap>, Reducers, Effects, Sel
 // ─── LENSES ─────────────────────────────────────────────────────────────────────
 //
 
-const reportsSubroutes = Lens.fromPath<RoutesMap>()([
-  "dashboard",
-  "subroutes",
-  "reports",
-  "subroutes",
-])
+const reportsSubroutes = Lens.fromPath<RoutesMap>()(["dashboard", "subroutes", "reports", "subroutes"])
 const appsSubroutes = Lens.fromPath<RoutesMap>()(["dashboard", "subroutes", "apps", "subroutes"])
 
 const findAndMergeValidConfigs = <T>(
@@ -708,14 +695,12 @@ const findAndMergeValidConfigs = <T>(
         )
       })
     )
-    .reduce(
-      (acc, navEntry) => {
-        if (navEntry) {
-          //@ts-ignore
-          delete navEntry.config
-          acc.push(navEntry)
-        }
-        return acc
-      },
-      [] as T[]
-    )
+    .reduce((acc, navEntry) => {
+      if (navEntry) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        delete navEntry.config
+        acc.push(navEntry)
+      }
+      return acc
+    }, [] as T[])

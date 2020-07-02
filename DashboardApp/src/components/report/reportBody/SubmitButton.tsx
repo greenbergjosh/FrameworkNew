@@ -16,12 +16,7 @@ export interface SubmitButtonProps {
   submitButtonProps?: buttonProps
 }
 
-export const SubmitButton = ({
-  onSubmit,
-  loading,
-  submitButtonLabel,
-  submitButtonProps,
-}: SubmitButtonProps) => {
+export const SubmitButton = ({ onSubmit, loading, submitButtonLabel, submitButtonProps }: SubmitButtonProps) => {
   const {
     block,
     buttonLabel,

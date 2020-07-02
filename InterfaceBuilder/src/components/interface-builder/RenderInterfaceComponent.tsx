@@ -1,9 +1,4 @@
-import {
-  Alert,
-  Form,
-  Icon,
-  Tooltip
-  } from "antd"
+import { Alert, Form, Icon, Tooltip } from "antd"
 import jsonLogic from "json-logic-js"
 import React from "react"
 import { tryCatch } from "./lib/Option"
@@ -13,6 +8,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
 } from "./components/base/BaseInterfaceComponent"
+import { RootUserInterfaceDataContext } from "./util/RootUserInterfaceDataContext"
 
 interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
@@ -78,9 +74,7 @@ export class RenderInterfaceComponent extends React.Component<
       return (
         <Alert
           message="Component Error"
-          description={`An error occurred while rendering the component: ${
-            componentDefinition.component
-          }`}
+          description={`An error occurred while rendering the component: ${componentDefinition.component}`}
           type="error"
         />
       )
@@ -98,24 +92,29 @@ export class RenderInterfaceComponent extends React.Component<
       Component && Component.getLayoutDefinition && Component.getLayoutDefinition()
 
     const content = Component ? (
-      <Component
-        {...componentDefinition}
-        userInterfaceData={data}
-        mode={mode}
-        onChangeData={(props: UserInterfaceProps["data"]) => {
-          console.log("RenderInterfaceComponent.onChangeData", props, onChangeData)
-          onChangeData && onChangeData(props)
-        }}
-        onChangeSchema={(newComponentDefinition: ComponentDefinition) => {
-          console.log(
-            "RenderInterfaceComponent.onChangeSchema",
-            newComponentDefinition,
-            onChangeSchema
-          )
-          onChangeSchema && onChangeSchema(newComponentDefinition)
-        }}
-        userInterfaceSchema={componentDefinition}
-      />
+      <RootUserInterfaceDataContext.Consumer>
+        {(rootData) => (
+          <Component
+            {...componentDefinition}
+            userInterfaceData={data}
+            rootUserInterfaceData={rootData}
+            mode={mode}
+            onChangeData={(props: UserInterfaceProps["data"]) => {
+              console.log("RenderInterfaceComponent.onChangeData", props, onChangeData)
+              onChangeData && onChangeData(props)
+            }}
+            onChangeSchema={(newComponentDefinition: ComponentDefinition) => {
+              console.log(
+                "RenderInterfaceComponent.onChangeSchema",
+                newComponentDefinition,
+                onChangeSchema
+              )
+              onChangeSchema && onChangeSchema(newComponentDefinition)
+            }}
+            userInterfaceSchema={componentDefinition}
+          />
+        )}
+      </RootUserInterfaceDataContext.Consumer>
     ) : (
       <DebugComponent componentDefinition={componentDefinition} index={index} mode={mode} />
     )

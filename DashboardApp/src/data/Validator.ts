@@ -9,12 +9,7 @@ import {
 } from "fp-ts/lib/NonEmptyArray2v"
 import { getLastSemigroup, getStructSemigroup, Semigroup } from "fp-ts/lib/Semigroup"
 import { getStructSetoid, Setoid, setoidString } from "fp-ts/lib/Setoid"
-import {
-  failure,
-  getApplicative as getApplicativeValidation,
-  success,
-  Validation,
-} from "fp-ts/lib/Validation"
+import { failure, getApplicative as getApplicativeValidation, success, Validation } from "fp-ts/lib/Validation"
 
 export interface ValidatorError<T> {
   value: T
@@ -45,14 +40,9 @@ export const isNotEmpty = <T>(M: Monoid<T>): Validator<T> => (value: T) =>
   M.empty === value ? failure({ value, reason: "cannot be empty" }) : success(value)
 
 export const isUnique = <T>(S: Setoid<T>) => (existing: Array<T>): Validator<T> => (value: T) =>
-  existing.some((el) => S.equals(el, value))
-    ? failure({ value, reason: "must be unique" })
-    : success(value)
+  existing.some((el) => S.equals(el, value)) ? failure({ value, reason: "must be unique" }) : success(value)
 
-export function validate<T>(
-  value: T,
-  validators: [Validator<T>, ...Array<Validator<T>>]
-): Validated<T> {
+export function validate<T>(value: T, validators: [Validator<T>, ...Array<Validator<T>>]): Validated<T> {
   const applicativeValidation = getApplicativeValidation(getSemigroupValidated<T>())
   const sequenceValidations = sequenceT(applicativeValidation)
   const [fst, ...rest] = validators

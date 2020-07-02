@@ -12,6 +12,7 @@ import { logger } from "./logger"
 import { navigation } from "./navigation"
 import { remoteDataClient } from "./remote-data-client"
 import { reports } from "./reports"
+import { queries } from "./queries"
 import { importIngestionReport } from "./import-ingestion-report"
 import * as Store from "./store.types"
 
@@ -24,6 +25,7 @@ const appModels: Omit<Store.AppModelConfigs, "loading"> = {
   navigation,
   remoteDataClient,
   reports,
+  queries,
   importIngestionReport,
 }
 
@@ -31,7 +33,11 @@ const _store = Rematch.init({
   models: (appModels as unknown) as Rematch.Models, // Rematch types are difficult to work with :(
   plugins: [
     createLoadingPlugin({}),
-    createPersistPlugin({ storage, whitelist: ["remoteDataClient"] }),
+    createPersistPlugin({
+      key: "root",
+      storage,
+      whitelist: ["remoteDataClient", "queries"],
+    }),
     createSelectPlugin(),
   ],
 })

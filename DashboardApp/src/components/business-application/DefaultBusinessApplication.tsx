@@ -1,18 +1,7 @@
 import * as Reach from "@reach/router"
-import {
-  Button,
-  Card,
-  Col,
-  Empty,
-  PageHeader,
-  Row,
-  Typography
-  } from "antd"
-import { tryCatch } from "fp-ts/lib/Option"
+import { Button, Card, Col, Empty, PageHeader, Row } from "antd"
 import * as record from "fp-ts/lib/Record"
-import JSON5 from "json5"
 import React from "react"
-import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { useRematch } from "../../hooks"
 import { store } from "../../state/store"
 import { BusinessApplicationConfig, BusinessApplicationId } from "./business-application.types"
@@ -32,7 +21,7 @@ export const DefaultBusinessApplication = ({
   const [fromStore, dispatch] = useRematch((s) => ({
     configsById: store.select.globalConfig.configsById(s),
     globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
-    reportPath: s.navigation.routes.dashboard.subroutes["reports"].abs,
+    reportPath: s.navigation.routes.dashboard.subroutes.reports.abs,
   }))
 
   console.log("BusinessApplication.render", {
@@ -47,9 +36,7 @@ export const DefaultBusinessApplication = ({
           applicationId && (
             <Button.Group size="small">
               <Button>
-                <Reach.Link to={`${fromStore.globalConfigPath}/${applicationId}`}>
-                  View Config
-                </Reach.Link>
+                <Reach.Link to={`${fromStore.globalConfigPath}/${applicationId}`}>View Config</Reach.Link>
               </Button>
             </Button.Group>
           )
@@ -66,9 +53,7 @@ export const DefaultBusinessApplication = ({
                   return reportRecord
                     .map((report) => (
                       <div key={report.id}>
-                        <Reach.Link to={`${fromStore.reportPath}/${report.id}`}>
-                          {report.name}
-                        </Reach.Link>
+                        <Reach.Link to={`${fromStore.reportPath}/${report.id}`}>{report.name}</Reach.Link>
                       </div>
                     ))
                     .toNullable()
@@ -86,9 +71,7 @@ export const DefaultBusinessApplication = ({
                   return ownerRecord
                     .map((owner) => (
                       <div key={owner.id}>
-                        <Reach.Link to={`${fromStore.globalConfigPath}/${owner.id}`}>
-                          {owner.name}
-                        </Reach.Link>
+                        <Reach.Link to={`${fromStore.globalConfigPath}/${owner.id}`}>{owner.name}</Reach.Link>
                       </div>
                     ))
                     .toNullable()
@@ -104,10 +87,7 @@ export const DefaultBusinessApplication = ({
             <Card title="Administration" bordered={false}>
               {businessApplicationConfig.administered_types.length ? (
                 businessApplicationConfig.administered_types.map(({ label, configType }) => {
-                  const administeredTypeRecord = record.lookup(
-                    configType.toLowerCase(),
-                    fromStore.configsById
-                  )
+                  const administeredTypeRecord = record.lookup(configType.toLowerCase(), fromStore.configsById)
                   return administeredTypeRecord
                     .map((administeredType) => (
                       <div key={administeredType.id}>
@@ -155,10 +135,7 @@ export const DefaultBusinessApplication = ({
             <Card title="Import & Ingestion" bordered={false}>
               {businessApplicationConfig.ingest_config.length ? (
                 businessApplicationConfig.ingest_config.map((ingestConfigId) => {
-                  const ingestConfigRecord = record.lookup(
-                    ingestConfigId.toLowerCase(),
-                    fromStore.configsById
-                  )
+                  const ingestConfigRecord = record.lookup(ingestConfigId.toLowerCase(), fromStore.configsById)
                   return ingestConfigRecord
                     .map((ingestConfig) => (
                       <div key={ingestConfig.id}>
@@ -178,10 +155,7 @@ export const DefaultBusinessApplication = ({
             <Card title="Export" bordered={false}>
               {businessApplicationConfig.export_config.length ? (
                 businessApplicationConfig.export_config.map((exportConfigId) => {
-                  const exportConfigRecord = record.lookup(
-                    exportConfigId.toLowerCase(),
-                    fromStore.configsById
-                  )
+                  const exportConfigRecord = record.lookup(exportConfigId.toLowerCase(), fromStore.configsById)
                   return exportConfigRecord
                     .map((exportConfig) => (
                       <div key={exportConfig.id}>

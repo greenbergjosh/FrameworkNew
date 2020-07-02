@@ -1,9 +1,7 @@
 import { ComponentDefinition } from "@opg/interface-builder"
-import { none, some } from "fp-ts/lib/Option"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
-import { string } from "prop-types"
-import { JSONRecord, JSONRecordCodec } from "./JSON"
+import { JSONRecord } from "./JSON"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({
@@ -18,10 +16,7 @@ export const SelectLayoutItemCodec = iots.type({
 })
 
 export type LayoutItem = iots.TypeOf<typeof LayoutItemCodec>
-export const LayoutItemCodec = iots.taggedUnion("component", [
-  TableLayoutItemCodec,
-  SelectLayoutItemCodec,
-])
+export const LayoutItemCodec = iots.taggedUnion("component", [TableLayoutItemCodec, SelectLayoutItemCodec])
 
 export type RemoteReportConfig = {
   type: "ReportConfig"
@@ -192,6 +187,7 @@ export const HTTPRequestQueryConfigCodec = iots.type({
   parameters: iots.array(ParameterItemCodec),
   query: iots.string,
   submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
 export type SQLQueryConfig = iots.TypeOf<typeof SQLQueryConfigCodec>
@@ -201,6 +197,7 @@ export const SQLQueryConfigCodec = iots.type({
   parameters: iots.array(ParameterItemCodec),
   layout: iots.array(iots.UnknownRecord),
   submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
 export type StoredProcQueryConfig = iots.TypeOf<typeof StoredProcQueryConfigCodec>
@@ -210,6 +207,7 @@ export const StoredProcQueryConfigCodec = iots.type({
   parameters: iots.array(ParameterItemCodec),
   layout: iots.array(iots.UnknownRecord),
   submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
 export type QueryLayoutItem = JSONRecord

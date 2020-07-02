@@ -1,4 +1,4 @@
-import { Button, Input, Layout, Menu, Typography } from "antd"
+import { Button, Input, Menu, Typography } from "antd"
 import FlexSearch, { Index, SearchResults } from "flexsearch"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { get } from "lodash/fp"
@@ -17,6 +17,7 @@ export interface FilteredMenuProps<T> {
   valueAccessor: string | ((dataItem: T) => string)
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export const FilteredMenu = <T extends {} = any>({
   data,
   inputStyle,
@@ -50,9 +51,7 @@ export const FilteredMenu = <T extends {} = any>({
     const resultsPromise = filterInput
       ? Promise.resolve(searchDB.search(filterInput, resultLimit)).then((ids) =>
           ids
-            ? (((ids as unknown) as string[])
-                .map((id) => id && valueToDataItemMap.get(id))
-                .filter((i) => i) as T[])
+            ? (((ids as unknown) as string[]).map((id) => id && valueToDataItemMap.get(id)).filter((i) => i) as T[])
             : ([] as T[])
         )
       : Promise.resolve(data.slice(0, resultLimit))
@@ -76,7 +75,7 @@ export const FilteredMenu = <T extends {} = any>({
       <Typography.Text type="secondary" ellipsis={true}>
         Selected:&nbsp;
         {get(labelAccessor as string, selected)}
-        {selected &&
+        {selected && (
           <Button
             type="link"
             shape="circle"
@@ -86,7 +85,7 @@ export const FilteredMenu = <T extends {} = any>({
               onSelect && onSelect(null)
             }}
           />
-        }
+        )}
       </Typography.Text>
       <Menu
         style={menuStyle}
@@ -97,17 +96,12 @@ export const FilteredMenu = <T extends {} = any>({
         }}
         selectedKeys={selectedValue ? [selectedValue] : []}>
         {results &&
-          results.map((item) => (
-            <Menu.Item key={access(valueAccessor, item)}>{access(labelAccessor, item)}</Menu.Item>
-          ))}
+          results.map((item) => <Menu.Item key={access(valueAccessor, item)}>{access(labelAccessor, item)}</Menu.Item>)}
       </Menu>
     </>
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 const access = <T extends {}>(accessor: FilteredMenuProps<T>["valueAccessor"], item: T) =>
-  typeof accessor === "string"
-    ? get(accessor, item)
-    : typeof accessor === "function"
-    ? accessor(item)
-    : null
+  typeof accessor === "string" ? get(accessor, item) : typeof accessor === "function" ? accessor(item) : null

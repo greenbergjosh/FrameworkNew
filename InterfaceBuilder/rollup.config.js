@@ -5,6 +5,7 @@ import typescript from "rollup-plugin-typescript2"
 import { terser } from "rollup-plugin-terser"
 import analyze from "rollup-plugin-analyzer"
 import postcss from 'rollup-plugin-postcss-modules'
+import notify from 'rollup-plugin-notify'
 import autoprefixer from 'autoprefixer'
 
 export default {
@@ -27,6 +28,7 @@ export default {
       "@reach/component-component": "Component",
       "io-ts": "iots",
       "monaco-editor": "monacoEditor",
+      "@monaco-editor/react": "monacoEditor",
       "react-monaco-editor": "MonacoEditor",
       moment: "moment",
       "js-file-download": "fileDownload",
@@ -61,5 +63,6 @@ export default {
     images(),
     progress(),
     analyze({ summaryOnly: true, limit: 5 }),
+    notify(),
   ],
 }

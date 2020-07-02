@@ -63,8 +63,8 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
               },
-            ]
-          }
+            ],
+          },
         ],
       },
     ],
