@@ -29,13 +29,13 @@ namespace Utility.EDW.Reporting
             AddEvent(eventId, eventTimestamp, reportingSequences, body, (object)null, aggregationTtl);
         }
 
-        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, IEnumerable<(Guid eventId, DateTime eventTimestamp)> parentEvents = null, TimeSpan aggregationTtl = default)
+        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, IEnumerable<(Guid eventId, DateTime eventTimestamp)> parentEvents, TimeSpan aggregationTtl = default)
         {
             var whep = parentEvents?.Any() == true ? parentEvents.Select(parentEvent => ToLinkedId(parentEvent.eventId, parentEvent.eventTimestamp)) : null;
             AddEvent(eventId, eventTimestamp, reportingSequences, body, whep, aggregationTtl);
         }
 
-        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, IDictionary<string, (Guid eventId, DateTime eventTimestamp)> parentEvents = null, TimeSpan aggregationTtl = default)
+        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, IDictionary<string, (Guid eventId, DateTime eventTimestamp)> parentEvents, TimeSpan aggregationTtl = default)
         {
             var whep = parentEvents?.Any() == true ? parentEvents.ToDictionary(kvp => kvp.Key, kvp => ToLinkedId(kvp.Value.eventId, kvp.Value.eventTimestamp)) : null;
             AddEvent(eventId, eventTimestamp, reportingSequences, body, whep, aggregationTtl);
