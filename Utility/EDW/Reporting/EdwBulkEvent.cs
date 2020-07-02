@@ -24,9 +24,9 @@ namespace Utility.EDW.Reporting
         };
 
         #region Event Methods
-        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body)
+        public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, TimeSpan aggregationTtl = default)
         {
-            AddEvent(eventId, eventTimestamp, reportingSequences, body, (object)null, TimeSpan.Zero);
+            AddEvent(eventId, eventTimestamp, reportingSequences, body, (object)null, aggregationTtl);
         }
 
         public void AddEvent(Guid eventId, DateTime eventTimestamp, IDictionary<Guid, (Guid rsId, DateTime rsTimestamp)> reportingSequences, object body, IEnumerable<(Guid eventId, DateTime eventTimestamp)> parentEvents = null, TimeSpan aggregationTtl = default)
@@ -144,20 +144,20 @@ namespace Utility.EDW.Reporting
         #region Helper Methods
         private string ToLinkedId(Guid id, DateTime timestamp) => $"{id:N}|{timestamp:yyMMddHHmmssffffff}";
 
-        private static string ToTtlString(TimeSpan aggregationTtl)
+        private static string ToTtlString(TimeSpan ttl)
         {
-            string agg_ttl_interval = null;
+            string ttl_interval = null;
 
-            if (aggregationTtl.Days > 0)
+            if (ttl.Days > 0)
             {
-                agg_ttl_interval = $"{aggregationTtl.Days}d";
+                ttl_interval = $"{ttl.Days}d";
             }
-            else if (aggregationTtl.Hours > 0)
+            else if (ttl.Hours > 0)
             {
-                agg_ttl_interval = $"{aggregationTtl.Hours}h";
+                ttl_interval = $"{ttl.Hours}h";
             }
 
-            return agg_ttl_interval;
+            return ttl_interval;
         }
         #endregion
     }
