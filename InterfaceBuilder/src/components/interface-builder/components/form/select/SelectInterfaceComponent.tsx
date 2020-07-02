@@ -94,7 +94,6 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     loadError,
     loadStatus,
     options,
-    handleFocus,
   }: SelectableChildProps) => {
     const { placeholder, allowClear, multiple, size } = this.props as ISelectProps
 
@@ -113,7 +112,6 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
         loading={loadStatus === "loading"}
         mode={this.mode}
         onChange={this.handleChange}
-        onFocus={handleFocus}
         optionFilterProp="label"
         placeholder={placeholder}
         showSearch

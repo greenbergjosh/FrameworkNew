@@ -4,7 +4,6 @@ import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { UserInterfaceContext } from "../../../UserInterfaceContextManager"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { SelectableChildProps, SelectableOption, SelectableProps, SelectableState } from "./types"
-import { default as localFunctionDataHandler } from "./dataHandlers/localFunctionDataHandler"
 
 export class Selectable extends BaseInterfaceComponent<SelectableProps, SelectableState> {
   static defaultProps = {
@@ -110,33 +109,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 
   // componentDidMount() {}
 
-  componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
-    if (this.props.dataHandlerType === "local-function") {
-      const nextState = localFunctionDataHandler.getUpdatedState({
-        dataHandlerType: this.props.dataHandlerType,
-        prevProps: prevProps,
-        userInterfaceData: this.props.userInterfaceData,
-        rootUserInterfaceData: this.props.rootUserInterfaceData,
-        localFunctionDataHandler: this.props.localFunctionDataHandler,
-        localFunction: this.state.localFunction,
-      })
-      if (nextState) this.setState(nextState as any)
-    }
-  }
-
-  handleFocus() {
-    // Local Function
-    // Only run the first time the select is focused
-    // by checking if we don't have the localFunction yet.
-    if (!this.state.localFunction && this.props.dataHandlerType === "local-function") {
-      const nextState = localFunctionDataHandler.getInitialState(
-        this.props.userInterfaceData,
-        this.props.rootUserInterfaceData,
-        this.props.localFunctionDataHandler
-      )
-      if (nextState) this.setState(nextState as any)
-    }
-  }
+  // componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) { }
 
   /**
    *
@@ -198,7 +171,6 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       getCleanValue: this.getCleanValue,
       loadStatus,
       loadError,
-      handleFocus: this.handleFocus.bind(this),
     }
 
     return <>{this.props.children && this.props.children(selectableChildProps)}</>

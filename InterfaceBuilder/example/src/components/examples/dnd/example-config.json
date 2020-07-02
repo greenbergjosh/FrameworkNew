@@ -1,216 +1,56 @@
 {
-  "component": "form",
   "key": "outer",
-  "label": "Query Form",
+  "hidden": false,
+  "inset": false,
+  "size": "default",
+  "bordered": false,
+  "hoverable": true,
+  "extra": "",
+  "title": "Date Stepper Demo",
+  "valueKey": "data",
+  "label": "Card",
+  "hideLabel": true,
+  "component": "card",
   "components": [
     {
-      "key": "tabs",
-      "defaultActiveKey": "tab1",
-      "label": "Some Tabs",
-      "component": "tabs",
-      "tabs": [
-        {
-          "key": "tab1",
-          "label": "First Tab",
-          "component": "tab",
-          "components": [
-            {
-              "hidden": false,
-              "allowClear": true,
-              "placeholder": "Please select",
-              "data": {
-                "values": [
-                  {
-                    "label": "one",
-                    "value": "1"
-                  },
-                  {
-                    "label": "two",
-                    "value": "2"
-                  },
-                  {
-                    "label": "three",
-                    "value": "3"
-                  }
-                ]
-              },
-              "multiple": false,
-              "dataHandlerType": "local",
-              "valueKey": "value",
-              "label": "Pick Something",
-              "hideLabel": false,
-              "key": "pick1",
-              "component": "select"
-            },
-            {
-              "key": "write1",
-              "label": "Write something",
-              "component": "input"
-            }
-          ]
-        },
-        {
-          "key": "tab2",
-          "label": "Second Tab",
-          "component": "tab",
-          "components": [
-            {
-              "key": "write2",
-              "label": "Write Something Else",
-              "component": "input"
-            },
-            {
-              "hidden": false,
-              "allowClear": true,
-              "placeholder": "Please select",
-              "data": {
-                "values": [
-                  {
-                    "label": "one",
-                    "value": "1"
-                  },
-                  {
-                    "label": "two",
-                    "value": "2"
-                  },
-                  {
-                    "label": "three",
-                    "value": "3"
-                  }
-                ]
-              },
-              "multiple": false,
-              "dataHandlerType": "local",
-              "valueKey": "value",
-              "label": "Pick something Else",
-              "hideLabel": false,
-              "key": "pick2",
-              "component": "select"
-            }
-          ]
-        },
-        {
-          "key": "tab3",
-          "label": "Progress Test",
-          "component": "tab",
-          "components": [
-            {
-              "hideLabel": false,
-              "label": "Progress",
-              "valueKey": "currentValue",
-              "calculatePercent": true,
-              "maxValueKey": "maxValue",
-              "forceStatus": "useAPI",
-              "statusKey": "status",
-              "statuses": {
-                "exception": "exception",
-                "success": "success",
-                "active": "active",
-                "normal": "normal"
-              },
-              "type": "line",
-              "smallLine": false,
-              "hideInfo": false,
-              "hidden": false,
-              "component": "progress"
-            },
-            {
-              "hideLabel": false,
-              "label": "Columns",
-              "valueKey": "columns",
-              "hideTitle": false,
-              "components": [],
-              "gutter": 8,
-              "hidden": false,
-              "component": "column",
-              "columns": [
-                {
-                  "hideTitle": true,
-                  "components": [
-                    {
-                      "hideLabel": false,
-                      "label": "Current Value",
-                      "valueKey": "currentValue",
-                      "hidden": false,
-                      "component": "number-input"
-                    }
-                  ]
-                },
-                {
-                  "hideTitle": true,
-                  "components": [
-                    {
-                      "hideLabel": false,
-                      "label": "Max Value",
-                      "valueKey": "maxValue",
-                      "hidden": false,
-                      "component": "number-input"
-                    }
-                  ]
-                },
-                {
-                  "hideTitle": true,
-                  "components": [
-                    {
-                      "hideLabel": false,
-                      "label": "Status",
-                      "valueKey": "status",
-                      "placeholder": null,
-                      "multiple": false,
-                      "defaultValue": "normal",
-                      "dataHandlerType": "local",
-                      "data": {
-                        "values": [
-                          {
-                            "label": "Normal",
-                            "value": "normal"
-                          },
-                          {
-                            "label": "Active",
-                            "value": "active"
-                          },
-                          {
-                            "label": "Success",
-                            "value": "success"
-                          },
-                          {
-                            "label": "Exception",
-                            "value": "exception"
-                          }
-                        ]
-                      },
-                      "allowCreateNew": false,
-                      "createNewLabel": "Create New...",
-                      "hidden": false,
-                      "component": "select"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "hidden": false,
+      "size": "default",
+      "maxLength": null,
+      "valueKey": "value",
+      "defaultValue": "test",
+      "label": "Text",
+      "hideLabel": false,
+      "component": "input"
     },
     {
-      "key": "post-tabs-divider",
-      "component": "divider"
-    },
-    {
-      "key": "daterange1",
+      "hidden": false,
+      "timeSettings": {
+        "use24Clock": false,
+        "includeHour": false,
+        "includeMinute": false,
+        "includeSecond": false,
+        "includeTime": false
+      },
+      "wrapperObjectKey": "dateRange",
+      "useWrapperObject": true,
+      "endDateKey": "dateRange.endDate",
+      "startDateKey": "dateRange.startDate",
+      "defaultRangeValue": "Today",
       "label": "Date Range",
+      "hideLabel": false,
       "component": "date-range"
     },
     {
-      "key": "date1",
-      "component": "date",
-      "label": "Date 1",
-      "valueKey": "date",
-      "timeSettings": {
-        "includeTime": true,
-        "includeHour": true,
-        "includeMinute": true
-      }
+      "hidden": false,
+      "size": "small",
+      "endDateKey": "dateRange.endDate",
+      "startDateKey": "dateRange.startDate",
+      "dateKey": "startDate",
+      "isDateRange": true,
+      "label": "Date Stepper",
+      "hideLabel": false,
+      "key": "outer",
+      "component": "date-stepper"
     }
   ]
 }
