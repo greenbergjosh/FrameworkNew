@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Asn1.X509;
-using Utility;
+using Npgsql;
 using Utility.EDW.Reporting;
 
 namespace QuickTester
@@ -15,6 +11,8 @@ namespace QuickTester
     {
         public static void GenerateTestData()
         {
+            var connectionString = "Server=warehouse1.data.techopg.local;Port=5432;Database=lab3;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='Edw Test Data Generator';MaxPoolSize=300;Pooling=true;";
+
             var rs1ConfigId = Guid.Parse("709cf774-88f5-42d8-8f55-08d5cee342b4");
             var rs2ConfigId = Guid.Parse("395fe415-095f-418b-97a6-dd6a8f9752db");
 
@@ -24,14 +22,10 @@ namespace QuickTester
 
             var hours = Enumerable.Range(1, 10);  //10
 
-            var subCampaigns = Enumerable.Range(1, 100);  //100
+            var subCampaigns = Enumerable.Range(1, 10);  //100
 
-            var ages = Enumerable.Range(1, 100);  //100
+            var ages = Enumerable.Range(1, 10);  //100
 
-            int i = 0;
-            var folder = GetFolder("OneFile");
-            var file = Path.Combine(folder, "events.txt");
-            System.IO.StreamWriter sw = new System.IO.StreamWriter(file);
             foreach (var date in dates)
             {
                 foreach (var hour in hours)
@@ -42,8 +36,6 @@ namespace QuickTester
                     {
                         foreach (var age in ages)
                         {
-                            //var events = new List<EdwBulkEvent>();
-                            StringBuilder sb = new StringBuilder();
 
                             var eventGuids = Enumerable.Range(1, 10).Select(_ => Guid.NewGuid()).ToArray();
                             var rs1Id = eventGuids[0];
@@ -57,141 +49,62 @@ namespace QuickTester
 
                             var e = new EdwBulkEvent();
                             e.AddReportingSequence(rs1Id, targetDate, new { s = subCampaign }, rs1ConfigId); // file export type = RS1
-                            if (i == 0) sb.Append(e.ToString());
-                            else sb.Append("|" + e.ToString());
-                            i++;
 
-                            e = new EdwBulkEvent();
                             e.AddCheckedReportingSequence(rs2Id, targetDate, new { s = subCampaign }, rs2ConfigId); // file export type = RS2 - 1
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[2], targetDate, rss, new { et = "GPImpression", p1 = 1, p4 = 4, p6 = 6, p8 = 8 });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[3], targetDate, rss, new { et = "PImpression", p2 = 2, p5 = 5, p7 = 7, p8 = 80 });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[4], targetDate, rss, new { et = "Impression", p3 = 3, p6 = 60, p7 = 70, p8 = 800 }, new[] { (eventGuids[3], targetDate), (eventGuids[2], targetDate) });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[5], targetDate, rss, new { et = "GPClick", q1 = 1, q4 = 4, q5 = 5, q7 = 7 });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[6], targetDate, rss, new { et = "PClick", q2 = 2, q4 = 40, q6 = 6, q7 = 70 });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[7], targetDate, rss, new { et = "Click", q3 = 3, q5 = 50, q6 = 60, q7 = 700 }, new Dictionary<string, (Guid eventId, DateTime eventTimestamp)> { ["bob"] = (eventGuids[5], targetDate), ["tom"] = (eventGuids[6], targetDate) });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[8], targetDate, rss, new { et = "Survey", age });
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddCheckedReportingSequenceDetail(rs2Id, targetDate, targetDate, new { age }, rs2ConfigId); // file export type = RS2 - 1
-                            sb.Append("|" + e.ToString());
 
-                            e = new EdwBulkEvent();
                             e.AddEvent(eventGuids[9], targetDate, rss, new { et = "Action" });
-                            sb.Append("|" + e.ToString());
 
-                            sw.Write(sb.ToString());
+                            InsertEdwPayload(connectionString, e);
                         }
                     }
                 }
             }
-
-            sw.Close();
-            //OneFile(events);
-            //FilePerEventType(events);
-            //RandomFiles(events);
         }
 
-        private static void OneFile(IEnumerable<EdwBulkEvent> events)
+        private static void InsertEdwPayload(string connectionString, EdwBulkEvent edwBulkEvent, int timeout = 120)
         {
-            var folder = GetFolder("OneFile");
+            using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+            cn.Open();
 
-            var file = Path.Combine(folder, "events.txt");
-            File.WriteAllText(file, SerializeEdwEvents(events));
-        }
+            using var cmd = new NpgsqlCommand($"SELECT staging.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout };
+            cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, edwBulkEvent.ToString());
+            cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
+            cmd.CommandTimeout = timeout;
+            cmd.ExecuteNonQuery();
 
-        private static void FilePerEventType(IEnumerable<EdwBulkEvent> events)
-        {
-            var folder = GetFolder("FilePerEventType");
+            cn.Close();
 
-            foreach (var eventTypeGroup in events.GroupBy(e =>
+            var result = cmd.Parameters["@Return"].Value;
+            if (result?.ToString() != "200 ok")
             {
-                if (e.RsTypes[EdwBulkEvent.EdwType.Event].Any())
-                {
-                    var payload = JObject.FromObject(e.RsTypes[EdwBulkEvent.EdwType.Event][0])["payload"];
-
-                    return payload["et"].Value<string>();
-                }
-
-                return "RS";
-            }))
-            {
-                var file = Path.Combine(folder, $"{eventTypeGroup.Key}.txt");
-                File.WriteAllText(file, SerializeEdwEvents(eventTypeGroup.ToList()));
+                throw new Exception(result?.ToString());
             }
         }
 
-        private static void RandomFiles(IEnumerable<EdwBulkEvent> events)
+        private static string PrepareConnectionString(string connectionString)
         {
-            var folder = GetFolder("RandomFiles");
-
-            var random = new Random();
-
-            var randomEvents = events.OrderBy(e => random.Next()).ToList();
-
-            var fileCount = 20;
-
-            var fileEvents = new List<List<EdwBulkEvent>>(fileCount);
-            for (var i = 0; i < fileCount; i++)
+            var builder = new NpgsqlConnectionStringBuilder(connectionString);
+            if (string.IsNullOrWhiteSpace(builder.ApplicationName))
             {
-                fileEvents.Add(new List<EdwBulkEvent>());
+                builder.ApplicationName = Path.GetFileName(Directory.GetCurrentDirectory());
             }
-
-            foreach (var e in events)
-            {
-                var fileIndex = random.Next(fileCount);
-
-                fileEvents[fileIndex].Add(e);
-            }
-
-            for (var i = 0; i < fileCount; i++)
-            {
-                var es = fileEvents[i];
-
-                var file = Path.Combine(folder, $"{i}.txt");
-                File.WriteAllText(file, SerializeEdwEvents(es));
-            }
-        }
-
-        private static string SerializeEdwEvents(IEnumerable<EdwBulkEvent> events) => JsonConvert.SerializeObject(events.Select(e => JsonConvert.DeserializeObject(e.ToString())), Formatting.Indented);
-
-        private static string GetFolder(string folderName)
-        {
-            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var testFolder = Path.Combine(desktop, "EdwTestCases");
-            if (!Directory.Exists(testFolder))
-            {
-                Directory.CreateDirectory(testFolder);
-            }
-
-            var folder = Path.Combine(testFolder, folderName);
-            if (!Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
-
-            return folder;
+            return builder.ToString();
         }
     }
 }

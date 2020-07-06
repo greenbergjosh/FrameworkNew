@@ -7,7 +7,7 @@ namespace Utility.EDW.Reporting
 {
     public class EdwBulkEvent
     {
-        public enum EdwType
+        private enum EdwType
         {
             Event = 0,
             Immediate,
@@ -15,7 +15,7 @@ namespace Utility.EDW.Reporting
             CheckedDetail
         }
 
-        public Dictionary<EdwType, List<object>> RsTypes { get; } = new Dictionary<EdwType, List<object>>()
+        private readonly Dictionary<EdwType, List<object>> _rsTypes = new Dictionary<EdwType, List<object>>()
         {
             { EdwType.Event, new List<object>() },
             { EdwType.Immediate, new List<object>() },
@@ -70,7 +70,7 @@ namespace Utility.EDW.Reporting
                 payload["body"] = body;
             }
 
-            RsTypes[EdwType.Event].Add(
+            _rsTypes[EdwType.Event].Add(
                  new
                  {
                      id = eventId,
@@ -127,22 +127,22 @@ namespace Utility.EDW.Reporting
                 ["rsid"] = rsConfigId
             };
 
-            RsTypes[type].Add(rs);
+            _rsTypes[type].Add(rs);
         }
         #endregion
 
         public override string ToString() => JsonConvert.SerializeObject(
             new
             {
-                E = RsTypes[EdwType.Event],
-                IM = RsTypes[EdwType.Immediate],
-                CK = RsTypes[EdwType.Checked],
-                CD = RsTypes[EdwType.CheckedDetail]
+                E = _rsTypes[EdwType.Event],
+                IM = _rsTypes[EdwType.Immediate],
+                CK = _rsTypes[EdwType.Checked],
+                CD = _rsTypes[EdwType.CheckedDetail]
             }
         );
 
         #region Helper Methods
-        private string ToLinkedId(Guid id, DateTime timestamp) => $"{id:N}|{timestamp:yyMMddHHmmssffffff}";
+        private string ToLinkedId(Guid id, DateTime timestamp) => $"{id:N}.{timestamp:yyMMddHHmmssffffff}";
 
         private static string ToTtlString(TimeSpan ttl)
         {
