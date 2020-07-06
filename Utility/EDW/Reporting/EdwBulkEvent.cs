@@ -148,7 +148,7 @@ namespace Utility.EDW.Reporting
         {
             string ttl_interval = null;
 
-            if (ttl.Days > 0)
+            if (ttl.Days > 0 && ttl.Hours == 0)
             {
                 ttl_interval = $"{ttl.Days}d";
             }

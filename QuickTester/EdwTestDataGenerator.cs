@@ -26,6 +26,8 @@ namespace QuickTester
 
             var ages = Enumerable.Range(1, 10);  //100
 
+            var random = new Random();
+
             foreach (var date in dates)
             {
                 foreach (var hour in hours)
@@ -47,28 +49,32 @@ namespace QuickTester
                                 [rs2ConfigId] = (rs1Id, targetDate)
                             };
 
+                            var aggregationTtl = TimeSpan.FromHours(random.Next(48));
+
+                            var satisfactionTtl = TimeSpan.FromHours(random.Next(6));
+
                             var e = new EdwBulkEvent();
-                            e.AddReportingSequence(rs1Id, targetDate, new { s = subCampaign }, rs1ConfigId); // file export type = RS1
+                            e.AddReportingSequence(rs1Id, targetDate, new { s = subCampaign }, rs1ConfigId, aggregationTtl); // file export type = RS1
 
-                            e.AddCheckedReportingSequence(rs2Id, targetDate, new { s = subCampaign }, rs2ConfigId); // file export type = RS2 - 1
+                            e.AddCheckedReportingSequence(rs2Id, targetDate, new { s = subCampaign }, rs2ConfigId, aggregationTtl, satisfactionTtl); // file export type = RS2 - 1
 
-                            e.AddEvent(eventGuids[2], targetDate, rss, new { et = "GPImpression", p1 = 1, p4 = 4, p6 = 6, p8 = 8 });
+                            e.AddEvent(eventGuids[2], targetDate, rss, new { et = "GPImpression", p1 = 1, p4 = 4, p6 = 6, p8 = 8 }, aggregationTtl);
 
-                            e.AddEvent(eventGuids[3], targetDate, rss, new { et = "PImpression", p2 = 2, p5 = 5, p7 = 7, p8 = 80 });
+                            e.AddEvent(eventGuids[3], targetDate, rss, new { et = "PImpression", p2 = 2, p5 = 5, p7 = 7, p8 = 80 }, aggregationTtl);
 
-                            e.AddEvent(eventGuids[4], targetDate, rss, new { et = "Impression", p3 = 3, p6 = 60, p7 = 70, p8 = 800 }, new[] { (eventGuids[3], targetDate), (eventGuids[2], targetDate) });
+                            e.AddEvent(eventGuids[4], targetDate, rss, new { et = "Impression", p3 = 3, p6 = 60, p7 = 70, p8 = 800 }, new[] { (eventGuids[3], targetDate), (eventGuids[2], targetDate) }, aggregationTtl);
 
-                            e.AddEvent(eventGuids[5], targetDate, rss, new { et = "GPClick", q1 = 1, q4 = 4, q5 = 5, q7 = 7 });
+                            e.AddEvent(eventGuids[5], targetDate, rss, new { et = "GPClick", q1 = 1, q4 = 4, q5 = 5, q7 = 7 }, aggregationTtl);
 
-                            e.AddEvent(eventGuids[6], targetDate, rss, new { et = "PClick", q2 = 2, q4 = 40, q6 = 6, q7 = 70 });
+                            e.AddEvent(eventGuids[6], targetDate, rss, new { et = "PClick", q2 = 2, q4 = 40, q6 = 6, q7 = 70 }, aggregationTtl);
 
-                            e.AddEvent(eventGuids[7], targetDate, rss, new { et = "Click", q3 = 3, q5 = 50, q6 = 60, q7 = 700 }, new Dictionary<string, (Guid eventId, DateTime eventTimestamp)> { ["bob"] = (eventGuids[5], targetDate), ["tom"] = (eventGuids[6], targetDate) });
+                            e.AddEvent(eventGuids[7], targetDate, rss, new { et = "Click", q3 = 3, q5 = 50, q6 = 60, q7 = 700 }, new Dictionary<string, (Guid eventId, DateTime eventTimestamp)> { ["bob"] = (eventGuids[5], targetDate), ["tom"] = (eventGuids[6], targetDate) }, aggregationTtl);
 
-                            e.AddEvent(eventGuids[8], targetDate, rss, new { et = "Survey", age });
+                            e.AddEvent(eventGuids[8], targetDate, rss, new { et = "Survey", age }, aggregationTtl);
 
-                            e.AddCheckedReportingSequenceDetail(rs2Id, targetDate, targetDate, new { age }, rs2ConfigId); // file export type = RS2 - 1
+                            e.AddCheckedReportingSequenceDetail(rs2Id, targetDate, targetDate, new { age }, rs2ConfigId, satisfactionTtl); // file export type = RS2 - 1
 
-                            e.AddEvent(eventGuids[9], targetDate, rss, new { et = "Action" });
+                            e.AddEvent(eventGuids[9], targetDate, rss, new { et = "Action" }, aggregationTtl);
 
                             InsertEdwPayload(connectionString, e);
                         }
@@ -79,7 +85,7 @@ namespace QuickTester
 
         private static void InsertEdwPayload(string connectionString, EdwBulkEvent edwBulkEvent, int timeout = 120)
         {
-            using var cn = new NpgsqlConnection(PrepareConnectionString(connectionString));
+            using var cn = new NpgsqlConnection(connectionString);
             cn.Open();
 
             using var cmd = new NpgsqlCommand($"SELECT staging.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout };
@@ -95,16 +101,6 @@ namespace QuickTester
             {
                 throw new Exception(result?.ToString());
             }
-        }
-
-        private static string PrepareConnectionString(string connectionString)
-        {
-            var builder = new NpgsqlConnectionStringBuilder(connectionString);
-            if (string.IsNullOrWhiteSpace(builder.ApplicationName))
-            {
-                builder.ApplicationName = Path.GetFileName(Directory.GetCurrentDirectory());
-            }
-            return builder.ToString();
         }
     }
 }
