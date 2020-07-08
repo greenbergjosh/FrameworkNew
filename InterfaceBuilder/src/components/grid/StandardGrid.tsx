@@ -40,6 +40,20 @@ import { CustomAggregateFunctions, StandardGridComponentProps } from "./types"
 import { average, count, getUsableColumns, getUsableData } from "./utils"
 import { getCustomAggregateFunctionKey } from "components/grid/aggregates/getAggregateRows"
 
+/**
+ * Event Handler
+ * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
+ * @param arg
+ */
+const handleActionComplete = (arg?: DialogEditEventArgs): void => {
+  if (arg && (arg.requestType === "beginEdit" || arg.requestType === "add")) {
+    const dialog = arg.dialog as Dialog
+    dialog.height = 400
+    // change the header of the dialog
+    dialog.header = arg.requestType === "beginEdit" ? "Existing Record" : "New Row"
+  }
+}
+
 export const StandardGrid = React.forwardRef(
   (
     {
@@ -67,8 +81,6 @@ export const StandardGrid = React.forwardRef(
      *
      * CONSTANTS
      */
-
-    const [showSpinner, setShowSpinner] = React.useState(false)
 
     // Columns and Data
     const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [])
@@ -171,12 +183,6 @@ export const StandardGrid = React.forwardRef(
      * PROP WATCHERS
      */
 
-    React.useEffect(() => {
-      if (loading) {
-        setShowSpinner(true)
-      }
-    }, [loading])
-
     /**
      * Manage column change.
      * Since we can only create the columns once, we unfortunately are
@@ -246,35 +252,6 @@ export const StandardGrid = React.forwardRef(
      */
 
     /**
-     * Event Handler
-     * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
-     * @param arg
-     */
-    const handleActionComplete = (arg?: DialogEditEventArgs): void => {
-      if (!arg) return
-
-      function configureDialog() {
-        if (!arg) return
-        const dialog = arg.dialog as Dialog
-        dialog.height = 400
-        // change the header of the dialog
-        dialog.header = arg.requestType === "beginEdit" ? "Existing Record" : "New Row"
-      }
-
-      switch (arg.requestType) {
-        case "beginEdit":
-          configureDialog()
-          break
-        case "add":
-          configureDialog()
-          break
-        case "refresh":
-          setShowSpinner(false)
-          break
-      }
-    }
-
-    /**
      * Triggers when data source is populated in the Grid.
      * @param defaultCollapseAll
      * @param grid
@@ -340,7 +317,7 @@ export const StandardGrid = React.forwardRef(
      */
 
     return (
-      <Spin spinning={showSpinner}>
+      <Spin spinning={loading}>
         <PureGridComponent
           // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
           ref={ref}

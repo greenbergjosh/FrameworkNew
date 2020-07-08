@@ -19,6 +19,7 @@ interface RenderInterfaceComponentProps {
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema?: (newComponentDefinition: ComponentDefinition) => void
+  submit?: UserInterfaceProps["submit"]
   path: string
 }
 
@@ -47,6 +48,7 @@ export class RenderInterfaceComponent extends React.Component<
       mode,
       onChangeData,
       onChangeSchema,
+      submit,
       path,
     } = this.props
     const { error } = this.state
@@ -111,6 +113,7 @@ export class RenderInterfaceComponent extends React.Component<
               )
               onChangeSchema && onChangeSchema(newComponentDefinition)
             }}
+            submit={submit}
             userInterfaceSchema={componentDefinition}
           />
         )}

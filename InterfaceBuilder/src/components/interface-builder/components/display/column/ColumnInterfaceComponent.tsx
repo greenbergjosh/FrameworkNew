@@ -26,6 +26,7 @@ export interface ColumnInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+  submit?: UserInterfaceProps["submit"]
 }
 
 export class ColumnInterfaceComponent extends BaseInterfaceComponent<
@@ -66,7 +67,7 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render() {
-    const { columns, gutter, onChangeData, userInterfaceData } = this.props
+    const { columns, gutter, onChangeData, userInterfaceData, submit } = this.props
 
     const definedColumnWidths = columns.reduce(
       (acc, { span }) =>
@@ -96,6 +97,7 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<
                         { newSchema }
                       )
                     }}
+                    submit={submit}
                   />
                 </DataPathContext>
               </Col>
