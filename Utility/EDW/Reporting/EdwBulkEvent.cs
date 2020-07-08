@@ -142,7 +142,7 @@ namespace Utility.EDW.Reporting
         );
 
         #region Helper Methods
-        private string ToLinkedId(Guid id, DateTime timestamp) => $"{id:N}.{timestamp:yyMMddHHmmssffffff}";
+        private string ToLinkedId(Guid id, DateTime timestamp) => $"{id:N}.{timestamp.ToUniversalTime():yyMMddHHmmssffffff}";
 
         private static string ToTtlString(TimeSpan ttl)
         {
