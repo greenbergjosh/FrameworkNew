@@ -40,7 +40,6 @@ namespace QuickTester
                     {
                         foreach (var age in ages)
                         {
-
                             var eventGuids = Enumerable.Range(1, 10).Select(_ => Guid.NewGuid()).ToArray();
                             var rs1Id = eventGuids[0];
                             var rs2Id = eventGuids[1];
@@ -48,7 +47,7 @@ namespace QuickTester
                             var rss = new Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)>
                             {
                                 [rs1ConfigId] = (rs1Id, targetDate),
-                                [rs2ConfigId] = (rs1Id, targetDate)
+                                [rs2ConfigId] = (rs2Id, targetDate)
                             };
 
                             var aggregationTtl = TimeSpan.FromHours(random.Next(48));
