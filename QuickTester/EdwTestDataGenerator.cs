@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Npgsql;
 using Utility.EDW.Reporting;
@@ -11,7 +10,10 @@ namespace QuickTester
     {
         public static void GenerateTestData()
         {
-            var connectionString = "Server=warehouse1.data.techopg.local;Port=5432;Database=lab3;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='Edw Test Data Generator';MaxPoolSize=300;Pooling=true;";
+            var connectionString = "Server=warehouse1.data.techopg.local;Port=5432;Database=lab3;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='Edw Test Data Generator';";
+
+            using var connection = new NpgsqlConnection(connectionString);
+            connection.Open();
 
             var rs1ConfigId = Guid.Parse("709cf774-88f5-42d8-8f55-08d5cee342b4");
             var rs2ConfigId = Guid.Parse("395fe415-095f-418b-97a6-dd6a8f9752db");
@@ -76,25 +78,22 @@ namespace QuickTester
 
                             e.AddEvent(eventGuids[9], targetDate, rss, new { et = "Action" }, aggregationTtl);
 
-                            InsertEdwPayload(connectionString, e);
+                            InsertEdwPayload(connection, e);
                         }
                     }
                 }
             }
+
+            connection.Close();
         }
 
-        private static void InsertEdwPayload(string connectionString, EdwBulkEvent edwBulkEvent, int timeout = 120)
+        private static void InsertEdwPayload(NpgsqlConnection connection, EdwBulkEvent edwBulkEvent, int timeout = 120)
         {
-            using var cn = new NpgsqlConnection(connectionString);
-            cn.Open();
-
-            using var cmd = new NpgsqlCommand($"SELECT staging.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout };
+            using var cmd = new NpgsqlCommand($"SELECT staging.submit_bulk_payload(@Payload)", connection) { CommandTimeout = timeout };
             cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, edwBulkEvent.ToString());
             cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
             cmd.CommandTimeout = timeout;
             cmd.ExecuteNonQuery();
-
-            cn.Close();
 
             var result = cmd.Parameters["@Return"].Value;
             if (result?.ToString() != "200 ok")
