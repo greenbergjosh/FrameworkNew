@@ -24,6 +24,7 @@ interface IUserInterfaceProps {
   mode: "display" | "edit"
   onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
+  submit?: () => void
 }
 
 export interface DisplayUserInterfaceProps extends IUserInterfaceProps {
@@ -76,7 +77,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
   }
 
   render() {
-    const { components, contextManager, data, mode, onChangeData } = this.props
+    const { components, contextManager, data, mode, onChangeData, submit } = this.props
     const { clipboardComponent, error, fullscreen, itemToAdd, itemToEdit } = this.state
 
     if (error) {
@@ -107,6 +108,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                   )
                 }
           }
+          submit={submit}
           onDrop={this.handleDrop}
         />
       </RootUserInterfaceDataContext.Provider>

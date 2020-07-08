@@ -25,6 +25,14 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: true,
               },
               {
+                key: "executeImmediately",
+                valueKey: "executeImmediately",
+                label: "Submit on Click",
+                help: "Submit the parent form on click.",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
                 key: "isDateRange",
                 valueKey: "isDateRange",
                 ordinal: 11,

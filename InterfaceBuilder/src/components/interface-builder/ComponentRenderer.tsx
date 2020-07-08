@@ -16,6 +16,7 @@ interface ComponentRendererProps {
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   onChangeSchema: EditUserInterfaceProps["onChangeSchema"]
+  submit?: UserInterfaceProps["submit"]
   onDrop?: DroppableContextType["onDrop"]
 }
 
@@ -33,6 +34,7 @@ export const _ComponentRenderer = ({
   mode: propMode,
   onChangeData,
   onChangeSchema,
+  submit,
   onDrop,
 }: ComponentRendererProps) => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
@@ -72,6 +74,7 @@ export const _ComponentRenderer = ({
               onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
             }
           }}
+          submit={submit}
           path={path}
         />
       )}

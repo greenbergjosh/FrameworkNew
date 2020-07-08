@@ -16,6 +16,7 @@ export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitio
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
+  submit: UserInterfaceProps["submit"]
 }
 
 interface UserInterfaceInterfaceComponentState {
@@ -64,7 +65,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { defaultValue, mode, userInterfaceData, valueKey } = this.props
+    const { defaultValue, mode, userInterfaceData, valueKey, submit } = this.props
     const { data } = this.state
     return (
       <UserInterface
@@ -73,6 +74,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
         mode="edit"
         onChangeData={this.handleChangeData}
         onChangeSchema={this.handleChangeSchema}
+        submit={submit}
       />
     )
   }
