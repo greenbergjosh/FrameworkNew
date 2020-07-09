@@ -89,7 +89,8 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
               ApiResponse({
                 OK(payload) {
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
-                  dispatch.queries.updateQueryGlobalParams(params)
+                  const gpp = filterGloballyPersistedParams(params, query)
+                  gpp && dispatch.queries.updateQueryGlobalParams(gpp)
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
@@ -256,3 +257,34 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
 }
 
 const prepareQueryBody = (lang: "json" | string, body: string) => (body && lang === "json" ? json5.parse(body) : body)
+
+/* **********************************************************
+ *
+ * FUNCTIONS
+ */
+
+export function filterGloballyPersistedParams(
+  params: JSONRecord | JSONArray,
+  queryConfig: QueryConfig
+): JSONRecord | undefined {
+  if (!params) {
+    return
+  }
+  const isArray = Array.isArray(params)
+  if (isArray) {
+    // We don't know the shape of the array items, so we can't persist them
+    return
+  }
+  const keys = Object.keys(params)
+
+  return keys.reduce((acc: JSONRecord, key: string) => {
+    const paramConfig = queryConfig.parameters.find((cfg) => cfg.name === key)
+
+    if (paramConfig && paramConfig.persistGlobally) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      acc[key] = params[key]
+    }
+    return acc
+  }, {})
+}

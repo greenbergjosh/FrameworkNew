@@ -69,6 +69,7 @@ export const StringParameterItemCodec = iots.intersection([
     type: iots.literal("string"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -79,6 +80,7 @@ export const IntegerParameterItemCodec = iots.intersection([
     type: iots.literal("integer"),
     defaultValue: iotst.createOptionFromNullable(iots.number),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -89,6 +91,7 @@ export const FloatParameterItemCodec = iots.intersection([
     type: iots.literal("float"),
     defaultValue: iotst.createOptionFromNullable(iots.number),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -99,6 +102,7 @@ export const DateParameterItemCodec = iots.intersection([
     type: iots.literal("date"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -109,6 +113,7 @@ export const DateRangeParameterItemCodec = iots.intersection([
     type: iots.literal("date-range"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -119,6 +124,7 @@ export const BooleanParameterItemCodec = iots.intersection([
     type: iots.literal("boolean"),
     defaultValue: iotst.createOptionFromNullable(iots.boolean),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 
@@ -151,6 +157,7 @@ export const SelectParameterItemCodec = iots.intersection([
     type: iots.literal("select"),
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
+    persistGlobally: iots.union([iots.undefined, iots.boolean]),
   }),
 ])
 

@@ -13,6 +13,7 @@ import { JSONRecord } from "../../../data/JSON"
 import { LocalReportConfig, QueryConfig } from "../../../data/Report"
 import { QueryForm } from "./QueryForm"
 import { store } from "../../../state/store"
+import { filterGloballyPersistedParams } from "../../../state/reports"
 import { useRematch } from "../../../hooks"
 import {
   GridComponent,
@@ -60,13 +61,15 @@ export const ReportBody = React.memo(
         parseNumbers: true,
         arrayFormat: "comma",
       })
-    }, [window.location.search])
+    }, [])
 
     /**
      * Get persisted global params
+     * Filter globally persisted params that aren't globally persisted by this query
      */
-    const persistedGlobalParams = React.useMemo(() => {
-      return fromStore.queryGlobalParams as ParsedQuery
+    const globallyPersistedParams = React.useMemo(() => {
+      const gpp = fromStore.queryGlobalParams
+      return filterGloballyPersistedParams(gpp, queryConfig)
     }, [fromStore.queryGlobalParams])
 
     /**
@@ -83,7 +86,7 @@ export const ReportBody = React.memo(
       () =>
         determineSatisfiedParameters(
           queryConfig.parameters,
-          { ...persistedParams, ...persistedGlobalParams, ...querystringParams, ...parentData } || {},
+          { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...parentData } || {},
           true
         ),
       [parentData, queryConfig.parameters]
