@@ -263,13 +263,17 @@ export const ReportBody = React.memo(
           ) as any
         }
 
-        // Render a formatted string (that may include HTML) into a cell.
-        // NOTE: A cell can have either a "layout" or a "formatter" but not both.
+        /*
+         * Render a formatted string (that may include HTML) into a cell.
+         * NOTE: A cell can have either a "layout" or a "formatter" but not both.
+         */
         if (columnConfig.cellFormatter && columnConfig.type !== "layout") {
           const formatter = getCellFormatter(
+            columnConfig.formatter,
             columnConfig.cellFormatter,
             columnConfig.cellFormatterOptions,
-            fromStore.configsById
+            fromStore.configsById,
+            parameterValues.toUndefined()
           )
           if (typeof formatter === "function") {
             columnConfig.formatter = formatter
@@ -290,7 +294,7 @@ export const ReportBody = React.memo(
 
         return columnConfig
       })
-    }, [reportConfig.columns, parameterValues.toUndefined(), parentData])
+    }, [dispatch, fromStore.configsById, reportConfig.columns, parameterValues, parentData])
 
     return (
       <>
