@@ -15,6 +15,7 @@ import {
 } from "@opg/interface-builder"
 import { buttonProps } from "../../custom-ib-components/execute/types"
 import { SubmitButton } from "./SubmitButton"
+import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 interface QueryFormProps {
   layout: QueryConfig["layout"]
@@ -27,12 +28,18 @@ interface QueryFormProps {
 
 export const QueryForm = React.memo(
   ({ layout, parameters, parameterValues, onSubmit, submitButtonLabel, submitButtonProps }: QueryFormProps) => {
+    /* ***************************************************
+     *
+     * State, and Redux <--> Context connector
+     */
+
+    /**
+     * Redux to Context connector
+     */
     const [fromStore, dispatch] = useRematch((s) => {
       const executeQuery = store.dispatch.reports.executeQuery.bind(store.dispatch.reports)
-      const userInterfaceContextManager: UserInterfaceContextManager<PersistedConfig> = {
-        // TODO: BUG: executeQuery does not exist on type UserInterfaceContextManager
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore vvv DEFECT!
+      const userInterfaceContextManager: Partial<AdminUserInterfaceContextManager> &
+        UserInterfaceContextManager<PersistedConfig> = {
         executeQuery,
         reportDataByQuery: s.reports.reportDataByQuery,
         loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
@@ -60,7 +67,19 @@ export const QueryForm = React.memo(
       }
     })
 
-    const defaultFormState = React.useMemo(() => {
+    const [formState, updateFormState] = React.useState({})
+    const [loading, setLoading] = React.useState(false)
+    const [submitting, setSubmitting] = React.useState(false)
+
+    /* ***************************************************
+     *
+     * Property Watchers
+     */
+
+    /**
+     * Update State
+     */
+    React.useEffect(() => {
       const emptyComponentValues: JSONRecord = {}
       const emptyParameters: { [key: string]: any } = {}
       const layoutOrEmptySet = (layout || []) as ComponentDefinition[]
@@ -76,29 +95,51 @@ export const QueryForm = React.memo(
           }
           return acc
         }, emptyParameters)
-      return merge(merge(defaultParameters, defaultComponentValues), parameterValues)
+      const newState = merge(merge(defaultParameters, defaultComponentValues), parameterValues)
+
+      updateFormState(newState)
     }, [layout, parameters, parameterValues])
 
-    const [formState, updateFormState] = React.useState(defaultFormState)
-    const [loading, setLoading] = React.useState(false)
+    /**
+     * Submit Form
+     * Wait until state has been updated to submit the form. Otherwise, we submit old data.
+     */
+    React.useEffect(() => {
+      // This effect triggers whenever state updates,
+      // so we check first for submitting.
+      if (!submitting) {
+        return
+      }
+      const promise = onSubmit(formState)
+      if (promise) {
+        setLoading(true)
+        promise.finally(() => {
+          setLoading(false)
+        })
+      }
+      setSubmitting(false)
+    }, [submitting, onSubmit, formState])
 
-    React.useMemo(() => {
-      updateFormState(defaultFormState)
-    }, [defaultFormState])
+    /* ***************************************************
+     *
+     * Event Handlers
+     */
 
+    /**
+     * Wait until state has been updated to submit the form. Otherwise, we submit old data.
+     */
     const handleSubmit = React.useCallback(
-      debounce(() => {
-        console.log("QueryForm.handleSubmit", formState)
-        const promise = onSubmit(formState)
-        if (promise) {
-          setLoading(true)
-          promise.finally(() => {
-            setLoading(false)
-          })
-        }
-      }, 50),
-      [onSubmit, formState]
+      () =>
+        debounce(() => {
+          setSubmitting(true)
+        }, 50)(),
+      []
     )
+
+    /* ***************************************************
+     *
+     * Render
+     */
 
     if (layout) {
       return (
@@ -109,6 +150,7 @@ export const QueryForm = React.memo(
             data={formState}
             onChangeData={updateFormState}
             contextManager={fromStore.userInterfaceContextManager}
+            submit={handleSubmit}
           />
           <div style={{ marginTop: "10px", marginBottom: "10px" }}>
             <SubmitButton

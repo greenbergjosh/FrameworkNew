@@ -25,25 +25,25 @@
   },
   "dependencies": {
     "@opg/interface-builder": "link:..",
-    "@types/jest": "25.2.3",
-    "@types/node": "14.0.5",
-    "@types/react": "16.9.35",
+    "@types/jest": "26.0.3",
+    "@types/node": "14.0.14",
+    "@types/react": "16.9.41",
     "@types/react-dom": "16.9.8",
     "@types/react-helmet": "6.0.0",
     "classnames": "2.2.6",
     "lodash.debounce": "4.0.8",
     "prop-types": "15.7.2",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-helmet": "6.0.0",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "react-helmet": "6.1.0",
     "react-scripts": "3.4.1"
   },
   "devDependencies": {
     "eslint-config-prettier": "6.11.0",
     "eslint-config-problems": "4.0.0",
-    "eslint-plugin-import": "2.20.2",
-    "eslint-plugin-react": "7.20.0",
-    "eslint-plugin-react-hooks": "4.0.4",
-    "typescript": "3.9.3"
+    "eslint-plugin-import": "2.22.0",
+    "eslint-plugin-react": "7.20.3",
+    "eslint-plugin-react-hooks": "4.0.5",
+    "typescript": "3.9.6"
   }
 }

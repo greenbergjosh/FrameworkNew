@@ -53,7 +53,6 @@ export interface ISelectableProps extends ComponentDefinitionNamedProps {
 
   dataHandlerType: LocalDataHandlerType
   data: {}
-  localFunctionDataHandler?: string
   children: (props: SelectableChildProps) => JSX.Element | JSX.Element[] | null
 }
 
@@ -64,21 +63,13 @@ export interface SelectablePropsLocalData extends ISelectableProps {
   }
 }
 
-export interface SelectablePropsLocalFunctionData extends ISelectableProps {
-  dataHandlerType: "local-function"
-  data: {
-    values: SelectableOption[]
-  }
-}
-
 export interface SelectableState {
   loadError: string | null
   loadStatus: LoadStatusType
   options: SelectableOption[]
-  localFunction?: Function
 }
 
-export type SelectableProps = (SelectablePropsLocalData | SelectablePropsLocalFunctionData) &
+export type SelectableProps = (SelectablePropsLocalData) &
   ComponentRenderMetaProps
 
 /* *********************************************
@@ -95,5 +86,4 @@ export interface SelectableChildProps {
   loadError: string | null
   loadStatus: LoadStatusType
   options: SelectableOption[]
-  handleFocus: () => void;
 }
