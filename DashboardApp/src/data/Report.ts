@@ -70,6 +70,7 @@ export const StringParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
@@ -81,6 +82,7 @@ export const IntegerParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.number),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
@@ -92,6 +94,7 @@ export const FloatParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.number),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
@@ -103,6 +106,7 @@ export const DateParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
@@ -114,6 +118,7 @@ export const DateRangeParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
@@ -125,6 +130,7 @@ export const BooleanParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.boolean),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 
@@ -158,6 +164,7 @@ export const SelectParameterItemCodec = iots.intersection([
     defaultValue: iotst.createOptionFromNullable(iots.string),
     required: iots.union([iots.undefined, iots.boolean]),
     persistGlobally: iots.union([iots.undefined, iots.boolean]),
+    globallyPersistedNamespace: iotst.createOptionFromNullable(iots.string),
   }),
 ])
 

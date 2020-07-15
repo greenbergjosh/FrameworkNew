@@ -13,7 +13,7 @@ import { JSONRecord } from "../../../data/JSON"
 import { LocalReportConfig, QueryConfig } from "../../../data/Report"
 import { QueryForm } from "./QueryForm"
 import { store } from "../../../state/store"
-import { filterGloballyPersistedParams } from "../../../state/reports"
+import { decodeGloballyPersistedParams } from "../../../state/reports"
 import { useRematch } from "../../../hooks"
 import {
   GridComponent,
@@ -69,8 +69,8 @@ export const ReportBody = React.memo(
      */
     const globallyPersistedParams = React.useMemo(() => {
       const gpp = fromStore.queryGlobalParams
-      return filterGloballyPersistedParams(gpp, queryConfig)
-    }, [fromStore.queryGlobalParams])
+      return decodeGloballyPersistedParams(gpp, queryConfig.parameters)
+    }, [fromStore.queryGlobalParams, queryConfig.parameters])
 
     /**
      * Get persisted params by query
