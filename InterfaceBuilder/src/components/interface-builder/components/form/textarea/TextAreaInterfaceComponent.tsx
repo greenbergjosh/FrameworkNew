@@ -8,6 +8,7 @@ import {
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface TextAreaInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "textarea"
@@ -77,13 +78,15 @@ export class TextAreaInterfaceComponent extends BaseInterfaceComponent<TextAreaI
     const autosizeValue = getAutosize(minRows, maxRows, autosize)
     return (
       <>
-        <Input.TextArea
-          onChange={this.handleChange}
-          value={value}
-          autosize={autosizeValue}
-          maxLength={maxLength}
-        />
-        <CharCounter text={value} maxLength={maxLength}/>
+        <Undraggable>
+          <Input.TextArea
+            onChange={this.handleChange}
+            value={value}
+            autosize={autosizeValue}
+            maxLength={maxLength}
+          />
+        </Undraggable>
+        <CharCounter text={value} maxLength={maxLength} />
       </>
     )
   }

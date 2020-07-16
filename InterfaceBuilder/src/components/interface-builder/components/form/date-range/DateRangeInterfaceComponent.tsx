@@ -10,6 +10,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-range"
@@ -167,14 +168,16 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     const [startDateValue, endDateValue] = this.getValues()
     const timeFormat = getTimeFormat(timeSettings)
     return (
-      <DatePicker.RangePicker
-        format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
-        onChange={this.handleChange}
-        ranges={DateRangeInterfaceComponent.standardRanges()}
-        showTime={timeFormat}
-        style={{ display: "block" }}
-        value={[moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]}
-      />
+      <Undraggable wrap>
+        <DatePicker.RangePicker
+          format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
+          onChange={this.handleChange}
+          ranges={DateRangeInterfaceComponent.standardRanges()}
+          showTime={timeFormat}
+          style={{ display: "block" }}
+          value={[moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]}
+        />
+      </Undraggable>
     )
   }
 }
