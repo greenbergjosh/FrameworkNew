@@ -8,7 +8,6 @@ import styles from "../styles.scss"
 import classNames from "classnames"
 
 export function RepeaterItem({
-  className,
   components,
   data,
   draganddropId,
@@ -74,7 +73,7 @@ export function RepeaterItem({
    */
 
   return (
-    <div className={className}>
+    <>
       {isDraggable ? (
         <Draggable
           canCopy={false}
@@ -118,6 +117,6 @@ export function RepeaterItem({
           </Badge>
         </li>
       )}
-    </div>
+      </>
   )
 }

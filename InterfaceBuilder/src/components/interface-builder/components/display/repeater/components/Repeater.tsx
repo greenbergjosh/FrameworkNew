@@ -119,7 +119,6 @@ export function Repeater({
        */}
       {hasLastItemComponents && lastItemComponents ? (
         <RepeaterItem
-          className={"dnd-droppable"} // Keep layout consistent with above
           components={lastItemComponents}
           data={lastItemData}
           draganddropId={draganddropId}
