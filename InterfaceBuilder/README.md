@@ -14,6 +14,7 @@ yarn @opg/interface-builder
 ```
 
 ## Usage
+> IMPORTANT: DragDropContext must be positioned above all instances of UserInterface.
 
 ```tsx
 import * as React from 'react'
@@ -21,7 +22,8 @@ import {
     ComponentDefinition,
     UserInterface,
     antComponents,
-    registry
+    registry,
+    DragDropContext
 } from '@opg/interface-builder'
 import config from "./example-config.json"
 
@@ -32,6 +34,7 @@ const MyComponent: React.FC = () => {
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
   return (
+     <DragDropContext.HTML5>
         <UserInterface
             mode="display"
             components={schema}
@@ -41,7 +44,7 @@ const MyComponent: React.FC = () => {
                 setData(newData)
             }}
         />
-
+     </DragDropContext.HTML5>
   )
 }
 ```

@@ -195,7 +195,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
           {(parentPath) => (
             <DataPathContext reset>
               <ComponentRegistryContext.Provider value={{ componentRegistry: registry }}>
-                <DragDropContext.HTML5>
+                {/*<DragDropContext.HTML5>*/}
                   <DraggableContext.Provider value={draggableContextHandlers}>
                     {mode === "edit" ? (
                       <>
@@ -324,7 +324,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                       contentWithContext
                     )}
                   </DraggableContext.Provider>
-                </DragDropContext.HTML5>
+                {/*</DragDropContext.HTML5>*/}
               </ComponentRegistryContext.Provider>
             </DataPathContext>
           )}
