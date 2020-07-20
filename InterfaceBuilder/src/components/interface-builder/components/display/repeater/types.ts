@@ -50,7 +50,6 @@ export interface RepeaterProps extends ModeProps {
 
 export interface RepeaterItemProps extends ModeProps {
   data: JSONRecord
-  className?: string
   draganddropId: string
   index: number
   isDraggable: boolean

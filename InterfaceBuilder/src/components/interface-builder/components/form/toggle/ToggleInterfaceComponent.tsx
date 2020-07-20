@@ -9,6 +9,7 @@ import {
   ComponentDefinitionNamedProps,
   ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "toggle"
@@ -53,6 +54,10 @@ export class ToggleInterfaceComponent extends BaseInterfaceComponent<
     const rawValue = get(valueKey, userInterfaceData)
     const realValue = (typeof rawValue !== "undefined" ? rawValue : defaultValue) || false
     const finalValue = inverted ? !realValue : realValue
-    return <Switch onChange={this.handleChange} checked={finalValue} size={size} />
+    return (
+      <Undraggable wrap="shrink">
+        <Switch onChange={this.handleChange} checked={finalValue} size={size} />
+      </Undraggable>
+    )
   }
 }

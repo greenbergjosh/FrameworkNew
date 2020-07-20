@@ -28,8 +28,8 @@ export function stepSingleDateValue(
   let date = moment(strDate)
 
   if (!date.isValid()) {
-    console.warn(`Date Stepper received an invalid date: "${strDate}"`)
-    return {}
+    console.warn(`Date Stepper received an invalid date: "${strDate}". Defaulting to today.`)
+    date = moment()
   }
   return set(dateKey, action(date, "none"), {})
 }
@@ -46,12 +46,20 @@ export function stepDateRangeValues(
   let endDate = moment(strEndDate)
   let newValue = {}
 
-  if (!startDate.isValid() || !endDate.isValid()) {
+  if (!startDate.isValid()) {
     console.warn(
-      `Date Stepper received an invalid date. Start Date: "${strStartDate}", End Date: "${strEndDate}"`
+      `Date Stepper received an invalid Start Date: "${strStartDate}". Defaulting to today.`
     )
-    return {}
+    startDate = moment()
   }
+
+  if (!endDate.isValid()) {
+    console.warn(
+      `Date Stepper received an invalid End Date: "${strEndDate}". Defaulting to today.`
+    )
+    endDate = moment()
+  }
+
   newValue = set(startDateKey, action(startDate, "start"), newValue)
   newValue = set(endDateKey, action(endDate, "end"), newValue)
   return newValue

@@ -8,6 +8,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface CheckboxInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "checkbox"
@@ -65,6 +66,10 @@ export class CheckboxInterfaceComponent extends BaseInterfaceComponent<
     const rawValue = get(valueKey, userInterfaceData)
 
     const value = typeof rawValue === "boolean" ? rawValue : defaultValue
-    return <Checkbox onChange={this.handleChange} checked={value} />
+    return (
+      <Undraggable wrap="shrink">
+        <Checkbox onChange={this.handleChange} checked={value} />
+      </Undraggable>
+    )
   }
 }

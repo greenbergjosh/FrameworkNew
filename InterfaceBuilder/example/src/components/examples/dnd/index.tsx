@@ -4,6 +4,7 @@ import { Card, Divider, Layout, PageHeader, Tabs, Typography } from "antd"
 import { ComponentDefinition, UserInterface } from "@opg/interface-builder"
 import config from "./example-config.json"
 import "./code.css"
+import { UserInterfaceProps } from "../../../../../src/components/interface-builder/UserInterface"
 
 const { Title, Text } = Typography
 const { TabPane } = Tabs
@@ -39,7 +40,7 @@ const DndExample: React.FC = () => {
                 mode="display"
                 components={schema}
                 data={data}
-                onChangeData={(newData) => {
+                onChangeData={(newData: UserInterfaceProps["data"]) => {
                   console.log("New Data", newData)
                   setData(newData)
                 }}
@@ -61,11 +62,11 @@ const DndExample: React.FC = () => {
             mode="edit"
             components={schema}
             data={data}
-            onChangeData={(newData) => {
+            onChangeData={(newData: UserInterfaceProps["data"]) => {
               console.log("New Data", newData)
               setData(newData)
             }}
-            onChangeSchema={(newSchema) => {
+            onChangeSchema={(newSchema: ComponentDefinition[]) => {
               console.log("New Schema", newSchema)
               setSchema(newSchema)
             }}

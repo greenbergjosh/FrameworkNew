@@ -8,6 +8,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
+import { Undraggable } from "components/interface-builder/components/_shared/Undraggable"
 
 export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "timeRange"
@@ -87,25 +88,29 @@ export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRang
 
     return (
       <>
-        <TimePicker
-          value={this.getValue(startTimeKey)}
-          placeholder={startTimePlaceholder}
-          format={TIMEFORMAT}
-          onChange={this.handleStartTimeChange}
-          defaultOpenValue={this.getDefaultValue()}
-          size={size}
-          use12Hours
-        />
+        <Undraggable wrap="shrink">
+          <TimePicker
+            value={this.getValue(startTimeKey)}
+            placeholder={startTimePlaceholder}
+            format={TIMEFORMAT}
+            onChange={this.handleStartTimeChange}
+            defaultOpenValue={this.getDefaultValue()}
+            size={size}
+            use12Hours
+          />
+        </Undraggable>
         <span>&nbsp;to&nbsp;</span>
-        <TimePicker
-          value={this.getValue(endTimeKey)}
-          placeholder={endTimePlaceholder}
-          format={TIMEFORMAT}
-          onChange={this.handleEndTimeChange}
-          defaultOpenValue={this.getDefaultValue()}
-          size={size}
-          use12Hours
-        />
+        <Undraggable wrap="shrink">
+          <TimePicker
+            value={this.getValue(endTimeKey)}
+            placeholder={endTimePlaceholder}
+            format={TIMEFORMAT}
+            onChange={this.handleEndTimeChange}
+            defaultOpenValue={this.getDefaultValue()}
+            size={size}
+            use12Hours
+          />
+        </Undraggable>
       </>
     )
   }

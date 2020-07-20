@@ -8,7 +8,7 @@ import { ComponentRegistryCache, ComponentRegistryContext } from "./registry"
 
 interface InterfaceComponentChoicesProps {}
 
-export const InterfaceComponentChoices = ({  }: InterfaceComponentChoicesProps) => {
+export const InterfaceComponentChoices = ({}: InterfaceComponentChoicesProps) => {
   const { componentRegistry } = React.useContext(ComponentRegistryContext)
 
   return (
@@ -33,9 +33,21 @@ export const InterfaceComponentChoices = ({  }: InterfaceComponentChoicesProps) 
                           width: "95%",
                           margin: "auto",
                         }}>
-                        {layoutDefinition.icon && (
-                          <Icon type={layoutDefinition.icon} style={{ marginRight: "1em" }} />
-                        )}
+                        {
+                          // Use ant icon
+                          layoutDefinition.icon && (
+                            <Icon type={layoutDefinition.icon} style={{ marginRight: "1em" }} />
+                          )
+                        }
+                        {
+                          // Pass a custom icon component to ant icon (usually an SVG wrapped in a component).
+                          layoutDefinition.iconComponent && (
+                            <Icon
+                              component={layoutDefinition.iconComponent}
+                              style={{ marginRight: "1em" }}
+                            />
+                          )
+                        }
                         {layoutDefinition.title}
                       </Tag>
                     </div>

@@ -15,7 +15,7 @@ import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
-import { antComponents, registerMonacoEditorMount, registry } from "@opg/interface-builder"
+import { antComponents, registerMonacoEditorMount, registry, DragDropContext } from "@opg/interface-builder"
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
 import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
@@ -71,11 +71,13 @@ export function App(): JSX.Element {
     <PersistGate persistor={persistor} loading={<AppLoadingScreen title="Restoring Application State" />}>
       <div className={`${styles.app}`}>
         <ReactRedux.Provider store={store}>
-          {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
-            <AppLoadingScreen title="Checking Session Authentication" />
-          ) : (
-            <Routes />
-          )}
+          <DragDropContext.HTML5>
+            {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
+              <AppLoadingScreen title="Checking Session Authentication" />
+            ) : (
+              <Routes />
+            )}
+          </DragDropContext.HTML5>
         </ReactRedux.Provider>
       </div>
     </PersistGate>

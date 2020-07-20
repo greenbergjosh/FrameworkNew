@@ -8,6 +8,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface NumberInputInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "number-input"
@@ -56,6 +57,10 @@ export class NumberInputInterfaceComponent extends BaseInterfaceComponent<
     const { defaultValue, userInterfaceData, valueKey, size } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
-    return <InputNumber onChange={this.handleChange} value={value} size={size} />
+    return (
+      <Undraggable wrap="shrink">
+        <InputNumber onChange={this.handleChange} value={value} size={size} />
+      </Undraggable>
+    )
   }
 }

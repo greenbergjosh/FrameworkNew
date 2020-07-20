@@ -2,7 +2,7 @@ const images = require("@rollup/plugin-image")
 import pkg from "./package.json"
 import progress from "rollup-plugin-progress"
 import typescript from "rollup-plugin-typescript2"
-import { terser } from "rollup-plugin-terser"
+// import { terser } from "rollup-plugin-terser"
 import analyze from "rollup-plugin-analyzer"
 import postcss from "rollup-plugin-postcss-modules"
 import notify from "rollup-plugin-notify"

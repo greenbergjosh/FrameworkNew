@@ -10,6 +10,7 @@ import {
 } from "../../base/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
 import styles from "./input.module.scss"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface InputInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "input"
@@ -62,13 +63,15 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     return (
       <div className={styles.wrapper}>
-        <Input
-          onChange={this.handleChange}
-          value={value}
-          maxLength={maxLength}
-          className={styles.input}
-          size={size}
-        />
+        <Undraggable>
+          <Input
+            onChange={this.handleChange}
+            value={value}
+            maxLength={maxLength}
+            className={styles.input}
+            size={size}
+          />
+        </Undraggable>
         <CharCounter text={value} maxLength={maxLength} className={styles.counter} />
       </div>
     )

@@ -10,6 +10,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-range"
@@ -64,67 +65,35 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     return {
       Today: [now.clone().startOf("day"), now.clone().endOf("day")],
       Yesterday: [
-        now
-          .clone()
-          .subtract(1, "day")
-          .startOf("day"),
-        now
-          .clone()
-          .subtract(1, "day")
-          .endOf("day"),
+        now.clone().subtract(1, "day").startOf("day"),
+        now.clone().subtract(1, "day").endOf("day"),
       ],
       "This Week": [
-        now
-          .clone()
-          .startOf("week")
-          .startOf("day"),
-        now
-          .clone()
-          .endOf("week")
-          .endOf("day"),
+        now.clone().startOf("week").startOf("day"),
+        now.clone().endOf("week").endOf("day"),
       ],
       "Last Week": [
-        now
-          .clone()
-          .subtract(1, "week")
-          .startOf("week")
-          .startOf("day"),
-        now
-          .clone()
-          .subtract(1, "week")
-          .endOf("week")
-          .endOf("day"),
+        now.clone().subtract(1, "week").startOf("week").startOf("day"),
+        now.clone().subtract(1, "week").endOf("week").endOf("day"),
       ],
       "This Month": [
-        now
-          .clone()
-          .startOf("month")
-          .startOf("day"),
-        now
-          .clone()
-          .endOf("month")
-          .endOf("day"),
+        now.clone().startOf("month").startOf("day"),
+        now.clone().endOf("month").endOf("day"),
       ],
       "Last Month": [
-        now
-          .clone()
-          .subtract(1, "month")
-          .startOf("month")
-          .startOf("day"),
-        now
-          .clone()
-          .subtract(1, "month")
-          .endOf("month")
-          .endOf("day"),
+        now.clone().subtract(1, "month").startOf("month").startOf("day"),
+        now.clone().subtract(1, "month").endOf("month").endOf("day"),
       ],
-      YTD: [
-        now
-          .clone()
-          .startOf("year")
-          .startOf("day"),
-        now.clone().endOf("day"),
-      ],
+      YTD: [now.clone().startOf("year").startOf("day"), now.clone().endOf("day")],
     }
+  }
+
+  componentDidMount(): void {
+    const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
+    const [startDate, endDate] = this.getValues()
+
+    onChangeData &&
+      onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
@@ -167,14 +136,16 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     const [startDateValue, endDateValue] = this.getValues()
     const timeFormat = getTimeFormat(timeSettings)
     return (
-      <DatePicker.RangePicker
-        format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
-        onChange={this.handleChange}
-        ranges={DateRangeInterfaceComponent.standardRanges()}
-        showTime={timeFormat}
-        style={{ display: "block" }}
-        value={[moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]}
-      />
+      <Undraggable wrap>
+        <DatePicker.RangePicker
+          format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
+          onChange={this.handleChange}
+          ranges={DateRangeInterfaceComponent.standardRanges()}
+          showTime={timeFormat}
+          style={{ display: "block" }}
+          value={[moment.utc(startDateValue || undefined), moment.utc(endDateValue || undefined)]}
+        />
+      </Undraggable>
     )
   }
 }

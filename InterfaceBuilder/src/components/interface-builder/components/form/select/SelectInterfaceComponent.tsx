@@ -6,6 +6,7 @@ import { MODES, SelectableChildProps, SelectableProps } from "../../_shared/sele
 import { Selectable } from "../../_shared/selectable/Selectable"
 import { selectManageForm } from "./select-manage-form"
 import { ISelectProps, SelectProps, SelectState } from "./types"
+import { Undraggable } from "../../_shared/Undraggable"
 
 /******************************
  * Component
@@ -103,33 +104,35 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     }
 
     return (
-      <Select
-        allowClear={allowClear}
-        defaultValue={getCleanValue()}
-        disabled={disabled}
-        filterOption={this.filterOption}
-        key={getKeyFromValue()}
-        loading={loadStatus === "loading"}
-        mode={this.mode}
-        onChange={this.handleChange}
-        optionFilterProp="label"
-        placeholder={placeholder}
-        showSearch
-        size={size}>
-        {options.map((option) => (
-          <Select.Option key={`${option.value}`} value={option.value}>
-            {typeof option.icon !== "undefined" ? (
-              <Icon type={option.icon} style={{ marginRight: "8px" }} />
-            ) : null}
-            {option.label}
-          </Select.Option>
-        ))}
-        {allowCreateNew && (
-          <Select.Option key="create_new_entry" value="create_new">
-            {createNewLabel}
-          </Select.Option>
-        )}
-      </Select>
+      <Undraggable wrap>
+        <Select
+          allowClear={allowClear}
+          defaultValue={getCleanValue()}
+          disabled={disabled}
+          filterOption={this.filterOption}
+          key={getKeyFromValue()}
+          loading={loadStatus === "loading"}
+          mode={this.mode}
+          onChange={this.handleChange}
+          optionFilterProp="label"
+          placeholder={placeholder}
+          showSearch
+          size={size}>
+          {options.map((option) => (
+            <Select.Option key={`${option.value}`} value={option.value}>
+              {typeof option.icon !== "undefined" ? (
+                <Icon type={option.icon} style={{ marginRight: "8px" }} />
+              ) : null}
+              {option.label}
+            </Select.Option>
+          ))}
+          {allowCreateNew && (
+            <Select.Option key="create_new_entry" value="create_new">
+              {createNewLabel}
+            </Select.Option>
+          )}
+        </Select>
+      </Undraggable>
     )
   }
 

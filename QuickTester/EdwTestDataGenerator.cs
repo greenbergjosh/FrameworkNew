@@ -18,13 +18,13 @@ namespace QuickTester
             var rs1ConfigId = Guid.Parse("709cf774-88f5-42d8-8f55-08d5cee342b4");
             var rs2ConfigId = Guid.Parse("395fe415-095f-418b-97a6-dd6a8f9752db");
 
-            var startDate = DateTime.Parse("01/01/2020");
+            var startDate = DateTime.Parse("07/06/2020");
 
-            var dates = Enumerable.Range(0, 10).Select(i => startDate.AddDays(i));  //10
+            var dates = Enumerable.Range(0, 2).Select(i => startDate.AddDays(i));  //10
 
             var hours = Enumerable.Range(1, 10);  //10
 
-            var subCampaigns = Enumerable.Range(1, 10);  //100
+            var subCampaigns = Enumerable.Range(1, 50);  //100
 
             var ages = Enumerable.Range(1, 10);  //100
 

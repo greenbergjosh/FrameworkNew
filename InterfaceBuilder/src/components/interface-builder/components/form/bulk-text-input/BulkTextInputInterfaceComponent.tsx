@@ -8,6 +8,7 @@ import {
   ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 import { Codec, getCodec, separator } from "./codec"
+import { Undraggable } from "../../_shared/Undraggable"
 
 export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "bulk-text-input"
@@ -99,12 +100,14 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<
     const autosizeValue = getAutosize(minRows, maxRows, autosize)
     const placeholder = itemSeparator === separator.comma ? commaPlaceholder : newlinePlaceholder
     return (
-      <Input.TextArea
-        onChange={this.handleChange}
-        value={value}
-        autosize={autosizeValue}
-        placeholder={placeholder}
-      />
+      <Undraggable>
+        <Input.TextArea
+          onChange={this.handleChange}
+          value={value}
+          autoSize={autosizeValue}
+          placeholder={placeholder}
+        />
+      </Undraggable>
     )
   }
 }

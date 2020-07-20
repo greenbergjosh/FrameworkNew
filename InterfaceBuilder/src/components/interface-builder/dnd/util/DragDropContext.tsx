@@ -1,14 +1,18 @@
 import React from "react"
-import { DragDropContext } from "react-dnd"
-import HTML5Backend from "react-dnd-html5-backend"
-import TouchBackend from "react-dnd-touch-backend"
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
+import { TouchBackend } from "react-dnd-touch-backend"
 
-const DragAndDropHOC: React.FunctionComponent<{}> = (props) => {
-  return <>{props.children}</>
+
+const withHTML5DragDropContext: React.FunctionComponent<{}> = (props) => {
+  return <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>
+}
+
+const withTouchDragDropContext: React.FunctionComponent<{}> = (props) => {
+  return <DndProvider backend={TouchBackend}>{props.children}</DndProvider>
 }
 
 export default {
-  HTML5: DragDropContext(HTML5Backend)(DragAndDropHOC),
-  //@ts-ignore
-  Touch: DragDropContext(TouchBackend)(DragAndDropHOC),
+  HTML5: withHTML5DragDropContext,
+  Touch: withTouchDragDropContext,
 }

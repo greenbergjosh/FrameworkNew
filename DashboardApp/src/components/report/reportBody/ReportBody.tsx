@@ -13,6 +13,7 @@ import { JSONRecord } from "../../../data/JSON"
 import { LocalReportConfig, QueryConfig } from "../../../data/Report"
 import { QueryForm } from "./QueryForm"
 import { store } from "../../../state/store"
+import { decodeGloballyPersistedParams } from "../../../state/reports"
 import { useRematch } from "../../../hooks"
 import {
   GridComponent,
@@ -60,14 +61,16 @@ export const ReportBody = React.memo(
         parseNumbers: true,
         arrayFormat: "comma",
       })
-    }, [window.location.search])
+    }, [])
 
     /**
      * Get persisted global params
+     * Filter globally persisted params that aren't globally persisted by this query
      */
-    const persistedGlobalParams = React.useMemo(() => {
-      return fromStore.queryGlobalParams as ParsedQuery
-    }, [fromStore.queryGlobalParams])
+    const globallyPersistedParams = React.useMemo(() => {
+      const gpp = fromStore.queryGlobalParams
+      return decodeGloballyPersistedParams(gpp, queryConfig.parameters)
+    }, [fromStore.queryGlobalParams, queryConfig.parameters])
 
     /**
      * Get persisted params by query
@@ -83,7 +86,7 @@ export const ReportBody = React.memo(
       () =>
         determineSatisfiedParameters(
           queryConfig.parameters,
-          { ...persistedParams, ...persistedGlobalParams, ...querystringParams, ...parentData } || {},
+          { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...parentData } || {},
           true
         ),
       [parentData, queryConfig.parameters]
@@ -260,13 +263,17 @@ export const ReportBody = React.memo(
           ) as any
         }
 
-        // Render a formatted string (that may include HTML) into a cell.
-        // NOTE: A cell can have either a "layout" or a "formatter" but not both.
+        /*
+         * Render a formatted string (that may include HTML) into a cell.
+         * NOTE: A cell can have either a "layout" or a "formatter" but not both.
+         */
         if (columnConfig.cellFormatter && columnConfig.type !== "layout") {
           const formatter = getCellFormatter(
+            columnConfig.formatter,
             columnConfig.cellFormatter,
             columnConfig.cellFormatterOptions,
-            fromStore.configsById
+            fromStore.configsById,
+            parameterValues.toUndefined()
           )
           if (typeof formatter === "function") {
             columnConfig.formatter = formatter
@@ -287,7 +294,7 @@ export const ReportBody = React.memo(
 
         return columnConfig
       })
-    }, [reportConfig.columns, parameterValues.toUndefined(), parentData])
+    }, [dispatch, fromStore.configsById, reportConfig.columns, parameterValues, parentData])
 
     return (
       <>

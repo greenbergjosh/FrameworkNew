@@ -120,6 +120,7 @@ export default function DisplayMode({
               {() =>
                 finalComponents.map((iteratedComponent, index) => (
                   <DraggableListItem
+                    key={index}
                     data={data}
                     index={index}
                     interleave={interleave}

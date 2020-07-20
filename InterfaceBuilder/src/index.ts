@@ -12,6 +12,7 @@ import "./styles/index.scss"
 /**
  * Framework
  */
+export { default as DragDropContext } from "./components/interface-builder/dnd/util/DragDropContext"
 export { default as antComponents } from "./plugins/ant.ibplugin"
 export {
   BaseInterfaceComponent,

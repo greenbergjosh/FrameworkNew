@@ -11,8 +11,12 @@ export interface LayoutDefinition {
   name: string
   /** The display text of this component */
   title: string
+  /** A description of this component */
+  description?: string | { __html: string; }
   /** The AntDesign icon name of this component */
   icon?: string
+  /** An SVG icon component to use instead of AntDesign icons */
+  iconComponent?: React.ComponentType<React.SVGProps<SVGSVGElement>>
   /** Whether or not this component is a form control */
   formControl?: boolean
   /** The initial ComponentDefinition when creating an instance of this */

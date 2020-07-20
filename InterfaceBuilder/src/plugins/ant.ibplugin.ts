@@ -23,6 +23,7 @@ import { ProgressInterfaceComponent } from "../components/interface-builder/comp
 import { RichTextEditorInterfaceComponent } from "../components/interface-builder/components/form/rich-text-editor/RichTextEditorInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "../components/interface-builder/components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { SelectInterfaceComponent } from "../components/interface-builder/components/form/select/SelectInterfaceComponent"
+import { StringTemplateInterfaceComponent } from "../components/interface-builder/components/special/string-template/StringTemplateInterfaceComponent"
 import { TableInterfaceComponent } from "../components/interface-builder/components/display/table/TableInterfaceComponent"
 import { TabsInterfaceComponent } from "../components/interface-builder/components/display/tabs/TabsInterfaceComponent"
 import { TagsInterfaceComponent } from "../components/interface-builder/components/form/tags/TagsInterfaceComponent"
@@ -66,6 +67,7 @@ export default {
   "rich-text-editor": RichTextEditorInterfaceComponent,
   "sectioned-navigation": SectionedNavigationInterfaceComponent,
   select: SelectInterfaceComponent,
+  "string-template": StringTemplateInterfaceComponent,
   table: TableInterfaceComponent,
   tabs: TabsInterfaceComponent,
   tags: TagsInterfaceComponent,
