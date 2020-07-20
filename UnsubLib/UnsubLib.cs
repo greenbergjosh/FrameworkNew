@@ -1928,7 +1928,8 @@ namespace UnsubLib
                 new UnsubFileProviders.MidEnity(_fw),
                 new UnsubFileProviders.W4(_fw),
                 new UnsubFileProviders.Unsubly(_fw),
-                new UnsubFileProviders.Ad1Media()
+                new UnsubFileProviders.Ad1Media(),
+                new UnsubFileProviders.SuppMeNow()
             };
 
             try

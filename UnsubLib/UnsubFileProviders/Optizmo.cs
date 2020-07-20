@@ -46,8 +46,7 @@ namespace UnsubLib.UnsubFileProviders
             }).Where(rx => rx != null).ToArray();
         }
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) =>
-            uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || (uri.ToString().Contains("mailer.optizmo.net") && !network.GetS($"Credentials/OptizmoToken").IsNullOrWhitespace());
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || uri.ToString().Contains("mailer.optizmo.net");
 
         public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
@@ -59,7 +58,17 @@ namespace UnsubLib.UnsubFileProviders
 
             await _fw.Trace(_logMethod, $"Getting Unsub location: UseApi: {useApi} {uri}");
 
-            if (useApi)
+            if (uri.Query.Contains("mak="))
+            {
+                var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                var mak = queryString["mak"];
+
+                var path = $"accesskey/download/{mak}";
+
+                return await GetOptizmoUnsubFileUri(path, authToken);
+            }
+
+            else if (useApi)
             {
                 string fileId = null;
 

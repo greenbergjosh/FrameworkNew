@@ -171,9 +171,8 @@ namespace Utility
                     await UnixWrapper.UnzipZip(fileSourceDirectory, fileName, fileDestinationDirectory + "\\" + ufn);
                 }
 
-
                 var dir = new DirectoryInfo(fileDestinationDirectory + "\\" + ufn);
-                foreach (var f in dir.GetFiles())
+                foreach (var f in dir.GetFiles("*", SearchOption.AllDirectories))
                 {
                     var tr = await zipEntryTester(f);
                     var pr = await zipEntryProcessors[tr](f);
