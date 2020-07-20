@@ -82,7 +82,7 @@ export class TextAreaInterfaceComponent extends BaseInterfaceComponent<TextAreaI
           <Input.TextArea
             onChange={this.handleChange}
             value={value}
-            autosize={autosizeValue}
+            autoSize={autosizeValue}
             maxLength={maxLength}
           />
         </Undraggable>

@@ -104,7 +104,7 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<
         <Input.TextArea
           onChange={this.handleChange}
           value={value}
-          autosize={autosizeValue}
+          autoSize={autosizeValue}
           placeholder={placeholder}
         />
       </Undraggable>

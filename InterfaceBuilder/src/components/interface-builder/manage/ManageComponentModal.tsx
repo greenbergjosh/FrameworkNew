@@ -4,6 +4,7 @@ import { ComponentDefinition } from "../components/base/BaseInterfaceComponent"
 import { registry } from "../registry"
 import { ManageComponentForm } from "./ManageComponentForm"
 import { ManageComponentPreview } from "./ManageComponentPreview"
+import { isEmpty } from "lodash/fp"
 
 export interface ManageComponentModalProps {
   componentDefinition: null | Partial<ComponentDefinition>
@@ -59,8 +60,11 @@ export const ManageComponentModal = ({
       style={{ maxWidth: "1200px", width: "95%" }}
       width="95%">
       <div>
-        <Row>
+        <Row gutter={[{ xs: 8, sm: 16, md: 24, lg: 32 }, 20]} type="flex">
           <Col span={16}>
+            {layoutDefinition && !isEmpty(layoutDefinition.description) && (
+              <p>{layoutDefinition && layoutDefinition.description}</p>
+            )}
             <Typography.Title level={4}>Definition</Typography.Title>
             {layoutDefinition && componentDefinition && manageForm && (
               <ManageComponentForm
@@ -74,7 +78,7 @@ export const ManageComponentModal = ({
               />
             )}
           </Col>
-          <Col span={8}>
+          <Col span={8} style={{ backgroundColor: "#fafafa", paddingBottom: 20, borderRadius: 5 }}>
             <Typography.Title level={4}>Preview</Typography.Title>
             {Component && layoutDefinition && (
               <ManageComponentPreview
