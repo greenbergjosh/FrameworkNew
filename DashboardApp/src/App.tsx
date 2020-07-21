@@ -24,6 +24,7 @@ import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/
 import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
 import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
+import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
 
 const persistor = getPersistor()
 
@@ -62,6 +63,7 @@ export function App(): JSX.Element {
     registry.register({ "path-editor": PathEditorInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
     registry.register({ "slot-config": SlotConfigInterfaceComponent })
+    registry.register({ "string-template": StringTemplateInterfaceComponent })
     registry.register({ select: SelectInterfaceComponent })
     registry.register({ tags: TagsInterfaceComponent })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
