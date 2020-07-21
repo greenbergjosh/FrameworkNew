@@ -1,14 +1,12 @@
 import { tryCatch } from "fp-ts/lib/Option"
 
-export type LBMType = ((args?: any) => unknown) | undefined
-
 /**
  * Extract an executable function from a string.
  * Client code must provide a string containing a return statement that returns a function.
  * @return string - Aggregate "summary" row cell
  * @param lbmSource - string
  */
-export function parseLBM(lbmSource?: string): LBMType {
+export function parseLBM<T>(lbmSource?: string): T | undefined {
   if (!lbmSource || (lbmSource && lbmSource.trim().length === 0)) {
     return undefined
   }

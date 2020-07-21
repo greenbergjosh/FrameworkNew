@@ -5,7 +5,7 @@ export const stringTemplateManageForm = (...extend: Partial<ComponentDefinition>
   return baseManageForm(...stringTemplateManageFormDefinition, ...extend)
 }
 
-const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] = [
+export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [
@@ -30,7 +30,8 @@ const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 valueKey: "serializeSrc",
                 label: "Serialize",
-                help: "Optional. The serialize function must take a JSON object and return a string.",
+                help:
+                  "Optional. The serialize function must take a JSON object and return a string.",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
                 hidden: false,
@@ -49,6 +50,18 @@ const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hideLabel: false,
                 component: "code-editor",
                 height: 200,
+              },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "showBorder",
+                valueKey: "showBorder",
+                component: "toggle",
+                defaultValue: true,
+                label: "Border",
               },
             ],
           },

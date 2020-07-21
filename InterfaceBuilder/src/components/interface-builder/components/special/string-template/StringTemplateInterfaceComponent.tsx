@@ -10,7 +10,7 @@ import {
 } from "./types"
 import { QuoteIcon } from "./components/QuoteIcon"
 import { DataPathContext } from "components/interface-builder/util/DataPathContext"
-import { set } from "lodash/fp"
+import { set, isEmpty } from "lodash/fp"
 import { Card } from "antd"
 import { JSONRecord } from "index"
 import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"
@@ -24,10 +24,10 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     super(props)
 
     this.state = {
-      serialize: function (value?: JSONRecord | JSONRecord[]) {
+      serialize(value?: JSONRecord | JSONRecord[]) {
         return value && JSON.stringify(value)
       },
-      deserialize: function (value?: string) {
+      deserialize(value?: string) {
         return tryCatch(() => value && JSON.parse(value)).toUndefined()
       },
     }
@@ -36,6 +36,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "data",
+    showBorder: true,
   }
 
   static getLayoutDefinition() {
@@ -60,28 +61,55 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = stringTemplateManageForm
 
   componentDidMount(): void {
-    const serialize = parseLBM(this.props.serializeSrc) as SerializeType
-    const deserialize = parseLBM(this.props.deserializeSrc) as DeserializeType
+    // Load local config serialize function, if provided
+    if (!isEmpty(this.props.serializeSrc)) {
+      const serialize = parseLBM<SerializeType>(this.props.serializeSrc)
+      serialize && this.setState({ serialize })
+    }
 
-    serialize && this.setState({ serialize })
-    deserialize && this.setState({ deserialize })
+    // Load local config deserialize function, if provided
+    if (!isEmpty(this.props.deserializeSrc)) {
+      const deserialize = parseLBM<DeserializeType>(this.props.deserializeSrc)
+      deserialize && this.setState({ deserialize })
+    }
   }
 
   handleChangeData = (nextState: object) => {
     const { components, onChangeData, preconfigured, userInterfaceData, valueKey } = this.props
-    const serializedData = this.state.serialize(nextState as JSONRecord)
+    const serializedData = this.props.serialize
+      ? this.props.serialize(nextState as JSONRecord) // First from parent component, if provided
+      : this.state.serialize(nextState as JSONRecord) // Else from local config
 
     onChangeData && onChangeData(set(valueKey, serializedData, userInterfaceData))
   }
 
   render() {
-    const { components, preconfigured, userInterfaceData, valueKey } = this.props
+    const { components, preconfigured, userInterfaceData, valueKey, showBorder } = this.props
     const value = userInterfaceData[valueKey]
-    const data = value && this.state.deserialize(value)
+    const data =
+      value && this.props.deserialize
+        ? this.props.deserialize(value) // First from parent component, if provided
+        : this.state.deserialize(value) // Else from local config
 
     return (
       <DataPathContext path="components">
-        <Card size="small" style={{ marginTop: 8, marginBottom: 16 }}>
+        {showBorder ? (
+          <Card size="small" style={{ marginTop: 8, marginBottom: 16 }}>
+            <ComponentRenderer
+              components={components || ([] as ComponentDefinition[])}
+              data={data}
+              dragDropDisabled={!!preconfigured}
+              onChangeData={this.handleChangeData}
+              onChangeSchema={(newSchema) => {
+                console.warn(
+                  "StringTemplateInterfaceComponent.render",
+                  "TODO: Cannot alter schema inside ComponentRenderer in Card",
+                  { newSchema }
+                )
+              }}
+            />
+          </Card>
+        ) : (
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
             data={data}
@@ -95,7 +123,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
               )
             }}
           />
-        </Card>
+        )}
       </DataPathContext>
     )
   }

@@ -14,24 +14,11 @@ import "./styles/index.scss"
  */
 export { default as DragDropContext } from "./components/interface-builder/dnd/util/DragDropContext"
 export { default as antComponents } from "./plugins/ant.ibplugin"
-export {
-  BaseInterfaceComponent,
-} from "./components/interface-builder/components/base/BaseInterfaceComponent"
+export { BaseInterfaceComponent } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 export { baseManageForm } from "./components/interface-builder/components/base/base-component-form"
-export {
-  CodeEditor,
-  editorLanguages,
-  EditorLangCodec,
-  registerMonacoEditorMount,
-  supportedEditorTheme,
-  EditorLang,
-  EditorTheme,
-} from "./components/interface-builder/components/special/code-editor/code-editor"
 export { ComponentRenderer } from "./components/interface-builder/ComponentRenderer"
 export { DataPathContext } from "./components/interface-builder/util/DataPathContext"
-export {
-  getDefaultsFromComponentDefinitions,
-} from "./components/interface-builder/components/base/BaseInterfaceComponent"
+export { getDefaultsFromComponentDefinitions } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 export { registry } from "./components/interface-builder/registry"
 export { UserInterface } from "./components/interface-builder/UserInterface"
 export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager"
@@ -46,6 +33,23 @@ export { Right } from "./components/interface-builder/lib/Either"
 export { sanitizeText } from "./components/interface-builder/lib/sanitize-text"
 export { shallowPropCheck } from "./components/interface-builder/dnd"
 export { getIconSelectConfig } from "./components/interface-builder/components/form/_shared/icon-select-form-config"
+
+/**
+ * Framework Components
+ */
+import * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
+export { utils }
+export {
+  CodeEditor,
+  editorLanguages,
+  EditorLangCodec,
+  registerMonacoEditorMount,
+  supportedEditorTheme,
+  EditorLang,
+  EditorTheme,
+} from "./components/interface-builder/components/special/code-editor/code-editor"
+import * as StringTemplate from "./components/interface-builder/components/special/string-template"
+export { StringTemplate }
 
 /**
  * Non-Framework Components
