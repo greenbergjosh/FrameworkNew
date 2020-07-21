@@ -1,14 +1,14 @@
 import React, { useState } from "react"
-import { useRematch } from "../../hooks"
-import { store } from "../../state/store"
+import { useRematch } from "../../../hooks"
+import { store } from "../../../state/store"
 import { UserInterface } from "@opg/interface-builder"
 import {
   BusinessApplicationConfig,
   BusinessApplicationId,
   BusinessApplicationPageConfig,
   BusinessApplicationPageId,
-} from "./business-application.types"
-import { AdminUserInterfaceContextManagerProvider } from "../../data/AdminUserInterfaceContextManager"
+} from "../types"
+import { AdminUserInterfaceContextManagerProvider } from "../../../data/AdminUserInterfaceContextManager"
 import { Button, PageHeader } from "antd"
 import * as Reach from "@reach/router"
 

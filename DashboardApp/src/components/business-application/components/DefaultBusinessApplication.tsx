@@ -2,9 +2,9 @@ import * as Reach from "@reach/router"
 import { Button, Card, Col, Empty, PageHeader, Row } from "antd"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
-import { useRematch } from "../../hooks"
-import { store } from "../../state/store"
-import { BusinessApplicationConfig, BusinessApplicationId } from "./business-application.types"
+import { useRematch } from "../../../hooks"
+import { store } from "../../../state/store"
+import { BusinessApplicationConfig, BusinessApplicationId } from "../types"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId

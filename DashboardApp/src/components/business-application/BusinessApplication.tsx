@@ -6,15 +6,15 @@ import { useRematch } from "../../hooks"
 import { NavigationGroupWithChildren, NavigationItem } from "../../state/navigation"
 import { store } from "../../state/store"
 import { AppSelectors } from "../../state/store.types"
-import { BusinessApplicationPage } from "./BusinessApplicationPage"
-import { DefaultBusinessApplication } from "./DefaultBusinessApplication"
+import { BusinessApplicationPage } from "./components/BusinessApplicationPage"
+import { DefaultBusinessApplication } from "./components/DefaultBusinessApplication"
 import {
   BusinessApplicationConfig,
   BusinessApplicationId,
   BusinessApplicationPageConfig,
   BusinessApplicationPageId,
   BusinessAppNavigationItem,
-} from "./business-application.types"
+} from "./types"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId
