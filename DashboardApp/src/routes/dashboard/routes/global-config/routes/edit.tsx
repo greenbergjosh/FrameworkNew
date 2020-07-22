@@ -35,9 +35,9 @@ export function EditGlobalConfig({
   path,
   uri,
 }: WithRouteProps<Props>): JSX.Element {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configs: s.globalConfig.configs,
-    configsById: store.select.globalConfig.configsById(s),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configs: appState.globalConfig.configs,
+    configsById: store.select.globalConfig.configsById(appState),
   }))
 
   const [focusedConfig, prevFocusedConfig] = useMemoPlus(
@@ -67,16 +67,16 @@ export function EditGlobalConfig({
 }
 
 function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configs: s.globalConfig.configs,
-    configsById: store.select.globalConfig.configsById(s),
-    configNames: store.select.globalConfig.configNames(s),
-    configsByType: store.select.globalConfig.configsByType(s),
-    defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
-    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
-    isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
-    isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigs,
-    reportDataByQuery: s.reports.reportDataByQuery,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configs: appState.globalConfig.configs,
+    configsById: store.select.globalConfig.configsById(appState),
+    configNames: store.select.globalConfig.configNames(appState),
+    configsByType: store.select.globalConfig.configsByType(appState),
+    defaultEntityTypeConfig: appState.globalConfig.defaultEntityTypeConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(appState),
+    isUpdatingRemoteConfig: appState.loading.effects.globalConfig.updateRemoteConfig,
+    isDeletingRemoteConfig: appState.loading.effects.globalConfig.deleteRemoteConfigs,
+    reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
   const userInterfaceContextManager: AdminUserInterfaceContextManager = {

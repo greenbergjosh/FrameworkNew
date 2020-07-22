@@ -52,11 +52,11 @@ export const ExportStatusCodec = iots.type({
 export function ImportIngestionReportView(props: WithRouteProps<Props>): JSX.Element {
   console.log("ImportIngestionReportView.render")
 
-  const [fromStore, dispatch] = useRematch((state) => ({
-    configsById: store.select.globalConfig.configsById(state),
-    configs: state.globalConfig.configs,
-    selectedPartner: state.importIngestionReport.selectedPartner,
-    reportDataByQuery: state.reports.reportDataByQuery,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    configs: appState.globalConfig.configs,
+    selectedPartner: appState.importIngestionReport.selectedPartner,
+    reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
   // React.useEffect invoke 4 data calls

@@ -52,11 +52,11 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
       .map(([k, sr]) => sr.abs)
   }, [props.subroutes, props.location.pathname])
 
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configsById: store.select.globalConfig.configsById(s),
-    profile: s.iam.profile,
-    loadingGlobalConfigs: s.loading.effects.globalConfig.loadRemoteConfigs,
-    navigation: store.select.navigation.primaryNavigation(s),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    profile: appState.iam.profile,
+    loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
+    navigation: store.select.navigation.primaryNavigation(appState),
   }))
 
   const navigationDepthComponentRef: React.Ref<Carousel> = React.useRef(null)

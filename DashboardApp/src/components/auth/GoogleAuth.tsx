@@ -3,7 +3,7 @@ import React from "react"
 import { useRematch } from "../../hooks/use-rematch"
 
 export const GoogleAuth = (): JSX.Element => {
-  const [, dispatch] = useRematch((s) => null)
+  const [fromStore, dispatch] = useRematch((appState) => null)
 
   return (
     <Button block={true} htmlType="button" icon="google" onClick={() => dispatch.iam.authViaGoogleOAuth()}>

@@ -35,10 +35,10 @@ export const DEFAULT_BUSINESS_APPLICATION_CONFIG: BusinessApplicationConfig = {
 
 /** Page style rendering of a business application */
 export const BusinessApplication = ({ applicationId, pageId, title }: BusinessApplicationProps): JSX.Element => {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configsById: store.select.globalConfig.configsById(s),
-    globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
-    businessApplicationPath: s.navigation.routes.dashboard.subroutes.apps.abs,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    businessApplicationPath: appState.navigation.routes.dashboard.subroutes.apps.abs,
   }))
 
   const { businessApplicationRecord, businessApplicationConfig } = BusinessApplication.getAppConfig(

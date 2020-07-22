@@ -41,16 +41,16 @@ export function CreateGlobalConfig({
   path,
   uri,
 }: WithRouteProps<Props>): JSX.Element {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configs: s.globalConfig.configs,
-    configsById: store.select.globalConfig.configsById(s),
-    configsByType: store.select.globalConfig.configsByType(s),
-    configNames: store.select.globalConfig.configNames(s),
-    defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
-    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
-    entityTypeConfigs: store.select.globalConfig.entityTypeConfigs(s),
-    isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
-    reportDataByQuery: s.reports.reportDataByQuery,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configs: appState.globalConfig.configs,
+    configsById: store.select.globalConfig.configsById(appState),
+    configsByType: store.select.globalConfig.configsByType(appState),
+    configNames: store.select.globalConfig.configNames(appState),
+    defaultEntityTypeConfig: appState.globalConfig.defaultEntityTypeConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(appState),
+    entityTypeConfigs: store.select.globalConfig.entityTypeConfigs(appState),
+    isCreatingConfig: appState.loading.effects.globalConfig.createRemoteConfig,
+    reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
   const [setState, state, prevState] = useStatePlus({
@@ -394,11 +394,11 @@ function CreateEntityTypeModal(props: {
   onDidCreate: (c: PersistedConfig) => void
   onRequestClose: () => void
 }) {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configs: s.globalConfig.configs,
-    configsByType: store.select.globalConfig.configsByType(s),
-    isCreatingConfig: s.loading.effects.globalConfig.createRemoteConfig,
-    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configs: appState.globalConfig.configs,
+    configsByType: store.select.globalConfig.configsByType(appState),
+    isCreatingConfig: appState.loading.effects.globalConfig.createRemoteConfig,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(appState),
   }))
 
   const initialFormState = React.useMemo(() => ({ name: "", lang: "" }), [])

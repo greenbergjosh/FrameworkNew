@@ -23,19 +23,19 @@ export const QueryForm = React.memo(
     const [loading, setLoading] = React.useState(false)
     const [submitting, setSubmitting] = React.useState(false)
 
-    const [fromStore, dispatch] = useRematch((s: AppState) => {
-      const privilegedUserInterfaceContextManager = getPrivilegedUserInterfaceContextManager(s)
+    const [fromStore, dispatch] = useRematch((appState) => {
+      const privilegedUserInterfaceContextManager = getPrivilegedUserInterfaceContextManager(appState)
 
       return {
-        configs: s.globalConfig.configs,
-        configsById: store.select.globalConfig.configsById(s),
-        configNames: store.select.globalConfig.configNames(s),
-        configsByType: store.select.globalConfig.configsByType(s),
-        defaultEntityTypeConfig: s.globalConfig.defaultEntityTypeConfig,
-        entityTypes: store.select.globalConfig.entityTypeConfigs(s),
-        isUpdatingRemoteConfig: s.loading.effects.globalConfig.updateRemoteConfig,
-        isDeletingRemoteConfig: s.loading.effects.globalConfig.deleteRemoteConfigs,
-        reportDataByQuery: s.reports.reportDataByQuery,
+        configs: appState.globalConfig.configs,
+        configsById: store.select.globalConfig.configsById(appState),
+        configNames: store.select.globalConfig.configNames(appState),
+        configsByType: store.select.globalConfig.configsByType(appState),
+        defaultEntityTypeConfig: appState.globalConfig.defaultEntityTypeConfig,
+        entityTypes: store.select.globalConfig.entityTypeConfigs(appState),
+        isUpdatingRemoteConfig: appState.loading.effects.globalConfig.updateRemoteConfig,
+        isDeletingRemoteConfig: appState.loading.effects.globalConfig.deleteRemoteConfigs,
+        reportDataByQuery: appState.reports.reportDataByQuery,
         privilegedUserInterfaceContextManager,
       }
     })

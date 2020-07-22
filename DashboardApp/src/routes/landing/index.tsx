@@ -20,9 +20,9 @@ interface Props {
 }
 
 export function Landing(props: WithRouteProps<Props>) {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    iam: s.iam,
-    routes: s.navigation.routes,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    iam: appState.iam,
+    routes: appState.navigation.routes,
   }))
 
   React.useEffect(

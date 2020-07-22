@@ -47,9 +47,9 @@ function AppLoadingScreen({ title }: AppLoadingScreenProps) {
 }
 
 export function App(): JSX.Element {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    profile: s.iam.profile,
-    isCheckingSession: s.loading.effects.iam.attemptResumeSession,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    profile: appState.iam.profile,
+    isCheckingSession: appState.loading.effects.iam.attemptResumeSession,
   }))
 
   React.useEffect(() => {
@@ -87,9 +87,9 @@ export function App(): JSX.Element {
 }
 
 function Routes() {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    profile: s.iam.profile,
-    routes: store.select.navigation.routes(s),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    profile: appState.iam.profile,
+    routes: store.select.navigation.routes(appState),
   }))
   return (
     <Reach.Router>

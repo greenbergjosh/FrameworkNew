@@ -18,10 +18,10 @@ export const DefaultBusinessApplication = ({
   businessApplicationConfig,
   title,
 }: BusinessApplicationProps): JSX.Element => {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configsById: store.select.globalConfig.configsById(s),
-    globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
-    reportPath: s.navigation.routes.dashboard.subroutes.reports.abs,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    reportPath: appState.navigation.routes.dashboard.subroutes.reports.abs,
   }))
 
   console.log("BusinessApplication.render", {

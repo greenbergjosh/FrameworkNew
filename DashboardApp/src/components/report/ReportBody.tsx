@@ -40,14 +40,14 @@ export interface ReportBodyProps {
 
 export const ReportBody = React.memo(
   ({ isChildReport, parentData, queryConfig, reportConfig, reportId, title, withoutHeader }: ReportBodyProps) => {
-    const [fromStore, dispatch] = useRematch((state) => ({
-      configs: state.globalConfig.configs,
-      configsById: store.select.globalConfig.configsById(state),
-      globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
-      isExecutingQuery: state.loading.effects.reports.executeQuery,
-      reportDataByQuery: state.reports.reportDataByQuery,
-      queryParamsByQuery: state.queries.queryParamsByQuery,
-      queryGlobalParams: state.queries.queryGlobalParams,
+    const [fromStore, dispatch] = useRematch((appState) => ({
+      configs: appState.globalConfig.configs,
+      configsById: store.select.globalConfig.configsById(appState),
+      globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+      isExecutingQuery: appState.loading.effects.reports.executeQuery,
+      reportDataByQuery: appState.reports.reportDataByQuery,
+      queryParamsByQuery: appState.queries.queryParamsByQuery,
+      queryGlobalParams: appState.queries.queryGlobalParams,
     }))
 
     const grid = React.useRef<GridComponent>(null)
