@@ -9,14 +9,14 @@ import { count, flattenDataItems } from "../utils"
  */
 export default function getCustomNullCountAggregate(
   usableColumns: EnrichedColumnDefinition[],
-  columnCounts: { [p: string]: number },
+  columnCounts: { [p: string]: number }
 ) {
   return (data: any, column: AggregateColumnModel) =>
     data.count -
     (!data.requestType && data.items
       ? count(
-        usableColumns.filter(({ field }) => field === column.field),
-        flattenDataItems(data),
-      )
+          usableColumns.filter(({ field }) => field === column.field),
+          flattenDataItems(data)
+        )
       : columnCounts)[column.field || column.columnName || ""]
 }

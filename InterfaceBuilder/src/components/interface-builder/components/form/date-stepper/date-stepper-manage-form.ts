@@ -38,7 +38,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 ordinal: 11,
                 component: "toggle",
                 defaultValue: true,
-                label: "Date Range"
+                label: "Date Range",
               },
               {
                 key: "dateKey",
@@ -106,7 +106,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
-            ]
+            ],
           },
         ],
       },

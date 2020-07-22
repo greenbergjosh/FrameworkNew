@@ -28,10 +28,8 @@ const dateManageFormDefinition: Partial<ComponentDefinition>[] = [
           },
           {
             key: "appearance",
-            components: [
-              ...commonIncludeTimeForm,
-            ]
-          }
+            components: [...commonIncludeTimeForm],
+          },
         ],
       },
     ],

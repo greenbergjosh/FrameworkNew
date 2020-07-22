@@ -19,8 +19,6 @@ declare type VariadicTuple =
   | [unknown, unknown, unknown, unknown, unknown]
   | [unknown, unknown, unknown, unknown, unknown, unknown]
 
-
-
 /**
  * Default definitions for typescript
  */

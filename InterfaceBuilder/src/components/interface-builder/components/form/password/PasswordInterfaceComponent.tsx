@@ -20,7 +20,9 @@ export interface PasswordInterfaceComponentProps extends ComponentDefinitionName
 
 interface PasswordInterfaceComponentState {}
 
-export class PasswordInterfaceComponent extends BaseInterfaceComponent<PasswordInterfaceComponentProps> {
+export class PasswordInterfaceComponent extends BaseInterfaceComponent<
+  PasswordInterfaceComponentProps
+> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -55,6 +57,12 @@ export class PasswordInterfaceComponent extends BaseInterfaceComponent<PasswordI
     const { defaultValue, userInterfaceData, valueKey, hasShowPasswordToggle } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
-    return <Input.Password onChange={this.handleChange} value={value} visibilityToggle={hasShowPasswordToggle}/>
+    return (
+      <Input.Password
+        onChange={this.handleChange}
+        value={value}
+        visibilityToggle={hasShowPasswordToggle}
+      />
+    )
   }
 }

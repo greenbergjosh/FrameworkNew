@@ -22,7 +22,7 @@ export { supportedEditorTheme } from "./code-editor-manage-form"
  * https://github.com/microsoft/monaco-editor-samples/blob/master/browser-esm-webpack-small/webpack.config.js
  */
 ;(window as any).MonacoEnvironment = {
-  getWorkerUrl: function(moduleId: string, label: string) {
+  getWorkerUrl: function (moduleId: string, label: string) {
     if (label === "json") {
       return "/monaco/json.worker.js"
     }
@@ -58,7 +58,10 @@ interface Props extends Required<Pick<EditorProps, "height" | "width">> {
   language: EditorLang
   onChange?: (x: { value: string; errors: Option<string[]> }) => void
   onMonacoInit?: (monacoInstance: typeof monacoEditor) => void
-  editorDidMount?: (getEditorValue: () => string, editor: monacoEditor.editor.IStandaloneCodeEditor) => void
+  editorDidMount?: (
+    getEditorValue: () => string,
+    editor: monacoEditor.editor.IStandaloneCodeEditor
+  ) => void
 }
 
 export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => IDisposable[]

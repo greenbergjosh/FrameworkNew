@@ -1,10 +1,15 @@
 export interface Codec {
-  type: string,
-  join: JoinerType,
+  type: string
+  join: JoinerType
   split: SplitterType
 }
 
-type JoinStrategyType = (previousValue: string, currentValue: string, currentIndex: number, array: string[]) => string
+type JoinStrategyType = (
+  previousValue: string,
+  currentValue: string,
+  currentIndex: number,
+  array: string[]
+) => string
 type SplitStrategyType = (value: string) => string[]
 type SplitterType = (value: string) => string[]
 type JoinerType = (value: string[]) => string
@@ -55,7 +60,7 @@ function splitByComma(value: string) {
 }
 
 function getJoiner(joinStrategy: JoinStrategyType): JoinerType {
-  return function(value: string[]): string {
+  return function (value: string[]): string {
     if (typeof value === "undefined") {
       return ""
     }
@@ -67,7 +72,7 @@ function getJoiner(joinStrategy: JoinStrategyType): JoinerType {
 }
 
 function getSplitter(splitStrategy: SplitStrategyType): SplitterType {
-  return function(value: string): string[] {
+  return function (value: string): string[] {
     return splitStrategy(value).map((item: string) => item.trimStart())
   }
 }

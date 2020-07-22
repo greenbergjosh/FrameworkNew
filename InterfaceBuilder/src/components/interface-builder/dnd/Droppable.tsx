@@ -1,11 +1,6 @@
 import classNames from "classnames"
 import React from "react"
-import {
-  ConnectDropTarget,
-  DropTarget,
-  DropTargetConnector,
-  DropTargetMonitor
-  } from "react-dnd"
+import { ConnectDropTarget, DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd"
 import { DraggableInnerProps } from "./Draggable"
 import {
   DraggedItemProps,
@@ -24,7 +19,7 @@ const dropHandlers = {
   // canDrop(props: DroppableInnerProps) {
   //   return props.allowDrop !== false
   // },
-  hover: function(props: DroppableInnerProps, monitor: DropTargetMonitor, component: any) {
+  hover: function (props: DroppableInnerProps, monitor: DropTargetMonitor, component: any) {
     const item = monitor.getItem() as DraggableInnerProps
     const { index: draggedIndex, draggableId, parentDroppableId } = item
     const {

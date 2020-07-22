@@ -9,13 +9,13 @@ import { average, flattenDataItems } from "../utils"
  */
 export default function getCustomAverageAggregate(
   usableColumns: EnrichedColumnDefinition[],
-  columnAverages: { [p: string]: number },
+  columnAverages: { [p: string]: number }
 ) {
   return (data: any, column: AggregateColumnModel) =>
     (!data.requestType && (data.items || Array.isArray(data))
       ? average(
-        usableColumns.filter(({ field }) => field === column.field),
-        flattenDataItems(data),
-      )
+          usableColumns.filter(({ field }) => field === column.field),
+          flattenDataItems(data)
+        )
       : columnAverages)[column.field || column.columnName || ""]
 }

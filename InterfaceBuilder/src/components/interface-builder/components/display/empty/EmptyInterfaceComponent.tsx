@@ -1,9 +1,4 @@
-import {
-  Empty,
-  Form,
-  Input,
-  InputNumber
-  } from "antd"
+import { Empty, Form, Input, InputNumber } from "antd"
 import { get, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"

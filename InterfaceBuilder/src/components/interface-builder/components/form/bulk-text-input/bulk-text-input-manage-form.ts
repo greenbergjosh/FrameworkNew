@@ -56,7 +56,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 ordinal: 11,
                 component: "toggle",
                 defaultValue: true,
-                label: "Autosize height"
+                label: "Autosize height",
               },
               {
                 key: "newlinePlaceholder",
@@ -102,7 +102,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "===": [false, { var: "autosize" }],
                 },
               },
-            ]
+            ],
           },
         ],
       },

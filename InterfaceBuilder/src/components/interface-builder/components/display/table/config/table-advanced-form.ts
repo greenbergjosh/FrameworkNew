@@ -23,7 +23,8 @@ export const tableAdvancedForm = {
       key: "maxWidth",
       valueKey: "maxWidth",
       label: "Max Width",
-      help: 'Maximum width of the column. Consider setting "Wrap Mode" on the grid to allow text to wrap in this column.',
+      help:
+        'Maximum width of the column. Consider setting "Wrap Mode" on the grid to allow text to wrap in this column.',
       component: "number-input",
     },
     {

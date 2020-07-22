@@ -103,7 +103,8 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Auto Fit Columns",
                 component: "toggle",
                 defaultValue: false,
-                help: "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
+                help:
+                  "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
               },
               {
                 key: "useSmallFont",
@@ -125,7 +126,8 @@ const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Enable Virtualization",
                 component: "toggle",
                 defaultValue: false,
-                help: "Load and render rows as they scroll into view to improve performance in some cases.",
+                help:
+                  "Load and render rows as they scroll into view to improve performance in some cases.",
               },
               {
                 key: "height",

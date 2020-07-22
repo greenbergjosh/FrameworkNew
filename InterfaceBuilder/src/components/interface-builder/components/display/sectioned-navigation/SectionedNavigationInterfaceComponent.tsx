@@ -1,11 +1,5 @@
 import { Data } from "@syncfusion/ej2-grids"
-import {
-  Button,
-  Card,
-  Menu,
-  PageHeader,
-  Popover
-  } from "antd"
+import { Button, Card, Menu, PageHeader, Popover } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"

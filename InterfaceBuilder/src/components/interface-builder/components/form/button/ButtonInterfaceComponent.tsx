@@ -1,27 +1,8 @@
-import {
-  Button,
-  Col,
-  Form,
-  Icon,
-  Popover,
-  Row,
-  Tooltip,
-  Typography
-  } from "antd"
-import {
-  get,
-  merge,
-  set,
-  throttle
-  } from "lodash/fp"
+import { Button, Col, Form, Icon, Popover, Row, Tooltip, Typography } from "antd"
+import { get, merge, set, throttle } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
-import {
-  buttonDisplayType,
-  buttonManageForm,
-  shapeType,
-  sizeType
-  } from "./button-manage-form"
+import { buttonDisplayType, buttonManageForm, shapeType, sizeType } from "./button-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,

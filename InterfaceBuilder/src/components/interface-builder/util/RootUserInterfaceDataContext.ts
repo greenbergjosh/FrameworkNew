@@ -1,3 +1,3 @@
 import React from "react"
 
-export const RootUserInterfaceDataContext = React.createContext(null);
+export const RootUserInterfaceDataContext = React.createContext(null)

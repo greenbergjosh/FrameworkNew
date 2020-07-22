@@ -1,18 +1,5 @@
-import {
-  Button,
-  Col,
-  Divider,
-  Empty,
-  Icon,
-  Row,
-  Tree
-  } from "antd"
-import {
-  cloneDeep,
-  get,
-  getOr,
-  set
-  } from "lodash/fp"
+import { Button, Col, Divider, Empty, Icon, Row, Tree } from "antd"
+import { cloneDeep, get, getOr, set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"

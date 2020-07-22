@@ -87,8 +87,8 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Show Inset",
                 defaultValue: false,
               },
-            ]
-          }
+            ],
+          },
         ],
       },
     ],

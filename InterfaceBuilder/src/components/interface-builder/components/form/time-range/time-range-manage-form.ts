@@ -114,8 +114,8 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "End Time",
                 label: "End Time Placeholder",
               },
-            ]
-          }
+            ],
+          },
         ],
       },
     ],

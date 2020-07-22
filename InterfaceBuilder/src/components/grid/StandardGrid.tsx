@@ -353,8 +353,7 @@ export const StandardGrid = React.forwardRef(
           pageSettings={defaultedPageSettings}
           showColumnChooser={true}
           sortSettings={sortSettings}
-          toolbar={[...editingToolbarItems, ...toolbar]}
-        >
+          toolbar={[...editingToolbarItems, ...toolbar]}>
           <Inject
             services={[
               Toolbar,

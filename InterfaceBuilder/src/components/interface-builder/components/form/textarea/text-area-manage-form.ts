@@ -42,7 +42,7 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                 ordinal: 11,
                 component: "toggle",
                 defaultValue: true,
-                label: "Autosize height"
+                label: "Autosize height",
               },
               {
                 key: "minRows",
@@ -66,7 +66,7 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "===": [false, { var: "autosize" }],
                 },
               },
-            ]
+            ],
           },
         ],
       },

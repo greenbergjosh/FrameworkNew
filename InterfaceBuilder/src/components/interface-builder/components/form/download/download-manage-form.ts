@@ -235,7 +235,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
           },
           {
             key: "appearance",
-            components: appearanceComponents
+            components: appearanceComponents,
           },
         ],
       },

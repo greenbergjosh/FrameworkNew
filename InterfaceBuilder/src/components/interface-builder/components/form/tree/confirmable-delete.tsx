@@ -1,11 +1,4 @@
-import {
-  Button,
-  Col,
-  Icon,
-  Popover,
-  Row,
-  Typography
-  } from "antd"
+import { Button, Col, Icon, Popover, Row, Typography } from "antd"
 import { ButtonProps } from "antd/lib/button"
 import React from "react"
 

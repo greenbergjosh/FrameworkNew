@@ -9,7 +9,7 @@ export const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps
   // Returns null if we should not re-render
   const runDeepDiff = () =>
     deepDiff(prevProps, nextProps, (k) =>
-      ["children", "detailTemplate", "valueAccessor"].includes(k),
+      ["children", "detailTemplate", "valueAccessor"].includes(k)
     )
 
   const deepDiffResult = runDeepDiff()

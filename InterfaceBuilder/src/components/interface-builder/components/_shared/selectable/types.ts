@@ -69,8 +69,7 @@ export interface SelectableState {
   options: SelectableOption[]
 }
 
-export type SelectableProps = (SelectablePropsLocalData) &
-  ComponentRenderMetaProps
+export type SelectableProps = SelectablePropsLocalData & ComponentRenderMetaProps
 
 /* *********************************************
  *

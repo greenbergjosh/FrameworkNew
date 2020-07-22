@@ -9,13 +9,13 @@ import { count, flattenDataItems } from "../utils"
  */
 export default function getCustomValueCountAggregate(
   usableColumns: EnrichedColumnDefinition[],
-  columnCounts: { [p: string]: number },
+  columnCounts: { [p: string]: number }
 ) {
   return (data: any, column: AggregateColumnModel) =>
     (!data.requestType && data.items
       ? count(
-        usableColumns.filter(({ field }) => field === column.field),
-        flattenDataItems(data),
-      )
+          usableColumns.filter(({ field }) => field === column.field),
+          flattenDataItems(data)
+        )
       : columnCounts)[column.field || column.columnName || ""]
 }

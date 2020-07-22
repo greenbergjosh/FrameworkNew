@@ -92,25 +92,22 @@ export function deepDiff(
   let foundNonNull = false
 
   // Iterate over the keys, collecting changes
-  const result = keys.reduce(
-    (acc, key) => {
-      // Old and new values of prop
-      const o = oldVal[key]
-      const n = newVal[key]
+  const result = keys.reduce((acc, key) => {
+    // Old and new values of prop
+    const o = oldVal[key]
+    const n = newVal[key]
 
-      // If the objects are not the same reference
-      if (o !== n && !ignoreProp(key, o, n)) {
-        const d = deepDiff(o, n, ignoreProp)
-        foundNonNull = foundNonNull || !!d
-        if (d) {
-          acc[key] = d
-        }
+    // If the objects are not the same reference
+    if (o !== n && !ignoreProp(key, o, n)) {
+      const d = deepDiff(o, n, ignoreProp)
+      foundNonNull = foundNonNull || !!d
+      if (d) {
+        acc[key] = d
       }
+    }
 
-      return acc
-    },
-    {} as { [key: string]: any }
-  )
+    return acc
+  }, {} as { [key: string]: any })
 
   return foundNonNull ? result : null
 }

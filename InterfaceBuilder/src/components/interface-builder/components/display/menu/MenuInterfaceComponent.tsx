@@ -123,7 +123,7 @@ export class MenuInterfaceComponent extends BaseInterfaceComponent<MenuProps, Se
               </Menu.Item>
             ))}
           </Menu>
-          {!loadError && (options && options.length > 0) ? null : (
+          {!loadError && options && options.length > 0 ? null : (
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
           )}
         </Skeleton>
@@ -134,7 +134,7 @@ export class MenuInterfaceComponent extends BaseInterfaceComponent<MenuProps, Se
   render(): JSX.Element {
     return (
       // Since props is a union of IMenuProps and SelectableProps, we cast as SelectableProps
-      <Selectable {...this.props as SelectableProps}>{this.renderMenu}</Selectable>
+      <Selectable {...(this.props as SelectableProps)}>{this.renderMenu}</Selectable>
     )
   }
 }

@@ -22,12 +22,13 @@ export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNam
   endTimePlaceholder: string
 }
 
-interface TimeRangeInterfaceComponentState {
-}
+interface TimeRangeInterfaceComponentState {}
 
 const TIMEFORMAT = "h:mm a"
 
-export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRangeInterfaceComponentProps> {
+export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<
+  TimeRangeInterfaceComponentProps
+> {
   static defaultProps = {
     startTimeKey: "startTime",
     endTimeKey: "endTime",
