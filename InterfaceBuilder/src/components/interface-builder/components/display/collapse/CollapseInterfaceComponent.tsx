@@ -1,4 +1,4 @@
-import { Card, Collapse } from "antd"
+import { Collapse } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
@@ -7,8 +7,8 @@ import { UserInterfaceProps } from "../../../UserInterface"
 import { collapseManageForm } from "./collapse-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 export interface SectionDefinition {

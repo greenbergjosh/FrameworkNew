@@ -1,8 +1,8 @@
 import {
   AggregateColumnModel,
   AggregateRowModel,
-  ColumnModel,
   AggregateType,
+  ColumnModel,
   CustomSummaryType,
 } from "@syncfusion/ej2-react-grids"
 import { sanitizeText } from "components/interface-builder/lib/sanitize-text"

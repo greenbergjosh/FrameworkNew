@@ -1,5 +1,5 @@
-import { Button, Tooltip, message } from "antd"
-import { get, set } from "lodash/fp"
+import { Button, message, Tooltip } from "antd"
+import { get } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { buttonDisplayType, downloadManageForm, shapeType, sizeType } from "./download-manage-form"

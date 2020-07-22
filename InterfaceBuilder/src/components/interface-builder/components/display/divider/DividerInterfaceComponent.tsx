@@ -1,8 +1,6 @@
 import { Divider } from "antd"
 import { DividerProps } from "antd/lib/divider"
-import { get } from "lodash/fp"
 import React from "react"
-import { UserInterfaceProps } from "../../../UserInterface"
 import { dividerManageForm } from "./divider-manage-form"
 import {
   BaseInterfaceComponent,

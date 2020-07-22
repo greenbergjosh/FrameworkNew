@@ -1,6 +1,5 @@
-import { Form, Input } from "antd"
 import CKEditor from "ckeditor4-react"
-import { get, set, throttle } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { richTextEditorManageForm } from "./rich-text-editor-manage-form"

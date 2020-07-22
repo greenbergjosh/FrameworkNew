@@ -1,6 +1,6 @@
-import { Form, Input, InputNumber } from "antd"
+import { InputNumber } from "antd"
 import { InputNumberProps } from "antd/lib/input-number"
-import { get, set, throttle } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { numberInputManageForm } from "./number-input-manage-form"

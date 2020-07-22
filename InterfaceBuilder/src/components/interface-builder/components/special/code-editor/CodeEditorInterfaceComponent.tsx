@@ -2,11 +2,11 @@ import { some } from "fp-ts/lib/Option"
 import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
-import { CodeEditor, EditorTheme, EditorLang } from "./code-editor"
+import { CodeEditor, EditorLang, EditorTheme } from "./code-editor"
 import { codeEditorManageForm } from "./code-editor-manage-form"
 import {
-  ComponentDefinitionNamedProps,
   BaseInterfaceComponent,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {

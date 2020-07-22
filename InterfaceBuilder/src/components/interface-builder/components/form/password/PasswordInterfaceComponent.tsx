@@ -1,5 +1,5 @@
-import { Form, Input } from "antd"
-import { get, set, throttle } from "lodash/fp"
+import { Input } from "antd"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { passwordManageForm } from "./password-manage-form"

@@ -1,6 +1,6 @@
-import { Form, Input, Row, Col } from "antd"
+import { Input } from "antd"
 import { InputProps } from "antd/lib/input"
-import { get, set, throttle } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { inputManageForm } from "./input-manage-form"

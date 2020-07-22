@@ -1,4 +1,4 @@
-import { CustomAggregateFunction, EnrichedColumnDefinition } from "../types"
+import { EnrichedColumnDefinition } from "../types"
 import { AggregateColumnModel } from "@syncfusion/ej2-react-grids"
 import { average, flattenDataItems } from "../utils"
 

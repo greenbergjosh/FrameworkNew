@@ -1,4 +1,3 @@
-import { get, set } from "lodash/fp"
 import React from "react"
 import { ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { repeaterManageForm } from "./repeater-manage-form"

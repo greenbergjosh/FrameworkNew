@@ -15,8 +15,8 @@ import {
 } from "antd/lib/tree/Tree"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 type EntryType = "standard" | "leaf" | "parent"

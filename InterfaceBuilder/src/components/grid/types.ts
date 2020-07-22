@@ -1,11 +1,11 @@
 import {
+  AggregateColumnModel,
   AggregateType,
   ColumnModel,
   CustomSummaryType,
   GroupSettingsModel,
   PageSettingsModel,
   SortSettingsModel,
-  AggregateColumnModel,
 } from "@syncfusion/ej2-react-grids"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"

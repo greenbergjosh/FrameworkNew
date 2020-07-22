@@ -1,4 +1,4 @@
-import { Button, Card, Menu, PageHeader, Popover, Steps } from "antd"
+import { Button, Steps } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
@@ -7,8 +7,8 @@ import { UserInterfaceProps } from "../../../UserInterface"
 import { wizardManageForm } from "./wizard-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 interface WizardStep {

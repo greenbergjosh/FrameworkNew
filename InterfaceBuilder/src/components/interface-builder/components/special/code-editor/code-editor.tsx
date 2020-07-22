@@ -5,8 +5,9 @@ import * as iots from "io-ts"
 import { editor, IDisposable, MarkerSeverity } from "monaco-editor"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
-import { monaco, DiffEditor, EditorProps, ControlledEditor } from "@monaco-editor/react"
+import { ControlledEditor, DiffEditor, EditorProps, monaco } from "@monaco-editor/react"
 import { None, Some } from "../../../lib/Option"
+
 export { supportedEditorTheme } from "./code-editor-manage-form"
 
 /* ########################################################################

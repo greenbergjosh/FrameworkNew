@@ -1,7 +1,7 @@
 import {
-  StringTemplateInterfaceComponentProps as _StringTemplateInterfaceComponentProps,
-  SerializeType as _SerializeType,
   DeserializeType as _DeserializeType,
+  SerializeType as _SerializeType,
+  StringTemplateInterfaceComponentProps as _StringTemplateInterfaceComponentProps,
   StringTemplateInterfaceComponentState as _StringTemplateInterfaceComponentState,
 } from "./types"
 

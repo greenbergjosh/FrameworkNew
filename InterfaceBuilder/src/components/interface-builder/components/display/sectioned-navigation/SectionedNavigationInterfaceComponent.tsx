@@ -1,15 +1,14 @@
-import { Data } from "@syncfusion/ej2-grids"
 import { Button, Card, Menu, PageHeader, Popover } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
-import { EditUserInterfaceProps, UserInterfaceProps } from "../../../UserInterface"
+import { UserInterfaceProps } from "../../../UserInterface"
 import { sectionedNavigationManageForm } from "./sectioned-navigation-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 interface NavigationSection {

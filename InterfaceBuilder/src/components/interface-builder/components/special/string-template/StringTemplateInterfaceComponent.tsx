@@ -10,7 +10,7 @@ import {
 } from "./types"
 import { QuoteIcon } from "./components/QuoteIcon"
 import { DataPathContext } from "components/interface-builder/util/DataPathContext"
-import { set, isEmpty } from "lodash/fp"
+import { isEmpty, set } from "lodash/fp"
 import { Card } from "antd"
 import { JSONRecord } from "index"
 import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"

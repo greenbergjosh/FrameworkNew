@@ -7,7 +7,6 @@ import { toggleManageForm } from "./toggle-manage-form"
 import {
   BaseInterfaceComponent,
   ComponentDefinitionNamedProps,
-  ComponentDefinition,
 } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
 

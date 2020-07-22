@@ -1,13 +1,20 @@
 import { TSEnum as _TSEnum } from "./@types/ts-enum"
 import { JSONRecord as _JSONRecord } from "./components/interface-builder/@types/JSONTypes"
-import { ComponentDefinition as _ComponentDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { ComponentDefinitionNamedProps as _ComponentDefinitionNamedProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { ComponentRenderMetaProps as _ComponentRenderMetaProps } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+import {
+  ComponentDefinition as _ComponentDefinition,
+  ComponentDefinitionNamedProps as _ComponentDefinitionNamedProps,
+  ComponentRenderMetaProps as _ComponentRenderMetaProps,
+} from "./components/interface-builder/components/base/BaseInterfaceComponent"
 import { FormInterfaceComponentProps as _FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
 import { UserInterfaceProps as _UserInterfaceProps } from "./components/interface-builder/UserInterface"
 import { UserInterfaceContextManager as _UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
 import { EnrichedColumnDefinition as _EnrichedColumnDefinition } from "./components/grid/types"
 import "./styles/index.scss"
+/**
+ * Framework Components
+ */
+import * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
+import * as StringTemplate from "./components/interface-builder/components/special/string-template"
 
 /**
  * Framework
@@ -34,10 +41,6 @@ export { sanitizeText } from "./components/interface-builder/lib/sanitize-text"
 export { shallowPropCheck } from "./components/interface-builder/dnd"
 export { getIconSelectConfig } from "./components/interface-builder/components/form/_shared/icon-select-form-config"
 
-/**
- * Framework Components
- */
-import * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
 export { utils }
 export {
   CodeEditor,
@@ -48,7 +51,6 @@ export {
   EditorLang,
   EditorTheme,
 } from "./components/interface-builder/components/special/code-editor/code-editor"
-import * as StringTemplate from "./components/interface-builder/components/special/string-template"
 export { StringTemplate }
 
 /**

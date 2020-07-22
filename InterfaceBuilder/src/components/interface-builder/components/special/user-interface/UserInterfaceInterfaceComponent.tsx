@@ -4,8 +4,8 @@ import { UserInterface, UserInterfaceProps } from "../../../UserInterface"
 import { userInterfaceManageForm } from "./user-interface-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitionNamedProps {
