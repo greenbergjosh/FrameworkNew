@@ -1,10 +1,6 @@
-import { JSONRecord } from "../data/JSON"
-import { ParameterItem } from "../data/Report"
-
-type SortedParamsType = {
-  unsatisfiedByParentParams: ParameterItem[]
-  satisfiedByParentParams: JSONRecord
-}
+import { JSONRecord } from "../../../data/JSON"
+import { ParameterItem } from "../../../data/Report"
+import { SortedParamsType } from "../types"
 
 function sortParam(
   sortedParams: SortedParamsType,

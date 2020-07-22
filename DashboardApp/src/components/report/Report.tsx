@@ -8,7 +8,7 @@ import { Left, Right, right } from "../../data/Either"
 import { GlobalConfigReference, LocalReportConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
 import { store } from "../../state/store"
-import { ReportBody } from "./reportBody/ReportBody"
+import { ReportBody } from "./ReportBody"
 import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
 import { ReportProps } from "./types"
 

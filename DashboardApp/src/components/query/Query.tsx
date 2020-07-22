@@ -11,9 +11,9 @@ import { Right } from "../../data/Either"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../data/JSON"
 import { QueryConfig, QueryConfigCodec } from "../../data/Report"
-import { determineSatisfiedParameters } from "../../lib/determine-satisfied-parameters"
+import { determineSatisfiedParameters } from "./lib/determineSatisfiedParameters"
 import { cheapHash } from "../../lib/json"
-import { QueryForm } from "../report/reportBody/QueryForm"
+import { QueryForm } from "./QueryForm"
 import { LoadDataParams, QueryProps, QueryState } from "./types"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { Brand, Branded } from "io-ts"
@@ -42,7 +42,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     }
   }
 
-  /****************************************************************************
+  /* ***************************************************************************
+   *
    * EVENT HANDLERS
    */
 
@@ -163,7 +164,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     )
   }
 
-  /****************************************************************************
+  /* ***************************************************************************
+   *
    * PRIVATE MEMBERS
    */
 
@@ -201,7 +203,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     }
   }
 
-  /****************************************************************************
+  /* ***************************************************************************
    * PRIVATE MEMBERS: REMOTE CONFIG
    */
 
@@ -246,7 +248,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       : (config: PersistedConfig) => true
   }
 
-  /****************************************************************************
+  /* ***************************************************************************
+   *
    * PRIVATE MEMBERS: REMOTE QUERY
    */
 
@@ -463,7 +466,8 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
   }
 }
 
-/****************************************************************************
+/* ***************************************************************************
+ *
  * Private diagnostic component
  */
 
