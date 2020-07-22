@@ -1,4 +1,5 @@
 import { JSONType } from "../data/JSON"
+
 export function prettyPrint(value: unknown): string {
   return JSON.stringify(value, null, 2)
 }
