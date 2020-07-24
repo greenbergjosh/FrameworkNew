@@ -138,7 +138,15 @@ namespace Utility
                     }
                 }
 
-                rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
+                if (await UnixWrapper.IsZip(Path.Combine(workingDirectory, fileName)))
+                {
+                    rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
+                }
+                else
+                {
+                    var (tr, pr) = await ProcessFile(new FileInfo(Path.Combine(workingDirectory, fileName)), zipEntryTester, zipEntryProcessors);
+                    rs[tr] = pr;
+                }
             }
             catch (Exception)
             {
@@ -174,14 +182,12 @@ namespace Utility
                 var dir = new DirectoryInfo(fileDestinationDirectory + "\\" + ufn);
                 foreach (var f in dir.GetFiles("*", SearchOption.AllDirectories))
                 {
-                    var tr = await zipEntryTester(f);
-                    var pr = await zipEntryProcessors[tr](f);
+                    var (tr, pr) = await ProcessFile(f, zipEntryTester, zipEntryProcessors);
                     results[tr] = pr;
                 }
             }
             finally
             {
-                Fs.TryDeleteFile(fileSourceDirectory + "\\" + fileName);
                 var dir = new DirectoryInfo(fileDestinationDirectory + "\\" + ufn);
                 if (dir.Exists)
                 {
@@ -190,6 +196,13 @@ namespace Utility
             }
 
             return results;
+        }
+
+        public static async Task<(string, object)> ProcessFile(FileInfo file, Func<FileInfo, Task<string>> fileTester, Dictionary<string, Func<FileInfo, Task<object>>> fileProcessors)
+        {
+            var tr = await fileTester(file);
+            var pr = await fileProcessors[tr](file);
+            return (tr, pr);
         }
 
         public static async Task UploadStream(string fileName, Stream stream, string host, string userName, string password, bool enableSsl = false)

@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Utility
 {
     public static class ProcessWrapper
@@ -19,7 +18,7 @@ namespace Utility
             TextWriter errorTextWriter = null,
             Stream input = null)
         {
-            using (var process = new Process()
+            using var process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
                 {
@@ -32,76 +31,74 @@ namespace Utility
                     UseShellExecute = false,
                     WorkingDirectory = workingDirectory
                 }
-            })
+            };
+
+            var cancellationTokenSource = timeout.HasValue ?
+                new CancellationTokenSource(timeout.Value) :
+                new CancellationTokenSource();
+
+            var tasks = new List<Task>(3) { process.StartAndWaitForExitAsync(cancellationTokenSource.Token) };
+            if (outputTextWriter != null)
             {
-                process.Start();
-                var cancellationTokenSource = timeout.HasValue ?
-                    new CancellationTokenSource(timeout.Value) :
-                    new CancellationTokenSource();
-
-                var tasks = new List<Task>(3) { process.WaitForExitAsync(cancellationTokenSource.Token) };
-                if (outputTextWriter != null)
-                {
-                    tasks.Add(ReadAsync(
-                        x =>
-                        {
-                            process.OutputDataReceived += x;
-                            process.BeginOutputReadLine();
-                        },
-                        x => process.OutputDataReceived -= x,
-                        outputTextWriter,
-                        cancellationTokenSource.Token));
-                }
-
-                if (errorTextWriter != null)
-                {
-                    tasks.Add(ReadAsync(
-                        x =>
-                        {
-                            process.ErrorDataReceived += x;
-                            process.BeginErrorReadLine();
-                        },
-                        x => process.ErrorDataReceived -= x,
-                        errorTextWriter,
-                        cancellationTokenSource.Token));
-                }
-
-                if (input != null)
-                {
-                    //await input.CopyToAsync(process.StandardInput.BaseStream);
-                    input.CopyTo(process.StandardInput.BaseStream);
-                    process.StandardInput.BaseStream.Close();
-                }
-
-                await Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext: false);
-                return process.ExitCode;
+                tasks.Add(ReadAsync(
+                    x =>
+                    {
+                        process.OutputDataReceived += x;
+                        process.BeginOutputReadLine();
+                    },
+                    x => process.OutputDataReceived -= x,
+                    outputTextWriter,
+                    cancellationTokenSource.Token));
             }
+
+            if (errorTextWriter != null)
+            {
+                tasks.Add(ReadAsync(
+                    x =>
+                    {
+                        process.ErrorDataReceived += x;
+                        process.BeginErrorReadLine();
+                    },
+                    x => process.ErrorDataReceived -= x,
+                    errorTextWriter,
+                    cancellationTokenSource.Token));
+            }
+
+            if (input != null)
+            {
+                //await input.CopyToAsync(process.StandardInput.BaseStream);
+                input.CopyTo(process.StandardInput.BaseStream);
+                process.StandardInput.BaseStream.Close();
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(continueOnCapturedContext: false);
+            return process.ExitCode;
         }
 
         /// <summary>
-        /// Waits asynchronously for the process to exit.
+        /// Starts and waits asynchronously for the process to exit.
         /// </summary>
-        /// <param name="process">The process to wait for cancellation.</param>
+        /// <param name="process">The process to start and wait for cancellation.</param>
         /// <param name="cancellationToken">A cancellation token. If invoked, the task will return
         /// immediately as cancelled.</param>
         /// <returns>A Task representing waiting for the process to end.</returns>
-        public static Task WaitForExitAsync(
+        public static Task StartAndWaitForExitAsync(
             this Process process,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             process.EnableRaisingEvents = true;
 
             var taskCompletionSource = new TaskCompletionSource<object>();
 
-            EventHandler handler = null;
-            handler = (sender, args) =>
+            void handler(object sender, EventArgs args)
             {
                 process.Exited -= handler;
                 taskCompletionSource.TrySetResult(null);
-            };
+            }
+
             process.Exited += handler;
 
-            if (cancellationToken != default(CancellationToken))
+            if (cancellationToken != default)
             {
                 cancellationToken.Register(
                     () =>
@@ -111,6 +108,7 @@ namespace Utility
                     });
             }
 
+            process.Start();
             return taskCompletionSource.Task;
         }
 
@@ -127,7 +125,7 @@ namespace Utility
             this Action<DataReceivedEventHandler> addHandler,
             Action<DataReceivedEventHandler> removeHandler,
             TextWriter textWriter,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
         {
             var taskCompletionSource = new TaskCompletionSource<object>();
 
@@ -148,7 +146,7 @@ namespace Utility
 
             addHandler(handler);
 
-            if (cancellationToken != default(CancellationToken))
+            if (cancellationToken != default)
             {
                 cancellationToken.Register(
                     () =>

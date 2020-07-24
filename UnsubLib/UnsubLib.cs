@@ -1921,7 +1921,6 @@ namespace UnsubLib
             var networkName = network.GetS("Name");
             var fileLocationProviders = new UnsubFileProviders.IUnsubLocationProvider[]
             {
-                //new UnsubFileProviders.UnsubCentral(_fw),
                 new UnsubFileProviders.UnsubCentralV2(_fw),
                 new UnsubFileProviders.Ezepo(_fw),
                 new UnsubFileProviders.Optizmo(_fw),
@@ -1929,7 +1928,8 @@ namespace UnsubLib
                 new UnsubFileProviders.W4(_fw),
                 new UnsubFileProviders.Unsubly(_fw),
                 new UnsubFileProviders.Ad1Media(),
-                new UnsubFileProviders.SuppMeNow()
+                new UnsubFileProviders.SuppMeNow(),
+                new UnsubFileProviders.WeOpt()
             };
 
             try
