@@ -1,12 +1,5 @@
-import {
-  Empty,
-  Form,
-  Input,
-  InputNumber
-  } from "antd"
-import { get, set, throttle } from "lodash/fp"
+import { Empty } from "antd"
 import React from "react"
-import { UserInterfaceProps } from "../../../UserInterface"
 import { emptyManageForm } from "./empty-manage-form"
 import {
   BaseInterfaceComponent,

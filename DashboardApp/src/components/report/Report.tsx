@@ -8,15 +8,15 @@ import { Left, Right, right } from "../../data/Either"
 import { GlobalConfigReference, LocalReportConfig } from "../../data/Report"
 import { useRematch } from "../../hooks"
 import { store } from "../../state/store"
-import { ReportBody } from "./reportBody/ReportBody"
+import { ReportBody } from "./ReportBody"
 import { ReportOrErrors } from "./reportOrErrors/ReportOrErrors"
 import { ReportProps } from "./types"
 
 export const Report = (props: ReportProps): JSX.Element => {
-  const [fromStore, dispatch] = useRematch((state) => ({
-    configsById: store.select.globalConfig.configsById(state),
-    decodedReportConfigsById: store.select.reports.decodedReportConfigByConfigId(state),
-    decodedQueryConfigsById: store.select.reports.decodedQueryConfigByConfigId(state),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    decodedReportConfigsById: store.select.reports.decodedReportConfigByConfigId(appState),
+    decodedQueryConfigsById: store.select.reports.decodedQueryConfigByConfigId(appState),
   }))
 
   const reportConfig = React.useMemo(

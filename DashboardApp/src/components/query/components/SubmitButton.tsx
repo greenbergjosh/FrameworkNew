@@ -1,20 +1,6 @@
 import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
 import React from "react"
-import { buttonProps } from "../../custom-ib-components/execute/types"
-
-export type confirmationType = {
-  title?: string
-  message?: string
-  okText?: string
-  cancelText?: string
-}
-
-export interface SubmitButtonProps {
-  onSubmit: () => void
-  loading?: boolean
-  submitButtonLabel?: string
-  submitButtonProps?: buttonProps
-}
+import { SubmitButtonProps } from "../types"
 
 export const SubmitButton = ({ onSubmit, loading, submitButtonLabel, submitButtonProps }: SubmitButtonProps) => {
   const {

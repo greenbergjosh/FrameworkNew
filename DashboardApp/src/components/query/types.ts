@@ -1,8 +1,57 @@
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
-import { QueryConfig } from "../../data/Report"
+import { ParameterItem, QueryConfig } from "../../data/Report"
 import { JSONRecord } from "../../data/JSON"
 import { AppDispatch } from "../../state/store.types"
+import { buttonProps } from "../custom-ib-components/execute/types"
+import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
+import { UserInterfaceContextManager } from "@opg/interface-builder"
+
+/* ****************************************************
+ *
+ * Query Form
+ */
+
+export interface QueryFormProps {
+  layout: QueryConfig["layout"]
+  parameters: QueryConfig["parameters"]
+  parameterValues: JSONRecord
+  onSubmit: (parameterValues: JSONRecord) => void | Promise<unknown>
+  submitButtonProps?: buttonProps
+  submitButtonLabel?: string // retained for legacy
+}
+
+export type SortedParamsType = {
+  unsatisfiedByParentParams: ParameterItem[]
+  satisfiedByParentParams: JSONRecord
+}
+
+export type PrivilegedUserInterfaceContextManager = Partial<AdminUserInterfaceContextManager> &
+  UserInterfaceContextManager<PersistedConfig>
+
+/* ****************************************************
+ *
+ * Submit Button
+ */
+
+export type confirmationType = {
+  title?: string
+  message?: string
+  okText?: string
+  cancelText?: string
+}
+
+export interface SubmitButtonProps {
+  onSubmit: () => void
+  loading?: boolean
+  submitButtonLabel?: string
+  submitButtonProps?: buttonProps
+}
+
+/* ****************************************************
+ *
+ * Query
+ */
 
 export interface QueryChildProps<T = any> {
   data: T[]

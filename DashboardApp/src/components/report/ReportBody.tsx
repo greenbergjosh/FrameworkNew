@@ -7,14 +7,14 @@ import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
 import { cloneDeep, matches, sortBy } from "lodash/fp"
 import { Button, PageHeader } from "antd"
 import { EnrichedColumnDefinition, StandardGrid } from "@opg/interface-builder"
-import { cheapHash } from "../../../lib/json"
-import { determineSatisfiedParameters } from "../../../lib/determine-satisfied-parameters"
-import { JSONRecord } from "../../../data/JSON"
-import { LocalReportConfig, QueryConfig } from "../../../data/Report"
-import { QueryForm } from "./QueryForm"
-import { store } from "../../../state/store"
-import { decodeGloballyPersistedParams } from "../../../state/reports"
-import { useRematch } from "../../../hooks"
+import { cheapHash } from "../../lib/json"
+import { determineSatisfiedParameters } from "../query/lib/determineSatisfiedParameters"
+import { JSONRecord } from "../../data/JSON"
+import { LocalReportConfig, QueryConfig } from "../../data/Report"
+import { QueryForm } from "../query/QueryForm"
+import { store } from "../../state/store"
+import { decodeGloballyPersistedParams } from "../../state/reports"
+import { useRematch } from "../../hooks"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -22,10 +22,10 @@ import {
   SortDescriptorModel,
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
-import { getDetailTemplate } from "../templates/getDetailTemplate"
-import { ColumnConfig } from "../templates/types"
-import { getCustomAggregateFunction } from "../templates/customAggregateFunction"
-import { getCellFormatter } from "../templates/cellFormatter"
+import { getDetailTemplate } from "./templates/getDetailTemplate"
+import { ColumnConfig } from "./templates/types"
+import { getCustomAggregateFunction } from "./templates/customAggregateFunction"
+import { getCellFormatter } from "./templates/cellFormatter"
 import queryString, { ParsedQuery } from "query-string"
 
 export interface ReportBodyProps {
@@ -40,14 +40,14 @@ export interface ReportBodyProps {
 
 export const ReportBody = React.memo(
   ({ isChildReport, parentData, queryConfig, reportConfig, reportId, title, withoutHeader }: ReportBodyProps) => {
-    const [fromStore, dispatch] = useRematch((state) => ({
-      configs: state.globalConfig.configs,
-      configsById: store.select.globalConfig.configsById(state),
-      globalConfigPath: state.navigation.routes.dashboard.subroutes["global-config"].abs,
-      isExecutingQuery: state.loading.effects.reports.executeQuery,
-      reportDataByQuery: state.reports.reportDataByQuery,
-      queryParamsByQuery: state.queries.queryParamsByQuery,
-      queryGlobalParams: state.queries.queryGlobalParams,
+    const [fromStore, dispatch] = useRematch((appState) => ({
+      configs: appState.globalConfig.configs,
+      configsById: store.select.globalConfig.configsById(appState),
+      globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+      isExecutingQuery: appState.loading.effects.reports.executeQuery,
+      reportDataByQuery: appState.reports.reportDataByQuery,
+      queryParamsByQuery: appState.queries.queryParamsByQuery,
+      queryGlobalParams: appState.queries.queryGlobalParams,
     }))
 
     const grid = React.useRef<GridComponent>(null)

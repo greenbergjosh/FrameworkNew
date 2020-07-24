@@ -72,13 +72,10 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
         keyLabel={keyLabel}
         multiple
         onDataChanged={(newData) => {
-          const newValue = newData.reduce(
-            (acc, item: any) => {
-              acc[item.key] = typeof item.value === "undefined" ? null : item.value
-              return acc
-            },
-            {} as any
-          )
+          const newValue = newData.reduce((acc, item: any) => {
+            acc[item.key] = typeof item.value === "undefined" ? null : item.value
+            return acc
+          }, {} as any)
 
           onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
         }}

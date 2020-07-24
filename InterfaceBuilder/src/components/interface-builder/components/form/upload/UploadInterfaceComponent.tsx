@@ -1,15 +1,15 @@
 import React from "react"
 import { message, Spin } from "antd"
-import { get, getOr, set, throttle } from "lodash/fp"
+import { getOr, set } from "lodash/fp"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { uploadManageForm } from "./upload-manage-form"
 import {
-  RemovingEventArgs,
-  SuccessEventArgs,
   FailureEventArgs,
   PauseResumeEventArgs,
-  UploadingEventArgs,
+  RemovingEventArgs,
+  SuccessEventArgs,
   UploaderComponent,
+  UploadingEventArgs,
 } from "@syncfusion/ej2-react-inputs"
 import {
   BaseInterfaceComponent,

@@ -41,8 +41,8 @@ import { DeleteConfigEventPayload } from "../../../../../state/global-config"
 interface Props {}
 
 export function ListGlobalConfig({ children, location, navigate, path, uri }: WithRouteProps<Props>): JSX.Element {
-  const [fromStore] = useRematch((s) => ({
-    configs: s.globalConfig.configs,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configs: appState.globalConfig.configs,
   }))
 
   return fromStore.configs.foldL(
@@ -71,11 +71,11 @@ interface ConfigTableProps {
   configs: Array<PersistedConfig>
 }
 function ConfigTable({ configs }: ConfigTableProps) {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configTypes: store.select.globalConfig.configTypes(s),
-    configsById: store.select.globalConfig.configsById(s),
-    isDeletingConfigs: s.loading.effects.globalConfig.deleteRemoteConfigs,
-    entityTypes: store.select.globalConfig.entityTypeConfigs(s),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configTypes: store.select.globalConfig.configTypes(appState),
+    configsById: store.select.globalConfig.configsById(appState),
+    isDeletingConfigs: appState.loading.effects.globalConfig.deleteRemoteConfigs,
+    entityTypes: store.select.globalConfig.entityTypeConfigs(appState),
   }))
 
   const [potentiallyStaleSelectedRowKeys, setSelectedRowKeys] = React.useState<

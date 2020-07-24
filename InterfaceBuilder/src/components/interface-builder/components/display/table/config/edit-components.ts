@@ -34,13 +34,13 @@ export const editComponents: ComponentDefinition[] = [
             valueKey: "field",
             label: "Field",
             component: "input",
-            "visibilityConditions": {
+            visibilityConditions: {
               "!==": [
                 "layout",
                 {
-                  "var": "type"
-                }
-              ]
+                  var: "type",
+                },
+              ],
             },
           },
           {
@@ -60,10 +60,10 @@ export const editComponents: ComponentDefinition[] = [
               ...formItem,
               visibilityConditions: formItem.visibilityConditions
                 ? {
-                  and: [formItem.visibilityConditions, visiblityConditionType(type.option.value)],
-                }
+                    and: [formItem.visibilityConditions, visiblityConditionType(type.option.value)],
+                  }
                 : visiblityConditionType(type.option.value),
-            })),
+            }))
           ),
           {
             hideLabel: true,

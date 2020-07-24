@@ -15,11 +15,7 @@ interface AbstractTableProps extends Partial<TableInterfaceComponentEditModeProp
  * that use this table cannot edit the abstract table's
  * basic settings (settings popup), but may edit its columns.
  */
-export function AbstractTable({
-  onChangeData,
-  userInterfaceData,
-  valueKey,
-}: AbstractTableProps) {
+export function AbstractTable({ onChangeData, userInterfaceData, valueKey }: AbstractTableProps) {
   const dataArray = get(valueKey!, userInterfaceData) || []
   const data = { columns: dataArray }
 

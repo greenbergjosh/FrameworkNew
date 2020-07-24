@@ -4,7 +4,7 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"
 import { JSONRecord } from "../../../data/JSON"
 import { AppDispatch } from "../../../state/store.types"
-import { confirmationType } from "../../report/reportBody/SubmitButton"
+import { confirmationType } from "../../query/types"
 
 export type shapeType = "circle" | "circle-outline" | "round" | undefined
 export type sizeType = "small" | "large" | undefined

@@ -69,10 +69,7 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
         : "day"
 
     const newValue = newValueMoment.isValid()
-      ? newValueMoment
-          .startOf(alignmentTimePeriod)
-          .utc()
-          .toISOString()
+      ? newValueMoment.startOf(alignmentTimePeriod).utc().toISOString()
       : null
 
     if (currentValue !== newValue && onChangeData) {

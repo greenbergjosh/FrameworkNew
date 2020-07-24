@@ -1,7 +1,7 @@
 import { array } from "fp-ts/lib/Array"
 import { identity, tuple } from "fp-ts/lib/function"
 import * as record from "fp-ts/lib/Record"
-import { isEmpty, set, get } from "lodash/fp"
+import { get, isEmpty, set } from "lodash/fp"
 import { JSONFromString } from "io-ts-types"
 import json5 from "json5"
 import { Left, Right } from "../data/Either"

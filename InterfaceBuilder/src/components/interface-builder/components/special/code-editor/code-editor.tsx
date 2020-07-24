@@ -5,8 +5,9 @@ import * as iots from "io-ts"
 import { editor, IDisposable, MarkerSeverity } from "monaco-editor"
 import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api"
 import React from "react"
-import { monaco, DiffEditor, EditorProps, ControlledEditor } from "@monaco-editor/react"
+import { ControlledEditor, DiffEditor, EditorProps, monaco } from "@monaco-editor/react"
 import { None, Some } from "../../../lib/Option"
+
 export { supportedEditorTheme } from "./code-editor-manage-form"
 
 /* ########################################################################
@@ -22,7 +23,7 @@ export { supportedEditorTheme } from "./code-editor-manage-form"
  * https://github.com/microsoft/monaco-editor-samples/blob/master/browser-esm-webpack-small/webpack.config.js
  */
 ;(window as any).MonacoEnvironment = {
-  getWorkerUrl: function(moduleId: string, label: string) {
+  getWorkerUrl: function (moduleId: string, label: string) {
     if (label === "json") {
       return "/monaco/json.worker.js"
     }
@@ -58,7 +59,10 @@ interface Props extends Required<Pick<EditorProps, "height" | "width">> {
   language: EditorLang
   onChange?: (x: { value: string; errors: Option<string[]> }) => void
   onMonacoInit?: (monacoInstance: typeof monacoEditor) => void
-  editorDidMount?: (getEditorValue: () => string, editor: monacoEditor.editor.IStandaloneCodeEditor) => void
+  editorDidMount?: (
+    getEditorValue: () => string,
+    editor: monacoEditor.editor.IStandaloneCodeEditor
+  ) => void
 }
 
 export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => IDisposable[]

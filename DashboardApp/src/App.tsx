@@ -15,7 +15,7 @@ import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
-import { antComponents, registerMonacoEditorMount, registry, DragDropContext } from "@opg/interface-builder"
+import { antComponents, DragDropContext, registerMonacoEditorMount, registry } from "@opg/interface-builder"
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
 import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
@@ -24,6 +24,7 @@ import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/
 import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
 import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
+import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
 
 const persistor = getPersistor()
 
@@ -46,9 +47,9 @@ function AppLoadingScreen({ title }: AppLoadingScreenProps) {
 }
 
 export function App(): JSX.Element {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    profile: s.iam.profile,
-    isCheckingSession: s.loading.effects.iam.attemptResumeSession,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    profile: appState.iam.profile,
+    isCheckingSession: appState.loading.effects.iam.attemptResumeSession,
   }))
 
   React.useEffect(() => {
@@ -62,6 +63,7 @@ export function App(): JSX.Element {
     registry.register({ "path-editor": PathEditorInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
     registry.register({ "slot-config": SlotConfigInterfaceComponent })
+    registry.register({ "string-template": StringTemplateInterfaceComponent })
     registry.register({ select: SelectInterfaceComponent })
     registry.register({ tags: TagsInterfaceComponent })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
@@ -85,9 +87,9 @@ export function App(): JSX.Element {
 }
 
 function Routes() {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    profile: s.iam.profile,
-    routes: store.select.navigation.routes(s),
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    profile: appState.iam.profile,
+    routes: store.select.navigation.routes(appState),
   }))
   return (
     <Reach.Router>

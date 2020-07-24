@@ -36,10 +36,10 @@ export interface AdminUserInterfaceContextManagerProviderProps {
 export const AdminUserInterfaceContextManagerProvider = ({
   children,
 }: AdminUserInterfaceContextManagerProviderProps) => {
-  const [fromStore, dispatch] = useRematch((state) => ({
-    configs: state.globalConfig.configs,
-    configsById: store.select.globalConfig.configsById(state),
-    reportDataByQuery: state.reports.reportDataByQuery,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configs: appState.globalConfig.configs,
+    configsById: store.select.globalConfig.configsById(appState),
+    reportDataByQuery: appState.reports.reportDataByQuery,
   }))
 
   const userInterfaceContextManager = React.useMemo(

@@ -2,8 +2,8 @@ import { Form } from "antd"
 import React from "react"
 import { RenderInterfaceComponent } from "../RenderInterfaceComponent"
 import {
-  ComponentDefinition,
   BaseInterfaceComponent,
+  ComponentDefinition,
   LayoutDefinition,
 } from "../components/base/BaseInterfaceComponent"
 

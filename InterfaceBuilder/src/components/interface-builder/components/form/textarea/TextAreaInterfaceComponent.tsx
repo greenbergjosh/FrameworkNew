@@ -1,5 +1,5 @@
-import { Form, Input, Typography } from "antd"
-import { get, set, throttle } from "lodash/fp"
+import { Input } from "antd"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { textAreaManageForm } from "./text-area-manage-form"
@@ -23,24 +23,29 @@ export interface TextAreaInterfaceComponentProps extends ComponentDefinitionName
   maxLength?: number
 }
 
-interface TextAreaInterfaceComponentState {
-}
+interface TextAreaInterfaceComponentState {}
 
 function getAutosize(
   minRows: number | undefined,
   maxRows: number | undefined,
-  autosize: boolean | undefined,
-): true | { minRows: number | undefined, maxRows: number | undefined } | undefined {
+  autosize: boolean | undefined
+): true | { minRows: number | undefined; maxRows: number | undefined } | undefined {
   const minMaxRows = minRows || maxRows ? { minRows, maxRows } : undefined
   return typeof autosize !== "undefined" && autosize ? true : minMaxRows
 }
 
-function getValue(valueKey: string, userInterfaceData: UserInterfaceProps["data"], defaultValue: string | undefined) {
+function getValue(
+  valueKey: string,
+  userInterfaceData: UserInterfaceProps["data"],
+  defaultValue: string | undefined
+) {
   const rawValue = get(valueKey, userInterfaceData)
   return typeof rawValue !== "undefined" ? rawValue : defaultValue
 }
 
-export class TextAreaInterfaceComponent extends BaseInterfaceComponent<TextAreaInterfaceComponentProps> {
+export class TextAreaInterfaceComponent extends BaseInterfaceComponent<
+  TextAreaInterfaceComponentProps
+> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -73,7 +78,15 @@ export class TextAreaInterfaceComponent extends BaseInterfaceComponent<TextAreaI
   }
 
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey, autosize, minRows, maxRows, maxLength } = this.props
+    const {
+      defaultValue,
+      userInterfaceData,
+      valueKey,
+      autosize,
+      minRows,
+      maxRows,
+      maxLength,
+    } = this.props
     const value = getValue(valueKey, userInterfaceData, defaultValue)
     const autosizeValue = getAutosize(minRows, maxRows, autosize)
     return (

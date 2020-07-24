@@ -21,7 +21,7 @@ const OneLoginIcon = ({ color = "currentColor" }) => (
 
 export const OneLoginAuth = (): JSX.Element => {
   const [isSigningIn, setIsSigningIn] = useState(false)
-  const [, dispatch] = useRematch((s) => null)
+  const [fromStore, dispatch] = useRematch((appState) => null)
   const handleClick = () => {
     setIsSigningIn(true)
     dispatch.iam.authViaOneLoginOIDC()

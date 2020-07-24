@@ -1,6 +1,6 @@
 import React from "react"
-import { Form, TimePicker } from "antd"
-import { get, set, throttle } from "lodash/fp"
+import { TimePicker } from "antd"
+import { get, set } from "lodash/fp"
 import moment from "moment"
 import { timeRangeManageForm } from "./time-range-manage-form"
 import { UserInterfaceProps } from "../../../UserInterface"
@@ -22,12 +22,13 @@ export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNam
   endTimePlaceholder: string
 }
 
-interface TimeRangeInterfaceComponentState {
-}
+interface TimeRangeInterfaceComponentState {}
 
 const TIMEFORMAT = "h:mm a"
 
-export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRangeInterfaceComponentProps> {
+export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<
+  TimeRangeInterfaceComponentProps
+> {
   static defaultProps = {
     startTimeKey: "startTime",
     endTimeKey: "endTime",

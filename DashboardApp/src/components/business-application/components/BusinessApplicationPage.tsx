@@ -1,14 +1,14 @@
 import React, { useState } from "react"
-import { useRematch } from "../../hooks"
-import { store } from "../../state/store"
+import { useRematch } from "../../../hooks"
+import { store } from "../../../state/store"
 import { UserInterface } from "@opg/interface-builder"
 import {
   BusinessApplicationConfig,
   BusinessApplicationId,
   BusinessApplicationPageConfig,
   BusinessApplicationPageId,
-} from "./business-application.types"
-import { AdminUserInterfaceContextManagerProvider } from "../../data/AdminUserInterfaceContextManager"
+} from "../types"
+import { AdminUserInterfaceContextManagerProvider } from "../../../data/AdminUserInterfaceContextManager"
 import { Button, PageHeader } from "antd"
 import * as Reach from "@reach/router"
 
@@ -33,10 +33,10 @@ export const BusinessApplicationPage = ({
    * but it seems likely that he meant to persist the users
    * interaction with the app.
    */
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configsById: store.select.globalConfig.configsById(s),
-    globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
-    reportPath: s.navigation.routes.dashboard.subroutes.reports.abs,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    reportPath: appState.navigation.routes.dashboard.subroutes.reports.abs,
   }))
   /*
    * For now, the user interacts with state

@@ -95,9 +95,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
           },
           {
             key: "appearance",
-            components: [
-              ...commonIncludeTimeForm,
-            ]
+            components: [...commonIncludeTimeForm],
           },
         ],
       },

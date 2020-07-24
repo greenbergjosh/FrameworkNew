@@ -3,12 +3,12 @@ import React from "react"
 import { ConnectDragSource, DragSource } from "react-dnd"
 import {
   DraggableContext,
+  DraggableContextProps,
   DraggableEditButtons,
   DraggedItemProps,
   DroppableContext,
-  shallowPropCheck,
   DroppableContextType,
-  DraggableContextProps,
+  shallowPropCheck,
 } from "./util"
 
 const dragHandlers = {

@@ -5,10 +5,15 @@ const getLength = (value: string): number => {
   return typeof value !== "undefined" && value.length ? value.length : 0
 }
 
-const CharCounter = (
-  { text, maxLength, className }:
-    { text: string, maxLength: number | undefined, className?: string | undefined },
-) => {
+const CharCounter = ({
+  text,
+  maxLength,
+  className,
+}: {
+  text: string
+  maxLength: number | undefined
+  className?: string | undefined
+}) => {
   if (!maxLength) return null
   return (
     <Typography.Text
@@ -19,8 +24,9 @@ const CharCounter = (
         textAlign: "right",
         fontSize: "0.85em",
         lineHeight: "12px",
-      }}
-    >{getLength(text)}/{maxLength}</Typography.Text>
+      }}>
+      {getLength(text)}/{maxLength}
+    </Typography.Text>
   )
 }
 

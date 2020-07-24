@@ -54,9 +54,7 @@ export function stepDateRangeValues(
   }
 
   if (!endDate.isValid()) {
-    console.warn(
-      `Date Stepper received an invalid End Date: "${strEndDate}". Defaulting to today.`
-    )
+    console.warn(`Date Stepper received an invalid End Date: "${strEndDate}". Defaulting to today.`)
     endDate = moment()
   }
 

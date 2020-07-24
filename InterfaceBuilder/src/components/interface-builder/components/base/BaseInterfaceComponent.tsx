@@ -12,7 +12,7 @@ export interface LayoutDefinition {
   /** The display text of this component */
   title: string
   /** A description of this component */
-  description?: string | { __html: string; }
+  description?: string | { __html: string }
   /** The AntDesign icon name of this component */
   icon?: string
   /** An SVG icon component to use instead of AntDesign icons */
@@ -46,7 +46,7 @@ export interface ComponentDefinitionRecursiveProp {
 
 export type ComponentDefinition =
   | ComponentDefinitionNamedProps
-  | ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp
+  | (ComponentDefinitionNamedProps & ComponentDefinitionRecursiveProp)
 
 export interface ComponentRenderMetaProps {
   mode?: UserInterfaceProps["mode"]

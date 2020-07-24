@@ -2,9 +2,9 @@ import * as Reach from "@reach/router"
 import { Button, Card, Col, Empty, PageHeader, Row } from "antd"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
-import { useRematch } from "../../hooks"
-import { store } from "../../state/store"
-import { BusinessApplicationConfig, BusinessApplicationId } from "./business-application.types"
+import { useRematch } from "../../../hooks"
+import { store } from "../../../state/store"
+import { BusinessApplicationConfig, BusinessApplicationId } from "../types"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId
@@ -18,10 +18,10 @@ export const DefaultBusinessApplication = ({
   businessApplicationConfig,
   title,
 }: BusinessApplicationProps): JSX.Element => {
-  const [fromStore, dispatch] = useRematch((s) => ({
-    configsById: store.select.globalConfig.configsById(s),
-    globalConfigPath: s.navigation.routes.dashboard.subroutes["global-config"].abs,
-    reportPath: s.navigation.routes.dashboard.subroutes.reports.abs,
+  const [fromStore, dispatch] = useRematch((appState) => ({
+    configsById: store.select.globalConfig.configsById(appState),
+    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
+    reportPath: appState.navigation.routes.dashboard.subroutes.reports.abs,
   }))
 
   console.log("BusinessApplication.render", {

@@ -25,7 +25,7 @@ declare module "@reach/component-component" {
     willUnmount?(args: StateProps<P, S> & Refs): void
     getSnapshotBeforeUpdate?(args: StateProps<P, S> & Refs & { prevProps: P; prevState: S }): any
     shouldUpdate?(args: StateProps<P, S> & { nextProps: P; nextState: S }): boolean
-    children?(args: Args<P, S> & Refs): Args<P, S> & Refs | React.ReactNode | null
+    children?(args: Args<P, S> & Refs): (Args<P, S> & Refs) | React.ReactNode | null
     render?(args: Args<P, S>): void
   }
 

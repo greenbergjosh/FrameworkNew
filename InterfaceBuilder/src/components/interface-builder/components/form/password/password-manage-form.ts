@@ -36,8 +36,8 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Show Password Toggle",
               },
-            ]
-          }
+            ],
+          },
         ],
       },
     ],

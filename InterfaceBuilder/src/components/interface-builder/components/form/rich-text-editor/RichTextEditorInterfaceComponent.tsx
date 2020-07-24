@@ -1,6 +1,5 @@
-import { Form, Input } from "antd"
 import CKEditor from "ckeditor4-react"
-import { get, set, throttle } from "lodash/fp"
+import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { richTextEditorManageForm } from "./rich-text-editor-manage-form"
@@ -20,10 +19,11 @@ export interface InputInterfaceComponentProps extends ComponentDefinitionNamedPr
   valueKey: string
 }
 
-interface InputInterfaceComponentState {
-}
+interface InputInterfaceComponentState {}
 
-export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<InputInterfaceComponentProps> {
+export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<
+  InputInterfaceComponentProps
+> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -65,7 +65,9 @@ export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<Inp
         onChange={this.handleChange}
         data={value}
         // Suppresses Error: 'react Error code: editor-element-conflict. editorName: "editor1"'
-        onBeforeLoad={(CKEditor: { disableAutoInline: boolean }) => (CKEditor.disableAutoInline = true)}
+        onBeforeLoad={(CKEditor: { disableAutoInline: boolean }) =>
+          (CKEditor.disableAutoInline = true)
+        }
       />
     )
   }

@@ -3,7 +3,6 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import { TouchBackend } from "react-dnd-touch-backend"
 
-
 const withHTML5DragDropContext: React.FunctionComponent<{}> = (props) => {
   return <DndProvider backend={HTML5Backend}>{props.children}</DndProvider>
 }

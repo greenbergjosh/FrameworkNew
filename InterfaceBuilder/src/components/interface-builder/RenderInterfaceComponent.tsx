@@ -3,7 +3,7 @@ import jsonLogic from "json-logic-js"
 import React from "react"
 import { tryCatch } from "./lib/Option"
 import { Draggable } from "./dnd"
-import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
+import { UserInterfaceProps } from "./UserInterface"
 import {
   BaseInterfaceComponent,
   ComponentDefinition,

@@ -2,7 +2,6 @@ import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
 import { baseSelectDataComponents } from "../../_shared/selectable/selectable-manage-form"
 
-
 export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
@@ -21,7 +20,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
               },
-              ...baseSelectDataComponents
+              ...baseSelectDataComponents,
             ],
           },
           {
@@ -68,8 +67,8 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
-            ]
-          }
+            ],
+          },
         ],
       },
     ],

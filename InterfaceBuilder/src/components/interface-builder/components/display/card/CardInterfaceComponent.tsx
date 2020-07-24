@@ -6,8 +6,8 @@ import { UserInterfaceProps } from "../../../UserInterface"
 import { cardManageForm } from "./card-manage-form"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 export interface CardInterfaceComponentProps extends ComponentDefinitionNamedProps {

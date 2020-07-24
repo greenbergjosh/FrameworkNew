@@ -117,6 +117,6 @@ export function RepeaterItem({
           </Badge>
         </li>
       )}
-      </>
+    </>
   )
 }

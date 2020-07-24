@@ -17,6 +17,9 @@ export interface StringTemplateInterfaceComponentProps extends ComponentDefiniti
   // Additional props
   serializeSrc?: string
   deserializeSrc?: string
+  serialize?: SerializeType
+  deserialize?: DeserializeType
+  showBorder?: boolean
 }
 
 export type SerializeType = (value?: JSONRecord | JSONRecord[]) => string | undefined

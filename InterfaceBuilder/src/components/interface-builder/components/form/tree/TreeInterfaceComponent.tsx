@@ -1,18 +1,5 @@
-import {
-  Button,
-  Col,
-  Divider,
-  Empty,
-  Icon,
-  Row,
-  Tree
-  } from "antd"
-import {
-  cloneDeep,
-  get,
-  getOr,
-  set
-  } from "lodash/fp"
+import { Button, Col, Divider, Empty, Icon, Row, Tree } from "antd"
+import { cloneDeep, get, getOr, set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
 import { ComponentRenderer } from "../../../ComponentRenderer"
@@ -28,8 +15,8 @@ import {
 } from "antd/lib/tree/Tree"
 import {
   BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
   ComponentDefinition,
+  ComponentDefinitionNamedProps,
 } from "../../base/BaseInterfaceComponent"
 
 type EntryType = "standard" | "leaf" | "parent"
