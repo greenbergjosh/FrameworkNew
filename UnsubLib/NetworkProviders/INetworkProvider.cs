@@ -21,6 +21,7 @@ namespace UnsubLib.NetworkProviders
                 "Cake" => new Cake(fw),
                 "W4" => new W4(fw),
                 "Tune" => new Tune(fw),
+                "Everflow" => new Everflow(fw),
                 _ => new Other(fw),
             };
         }
