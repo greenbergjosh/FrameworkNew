@@ -66,7 +66,7 @@ namespace UnsubLib
         private const int DefaultFileCopyTimeout = 5 * 60000; // 5mins
         private const string Conn = "Unsub";
 
-        private HashSet<string> _queuedCampaigns = null;
+        private HashSet<string> _queuedCampaigns;
         private readonly string _queuedCampaignsUrl;
         private readonly string _queuedCampaignsBody;
 
@@ -178,6 +178,35 @@ namespace UnsubLib
             await _fw.Log(nameof(ForceUnsub), $"Completed ForceUnsub: {forceName}");
 
             return Jw.Serialize(new { Result = "Success" });
+        }
+
+        public async Task<string> RefreshCampaigns(IGenericEntity dtve)
+        {
+            try
+            {
+                var networkName = dtve.GetS("networkName");
+
+                await _fw.Err(ErrorSeverity.Log, nameof(RefreshCampaigns), ErrorDescriptor.Log, $"Starting {nameof(RefreshCampaigns)}. Network: [{networkName}]");
+
+                var networks = await Data.CallFn(Conn, "SelectNetwork", Jw.Serialize(new { NetworkName = networkName }), "");
+
+                var network = networks?.GetL("").FirstOrDefault();
+                if (network == null || string.IsNullOrWhiteSpace(network.GetS("Name")))
+                {
+                    await _fw.Error(nameof(RefreshCampaigns), $"{nameof(RefreshCampaigns)}: Network {networkName} not found");
+                    return Jw.Serialize(new { ServerException = new { reason = $"Network [{networkName}] not found" } });
+                }
+
+                var networkProvider = Factory.GetInstance(_fw, network);
+                _ = Task.Run(async () => await GetCampaignsScheduledJobs(network, networkProvider, true));
+
+                return Jw.Serialize(new { OK = true });
+            }
+            catch (Exception ex)
+            {
+                await _fw.Error(nameof(RefreshCampaigns), $"Exception: {ex}");
+                return Jw.Serialize(new { ServerException = new { reason = ex.Message } });
+            }
         }
 
         public async Task<string> RunCampaign(IGenericEntity dtve)
@@ -1078,18 +1107,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+            }
 #if DEBUG
             }
 #endif

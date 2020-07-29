@@ -120,11 +120,35 @@ namespace UnsubJob
                 return;
             }
 
+            var refreshCampaigns = args.Any(a => string.Equals(a, "refreshCampaigns", StringComparison.CurrentCultureIgnoreCase));
+
             foreach (var n in networks)
             {
                 var name = n.GetS("Name");
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
+
+                if (refreshCampaigns)
+                {
+                    try
+                    {
+                        await Fw.Log(nameof(Main), $"Starting GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
+                        var networkProvider = Factory.GetInstance(Fw, n);
+                        await nw.GetCampaignsScheduledJobs(n, networkProvider, skipQueuedCheck);
+                        await Fw.Log(nameof(Main), $"Completed GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
+                    }
+                    catch (HaltingException e)
+                    {
+                        await Fw.Error(nameof(UnsubJob), $"Network fatal error for {name}: {e.UnwrapForLog()}");
+                        await Fw.Alert(nameof(UnsubJob), "Unsub Fatal Error", $"Network fatal error for {name}: {e.UnwrapForLog()}");
+                        continue;
+                    }
+                    catch (Exception exScheduledUnsub)
+                    {
+                        await Fw.Error(nameof(Main), $"GetCampaignsScheduledJobs failed({name}): {exScheduledUnsub}");
+                    }
+                    continue;
+                }
 
                 var unsubMethod = n.GetS("Credentials/UnsubMethod");
 

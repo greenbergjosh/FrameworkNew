@@ -50,6 +50,9 @@ namespace UnsubClientWeb
                     case "GetCampaigns":
                         result = (await unsub.GetCampaigns())?.GetS("") ?? result;
                         break;
+                    case "RefreshCampaigns":
+                        result = await unsub.RefreshCampaigns(dtv);
+                        break;
                     case "RunCampaign":
                         result = await unsub.RunCampaign(dtv);
                         break;
