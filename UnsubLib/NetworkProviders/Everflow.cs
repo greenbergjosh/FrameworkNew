@@ -6,6 +6,18 @@ using Utility.DataLayer;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
+// Saving this here in case the google sheet goes away
+/*
+Partner 	Person 	    API Key
+1P	        Aldo	    Wfo0zUBeSCe6fRxxIHavSA
+2P	        Nadia	    JJZbQUGQMWGT7g3SWNlQ
+2P-C	    Caleb	    fDexAoKKTdeRlAFzzxsmhA
+3P	        Andy	    juMp3rkUSH6gS0LaoVEhoQ
+3P-C	    Cathy	    mwW7RGstSjuMzh4nCGKXg
+3P-R	    Roxy	    VigbsuQeC713gd1bgA
+PUSH	    Victoria    kwWLIk3QgerUuY0s2nzgQ
+SMS	        Chris	    FQZPfVXMQ7SPBFxkdJgKYw
+*/
 namespace UnsubLib.NetworkProviders
 {
     internal class Everflow : INetworkProvider
