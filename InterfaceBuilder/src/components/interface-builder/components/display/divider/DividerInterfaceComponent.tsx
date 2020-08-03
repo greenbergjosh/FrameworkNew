@@ -2,10 +2,7 @@ import { Divider } from "antd"
 import { DividerProps } from "antd/lib/divider"
 import React from "react"
 import { dividerManageForm } from "./divider-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 export interface DividerInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "divider"
@@ -15,9 +12,7 @@ export interface DividerInterfaceComponentProps extends ComponentDefinitionNamed
   textAlignment?: DividerProps["orientation"]
 }
 
-export class DividerInterfaceComponent extends BaseInterfaceComponent<
-  DividerInterfaceComponentProps
-> {
+export class DividerInterfaceComponent extends BaseInterfaceComponent<DividerInterfaceComponentProps> {
   static defaultProps = {
     defaultValue: 0,
   }

@@ -4,10 +4,7 @@ import React from "react"
 import { tryCatch } from "./lib/Option"
 import { Draggable } from "./dnd"
 import { UserInterfaceProps } from "./UserInterface"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinition,
-} from "./components/base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinition } from "./components/base/BaseInterfaceComponent"
 import { RootUserInterfaceDataContext } from "./util/RootUserInterfaceDataContext"
 
 interface RenderInterfaceComponentProps {
@@ -90,8 +87,7 @@ export class RenderInterfaceComponent extends React.Component<
       })
     }
 
-    const layoutDefintion =
-      Component && Component.getLayoutDefinition && Component.getLayoutDefinition()
+    const layoutDefintion = Component && Component.getLayoutDefinition && Component.getLayoutDefinition()
 
     const content = Component ? (
       <RootUserInterfaceDataContext.Consumer>
@@ -106,11 +102,7 @@ export class RenderInterfaceComponent extends React.Component<
               onChangeData && onChangeData(props)
             }}
             onChangeSchema={(newComponentDefinition: ComponentDefinition) => {
-              console.log(
-                "RenderInterfaceComponent.onChangeSchema",
-                newComponentDefinition,
-                onChangeSchema
-              )
+              console.log("RenderInterfaceComponent.onChangeSchema", newComponentDefinition, onChangeSchema)
               onChangeSchema && onChangeSchema(newComponentDefinition)
             }}
             submit={submit}

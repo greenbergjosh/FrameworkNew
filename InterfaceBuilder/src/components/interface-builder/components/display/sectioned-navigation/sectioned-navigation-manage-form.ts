@@ -64,8 +64,7 @@ const sectionedNavigationManageFormDefinition: Partial<ComponentDefinition>[] = 
                 label: "Sections",
                 addItemLabel: "Add Section",
                 emptyText: "No Configured Navigation Sections",
-                help:
-                  "List the named sections here, and fill in the components in the Layout Creator",
+                help: "List the named sections here, and fill in the components in the Layout Creator",
               },
             ],
           },

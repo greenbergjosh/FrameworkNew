@@ -200,10 +200,7 @@ const appearanceTab = {
       defaultValue: false,
       label: "Hide Button Text",
       visibilityConditions: {
-        and: [
-          { "!==": ["circle", { var: ["shape"] }] },
-          { "!==": ["circle-outline", { var: ["shape"] }] },
-        ],
+        and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
       },
     },
     {
@@ -247,10 +244,7 @@ const appearanceTab = {
       defaultValue: false,
       label: "Full Width",
       visibilityConditions: {
-        and: [
-          { "!==": ["circle", { var: ["shape"] }] },
-          { "!==": ["circle-outline", { var: ["shape"] }] },
-        ],
+        and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
       },
     },
     {

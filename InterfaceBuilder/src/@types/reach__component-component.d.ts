@@ -3,9 +3,7 @@ declare module "@reach/component-component" {
     props: P
     state: S
     setState<K extends keyof S>(
-      state:
-        | ((prevState: Readonly<S>, props: P) => Pick<S, K> | S | null)
-        | (Pick<S, K> | S | null),
+      state: ((prevState: Readonly<S>, props: P) => Pick<S, K> | S | null) | (Pick<S, K> | S | null),
       callback?: () => void
     ): void
     forceUpdate(callBack?: () => void): void
@@ -29,10 +27,7 @@ declare module "@reach/component-component" {
     render?(args: Args<P, S>): void
   }
 
-  class Component<P extends ComponentProps<P, S>, S = any> extends React.Component<
-    ComponentProps<P, S>,
-    {}
-  > {}
+  class Component<P extends ComponentProps<P, S>, S = any> extends React.Component<ComponentProps<P, S>, {}> {}
 
   export default Component
 }

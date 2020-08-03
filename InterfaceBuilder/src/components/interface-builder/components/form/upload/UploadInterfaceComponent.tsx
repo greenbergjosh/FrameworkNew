@@ -11,10 +11,7 @@ import {
   UploaderComponent,
   UploadingEventArgs,
 } from "@syncfusion/ej2-react-inputs"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import "./upload.module.scss"
 
 /******************************
@@ -100,19 +97,14 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
   constructor(props: UploadInterfaceComponentProps) {
     super(props)
     this.isInteraction = false
-    this.browseButtonLabel = this.props.standaloneButton
-      ? this.props.standaloneButtonLabel
-      : this.props.dndButtonLabel
+    this.browseButtonLabel = this.props.standaloneButton ? this.props.standaloneButtonLabel : this.props.dndButtonLabel
 
     this.state = {
       isUploading: false,
     }
   }
 
-  componentDidUpdate(
-    prevProps: Readonly<UploadInterfaceComponentProps>,
-    prevState: Readonly<{}>
-  ): void {
+  componentDidUpdate(prevProps: Readonly<UploadInterfaceComponentProps>, prevState: Readonly<{}>): void {
     if (
       this.props.standaloneButton !== prevProps.standaloneButton ||
       this.props.dndButtonLabel !== prevProps.dndButtonLabel ||
@@ -204,7 +196,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
 
     args.cancel = !this.isInteraction
     // Check network availability every 500 milliseconds
-    let clearTimeInterval = setInterval(getCallback(), 500)
+    const clearTimeInterval = setInterval(getCallback(), 500)
 
     const clearSetInterval = () => {
       clearInterval(clearTimeInterval)
@@ -221,9 +213,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
     this.setState({ isUploading: false })
 
     console.warn("Upload", "onFailure!", "args", failureEventArgs, "this.uploadObj", this.uploadObj)
-    message.warn(
-      "Something is wrong with the network. Upload will resume when the network is restored."
-    )
+    message.warn("Something is wrong with the network. Upload will resume when the network is restored.")
   }
 
   /**
@@ -237,8 +227,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
 
     if (successEventArgs?.operation === "upload") {
       // File was uploaded
-      onChangeData &&
-        onChangeData(set(valueKey, this.uploadObj && this.uploadObj.filesData, userInterfaceData))
+      onChangeData && onChangeData(set(valueKey, this.uploadObj && this.uploadObj.filesData, userInterfaceData))
       message.success("Upload completed")
     } else if (successEventArgs?.operation === "remove") {
       // File was removed

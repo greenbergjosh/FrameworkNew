@@ -49,8 +49,7 @@ const dividerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 defaultValue: "center",
                 label: "Text Alignment",
-                help:
-                  "Whether the text on the label should appear on the left, right, or center of the divider.",
+                help: "Whether the text on the label should appear on the left, right, or center of the divider.",
                 dataHandlerType: "local",
                 data: {
                   values: [

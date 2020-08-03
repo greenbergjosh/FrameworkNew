@@ -14,13 +14,13 @@ export const getTimeFormat = (timeSettings?: TimeSettings) => {
       formatString += (formatString.length ? ":" : "") + (use24Clock ? "HH" : "h")
     }
     if (includeMinute) {
-      formatString += (formatString.length ? ":" : "") + "mm"
+      formatString += `${formatString.length ? ":" : ""}mm`
     }
     if (includeSecond) {
-      formatString += (formatString.length ? ":" : "") + "ss"
+      formatString += `${formatString.length ? ":" : ""}ss`
     }
     if (!use24Clock) {
-      formatString += (formatString.length ? " " : "") + "A"
+      formatString += `${formatString.length ? " " : ""}A`
     }
 
     if (formatString) {

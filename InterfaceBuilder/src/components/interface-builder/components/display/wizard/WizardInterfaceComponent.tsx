@@ -35,9 +35,7 @@ interface WizardInterfaceComponentEditModeProps extends IWizardInterfaceComponen
   userInterfaceSchema?: ComponentDefinition
 }
 
-type WizardInterfaceComponentProps =
-  | WizardInterfaceComponentDisplayModeProps
-  | WizardInterfaceComponentEditModeProps
+type WizardInterfaceComponentProps = WizardInterfaceComponentDisplayModeProps | WizardInterfaceComponentEditModeProps
 
 export interface WizardInterfaceComponentState {
   activeStep: number
@@ -82,9 +80,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
     return (
       <DataPathContext path="steps">
         <div>
-          <Steps
-            current={activeStepIndex}
-            onChange={(stepIndex: number) => this.setState({ activeStep: stepIndex })}>
+          <Steps current={activeStepIndex} onChange={(stepIndex: number) => this.setState({ activeStep: stepIndex })}>
             {steps.map(({ title }) => (
               <Steps.Step key={title} title={title} />
             ))}
@@ -106,9 +102,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
                     })
                     onChangeSchema &&
                       userInterfaceSchema &&
-                      onChangeSchema(
-                        set(`steps.${activeStepIndex}.components`, newSchema, userInterfaceSchema)
-                      )
+                      onChangeSchema(set(`steps.${activeStepIndex}.components`, newSchema, userInterfaceSchema))
                   }
                 }}
               />
@@ -116,9 +110,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
           </div>
           <div className="steps-action">
             {activeStepIndex < steps.length - 1 && (
-              <Button
-                type="primary"
-                onClick={() => this.setState({ activeStep: activeStepIndex + 1 })}>
+              <Button type="primary" onClick={() => this.setState({ activeStep: activeStepIndex + 1 })}>
                 Next
               </Button>
             )}
@@ -129,9 +121,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
               </Button>
             )} */}
             {activeStepIndex > 0 && (
-              <Button
-                style={{ marginLeft: 8 }}
-                onClick={() => this.setState({ activeStep: activeStepIndex - 1 })}>
+              <Button style={{ marginLeft: 8 }} onClick={() => this.setState({ activeStep: activeStepIndex - 1 })}>
                 Previous
               </Button>
             )}

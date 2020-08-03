@@ -25,15 +25,12 @@ const mergeHandler = (value: any, srcValue: any, key?: any) => {
     //   result: items.concat(remaining),
     // })
     return items.concat(remaining)
-  } else {
-    // console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
   }
+  // console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
 }
 
 export const baseManageForm = (...extend: Partial<ComponentDefinition>[]) =>
-  extend.length
-    ? (mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[])
-    : baseManageFormDefinition
+  extend.length ? (mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[]) : baseManageFormDefinition
 
 const baseManageFormDefinition: ComponentDefinition[] = [
   {

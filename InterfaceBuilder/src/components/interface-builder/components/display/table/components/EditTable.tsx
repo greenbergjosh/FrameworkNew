@@ -41,9 +41,7 @@ export function EditTable({
           //   onChangeSchema,
           //   userInterfaceSchema,
           // })
-          onChangeSchema &&
-            userInterfaceSchema &&
-            onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
+          onChangeSchema && userInterfaceSchema && onChangeSchema(set("columns", newData.columns, userInterfaceSchema))
         }}
         onChangeSchema={(newData) => {
           console.log("TableInterfaceComponent.EditTable", "onChangeSchema X1", {
@@ -63,9 +61,7 @@ export function EditTable({
           <ComponentRenderer
             components={rowDetails}
             data={data}
-            onChangeData={(newData) =>
-              onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))
-            }
+            onChangeData={(newData) => onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))}
             onChangeSchema={(newSchema) => {
               // console.log("TableInterfaceComponent.render", "onChangeSchema X2", {
               //   abstract,
@@ -75,9 +71,7 @@ export function EditTable({
               //   onChangeSchema,
               //   userInterfaceSchema,
               // })
-              onChangeSchema &&
-                userInterfaceSchema &&
-                onChangeSchema(set("rowDetails", newSchema, userInterfaceSchema))
+              onChangeSchema && userInterfaceSchema && onChangeSchema(set("rowDetails", newSchema, userInterfaceSchema))
             }}
           />
         </DataPathContext>

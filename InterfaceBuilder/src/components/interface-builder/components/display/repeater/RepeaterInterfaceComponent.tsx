@@ -6,9 +6,7 @@ import { RepeaterInterfaceComponentProps } from "./types"
 import { ConfigureMode } from "./components/ConfigureMode"
 import { DisplayMode } from "./components/DisplayMode"
 
-export class RepeaterInterfaceComponent extends BaseInterfaceComponent<
-  RepeaterInterfaceComponentProps
-> {
+export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterInterfaceComponentProps> {
   static defaultProps = {
     addItemLabel: "Add Item",
     allowDelete: true,

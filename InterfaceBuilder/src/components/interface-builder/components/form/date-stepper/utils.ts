@@ -47,9 +47,7 @@ export function stepDateRangeValues(
   let newValue = {}
 
   if (!startDate.isValid()) {
-    console.warn(
-      `Date Stepper received an invalid Start Date: "${strStartDate}". Defaulting to today.`
-    )
+    console.warn(`Date Stepper received an invalid Start Date: "${strStartDate}". Defaulting to today.`)
     startDate = moment()
   }
 

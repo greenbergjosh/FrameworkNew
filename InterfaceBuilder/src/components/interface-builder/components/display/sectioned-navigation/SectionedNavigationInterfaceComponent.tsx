@@ -26,13 +26,11 @@ export interface ISectionedNavigationInterfaceComponentProps extends ComponentDe
   userInterfaceData?: UserInterfaceProps["data"]
 }
 
-interface SectionedNavigationInterfaceComponentDisplayModeProps
-  extends ISectionedNavigationInterfaceComponentProps {
+interface SectionedNavigationInterfaceComponentDisplayModeProps extends ISectionedNavigationInterfaceComponentProps {
   mode: "display"
 }
 
-interface SectionedNavigationInterfaceComponentEditModeProps
-  extends ISectionedNavigationInterfaceComponentProps {
+interface SectionedNavigationInterfaceComponentEditModeProps extends ISectionedNavigationInterfaceComponentProps {
   mode: "edit"
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition
@@ -122,13 +120,7 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
                         })
                         onChangeSchema &&
                           userInterfaceSchema &&
-                          onChangeSchema(
-                            set(
-                              `sections.${sectionIndex}.components`,
-                              newSchema,
-                              userInterfaceSchema
-                            )
-                          )
+                          onChangeSchema(set(`sections.${sectionIndex}.components`, newSchema, userInterfaceSchema))
                       }
                     }}
                   />

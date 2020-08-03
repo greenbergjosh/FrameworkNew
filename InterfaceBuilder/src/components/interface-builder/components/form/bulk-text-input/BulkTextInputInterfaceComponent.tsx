@@ -3,10 +3,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { bulkTextInputManageForm } from "./bulk-text-input-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Codec, getCodec, separator } from "./codec"
 import { Undraggable } from "../../_shared/Undraggable"
 
@@ -36,20 +33,13 @@ function getAutosize(
   return typeof autosize !== "undefined" && autosize ? true : minMaxRows
 }
 
-function getValue(
-  valueKey: string,
-  userInterfaceData: UserInterfaceProps["data"],
-  defaultValue: string,
-  codec: Codec
-) {
+function getValue(valueKey: string, userInterfaceData: UserInterfaceProps["data"], defaultValue: string, codec: Codec) {
   const rawValue = get(valueKey, userInterfaceData)
   const value = codec.join(rawValue)
   return typeof value !== "undefined" ? value : defaultValue
 }
 
-export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<
-  BulkTextInputInterfaceComponentProps
-> {
+export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<BulkTextInputInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -101,12 +91,7 @@ export class BulkTextInputInterfaceComponent extends BaseInterfaceComponent<
     const placeholder = itemSeparator === separator.comma ? commaPlaceholder : newlinePlaceholder
     return (
       <Undraggable>
-        <Input.TextArea
-          onChange={this.handleChange}
-          value={value}
-          autoSize={autosizeValue}
-          placeholder={placeholder}
-        />
+        <Input.TextArea onChange={this.handleChange} value={value} autoSize={autosizeValue} placeholder={placeholder} />
       </Undraggable>
     )
   }

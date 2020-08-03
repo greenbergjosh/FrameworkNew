@@ -65,8 +65,7 @@ const collapseManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Collapse Sections",
                 addItemLabel: "Add Section",
                 emptyText: "No Configured Collapse Sections",
-                help:
-                  "List the named sections here, and fill in the components in the Layout Creator",
+                help: "List the named sections here, and fill in the components in the Layout Creator",
               },
             ],
           },

@@ -4,10 +4,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { numberInputManageForm } from "./number-input-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
 
 export interface NumberInputInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -20,9 +17,7 @@ export interface NumberInputInterfaceComponentProps extends ComponentDefinitionN
   size: InputNumberProps["size"]
 }
 
-export class NumberInputInterfaceComponent extends BaseInterfaceComponent<
-  NumberInputInterfaceComponentProps
-> {
+export class NumberInputInterfaceComponent extends BaseInterfaceComponent<NumberInputInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",

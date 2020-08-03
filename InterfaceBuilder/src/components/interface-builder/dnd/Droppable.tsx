@@ -19,7 +19,7 @@ const dropHandlers = {
   // canDrop(props: DroppableInnerProps) {
   //   return props.allowDrop !== false
   // },
-  hover: function (props: DroppableInnerProps, monitor: DropTargetMonitor, component: any) {
+  hover(props: DroppableInnerProps, monitor: DropTargetMonitor, component: any) {
     const item = monitor.getItem() as DraggableInnerProps
     const { index: draggedIndex, draggableId, parentDroppableId } = item
     const {
@@ -37,12 +37,9 @@ const dropHandlers = {
       if (hoverElement) {
         if (isPlaceholderElement(hoverElement)) return
 
-        const simpleHoverIndex = [...droppableElement.children].findIndex(
-          (child) => child === hoverElement
-        )
+        const simpleHoverIndex = [...droppableElement.children].findIndex((child) => child === hoverElement)
 
-        const isHoveringOriginal =
-          draggedIndex === simpleHoverIndex && parentDroppableId === droppableId
+        const isHoveringOriginal = draggedIndex === simpleHoverIndex && parentDroppableId === droppableId
 
         if (!isHoveringOriginal) {
           // find the middle of things
@@ -89,35 +86,33 @@ const dropHandlers = {
               // console.log("Droppable.hover", "result", "Do Nothing")
             }
             return
-          } else {
-            const finalHoverElement = droppableElement.children.item(hoveredIndex)
+          }
+          const finalHoverElement = droppableElement.children.item(hoveredIndex)
 
-            if (finalHoverElement) {
-              const finalHoverBoundingRect = finalHoverElement.getBoundingClientRect()
+          if (finalHoverElement) {
+            const finalHoverBoundingRect = finalHoverElement.getBoundingClientRect()
 
-              // insert a display placeholder at an appropriate position
-              const newPlaceholder = {
-                index: hoveredIndex,
-                x: finalHoverBoundingRect.left - droppableBoundingRect.left + 5,
-                y: finalHoverBoundingRect.top - droppableBoundingRect.top + 5,
-                width: finalHoverBoundingRect.width - 10,
-              }
+            // insert a display placeholder at an appropriate position
+            const newPlaceholder = {
+              index: hoveredIndex,
+              x: finalHoverBoundingRect.left - droppableBoundingRect.left + 5,
+              y: finalHoverBoundingRect.top - droppableBoundingRect.top + 5,
+              width: finalHoverBoundingRect.width - 10,
+            }
 
-              // Don't update the state unless the state has actually changed
-              if (!isShallowEqual(newPlaceholder, placeholder)) {
-                // console.log("Droppable.hover", "result", { newPlaceholder })
-                props.setPlaceholder(newPlaceholder)
-              } else {
-                // console.log("Droppable.hover", "result", "Do Nothing")
-              }
+            // Don't update the state unless the state has actually changed
+            if (!isShallowEqual(newPlaceholder, placeholder)) {
+              // console.log("Droppable.hover", "result", { newPlaceholder })
+              props.setPlaceholder(newPlaceholder)
             } else {
               // console.log("Droppable.hover", "result", "Do Nothing")
             }
-            return
+          } else {
+            // console.log("Droppable.hover", "result", "Do Nothing")
           }
-        } else {
-          // If we're hovering the original item, don't show a placeholder
+          return
         }
+        // If we're hovering the original item, don't show a placeholder
       } else {
         // Not hovrering any particular element, placeholder should go to the top or bottom
         // Determine bounds of Droppable
@@ -158,8 +153,7 @@ const dropHandlers = {
             // If this was already the bottom item in this list, then bail
             if (
               (draggedIndex === hoveredIndex ||
-                (draggedIndex === hoveredIndex - 1 &&
-                  hoveredIndex === droppableElement.children.length)) &&
+                (draggedIndex === hoveredIndex - 1 && hoveredIndex === droppableElement.children.length)) &&
               parentDroppableId === droppableId
             )
               return
@@ -280,7 +274,7 @@ function DroppableInner({
         "accept-drop": canDrop && isOver && allowDrop,
         "has-placeholder": !!placeholder && canDrop && isOver && allowDrop,
         vertical: !horizontal,
-        horizontal: horizontal,
+        horizontal,
       })}
       ref={innerRef}>
       {/* Id {droppableId} | Placeholder at{" "}
@@ -337,12 +331,10 @@ export const Droppable = React.memo(
     const [placeholder, setPlaceholder] = React.useState<DroppablePlaceholderState | null>(null)
 
     const parentDroppableContext = React.useContext(DroppableContext)
-    const finalDropHandler =
-      onDrop || (parentDroppableContext ? parentDroppableContext.onDrop : void 0)
+    const finalDropHandler = onDrop || (parentDroppableContext ? parentDroppableContext.onDrop : void 0)
 
     return (
-      <DroppableContext.Provider
-        value={{ droppableId, onDrop: finalDropHandler, orientation, placeholder }}>
+      <DroppableContext.Provider value={{ droppableId, onDrop: finalDropHandler, orientation, placeholder }}>
         <DroppableComponent
           allowDrop={allowDrop}
           disabled={disabled}

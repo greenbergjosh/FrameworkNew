@@ -71,8 +71,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "checkbox",
                 defaultValue: false,
                 label: "Use API Wrapper Object",
-                help:
-                  "Whether to send the start and end values as two separate values or contained in an object.",
+                help: "Whether to send the start and end values as two separate values or contained in an object.",
               },
               {
                 key: "wrapperObjectKey",

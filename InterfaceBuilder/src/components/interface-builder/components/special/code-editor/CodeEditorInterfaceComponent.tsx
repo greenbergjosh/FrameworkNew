@@ -4,10 +4,7 @@ import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { CodeEditor, EditorLang, EditorTheme } from "./code-editor"
 import { codeEditorManageForm } from "./code-editor-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 export interface CodeEditorInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "code-editor"

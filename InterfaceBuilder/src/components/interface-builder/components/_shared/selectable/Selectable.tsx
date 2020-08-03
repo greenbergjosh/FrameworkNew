@@ -139,8 +139,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
           options.find(
             ({ value }) =>
               value === anyCaseResult ||
-              (typeof value === "string" && value.toLowerCase()) ===
-                (anyCaseResult && anyCaseResult.toLowerCase())
+              (typeof value === "string" && value.toLowerCase()) === (anyCaseResult && anyCaseResult.toLowerCase())
           ) || { value: anyCaseResult }
         ).value
       )
@@ -152,8 +151,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
               options.find(
                 ({ value }) =>
                   value === resultItem ||
-                  (typeof value === "string" && value.toLowerCase()) ===
-                    (resultItem && resultItem.toLowerCase())
+                  (typeof value === "string" && value.toLowerCase()) === (resultItem && resultItem.toLowerCase())
               ) || { value: resultItem }
             ).value
         )
@@ -180,9 +178,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
 const cleanText = (text: string, prefix?: string, suffix?: string) => {
   const noPrefix = text && prefix && text.startsWith(prefix) ? text.substring(prefix.length) : text
   const noSuffix =
-    noPrefix && suffix && noPrefix.endsWith(suffix)
-      ? noPrefix.substr(0, noPrefix.length - suffix.length)
-      : noPrefix
+    noPrefix && suffix && noPrefix.endsWith(suffix) ? noPrefix.substr(0, noPrefix.length - suffix.length) : noPrefix
 
   return noSuffix
 }

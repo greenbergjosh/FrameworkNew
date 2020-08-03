@@ -23,7 +23,7 @@ export { supportedEditorTheme } from "./code-editor-manage-form"
  * https://github.com/microsoft/monaco-editor-samples/blob/master/browser-esm-webpack-small/webpack.config.js
  */
 ;(window as any).MonacoEnvironment = {
-  getWorkerUrl: function (moduleId: string, label: string) {
+  getWorkerUrl(moduleId: string, label: string) {
     if (label === "json") {
       return "/monaco/json.worker.js"
     }
@@ -59,10 +59,7 @@ interface Props extends Required<Pick<EditorProps, "height" | "width">> {
   language: EditorLang
   onChange?: (x: { value: string; errors: Option<string[]> }) => void
   onMonacoInit?: (monacoInstance: typeof monacoEditor) => void
-  editorDidMount?: (
-    getEditorValue: () => string,
-    editor: monacoEditor.editor.IStandaloneCodeEditor
-  ) => void
+  editorDidMount?: (getEditorValue: () => string, editor: monacoEditor.editor.IStandaloneCodeEditor) => void
 }
 
 export type CustomEditorWillMount = (monaco: editor.IStandaloneCodeEditor) => IDisposable[]
@@ -200,10 +197,7 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
           oldSetModelMarkers.call(editor, model, language, markers)
           const errors = markers
             .filter((marker) => marker.severity === MarkerSeverity.Error)
-            .map(
-              (marker) =>
-                `${marker.message} on line ${marker.startLineNumber}:${marker.startColumn}`
-            )
+            .map((marker) => `${marker.message} on line ${marker.startLineNumber}:${marker.startColumn}`)
           if (props.onChange) {
             props.onChange({
               value: model.getValue(),
@@ -252,10 +246,9 @@ export const CodeEditor = React.memo(function CodeEditor(props: Props): JSX.Elem
                     {...props}
                     {...editorProps}
                     onChange={onChange} // <-- onChange provided by <ControlledEditor> but not <Editor>
-                    editorDidMount={(
-                      getEditorValue: () => string,
-                      editor: editor.IStandaloneCodeEditor
-                    ) => handleEditorDidMount(editor, setLocalState, getEditorValue)}
+                    editorDidMount={(getEditorValue: () => string, editor: editor.IStandaloneCodeEditor) =>
+                      handleEditorDidMount(editor, setLocalState, getEditorValue)
+                    }
                   />
                 )}
               </Component>

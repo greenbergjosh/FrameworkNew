@@ -56,14 +56,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = dataDictionaryManageForm
 
   render(): JSX.Element {
-    const {
-      defaultValue,
-      keyLabel,
-      onChangeData,
-      userInterfaceData,
-      valueComponent,
-      valueKey,
-    } = this.props
+    const { defaultValue, keyLabel, onChangeData, userInterfaceData, valueComponent, valueKey } = this.props
     const dictionary = get(valueKey, userInterfaceData) || defaultValue
     const values = dictionary && Object.entries(dictionary).map(([key, value]) => ({ key, value }))
     return (
@@ -133,9 +126,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
             </DataPathContext>
           )
         }}
-        valueLabel={
-          Array.isArray(valueComponent) && valueComponent.length ? valueComponent[0].label : ""
-        }
+        valueLabel={Array.isArray(valueComponent) && valueComponent.length ? valueComponent[0].label : ""}
       />
     )
   }

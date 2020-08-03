@@ -12,15 +12,10 @@ export const DataPathContext = ({ path, reset, children }: DataPathContextProps)
   const currentPath = React.useContext(PrivatePathContext)
 
   const content =
-    typeof children === "function" ? (
-      <PrivatePathContext.Consumer>{children}</PrivatePathContext.Consumer>
-    ) : (
-      children
-    )
+    typeof children === "function" ? <PrivatePathContext.Consumer>{children}</PrivatePathContext.Consumer> : children
 
   return reset || ["string", "number"].includes(typeof path) ? (
-    <PrivatePathContext.Provider
-      value={reset ? "" : `${currentPath ? currentPath + "." : ""}${path}`}>
+    <PrivatePathContext.Provider value={reset ? "" : `${currentPath ? `${currentPath}.` : ""}${path}`}>
       {content}
     </PrivatePathContext.Provider>
   ) : (

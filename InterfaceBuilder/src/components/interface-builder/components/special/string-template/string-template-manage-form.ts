@@ -30,8 +30,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
               {
                 valueKey: "serializeSrc",
                 label: "Serialize",
-                help:
-                  "Optional. The serialize function must take a JSON object and return a string.",
+                help: "Optional. The serialize function must take a JSON object and return a string.",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "javascript",
                 hidden: false,

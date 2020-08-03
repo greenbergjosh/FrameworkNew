@@ -25,13 +25,7 @@ export function ListItem({
 
     return (
       onChangeData &&
-      onChangeData(
-        set(
-          `${valueKey}.${index}`,
-          unwrapped ? Object.values(newData)[0] : newData,
-          userInterfaceData
-        )
-      )
+      onChangeData(set(`${valueKey}.${index}`, unwrapped ? Object.values(newData)[0] : newData, userInterfaceData))
     )
   }
 
@@ -53,11 +47,9 @@ export function ListItem({
       }
       onChangeData={handleChangeData(index)}
       onChangeSchema={(newSchema) => {
-        console.warn(
-          "ListInterfaceComponent.render",
-          "TODO: Cannot alter schema inside ComponentRenderer in List.",
-          { newSchema }
-        )
+        console.warn("ListInterfaceComponent.render", "TODO: Cannot alter schema inside ComponentRenderer in List.", {
+          newSchema,
+        })
       }}
     />
   )

@@ -4,10 +4,7 @@ import { get, set } from "lodash/fp"
 import moment from "moment"
 import { timeRangeManageForm } from "./time-range-manage-form"
 import { UserInterfaceProps } from "../../../UserInterface"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "components/interface-builder/components/_shared/Undraggable"
 
 export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -26,9 +23,7 @@ interface TimeRangeInterfaceComponentState {}
 
 const TIMEFORMAT = "h:mm a"
 
-export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<
-  TimeRangeInterfaceComponentProps
-> {
+export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRangeInterfaceComponentProps> {
   static defaultProps = {
     startTimeKey: "startTime",
     endTimeKey: "endTime",

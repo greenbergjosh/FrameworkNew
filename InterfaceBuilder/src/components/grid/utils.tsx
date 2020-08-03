@@ -23,10 +23,7 @@ export function getUsableData(data: JSONRecord[], columns: ColumnModel[]) {
     columns.forEach(({ field, type }) => {
       if (field) {
         const value = dataRow[field]
-        if (
-          (typeof value === "string" || typeof value === "number") &&
-          ["date", "dateTime"].includes(type || "")
-        ) {
+        if ((typeof value === "string" || typeof value === "number") && ["date", "dateTime"].includes(type || "")) {
           // Date type columns must appear as JS Date objects, not strings
           dataRow[field] = moment(value).toDate() as any
         } else if (field[0] === "=") {
@@ -36,10 +33,7 @@ export function getUsableData(data: JSONRecord[], columns: ColumnModel[]) {
             const interpolatedCalculationString = sortBy(
               ([key, value]) => key && key.length,
               Object.entries(dataRow)
-            ).reduce(
-              (acc: string, [key, value]) => acc.replace(key, String(value)),
-              calculationString
-            )
+            ).reduce((acc: string, [key, value]) => acc.replace(key, String(value)), calculationString)
 
             return evalExpression(interpolatedCalculationString)
           }).fold(
@@ -209,5 +203,6 @@ export const average = (
 export const flattenDataItems = (data: any[] | { items: any[] } | any) => {
   if (Array.isArray(data) || Array.isArray(data.items)) {
     return (Array.isArray(data) ? data : data.items).flatMap(flattenDataItems)
-  } else return data
+  }
+  return data
 }

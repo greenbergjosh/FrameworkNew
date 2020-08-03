@@ -139,9 +139,7 @@ export default function DisplayMode({
           <Empty description={description} />
         )}
       </div>
-      <Button
-        style={{ display: "block", marginTop: "10px", marginBottom: "10px" }}
-        onClick={handleAddClick}>
+      <Button style={{ display: "block", marginTop: "10px", marginBottom: "10px" }} onClick={handleAddClick}>
         {addItemLabel}
       </Button>
     </>

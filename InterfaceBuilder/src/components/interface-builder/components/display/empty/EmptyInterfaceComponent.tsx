@@ -1,10 +1,7 @@
 import { Empty } from "antd"
 import React from "react"
 import { emptyManageForm } from "./empty-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 export interface EmptyInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "empty"

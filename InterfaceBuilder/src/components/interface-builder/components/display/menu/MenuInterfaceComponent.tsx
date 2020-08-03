@@ -76,13 +76,7 @@ export class MenuInterfaceComponent extends BaseInterfaceComponent<MenuProps, Se
    * so Selectable can pass in Selectable state and props.
    * Props must implement SelectableChildProps interface.
    */
-  private renderMenu = ({
-    disabled,
-    getCleanValue,
-    loadError,
-    loadStatus,
-    options,
-  }: SelectableChildProps) => {
+  private renderMenu = ({ disabled, getCleanValue, loadError, loadStatus, options }: SelectableChildProps) => {
     const { searchPlaceholder } = this.props as IMenuProps
     const { selectedKey } = this.state
 
@@ -103,13 +97,7 @@ export class MenuInterfaceComponent extends BaseInterfaceComponent<MenuProps, Se
         <Typography.Text type="secondary" ellipsis={true}>
           Selected:&nbsp;{selectedKey}
           {selectedKey && (
-            <Button
-              type="link"
-              shape="circle"
-              size="small"
-              icon="close-circle"
-              onClick={this.handleButtonClick}
-            />
+            <Button type="link" shape="circle" size="small" icon="close-circle" onClick={this.handleButtonClick} />
           )}
         </Typography.Text>
         <Skeleton active loading={loadStatus === "loading"}>
@@ -123,9 +111,7 @@ export class MenuInterfaceComponent extends BaseInterfaceComponent<MenuProps, Se
               </Menu.Item>
             ))}
           </Menu>
-          {!loadError && options && options.length > 0 ? null : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
+          {!loadError && options && options.length > 0 ? null : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
         </Skeleton>
       </>
     )
