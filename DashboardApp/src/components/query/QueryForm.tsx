@@ -13,7 +13,15 @@ import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import * as record from "fp-ts/lib/Record"
 
 export const QueryForm = React.memo(
-  ({ layout, parameters, parameterValues, onSubmit, submitButtonLabel, submitButtonProps }: QueryFormProps) => {
+  ({
+    layout,
+    parameters,
+    parameterValues,
+    onMount,
+    onSubmit,
+    submitButtonLabel,
+    submitButtonProps,
+  }: QueryFormProps) => {
     /* ****************************
      *
      * State
@@ -45,7 +53,24 @@ export const QueryForm = React.memo(
      * Property Watchers
      */
 
-    /**
+    /*
+     * Trigger onMount event only on component mount.
+     * For instance the parent may want to execute this
+     * query form immediately when the page loads.
+     */
+    React.useEffect(() => {
+      if (!onMount) return
+      const promise = onMount(formState)
+      if (promise) {
+        setLoading(true)
+        promise.finally(() => {
+          setLoading(false)
+        })
+      }
+      setSubmitting(false)
+    }, [])
+
+    /*
      * Update form state when layout or parameters change
      */
     React.useEffect(() => {
@@ -56,7 +81,7 @@ export const QueryForm = React.memo(
       updateFormState(newState)
     }, [layout, parameters, parameterValues])
 
-    /**
+    /*
      * Submit Form
      * Wait until state is updated to submit the form so we don't submit old data.
      */

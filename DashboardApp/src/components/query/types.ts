@@ -16,6 +16,7 @@ export interface QueryFormProps {
   layout: QueryConfig["layout"]
   parameters: QueryConfig["parameters"]
   parameterValues: JSONRecord
+  onMount?: (parameterValues: JSONRecord) => void | Promise<unknown>
   onSubmit: (parameterValues: JSONRecord) => void | Promise<unknown>
   submitButtonProps?: buttonProps
   submitButtonLabel?: string // retained for legacy

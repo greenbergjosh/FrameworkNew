@@ -3,7 +3,6 @@ import { BaseInterfaceComponent, StringTemplate, UserInterfaceContext, utils } f
 import { stringTemplateManageForm } from "./string-template-manage-form"
 import { StringTemplateInterfaceComponentProps, StringTemplateInterfaceComponentState } from "./types"
 import { loadRemoteLBM } from "../_shared/LBM/loadRemoteLBM"
-import { hasContext } from "../execute/queryConfig/queryConfig"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
@@ -27,7 +26,13 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = stringTemplateManageForm
 
   componentDidMount(): void {
-    if (!hasContext(this.context)) return
+    if (!this.context) {
+      console.warn(
+        "StringTemplateInterfaceComponent",
+        "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
+      )
+      return
+    }
     const { loadById } = this.context as AdminUserInterfaceContextManager
     const serializeSrc = loadRemoteLBM(loadById, this.props.serializeConfigId)
     const deserializeSrc = loadRemoteLBM(loadById, this.props.deserializeConfigId)

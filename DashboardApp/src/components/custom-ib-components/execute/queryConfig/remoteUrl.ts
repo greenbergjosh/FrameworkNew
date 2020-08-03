@@ -1,57 +1,58 @@
-import { QueryConfig } from "../../../../data/Report"
+import { HTTPRequestQueryConfig } from "../../../../data/Report"
+import { ExecuteInterfaceComponentState } from "../types"
 import { JSONRecord } from "../../../../data/JSON"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
-import { ExecuteInterfaceComponentState } from "../types"
 import { cheapHash } from "../../../../lib/json"
 import { notification } from "antd"
 
-export async function remoteUrl_executeQuery(
-  queryConfig: QueryConfig,
+/**
+ * "Remote URL" is aka "HTTP Request" to another domain
+ * @param queryConfig
+ * @param parameterValues
+ * @param queryFormValues
+ * @param context
+ * @param isCRUD
+ * @return State object with load status (Note: executeHTTPRequestQuery puts the response data into cache.)
+ */
+export async function executeRemoteUrl(
+  queryConfig: HTTPRequestQueryConfig,
   parameterValues: JSONRecord,
   queryFormValues: JSONRecord,
-  context: AdminUserInterfaceContextManager
+  context: AdminUserInterfaceContextManager,
+  isCRUD: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
-  if (queryConfig.format !== "HTTPRequest") {
-    return Promise.reject("queryConfig is not an HTTPRequest!")
-  }
-  const { executeHTTPRequestQuery } = context
+  const { executeHTTPRequestQuery, reportDataByQuery } = context
   const queryResultURI = cheapHash(queryConfig.query, {
     ...parameterValues,
     ...queryFormValues,
   })
 
-  /*
-   * From src/state/reports.ts
-   *
-   * executeHTTPRequestQuery(
-   *  payload: {
-   *   resultURI: string
-   *   query: HTTPRequestQueryConfig
-   *   params: JSONRecord | JSONArray
-   *  }
-   * )
-   */
   return Promise.resolve(({
     remoteQueryLoggingName: queryConfig.query,
     loadStatus: "loading",
   } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() =>
+    // NOTE: executeHTTPRequestQuery puts the response data into cache and does not return it here.
     executeHTTPRequestQuery({
       resultURI: queryResultURI,
       query: queryConfig,
       params: { ...parameterValues, ...queryFormValues },
     })
       .then(() => {
-        notification.success({
-          type: "success",
-          message: "Successfully saved your changes",
-          duration: 10,
-        })
+        if (isCRUD) {
+          notification.success({
+            type: "success",
+            message: "Successfully saved your changes",
+            duration: 10,
+          })
+        }
+        // Return loading state
         return ({
           loadStatus: "none",
         } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
       })
       .catch((e: Error) => {
-        console.error("Query.remoteQuery_executeQuery", queryConfig.query, e)
+        console.error("ExecuteInterfaceComponent.executeRemoteUrl", queryConfig.query, e)
+        // Return loading state
         return ({ loadStatus: "error", loadError: e.message } as unknown) as Readonly<
           Partial<ExecuteInterfaceComponentState>
         >

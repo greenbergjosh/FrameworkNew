@@ -2,7 +2,6 @@ import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps 
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"
-import { JSONRecord } from "../../../data/JSON"
 import { AppDispatch } from "../../../state/store.types"
 import { confirmationType } from "../../query/types"
 
@@ -36,11 +35,14 @@ interface ExecuteButtonProps {
 export interface IExecuteInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "query"
   components: ComponentDefinition[]
+  executeImmediately?: boolean
   loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
-  queryType: "remote-query" | "remote-config" | "remote-url"
+  queryType: "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
+  outboundValueKey: string
+  inboundApiKey: string
   fromStore?: any
   dispatch?: AppDispatch
   buttonLabel?: string
@@ -60,18 +62,21 @@ interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInterfaceCom
   queryType: "remote-query"
   remoteQuery?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
+  isCRUD?: boolean
 }
 
 interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-config"
   remoteConfigType?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
+  isCRUD?: boolean
 }
 
 interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-url"
   remoteUrl?: PersistedConfig["id"]
   remoteDataFilter?: JSONObject
+  isCRUD?: boolean
 }
 
 export type ExecuteInterfaceComponentProps = (
@@ -86,14 +91,11 @@ export interface ExecuteInterfaceComponentState {
   data: any[]
   loadError: string | null
   loadStatus: "none" | "loading" | "loaded" | "error"
-  parameterValues: JSONRecord
-  promptLayout: QueryConfig["layout"]
-  promptParameters: QueryConfig["parameters"]
   formState: any
   /**
    * QueryConfig is type of taggedUnion:
    * ( HTTPRequestQueryConfigCodec | SQLQueryConfigCodec | StoredProcQueryConfigCodec )
    * from Reports.ts
    */
-  queryConfig: QueryConfig | null
+  queryConfig?: QueryConfig
 }
