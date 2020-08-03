@@ -34,6 +34,7 @@ export interface ComponentDefinitionNamedProps {
   defaultValue?: any
   help?: string
   hidden?: boolean
+  invisible?: boolean
   hideLabel?: boolean
   label?: string
   visibilityConditions?: JSONObject

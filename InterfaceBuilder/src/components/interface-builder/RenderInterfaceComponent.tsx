@@ -152,6 +152,27 @@ export class RenderInterfaceComponent extends React.Component<
         content
       )
 
+    function getInvisibleComponent() {
+      return mode === "edit" ? (
+        <fieldset
+          style={{
+            padding: 10,
+            border: " 1px dashed lightgrey",
+            backgroundColor: "rgba(0,0,0,.02)",
+            borderRadius: 5,
+          }}>
+          <legend style={{ all: "unset", color: "grey", padding: 5 }}>Invisible</legend>
+          {wrapper}
+        </fieldset>
+      ) : (
+        <div style={{ display: "none" }}>{wrapper}</div>
+      )
+    }
+
+    function getVisibilityToggledComponent() {
+      return componentDefinition.invisible ? getInvisibleComponent() : wrapper
+    }
+
     return mode === "edit" && !dragDropDisabled ? (
       <Draggable
         data={componentDefinition}
@@ -161,11 +182,11 @@ export class RenderInterfaceComponent extends React.Component<
         title={layoutDefintion && layoutDefintion.title}
         type="INTERFACE_COMPONENT">
         {({ isDragging }) => {
-          return wrapper
+          return getVisibilityToggledComponent()
         }}
       </Draggable>
     ) : (
-      wrapper
+      getVisibilityToggledComponent()
     )
   }
 }
