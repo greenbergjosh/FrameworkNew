@@ -36,7 +36,8 @@ import { PureGridComponent } from "./PureGridComponent"
 import { CustomAggregateFunctions, StandardGridComponentProps } from "./types"
 import { average, count, getUsableColumns, getUsableData } from "./utils"
 import { getCustomAggregateFunctionKey } from "components/grid/aggregates/getAggregateRows"
-import { useDependenciesDebugger } from "hooks/use-dependency-debugger"
+
+let grid: GridComponent | null = null
 
 /**
  * Event Handler
@@ -83,8 +84,35 @@ export const StandardGrid = React.forwardRef(
     // Columns and Data
     const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [columns, useSmallFont])
     const usableData = React.useMemo(() => getUsableData(data, columns), [data, columns])
-    useDependenciesDebugger({ data })
-    useDependenciesDebugger({ ref, usableData, defaultCollapseAll, autoFitColumns })
+
+    /*
+     * Syncfusion grid "ref" prop takes a callback that receives the GridComponent.
+     * We get a reference to the GridComponent in order to update the dataSource
+     * in the useEffect watchers.
+     *
+     * Loosely referencing this article
+     * https://ej2.syncfusion.com/react/documentation/grid/how-to/refresh-the-data-source/
+     *
+     * If the ref is a forwardRef, then we attach the GridComponent to ref.current
+     * even though the "current" property is supposed to be readonly. The ref that
+     * is passed down has a null "current" property.
+     *
+     * We data bind to ref instead of using "dataSource" prop because
+     * The Syncfusion grid will not re-render when data is passed
+     * through the dataSource prop in an IB layout.
+     */
+    const getGridRef = React.useCallback(
+      (gridComponent: GridComponent | null) => {
+        grid = gridComponent
+        if (ref && typeof ref !== "function") {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          ref.current = gridComponent
+        }
+        return ref || gridComponent
+      },
+      [ref]
+    )
 
     //**********************************
     // Averages and Counts
@@ -176,6 +204,23 @@ export const StandardGrid = React.forwardRef(
      *
      * PROP WATCHERS
      */
+
+    /**
+     * Data Binding to ref instead of using the "dataSource" prop.
+     * The Syncfusion GridComponent will not re-render when data
+     * is passed to the "dataSource" prop while in an IB layout.
+     */
+    React.useEffect(() => {
+      if (ref && typeof ref !== "function" && ref.current) {
+        /*
+         * The ref a RefObject so we can access the "current"
+         * property which must be a GridComponent
+         */
+        ref.current.dataSource = usableData
+      } else if (grid) {
+        grid.dataSource = usableData
+      }
+    }, [ref, grid, usableData])
 
     /**
      * Manage column change.
@@ -307,7 +352,8 @@ export const StandardGrid = React.forwardRef(
       <Spin spinning={loading}>
         <PureGridComponent
           // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
-          ref={ref}
+          // ref={ref}
+          ref={getGridRef}
           // Event Handlers
           actionComplete={handleActionComplete}
           toolbarClick={handleToolbarClick}
@@ -326,7 +372,7 @@ export const StandardGrid = React.forwardRef(
           allowTextWrap={true}
           columnMenuItems={["SortAscending", "SortDescending"]}
           columns={usableColumns}
-          dataSource={usableData}
+          // dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
           enableAltRow={enableAltRow}
