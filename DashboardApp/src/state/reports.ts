@@ -272,7 +272,7 @@ const prepareQueryBody = (query: HTTPRequestQueryConfig, params: JSONRecord | JS
     case "json-tokenized":
       return tryCatch(() => json5.parse(replaceQueryParamTokens(raw, query, params))).toNullable()
     case "json":
-      return json5.parse(raw)
+      return tryCatch(() => json5.parse(raw)).toNullable()
     default:
       return raw
   }
