@@ -31,7 +31,7 @@ export const QueryForm = React.memo(
     const [loading, setLoading] = React.useState(false)
     const [submitting, setSubmitting] = React.useState(false)
 
-    const [fromStore, dispatch] = useRematch((appState) => {
+    const [fromStore /* dispatch */] = useRematch((appState) => {
       const privilegedUserInterfaceContextManager = getPrivilegedUserInterfaceContextManager(appState)
 
       return {

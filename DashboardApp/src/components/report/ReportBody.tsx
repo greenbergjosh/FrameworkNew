@@ -112,22 +112,22 @@ export const ReportBody = React.memo(
      */
 
     /*
-     * Get report data by hash key (query route + params)
+     * Get report data hash key (query route + params)
      * example hash key: '"edwLab:pathExpenseReport1SessionDate"{"startDate":"","endDate":""}'
      */
-    const queryResultData = React.useMemo(() => {
-      const hashKey = cheapHash(queryConfig.query, satisfiedByParentParams)
+    const hashKey = React.useMemo(() => {
       return parameterValues.foldL(
         // None
-        () => record.lookup(hashKey, fromStore.reportDataByQuery),
+        () => cheapHash(queryConfig.query, satisfiedByParentParams),
         // Some
-        (params) =>
-          record.lookup(
-            cheapHash(queryConfig.query, { ...satisfiedByParentParams, ...params }),
-            fromStore.reportDataByQuery
-          )
+        (params) => cheapHash(queryConfig.query, { ...satisfiedByParentParams, ...params })
       )
-    }, [fromStore.reportDataByQuery, parameterValues, queryConfig.query, satisfiedByParentParams])
+    }, [parameterValues, queryConfig.query, satisfiedByParentParams])
+
+    const { queryResultDataIsNone, queryResultData } = React.useMemo(() => {
+      const data = record.lookup(hashKey, fromStore.reportDataByQuery)
+      return { queryResultDataIsNone: data.isNone(), queryResultData: data.getOrElse(emptyArray) }
+    }, [fromStore.reportDataByQuery, hashKey])
 
     /*
      * Execute Query
@@ -136,7 +136,7 @@ export const ReportBody = React.memo(
       if (
         !automaticQueryErrorState &&
         !fromStore.isExecutingQuery &&
-        queryResultData.isNone() &&
+        queryResultDataIsNone &&
         (!unsatisfiedByParentParams.length || withoutHeader)
       ) {
         if (queryConfig.executeImmediately === undefined || queryConfig.executeImmediately) {
@@ -165,8 +165,7 @@ export const ReportBody = React.memo(
       automaticQueryErrorState,
       dispatch,
       unsatisfiedByParentParams.length,
-      queryResultData,
-      // queryResultData.isNone(),
+      queryResultDataIsNone,
       queryConfig,
       queryConfig.query,
       satisfiedByParentParams,
@@ -314,7 +313,7 @@ export const ReportBody = React.memo(
             ref={grid}
             columns={columns}
             contextData={contextData}
-            data={queryResultData.getOrElse(emptyArray)}
+            data={queryResultData}
             detailTemplate={getMemoizedDetailTemplate}
             loading={fromStore.isExecutingQuery}
             sortSettings={sortSettings}

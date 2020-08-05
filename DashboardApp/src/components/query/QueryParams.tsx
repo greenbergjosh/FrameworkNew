@@ -33,6 +33,7 @@ export const QueryParams = React.memo(({ children, parentData, queryConfig }: Qu
   }))
 
   const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
+  const [hasInitialParameters, setHasInitialParameters] = React.useState(false)
 
   /* ***************************
    *
@@ -69,23 +70,24 @@ export const QueryParams = React.memo(({ children, parentData, queryConfig }: Qu
   /**
    * Combine param sources, and then sort them
    */
-  const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
-    () =>
-      determineSatisfiedParameters(
-        queryConfig.parameters,
-        { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...parentData } || {},
-        true
-      ),
-    [parentData, queryConfig.parameters, globallyPersistedParams, persistedParams, querystringParams]
-  )
+  const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(() => {
+    const sortedParameters = determineSatisfiedParameters(
+      queryConfig.parameters,
+      { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...parentData } || {},
+      true
+    )
+    return sortedParameters
+  }, [parentData, queryConfig.parameters, globallyPersistedParams, persistedParams, querystringParams])
 
   /**
    * Set QueryForm with initial parameters
    */
   React.useEffect(() => {
-    setParameterValues(some(satisfiedByParentParams))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [satisfiedByParentParams])
+    if (!hasInitialParameters) {
+      setParameterValues(some(satisfiedByParentParams))
+      setHasInitialParameters(true)
+    }
+  }, [hasInitialParameters, satisfiedByParentParams])
 
   /* ***************************
    *
