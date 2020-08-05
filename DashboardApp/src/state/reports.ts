@@ -1,7 +1,7 @@
 import { array } from "fp-ts/lib/Array"
 import { identity, tuple } from "fp-ts/lib/function"
 import * as record from "fp-ts/lib/Record"
-import { isEmpty, toPairs, isArray } from "lodash/fp"
+import { isArray, isEmpty } from "lodash/fp"
 import { JSONFromString } from "io-ts-types"
 import json5 from "json5"
 import { Left, Right } from "../data/Either"
@@ -9,14 +9,7 @@ import { PersistedConfig } from "../data/GlobalConfig.Config"
 import { JSONArray, JSONRecord } from "../data/JSON"
 import { None, Some } from "../data/Option"
 import * as Store from "./store.types"
-import {
-  HTTPRequestQueryConfig,
-  ParameterItem,
-  ParameterItemCodec,
-  QueryConfig,
-  QueryConfigCodec,
-  ReportConfigCodec,
-} from "../data/Report"
+import { HTTPRequestQueryConfig, ParameterItem, QueryConfig, QueryConfigCodec, ReportConfigCodec } from "../data/Report"
 import { encodeGloballyPersistedParams } from "./queries.persistedParams"
 import { tryCatch } from "fp-ts/lib/Option"
 
@@ -264,8 +257,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
 }
 
 const prepareQueryBody = (query: HTTPRequestQueryConfig, params: JSONRecord | JSONArray): string => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  if (query.body.format !== "raw") return ""
   const { lang, raw } = query.body
 
   switch (lang) {

@@ -62,11 +62,13 @@ export const ReportBody = React.memo(
 
     const onChangeData = React.useCallback((oldData: JSONRecord, newData: JSONRecord) => {
       if (grid && grid.current) {
-        const ds = grid.current.dataSource as []
+        /*
+         * If the dataSource is an array of JavaScript objects, then Grid will create instance of DataManager.
+         * https://ej2.syncfusion.com/react/documentation/api/grid/
+         */
+        const ds = grid.current.dataSource as JSONRecord[]
         const idx = ds.findIndex((item) => matches(item)(oldData))
         if (idx && idx > -1) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           ds[idx] = { ...newData }
           grid.current.refresh()
         }
@@ -228,7 +230,7 @@ export const ReportBody = React.memo(
         // Render a UserInterface (with JSX Elements) into a cell.
         if (columnConfig.type === "layout") {
           // NOTE: Syncfusion grid does not type or document that "template"
-          // accepts React JSX Elements, so we up-cast as "any" type.
+          // accepts React JSX Elements, so we ignore the Typescript error.
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           columnConfig.template = getDetailTemplate(

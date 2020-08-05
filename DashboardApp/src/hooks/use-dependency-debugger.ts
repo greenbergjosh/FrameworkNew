@@ -15,6 +15,7 @@ const compareInputs = (inputKeys: any[], oldInputs: { [x: string]: any }, newInp
 
 /**
  * Show changed to dependencies
+ * Dev diagnostic tool when working with hooks like useEffect, useMemo, useCallback.
  * @param inputs
  */
 export function useDependenciesDebugger(inputs: { [s: string]: unknown } | ArrayLike<unknown>): void {
