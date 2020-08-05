@@ -90,12 +90,8 @@ export const StandardGrid = React.forwardRef(
      * We get a reference to the GridComponent in order to update the dataSource
      * in the useEffect watchers.
      *
-     * Loosely referencing this article
+     * Loosely referencing this doc
      * https://ej2.syncfusion.com/react/documentation/grid/how-to/refresh-the-data-source/
-     *
-     * If the ref is a forwardRef, then we attach the GridComponent to ref.current
-     * even though the "current" property is supposed to be readonly. The ref that
-     * is passed down has a null "current" property.
      *
      * We data bind to ref instead of using "dataSource" prop because
      * The Syncfusion grid will not re-render when data is passed
@@ -105,6 +101,11 @@ export const StandardGrid = React.forwardRef(
       (gridComponent: GridComponent | null) => {
         grid = gridComponent
         if (ref && typeof ref !== "function") {
+          /*
+           * If the ref is a forwardRef, then we attach the GridComponent to ref.current
+           * even though the "current" property is supposed to be readonly. The ref that
+           * is passed down has a null "current" property. So we ignore the Typescript error.
+           */
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           ref.current = gridComponent
