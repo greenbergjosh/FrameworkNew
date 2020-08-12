@@ -3,10 +3,7 @@ import { get } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { buttonDisplayType, downloadManageForm, shapeType, sizeType } from "./download-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import fileDownload from "js-file-download"
 
 export interface DownloadInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -159,14 +156,8 @@ async function postData(url = "", params = {}, configOverrides = {}) {
   }
 }
 
-function getFilename(
-  useFilenameFromServer: boolean,
-  response: { headers: Headers; data: Blob },
-  filename: string
-) {
-  const filenameFixed = useFilenameFromServer
-    ? getFilenameFromHeaders(response.headers, filename)
-    : filename
+function getFilename(useFilenameFromServer: boolean, response: { headers: Headers; data: Blob }, filename: string) {
+  const filenameFixed = useFilenameFromServer ? getFilenameFromHeaders(response.headers, filename) : filename
   return filenameFixed
 }
 
@@ -180,9 +171,6 @@ function getFilenameFromHeaders(headers: Headers, defaultFilename: string) {
       filename = matches[1].replace(/['"]/g, "")
     }
   }
-  const fixedDefaultFilename =
-    defaultFilename && defaultFilename.length > 0 ? defaultFilename : "download"
-  return filename && filename.length > 0 && filename.indexOf(".") > -1
-    ? filename
-    : fixedDefaultFilename
+  const fixedDefaultFilename = defaultFilename && defaultFilename.length > 0 ? defaultFilename : "download"
+  return filename && filename.length > 0 && filename.indexOf(".") > -1 ? filename : fixedDefaultFilename
 }

@@ -143,7 +143,6 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
       <Alert type="error" message={loadError || "An error occurred during data loading"} />
     ) : (
       <Spin spinning={loadStatus === "loading"}>
-        {/* <TempComponent /> */}
         {queryType === "remote-query" &&
           !!promptParameters.length &&
           promptParameters.some(({ required }) => required === true) && (
@@ -464,22 +463,4 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
             })
     })
   }
-}
-
-/* ***************************************************************************
- *
- * Private diagnostic component
- */
-
-const TempComponent = () => {
-  const queryData = React.useContext(UserInterfaceContext)
-  // const queryData2 = React.useContext(AdminUserInterfaceContext)
-
-  return (
-    <div>
-      <pre>{JSON.stringify(queryData, null, 2)}</pre>
-      <hr />
-      {/* <pre>{JSON.stringify(queryData2, null, 2)}</pre> */}
-    </div>
-  )
 }

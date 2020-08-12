@@ -29,9 +29,7 @@ export interface ColumnInterfaceComponentProps extends ComponentDefinitionNamedP
   submit?: UserInterfaceProps["submit"]
 }
 
-export class ColumnInterfaceComponent extends BaseInterfaceComponent<
-  ColumnInterfaceComponentProps
-> {
+export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInterfaceComponentProps> {
   static defaultProps = {
     addItemLabel: "Add Item",
     columns: [],
@@ -70,13 +68,10 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<
     const { columns, gutter, onChangeData, userInterfaceData, submit } = this.props
 
     const definedColumnWidths = columns.reduce(
-      (acc, { span }) =>
-        span && !isNaN(Number(String(span))) ? { sum: acc.sum + span, count: acc.count + 1 } : acc,
+      (acc, { span }) => (span && !isNaN(Number(String(span))) ? { sum: acc.sum + span, count: acc.count + 1 } : acc),
       { sum: 0, count: 0 }
     )
-    const colSpan = Math.floor(
-      (24 - definedColumnWidths.sum) / (columns.length - definedColumnWidths.count || 1)
-    )
+    const colSpan = Math.floor((24 - definedColumnWidths.sum) / (columns.length - definedColumnWidths.count || 1))
 
     return (
       <DataPathContext path="columns">

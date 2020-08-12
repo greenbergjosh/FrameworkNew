@@ -22,8 +22,7 @@ export const ManageComponentModal = ({
   React.useEffect(() => {
     console.log("ManageComponentModal useEffect", { componentDefinition, propComponentDefinition })
     if (!componentDefinition && propComponentDefinition) {
-      const Component =
-        propComponentDefinition.component && registry.lookup(propComponentDefinition.component)
+      const Component = propComponentDefinition.component && registry.lookup(propComponentDefinition.component)
 
       // Determine the default values for this component
       const defaults = (Component && Component.getManageFormDefaults()) || {}

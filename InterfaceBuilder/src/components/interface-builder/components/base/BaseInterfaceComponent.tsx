@@ -34,6 +34,7 @@ export interface ComponentDefinitionNamedProps {
   defaultValue?: any
   help?: string
   hidden?: boolean
+  invisible?: boolean
   hideLabel?: boolean
   label?: string
   visibilityConditions?: JSONObject
@@ -61,10 +62,10 @@ export interface ComponentRenderMetaProps {
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps
 export type BaseInterfaceComponentType = typeof BaseInterfaceComponent
 
-export abstract class BaseInterfaceComponent<
-  T extends BaseInterfaceComponentProps,
-  Y = {}
-> extends React.Component<T, Y> {
+export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentProps, Y = {}> extends React.Component<
+  T,
+  Y
+> {
   static getLayoutDefinition(): LayoutDefinition {
     return { name: "__Undefined", title: "__Undefined" } as LayoutDefinition
   }
@@ -92,12 +93,8 @@ export abstract class BaseInterfaceComponent<
   getDefaultValue(): unknown {
     if (typeof this.props.defaultValue !== "undefined") {
       return this.props.defaultValue
-    } else {
-      return ((this
-        .constructor as unknown) as typeof BaseInterfaceComponent).getDefintionDefaultValue(
-        this.props
-      )
     }
+    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefintionDefaultValue(this.props)
   }
 }
 
@@ -105,17 +102,14 @@ export function getDefaultsFromComponentDefinitions(componentDefinitions: Compon
   // Iterate over all the definitions to accumulate their defaults
   return componentDefinitions.reduce((acc, componentDefinition) => {
     // If there are child lists of in the component's properties
-    const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce(
-      (acc2, [key, value]) => {
-        if (Array.isArray(value) && value.length && value[0].component) {
-          // Merge in child list values if they exist
-          return merge(getDefaultsFromComponentDefinitions(value), acc2)
-        }
+    const nestedValues: { [key: string]: any } = Object.entries(componentDefinition).reduce((acc2, [key, value]) => {
+      if (Array.isArray(value) && value.length && value[0].component) {
+        // Merge in child list values if they exist
+        return merge(getDefaultsFromComponentDefinitions(value), acc2)
+      }
 
-        return acc2
-      },
-      {}
-    )
+      return acc2
+    }, {})
 
     // Check to see if there's a component type for this object
     const Component = registry.lookup(componentDefinition.component)

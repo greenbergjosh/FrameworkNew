@@ -3,10 +3,7 @@ import { get, merge } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { buttonDisplayType, buttonManageForm, shapeType, sizeType } from "./button-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 interface ConfirmationProps {
   title?: string

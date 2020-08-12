@@ -25,15 +25,12 @@ const mergeHandler = (value: any, srcValue: any, key?: any) => {
     //   result: items.concat(remaining),
     // })
     return items.concat(remaining)
-  } else {
-    // console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
   }
+  // console.log("base-component-form.mergeHandler", "non-array", { value, srcValue, key })
 }
 
 export const baseManageForm = (...extend: Partial<ComponentDefinition>[]) =>
-  extend.length
-    ? (mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[])
-    : baseManageFormDefinition
+  extend.length ? (mergeHandler(extend, baseManageFormDefinition) as ComponentDefinition[]) : baseManageFormDefinition
 
 const baseManageFormDefinition: ComponentDefinition[] = [
   {
@@ -90,20 +87,23 @@ const baseManageFormDefinition: ComponentDefinition[] = [
             component: "tab",
             hideLabel: true,
             label: "Appearance",
-            components: [],
-          },
-          {
-            key: "visibility",
-            component: "tab",
-            hideLabel: true,
-            label: "Visibility",
             components: [
               {
                 key: "hidden",
                 valueKey: "hidden",
                 ordinal: 10,
                 component: "toggle",
-                label: "Hidden",
+                label: "Do not render",
+                help: "Do not render and block behavior.",
+                defaultValue: false,
+              },
+              {
+                key: "invisible",
+                valueKey: "invisible",
+                ordinal: 10,
+                component: "toggle",
+                label: "Invisible",
+                help: "Do not display but otherwise behave as normal.",
                 defaultValue: false,
               },
             ],

@@ -20,9 +20,7 @@ interface ComponentRendererProps {
   onDrop?: DroppableContextType["onDrop"]
 }
 
-export const ComponentRendererModeContext = React.createContext<UserInterfaceProps["mode"]>(
-  "display"
-)
+export const ComponentRendererModeContext = React.createContext<UserInterfaceProps["mode"]>("display")
 
 export const UI_ROOT = "UI-Root"
 
@@ -114,8 +112,7 @@ _ComponentRenderer.defaultProps = {
 export const ComponentRenderer = React.memo(_ComponentRenderer, (prevProps, nextProps) => {
   // @ts-ignore
   const simplePropEquality = shallowPropCheck(["components", "data", "mode"])(prevProps, nextProps)
-  const runDeepDiff = () =>
-    deepDiff(prevProps, nextProps, (k) => ["onChangeSchema", "onChangeData"].includes(k))
+  const runDeepDiff = () => deepDiff(prevProps, nextProps, (k) => ["onChangeSchema", "onChangeData"].includes(k))
   // console.log("ComponentRenderer.memo", simplePropEquality, runDeepDiff())
 
   return simplePropEquality && !runDeepDiff()

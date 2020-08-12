@@ -4,10 +4,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { checkboxManageForm } from "./checkbox-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
 
 export interface CheckboxInterfaceComponentProps extends ComponentDefinitionNamedProps {

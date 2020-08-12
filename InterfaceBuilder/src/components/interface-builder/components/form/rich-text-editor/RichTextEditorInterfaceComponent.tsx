@@ -3,10 +3,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { richTextEditorManageForm } from "./rich-text-editor-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 CKEditor.editorUrl = "https://cdn.ckeditor.com/4.12.1/full-all/ckeditor.js"
 
@@ -21,9 +18,7 @@ export interface InputInterfaceComponentProps extends ComponentDefinitionNamedPr
 
 interface InputInterfaceComponentState {}
 
-export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<
-  InputInterfaceComponentProps
-> {
+export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<InputInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",
     defaultValue: "",
@@ -65,9 +60,7 @@ export class RichTextEditorInterfaceComponent extends BaseInterfaceComponent<
         onChange={this.handleChange}
         data={value}
         // Suppresses Error: 'react Error code: editor-element-conflict. editorName: "editor1"'
-        onBeforeLoad={(CKEditor: { disableAutoInline: boolean }) =>
-          (CKEditor.disableAutoInline = true)
-        }
+        onBeforeLoad={(CKEditor: { disableAutoInline: boolean }) => (CKEditor.disableAutoInline = true)}
       />
     )
   }

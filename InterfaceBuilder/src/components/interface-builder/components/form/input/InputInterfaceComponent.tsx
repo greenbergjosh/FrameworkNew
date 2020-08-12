@@ -4,10 +4,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { inputManageForm } from "./input-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import CharCounter from "../_shared/CharCounter"
 import styles from "./input.module.scss"
 import { Undraggable } from "../../_shared/Undraggable"

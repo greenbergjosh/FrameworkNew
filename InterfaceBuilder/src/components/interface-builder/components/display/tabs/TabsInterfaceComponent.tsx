@@ -44,10 +44,7 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
               <Tabs.TabPane tab={tab.label} key={`tab${index}`}>
                 <DataPathContext path={`${index}.components`}>
                   <ComponentRenderer
-                    components={
-                      (tab as ComponentDefinitionRecursiveProp).components ||
-                      ([] as ComponentDefinition[])
-                    }
+                    components={(tab as ComponentDefinitionRecursiveProp).components || ([] as ComponentDefinition[])}
                     data={userInterfaceData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {

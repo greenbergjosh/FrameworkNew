@@ -24,15 +24,11 @@ export default function EditMode({
         componentLimit={interleave === "none" ? 1 : 0}
         data={data}
         dragDropDisabled={!!preconfigured}
-        onChangeData={(newData) =>
-          onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))
-        }
+        onChangeData={(newData) => onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))}
         onChangeSchema={(newSchema) => {
-          console.warn(
-            "ListInterfaceComponent.render",
-            "TODO: Cannot alter schema inside ComponentRenderer in List",
-            { newSchema }
-          )
+          console.warn("ListInterfaceComponent.render", "TODO: Cannot alter schema inside ComponentRenderer in List", {
+            newSchema,
+          })
         }}
       />
     </DataPathContext>

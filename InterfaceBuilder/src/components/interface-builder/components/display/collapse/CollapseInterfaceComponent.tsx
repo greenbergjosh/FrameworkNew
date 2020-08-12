@@ -39,9 +39,7 @@ type CollapseInterfaceComponentProps =
   | CollapseInterfaceComponentDisplayModeProps
   | CollapseInterfaceComponentEditModeProps
 
-export class CollapseInterfaceComponent extends BaseInterfaceComponent<
-  CollapseInterfaceComponentProps
-> {
+export class CollapseInterfaceComponent extends BaseInterfaceComponent<CollapseInterfaceComponentProps> {
   static getLayoutDefinition() {
     return {
       category: "Display",
@@ -79,9 +77,7 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<
                     })
                     onChangeSchema &&
                       userInterfaceSchema &&
-                      onChangeSchema(
-                        set(`sections.${sectionIndex}.components`, newSchema, userInterfaceSchema)
-                      )
+                      onChangeSchema(set(`sections.${sectionIndex}.components`, newSchema, userInterfaceSchema))
                   }
                 }}
               />

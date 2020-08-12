@@ -3,10 +3,7 @@ import { Spin } from "antd"
 import React from "react"
 import {
   Aggregate,
-  AggregateColumnModel,
-  AggregateRowModel,
   ColumnChooser,
-  ColumnModel,
   DetailRow,
   DialogEditEventArgs,
   Edit,
@@ -39,6 +36,8 @@ import { PureGridComponent } from "./PureGridComponent"
 import { CustomAggregateFunctions, StandardGridComponentProps } from "./types"
 import { average, count, getUsableColumns, getUsableData } from "./utils"
 import { getCustomAggregateFunctionKey } from "components/grid/aggregates/getAggregateRows"
+
+let grid: GridComponent | null = null
 
 /**
  * Event Handler
@@ -83,8 +82,38 @@ export const StandardGrid = React.forwardRef(
      */
 
     // Columns and Data
-    const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [])
-    const usableData = React.useMemo(() => getUsableData(data, columns), [data])
+    const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [columns, useSmallFont])
+    const usableData = React.useMemo(() => getUsableData(data, columns), [data, columns])
+
+    /*
+     * Syncfusion grid "ref" prop takes a callback that receives the GridComponent.
+     * We get a reference to the GridComponent in order to update the dataSource
+     * in the useEffect watchers.
+     *
+     * Loosely referencing this doc
+     * https://ej2.syncfusion.com/react/documentation/grid/how-to/refresh-the-data-source/
+     *
+     * We data bind to ref instead of using "dataSource" prop because
+     * The Syncfusion grid will not re-render when data is passed
+     * through the dataSource prop in an IB layout.
+     */
+    const getGridRef = React.useCallback(
+      (gridComponent: GridComponent | null) => {
+        grid = gridComponent
+        if (ref && typeof ref !== "function") {
+          /*
+           * If the ref is a forwardRef, then we attach the GridComponent to ref.current
+           * even though the "current" property is supposed to be readonly. The ref that
+           * is passed down has a null "current" property. So we ignore the Typescript error.
+           */
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          ref.current = gridComponent
+        }
+        return ref || gridComponent
+      },
+      [ref]
+    )
 
     //**********************************
     // Averages and Counts
@@ -96,37 +125,31 @@ export const StandardGrid = React.forwardRef(
 
     //**********************************
     // Aggregates
-    const customAverageAggregate = React.useCallback(
-      getCustomAverageAggregate(usableColumns, columnAverages),
-      [columnAverages]
-    )
-    const customValueCountAggregate = React.useCallback(
-      getCustomValueCountAggregate(usableColumns, columnCounts),
-      [columnCounts]
-    )
-    const customNullCountAggregate = React.useCallback(
-      getCustomNullCountAggregate(usableColumns, columnCounts),
-      [columnCounts]
-    )
+    const customAverageAggregate = React.useCallback(getCustomAverageAggregate(usableColumns, columnAverages), [
+      columnAverages,
+    ])
+    const customValueCountAggregate = React.useCallback(getCustomValueCountAggregate(usableColumns, columnCounts), [
+      columnCounts,
+    ])
+    const customNullCountAggregate = React.useCallback(getCustomNullCountAggregate(usableColumns, columnCounts), [
+      columnCounts,
+    ])
 
     const remoteFunctions = React.useMemo(() => {
       const fns: CustomAggregateFunctions = {}
       usableColumns.map((col) => {
         // Custom Aggregate Functions
-        if (
-          col.aggregationFunction === "Custom" &&
-          col.customAggregateFunction &&
-          col.customAggregateId
-        ) {
+        if (col.aggregationFunction === "Custom" && col.customAggregateFunction && col.customAggregateId) {
           fns[getCustomAggregateFunctionKey(col)] = col.customAggregateFunction(
             usableColumns,
             columnCounts,
             col.customAggregateOptions
           )
         }
+        return null
       })
       return fns
-    }, [])
+    }, [columnCounts, usableColumns])
 
     // Reference-safe collection of aggregate functions
     const customAggregateFunctions: CustomAggregateFunctions = React.useMemo(() => {
@@ -136,12 +159,12 @@ export const StandardGrid = React.forwardRef(
         CustomValueCount: customValueCountAggregate,
         CustomNullCount: customNullCountAggregate,
       }
-    }, [columnAverages, columnCounts])
+    }, [customAverageAggregate, customNullCountAggregate, customValueCountAggregate, remoteFunctions])
 
-    const aggregates = React.useMemo(
-      () => getAggregateRows(usableColumns, customAggregateFunctions),
-      [usableColumns, customAggregateFunctions]
-    )
+    const aggregates = React.useMemo(() => getAggregateRows(usableColumns, customAggregateFunctions), [
+      usableColumns,
+      customAggregateFunctions,
+    ])
 
     //**********************************
     // Settings
@@ -184,6 +207,23 @@ export const StandardGrid = React.forwardRef(
      */
 
     /**
+     * Data Binding to ref instead of using the "dataSource" prop.
+     * The Syncfusion GridComponent will not re-render when data
+     * is passed to the "dataSource" prop while in an IB layout.
+     */
+    React.useEffect(() => {
+      if (ref && typeof ref !== "function" && ref.current) {
+        /*
+         * The ref a RefObject so we can access the "current"
+         * property which must be a GridComponent
+         */
+        ref.current.dataSource = usableData
+      } else if (grid) {
+        grid.dataSource = usableData
+      }
+    }, [ref, grid, usableData])
+
+    /**
      * Manage column change.
      * Since we can only create the columns once, we unfortunately are
      * left to manage (via mutations) any changeable aspects of the columns.
@@ -191,16 +231,14 @@ export const StandardGrid = React.forwardRef(
     React.useEffect(() => {
       usableColumns.forEach((col) => {
         if (col.visibilityConditions && contextData) {
-          col.visible = tryCatch(() =>
-            jsonLogic.apply(col.visibilityConditions, contextData)
-          ).getOrElse(true)
+          col.visible = tryCatch(() => jsonLogic.apply(col.visibilityConditions, contextData)).getOrElse(true)
         }
       })
 
       if (typeof ref === "object" && ref && ref.current && ref.current.headerModule) {
         ref.current.refresh()
       }
-    }, [contextData])
+    }, [ref, contextData, usableColumns])
 
     /**
      * Manually assign detail template.
@@ -210,7 +248,7 @@ export const StandardGrid = React.forwardRef(
       if (typeof ref === "object" && ref && ref.current && ref.current.headerModule) {
         ref.current.detailTemplate = detailTemplate
       }
-    }, [detailTemplate])
+    }, [ref, detailTemplate])
 
     /**
      * Update the grid with custom aggregates.
@@ -223,15 +261,12 @@ export const StandardGrid = React.forwardRef(
             columns.forEach((column) => {
               const usableColumn = usableColumns.find(({ field }) => field === column.field)
               if (usableColumn && usableColumn.aggregationFunction) {
-                column.customAggregate = getCustomAggregateFunction(
-                  usableColumn,
-                  customAggregateFunctions
-                )
+                column.customAggregate = getCustomAggregateFunction(usableColumn, customAggregateFunctions)
               }
             })
         })
       }
-    }, [columnAverages, usableColumns])
+    }, [ref, customAggregateFunctions, columnAverages, usableColumns])
 
     /**
      * Configures the pager in the Grid.
@@ -266,12 +301,10 @@ export const StandardGrid = React.forwardRef(
           ref.current.groupModule.collapseAll()
         }
       }
-    }, [ref, usableData, defaultCollapseAll, autoFitColumns])
+    }, [ref, defaultCollapseAll, autoFitColumns])
 
     // Helper function to handleToolbarClick
-    const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (
-      args?: ClickEventArgs
-    ) => {
+    const handleToolbarItemClicked = (grid: React.RefObject<GridComponent>) => (args?: ClickEventArgs) => {
       const id = args && args.item && args.item.id
       if (id && grid.current) {
         if (id.endsWith("_excelexport")) {
@@ -320,7 +353,8 @@ export const StandardGrid = React.forwardRef(
       <Spin spinning={loading}>
         <PureGridComponent
           // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
-          ref={ref}
+          // ref={ref}
+          ref={getGridRef}
           // Event Handlers
           actionComplete={handleActionComplete}
           toolbarClick={handleToolbarClick}
@@ -329,9 +363,7 @@ export const StandardGrid = React.forwardRef(
           aggregates={aggregates}
           allowExcelExport={true}
           allowFiltering={true}
-          allowGrouping={
-            groupSettings && groupSettings.columns ? groupSettings.columns.length > 0 : false
-          }
+          allowGrouping={groupSettings && groupSettings.columns ? groupSettings.columns.length > 0 : false}
           allowMultiSorting={true}
           allowPaging={true}
           allowPdfExport={true}
@@ -341,7 +373,7 @@ export const StandardGrid = React.forwardRef(
           allowTextWrap={true}
           columnMenuItems={["SortAscending", "SortDescending"]}
           columns={usableColumns}
-          dataSource={usableData}
+          // dataSource={usableData}
           detailTemplate={detailTemplate}
           editSettings={editSettings}
           enableAltRow={enableAltRow}

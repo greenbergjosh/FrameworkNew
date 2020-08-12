@@ -8,9 +8,7 @@ export const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps
   const simplePropEquality = shallowPropCheck(["columns", "dataSource"])(prevProps, nextProps)
   // Returns null if we should not re-render
   const runDeepDiff = () =>
-    deepDiff(prevProps, nextProps, (k) =>
-      ["children", "detailTemplate", "valueAccessor"].includes(k)
-    )
+    deepDiff(prevProps, nextProps, (k) => ["children", "detailTemplate", "valueAccessor"].includes(k))
 
   const deepDiffResult = runDeepDiff()
   return simplePropEquality && !deepDiffResult

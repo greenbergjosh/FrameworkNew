@@ -27,8 +27,7 @@ const toggleManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "inverted",
                 valueKey: "inverted",
                 label: "Invert Value?",
-                help:
-                  "For the case when toggled on should mean false and toggled off should mean true",
+                help: "For the case when toggled on should mean false and toggled off should mean true",
                 component: "toggle",
                 defaultValue: false,
               },

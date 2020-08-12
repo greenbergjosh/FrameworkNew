@@ -51,9 +51,7 @@ interface FormInterfaceComponentEditModeProps extends IFormInterfaceComponentPro
   userInterfaceSchema?: ComponentDefinition
 }
 
-export type FormInterfaceComponentProps =
-  | FormInterfaceComponentDisplayModeProps
-  | FormInterfaceComponentEditModeProps
+export type FormInterfaceComponentProps = FormInterfaceComponentDisplayModeProps | FormInterfaceComponentEditModeProps
 
 export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterfaceComponentProps> {
   static getLayoutDefinition() {
@@ -73,17 +71,9 @@ export class FormInterfaceComponent extends BaseInterfaceComponent<FormInterface
   static manageForm = formManageForm
 
   render() {
-    const {
-      components,
-      formColumnLayout,
-      onChangeData,
-      orientation,
-      userInterfaceData,
-    } = this.props
+    const { components, formColumnLayout, onChangeData, orientation, userInterfaceData } = this.props
 
-    const formLayout = formColumnLayout
-      ? merge(defaultFormLayout, formColumnLayout)
-      : defaultFormLayout
+    const formLayout = formColumnLayout ? merge(defaultFormLayout, formColumnLayout) : defaultFormLayout
 
     return (
       <Form style={{ padding: "5px" }} layout={orientation} {...formLayout}>

@@ -5,10 +5,7 @@ import React from "react"
 import { TSEnum } from "../../../@types/ts-enum"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { progressManageForm } from "./progress-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 const STATUS: TSEnum<ProgressProps["status"]> = {
   success: "success",
@@ -45,9 +42,7 @@ export interface ProgressInterfaceComponentProps extends ComponentDefinitionName
   width?: number
 }
 
-export class ProgressInterfaceComponent extends BaseInterfaceComponent<
-  ProgressInterfaceComponentProps
-> {
+export class ProgressInterfaceComponent extends BaseInterfaceComponent<ProgressInterfaceComponentProps> {
   static defaultProps = {
     defaultValue: 0,
   }
@@ -85,8 +80,7 @@ export class ProgressInterfaceComponent extends BaseInterfaceComponent<
 
     // Determine Status
     const statusValue = statusKey && get(statusKey, userInterfaceData)
-    const status =
-      forceStatus === "useAPI" ? mapStatus(statuses || STATUS, statusValue) : forceStatus
+    const status = forceStatus === "useAPI" ? mapStatus(statuses || STATUS, statusValue) : forceStatus
 
     // Determine Value
     const rawValue = get(valueKey, userInterfaceData)

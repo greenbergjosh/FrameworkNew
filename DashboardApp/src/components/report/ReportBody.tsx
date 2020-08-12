@@ -2,18 +2,13 @@ import React from "react"
 import { Helmet } from "react-helmet"
 import * as Reach from "@reach/router"
 import * as record from "fp-ts/lib/Record"
-import { none, Option, some } from "fp-ts/lib/Option"
 import { empty as emptyArray, isEmpty } from "fp-ts/lib/Array"
 import { cloneDeep, matches, sortBy } from "lodash/fp"
 import { Button, PageHeader } from "antd"
 import { EnrichedColumnDefinition, StandardGrid } from "@opg/interface-builder"
-import { cheapHash } from "../../lib/json"
-import { determineSatisfiedParameters } from "../query/lib/determineSatisfiedParameters"
 import { JSONRecord } from "../../data/JSON"
-import { LocalReportConfig, QueryConfig } from "../../data/Report"
 import { QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
-import { decodeGloballyPersistedParams } from "../../state/reports"
 import { useRematch } from "../../hooks"
 import {
   GridComponent,
@@ -26,100 +21,59 @@ import { getDetailTemplate } from "./templates/getDetailTemplate"
 import { ColumnConfig } from "./templates/types"
 import { getCustomAggregateFunction } from "./templates/customAggregateFunction"
 import { getCellFormatter } from "./templates/cellFormatter"
-import queryString, { ParsedQuery } from "query-string"
-
-export interface ReportBodyProps {
-  isChildReport?: boolean
-  parentData?: JSONRecord
-  queryConfig: QueryConfig
-  reportConfig: LocalReportConfig
-  reportId: Option<string>
-  title?: string
-  withoutHeader?: boolean
-}
+import { ReportBodyProps } from "./types"
+import { cheapHash } from "../../lib/json"
+import { some } from "fp-ts/lib/Option"
 
 export const ReportBody = React.memo(
-  ({ isChildReport, parentData, queryConfig, reportConfig, reportId, title, withoutHeader }: ReportBodyProps) => {
+  ({
+    isChildReport,
+    parameterValues,
+    parentData,
+    queryConfig,
+    reportConfig,
+    reportId,
+    satisfiedByParentParams,
+    setParameterValues,
+    title,
+    unsatisfiedByParentParams,
+    withoutHeader,
+  }: ReportBodyProps) => {
+    /* **********************************************************************
+     *
+     * REDUX, STATE, REFS
+     */
+
     const [fromStore, dispatch] = useRematch((appState) => ({
-      configs: appState.globalConfig.configs,
       configsById: store.select.globalConfig.configsById(appState),
       globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
       isExecutingQuery: appState.loading.effects.reports.executeQuery,
       reportDataByQuery: appState.reports.reportDataByQuery,
-      queryParamsByQuery: appState.queries.queryParamsByQuery,
-      queryGlobalParams: appState.queries.queryGlobalParams,
     }))
+
+    const [automaticQueryErrorState, setAutomaticQueryErrorState] = React.useState(null)
 
     const grid = React.useRef<GridComponent>(null)
 
-    /**
-     * Get querystring params
+    /* **********************************************************************
+     *
+     * EVENT HANDLERS
      */
-    const querystringParams = React.useMemo(() => {
-      return queryString.parse(window.location.search, {
-        parseBooleans: true,
-        parseNumbers: true,
-        arrayFormat: "comma",
-      })
+
+    const onChangeData = React.useCallback((oldData: JSONRecord, newData: JSONRecord) => {
+      if (grid && grid.current) {
+        /*
+         * If the dataSource is an array of JavaScript objects, then Grid will create instance of DataManager.
+         * https://ej2.syncfusion.com/react/documentation/api/grid/
+         */
+        const ds = grid.current.dataSource as JSONRecord[]
+        const idx = ds.findIndex((item) => matches(item)(oldData))
+        if (idx && idx > -1) {
+          ds[idx] = { ...newData }
+          grid.current.refresh()
+        }
+      }
     }, [])
-
-    /**
-     * Get persisted global params
-     * Filter globally persisted params that aren't globally persisted by this query
-     */
-    const globallyPersistedParams = React.useMemo(() => {
-      const gpp = fromStore.queryGlobalParams
-      return decodeGloballyPersistedParams(gpp, queryConfig.parameters)
-    }, [fromStore.queryGlobalParams, queryConfig.parameters])
-
-    /**
-     * Get persisted params by query
-     */
-    const persistedParams = React.useMemo(() => {
-      return record.lookup(queryConfig.query, fromStore.queryParamsByQuery).toUndefined() as ParsedQuery
-    }, [queryConfig.query, fromStore.queryParamsByQuery])
-
-    /**
-     * Combine param sources, and then sort them
-     */
-    const { satisfiedByParentParams, unsatisfiedByParentParams } = React.useMemo(
-      () =>
-        determineSatisfiedParameters(
-          queryConfig.parameters,
-          { ...persistedParams, ...globallyPersistedParams, ...querystringParams, ...parentData } || {},
-          true
-        ),
-      [parentData, queryConfig.parameters]
-    )
-
-    const [queryResultUri, setQueryResultUri] = React.useState(none as Option<string>)
-    const [parameterValues, setParameterValues] = React.useState(none as Option<JSONRecord>)
-    const [automaticQueryErrorState, setAutomaticQueryErrorState] = React.useState<any>(null)
-
-    /**
-     * Set QueryForm with initial parameters
-     */
-    React.useEffect(() => {
-      setParameterValues(some(satisfiedByParentParams))
-    }, [parentData, querystringParams])
-
-    /**
-     * Get report data by hash key (query route + params)
-     * example hash key: '"edwLab:pathExpenseReport1SessionDate"{"startDate":"","endDate":""}'
-     */
-    const queryResultData = React.useMemo(
-      () =>
-        parameterValues.foldL(
-          () => record.lookup(cheapHash(queryConfig.query, satisfiedByParentParams), fromStore.reportDataByQuery),
-
-          (params) =>
-            record.lookup(
-              cheapHash(queryConfig.query, { ...satisfiedByParentParams, ...params }),
-              fromStore.reportDataByQuery
-            )
-        ),
-      [fromStore.reportDataByQuery, parameterValues, queryConfig.query, satisfiedByParentParams]
-    )
 
     const handleQueryFormSubmit = React.useCallback(
       (parameterValues: JSONRecord) => {
@@ -128,7 +82,6 @@ export const ReportBody = React.memo(
           ...parameterValues,
         })
 
-        setQueryResultUri(some(queryResultURI))
         setParameterValues(some(parameterValues))
 
         dispatch.reports
@@ -150,14 +103,40 @@ export const ReportBody = React.memo(
             )
           })
       },
-      [dispatch.reports, queryConfig.query, satisfiedByParentParams]
+      [dispatch.reports, satisfiedByParentParams, queryConfig, setParameterValues]
     )
 
+    /* **********************************************************************
+     *
+     * PROPERTY WATCHERS
+     */
+
+    /*
+     * Get report data hash key (query route + params)
+     * example hash key: '"edwLab:pathExpenseReport1SessionDate"{"startDate":"","endDate":""}'
+     */
+    const hashKey = React.useMemo(() => {
+      return parameterValues.foldL(
+        // None
+        () => cheapHash(queryConfig.query, satisfiedByParentParams),
+        // Some
+        (params) => cheapHash(queryConfig.query, { ...satisfiedByParentParams, ...params })
+      )
+    }, [parameterValues, queryConfig.query, satisfiedByParentParams])
+
+    const { queryResultDataIsNone, queryResultData } = React.useMemo(() => {
+      const data = record.lookup(hashKey, fromStore.reportDataByQuery)
+      return { queryResultDataIsNone: data.isNone(), queryResultData: data.getOrElse(emptyArray) }
+    }, [fromStore.reportDataByQuery, hashKey])
+
+    /*
+     * Execute Query
+     */
     React.useEffect(() => {
       if (
         !automaticQueryErrorState &&
         !fromStore.isExecutingQuery &&
-        queryResultData.isNone() &&
+        queryResultDataIsNone &&
         (!unsatisfiedByParentParams.length || withoutHeader)
       ) {
         if (queryConfig.executeImmediately === undefined || queryConfig.executeImmediately) {
@@ -186,30 +165,23 @@ export const ReportBody = React.memo(
       automaticQueryErrorState,
       dispatch,
       unsatisfiedByParentParams.length,
-      queryResultData.isNone(),
+      queryResultDataIsNone,
+      queryConfig,
       queryConfig.query,
       satisfiedByParentParams,
       fromStore.isExecutingQuery,
+      withoutHeader,
     ])
 
-    const onChangeData = (oldData: JSONRecord, newData: JSONRecord) => {
-      if (grid && grid.current) {
-        const ds = grid.current.dataSource as []
-        const idx = ds.findIndex((item) => matches(item)(oldData))
-        if (idx && idx > -1) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          ds[idx] = { ...newData }
-          grid.current.refresh()
-        }
-      }
-    }
-
+    /*
+     * Detail Template
+     */
     const getMemoizedDetailTemplate = React.useMemo(() => {
       return getDetailTemplate(dispatch, reportConfig.details, parameterValues.toUndefined(), parentData, onChangeData)
-    }, [reportConfig.details, parameterValues.toUndefined(), parentData])
+    }, [dispatch, onChangeData, reportConfig.details, parameterValues, /*parameterValues.toUndefined(),*/ parentData])
 
     const sortSettings: SortSettingsModel = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       columns: sortBy("sortOrder", reportConfig.columns as any[]).reduce((acc, column) => {
         if (column.sortDirection && column.field) {
           acc.push({ field: column.field, direction: column.sortDirection })
@@ -217,6 +189,7 @@ export const ReportBody = React.memo(
         return acc
       }, [] as SortDescriptorModel[]),
     }
+
     const pageSettings: PageSettingsModel | undefined =
       reportConfig.defaultPageSize === "All"
         ? {
@@ -227,7 +200,9 @@ export const ReportBody = React.memo(
             pageSize: reportConfig.defaultPageSize,
           }
         : undefined
+
     const groupSettings: GroupSettingsModel = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       columns: sortBy("groupOrder", reportConfig.columns as any[]).reduce((acc, column) => {
         if (column.field && typeof column.groupOrder !== "undefined") {
           acc.push(column.field)
@@ -237,8 +212,9 @@ export const ReportBody = React.memo(
     }
 
     const contextData = React.useMemo(() => ({ ...parentData, ...parameterValues.getOrElse(record.empty) }), [
+      parameterValues,
+      // parameterValues.getOrElse(record.empty),
       parentData,
-      parameterValues.getOrElse(record.empty),
     ])
 
     /*
@@ -253,14 +229,16 @@ export const ReportBody = React.memo(
         // Render a UserInterface (with JSX Elements) into a cell.
         if (columnConfig.type === "layout") {
           // NOTE: Syncfusion grid does not type or document that "template"
-          // accepts React JSX Elements, so we up-cast as "any" type.
+          // accepts React JSX Elements, so we ignore the Typescript error.
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           columnConfig.template = getDetailTemplate(
             dispatch,
             columnConfig.details,
             parameterValues.toUndefined(),
             parentData,
             onChangeData
-          ) as any
+          )
         }
 
         /*
@@ -294,7 +272,12 @@ export const ReportBody = React.memo(
 
         return columnConfig
       })
-    }, [dispatch, fromStore.configsById, reportConfig.columns, parameterValues, parentData])
+    }, [onChangeData, dispatch, fromStore.configsById, reportConfig.columns, parameterValues, parentData])
+
+    /* **********************************************************************
+     *
+     * RENDER
+     */
 
     return (
       <>
@@ -330,7 +313,7 @@ export const ReportBody = React.memo(
             ref={grid}
             columns={columns}
             contextData={contextData}
-            data={queryResultData.getOrElse(emptyArray)}
+            data={queryResultData}
             detailTemplate={getMemoizedDetailTemplate}
             loading={fromStore.isExecutingQuery}
             sortSettings={sortSettings}

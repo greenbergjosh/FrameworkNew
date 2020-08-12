@@ -71,9 +71,7 @@ export function DisplayTable({
                 <ComponentRenderer
                   components={rowDetails}
                   data={parentData}
-                  onChangeData={(newData) =>
-                    onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))
-                  }
+                  onChangeData={(newData) => onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))}
                   onChangeSchema={(newSchema) => {
                     console.log("TableInterfaceComponent.DisplayTable", "onChangeSchema X4", {
                       newSchema,

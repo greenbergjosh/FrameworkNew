@@ -3,15 +3,26 @@ import { ExecuteInterfaceComponentState } from "../types"
 import { JSONRecord } from "../../../../data/JSON"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { cheapHash } from "../../../../lib/json"
+import { notification } from "antd"
 
-/* From Query.tsx */
-export async function remoteQuery_executeQuery(
+/**
+ * "Remote Query" is aka "TGWD Stored Procedure"
+ * @param queryConfig
+ * @param parameterValues
+ * @param queryFormValues
+ * @param context
+ * @param isCRUD
+ * @return State object with load status (Note: executeQuery and executeQueryUpdate put the response data into cache.)
+ */
+export async function executeRemoteQuery(
   queryConfig: QueryConfig,
   parameterValues: JSONRecord,
   queryFormValues: JSONRecord,
-  context: AdminUserInterfaceContextManager
+  context: AdminUserInterfaceContextManager,
+  isCRUD: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
-  const { executeQueryUpdate, reportDataByQuery } = context
+  const { executeQuery, executeQueryUpdate, reportDataByQuery } = context
+  const execute = isCRUD ? executeQueryUpdate : executeQuery
   const queryResultURI = cheapHash(queryConfig.query, {
     ...parameterValues,
     ...queryFormValues,
@@ -21,18 +32,28 @@ export async function remoteQuery_executeQuery(
     remoteQueryLoggingName: queryConfig.query,
     loadStatus: "loading",
   } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() =>
-    executeQueryUpdate({
+    // NOTE: execute puts the response data into cache and does not return it here.
+    execute({
       resultURI: queryResultURI,
       query: queryConfig,
       params: { ...parameterValues, ...queryFormValues },
     })
       .then(() => {
+        // if (isCRUD) {
+        //   notification.success({
+        //     type: "success",
+        //     message: "Successfully saved your changes",
+        //     duration: 10,
+        //   })
+        // }
+        // Return loading state
         return ({
           loadStatus: "none",
         } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
       })
       .catch((e: Error) => {
-        console.error("Query.remoteQuery_executeQuery", queryConfig.query, e)
+        console.error("ExecuteInterfaceComponent.executeRemoteQuery", queryConfig.query, e)
+        // Return loading state
         return ({ loadStatus: "error", loadError: e.message } as unknown) as Readonly<
           Partial<ExecuteInterfaceComponentState>
         >

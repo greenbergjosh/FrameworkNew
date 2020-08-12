@@ -45,13 +45,9 @@ function getAggregateColumn(
   customAggregateFunction: CustomSummaryType
 ): AggregateColumnModel {
   const isCustom = aggregateType.startsWith("Custom")
-  const defaultedFormat = [
-    "Count",
-    "TrueCount",
-    "FalseCount",
-    "CustomValueCount",
-    "CustomNullCount",
-  ].includes(aggregateType)
+  const defaultedFormat = ["Count", "TrueCount", "FalseCount", "CustomValueCount", "CustomNullCount"].includes(
+    aggregateType
+  )
     ? "N0"
     : format
   const templateToken = `\${${isCustom ? "Custom" : aggregateType}}`
@@ -78,7 +74,7 @@ export default function getAggregateRows(
 ): AggregateRowModel[] {
   const aggregateColumns = usableColumns.reduce((acc, col) => {
     if (col.aggregationFunction) {
-      let customAggregateFunction = getCustomAggregateFunction(col, customAggregateFunctions)
+      const customAggregateFunction = getCustomAggregateFunction(col, customAggregateFunctions)
       const aggregateColumn = getAggregateColumn(
         col.aggregationFunction, // aka: aggregateType
         col.field,

@@ -6,10 +6,7 @@ import React from "react"
 import { getTimeFormat, TimeSettings } from "../_shared/common-include-time-form"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { dateRangeManageForm } from "./date-range-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
 
 export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -50,11 +47,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = dateRangeManageForm
 
-  static getDefintionDefaultValue({
-    defaultRangeValue,
-    endDateKey,
-    startDateKey,
-  }: DateRangeInterfaceComponentProps) {
+  static getDefintionDefaultValue({ defaultRangeValue, endDateKey, startDateKey }: DateRangeInterfaceComponentProps) {
     const [startDate, endDate] = this.standardRanges()[defaultRangeValue]
     return set(startDateKey, startDate.toISOString(), set(endDateKey, endDate.toISOString(), {}))
   }
@@ -64,22 +57,13 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
 
     return {
       Today: [now.clone().startOf("day"), now.clone().endOf("day")],
-      Yesterday: [
-        now.clone().subtract(1, "day").startOf("day"),
-        now.clone().subtract(1, "day").endOf("day"),
-      ],
-      "This Week": [
-        now.clone().startOf("week").startOf("day"),
-        now.clone().endOf("week").endOf("day"),
-      ],
+      Yesterday: [now.clone().subtract(1, "day").startOf("day"), now.clone().subtract(1, "day").endOf("day")],
+      "This Week": [now.clone().startOf("week").startOf("day"), now.clone().endOf("week").endOf("day")],
       "Last Week": [
         now.clone().subtract(1, "week").startOf("week").startOf("day"),
         now.clone().subtract(1, "week").endOf("week").endOf("day"),
       ],
-      "This Month": [
-        now.clone().startOf("month").startOf("day"),
-        now.clone().endOf("month").endOf("day"),
-      ],
+      "This Month": [now.clone().startOf("month").startOf("day"), now.clone().endOf("month").endOf("day")],
       "Last Month": [
         now.clone().subtract(1, "month").startOf("month").startOf("day"),
         now.clone().subtract(1, "month").endOf("month").endOf("day"),
@@ -92,8 +76,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
     const [startDate, endDate] = this.getValues()
 
-    onChangeData &&
-      onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+    onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
@@ -112,13 +95,10 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
           : "day"
         : "day"
 
-    const startDate =
-      Array.isArray(dates) && dates[0] ? dates[0].startOf(alignmentTimePeriod).toISOString() : null
-    const endDate =
-      Array.isArray(dates) && dates[1] ? dates[1].endOf(alignmentTimePeriod).toISOString() : null
+    const startDate = Array.isArray(dates) && dates[0] ? dates[0].startOf(alignmentTimePeriod).toISOString() : null
+    const endDate = Array.isArray(dates) && dates[1] ? dates[1].endOf(alignmentTimePeriod).toISOString() : null
 
-    onChangeData &&
-      onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+    onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
   }
 
   getDefaultValue = () => {
@@ -138,7 +118,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     return (
       <Undraggable wrap>
         <DatePicker.RangePicker
-          format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
+          format={`YYYY-MM-DD${timeFormat ? ` ${timeFormat.format}` : ""}`}
           onChange={this.handleChange}
           ranges={DateRangeInterfaceComponent.standardRanges()}
           showTime={timeFormat}

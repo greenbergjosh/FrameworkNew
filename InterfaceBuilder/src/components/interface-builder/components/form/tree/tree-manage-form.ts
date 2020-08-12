@@ -51,10 +51,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: true,
                 help: "Allow adding new items to the tree",
                 visibilityConditions: {
-                  and: [
-                    { "===": [true, { var: "modifiable" }] },
-                    { "===": [true, { var: "allowNestingInLeaves" }] },
-                  ],
+                  and: [{ "===": [true, { var: "modifiable" }] }, { "===": [true, { var: "allowNestingInLeaves" }] }],
                 },
               },
               {
@@ -64,10 +61,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 visibilityConditions: {
-                  and: [
-                    { "===": [true, { var: "modifiable" }] },
-                    { "===": [false, { var: "allowNestingInLeaves" }] },
-                  ],
+                  and: [{ "===": [true, { var: "modifiable" }] }, { "===": [false, { var: "allowNestingInLeaves" }] }],
                 },
               },
               {
@@ -77,10 +71,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 visibilityConditions: {
-                  and: [
-                    { "===": [true, { var: "modifiable" }] },
-                    { "===": [false, { var: "allowNestingInLeaves" }] },
-                  ],
+                  and: [{ "===": [true, { var: "modifiable" }] }, { "===": [false, { var: "allowNestingInLeaves" }] }],
                 },
               },
               {
@@ -119,8 +110,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Can select parents?",
                 component: "toggle",
                 defaultValue: false,
-                help:
-                  "Turn this on to allow the user to select both leaf nodes as well as parent nodes in the tree",
+                help: "Turn this on to allow the user to select both leaf nodes as well as parent nodes in the tree",
                 visibilityConditions: {
                   "===": [true, { var: "selectable" }],
                 },
@@ -138,8 +128,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Items have details?",
                 component: "toggle",
                 defaultValue: true,
-                help:
-                  "Whether there are details components / properties that should be shown about tree items",
+                help: "Whether there are details components / properties that should be shown about tree items",
               },
               {
                 key: "detailsOrientation",
@@ -158,8 +147,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
                 defaultValue: "right",
-                help:
-                  "Whether there are details components / properties that should be shown about tree items",
+                help: "Whether there are details components / properties that should be shown about tree items",
               },
             ],
           },

@@ -19,7 +19,7 @@ export const DroppablePlaceholder = React.memo(
       className={classNames("droppable-placeholder", className, {
         "empty-container": emptyContainer,
         vertical: !horizontal,
-        horizontal: horizontal,
+        horizontal,
       })}
       style={
         emptyContainer

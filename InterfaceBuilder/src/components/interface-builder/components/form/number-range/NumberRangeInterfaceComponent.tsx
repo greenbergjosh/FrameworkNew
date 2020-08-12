@@ -4,10 +4,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { numberRangeManageForm } from "./number-range-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 
 interface LabelValue {
   label?: string
@@ -98,8 +95,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
     const { endKey, startKey, onChangeData, userInterfaceData } = this.props
 
     if (Array.isArray(value)) {
-      onChangeData &&
-        onChangeData(set(startKey, value[0], set(endKey, value[1], userInterfaceData)))
+      onChangeData && onChangeData(set(startKey, value[0], set(endKey, value[1], userInterfaceData)))
     }
   }
 

@@ -129,28 +129,13 @@ export class TreeInterfaceComponent extends BaseInterfaceComponent<TreeInterface
   }
 
   handleSelect = (selectedKeys: string[], event: AntTreeNodeSelectedEvent) => {
-    console.log(
-      "TreeInterfaceComponent.handleSelect",
-      event,
-      (event.node as any).isLeaf(),
-      selectedKeys
-    )
+    console.log("TreeInterfaceComponent.handleSelect", event, (event.node as any).isLeaf(), selectedKeys)
 
-    const {
-      allowSelectParents,
-      onChangeData,
-      selectable,
-      selectedKey,
-      userInterfaceData,
-      valueKey,
-    } = this.props
+    const { allowSelectParents, onChangeData, selectable, selectedKey, userInterfaceData, valueKey } = this.props
 
     const data = getOr([], valueKey, userInterfaceData) as TreeNodeNormal[]
 
-    if (
-      selectable &&
-      (allowSelectParents || (!allowSelectParents && (event.node as any).isLeaf()))
-    ) {
+    if (selectable && (allowSelectParents || (!allowSelectParents && (event.node as any).isLeaf()))) {
       onChangeData &&
         selectedKey &&
         onChangeData(set(selectedKey, findTreeNode(data, selectedKeys[0]), userInterfaceData))
@@ -240,9 +225,7 @@ export class TreeInterfaceComponent extends BaseInterfaceComponent<TreeInterface
     return (
       <>
         {orientTreeAndDetails(detailsOrientation, renderedTree, renderedDetails)}
-        {modifiable && allowNestInLeaves && allowAdd && (
-          <Button onClick={this.addEntry("standard")}>{addLabel}</Button>
-        )}
+        {modifiable && allowNestInLeaves && allowAdd && <Button onClick={this.addEntry("standard")}>{addLabel}</Button>}
         {modifiable && !allowNestInLeaves && allowAddParents && (
           <Button onClick={this.addEntry("parent")}>{addParentLabel}</Button>
         )}
@@ -261,7 +244,7 @@ const findTreeNode = (
 ): TreeNodeNormal | undefined => {
   // BFS tree traversal. There aren't likely to ever be enough nodes to blow out the stack
   // and the callback function requires more context than is easily provided when you use a stack or queue
-  for (let [index, item] of data.entries()) {
+  for (const [index, item] of data.entries()) {
     if (item.key === key) {
       if (callback) {
         callback(item, index, data)
@@ -345,16 +328,15 @@ function orientTreeAndDetails(
         {details}
       </>
     )
-  else {
-    console.warn(
-      "TreeInterfaceComponent.orientTreeAndDetails",
-      `Tree using default orientation because given orientation was ${orientation}`
-    )
-    return (
-      <>
-        {tree}
-        {details}
-      </>
-    )
-  }
+
+  console.warn(
+    "TreeInterfaceComponent.orientTreeAndDetails",
+    `Tree using default orientation because given orientation was ${orientation}`
+  )
+  return (
+    <>
+      {tree}
+      {details}
+    </>
+  )
 }

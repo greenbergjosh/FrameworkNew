@@ -138,8 +138,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "data-map",
                 defaultValue: [],
                 multiple: true,
-                help:
-                  "Provide header parameter name and API key pairs to send data to the server with the upload.",
+                help: "Provide header parameter name and API key pairs to send data to the server with the upload.",
                 keyComponent: {
                   label: "Param Name",
                   component: "input",
@@ -283,8 +282,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 visibilityConditions: {
                   "===": ["other", { var: "accept" }],
                 },
-                help:
-                  "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
+                help: "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
               },
             ],
           },

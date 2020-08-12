@@ -9,23 +9,14 @@ export interface DataMapProps {
   keyLabel: string
   onDataChanged: (data: DataMapProps["data"]) => void
   multiple?: boolean
-  renderKeyComponent: (
-    item: DataItem,
-    onChange: (item: DataItem) => void
-  ) => JSX.Element | JSX.Element[]
-  renderValueComponent: (
-    item: DataItem,
-    onChange: (item: DataItem) => void
-  ) => JSX.Element | JSX.Element[]
+  renderKeyComponent: (item: DataItem, onChange: (item: DataItem) => void) => JSX.Element | JSX.Element[]
+  renderValueComponent: (item: DataItem, onChange: (item: DataItem) => void) => JSX.Element | JSX.Element[]
   valueLabel: string
 }
 
-const itemChangeHandler = (
-  data: DataMapProps["data"],
-  index: number,
-  onDataChanged: DataMapProps["onDataChanged"]
-) => (updatedItem: DataItem) =>
-  onDataChanged([...data.slice(0, index), updatedItem, ...data.slice(index + 1)])
+const itemChangeHandler = (data: DataMapProps["data"], index: number, onDataChanged: DataMapProps["onDataChanged"]) => (
+  updatedItem: DataItem
+) => onDataChanged([...data.slice(0, index), updatedItem, ...data.slice(index + 1)])
 
 const itemDeleteHandler = (
   data: DataMapProps["data"],
@@ -72,12 +63,8 @@ export const DataMap = ({
 
   const items = iterable.map((dataItem, index) => (
     <Row key={index} {...rowProps}>
-      <Col {...colProps}>
-        {renderKeyComponent(dataItem, itemChangeHandler(data, index, onDataChanged))}
-      </Col>
-      <Col {...colProps}>
-        {renderValueComponent(dataItem, itemChangeHandler(data, index, onDataChanged))}
-      </Col>
+      <Col {...colProps}>{renderKeyComponent(dataItem, itemChangeHandler(data, index, onDataChanged))}</Col>
+      <Col {...colProps}>{renderValueComponent(dataItem, itemChangeHandler(data, index, onDataChanged))}</Col>
       {!hasCount && (
         <Col {...deleteColumnProps}>
           {index < data.length && (

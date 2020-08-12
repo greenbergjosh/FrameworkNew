@@ -59,55 +59,50 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
              * basic settings (settings popup), but may edit its columns.
              */
             return (
-              <AbstractTable
-                onChangeData={onChangeData}
-                userInterfaceData={userInterfaceData}
-                valueKey={valueKey}
-              />
+              <AbstractTable onChangeData={onChangeData} userInterfaceData={userInterfaceData} valueKey={valueKey} />
             )
-          } else {
-            switch (this.props.mode) {
-              case "edit": {
-                /*
-                 * Edit Mode
-                 * User defines columns with data types, etc.
-                 */
-                return (
-                  <EditTable
-                    onChangeData={onChangeData}
-                    onChangeSchema={this.props.onChangeSchema}
-                    rowDetails={rowDetails}
-                    userInterfaceData={userInterfaceData}
-                    userInterfaceSchema={this.props.userInterfaceSchema}
-                    valueKey={valueKey}
-                  />
-                )
-              }
-              case "display": {
-                /*
-                 * Display Mode
-                 * View the actual grid with data.
-                 */
-                return (
-                  <DisplayTable
-                    allowAdding={allowAdding}
-                    allowEditing={allowEditing}
-                    columns={columns}
-                    defaultCollapseAll={defaultCollapseAll}
-                    autoFitColumns={autoFitColumns}
-                    useSmallFont={useSmallFont}
-                    enableAltRow={enableAltRow}
-                    enableVirtualization={enableVirtualization}
-                    height={height}
-                    defaultPageSize={defaultPageSize}
-                    loadingKey={loadingKey}
-                    onChangeData={onChangeData}
-                    rowDetails={rowDetails}
-                    userInterfaceData={userInterfaceData}
-                    valueKey={valueKey}
-                  />
-                )
-              }
+          }
+          switch (this.props.mode) {
+            case "edit": {
+              /*
+               * Edit Mode
+               * User defines columns with data types, etc.
+               */
+              return (
+                <EditTable
+                  onChangeData={onChangeData}
+                  onChangeSchema={this.props.onChangeSchema}
+                  rowDetails={rowDetails}
+                  userInterfaceData={userInterfaceData}
+                  userInterfaceSchema={this.props.userInterfaceSchema}
+                  valueKey={valueKey}
+                />
+              )
+            }
+            case "display": {
+              /*
+               * Display Mode
+               * View the actual grid with data.
+               */
+              return (
+                <DisplayTable
+                  allowAdding={allowAdding}
+                  allowEditing={allowEditing}
+                  columns={columns}
+                  defaultCollapseAll={defaultCollapseAll}
+                  autoFitColumns={autoFitColumns}
+                  useSmallFont={useSmallFont}
+                  enableAltRow={enableAltRow}
+                  enableVirtualization={enableVirtualization}
+                  height={height}
+                  defaultPageSize={defaultPageSize}
+                  loadingKey={loadingKey}
+                  onChangeData={onChangeData}
+                  rowDetails={rowDetails}
+                  userInterfaceData={userInterfaceData}
+                  valueKey={valueKey}
+                />
+              )
             }
           }
         }}

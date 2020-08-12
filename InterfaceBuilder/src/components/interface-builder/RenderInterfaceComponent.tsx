@@ -4,10 +4,7 @@ import React from "react"
 import { tryCatch } from "./lib/Option"
 import { Draggable } from "./dnd"
 import { UserInterfaceProps } from "./UserInterface"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinition,
-} from "./components/base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinition } from "./components/base/BaseInterfaceComponent"
 import { RootUserInterfaceDataContext } from "./util/RootUserInterfaceDataContext"
 
 interface RenderInterfaceComponentProps {
@@ -90,8 +87,7 @@ export class RenderInterfaceComponent extends React.Component<
       })
     }
 
-    const layoutDefintion =
-      Component && Component.getLayoutDefinition && Component.getLayoutDefinition()
+    const layoutDefintion = Component && Component.getLayoutDefinition && Component.getLayoutDefinition()
 
     const content = Component ? (
       <RootUserInterfaceDataContext.Consumer>
@@ -106,11 +102,7 @@ export class RenderInterfaceComponent extends React.Component<
               onChangeData && onChangeData(props)
             }}
             onChangeSchema={(newComponentDefinition: ComponentDefinition) => {
-              console.log(
-                "RenderInterfaceComponent.onChangeSchema",
-                newComponentDefinition,
-                onChangeSchema
-              )
+              console.log("RenderInterfaceComponent.onChangeSchema", newComponentDefinition, onChangeSchema)
               onChangeSchema && onChangeSchema(newComponentDefinition)
             }}
             submit={submit}
@@ -152,6 +144,27 @@ export class RenderInterfaceComponent extends React.Component<
         content
       )
 
+    function getInvisibleComponent() {
+      return mode === "edit" ? (
+        <fieldset
+          style={{
+            padding: 10,
+            border: " 1px dashed lightgrey",
+            backgroundColor: "rgba(0,0,0,.02)",
+            borderRadius: 5,
+          }}>
+          <legend style={{ all: "unset", color: "grey", padding: 5 }}>Invisible</legend>
+          {wrapper}
+        </fieldset>
+      ) : (
+        <div style={{ display: "none" }}>{wrapper}</div>
+      )
+    }
+
+    function getVisibilityToggledComponent() {
+      return componentDefinition.invisible ? getInvisibleComponent() : wrapper
+    }
+
     return mode === "edit" && !dragDropDisabled ? (
       <Draggable
         data={componentDefinition}
@@ -161,11 +174,11 @@ export class RenderInterfaceComponent extends React.Component<
         title={layoutDefintion && layoutDefintion.title}
         type="INTERFACE_COMPONENT">
         {({ isDragging }) => {
-          return wrapper
+          return getVisibilityToggledComponent()
         }}
       </Draggable>
     ) : (
-      wrapper
+      getVisibilityToggledComponent()
     )
   }
 }

@@ -4,12 +4,7 @@ export interface Codec {
   split: SplitterType
 }
 
-type JoinStrategyType = (
-  previousValue: string,
-  currentValue: string,
-  currentIndex: number,
-  array: string[]
-) => string
+type JoinStrategyType = (previousValue: string, currentValue: string, currentIndex: number, array: string[]) => string
 type SplitStrategyType = (value: string) => string[]
 type SplitterType = (value: string) => string[]
 type JoinerType = (value: string[]) => string

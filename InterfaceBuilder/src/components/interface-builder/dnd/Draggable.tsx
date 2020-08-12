@@ -132,46 +132,17 @@ export const Draggable = React.memo(
     const droppableContext = React.useContext(DroppableContext)
     const draggableContext = React.useContext(DraggableContext)
 
-    const finalCanCopy =
-      typeof canCopy !== "undefined"
-        ? canCopy
-        : draggableContext
-        ? draggableContext.canCopy
-        : void 0
+    const finalCanCopy = typeof canCopy !== "undefined" ? canCopy : draggableContext ? draggableContext.canCopy : void 0
     const finalCanDelete =
-      typeof canDelete !== "undefined"
-        ? canDelete
-        : draggableContext
-        ? draggableContext.canDelete
-        : void 0
-    const finalCanEdit =
-      typeof canEdit !== "undefined"
-        ? canEdit
-        : draggableContext
-        ? draggableContext.canEdit
-        : void 0
+      typeof canDelete !== "undefined" ? canDelete : draggableContext ? draggableContext.canDelete : void 0
+    const finalCanEdit = typeof canEdit !== "undefined" ? canEdit : draggableContext ? draggableContext.canEdit : void 0
     const finalCanPaste =
-      typeof canPaste !== "undefined"
-        ? canPaste
-        : draggableContext
-        ? draggableContext.canPaste
-        : void 0
-    const finalOnCopy =
-      typeof onCopy !== "undefined" ? onCopy : draggableContext ? draggableContext.onCopy : void 0
+      typeof canPaste !== "undefined" ? canPaste : draggableContext ? draggableContext.canPaste : void 0
+    const finalOnCopy = typeof onCopy !== "undefined" ? onCopy : draggableContext ? draggableContext.onCopy : void 0
     const finalOnDelete =
-      typeof onDelete !== "undefined"
-        ? onDelete
-        : draggableContext
-        ? draggableContext.onDelete
-        : void 0
-    const finalOnEdit =
-      typeof onEdit !== "undefined" ? onEdit : draggableContext ? draggableContext.onEdit : void 0
-    const finalOnPaste =
-      typeof onPaste !== "undefined"
-        ? onPaste
-        : draggableContext
-        ? draggableContext.onPaste
-        : void 0
+      typeof onDelete !== "undefined" ? onDelete : draggableContext ? draggableContext.onDelete : void 0
+    const finalOnEdit = typeof onEdit !== "undefined" ? onEdit : draggableContext ? draggableContext.onEdit : void 0
+    const finalOnPaste = typeof onPaste !== "undefined" ? onPaste : draggableContext ? draggableContext.onPaste : void 0
 
     const draggableItem = {
       draggableId,
@@ -194,9 +165,7 @@ export const Draggable = React.memo(
         index={index}
         innerRef={innerRef}
         makeRoomForPlaceholder={
-          !!droppableContext &&
-          droppableContext.placeholder !== null &&
-          droppableContext.placeholder.index <= index
+          !!droppableContext && droppableContext.placeholder !== null && droppableContext.placeholder.index <= index
         }
         onCopy={finalOnCopy}
         onDelete={finalOnDelete}

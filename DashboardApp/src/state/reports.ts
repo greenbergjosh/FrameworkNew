@@ -1,7 +1,7 @@
 import { array } from "fp-ts/lib/Array"
 import { identity, tuple } from "fp-ts/lib/function"
 import * as record from "fp-ts/lib/Record"
-import { get, isEmpty, set } from "lodash/fp"
+import { isArray, isEmpty } from "lodash/fp"
 import { JSONFromString } from "io-ts-types"
 import json5 from "json5"
 import { Left, Right } from "../data/Either"
@@ -10,6 +10,8 @@ import { JSONArray, JSONRecord } from "../data/JSON"
 import { None, Some } from "../data/Option"
 import * as Store from "./store.types"
 import { HTTPRequestQueryConfig, ParameterItem, QueryConfig, QueryConfigCodec, ReportConfigCodec } from "../data/Report"
+import { encodeGloballyPersistedParams } from "./queries.persistedParams"
+import { tryCatch } from "fp-ts/lib/Option"
 
 declare module "./store.types" {
   interface AppModels {
@@ -164,10 +166,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
         .httpRequest({
           uri: query.query,
           method: query.method,
-          body:
-            query.body.format === "raw"
-              ? prepareQueryBody(query.body.lang, query.body.raw)
-              : new URLSearchParams(query.body.content),
+          body: query.body.format === "raw" ? prepareQueryBody(query, params) : new URLSearchParams(query.body.content),
           headers: query.headers,
           params,
         })
@@ -257,79 +256,36 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
   }),
 }
 
-const prepareQueryBody = (lang: "json" | string, body: string) => (body && lang === "json" ? json5.parse(body) : body)
+const prepareQueryBody = (query: HTTPRequestQueryConfig, params: JSONRecord | JSONArray): string => {
+  if (query.body.format !== "raw") return ""
+  const { lang, raw } = query.body
 
-/* **********************************************************
- *
- * FUNCTIONS
- */
-
-/**
- * Extract query parameters that need to be persisted
- * @param queryParams
- * @param paramConfigs
- */
-export function encodeGloballyPersistedParams(
-  queryParams: JSONRecord | JSONArray,
-  paramConfigs: QueryConfig["parameters"]
-): JSONRecord | undefined {
-  if (isEmpty(paramConfigs) || isEmpty(queryParams) || Array.isArray(queryParams)) {
-    // If array: we don't know the shape of the array items, so we can't persist them
-    return
+  switch (lang) {
+    case "json-tokenized":
+      return tryCatch(() => json5.parse(replaceQueryParamTokens(raw, query, params))).toNullable()
+    case "json":
+      return tryCatch(() => json5.parse(raw)).toNullable()
+    default:
+      return raw
   }
-
-  // Put state value into persisted object
-  function encode(queryParamKey: string, acc: JSONRecord) {
-    const paramConfig = paramConfigs.find((cfg) => cfg.name === queryParamKey)
-
-    if (paramConfig && paramConfig.persistGlobally) {
-      const keyPath = paramConfig.globallyPersistedNamespace.foldL(
-        () => queryParamKey, // onNone
-        (val) => `${val}.${queryParamKey}` // onSome
-      )
-      const stateValue = get(queryParamKey, queryParams)
-
-      if (!isEmpty(stateValue)) {
-        acc = set(keyPath, stateValue, acc)
-      }
-    }
-    return acc
-  }
-
-  // queryParams is an assoc array, so we need something iterable
-  const queryParamKeys = Object.keys(queryParams)
-  return queryParamKeys.reduce((acc: JSONRecord, key: string) => encode(key, acc), {})
 }
 
-/**
- * Extract persisted parameters and put them into a state object
- * @param globallyPersistedParams
- * @param paramConfigs
- */
-export function decodeGloballyPersistedParams(
-  globallyPersistedParams: JSONRecord | JSONArray,
-  paramConfigs: QueryConfig["parameters"]
-): JSONRecord | undefined {
-  if (isEmpty(paramConfigs) || isEmpty(globallyPersistedParams) || Array.isArray(globallyPersistedParams)) {
-    // If array: we don't know the shape of the array items, so we can't retrieve them
-    return
+function replaceQueryParamTokens(raw: string, query: HTTPRequestQueryConfig, params: JSONRecord | JSONArray) {
+  function getRegex(name: string): RegExp {
+    return new RegExp(`\\\$\\{${name}}`, "gmi")
   }
 
-  // Put persisted value into state object
-  function decode(paramConfig: ParameterItem, acc: JSONRecord) {
-    if (paramConfig.persistGlobally) {
-      const keyPath = paramConfig.globallyPersistedNamespace.foldL(
-        () => paramConfig.name, // onNone
-        (val) => `${val}.${paramConfig.name}` // onSome
-      )
-      const persistedValue = get(keyPath, globallyPersistedParams)
-
-      if (!isEmpty(persistedValue)) {
-        acc = set(paramConfig.name, persistedValue, acc)
-      }
-    }
-    return acc
+  function getValue(params: any, parameter: ParameterItem): string {
+    let value = params[parameter.name]
+    if (isArray(value) || parameter.type === "select") value = json5.stringify(value)
+    if (!value) value = parameter.defaultValue.toNullable()
+    return value
   }
 
-  return paramConfigs.reduce((acc: JSONRecord, paramConfig: ParameterItem) => decode(paramConfig, acc), {})
+  // Replace each parameter with its value
+  return query.parameters.reduce((acc: string, parameter: ParameterItem) => {
+    // Arrays are not strings with tokens, so bail
+    if (isArray(params) || !parameter.name) return acc
+    return acc.replace(getRegex(parameter.name), getValue(params, parameter))
+  }, raw)
 }

@@ -4,10 +4,7 @@ import { get, set } from "lodash/fp"
 import React from "react"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { toggleManageForm } from "./toggle-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
 
 export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -20,9 +17,7 @@ export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedP
   size: SwitchProps["size"]
 }
 
-export class ToggleInterfaceComponent extends BaseInterfaceComponent<
-  ToggleInterfaceComponentProps
-> {
+export class ToggleInterfaceComponent extends BaseInterfaceComponent<ToggleInterfaceComponentProps> {
   static defaultProps = {
     valueKey: "value",
   }

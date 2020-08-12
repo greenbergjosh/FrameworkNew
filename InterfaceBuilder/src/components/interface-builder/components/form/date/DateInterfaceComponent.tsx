@@ -5,10 +5,7 @@ import React from "react"
 import { getTimeFormat, TimeSettings } from "../_shared/common-include-time-form"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { dateManageForm } from "./date-manage-form"
-import {
-  BaseInterfaceComponent,
-  ComponentDefinitionNamedProps,
-} from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
 
 export interface DateInterfaceComponentProps extends ComponentDefinitionNamedProps {
@@ -49,10 +46,7 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
   handleChange = (inputMoment: moment.Moment | null, dateString: string) => {
     const { onChangeData, timeSettings, userInterfaceData, valueKey } = this.props
     const timeFormat = getTimeFormat(timeSettings)
-    const newValueMoment = moment(
-      dateString,
-      "YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")
-    )
+    const newValueMoment = moment(dateString, `YYYY-MM-DD${timeFormat ? ` ${timeFormat.format}` : ""}`)
     const currentValue = get(valueKey, userInterfaceData)
 
     const { includeTime } = timeSettings || { includeTime: false }
@@ -68,9 +62,7 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
           : "day"
         : "day"
 
-    const newValue = newValueMoment.isValid()
-      ? newValueMoment.startOf(alignmentTimePeriod).utc().toISOString()
-      : null
+    const newValue = newValueMoment.isValid() ? newValueMoment.startOf(alignmentTimePeriod).utc().toISOString() : null
 
     if (currentValue !== newValue && onChangeData) {
       console.log("DateInterfaceComponent", { inputMoment, dateString, newValueMoment })
@@ -85,7 +77,7 @@ export class DateInterfaceComponent extends BaseInterfaceComponent<
     return (
       <Undraggable wrap>
         <DatePicker
-          format={"YYYY-MM-DD" + (timeFormat ? " " + timeFormat.format : "")}
+          format={`YYYY-MM-DD${timeFormat ? ` ${timeFormat.format}` : ""}`}
           onChange={this.handleChange}
           showTime={timeFormat}
           style={{ display: "block" }}

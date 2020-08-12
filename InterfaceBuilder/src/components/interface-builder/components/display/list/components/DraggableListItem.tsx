@@ -22,11 +22,7 @@ export default function DraggableListItem({
 
     onChangeData &&
       onChangeData(
-        set(
-          valueKey,
-          [...existingData.slice(0, index), ...existingData.slice(index + 1)],
-          userInterfaceData
-        )
+        set(valueKey, [...existingData.slice(0, index), ...existingData.slice(index + 1)], userInterfaceData)
       )
   }
 
