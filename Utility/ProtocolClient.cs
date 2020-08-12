@@ -101,7 +101,7 @@ namespace Utility
             return resp;
         }
 
-        public static async Task<Dictionary<string, object>> DownloadUnzipUnbuffered(string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds = 180.0, int maxConnectionsPerServer = 5)
+        public static async Task<Dictionary<string, object>> DownloadUnzipUnbuffered(string url, string basicAuthString, Func<FileInfo, Task<string>> zipEntryTester, Dictionary<string, Func<FileInfo, Task<object>>> zipEntryProcessors, string workingDirectory, double timeoutSeconds, int maxConnectionsPerServer, FrameworkWrapper fw)
         {
             var responseBody = string.Empty;
 
@@ -118,41 +118,40 @@ namespace Utility
                     var byteArray = Encoding.ASCII.GetBytes(basicAuthString);
                     using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
                     {
-                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Convert.ToBase64String(byteArray));
-                        return client.SendAsync(requestMessage);
+                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                        return client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
                     }
                 }
                 else
                 {
-                    return client.GetAsync(url);
+                    return client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 }
             }
 
             try
             {
-                using (var response = await GetResponse())
+                using var response = await GetResponse();
+                using (var fs = new FileStream(workingDirectory + "\\" + fileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    using (var fs = new FileStream(workingDirectory + "\\" + fileName, FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        await response.Content.CopyToAsync(fs);
-                    }
+                    await response.Content.CopyToAsync(fs);
+                    await fw.Log(nameof(DownloadUnzipUnbuffered), $"Downloaded file {url} to {fileName}, size: {fs.Length} position: {fs.Position}");
                 }
 
-                if (await UnixWrapper.IsZip(Path.Combine(workingDirectory, fileName)))
+                if (await UnixWrapper.IsZip(Path.Combine(workingDirectory, fileName), fw))
                 {
+                    await fw.Log(nameof(DownloadUnzipUnbuffered), $"File is zip, calling {nameof(UnzipUnbuffered)} for {url} -> {fileName}");
                     rs = await UnzipUnbuffered(fileName, zipEntryTester, zipEntryProcessors, workingDirectory, workingDirectory);
                 }
                 else
                 {
+                    await fw.Log(nameof(DownloadUnzipUnbuffered), $"File is not a zip, calling {nameof(ProcessFile)} for {url} -> {fileName}");
                     var (tr, pr) = await ProcessFile(new FileInfo(Path.Combine(workingDirectory, fileName)), zipEntryTester, zipEntryProcessors);
                     rs[tr] = pr;
                 }
             }
-            catch (Exception)
-            {
-            }
             finally
             {
+                await fw.Log(nameof(DownloadUnzipUnbuffered), $"Deleting files for {url} -> {fileName}");
                 Fs.TryDeleteFile(workingDirectory + "\\" + ufn + ".tmp");
                 var dir = new DirectoryInfo(workingDirectory + "\\" + ufn);
                 if (dir.Exists)
@@ -160,6 +159,8 @@ namespace Utility
                     dir.Delete(true);
                 }
             }
+
+            await fw.Log(nameof(DownloadUnzipUnbuffered), $"Completed for {url} -> {fileName}");
 
             return rs;
         }

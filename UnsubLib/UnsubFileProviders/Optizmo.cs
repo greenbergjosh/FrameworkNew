@@ -46,7 +46,7 @@ namespace UnsubLib.UnsubFileProviders
             }).Where(rx => rx != null).ToArray();
         }
 
-        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || uri.ToString().Contains("mailer.optizmo.net");
+        public bool CanHandle(IGenericEntity network, string unsubRelationshipId, Uri uri) => uri.ToString().Contains("app.optizmo.com") || uri.ToString().Contains("mailer-api.optizmo.net") || uri.ToString().Contains("mailer.optizmo.net") || uri.ToString().Contains("affiliateaccesskey.com");
 
         public async Task<string> GetFileUrl(IGenericEntity network, string unsubRelationshipId, Uri uri)
         {
@@ -67,7 +67,6 @@ namespace UnsubLib.UnsubFileProviders
 
                 return await GetOptizmoUnsubFileUri(path, authToken);
             }
-
             else if (useApi)
             {
                 string fileId = null;
@@ -120,19 +119,18 @@ namespace UnsubLib.UnsubFileProviders
                     }, retryWalkaway);
                 }
             }
-            else
+
+            // Fallback if API failed
+            var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(uri.AbsolutePath, authToken);
+
+            await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {optizmoUnsubUrl}");
+
+            if (!string.IsNullOrWhiteSpace(optizmoUnsubUrl))
             {
-                var optizmoUnsubUrl = await GetOptizmoUnsubFileUri(uri.AbsolutePath, authToken);
-
-                await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {optizmoUnsubUrl}");
-
-                if (!string.IsNullOrWhiteSpace(optizmoUnsubUrl))
-                {
-                    return optizmoUnsubUrl;
-                }
-
-                await _fw.Error(_logMethod, $"Empty Optizmo url returned from: {uri}");
+                return optizmoUnsubUrl;
             }
+
+            await _fw.Error(_logMethod, $"Empty Optizmo url returned from: {uri}");
 
             return null;
         }

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Utility;
@@ -79,6 +82,20 @@ namespace UnsubLib.UnsubFileProviders
                 {
                     await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} defaultUrl {defaultUrl}");
                     return defaultUrl;
+                }
+
+                // Try new style API first
+                var authInfo = network.GetD("Credentials/DomainAuthStrings")?.FirstOrDefault(d => string.Equals(d.Item1, "api.unsubcentral.com", StringComparison.CurrentCultureIgnoreCase))?.Item2;
+
+                if (!authInfo.IsNullOrWhitespace())
+                {
+                    var url = $"https://api.unsubcentral.com/api/service/keys/{key}?s={secure}&format=hash";
+
+                    await _fw.Trace(_logMethod, $"Retrieved Unsub location: {uri} -> {url}");
+
+                    await _fw.Trace("UV2C", $"{unsubRelationshipId} {uriStr} final result {url}");
+
+                    return url;
                 }
 
                 var data = new Dictionary<string, string> { { "key", key }, { "s", secure } };

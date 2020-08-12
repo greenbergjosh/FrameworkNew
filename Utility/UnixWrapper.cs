@@ -147,7 +147,7 @@ namespace Utility
 
         public static string exeFile = @"C:\Program Files\Git\usr\bin\file";
 
-        public static async Task<bool> IsZip(string file)
+        public static async Task<bool> IsZip(string file, FrameworkWrapper fw)
         {
             var resultFileName = Path.GetTempFileName();
 
@@ -163,6 +163,7 @@ namespace Utility
             var result = await File.ReadAllTextAsync(resultFileName);
             Fs.TryDeleteFile(resultFileName);
 
+            await fw.Log(nameof(IsZip), $"File {file}: {result}");
             return result?.Contains("zip", StringComparison.OrdinalIgnoreCase) == true;
         }
 
