@@ -15,6 +15,6 @@
  * causing <Main> wrapping component to be too short
  * and content overflowed the container covering the footer.
  */
-.ant-layout-content {
+main.ant-layout-content {
   min-height: initial !important;
 }
