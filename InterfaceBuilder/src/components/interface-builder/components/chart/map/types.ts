@@ -23,19 +23,35 @@ export interface MapInterfaceComponentProps extends ComponentDefinitionNamedProp
 
   // Component specific
   width?: number
-  mapName: string
+  mapType: string
+  markerFillColor?: string
 }
 
 export type MarkerType = {
-  name: string
-  coordinates: [number, number]
+  latitude: string
+  longitude: string
   magnitude: number
+  name: string
+  percentage: string
 }
 
-export interface MapInterfaceComponentState {}
+export interface MapInterfaceComponentState {
+  markers?: MarkerType[]
+  loading: boolean
+}
 
 export type PositionType = { coordinates: Point; zoom: number }
 
 export interface MapChartProps {
-  markers: MarkerType[]
+  markers?: MarkerType[]
+  markerFillColor?: string
+}
+
+export interface MagnitudeMarkerProps {
+  marker: MarkerType
+  color?: string
+}
+
+export interface StateNameMarkerProps {
+  geo: any
 }

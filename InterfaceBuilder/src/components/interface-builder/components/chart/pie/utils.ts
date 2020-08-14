@@ -1,8 +1,11 @@
 import { PieDatum } from "@nivo/pie"
 import { OrdinalColorsInstruction } from "@nivo/colors"
 import { LegendProps } from "@nivo/legends"
+import { isEmpty, toNumber } from "lodash/fp"
 
-export function mapNivoColorScheme(colorScheme: string): OrdinalColorsInstruction<PieDatum> {
+export const emptyDataSet = [{ id: "None", label: "No data", value: 1 }]
+
+export function getNivoColorScheme(colorScheme: string): OrdinalColorsInstruction<PieDatum> {
   switch (colorScheme) {
     case "set1":
       return { scheme: "nivo" }
@@ -27,17 +30,49 @@ export function mapNivoColorScheme(colorScheme: string): OrdinalColorsInstructio
   }
 }
 
-export type NivoPieDataType = {
-  id: string
-  label: string
-  value: number
-}
-
-export function mapDataToNivoData(data: any[], sliceLabelKey: string, sliceValueKey: string): NivoPieDataType[] {
+/**
+ * Convert API data to an array of PieDatum type.
+ * @param data
+ * @param labelKey
+ * @param valueKey
+ * @param threshold
+ */
+export function convertToPieDatum(data: any[], labelKey: string, valueKey: string, threshold: number): PieDatum[] {
+  // Return if nothing to do
+  if (isEmpty(data)) return emptyDataSet
   if (!data.map || data.length < 1) return []
-  return data.map((d, index) => {
-    return { id: index.toString(), label: d[sliceLabelKey], value: d[sliceValueKey] }
-  })
+
+  let belowThreshold: PieDatum[] = []
+
+  // Convert to PieDatum[]
+  const pieDatum = data.reduce((acc, d, index) => {
+    const rawValue = toNumber(d[valueKey])
+    const value = isNaN(rawValue) ? 0 : rawValue
+    const label = d[labelKey]
+
+    if (threshold > 0 && value < threshold) {
+      belowThreshold.push({ id: index.toString(), label, value })
+    } else {
+      acc.push({ id: index.toString(), label, value })
+    }
+    return acc
+  }, [])
+
+  // Gather values below the threshold into an "Other" PieDatum
+  if (threshold > 0 && belowThreshold.length > 0) {
+    const aggregate = belowThreshold.reduce(
+      (acc, pieDatum, index) => {
+        acc.value += pieDatum.value
+        // acc.label += `, ${pieDatum.label}`
+        return acc
+      },
+      { id: "", value: 0, label: "Others" }
+    )
+
+    aggregate.id = pieDatum.length.toString()
+    pieDatum.push(aggregate)
+  }
+  return pieDatum
 }
 
 export const legends: LegendProps[] = [

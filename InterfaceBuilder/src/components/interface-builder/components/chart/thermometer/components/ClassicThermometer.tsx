@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { IconProps } from "../types"
+import { inRange } from "lodash/fp"
 
 // Intrinsic values from the original SVG artwork
 const artHeight = 295
@@ -43,7 +44,8 @@ export default function ({ height = 150, strokeColor = "black", strokeWidth = 2,
 
   useEffect(() => {
     // Mercury dims
-    const mercuryHeight = artMercuryHeight * value
+    const defaultedValue = inRange(0, 1, value) ? value : 0
+    const mercuryHeight = artMercuryHeight * defaultedValue
     const mercuryTop = artMercuryBottom - mercuryHeight
 
     // Entire artwork dims
@@ -60,7 +62,7 @@ export default function ({ height = 150, strokeColor = "black", strokeWidth = 2,
         <MercuryBulb />
       </g>
       <g fill={fillColor} strokeWidth={0}>
-        <rect x="31" y={dims.mercuryTop - 2} width="18" height={dims.mercuryHeight + 10}  rx="10" />
+        <rect x="31" y={dims.mercuryTop - 2} width="18" height={dims.mercuryHeight + 10} rx="10" />
       </g>
       <g fill="none" stroke={strokeColor} strokeWidth={strokeWidth} transform="translate(0,0)">
         <ClassicThermometer />

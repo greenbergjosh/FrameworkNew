@@ -1,72 +1,10 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
+import { colorOptions } from "components/interface-builder/components/_shared/colors"
 
 export const thermometerManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...thermometerManageFormDefinition, ...extend)
 }
-
-const colorOptions = [
-  {
-    label: "Light Grey",
-    value: "lightgrey",
-  },
-  {
-    label: "Grey",
-    value: "grey",
-  },
-  {
-    label: "Black",
-    value: "black",
-  },
-  {
-    label: "Light Blue",
-    value: "lightblue",
-  },
-  {
-    label: "Blue",
-    value: "blue",
-  },
-  {
-    label: "Light Green",
-    value: "lightgreen",
-  },
-  {
-    label: "Green",
-    value: "green",
-  },
-  {
-    label: "Light Red",
-    value: "pink",
-  },
-  {
-    label: "Red",
-    value: "red",
-  },
-  {
-    label: "Light Orange",
-    value: "lightorange",
-  },
-  {
-    label: "Orange",
-    value: "orange",
-  },
-  {
-    label: "Light Purple",
-    value: "violet",
-  },
-  {
-    label: "Purple",
-    value: "purple",
-  },
-  {
-    label: "Light Yellow",
-    value: "lightyellow",
-  },
-  {
-    label: "Brown",
-    value: "brown",
-  },
-]
 
 const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
@@ -85,6 +23,12 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "value",
+              },
+              {
+                key: "absoluteValueKey",
+                valueKey: "absoluteValueKey",
+                component: "input",
+                label: "Absolute Value Key",
               },
             ],
           },
@@ -152,6 +96,12 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Line Thickness",
                 defaultValue: 2,
                 component: "number-input",
+              },
+              {
+                key: "thermometerLabel",
+                valueKey: "thermometerLabel",
+                component: "input",
+                label: "Thermometer Label",
               },
             ],
           },

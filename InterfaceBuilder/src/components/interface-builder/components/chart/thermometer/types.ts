@@ -16,4 +16,10 @@ export interface ThermometerInterfaceComponentProps extends ComponentDefinitionN
   strokeWidth: number
   fillColor: string
   height: number
+  thermometerLabel?: string
+  absoluteValueKey?: string
+}
+
+export interface ThermometerInterfaceComponentState {
+  loading: boolean
 }

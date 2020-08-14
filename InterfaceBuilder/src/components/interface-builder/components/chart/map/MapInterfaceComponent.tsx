@@ -2,8 +2,9 @@ import React from "react"
 import { mapManageForm } from "./map-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import UsaMap from "./components/UsaMap"
-import { MapInterfaceComponentProps, MapInterfaceComponentState } from "./types"
-import { get } from "lodash/fp"
+import { MapInterfaceComponentProps, MapInterfaceComponentState, MarkerType } from "./types"
+import { get, intersectionWith, isEqual } from "lodash/fp"
+import { Empty, Spin } from "antd"
 
 export class MapInterfaceComponent extends BaseInterfaceComponent<
   MapInterfaceComponentProps,
@@ -26,16 +27,33 @@ export class MapInterfaceComponent extends BaseInterfaceComponent<
 
   constructor(props: MapInterfaceComponentProps) {
     super(props)
+    this.state = { loading: true }
+  }
+
+  componentDidUpdate(prevProps: Readonly<MapInterfaceComponentProps>) {
+    const prevValue: MarkerType[] = get(prevProps.valueKey, prevProps.userInterfaceData) || []
+    const nextValue: MarkerType[] = get(this.props.valueKey, this.props.userInterfaceData) || []
+    const intersection = intersectionWith(isEqual, prevValue, nextValue)
+
+    if (intersection.length !== prevValue.length || prevValue.length !== nextValue.length) {
+      this.setState({ loading: false })
+    }
   }
 
   render(): JSX.Element {
-    const { userInterfaceData, valueKey, width } = this.props
-    const value = get(valueKey, userInterfaceData)
+    const { width, mapType, valueKey, userInterfaceData, markerFillColor } = this.props
+    const markers = get(valueKey, userInterfaceData) || []
 
     return (
-      <div style={{ width }}>
-        <UsaMap markers={value} />
-      </div>
+      <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
+        <div style={{ width }}>
+          {mapType === "usaStates" ? (
+            <UsaMap markers={markers} markerFillColor={markerFillColor} />
+          ) : (
+            <Empty description="Map features not selected" />
+          )}
+        </div>
+      </Spin>
     )
   }
 }

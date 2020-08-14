@@ -1,5 +1,6 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
+import { colorOptions } from "components/interface-builder/components/_shared/colors"
 
 export const mapManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...mapManageFormDefinition, ...extend)
@@ -23,9 +24,14 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 defaultValue: "value",
               },
+            ],
+          },
+          {
+            key: "appearance",
+            components: [
               {
-                key: "mapName",
-                valueKey: "mapName",
+                key: "mapType",
+                valueKey: "mapType",
                 label: "Map",
                 help: "Select the map features to display",
                 component: "select",
@@ -44,17 +50,23 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
-            ],
-          },
-          {
-            key: "appearance",
-            components: [
               {
                 key: "width",
                 valueKey: "width",
                 label: "Width",
                 help: "Width in pixels. Height is determined by the component.",
                 component: "number-input",
+              },
+              {
+                key: "markerFillColor",
+                valueKey: "markerFillColor",
+                label: "Marker Color",
+                component: "select",
+                dataHandlerType: "local",
+                defaultValue: "red",
+                data: {
+                  values: colorOptions,
+                },
               },
             ],
           },

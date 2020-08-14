@@ -1,13 +1,14 @@
 import React, { FunctionComponent, useState } from "react"
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps"
-import states from "../maps/states-10m"
+import states from "../map-data/states-10m"
 import { MapChartProps, PositionType } from "../types"
 import { MagnitudeMarker } from "./MagnitudeMarker"
-import { ZoomControls } from "components/interface-builder/components/chart/map/components/ZoomControls"
+import { ZoomControls } from "./ZoomControls"
+import { StateNameMarker } from "./StateNameMarker"
 
 const initialPos: PositionType = { coordinates: [-95.7129, 37.0902], zoom: 1 }
 
-const UsaMap: FunctionComponent<MapChartProps> = ({ markers }) => {
+const UsaMap: FunctionComponent<MapChartProps> = ({ markers, markerFillColor }) => {
   const [position, setPosition] = useState<PositionType>(initialPos)
 
   function handleZoomIn() {
@@ -36,15 +37,16 @@ const UsaMap: FunctionComponent<MapChartProps> = ({ markers }) => {
             {({ geographies }) => (
               <>
                 {geographies.map((geo) => (
-                  <Geography key={geo.rsmKey} stroke="#FFF" geography={geo} fill="#DDD" />
+                  <>
+                    <Geography key={geo.rsmKey} stroke="#FFF" geography={geo} fill="#DDD" />
+                    <StateNameMarker geo={geo} />
+                  </>
                 ))}
               </>
             )}
           </Geographies>
           {markers &&
-            markers.map(({ name, coordinates, magnitude }) => (
-              <MagnitudeMarker key={name} numbers={coordinates} name={name} magnitude={magnitude}  />
-            ))}
+            markers.map((marker, index) => <MagnitudeMarker key={index} marker={marker} color={markerFillColor} />)}
         </ZoomableGroup>
       </ComposableMap>
       <ZoomControls onZoomOut={handleZoomOut} onReset={handleReset} onZoomIn={handleZoomIn} />
