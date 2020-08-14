@@ -234,7 +234,7 @@ export function Dashboard(props: WithRouteProps<Props>): JSX.Element {
           </Breadcrumb>
         </Row>
 
-        <Layout.Content className={`${styles.layoutContainer}`}>
+        <Layout.Content className={`${styles.layoutContainer}`} style={{ minHeight: "initial !important" }}>
           <Spin spinning={fromStore.loadingGlobalConfigs}>{props.children}</Spin>
         </Layout.Content>
 
