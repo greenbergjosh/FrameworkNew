@@ -41,6 +41,7 @@ export interface BusinessApplicationConfig {
 
 export interface BusinessApplicationPageConfig {
   layout: ComponentDefinition[]
+  hasWhiteBackground: boolean
 }
 
 export type BusinessApplicationId = string

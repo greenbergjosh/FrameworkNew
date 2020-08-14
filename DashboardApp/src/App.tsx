@@ -15,7 +15,13 @@ import { useRematch } from "./hooks/use-rematch"
 import { NotFound } from "./routes/not-found"
 import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
-import { antComponents, DragDropContext, registerMonacoEditorMount, registry } from "@opg/interface-builder"
+import {
+  antComponents,
+  DragDropContext,
+  nivoComponents,
+  registerMonacoEditorMount,
+  registry,
+} from "@opg/interface-builder"
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
 import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
@@ -58,6 +64,7 @@ export function App(): JSX.Element {
 
   React.useEffect(() => {
     registry.register(antComponents)
+    registry.register(nivoComponents)
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: ExecuteInterfaceComponent })
     registry.register({ "path-editor": PathEditorInterfaceComponent })

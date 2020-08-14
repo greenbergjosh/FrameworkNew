@@ -17,9 +17,10 @@ import { EditGlobalConfig } from "../routes/dashboard/routes/global-config/route
 import { ListGlobalConfig } from "../routes/dashboard/routes/global-config/routes/list"
 import { ShowGlobalConfig } from "../routes/dashboard/routes/global-config/routes/show"
 import { Reports } from "../routes/dashboard/routes/reports"
+import { Summary } from "../routes/dashboard/routes/summary"
+import { SummaryView } from "../routes/dashboard/routes/summary/routes/SummaryView"
 import ImportIngestionReportView from "../routes/dashboard/routes/reports/routes/import-ingestion"
 import ReportView from "../routes/dashboard/routes/reports/routes/report"
-import { Summary } from "../routes/dashboard/routes/summary"
 import { UserInterfaceTest } from "../routes/dashboard/routes/user-interface-test"
 import { Landing } from "../routes/landing"
 import { Profile } from "./iam"
@@ -328,7 +329,19 @@ const staticRoutesMap = {
         path: "summary",
         redirectFrom: ["/dashboard"],
         requiresAuthentication: true as const,
-        subroutes: {},
+        subroutes: {
+          "/": {
+            abs: "/dashboard/summary",
+            component: SummaryView,
+            description: "",
+            title: "Summary",
+            iconType: "dashboard",
+            path: "/",
+            redirectFrom: [],
+            requiresAuthentication: true as const,
+            subroutes: {},
+          },
+        },
       },
       reports: {
         abs: "/dashboard/reports",

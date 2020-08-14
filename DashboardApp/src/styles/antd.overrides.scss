@@ -9,3 +9,12 @@
 .label-wrapper .ant-progress-line {
   padding-right: 15px;
 }
+
+/*
+ * Fix for layout covering footer. Ant value was zero,
+ * causing <Main> wrapping component to be too short
+ * and content overflowed the container covering the footer.
+ */
+.ant-layout-content {
+  min-height: initial !important;
+}

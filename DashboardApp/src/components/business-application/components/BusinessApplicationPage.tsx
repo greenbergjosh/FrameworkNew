@@ -50,6 +50,9 @@ export const BusinessApplicationPage = ({
     businessApplicationPageConfig,
   })
 
+  const backgroundColor =
+    businessApplicationPageConfig && businessApplicationPageConfig.hasWhiteBackground ? "white" : "none"
+
   return (
     <div>
       <PageHeader
@@ -68,13 +71,15 @@ export const BusinessApplicationPage = ({
       />
       <AdminUserInterfaceContextManagerProvider>
         {(userInterfaceContextManager) => (
-          <UserInterface
-            mode="display"
-            contextManager={userInterfaceContextManager}
-            components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
-            data={data}
-            onChangeData={(newData) => setData(newData)}
-          />
+          <div style={{ backgroundColor }}>
+            <UserInterface
+              mode="display"
+              contextManager={userInterfaceContextManager}
+              components={(businessApplicationPageConfig && businessApplicationPageConfig.layout) || []}
+              data={data}
+              onChangeData={(newData) => setData(newData)}
+            />
+          </div>
         )}
       </AdminUserInterfaceContextManagerProvider>
     </div>
