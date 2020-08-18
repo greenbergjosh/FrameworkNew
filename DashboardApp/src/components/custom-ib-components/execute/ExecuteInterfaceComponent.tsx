@@ -189,14 +189,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
    */
 
   render(): JSX.Element {
-    const { buttonLabel, buttonProps, userInterfaceData, valueKey } = this.props
+    const { buttonLabel, buttonProps, userInterfaceData } = this.props
     const { queryConfig } = this.state
-    const data = get(valueKey, userInterfaceData)
 
     if (!queryConfig) return <></>
 
     return (
-      <QueryParams queryConfig={queryConfig} parentData={data}>
+      <QueryParams queryConfig={queryConfig} parentData={userInterfaceData}>
         {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
           <QueryForm
             layout={queryConfig.layout}
