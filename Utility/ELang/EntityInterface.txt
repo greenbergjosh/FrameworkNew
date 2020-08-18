@@ -1,5 +1,6 @@
 Entity(Id, Config)
-BinaryEntityRelationship(LEntityId, REntityId, LName, RName, Sequence)
+BinaryEntityRelationship(LEntityId, REntityId, RelationshipEntityId, Sequence)
+Entity('RelationshipEntityId', {LName, RName})
 
 Point to a specific EntityVersion
 Point to a specific Entity (use selection to choose a variant)

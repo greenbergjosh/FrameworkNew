@@ -61,6 +61,13 @@ namespace Utility.GenericEntity
 
         public override object this[string path] => _root.SelectToken(ConvertPath(path));
 
+        public override string GetS(string path, bool quoteStrings = false)
+        {
+            var s = _root.SelectToken(ConvertPath(path));
+            if (s?.Type == JTokenType.String && quoteStrings) return "\"" + s + "\"";
+            else return s?.ToString();
+        }
+
         public override void Set(string path, object value)
         {
             var cpath = SplitPropertyPath(path);
@@ -103,6 +110,15 @@ namespace Utility.GenericEntity
                 var entity = new GenericEntityJson();
                 entity.InitializeEntity(rw, null, item);
                 yield return entity;
+            }
+        }
+
+        public override IEnumerable<string> GetLS(string path, bool quoteStrings = false)
+        {
+            foreach (var item in _root.SelectTokens(ConvertPath(path)).Children())
+            {
+                if (item?.Type == JTokenType.String && quoteStrings) yield return $"\"{item}\"";
+                else yield return item?.ToString();
             }
         }
 

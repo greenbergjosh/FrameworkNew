@@ -20,6 +20,7 @@ namespace Utility.GenericEntity
         void RegisterNamedCallback(string callbackName, Func<IGenericEntity, Dictionary<string, object>, string, object> callback);
 
         IEnumerable<IGenericEntity> GetL(string path);
+        IEnumerable<string> GetLS(string path, bool quoteStrings = false);
         IGenericEntity GetE(string path);
         IEnumerable<Tuple<string, string>> GetD(string path);
         IEnumerable<(string key, IGenericEntity entity)> GetDe(string path);
@@ -35,7 +36,7 @@ namespace Utility.GenericEntity
         T Get<T>(string path, string fname);
 
         void Set(string path, object value);
-        string GetS(string path);
+        string GetS(string path, bool quoteStrings = false);
         string RunS(string fname);
         string GetS(string path, string fname);
 

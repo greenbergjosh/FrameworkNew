@@ -57,6 +57,11 @@ namespace Utility.GenericEntity
             throw new NotImplementedException();
         }
 
+        public virtual IEnumerable<string> GetLS(string path, bool quoteStrings = false)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual IGenericEntity GetE(string path)
         {
             throw new NotImplementedException();
@@ -129,7 +134,7 @@ namespace Utility.GenericEntity
             throw new NotImplementedException();
         }
 
-        public virtual string GetS(string path)
+        public virtual string GetS(string path, bool quoteStrings = false)
         {
             object s = Get(path);
             if (s == null) return null;
