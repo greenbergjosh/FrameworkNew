@@ -93,7 +93,6 @@ namespace UnsubLib.NetworkProviders
         public async Task<Uri> GetSuppressionLocationUrl(IGenericEntity network, string unsubRelationshipId)
         {
             var networkName = network.GetS("Name");
-            var downloadUrlPath = network.GetS("Credentials/DownloadUrlPath");
             var apiKey = network.GetS("Credentials/NetworkApiKey");
 
             var url = new Uri(new Uri(network.GetS("Credentials/BaseUrl")), network.GetS("Credentials/GetSuppressionPath")).ToString().Replace("{unsubRelationshipId}", unsubRelationshipId);
@@ -111,9 +110,21 @@ namespace UnsubLib.NetworkProviders
 
                 if (resp.success == false) throw new Exception($"Http request for suppression url failed for {networkName}: {url} {resp.body}", null);
 
-                var dlUrl = Jw.JsonToGenericEntity(respBody).GetS(downloadUrlPath);
+                var response = Jw.JsonToGenericEntity(respBody);
+                foreach (var downloadUrlPath in network.GetLS("Credentials/DownloadUrlPaths"))
+                {
+                    var dlUrl = response.GetS(downloadUrlPath);
 
-                return dlUrl.IsNullOrWhitespace() ? null : new Uri(dlUrl);
+                    if (dlUrl.IsNullOrWhitespace())
+                    {
+                        continue;
+                    }
+
+                    return new Uri(dlUrl);
+                }
+
+                await _fw.Error(_logMethod, $"Failed to get unsub for {networkName}: {url}::{respBody ?? "null"}");
+                return null;
             }
             catch (HaltingException) { throw; }
             catch (HttpRequestException e)
