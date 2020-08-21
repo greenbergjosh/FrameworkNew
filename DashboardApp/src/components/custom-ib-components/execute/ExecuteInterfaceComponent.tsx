@@ -1,5 +1,5 @@
 import React from "react"
-import { get, set } from "lodash/fp"
+import { set } from "lodash/fp"
 import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
 import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 import { JSONRecord } from "../../../data/JSON"
@@ -104,7 +104,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     satisfiedByParentParams: JSONRecord,
     setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
   ) => {
-    if (this.props.executeImmediately) {
+    if (this.props.executeImmediately && this.props.mode !== "edit") {
       this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
     }
   }
