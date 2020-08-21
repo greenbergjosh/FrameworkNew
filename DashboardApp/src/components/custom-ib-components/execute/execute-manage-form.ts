@@ -52,6 +52,14 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Should this action be executed when the page loads?",
               },
               {
+                key: "autoExecuteIntervalSeconds",
+                valueKey: "autoExecuteIntervalSeconds",
+                component: "number-input",
+                defaultValue: null,
+                label: "Auto Execute Interval Seconds",
+                help: "The number of seconds between auto-execution. (0 or blank to disable)",
+              },
+              {
                 key: "queryType",
                 valueKey: "queryType",
                 label: "Data Source",

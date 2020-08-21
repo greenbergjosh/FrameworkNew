@@ -107,6 +107,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     if (this.props.executeImmediately) {
       this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
     }
+    if (this.props.autoExecuteIntervalSeconds) {
+        setInterval(() => this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues), this.props.autoExecuteIntervalSeconds * 1000);
+    }
   }
 
   /* Originally from ReportBody.tsx */
