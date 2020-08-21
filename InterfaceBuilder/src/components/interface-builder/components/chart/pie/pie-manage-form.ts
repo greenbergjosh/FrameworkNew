@@ -27,8 +27,22 @@ const pieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "sliceLabelKey",
                 valueKey: "sliceLabelKey",
                 component: "input",
-                label: "Slice Label Key",
+                label: "Slice Label Name Key",
                 defaultValue: "label",
+              },
+              {
+                key: "sliceLabelValueKey",
+                valueKey: "sliceLabelValueKey",
+                component: "input",
+                label: "Slice Label Value Key",
+                defaultValue: "value",
+              },
+              {
+                key: "sliceLabelValueFunction",
+                valueKey: "sliceLabelValueFunction",
+                component: "input",
+                label: "Slice Label Value Function",
+                help: "A function that receives the slice value and returns a formatted string.",
               },
               {
                 key: "sliceValueKey",

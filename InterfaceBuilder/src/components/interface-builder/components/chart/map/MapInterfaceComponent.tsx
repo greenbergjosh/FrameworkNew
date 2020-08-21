@@ -41,8 +41,9 @@ export class MapInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { width, mapType, valueKey, userInterfaceData, markerFillColor } = this.props
-    const markers = get(valueKey, userInterfaceData) || []
+    const { width, mapType, valueKey, userInterfaceData, markerFillColor, markerLimit } = this.props
+    const rawMarkers = get(valueKey, userInterfaceData) || []
+    const markers = markerLimit && markerLimit > 0 ? rawMarkers.slice(0, markerLimit) : rawMarkers
 
     return (
       <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">

@@ -25,6 +25,7 @@ export interface MapInterfaceComponentProps extends ComponentDefinitionNamedProp
   width?: number
   mapType: string
   markerFillColor?: string
+  markerLimit?: number
 }
 
 export type MarkerType = {
@@ -50,8 +51,19 @@ export interface MapChartProps {
 export interface MagnitudeMarkerProps {
   marker: MarkerType
   color?: string
+  projection: any
 }
 
 export interface StateNameMarkerProps {
   geo: any
+}
+
+/**
+ * Validate Marker
+ * @param marker
+ * @return boolean
+ */
+export function isMarker(marker: MarkerType): boolean {
+  const requiredKeys = ["percentage", "magnitude", "name", "latitude", "longitude"]
+  return requiredKeys.every((k) => k in marker)
 }

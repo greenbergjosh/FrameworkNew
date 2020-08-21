@@ -34,7 +34,7 @@ const UsaMap: FunctionComponent<MapChartProps> = ({ markers, markerFillColor }) 
       <ComposableMap projection="geoAlbersUsa">
         <ZoomableGroup zoom={position.zoom} center={position.coordinates} onMoveEnd={handleMoveEnd}>
           <Geographies geography={states}>
-            {({ geographies }) => (
+            {({ geographies, projection }) => (
               <>
                 {geographies.map((geo) => (
                   <>
@@ -42,11 +42,13 @@ const UsaMap: FunctionComponent<MapChartProps> = ({ markers, markerFillColor }) 
                     <StateNameMarker geo={geo} />
                   </>
                 ))}
+                {markers &&
+                  markers.map((marker, index) => (
+                    <MagnitudeMarker key={index} marker={marker} projection={projection} color={markerFillColor} />
+                  ))}
               </>
             )}
           </Geographies>
-          {markers &&
-            markers.map((marker, index) => <MagnitudeMarker key={index} marker={marker} color={markerFillColor} />)}
         </ZoomableGroup>
       </ComposableMap>
       <ZoomControls onZoomOut={handleZoomOut} onReset={handleReset} onZoomIn={handleZoomIn} />

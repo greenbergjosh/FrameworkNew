@@ -23,6 +23,14 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "value",
+                help:
+                  'The data must be an array of objects with the properties: { "percentage", "magnitude", "name", "latitude", "longitude" }.',
+              },
+              {
+                key: "markerLimit",
+                valueKey: "markerLimit",
+                label: "Marker Limit",
+                component: "number-input",
               },
             ],
           },

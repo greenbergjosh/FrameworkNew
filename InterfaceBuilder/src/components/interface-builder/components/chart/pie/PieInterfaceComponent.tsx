@@ -37,15 +37,37 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
 
     if (isEqual(prevValue, nextValue)) return
-    const { sliceLabelKey = "label", sliceValueKey = "value", userInterfaceData, valueKey, threshold } = this.props
+    const {
+      sliceLabelKey,
+      sliceLabelValueFunction,
+      sliceLabelValueKey,
+      sliceValueKey,
+      threshold,
+      userInterfaceData,
+      valueKey,
+    } = this.props
     const rawData = get(valueKey, userInterfaceData)
-    const data = convertToPieDatum(rawData, sliceLabelKey, sliceValueKey, threshold)
+    const data = convertToPieDatum({
+      data: rawData,
+      labelNameKey: sliceLabelKey,
+      labelValueFunction: sliceLabelValueFunction,
+      labelValueKey: sliceLabelValueKey,
+      threshold,
+      valueKey: sliceValueKey,
+    })
 
     this.setState({ pieDatum: data, loading: false })
   }
 
   render(): JSX.Element {
-    const { colorScheme, donut = true, showLegend = false, sliceGap = 2 } = this.props
+    const {
+      colorScheme,
+      donut = true,
+      showLegend = false,
+      sliceGap = 2,
+      sliceLabelKey,
+      sliceLabelValueKey,
+    } = this.props
     const margin = { top: 40, right: 40, bottom: 40, left: 40 }
     const borderColor: InheritedColorProp = { from: "color", modifiers: [["darker", 0.5]] }
 
@@ -64,8 +86,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             motionDamping={15}
             motionStiffness={90}
             padAngle={sliceGap}
-            radialLabel="label"
-            radialLabelsLinkColor={{ from: "color" }}
+            radialLabel={sliceLabelKey}
             radialLabelsLinkDiagonalLength={16}
             radialLabelsLinkHorizontalLength={24}
             radialLabelsLinkOffset={0}
@@ -73,7 +94,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             radialLabelsSkipAngle={10}
             radialLabelsTextColor="#333333"
             radialLabelsTextXOffset={6}
-            sliceLabel="value"
+            sliceLabel={sliceLabelValueKey}
             slicesLabelsSkipAngle={10}
             slicesLabelsTextColor="#333333"
           />
