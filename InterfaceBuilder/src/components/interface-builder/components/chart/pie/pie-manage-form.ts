@@ -31,20 +31,6 @@ const pieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "label",
               },
               {
-                key: "sliceLabelValueKey",
-                valueKey: "sliceLabelValueKey",
-                component: "input",
-                label: "Slice Label Value Key",
-                defaultValue: "value",
-              },
-              {
-                key: "sliceLabelValueFunction",
-                valueKey: "sliceLabelValueFunction",
-                component: "input",
-                label: "Slice Label Value Function",
-                help: "A function that receives the slice value and returns a formatted string.",
-              },
-              {
                 key: "sliceValueKey",
                 valueKey: "sliceValueKey",
                 component: "input",
@@ -52,11 +38,100 @@ const pieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "value",
               },
               {
+                key: "sliceLabelValueType",
+                valueKey: "sliceLabelValueType",
+                label: "Slice Label Value Type",
+                help: "How to display the slice label: \
+                Default: The value of the slice\
+                Key: The property to display\
+                Function: A function that receives the slice and returns a formatted string displayed as the value of the slice.",
+                component: "select",
+                dataHandlerType: "local",
+                defaultValue: "default",
+                data: {
+                  values: [
+                    {
+                      label: "Default",
+                      value: "default",
+                    },
+                    {
+                      label: "Key",
+                      value: "key",
+                    },
+                    {
+                      label: "Function",
+                      value: "function",
+                    },
+                  ],
+                },
+              },
+              {
+                key: "sliceLabelValueKey",
+                valueKey: "sliceLabelValueKey",
+                component: "input",
+                label: "Slice Label Value Key",
+                defaultValue: "value",
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["sliceLabelValueType"],
+                    },
+                    "key",
+                  ],
+                },
+              },
+              {
+                key: "sliceLabelValueFunction",
+                valueKey: "sliceLabelValueFunction",
+                defaultTheme: "vs-dark",
+                defaultLanguage: "javascript",
+                component: "code-editor",
+                height: 100,
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["sliceLabelValueType"],
+                    },
+                    "function",
+                  ],
+                },
+              },
+              {
+                key: "useTooltipFunction",
+                valueKey: "useTooltipFunction",
+                component: "toggle",
+                label: "Tooltip Custom Formatter",
+                help: "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
+              },
+              {
+                key: "tooltipFunction",
+                valueKey: "tooltipFunction",
+                defaultTheme: "vs-dark",
+                defaultLanguage: "javascript",
+                component: "code-editor",
+                height: 100,
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["useTooltipFunction"],
+                    },
+                    true,
+                  ],
+                },
+              },
+              {
                 key: "sliceGap",
                 valueKey: "sliceGap",
                 label: "Slice Gap",
                 component: "number-input",
                 defaultValue: 2,
+              },
+              {
+                key: "preSorted",
+                valueKey: "preSorted",
+                label: "Data is pre-sorted",
+                component: "toggle",
+                defaultValue: false,
               },
             ],
           },
@@ -133,6 +208,24 @@ const pieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Set the cutoff value to display. Values below this amount will be aggregated into an \"Other\" slice.",
                 component: "number-input",
                 defaultValue: 0,
+              },
+              {
+                key: "otherAggregatorFunction",
+                valueKey: "otherAggregatorFunction",
+                label: "Other slice aggregator",
+                help: "A function that receives all slices below the threshold and returns the data for the \"Other\" slice. Note: By default the value will be summed.",
+                defaultTheme: "vs-dark",
+                defaultLanguage: "javascript",
+                component: "code-editor",
+                height: 100,
+                visibilityConditions: {
+                  ">": [
+                    {
+                      var: ["threshold"],
+                    },
+                    0,
+                  ],
+                },
               },
             ],
           },
