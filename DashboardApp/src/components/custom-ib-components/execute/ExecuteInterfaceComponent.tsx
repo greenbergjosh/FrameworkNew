@@ -40,6 +40,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = executeManageForm
   static contextType = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
+
+  autoExecuteTimer?: ReturnType<typeof setInterval> | null
+
   constructor(props: ExecuteInterfaceComponentProps) {
     super(props)
 
@@ -99,6 +102,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }))
   }
 
+  componentWillUnmount(): void {
+      if (this.autoExecuteTimer) {
+          clearInterval(this.autoExecuteTimer)
+          this.autoExecuteTimer = null
+      }
+  }
+
   handleMount = (
     parameterValues: JSONRecord,
     satisfiedByParentParams: JSONRecord,
@@ -106,6 +116,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ) => {
     if (this.props.executeImmediately && this.props.mode !== "edit") {
       this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
+      if (this.props.autoExecuteIntervalSeconds) {
+        this.autoExecuteTimer = setInterval(() => this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues), this.props.autoExecuteIntervalSeconds * 1000)
+	  }
     }
   }
 

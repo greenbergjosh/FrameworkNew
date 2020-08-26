@@ -36,6 +36,7 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   component: "query"
   components: ComponentDefinition[]
   executeImmediately?: boolean
+  autoExecuteIntervalSeconds?: number
   loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   queryType: "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
