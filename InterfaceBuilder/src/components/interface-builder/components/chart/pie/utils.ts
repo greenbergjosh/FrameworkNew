@@ -2,7 +2,7 @@ import { PieDatum } from "@nivo/pie"
 import { OrdinalColorsInstruction } from "@nivo/colors"
 import { LegendProps } from "@nivo/legends"
 import { isEmpty, toNumber } from "lodash/fp"
-import { PieDatumPlus } from "components/interface-builder/components/chart/pie/types"
+import { PieDatumPlus, SliceLabelValueType } from "components/interface-builder/components/chart/pie/types"
 import { tryCatch } from "fp-ts/lib/Option"
 
 export const emptyDataSet = [{ id: "None", label: "No data", value: 1 }]
@@ -33,50 +33,70 @@ export function getNivoColorScheme(colorScheme: string): OrdinalColorsInstructio
 }
 
 function createSliceData({
-  id,
-  labelName,
-  labelNameKey,
-  labelValue,
-  labelValueKey,
-  value,
-  valueKey,
-}: {
+                           id,
+                           labelName,
+                           labelValue,
+                           value,
+                           data,
+                         }: {
   id: string
   labelName: string
-  labelNameKey: string
   labelValue: string
-  labelValueKey: string
   value: number
-  valueKey: string
+  data: any
 }) {
   return {
     id,
     value,
-    label: labelValue,
-    [labelNameKey]: labelName,
-    [valueKey]: value,
-    [labelValueKey]: labelValue,
+    label: labelName,
+    sliceLabel: labelValue,
+    data,
   }
 }
 
+function getLabelValue({
+                         data,
+                         labelValueType,
+                         labelValueKey,
+                         labelValueFn,
+                         valueKey,
+                       }: {
+  data: any
+  labelValueType: SliceLabelValueType
+  labelValueFn?: Function | ""
+  labelValueKey: string
+  valueKey: string
+}): string {
+  switch (labelValueType) {
+    case "default":
+      return data[valueKey]
+    case "function":
+      return labelValueFn ? tryCatch(() => labelValueFn(data)).getOrElse(data[valueKey]) : data[valueKey]
+    case "key":
+      return data[labelValueKey]
+  }
+
+}
+
 function getSliceRawData({
-  data,
-  labelNameKey,
-  labelValueFn,
-  labelValueKey,
-  valueKey,
-}: {
+                           data,
+                           labelNameKey,
+                           labelValueType,
+                           labelValueKey,
+                           labelValueFn,
+                           valueKey,
+                         }: {
   data: any
   labelNameKey: string
+  labelValueType: SliceLabelValueType
   labelValueFn?: Function | ""
   labelValueKey: string
   valueKey: string
 }) {
   const rawValue = toNumber(data[valueKey])
   const value = isNaN(rawValue) ? 0 : rawValue
-  const labelName = data[labelNameKey]
-  const labelRawValue = data[labelValueKey]
-  const labelValue = labelValueFn ? tryCatch(() => labelValueFn(labelRawValue)).getOrElse(labelRawValue) : labelRawValue
+  const labelName: string = data[labelNameKey]
+  const labelValue = getLabelValue({ data, labelValueType, labelValueKey, labelValueFn, valueKey })
   return { value, labelName, labelValue }
 }
 
@@ -84,25 +104,34 @@ function getSliceRawData({
  * Convert API data to an array of PieDatum type.
  * @param data
  * @param labelNameKey
+ * @param labelValueType
  * @param labelValueKey
  * @param labelValueFunction
  * @param valueKey
+ * @param dataIsPreSorted
  * @param threshold
+ * @param otherAggregatorFunction
  */
 export function convertToPieDatum({
-  data,
-  labelNameKey,
-  labelValueFunction,
-  labelValueKey,
-  threshold,
-  valueKey,
-}: {
+                                    data,
+                                    labelNameKey,
+                                    labelValueType,
+                                    labelValueKey,
+                                    labelValueFunction,
+                                    valueKey,
+                                    dataIsPreSorted,
+                                    threshold,
+                                    otherAggregatorFunction,
+                                  }: {
   data: any[]
   labelNameKey: string
-  labelValueFunction?: string
+  labelValueType: SliceLabelValueType
   labelValueKey: string
-  threshold: number
+  labelValueFunction?: string
   valueKey: string
+  dataIsPreSorted: boolean
+  threshold: number
+  otherAggregatorFunction?: string
 }): PieDatumPlus[] {
   // Return if nothing to do
   if (isEmpty(data)) return emptyDataSet
@@ -112,25 +141,24 @@ export function convertToPieDatum({
 
   // Example function: d => `${Math.floor(Number.parseFloat(d.percentage) * 100)}%`
   const parsedLabelValueFunction =
-    labelValueFunction && tryCatch(() => new Function(`return ${labelValueFunction}`)()).toUndefined()
+    labelValueType === "function" && labelValueFunction && tryCatch(() => new Function(`return ${labelValueFunction}`)()).toUndefined()
 
   // Convert to PieDatum[]
   const pieDatum = data.reduce((acc, d, index) => {
     const { value, labelName, labelValue } = getSliceRawData({
       data: d,
       labelNameKey,
-      labelValueFn: parsedLabelValueFunction,
+      labelValueType,
       labelValueKey,
+      labelValueFn: parsedLabelValueFunction,
       valueKey,
     })
     const sliceData = createSliceData({
       id: index.toString(),
       labelName,
-      labelNameKey,
       labelValue,
-      labelValueKey,
       value,
-      valueKey,
+      data: d,
     })
 
     if (threshold > 0 && value < threshold) {
@@ -141,24 +169,38 @@ export function convertToPieDatum({
     return acc
   }, [])
 
+  if (!dataIsPreSorted) {
+    pieDatum.sort((a: { value: number }, b: { value: number }) => b.value - a.value)
+  }
+
   // Gather values below the threshold into an "Other" PieDatum
   if (threshold > 0 && belowThreshold.length > 0) {
     const defaultOtherSlice = createSliceData({
       id: "",
       labelName: "Others",
-      labelNameKey,
-      labelValue: "",
-      labelValueKey,
+      labelValue: "Others",
       value: 0,
-      valueKey,
+      data: {},
     })
-    const aggregate = belowThreshold.reduce((acc, pieDatum, index) => {
+
+    const aggregate = belowThreshold.reduce((acc, pieDatum) => {
       acc.value += pieDatum.value
-      // acc.label += `, ${pieDatum.label}`
       return acc
     }, defaultOtherSlice)
 
-    aggregate.id = pieDatum.length.toString()
+    const otherAggregator = otherAggregatorFunction && tryCatch(() => new Function(`return ${otherAggregatorFunction}`)()).toUndefined()
+    if (otherAggregator) {
+      aggregate.data = otherAggregator(belowThreshold)
+    }
+
+    aggregate.sliceLabel = getLabelValue({
+      data: aggregate.data,
+      labelValueType,
+      labelValueKey,
+      labelValueFn: parsedLabelValueFunction,
+      valueKey,
+    })
+    aggregate.id = (pieDatum.length + 1).toString()
     pieDatum.push(aggregate)
   }
   return pieDatum

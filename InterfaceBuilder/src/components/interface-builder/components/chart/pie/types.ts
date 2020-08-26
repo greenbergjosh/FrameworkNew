@@ -3,6 +3,8 @@ import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 import { PieDatum } from "@nivo/pie"
 import { JSONRecord } from "index"
 
+export type SliceLabelValueType = "default" | "key" | "function"
+
 export interface PieInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "pie"
   valueKey: string
@@ -13,11 +15,16 @@ export interface PieInterfaceComponentProps extends ComponentDefinitionNamedProp
   donut: boolean
   showLegend: boolean
   sliceLabelKey: string
+  sliceValueKey: string
+  sliceLabelValueType: SliceLabelValueType
   sliceLabelValueKey: string
   sliceLabelValueFunction?: string
-  sliceValueKey: string
+  useTooltipFunction: boolean
+  toolTipFunction?: string
   sliceGap: number
   threshold: number
+  otherAggregatorFunction?: string
+  preSorted: boolean
 }
 
 export interface PieInterfaceComponentState {

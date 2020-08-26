@@ -7,11 +7,10 @@ import { emptyDataSet, legends, convertToPieDatum, getNivoColorScheme } from "./
 import { get, isEqual } from "lodash/fp"
 import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { Spin } from "antd"
+import { tryCatch } from "fp-ts/lib/Option"
 
-export class PieInterfaceComponent extends BaseInterfaceComponent<
-  PieInterfaceComponentProps,
-  PieInterfaceComponentState
-> {
+export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceComponentProps,
+  PieInterfaceComponentState> {
   static getLayoutDefinition() {
     return {
       category: "Chart",
@@ -39,21 +38,27 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     if (isEqual(prevValue, nextValue)) return
     const {
       sliceLabelKey,
-      sliceLabelValueFunction,
-      sliceLabelValueKey,
       sliceValueKey,
+      sliceLabelValueType,
+      sliceLabelValueKey,
+      sliceLabelValueFunction,
       threshold,
       userInterfaceData,
       valueKey,
+      preSorted,
+      otherAggregatorFunction,
     } = this.props
     const rawData = get(valueKey, userInterfaceData)
     const data = convertToPieDatum({
       data: rawData,
       labelNameKey: sliceLabelKey,
-      labelValueFunction: sliceLabelValueFunction,
+      labelValueType: sliceLabelValueType,
       labelValueKey: sliceLabelValueKey,
-      threshold,
+      labelValueFunction: sliceLabelValueFunction,
       valueKey: sliceValueKey,
+      dataIsPreSorted: preSorted,
+      threshold,
+      otherAggregatorFunction,
     })
 
     this.setState({ pieDatum: data, loading: false })
@@ -65,11 +70,19 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
       donut = true,
       showLegend = false,
       sliceGap = 2,
-      sliceLabelKey,
-      sliceLabelValueKey,
+      useTooltipFunction,
+      tooltipFunction,
     } = this.props
     const margin = { top: 40, right: 40, bottom: 40, left: 40 }
     const borderColor: InheritedColorProp = { from: "color", modifiers: [["darker", 0.5]] }
+    const parsedTooltipFunction =
+      useTooltipFunction && tooltipFunction && tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
+    let wrappedTooltipFunction: any | undefined = undefined
+    if (parsedTooltipFunction && this.props.mode !== "edit") {
+      wrappedTooltipFunction = function(item: { data: any }) {
+        return (<div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data) }}/>)
+      }
+    }
 
     return (
       <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
@@ -86,7 +99,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             motionDamping={15}
             motionStiffness={90}
             padAngle={sliceGap}
-            radialLabel={sliceLabelKey}
+            radialLabel="label"
             radialLabelsLinkDiagonalLength={16}
             radialLabelsLinkHorizontalLength={24}
             radialLabelsLinkOffset={0}
@@ -94,9 +107,10 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             radialLabelsSkipAngle={10}
             radialLabelsTextColor="#333333"
             radialLabelsTextXOffset={6}
-            sliceLabel={sliceLabelValueKey}
+            sliceLabel="sliceLabel"
             slicesLabelsSkipAngle={10}
             slicesLabelsTextColor="#333333"
+            tooltip={wrappedTooltipFunction}
           />
         </div>
       </Spin>
