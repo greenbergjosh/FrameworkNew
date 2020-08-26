@@ -29,7 +29,9 @@ export interface PieInterfaceComponentProps extends ComponentDefinitionNamedProp
 
 export interface PieInterfaceComponentState {
   pieDatum?: PieDatumPlus[]
-  loading: boolean
+  loading: boolean,
+  tooltipFunction: any | undefined
 }
 
-export interface PieDatumPlus extends PieDatum, JSONRecord {}
+export interface PieDatumPlus extends PieDatum, JSONRecord {
+}

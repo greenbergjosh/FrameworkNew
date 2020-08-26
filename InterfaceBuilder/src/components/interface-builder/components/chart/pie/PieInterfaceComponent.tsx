@@ -28,7 +28,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceCo
 
   constructor(props: PieInterfaceComponentProps) {
     super(props)
-    this.state = { pieDatum: emptyDataSet, loading: true }
+    this.state = { pieDatum: emptyDataSet, loading: true, tooltipFunction: undefined }
   }
 
   componentDidUpdate(prevProps: Readonly<PieInterfaceComponentProps>): void {
@@ -47,6 +47,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceCo
       valueKey,
       preSorted,
       otherAggregatorFunction,
+      useTooltipFunction,
+      tooltipFunction,
     } = this.props
     const rawData = get(valueKey, userInterfaceData)
     const data = convertToPieDatum({
@@ -61,7 +63,16 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceCo
       otherAggregatorFunction,
     })
 
-    this.setState({ pieDatum: data, loading: false })
+    const parsedTooltipFunction =
+      useTooltipFunction && tooltipFunction && tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
+    let wrappedTooltipFunction: Function | undefined = undefined
+    if (parsedTooltipFunction && this.props.mode !== "edit") {
+      wrappedTooltipFunction = function(item: { data: any }) {
+        return (<div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data) }}/>)
+      }
+    }
+
+    this.setState({ pieDatum: data, loading: false, tooltipFunction: wrappedTooltipFunction })
   }
 
   render(): JSX.Element {
@@ -70,19 +81,9 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceCo
       donut = true,
       showLegend = false,
       sliceGap = 2,
-      useTooltipFunction,
-      tooltipFunction,
     } = this.props
     const margin = { top: 40, right: 40, bottom: 40, left: 40 }
     const borderColor: InheritedColorProp = { from: "color", modifiers: [["darker", 0.5]] }
-    const parsedTooltipFunction =
-      useTooltipFunction && tooltipFunction && tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
-    let wrappedTooltipFunction: any | undefined = undefined
-    if (parsedTooltipFunction && this.props.mode !== "edit") {
-      wrappedTooltipFunction = function(item: { data: any }) {
-        return (<div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data) }}/>)
-      }
-    }
 
     return (
       <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
@@ -110,7 +111,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceCo
             sliceLabel="sliceLabel"
             slicesLabelsSkipAngle={10}
             slicesLabelsTextColor="#333333"
-            tooltip={wrappedTooltipFunction}
+            tooltip={this.state.tooltipFunction}
           />
         </div>
       </Spin>
