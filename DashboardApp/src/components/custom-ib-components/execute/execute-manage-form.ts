@@ -58,7 +58,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
                 label: "Auto Execute Interval Seconds",
                 help: "The number of seconds between auto-execution. (0 or blank to disable)",
-				visibilityConditions: {
+                visibilityConditions: {
                   "===": [
                     "executeImmediately",
                     {
