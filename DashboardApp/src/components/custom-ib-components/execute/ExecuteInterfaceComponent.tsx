@@ -103,10 +103,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentWillUnmount(): void {
-      if (this.autoExecuteTimer) {
-          clearInterval(this.autoExecuteTimer)
-          this.autoExecuteTimer = null
-      }
+    if (this.autoExecuteTimer) {
+      clearInterval(this.autoExecuteTimer)
+      this.autoExecuteTimer = null
+    }
   }
 
   handleMount = (
@@ -117,8 +117,11 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     if (this.props.executeImmediately && this.props.mode !== "edit") {
       this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
       if (this.props.autoExecuteIntervalSeconds) {
-        this.autoExecuteTimer = setInterval(() => this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues), this.props.autoExecuteIntervalSeconds * 1000)
-	  }
+        this.autoExecuteTimer = setInterval(
+          () => this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues),
+          this.props.autoExecuteIntervalSeconds * 1000
+        )
+      }
     }
   }
 
