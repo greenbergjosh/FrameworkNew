@@ -27,7 +27,7 @@ namespace QuickTester
 
         public static string generateClickhouseNary(string op, IGenericEntity ge)
         {
-            return ge.GetL("").Select(x => generateClickhouseWhere(x)).Join(" " + op +" ");
+            return ge.GetL("").Select(x => generateClickhouseWhere(x)).Join(" " + op + " ");
         }
 
         public static string generateClickhouseUnary(string op, IGenericEntity ge)
@@ -35,13 +35,16 @@ namespace QuickTester
             string r = "";
             if (op == "!") r = "NOT " + generateClickhouseWhere(ge);
             else if (op == "filter")
-            { 
-                // Test here to see if child.Children.Count == 1 AND child.Children[1].condition=IN
-                r = "arrayFilter(x -> " +
-                generateClickhouseWhere(ge).Replace("$", "x.") +
-                ", arrayZip(" +
-                //join(child.Children, ",") +
-                ")) <> []";
+            {
+                // We materialize the list with ToArray just in case the GenericEntity doesn't preserve order (we iterate vars twice)
+                var vars = ge.GetEs("[0]//var").Select(var => var.GetS("")).Distinct().ToArray();
+                var whereClause = generateClickhouseWhere(ge.GetE("[0]"));
+                for (var i = 0; i < vars.Length; i++)
+                {
+                    whereClause = whereClause.Replace(vars[i], $"x.{i + 1}");
+                }
+
+                r = "arrayFilter(x -> " + whereClause + ", arrayZip(" + string.Join(',', vars) + ")) <> []";
             }
             return r;
         }

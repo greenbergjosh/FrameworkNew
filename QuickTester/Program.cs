@@ -17,6 +17,7 @@ namespace QuickTester
         {
             var ge = JsonWrapper.GenericEntityFromFile(@"json.txt").GetAwaiter().GetResult();
             string q = ClickhouseQueryGenerator.generateClickhouseQuery(ge);
+            Console.WriteLine(q);
         }
     }
 }
