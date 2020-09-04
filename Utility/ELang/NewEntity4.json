@@ -1,8 +1,8 @@
 {
-  "Test0": { "Entity" : { "Evaluate": { "Constant": "Any constant evaluated now"} } },
-  "Test1": { "Entity" : { "Evaluate": { "Code": "Actual C# code here to be evaluated now" } } },
-  "Test2": { "Entity" : { "Evaluate": { "EntityId": 15 } } },
-  "Test3": { "QuotedEntity" : { "Evaluate": { "Constant": "Any constant to be evaluated in the future"} } } ,
+  "Test0": { "Entity": { "Evaluate": { "Constant": "Any constant evaluated now" } } },
+  "Test1": { "Entity": { "Evaluate": { "Code": "Actual C# code here to be evaluated now" } } },
+  "Test2": { "Entity": { "Evaluate": { "EntityId": 15 } } },
+  "Test3": { "QuotedEntity": { "Evaluate": { "Constant": "Any constant to be evaluated in the future" } } },
   "ConfigurationEntities": [
     {
       "EntityTypeId": "",
@@ -33,7 +33,10 @@
       "EntityTypeVersionId": "3e0b7dbe-a3c5-4c16-a2d4-6c7e7bd3d236",
       "EntityTypeId": "2fabc096-f54f-4bf0-a407-117a4b41acc0",
       "InputParameters": [
-        { "Name": "EntityId", "Required": "True" }
+        {
+          "Name": "EntityId",
+          "Required": "True"
+        }
       ]
     },
     {
@@ -70,16 +73,58 @@
       "EntityTypeVersionId": "1bb079c4-8355-44da-a235-58b0ee53d3d6",
       "EntityTypeId": "d79fda8d-ae03-44e9-8874-47833be07cf9",
       "InputParameters": [
-        { "Name": "Method", "Required": "True", "AllowedValues": ["Get", "Set"] },
-        { "Name": "Location", "Required": "True" },
+        {
+          "Name": "Method",
+          "Required": "True",
+          "AllowedValues": [ "Get", "Set" ]
+        },
+        {
+          "Name": "Location",
+          "Required": "True"
+        },
         { "Name": "Partition" },
-        { "Name": "Key", "Required": "True" },
-        { "Name": "Value", "RequiredWhen": [ { "Name": "Method", "MatchValues": [ "Set" ] } ] },
-        { "Name": "DefaultValue", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] },
-        { "Name": "DefaultValueCreator", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] }
+        {
+          "Name": "Key",
+          "Required": "True"
+        },
+        {
+          "Name": "Value",
+          "RequiredWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [ "Set" ]
+            }
+          ]
+        },
+        {
+          "Name": "DefaultValue",
+          "ValidWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [ "Get" ]
+            }
+          ]
+        },
+        {
+          "Name": "DefaultValueCreator",
+          "ValidWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [ "Get" ]
+            }
+          ]
+        }
       ],
       "ReturnValues": [
-        { "Name": "Result", "ValidWhen": [ { "Name": "Method", "MatchValues": [ "Get" ] } ] }
+        {
+          "Name": "Result",
+          "ValidWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [ "Get" ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -194,8 +239,20 @@
       "EntityTypeVersionId": "450aa731-bdc0-45a9-ba89-0def05f37656",
       "EntityTypeId": "9502e953-7924-4fbd-95fb-890b95b47977",
       "InputParameters": [
-        { "Name": "Method", "Required": "True", "AllowedValues": [ "Write", "WriteLine", "Indent", "Unindent" ] },
-        { "Name": "Message", "RequiredWhen": [ { "Name": "Method", "MatchValues": [ "Write", "WriteLine" ] } ] },
+        {
+          "Name": "Method",
+          "Required": "True",
+          "AllowedValues": [ "Write", "WriteLine", "Indent", "Unindent" ]
+        },
+        {
+          "Name": "Message",
+          "RequiredWhen": [
+            {
+              "Name": "Method",
+              "MatchValues": [ "Write", "WriteLine" ]
+            }
+          ]
+        },
         { "Name": "MemoryLocationGuid" }
       ]
     },
@@ -217,26 +274,28 @@
       "TimestampUTC": "1/1/2018 10:10:10",
       "EntityVersionBranchId": "",
       "ChangeAuditDetails": {},
-      "Name": "IO Evaluatable",    
+      "Name": "IO Evaluatable",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemoryGet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate":  { "Constant": "Get" } } },
-                "Partition": { "Entity" : { "Evaluate":  { "Constant": "__IO__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Get" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__IO__" } } }
               }
             }
           }
         },
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemorySet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate":  { "Constant": "Set" } } },
-                "Partition": { "Entity" : { "Evaluate":  { "Constant": "__IO__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Set" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__IO__" } } }
               }
             }
           }
@@ -275,11 +334,11 @@
       "TimestampUTC": "1/1/2018 10:10:10",
       "EntityVersionBranchId": "",
       "ChangeAuditDetails": {},
-      "Name": "IO Evaluatable With Fixed Memory Location",    
+      "Name": "IO Evaluatable With Fixed Memory Location",
       "Evaluate": {
         "EntityId": "92897a5d-0797-43ef-a4f6-3d88f62952a0",
         "ActualParameters": {
-          "MemoryLocationGuid": { "Entity" : { "Evaluate":  { "Constant": "620015f2-dca1-4cae-9e3e-18d3fa06a458"} } }
+          "MemoryLocationGuid": { "Entity": { "Evaluate": { "Constant": "620015f2-dca1-4cae-9e3e-18d3fa06a458" } } }
         }
       }
     },
@@ -321,19 +380,21 @@
           "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
           "OutputToPropagate": { "__InputParameter": "OutputToPropagate" },
           "PreEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
               }
             },
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "66bf4a8d-f527-44bf-bd90-a21fc2ff4bc0",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
@@ -381,10 +442,11 @@
           "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
           "OutputToPropagate": { "__InputParameter": "OutputToPropagate" },
           "PreEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
@@ -424,8 +486,8 @@
       "Name": "IO decorated with Calls",
       "Evaluate": {
         "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
-        "ActualParameters": { 
-          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "92897a5d-0797-43ef-a4f6-3d88f62952a0" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "92897a5d-0797-43ef-a4f6-3d88f62952a0" } } }
         }
       }
     },
@@ -462,7 +524,8 @@
       "ChangeAuditDetails": {},
       "Name": "TransitionLogger Decoration",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "IO",
             "Evaluate": {
               "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477"
@@ -508,13 +571,14 @@
       "Evaluate": {
         "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
         "ActualParameters": {
-          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "db0b11bb-0e8d-494b-8a62-dc185a6487d3" } } },
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "db0b11bb-0e8d-494b-8a62-dc185a6487d3" } } },
           "PreEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
-                  "ActualParameters": { 
-                    "TargetEntityId": { "Entity" : { "Evaluate": { "Constant": "db0b11bb-0e8d-494b-8a62-dc185a6487d3" } } }
+                  "ActualParameters": {
+                    "TargetEntityId": { "Entity": { "Evaluate": { "Constant": "db0b11bb-0e8d-494b-8a62-dc185a6487d3" } } }
                   }
                 }
               }
@@ -602,35 +666,38 @@
       "ChangeAuditDetails": {},
       "Name": "Grid Decoration Code",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemoryGet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "Get" } } },
-                "Partition": { "Entity" : { "Evaluate": { "Constant": "__FrameworkState__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Get" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__FrameworkState__" } } }
               }
             }
           }
         },
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemorySet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "Set" } } },
-                "Partition": { "Entity" : { "Evaluate": { "Constant": "__FrameworkState__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Set" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__FrameworkState__" } } }
               }
             }
           }
         },
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "IOWrite",
             "Evaluate": {
               "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } },
-                "Partition": { "Entity" : { "Evaluate": { "Constant": "__FrameworkState__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "WriteLine" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__FrameworkState__" } } }
               }
             }
           }
@@ -684,12 +751,18 @@
       "Evaluate": {
         "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
         "ActualParameters": {
-          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8" } } },
-          "OutputToPropagate": { "Entity" : { "Evaluate": { "Constant": [
-            { "Name": "Grid" },
-            { "Name": "CellId" },
-            { "Name": "StackFrameId" }
-          ] } } }
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8" } } },
+          "OutputToPropagate": {
+            "Entity": {
+              "Evaluate": {
+                "Constant": [
+                  { "Name": "Grid" },
+                  { "Name": "CellId" },
+                  { "Name": "StackFrameId" }
+                ]
+              }
+            }
+          }
         }
       }
     },
@@ -735,7 +808,7 @@
       "Evaluate": {
         "EntityId": "37472d79-d354-4bde-b5ff-d1ee03d52706",
         "ActualParameters": {
-          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8" } } }
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "459d624b-8cb4-4f5b-b275-d5c6d1fb6ef8" } } }
         },
         "OutputParameters": {
           "Grid": { "Bubble": "true" },
@@ -815,28 +888,31 @@
         "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
         "ActualParameters": {
           "PreEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "f5597d45-a67e-4de3-b9af-f9d6c33a31a7",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
               }
             },
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "6b4cd28c-a146-4284-823a-d3b0c2b6481f",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
               }
             },
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "66bf4a8d-f527-44bf-bd90-a21fc2ff4bc0",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
@@ -885,17 +961,18 @@
         "ActualParameters": {
           "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
           "Evaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "b2284257-433e-475c-818f-14db9fa651e2",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "TargetEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
               }
             }
           ],
-          "RepeatAndReverseOnPost": { "Entity" : { "Evaluate": { "Constant": "true" } } }
+          "RepeatAndReverseOnPost": { "Entity": { "Evaluate": { "Constant": "true" } } }
         }
       }
     },
@@ -932,16 +1009,18 @@
         "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
         "ActualParameters": {
           "PreEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "19ea855b-bada-4ebc-8425-aa53cd14cb32",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "DecorationStage": { "__InputParameter": "DecorationStage" }
                   }
                 }
               }
             },
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "b2284257-433e-475c-818f-14db9fa651e2"
                 }
@@ -960,7 +1039,10 @@
       "EntityTypeVersionId": "81fd401e-fd0d-49d6-b38a-62b5b0d7842e",
       "EntityTypeId": "2f25d1ef-a1ef-4f2c-8b47-038e08640000",
       "InputParameters": [
-        { "Name": "EntityId", "Required": "True" }
+        {
+          "Name": "EntityId",
+          "Required": "True"
+        }
       ]
     },
     {
@@ -987,26 +1069,28 @@
         "ActualParameters": {
           "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
           "Evaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "86bd8f82-dd4d-4f2e-a87a-5c729fe6e0e1",
-                  "ActualParameters": { 
-                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Pre" } } }
+                  "ActualParameters": {
+                    "DecorationStage": { "Entity": { "Evaluate": { "Constant": "Pre" } } }
                   }
                 }
               }
             },
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "86bd8f82-dd4d-4f2e-a87a-5c729fe6e0e1",
-                  "ActualParameters": { 
-                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Post" } } }
+                  "ActualParameters": {
+                    "DecorationStage": { "Entity": { "Evaluate": { "Constant": "Post" } } }
                   }
                 }
               }
             }
           ],
-          "RepeatAndReverseOnPost": { "Entity" : { "Evaluate": { "Constant": "true" } } }
+          "RepeatAndReverseOnPost": { "Entity": { "Evaluate": { "Constant": "true" } } }
         }
       }
     },
@@ -1050,25 +1134,33 @@
       "Evaluate": {
         "EntityId": "cce1bf95-be17-4ae5-857f-cc260ca0236a",
         "ActualParameters": {
-          "OutputToPropagate": { "Entity" : { "Evaluate": { "Constant": [
-              { "Name": "Grid" },
-              { "Name": "CellId" },
-              { "Name": "StackFrameId" }
-            ] } } },
+          "OutputToPropagate": {
+            "Entity": {
+              "Evaluate": {
+                "Constant": [
+                  { "Name": "Grid" },
+                  { "Name": "CellId" },
+                  { "Name": "StackFrameId" }
+                ]
+              }
+            }
+          },
           "Evaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "10d896b5-b1c4-4d06-8c85-7452a217c15a",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "DecorationStage": { "__InputParameter": "DecorationStage" }
                   }
                 }
               }
             },
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "b2284257-433e-475c-818f-14db9fa651e2",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" }
                   }
                 }
@@ -1112,30 +1204,32 @@
         "ActualParameters": {
           "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
           "PreEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "88580a54-9255-4e5f-a1b6-ec10caa66da1",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
-                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Pre" } } }
+                    "DecorationStage": { "Entity": { "Evaluate": { "Constant": "Pre" } } }
                   }
                 }
               }
             }
           ],
           "PostEvaluatables": [
-            { "QuotedEntity": { 
+            {
+              "QuotedEntity": {
                 "Evaluate": {
                   "EntityId": "88580a54-9255-4e5f-a1b6-ec10caa66da1",
-                  "ActualParameters": { 
+                  "ActualParameters": {
                     "PrimaryEntityId": { "__InputParameter": "PrimaryEntityId" },
-                    "DecorationStage": { "Entity" : { "Evaluate": { "Constant": "Post" } } }
+                    "DecorationStage": { "Entity": { "Evaluate": { "Constant": "Post" } } }
                   }
                 }
               }
             }
           ],
-          "ReverseOnPost": { "Entity" : { "Evaluate": { "Constant": "true" } } }
+          "ReverseOnPost": { "Entity": { "Evaluate": { "Constant": "true" } } }
         }
       }
     },
@@ -1207,7 +1301,7 @@
       "Evaluate": {
         "EntityId": "4c9ca674-f0ac-42d5-a46e-fe28cb76f5b5",
         "ActualParameters": {
-          "ConfigEntityId": { "Entity" : { "Evaluate": { "Constant": "4e2bd1f6-7cda-4825-b897-8e2c9687347f"} } }
+          "ConfigEntityId": { "Entity": { "Evaluate": { "Constant": "4e2bd1f6-7cda-4825-b897-8e2c9687347f" } } }
         }
       }
     },
@@ -1270,12 +1364,13 @@
       "ChangeAuditDetails": {},
       "Name": "Bootstrap Evaluatable Code",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "IOWrite",
             "Evaluate": {
               "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "WriteLine" } } }
               }
             }
           }
@@ -1318,7 +1413,7 @@
       "Evaluate": {
         "EntityId": "e83ea270-d96a-4a51-9f9a-7f8c126e5ae7",
         "ActualParameters": {
-          "PrimaryEntityId": { "Entity" : { "Evaluate": { "Constant": "4aec78df-bd92-4fc4-87db-d768b91812d7"} } }
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "4aec78df-bd92-4fc4-87db-d768b91812d7" } } }
         }
       }
     },
@@ -1331,7 +1426,10 @@
       "EntityTypeVersionId": "d099b745-516b-459c-93c1-d3fd4253e5b8",
       "EntityTypeId": "0c36e182-337d-4f86-b038-7e6f34673824",
       "InputParameters": [
-        { "Name": "value", "Required": "true" },
+        {
+          "Name": "value",
+          "Required": "true"
+        },
         { "Name": "MemoryLocationGuid" }
       ]
     },
@@ -1355,32 +1453,35 @@
       "ChangeAuditDetails": {},
       "Name": "Accumulator Evaluatable Code",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "IOWrite",
             "Evaluate": {
               "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "WriteLine" } } }
               }
             }
           }
         },
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemoryGet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "Get" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Get" } } }
               }
             }
           }
         },
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemorySet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "Set" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Set" } } }
               }
             }
           }
@@ -1423,7 +1524,7 @@
       "Evaluate": {
         "EntityId": "34570621-cab8-4208-a09d-38ede245033c",
         "ActualParameters": {
-          "MemoryLocationGuid":  { "Entity" : { "Evaluate": { "Constant": "17709acc-8508-49ad-b1a7-3e1490b0f8ea" } } }
+          "MemoryLocationGuid": { "Entity": { "Evaluate": { "Constant": "17709acc-8508-49ad-b1a7-3e1490b0f8ea" } } }
         }
       }
     },
@@ -1457,8 +1558,8 @@
       "Name": "Accumulator decorated with TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
         }
       }
     },
@@ -1492,8 +1593,8 @@
       "Name": "Accumulator decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
         }
       }
     },
@@ -1527,8 +1628,8 @@
       "Name": "Accumulator decorated with Grid, TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "c9cfb0e3-f100-492e-bd58-fd7adcf455cc" } } }
         }
       }
     },
@@ -1539,7 +1640,7 @@
     },
     {
       "EntityTypeVersionId": "792efa66-3b52-4f7c-986d-100bbdf4cd97",
-      "EntityTypeId": "03820b01-705f-4eb7-9294-fa97ff6c52ba",
+      "EntityTypeId": "03820b01-705f-4eb7-9294-fa97ff6c52ba"
     },
     {
       "EntityId": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08",
@@ -1561,12 +1662,13 @@
       "ChangeAuditDetails": {},
       "Name": "Creative Evaluatable",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "IOWrite",
             "Evaluate": {
               "EntityId": "5ada80ba-c59a-4198-9925-ddf11720d477",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "WriteLine" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "WriteLine" } } }
               }
             }
           }
@@ -1608,8 +1710,8 @@
       "Name": "Creative decorated with TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
         }
       }
     },
@@ -1643,8 +1745,8 @@
       "Name": "Creative decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
         }
       }
     },
@@ -1678,8 +1780,8 @@
       "Name": "Creative decorated with Grid, TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "d2d2f7cf-b2e5-47d0-a676-10f6b9848b08" } } }
         }
       }
     },
@@ -1717,24 +1819,26 @@
       "ChangeAuditDetails": {},
       "Name": "Sequence Evaluatable Code",
       "Services": [
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemoryGet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "Get" } } },
-                "Partition": { "Entity" : { "Evaluate": { "Constant": "__Sequence__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Get" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__Sequence__" } } }
               }
             }
           }
         },
-        { "QuotedEntity": { 
+        {
+          "QuotedEntity": {
             "Name": "MemorySet",
             "Evaluate": {
               "EntityId": "d6196f61-a1ee-44cc-b7ef-b9938227d9bc",
-              "ActualParameters": { 
-                "Method": { "Entity" : { "Evaluate": { "Constant": "Set" } } },
-                "Partition": { "Entity" : { "Evaluate": { "Constant": "__Sequence__" } } }
+              "ActualParameters": {
+                "Method": { "Entity": { "Evaluate": { "Constant": "Set" } } },
+                "Partition": { "Entity": { "Evaluate": { "Constant": "__Sequence__" } } }
               }
             }
           }
@@ -1776,11 +1880,11 @@
       "Name": "Sequence Evaluatable With Fixed Memory Location",
       "Evaluate": {
         "EntityId": "cc2de38d-5e34-46f3-96ce-ee9f0e56ba35",
-        "ActualParameters": { 
-          "MemoryLocationGuid":  { "Entity" : { "Evaluate": { "Constant": "6e460d85-81dd-4d4a-9906-788c8cd425fe" } } }
+        "ActualParameters": {
+          "MemoryLocationGuid": { "Entity": { "Evaluate": { "Constant": "6e460d85-81dd-4d4a-9906-788c8cd425fe" } } }
         }
       }
-    },   
+    },
     {
       "EntityTypeId": "5653a969-a6a9-4a40-8bc1-bf5ccf26eaa6",
       "Name": "Sequence decorated with TransitionLogger, Calls, MemoryLocation",
@@ -1800,7 +1904,7 @@
       "EntityId": "894999b2-73e0-40c9-a351-d877cfe6da50",
       "VariantDescriptor": "",
       "EntityVariantSharedState": ""
-    }, 
+    },
     {
       "EntityVariantVersionId": "4334ece6-45f4-4ddd-950d-4f221e896a5c",
       "EntityVariantId": "dbf4c448-1c93-432d-a469-15c01435219a",
@@ -1811,8 +1915,8 @@
       "Name": "Sequence decorated with TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "f58130e5-0625-4b25-b55c-7f508bba6fbd",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
         }
       }
     },
@@ -1846,8 +1950,8 @@
       "Name": "Sequence decorated with StackFrame, TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "2d9761bd-688d-47ca-b70d-1662a008c92f",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
         }
       }
     },
@@ -1881,8 +1985,8 @@
       "Name": "Sequence decorated with Grid, TransitionLogger, Calls, MemoryLocation",
       "Evaluate": {
         "EntityId": "75079b6e-ef71-4c20-a015-21b093391bc0",
-        "ActualParameters": { 
-          "PrimaryEntityId":  { "Entity" : { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
+        "ActualParameters": {
+          "PrimaryEntityId": { "Entity": { "Evaluate": { "Constant": "38a701ed-c0c6-46d3-8a65-b49c31751edc" } } }
         }
       }
     },
@@ -1917,15 +2021,20 @@
       "Evaluate": {
         "EntityId": "894999b2-73e0-40c9-a351-d877cfe6da50",
         "ActualParameters": {
-          "Slots":  { "Entity" : { "Evaluate": { "Constant": 
-            [
-              {
-                "EntityId": "9cb28947-5636-4402-b121-02699601ad73"
-              },
-              {
-                "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372"
+          "Slots": {
+            "Entity": {
+              "Evaluate": {
+                "Constant": [
+                  {
+                    "EntityId": "9cb28947-5636-4402-b121-02699601ad73"
+                  },
+                  {
+                    "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372"
+                  }
+                ]
               }
-            ] } } }
+            }
+          }
         }
       }
     },
@@ -1951,15 +2060,20 @@
       "Evaluate": {
         "EntityId": "396d29fd-ffc4-41c0-acd0-9619f00dc2a1",
         "ActualParameters": {
-          "Slots":  { "Entity" : { "Evaluate": { "Constant": 
-            [
-              {
-                "EntityId": "9cb28947-5636-4402-b121-02699601ad73"
-              },
-              {
-                "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372"
+          "Slots": {
+            "Entity": {
+              "Evaluate": {
+                "Constant": [
+                  {
+                    "EntityId": "9cb28947-5636-4402-b121-02699601ad73"
+                  },
+                  {
+                    "EntityId": "4dc4b3a4-ba6f-4c87-b301-8c3158b43372"
+                  }
+                ]
               }
-            ] } } }
+            }
+          }
         }
       }
     },
@@ -1982,26 +2096,31 @@
       "EntityVersionBranchId": "",
       "ChangeAuditDetails": {},
       "Name": "Sequence 402",
-        "Evaluate": {
-          "EntityId": "b2e6dcf9-4d64-4635-949a-7955137cf3be",
-          "ActualParameters": {
-            "Slots":  { "Entity" : { "Evaluate": { "Constant": 
-              [
-                {
-                  "EntityId": "252ed4e5-dcf1-47d2-a1c8-070c99ba179f"
-                },
-                {
-                  "EntityId": "c815a56f-4e4a-446f-8aba-93c85ce44cd0"
-                },
-                {
-                  "EntityId": "659ed4fc-6dfc-48c7-8735-640a2b01bbff"
-                },
-                {
-                  "EntityId": "df21de03-6d82-49c5-bd26-a5e7740416f6"
-                }
-              ] } } }
+      "Evaluate": {
+        "EntityId": "b2e6dcf9-4d64-4635-949a-7955137cf3be",
+        "ActualParameters": {
+          "Slots": {
+            "Entity": {
+              "Evaluate": {
+                "Constant": [
+                  {
+                    "EntityId": "252ed4e5-dcf1-47d2-a1c8-070c99ba179f"
+                  },
+                  {
+                    "EntityId": "c815a56f-4e4a-446f-8aba-93c85ce44cd0"
+                  },
+                  {
+                    "EntityId": "659ed4fc-6dfc-48c7-8735-640a2b01bbff"
+                  },
+                  {
+                    "EntityId": "df21de03-6d82-49c5-bd26-a5e7740416f6"
+                  }
+                ]
+              }
+            }
           }
         }
+      }
     },
     {
       "EntityTypeId": "8ac9e2cf-9766-4487-ba6b-719cd2bfc2c2",
@@ -2033,9 +2152,9 @@
       "Name": "Creative 600",
       "Evaluate": {
         "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
-        "ActualParameters" : {
-          "Master" : { "Entity" : { "Evaluate": { "Constant": "8a3becd4-0351-4d89-97d5-068e15f5a77f" } } },
-          "Placeholders": { "Entity" : { "Evaluate": { "Constant": "This is Creative 600!!!" } } }
+        "ActualParameters": {
+          "Master": { "Entity": { "Evaluate": { "Constant": "8a3becd4-0351-4d89-97d5-068e15f5a77f" } } },
+          "Placeholders": { "Entity": { "Evaluate": { "Constant": "This is Creative 600!!!" } } }
         }
       }
     },
@@ -2061,7 +2180,7 @@
       "Evaluate": {
         "EntityId": "b1dc93d6-f333-4a01-a33f-489ae2bd8586",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 601!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 601!!!" } } }
         }
       }
     },
@@ -2087,7 +2206,7 @@
       "Evaluate": {
         "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 602!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 602!!!" } } }
         }
       }
     },
@@ -2113,7 +2232,7 @@
       "Evaluate": {
         "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 603!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 603!!!" } } }
         }
       }
     },
@@ -2139,7 +2258,7 @@
       "Evaluate": {
         "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 604!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 604!!!" } } }
         }
       }
     },
@@ -2165,7 +2284,7 @@
       "Evaluate": {
         "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 605!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 605!!!" } } }
         }
       }
     },
@@ -2191,7 +2310,7 @@
       "Evaluate": {
         "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 606!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 606!!!" } } }
         }
       }
     },
@@ -2217,7 +2336,7 @@
       "Evaluate": {
         "EntityId": "cbb69ccd-5318-4ad0-ad07-0494cc3eccdd",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 607!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 607!!!" } } }
         }
       }
     },
@@ -2243,7 +2362,7 @@
       "Evaluate": {
         "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 608!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 608!!!" } } }
         }
       }
     },
@@ -2269,7 +2388,7 @@
       "Evaluate": {
         "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 609!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 609!!!" } } }
         }
       }
     },
@@ -2295,9 +2414,36 @@
       "Evaluate": {
         "EntityId": "8a3becd4-0351-4d89-97d5-068e15f5a77f",
         "ActualParameters": {
-          "Content":  { "Entity" : { "Evaluate": { "Constant": "This is Creative 610!!!" } } }
+          "Content": { "Entity": { "Evaluate": { "Constant": "This is Creative 610!!!" } } }
         }
       }
     }
   ]
 }
+//EntityType LBM.CS -> Framework.EvaluteCSharpLbm
+
+//EntityId	Name			EntityType	Config
+//2			C# UnaryAdder	UnaryAdder		{ Evaluate: { EntityId: 1, ActualParams: { left: 1 } } }
+//3			LBM.cs			CodeProvider	{ Evaluate: { AssemblyQualifiedName: "", EvaluateMethodName: "" } }
+//5			F# BinaryAdder	BinaryAdder		{ Evaluate: { EntityId: LBM.fs, Code: "(l, r) => l + r" } }
+
+//6			SlotInterface	EntityType		{ FormalParameters: [Slot], OutputType: IEnumerable<Entity> }
+//7			SlotBehavior	SlotInterface	{ Evaluate: { EntityId: 3, Code: "slotCode here" } }
+//9			Slot			EntityType		{ FormalParameters: [rules/weights/priorities] }
+//8			Slot 10			Slot			{ Evaluate: { EntityId: 7, ActualParams: {} } }
+
+//4			BinaryAdderI	EntityType		{ FormalParameters: [BinaryAddrCfg], OutputType: {} }
+//1			C# BinaryAdder	BinaryAdderI	{ Evaluate: { EntityId: 3, Code: "return p.left + p.right;" } }
+//10			BinaryAddrCfg	EntityType		{ FormalParameters: [left, right] }
+//11			5 + 5			BinaryAddrCfg	{ Evaluate: { EntityId: 1, ActualParams: { left: 5, right: 5 } } }
+
+//104			BinaryAdderI	EntityType		{ FormalParameters: [left: int, right: int], OutputType: {} }
+//101			C# BinaryAdder	BinaryAdderI	{ Evaluate: { EntityId: 3, Code: "return p.left + p.right;" } }
+//105			F# BinaryAdder	BinaryAdderI	{ Evaluate: { EntityId: LBM.fs, Code: "(l, r) => l + r" } }
+//111			5 + 5			BinaryAddrCfg	{ Evaluate: { EntityId: 101, ActualParams: { left: 5, right: 5 } } }
+
+//104			UnaryAdderI		EntityType		{ FormalParameters: [right: int], OutputType: {} }
+//102			Plus 1			UnaryAdderI		{ Evaluate: { EntityId: 101, ActualParams: { left: 1 } } }
+//200			7				UnaryAdder		{ Evaluate: { EntityId: 102, ActualParams: { right: 6 } } }
+//200			?				UnaryAdder		{ Evaluate: { EntityId: 102, ActualParams: { right: { Evaluate: { EntityId: 3, Code: "DateTime.Now.Day" } } } } }
+

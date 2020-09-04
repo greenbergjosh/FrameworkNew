@@ -136,6 +136,14 @@ namespace Utility.GenericEntity
             return entity;
         }
 
+        public override IEnumerable<IGenericEntity> GetEs(string path)
+        {
+            foreach(var node in _root.SelectTokens(ConvertPath(path)))
+            {
+                yield return CreateFromObject(node, this.rw);
+            }
+        }
+
         public override IEnumerable<Tuple<string, string>> GetD(string path)
         {
             if (_root.SelectToken(ConvertPath(path)) is JObject jo)

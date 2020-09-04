@@ -67,6 +67,11 @@ namespace Utility.GenericEntity
             throw new NotImplementedException();
         }
 
+        public virtual IEnumerable<IGenericEntity> GetEs(string path)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual IEnumerable<Tuple<string, string>> GetD(string path)
         {
             throw new NotImplementedException();
