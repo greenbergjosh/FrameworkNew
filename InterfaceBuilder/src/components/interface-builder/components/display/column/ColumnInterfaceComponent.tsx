@@ -61,7 +61,7 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
   }
 
   getDefaultValue = () => {
-    return ColumnInterfaceComponent.getDefintionDefaultValue(this.props)
+    return ColumnInterfaceComponent.getDefinitionDefaultValue(this.props)
   }
 
   render() {

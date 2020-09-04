@@ -102,7 +102,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   getDefaultValue = () => {
-    return DateRangeInterfaceComponent.getDefintionDefaultValue(this.props)
+    return DateRangeInterfaceComponent.getDefinitionDefaultValue(this.props)
   }
 
   getValues = () => {

@@ -100,7 +100,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   getDefaultValue = () => {
-    return NumberRangeInterfaceComponent.getDefintionDefaultValue(this.props)
+    return NumberRangeInterfaceComponent.getDefinitionDefaultValue(this.props)
   }
 
   getValues = (): [number, number] => {
