@@ -1,6 +1,7 @@
 import { TSEnum as _TSEnum } from "./@types/ts-enum"
 import { JSONRecord as _JSONRecord } from "./components/interface-builder/@types/JSONTypes"
 import {
+  BaseInterfaceComponentProps as _BaseInterfaceComponentProps,
   ComponentDefinition as _ComponentDefinition,
   ComponentDefinitionNamedProps as _ComponentDefinitionNamedProps,
   ComponentRenderMetaProps as _ComponentRenderMetaProps,
@@ -29,7 +30,8 @@ export { DataPathContext } from "./components/interface-builder/util/DataPathCon
 export { getDefaultsFromComponentDefinitions } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 export { registry } from "./components/interface-builder/registry"
 export { UserInterface } from "./components/interface-builder/UserInterface"
-export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager"
+export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager;"
+export { EventBus, EventBusEventHandler } from "./services/event-bus;"
 
 /**
  * Utility
@@ -64,6 +66,7 @@ export { StandardGrid } from "./components/grid/StandardGrid"
  * Re-exported Types
  * Because you can't export a type directly from another module
  */
+export type BaseInterfaceComponentProps = _BaseInterfaceComponentProps
 export type ComponentDefinition = _ComponentDefinition
 export type ComponentDefinitionNamedProps = _ComponentDefinitionNamedProps
 export type ComponentRenderMetaProps = _ComponentRenderMetaProps

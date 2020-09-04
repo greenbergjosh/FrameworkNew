@@ -9,8 +9,10 @@ import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
 import { Spin } from "antd"
 import { tryCatch } from "fp-ts/lib/Option"
 
-export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceComponentProps,
-  PieInterfaceComponentState> {
+export class PieInterfaceComponent extends BaseInterfaceComponent<
+  PieInterfaceComponentProps,
+  PieInterfaceComponentState
+> {
   static getLayoutDefinition() {
     return {
       category: "Chart",
@@ -35,53 +37,72 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<PieInterfaceCo
     const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
     const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
 
-    if (isEqual(prevValue, nextValue)) return
-    const {
-      sliceLabelKey,
-      sliceValueKey,
-      sliceLabelValueType,
-      sliceLabelValueKey,
-      sliceLabelValueFunction,
-      threshold,
-      userInterfaceData,
-      valueKey,
-      preSorted,
-      otherAggregatorFunction,
-      useTooltipFunction,
-      tooltipFunction,
-    } = this.props
-    const rawData = get(valueKey, userInterfaceData)
-    const data = convertToPieDatum({
-      data: rawData,
-      labelNameKey: sliceLabelKey,
-      labelValueType: sliceLabelValueType,
-      labelValueKey: sliceLabelValueKey,
-      labelValueFunction: sliceLabelValueFunction,
-      valueKey: sliceValueKey,
-      dataIsPreSorted: preSorted,
-      threshold,
-      otherAggregatorFunction,
-    })
+    if (
+      !isEqual(prevValue, nextValue) ||
+      this.anyPropsChanged(prevProps, [
+        "sliceLabelKey",
+        "sliceValueKey",
+        "sliceLabelValueType",
+        "sliceLabelValueKey",
+        "sliceLabelValueFunction",
+        "threshold",
+        "valueKey",
+        "preSorted",
+        "otherAggregatorFunction",
+      ])
+    ) {
+      const {
+        sliceLabelKey,
+        sliceValueKey,
+        sliceLabelValueType,
+        sliceLabelValueKey,
+        sliceLabelValueFunction,
+        threshold,
+        userInterfaceData,
+        valueKey,
+        preSorted,
+        otherAggregatorFunction,
+      } = this.props
+      const rawData = get(valueKey, userInterfaceData)
+      const data = convertToPieDatum({
+        data: rawData,
+        labelNameKey: sliceLabelKey,
+        labelValueType: sliceLabelValueType,
+        labelValueKey: sliceLabelValueKey,
+        labelValueFunction: sliceLabelValueFunction,
+        valueKey: sliceValueKey,
+        dataIsPreSorted: preSorted,
+        threshold,
+        otherAggregatorFunction,
+        props: this.props,
+      })
 
-    const parsedTooltipFunction =
-      useTooltipFunction && tooltipFunction && tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
-    let wrappedTooltipFunction: Function | undefined = undefined
-    if (parsedTooltipFunction && this.props.mode !== "edit") {
-      wrappedTooltipFunction = function(item: { data: any }) {
-        return (<div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data) }}/>)
-      }
+      this.setState({ pieDatum: data, loading: false })
     }
 
-    this.setState({ pieDatum: data, loading: false, tooltipFunction: wrappedTooltipFunction })
+    if (
+      this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction"]) ||
+      (this.props.useTooltipFunction && !this.state.tooltipFunction)
+    ) {
+      const { useTooltipFunction, tooltipFunction } = this.props
+      const myProps = this.props
+      const parsedTooltipFunction =
+        useTooltipFunction &&
+        tooltipFunction &&
+        tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
+      let wrappedTooltipFunction: Function | undefined = undefined
+      if (parsedTooltipFunction && this.props.mode !== "edit") {
+        wrappedTooltipFunction = function (item: { data: any }) {
+          return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data, myProps) }} />
+        }
+      }
+
+      this.setState({ tooltipFunction: wrappedTooltipFunction })
+    }
   }
 
   render(): JSX.Element {
-    const {
-      colorScheme,
-      donut = true,
-      showLegend = false,
-      sliceGap = 2,
-    } = this.props
+    const { colorScheme, donut = true, showLegend = false, sliceGap = 2 } = this.props
     const margin = { top: 40, right: 40, bottom: 40, left: 40 }
     const borderColor: InheritedColorProp = { from: "color", modifiers: [["darker", 0.5]] }
 

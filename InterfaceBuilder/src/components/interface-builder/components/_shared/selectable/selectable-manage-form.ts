@@ -8,6 +8,12 @@ export const baseSelectDataComponents = [
     defaultValue: "value",
   },
   {
+    key: "defaultValue",
+    valueKey: "defaultValue",
+    label: "Default Value",
+    component: "input",
+  },
+  {
     key: "dataHandlerType",
     valueKey: "dataHandlerType",
     label: "Data Source",

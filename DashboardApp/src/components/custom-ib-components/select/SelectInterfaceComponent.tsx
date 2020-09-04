@@ -12,10 +12,6 @@ import { ISelectProps, SelectProps, SelectState } from "./types"
  */
 
 export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
-  constructor(props: SelectProps) {
-    super(props)
-  }
-
   static defaultProps = {
     allowClear: true,
     createNewLabel: "Create New...",
@@ -47,6 +43,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     return this.props.multiple ? MODES.multiple : MODES.default
   }
 
+  static availableEvents = ["valueChanged", "dropdownOpened", "focused"]
+
   handleChange = (value: string | string[]) => {
     const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
 
@@ -58,6 +56,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
         : value
 
     onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+
+    this.raiseEvent("valueChanged", { value: newValue })
   }
 
   private filterOption = (input: any, option: any) => {
@@ -69,9 +69,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
       return true
     } else if (Array.isArray(option.props.children)) {
       return !!option.props.children.find((item: any) => {
-        if (item && typeof item.toLowerCase === "function" && item.toLowerCase().indexOf(input.toLowerCase()) >= 0) {
-          return true
-        }
+        return item && typeof item.toLowerCase === "function" && item.toLowerCase().indexOf(input.toLowerCase()) >= 0
       })
     }
     return false
@@ -87,12 +85,11 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     createNewLabel,
     disabled,
     getCleanValue,
-    loadError,
     loadStatus,
     options,
     handleFocus,
   }: SelectableChildProps) => {
-    const { placeholder, allowClear, multiple, size } = this.props as ISelectProps
+    const { placeholder, allowClear, size } = this.props as ISelectProps
 
     const getKeyFromValue = () => {
       const value = getCleanValue()

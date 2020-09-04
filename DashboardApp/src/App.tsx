@@ -31,6 +31,8 @@ import { getCustomEditorConstructionOptions } from "./components/custom-ib-compo
 import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
+import { withEventManager } from "./components/event-manager/event-manager"
+import { ComponentRegistryCache } from "@opg/interface-builder/dist/components/interface-builder/registry"
 
 const persistor = getPersistor()
 
@@ -63,15 +65,23 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   React.useEffect(() => {
-    registry.register(antComponents)
-    registry.register(nivoComponents)
+    const wrappedAntComponents: ComponentRegistryCache = {}
+    Object.keys(antComponents).forEach((key) => {
+      wrappedAntComponents[key] = withEventManager((antComponents as ComponentRegistryCache)[key])
+    })
+    registry.register(wrappedAntComponents)
+    const wrappedNivoComponents: ComponentRegistryCache = {}
+    Object.keys(nivoComponents).forEach((key) => {
+      wrappedNivoComponents[key] = withEventManager((nivoComponents as ComponentRegistryCache)[key])
+    })
+    registry.register(wrappedNivoComponents)
     registry.register({ query: QueryInterfaceComponent })
-    registry.register({ execute: ExecuteInterfaceComponent })
+    registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
     registry.register({ "slot-config": SlotConfigInterfaceComponent })
     registry.register({ "string-template": StringTemplateInterfaceComponent })
-    registry.register({ select: SelectInterfaceComponent })
+    registry.register({ select: withEventManager(SelectInterfaceComponent) })
     registry.register({ tags: TagsInterfaceComponent })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
   }, [])

@@ -3,6 +3,7 @@ import { merge, set } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
+import { PieInterfaceComponentProps } from "components/interface-builder/components/chart/pie/types"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -38,7 +39,10 @@ export interface ComponentDefinitionNamedProps {
   hideLabel?: boolean
   label?: string
   visibilityConditions?: JSONObject
+
   [key: string]: unknown
+
+  onRaiseEvent?: ((eventName: string, eventPayload: object) => void) | undefined
 }
 
 export interface ComponentDefinitionRecursiveProp {
@@ -67,9 +71,13 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   Y
 > {
   static getLayoutDefinition(): LayoutDefinition {
-    return { name: "__Undefined", title: "__Undefined" } as LayoutDefinition
+    return {
+      name: "__Undefined",
+      title: "__Undefined",
+    } as LayoutDefinition
   }
-  static getDefintionDefaultValue(
+
+  static getDefinitionDefaultValue(
     componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
   ): { [key: string]: any } {
     if (
@@ -94,7 +102,20 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
     if (typeof this.props.defaultValue !== "undefined") {
       return this.props.defaultValue
     }
-    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefintionDefaultValue(this.props)
+    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
+  }
+
+  anyPropsChanged(prevProps: Readonly<PieInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
+    return propsToCheck.some((prop) => this.props[prop] !== prevProps[prop] || (this.props[prop] && !prevProps[prop]))
+  }
+
+  static availableEvents: string[] = []
+
+  raiseEvent(eventName: string, eventPayload: object) {
+    console.log(`BaseInterfaceComponent Event raised: ${eventName}`, eventPayload)
+    if (this.props.onRaiseEvent) {
+      this.props.onRaiseEvent(eventName, eventPayload)
+    }
   }
 }
 
@@ -115,7 +136,7 @@ export function getDefaultsFromComponentDefinitions(componentDefinitions: Compon
     const Component = registry.lookup(componentDefinition.component)
 
     // If this component has a value itself, get it
-    const thisValue = (Component && Component.getDefintionDefaultValue(componentDefinition)) || {}
+    const thisValue = (Component && Component.getDefinitionDefaultValue(componentDefinition)) || {}
 
     // Combine the existing values with this level's value and any nested values
     return merge(nestedValues, merge(thisValue, acc))
