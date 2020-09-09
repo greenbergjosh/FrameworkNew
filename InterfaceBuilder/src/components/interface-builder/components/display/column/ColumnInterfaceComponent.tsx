@@ -53,7 +53,7 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
 
   static manageForm = columnManageForm
 
-  static getDefintionDefaultValue({ columns }: ColumnInterfaceComponentProps) {
+  static getDefinitionDefaultValue({ columns }: ColumnInterfaceComponentProps) {
     return (columns || []).reduce(
       (acc, column) => merge(acc, getDefaultsFromComponentDefinitions(column.components)),
       {}

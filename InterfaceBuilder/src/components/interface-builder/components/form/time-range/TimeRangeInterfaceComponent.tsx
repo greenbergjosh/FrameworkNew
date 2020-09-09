@@ -45,7 +45,7 @@ export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRang
 
   static manageForm = timeRangeManageForm
 
-  static getDefintionDefaultValue({ endTimeKey, startTimeKey }: TimeRangeInterfaceComponentProps) {
+  static getDefinitionDefaultValue({ endTimeKey, startTimeKey }: TimeRangeInterfaceComponentProps) {
     const startTime = moment.utc()
     const endTime = startTime
     return set(startTimeKey, startTime.toISOString(), set(endTimeKey, endTime.toISOString(), {}))

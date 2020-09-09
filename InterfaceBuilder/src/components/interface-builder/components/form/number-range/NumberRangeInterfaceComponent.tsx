@@ -57,7 +57,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = numberRangeManageForm
 
-  static getDefintionDefaultValue({
+  static getDefinitionDefaultValue({
     defaultRangeValueType,
     defaultRangeLowerValue,
     defaultRangeUpperValue,

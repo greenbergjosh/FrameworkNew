@@ -69,7 +69,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   static getLayoutDefinition(): LayoutDefinition {
     return { name: "__Undefined", title: "__Undefined" } as LayoutDefinition
   }
-  static getDefintionDefaultValue(
+  static getDefinitionDefaultValue(
     componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
   ): { [key: string]: any } {
     if (
@@ -94,7 +94,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
     if (typeof this.props.defaultValue !== "undefined") {
       return this.props.defaultValue
     }
-    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefintionDefaultValue(this.props)
+    return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
   }
 }
 
@@ -115,7 +115,7 @@ export function getDefaultsFromComponentDefinitions(componentDefinitions: Compon
     const Component = registry.lookup(componentDefinition.component)
 
     // If this component has a value itself, get it
-    const thisValue = (Component && Component.getDefintionDefaultValue(componentDefinition)) || {}
+    const thisValue = (Component && Component.getDefinitionDefaultValue(componentDefinition)) || {}
 
     // Combine the existing values with this level's value and any nested values
     return merge(nestedValues, merge(thisValue, acc))
