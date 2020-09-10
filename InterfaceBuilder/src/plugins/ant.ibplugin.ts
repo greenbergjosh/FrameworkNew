@@ -20,6 +20,7 @@ import { NumberInputInterfaceComponent } from "../components/interface-builder/c
 import { NumberRangeInterfaceComponent } from "../components/interface-builder/components/form/number-range/NumberRangeInterfaceComponent"
 import { PasswordInterfaceComponent } from "../components/interface-builder/components/form/password/PasswordInterfaceComponent"
 import { ProgressInterfaceComponent } from "../components/interface-builder/components/display/progress/ProgressInterfaceComponent"
+import { QueryBuilderInterfaceComponent } from "../components/interface-builder/components/special/query-builder/QueryBuilderInterfaceComponent"
 import { RichTextEditorInterfaceComponent } from "../components/interface-builder/components/form/rich-text-editor/RichTextEditorInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "../components/interface-builder/components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { SelectInterfaceComponent } from "../components/interface-builder/components/form/select/SelectInterfaceComponent"
@@ -64,6 +65,7 @@ export default {
   "number-range": NumberRangeInterfaceComponent,
   password: PasswordInterfaceComponent,
   progress: ProgressInterfaceComponent,
+  "query-builder": QueryBuilderInterfaceComponent,
   "rich-text-editor": RichTextEditorInterfaceComponent,
   "sectioned-navigation": SectionedNavigationInterfaceComponent,
   select: SelectInterfaceComponent,

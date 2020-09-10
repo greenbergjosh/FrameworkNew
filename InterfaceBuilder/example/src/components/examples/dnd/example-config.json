@@ -1,216 +1,23 @@
 {
-  "component": "form",
+  "invisible": false,
+  "hidden": false,
   "key": "outer",
-  "label": "Query Form",
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
   "components": [
     {
-      "key": "tabs",
-      "defaultActiveKey": "tab1",
-      "label": "Some Tabs",
-      "component": "tabs",
-      "tabs": [
-        {
-          "key": "tab1",
-          "label": "First Tab",
-          "component": "tab",
-          "components": [
-            {
-              "hidden": false,
-              "allowClear": true,
-              "placeholder": "Please select",
-              "data": {
-                "values": [
-                  {
-                    "label": "one",
-                    "value": "1"
-                  },
-                  {
-                    "label": "two",
-                    "value": "2"
-                  },
-                  {
-                    "label": "three",
-                    "value": "3"
-                  }
-                ]
-              },
-              "multiple": false,
-              "dataHandlerType": "local",
-              "valueKey": "value",
-              "label": "Pick Something",
-              "hideLabel": false,
-              "key": "pick1",
-              "component": "select"
-            },
-            {
-              "key": "write1",
-              "label": "Write something",
-              "component": "input"
-            }
-          ]
-        },
-        {
-          "key": "tab2",
-          "label": "Second Tab",
-          "component": "tab",
-          "components": [
-            {
-              "key": "write2",
-              "label": "Write Something Else",
-              "component": "input"
-            },
-            {
-              "hidden": false,
-              "allowClear": true,
-              "placeholder": "Please select",
-              "data": {
-                "values": [
-                  {
-                    "label": "one",
-                    "value": "1"
-                  },
-                  {
-                    "label": "two",
-                    "value": "2"
-                  },
-                  {
-                    "label": "three",
-                    "value": "3"
-                  }
-                ]
-              },
-              "multiple": false,
-              "dataHandlerType": "local",
-              "valueKey": "value",
-              "label": "Pick something Else",
-              "hideLabel": false,
-              "key": "pick2",
-              "component": "select"
-            }
-          ]
-        },
-        {
-          "key": "tab3",
-          "label": "Progress Test",
-          "component": "tab",
-          "components": [
-            {
-              "hideLabel": false,
-              "label": "Progress",
-              "valueKey": "currentValue",
-              "calculatePercent": true,
-              "maxValueKey": "maxValue",
-              "forceStatus": "useAPI",
-              "statusKey": "status",
-              "statuses": {
-                "exception": "exception",
-                "success": "success",
-                "active": "active",
-                "normal": "normal"
-              },
-              "type": "line",
-              "smallLine": false,
-              "hideInfo": false,
-              "hidden": false,
-              "component": "progress"
-            },
-            {
-              "hideLabel": false,
-              "label": "Columns",
-              "valueKey": "columns",
-              "hideTitle": false,
-              "components": [],
-              "gutter": 8,
-              "hidden": false,
-              "component": "column",
-              "columns": [
-                {
-                  "hideTitle": true,
-                  "components": [
-                    {
-                      "hideLabel": false,
-                      "label": "Current Value",
-                      "valueKey": "currentValue",
-                      "hidden": false,
-                      "component": "number-input"
-                    }
-                  ]
-                },
-                {
-                  "hideTitle": true,
-                  "components": [
-                    {
-                      "hideLabel": false,
-                      "label": "Max Value",
-                      "valueKey": "maxValue",
-                      "hidden": false,
-                      "component": "number-input"
-                    }
-                  ]
-                },
-                {
-                  "hideTitle": true,
-                  "components": [
-                    {
-                      "hideLabel": false,
-                      "label": "Status",
-                      "valueKey": "status",
-                      "placeholder": null,
-                      "multiple": false,
-                      "defaultValue": "normal",
-                      "dataHandlerType": "local",
-                      "data": {
-                        "values": [
-                          {
-                            "label": "Normal",
-                            "value": "normal"
-                          },
-                          {
-                            "label": "Active",
-                            "value": "active"
-                          },
-                          {
-                            "label": "Success",
-                            "value": "success"
-                          },
-                          {
-                            "label": "Exception",
-                            "value": "exception"
-                          }
-                        ]
-                      },
-                      "allowCreateNew": false,
-                      "createNewLabel": "Create New...",
-                      "hidden": false,
-                      "component": "select"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "post-tabs-divider",
-      "component": "divider"
-    },
-    {
-      "key": "daterange1",
-      "label": "Date Range",
-      "component": "date-range"
-    },
-    {
-      "key": "date1",
-      "component": "date",
-      "label": "Date 1",
-      "valueKey": "date",
-      "timeSettings": {
-        "includeTime": true,
-        "includeHour": true,
-        "includeMinute": true
-      }
+      "invisible": false,
+      "hidden": false,
+      "schemaRaw": "{\n  Gender: {\n    label: \"Gender\",\n    type: \"select\",\n    operators: [\"select_equals\"],\n    listValues: [\"Male\", \"Female\", \"TEST\"],\n  },\n  Zip: {\n    label: \"Zip\",\n    type: \"select\",\n    operators: [\"select_equals\"],\n    listValues: [\"33442\", \"33444\", \"33448\", \"33449\", \"TEST\"],\n  },\n  HairColor: {\n    label: \"Hair Color\",\n    type: \"select\",\n    operators: [\"select_equals\"],\n    listValues: [\"Black\", \"Brown\", \"Grey\", \"Blond\", \"Red\", \"Other\"],\n  },\n  EyeColor: {\n    label: \"Eye Color\",\n    type: \"select\",\n    operators: [\"select_equals\"],\n    listValues: [\"Black\", \"Brown\", \"Hazel\", \"Blue\", \"Other\"],\n  },\n}",
+      "isStringified": true,
+      "valueKey": "query",
+      "label": "Query Builder",
+      "hideLabel": false,
+      "defaultTheme": "vs-dark",
+      "defaultLanguage": "json",
+      "component": "query-builder"
     }
   ]
 }

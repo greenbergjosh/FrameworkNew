@@ -1,0 +1,206 @@
+export default {
+  or: [
+    {
+      and: [
+        {
+          "==": [
+            {
+              var: "Gender",
+            },
+            "Male",
+          ],
+        },
+        {
+          "==": [
+            {
+              var: "Zip",
+            },
+            "33444",
+          ],
+        },
+      ],
+    },
+    {
+      "!": {
+        and: [
+          {
+            "==": [
+              {
+                var: "Gender",
+              },
+              "Female",
+            ],
+          },
+          {
+            "==": [
+              {
+                var: "Zip",
+              },
+              "33442",
+            ],
+          },
+          {
+            or: [
+              {
+                "==": [
+                  {
+                    var: "EyeColor",
+                  },
+                  "Blue",
+                ],
+              },
+              {
+                "==": [
+                  {
+                    var: "HairColor",
+                  },
+                  "Blond",
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      filter: [
+        {
+          or: [
+            {
+              and: [
+                {
+                  "==": [
+                    {
+                      var: "PeopleN.Gender",
+                    },
+                    "TEST",
+                  ],
+                },
+                {
+                  "==": [
+                    {
+                      var: "PeopleN.Zip",
+                    },
+                    "TEST",
+                  ],
+                },
+              ],
+            },
+            {
+              "!": {
+                and: [
+                  {
+                    "==": [
+                      {
+                        var: "PeopleN.Gender",
+                      },
+                      "Female",
+                    ],
+                  },
+                  {
+                    "==": [
+                      {
+                        var: "PeopleN.Zip",
+                      },
+                      "33442",
+                    ],
+                  },
+                  {
+                    or: [
+                      {
+                        "==": [
+                          {
+                            var: "PeopleN.EyeColor",
+                          },
+                          "Blue",
+                        ],
+                      },
+                      {
+                        "==": [
+                          {
+                            var: "PeopleN.HairColor",
+                          },
+                          "Blond",
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      filter: [
+        {
+          or: [
+            {
+              and: [
+                {
+                  "==": [
+                    {
+                      var: "PeopleN.Gender",
+                    },
+                    "Male",
+                  ],
+                },
+                {
+                  "==": [
+                    {
+                      var: "PeopleN.Zip",
+                    },
+                    "33448",
+                  ],
+                },
+              ],
+            },
+            {
+              "!": {
+                and: [
+                  {
+                    "==": [
+                      {
+                        var: "PeopleN.Gender",
+                      },
+                      "Female",
+                    ],
+                  },
+                  {
+                    "==": [
+                      {
+                        var: "PeopleN.Zip",
+                      },
+                      "33449",
+                    ],
+                  },
+                  {
+                    or: [
+                      {
+                        "==": [
+                          {
+                            var: "PeopleN.EyeColor",
+                          },
+                          "Blue",
+                        ],
+                      },
+                      {
+                        "==": [
+                          {
+                            var: "PeopleN.HairColor",
+                          },
+                          "Blond",
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ],
+}
