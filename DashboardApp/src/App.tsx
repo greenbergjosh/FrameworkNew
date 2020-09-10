@@ -19,6 +19,7 @@ import {
   antComponents,
   DragDropContext,
   nivoComponents,
+  htmlComponents,
   registerMonacoEditorMount,
   registry,
 } from "@opg/interface-builder"
@@ -65,6 +66,7 @@ export function App(): JSX.Element {
   React.useEffect(() => {
     registry.register(antComponents)
     registry.register(nivoComponents)
+    registry.register(htmlComponents)
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: ExecuteInterfaceComponent })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
