@@ -25,6 +25,7 @@ import {
 import { QueryInterfaceComponent } from "./components/custom-ib-components/query/QueryInterfaceComponent"
 import { ExecuteInterfaceComponent } from "./components/custom-ib-components/execute/ExecuteInterfaceComponent"
 import { PathEditorInterfaceComponent } from "./components/custom-ib-components/path-editor/PathEditorInterfaceComponent"
+import { QueryBuilderInterfaceComponent } from "./components/custom-ib-components/query-builder/QueryBuilderInterfaceComponent"
 import { RemoteComponentInterfaceComponent } from "./components/custom-ib-components/remote-component/RemoteComponentInterfaceComponent"
 import { SlotConfigInterfaceComponent } from "./components/custom-ib-components/slot-config/SlotConfigInterfaceComponent"
 import { getCustomEditorConstructionOptions } from "./components/custom-ib-components/code-editor-mount"
@@ -68,6 +69,7 @@ export function App(): JSX.Element {
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: ExecuteInterfaceComponent })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
+    registry.register({ "query-builder": QueryBuilderInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
     registry.register({ "slot-config": SlotConfigInterfaceComponent })
     registry.register({ "string-template": StringTemplateInterfaceComponent })

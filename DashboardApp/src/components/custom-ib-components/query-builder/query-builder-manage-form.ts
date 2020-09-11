@@ -1,5 +1,4 @@
-import { baseManageForm } from "../../base/base-component-form"
-import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
+import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 
 export const queryBuilderManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...queryBuilderManageFormDefinition, ...extend)
@@ -24,15 +23,13 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 defaultValue: "query",
               },
               {
-                key: "schemaRaw",
-                valueKey: "schemaRaw",
-                component: "code-editor",
+                key: "schemaRawConfigId",
+                valueKey: "schemaRawConfigId",
                 label: "Schema",
                 help: "Schema for the data to be queried.",
-                defaultValue: "{}",
-                defaultTheme: "vs-dark",
-                defaultLanguage: "json",
-                height: 100,
+                component: "select",
+                dataHandlerType: "remote-config",
+                remoteConfigType: "Components.QueryBuilder.Schema",
               },
             ],
           },

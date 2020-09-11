@@ -2,7 +2,7 @@ import React from "react"
 import { Builder, BuilderProps, Config, ImmutableTree, Query, Utils } from "react-awesome-query-builder"
 import "react-awesome-query-builder/lib/css/styles.css"
 import "react-awesome-query-builder/lib/css/compact_styles.css"
-import { emptyQBData, getConfig, getDefaultedQuery, hasSchema } from "./utils"
+import { emptyQBData, getConfig, getQueryOrDefault, hasSchema } from "./utils"
 import { QueryBuilderProps } from "../types"
 import { Empty } from "antd"
 
@@ -25,8 +25,8 @@ export function QueryBuilder({ schema, query, onChange }: QueryBuilderProps) {
     }
 
     const config = getConfig(schema)
-    const defaultedQuery = query && getDefaultedQuery(query)
-    const rawQBData = defaultedQuery && loadFromJsonLogic(defaultedQuery, config)
+    const queryOrDefault = query && getQueryOrDefault(query)
+    const rawQBData = queryOrDefault && loadFromJsonLogic(queryOrDefault, config)
     const qbData = rawQBData ? checkTree(rawQBData, config) : loadTree(emptyQBData)
 
     return { config, qbData }

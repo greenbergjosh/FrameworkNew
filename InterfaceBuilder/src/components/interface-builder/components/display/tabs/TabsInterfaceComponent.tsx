@@ -39,7 +39,7 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
     return (
       <DataPathContext path="tabs">
         <Tabs defaultActiveKey="tab0">
-          {tabs &&
+          {tabs ?
             tabs.map((tab, index) => (
               <Tabs.TabPane tab={tab.label} key={`tab${index}`}>
                 <DataPathContext path={`${index}.components`}>
@@ -57,7 +57,10 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
                   />
                 </DataPathContext>
               </Tabs.TabPane>
-            ))}
+            )) : (
+              <Tabs.TabPane tab="" key="tab0">
+              </Tabs.TabPane>
+            )}
         </Tabs>
       </DataPathContext>
     )

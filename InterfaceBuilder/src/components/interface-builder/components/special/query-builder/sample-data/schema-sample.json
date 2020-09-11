@@ -1,0 +1,57 @@
+{
+  "Gender": {
+    "label": "Gender",
+    "type": "select",
+    "operators": ["select_equals"],
+    "listValues": ["Male", "Female", "TEST"]
+  },
+  "Zip": {
+    "label": "Zip",
+    "type": "select",
+    "operators": ["select_equals"],
+    "listValues": ["33442", "33444", "33448", "33449", "TEST"]
+  },
+  "HairColor": {
+    "label": "Hair Color",
+    "type": "select",
+    "operators": ["select_equals"],
+    "listValues": ["Black", "Brown", "Grey", "Blond", "Red", "Other"]
+  },
+  "EyeColor": {
+    "label": "Eye Color",
+    "type": "select",
+    "operators": ["select_equals"],
+    "listValues": ["Black", "Brown", "Hazel", "Blue", "Other"]
+  },
+  "PeopleN": {
+    "label": "PeopleN",
+    "tooltip": "PeopleN",
+    "type": "!group",
+    "subfields": {
+      "Gender": {
+        "label": "Gender",
+        "type": "select",
+        "operators": ["select_equals"],
+        "listValues": ["Male", "Female", "TEST"]
+      },
+      "Zip": {
+        "label": "Zip",
+        "type": "select",
+        "operators": ["select_equals"],
+        "listValues": ["33442", "33444", "33448", "33449", "TEST"]
+      },
+      "HairColor": {
+        "label": "Hair Color",
+        "type": "select",
+        "operators": ["select_equals"],
+        "listValues": ["Black", "Brown", "Grey", "Blond", "Red", "Other"]
+      },
+      "EyeColor": {
+        "label": "Eye Color",
+        "type": "select",
+        "operators": ["select_equals"],
+        "listValues": ["Black", "Brown", "Hazel", "Blue", "Other"]
+      }
+    }
+  }
+}

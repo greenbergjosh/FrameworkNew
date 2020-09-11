@@ -15,6 +15,7 @@ import "./styles/index.scss"
  */
 import * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
 import * as StringTemplate from "./components/interface-builder/components/special/string-template"
+import * as QueryBuilder from "./components/interface-builder/components/special/query-builder"
 
 /**
  * Framework
@@ -52,7 +53,7 @@ export {
   EditorLang,
   EditorTheme,
 } from "./components/interface-builder/components/special/code-editor/code-editor"
-export { StringTemplate }
+export { StringTemplate, QueryBuilder }
 
 /**
  * Non-Framework Components

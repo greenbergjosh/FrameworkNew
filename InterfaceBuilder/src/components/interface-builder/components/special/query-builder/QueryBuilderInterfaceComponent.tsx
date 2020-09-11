@@ -3,14 +3,10 @@ import React from "react"
 import { queryBuilderManageForm } from "./query-builder-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { QueryBuilder } from "./components/QueryBuilder"
-import {
-  QueryBuilderInterfaceComponentProps,
-  QueryBuilderInterfaceComponentState,
-} from "components/interface-builder/components/special/query-builder/types"
+import { QueryBuilderInterfaceComponentProps, QueryBuilderInterfaceComponentState, SchemaType } from "./types"
 import { FieldOrGroup, JsonLogicTree, TypedMap } from "react-awesome-query-builder"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
-import { Spin } from "antd"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   QueryBuilderInterfaceComponentProps,
@@ -39,36 +35,37 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
 
   constructor(props: QueryBuilderInterfaceComponentProps) {
     super(props)
-    this.state = { loading: true }
+    this.state = {}
   }
 
   componentDidMount(): void {
-    const { userInterfaceData, valueKey, mode, schemaRaw } = this.props
-    debugger
-
-    if (mode === "edit" || isEmpty(schemaRaw)) {
-      return
-    }
-    const schema: TypedMap<FieldOrGroup> | undefined = tryCatch(() => JSON5.parse(schemaRaw)).toUndefined()
-
-    this.setState({ schema, loading: false })
-    const query: JsonLogicTree = get(valueKey, userInterfaceData)
-
-    if (!isEmpty(query)) {
-      this.setState({ query, schema })
-    }
+    this.updateSchema()
+    this.updateQuery()
   }
 
   componentDidUpdate(prevProps: Readonly<QueryBuilderInterfaceComponentProps>): void {
-    const { mode, schemaRaw } = this.props
-    debugger
+    this.updateSchema(prevProps)
+    this.updateQuery()
+  }
 
-    if (mode === "edit" || isEmpty(schemaRaw) || isEqual(schemaRaw, prevProps.schemaRaw)) {
-      return
+  private updateQuery() {
+    const { userInterfaceData, valueKey, mode, schemaRaw } = this.props
+    const query: JsonLogicTree = get(valueKey, userInterfaceData)
+
+    // Once we have the query, don't update again or we'll wipe out the user's changes
+    if (isEmpty(this.state.query) && !isEmpty(query)) {
+      this.setState({ query })
     }
-    const schema: TypedMap<FieldOrGroup> | undefined = tryCatch(() => JSON5.parse(schemaRaw)).toUndefined()
+  }
 
-    this.setState({ schema, loading: false })
+  private updateSchema(prevProps?: Readonly<QueryBuilderInterfaceComponentProps>) {
+    const { userInterfaceData, valueKey, mode, schemaRaw } = this.props
+    const isSchemaUnchanged = (prevProps && isEqual(schemaRaw, prevProps.schemaRaw)) || false
+
+    if (!isEmpty(schemaRaw) && !isSchemaUnchanged) {
+      const schema: SchemaType | undefined = tryCatch(() => JSON5.parse(schemaRaw)).toUndefined()
+      this.setState({ schema })
+    }
   }
 
   handleChange = (jsonLogic?: JsonLogicTree) => {
@@ -81,10 +78,6 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    return (
-      <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
-        <QueryBuilder schema={this.state.schema} query={this.state.query} onChange={this.handleChange} />
-      </Spin>
-    )
+    return <QueryBuilder schema={this.state.schema} query={this.state.query} onChange={this.handleChange} />
   }
 }
