@@ -71,7 +71,6 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private getText(value: string | JSONRecord): string | null {
-    debugger
     const { stringTemplate, useTokens } = this.props
     return useTokens ? replaceTokens(stringTemplate, value) : stringTemplate
   }
@@ -93,12 +92,10 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
 }
 
 function replaceTokens(stringTemplate: string, value: string | JSONRecord): string | null {
-  debugger
   const matches = stringTemplate && stringTemplate.match(/(\{\$\.([^{]*)\})/gm)
   return (
     matches &&
     matches.reduce((acc, match) => {
-      debugger
       const key = match.slice(3, match.length - 1)
       const val = get(key, value) || "?"
       return acc.replace(match, val)

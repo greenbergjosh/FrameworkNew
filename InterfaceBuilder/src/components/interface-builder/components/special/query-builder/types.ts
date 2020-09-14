@@ -17,6 +17,8 @@ export interface QueryBuilderInterfaceComponentProps extends ComponentDefinition
   schemaRaw: string
   queryRaw: string
   query: JsonLogicTree
+  exposeQueryableFields: boolean
+  queryableFieldsKey?: string
 }
 
 export interface QueryBuilderInterfaceComponentState {

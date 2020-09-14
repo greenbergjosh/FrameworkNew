@@ -23,6 +23,30 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 defaultValue: "query",
               },
               {
+                key: "exposeQueryableFields",
+                valueKey: "exposeQueryableFields",
+                ordinal: 11,
+                component: "toggle",
+                label: "Expose Queryable Fields",
+                help:
+                  "Make the queryable fields (root properties) available on the data model when the schema is loaded.",
+                defaultValue: false,
+              },
+              {
+                key: "queryableFieldsKey",
+                valueKey: "queryableFieldsKey",
+                component: "input",
+                label: "Queryable Fields Key",
+                visibilityConditions: {
+                  "===": [
+                    true,
+                    {
+                      var: ["exposeQueryableFields"],
+                    },
+                  ],
+                },
+              },
+              {
                 key: "schemaRawConfigId",
                 valueKey: "schemaRawConfigId",
                 label: "Schema",

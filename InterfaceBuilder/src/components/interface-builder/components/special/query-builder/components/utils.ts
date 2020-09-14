@@ -1,11 +1,7 @@
 import { Config, FieldOrGroup, JsonLogicTree, JsonTree, TypedMap, Utils } from "react-awesome-query-builder"
 import AntdConfig from "react-awesome-query-builder/lib/config/antd"
 import { SchemaType } from "../types"
-
-/* **************************************************
- *
- * CONFIG
- */
+import { keys, isArray } from "lodash/fp"
 
 /**
  *
@@ -41,4 +37,15 @@ export const emptyQBData: JsonTree = { id: Utils.uuid(), type: "group" }
 
 export function getQueryOrDefault(query: JsonLogicTree): JsonLogicTree {
   return query && Object.keys(query).length > 0 ? query : emptyQBData
+}
+
+export function getQueryableFields(schema: SchemaType): string[] {
+  const ownKeys = keys(schema)
+  return ownKeys.reduce((acc: string[], key) => {
+    const prop = schema[key]
+    if (!prop.type.endsWith("group")) {
+      acc.push(key)
+    }
+    return acc
+  }, [])
 }

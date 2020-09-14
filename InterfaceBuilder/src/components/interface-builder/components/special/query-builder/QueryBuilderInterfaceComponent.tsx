@@ -7,6 +7,8 @@ import { QueryBuilderInterfaceComponentProps, QueryBuilderInterfaceComponentStat
 import { FieldOrGroup, JsonLogicTree, TypedMap } from "react-awesome-query-builder"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
+import { getQueryableFields } from "./components/utils"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   QueryBuilderInterfaceComponentProps,
@@ -59,12 +61,21 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private updateSchema(prevProps?: Readonly<QueryBuilderInterfaceComponentProps>) {
-    const { userInterfaceData, valueKey, mode, schemaRaw } = this.props
+    const { schemaRaw } = this.props
     const isSchemaUnchanged = (prevProps && isEqual(schemaRaw, prevProps.schemaRaw)) || false
 
     if (!isEmpty(schemaRaw) && !isSchemaUnchanged) {
       const schema: SchemaType | undefined = tryCatch(() => JSON5.parse(schemaRaw)).toUndefined()
+      this.provideQueryableFields(schema)
       this.setState({ schema })
+    }
+  }
+
+  private provideQueryableFields(schema: SchemaType | undefined) {
+    const { userInterfaceData, exposeQueryableFields, onChangeData, queryableFieldsKey } = this.props
+    if (schema && exposeQueryableFields && !isEmpty(queryableFieldsKey)) {
+      const queryableFelds = getQueryableFields(schema)
+      onChangeData && onChangeData(set(queryableFieldsKey!, queryableFelds, userInterfaceData))
     }
   }
 
