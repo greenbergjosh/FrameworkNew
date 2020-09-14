@@ -80,10 +80,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
       this.setState({ pieDatum: data, loading: false })
     }
 
-    if (
-      this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction"]) ||
-      (this.props.useTooltipFunction && !this.state.tooltipFunction)
-    ) {
+    if (this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction"])) {
       const { useTooltipFunction, tooltipFunction } = this.props
       const myProps = this.props
       const parsedTooltipFunction =

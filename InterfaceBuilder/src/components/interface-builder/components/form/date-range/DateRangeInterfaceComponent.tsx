@@ -47,7 +47,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = dateRangeManageForm
 
-  static getDefintionDefaultValue({ defaultRangeValue, endDateKey, startDateKey }: DateRangeInterfaceComponentProps) {
+  static getDefinitionDefaultValue({ defaultRangeValue, endDateKey, startDateKey }: DateRangeInterfaceComponentProps) {
     const [startDate, endDate] = this.standardRanges()[defaultRangeValue]
     return set(startDateKey, startDate.toISOString(), set(endDateKey, endDate.toISOString(), {}))
   }
@@ -102,7 +102,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   getDefaultValue = () => {
-    return DateRangeInterfaceComponent.getDefintionDefaultValue(this.props)
+    return DateRangeInterfaceComponent.getDefinitionDefaultValue(this.props)
   }
 
   getValues = () => {

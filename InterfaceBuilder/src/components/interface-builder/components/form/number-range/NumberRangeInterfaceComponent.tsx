@@ -57,7 +57,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = numberRangeManageForm
 
-  static getDefintionDefaultValue({
+  static getDefinitionDefaultValue({
     defaultRangeValueType,
     defaultRangeLowerValue,
     defaultRangeUpperValue,
@@ -100,7 +100,7 @@ export class NumberRangeInterfaceComponent extends BaseInterfaceComponent<
   }
 
   getDefaultValue = () => {
-    return NumberRangeInterfaceComponent.getDefintionDefaultValue(this.props)
+    return NumberRangeInterfaceComponent.getDefinitionDefaultValue(this.props)
   }
 
   getValues = (): [number, number] => {

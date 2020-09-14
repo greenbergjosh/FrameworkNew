@@ -106,7 +106,10 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   }
 
   anyPropsChanged(prevProps: Readonly<PieInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
-    return propsToCheck.some((prop) => this.props[prop] !== prevProps[prop] || (this.props[prop] && !prevProps[prop]))
+    return propsToCheck.some(
+      (prop) =>
+        this.props[prop] !== prevProps[prop] || (this.props[prop] !== undefined && prevProps[prop] === undefined)
+    )
   }
 
   static availableEvents: string[] = []

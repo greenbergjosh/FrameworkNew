@@ -30,8 +30,8 @@ export { DataPathContext } from "./components/interface-builder/util/DataPathCon
 export { getDefaultsFromComponentDefinitions } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 export { registry } from "./components/interface-builder/registry"
 export { UserInterface } from "./components/interface-builder/UserInterface"
-export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager;"
-export { EventBus, EventBusEventHandler } from "./services/event-bus;"
+export { UserInterfaceContext } from "./components/interface-builder/UserInterfaceContextManager"
+export { EventBus, EventBusEventHandler } from "./services/event-bus"
 
 /**
  * Utility
