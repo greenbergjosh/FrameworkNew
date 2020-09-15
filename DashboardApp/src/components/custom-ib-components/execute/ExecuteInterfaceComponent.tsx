@@ -24,6 +24,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     valueKey: "data",
     inboundValueKey: "data",
   }
+
   static getLayoutDefinition() {
     return {
       category: "Special",
@@ -37,6 +38,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       },
     }
   }
+
   static manageForm = executeManageForm
   static contextType = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
@@ -115,13 +117,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
   ) => {
     if (this.props.executeImmediately && this.props.mode !== "edit") {
-      this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
       if (this.props.autoExecuteIntervalSeconds) {
         this.autoExecuteTimer = setInterval(
           () => this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues),
           this.props.autoExecuteIntervalSeconds * 1000
         )
       }
+      return this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
     }
   }
 

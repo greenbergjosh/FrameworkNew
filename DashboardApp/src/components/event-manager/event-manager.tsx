@@ -24,11 +24,15 @@ type EventMapItem = {
 }
 
 type OutgoingEventMap = { [key: string]: EventMapItem }
-type IncomingEventHandlers = { [key: string]: PersistedConfig["id"] }
+type IncomingEventHandlers = {
+  eventName: string
+  handlerFunctionId: PersistedConfig["id"]
+  handlerFunctionParameters: { [key: string]: string }
+}[]
 
 class EventManagerProps {
   outgoingEventMap: OutgoingEventMap = {}
-  incomingEventHandlers: IncomingEventHandlers = {}
+  incomingEventHandlers: IncomingEventHandlers = []
 }
 
 export function withEventManager<T extends BaseInterfaceComponentProps, Y>(WrappedComponent: any) {
@@ -39,7 +43,12 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
     parameters: { [key: string]: string }
   ) => { mappedEventName: string; mappedEventPayload: any }
 
-  type EventHandler = (props: T, eventName: string, eventPayload: any) => Record<string, any>
+  type EventHandler = (
+    props: T,
+    eventName: string,
+    eventPayload: any,
+    eventParameters: { [key: string]: string }
+  ) => Record<string, any>
 
   const manageFormWithEvents = getManageForm(WrappedComponent)
 
@@ -58,18 +67,25 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
 
     componentDidMount() {
       const { loadById } = this.context as AdminUserInterfaceContextManager
-      for (const eventName in this.props.incomingEventHandlers) {
-        const handlerId: PersistedConfig["id"] = this.props.incomingEventHandlers[eventName]
-        const handlerSrc = loadRemoteLBM(loadById, handlerId)
-        const handler = utils.parseLBM<EventHandler>(handlerSrc)
-        if (handler) {
-          console.log(`EventManager: Subscribing to event ${eventName}`)
-          this.subscriptionIds.push({
-            eventName,
-            subscriptionId: EventBus.addSubscription(eventName, this.makeEventHandler(handler)),
-          })
-        }
-      }
+      this.props.incomingEventHandlers &&
+        this.props.incomingEventHandlers.forEach((eventInfo) => {
+          if (!eventInfo.handlerFunctionId) {
+            console.warn(`No handlerFunctionId for event ${eventInfo.eventName} for component ${this.displayName}`)
+            return
+          }
+          const handlerSrc = loadRemoteLBM(loadById, eventInfo.handlerFunctionId)
+          const handler = utils.parseLBM<EventHandler>(handlerSrc)
+          if (handler) {
+            console.log(`EventManager: Subscribing to event ${eventInfo.eventName}`)
+            this.subscriptionIds.push({
+              eventName: eventInfo.eventName,
+              subscriptionId: EventBus.addSubscription(
+                eventInfo.eventName,
+                this.makeEventHandler(handler, eventInfo.handlerFunctionParameters)
+              ),
+            })
+          }
+        })
     }
 
     componentWillUnmount() {
@@ -122,11 +138,14 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       EventBus.raiseEvent(mappedEventName, mappedEventPayload)
     }
 
-    private makeEventHandler(eventHandler: EventHandler): EventBusEventHandler {
+    private makeEventHandler(
+      eventHandler: EventHandler,
+      eventHandlerParameters: { [key: string]: string }
+    ): EventBusEventHandler {
       return (eventName: string, eventPayload: any) => {
         console.log(`EventManager: Handling event ${eventName}`, eventPayload)
         const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
-        const mutatedProps = eventHandler(passThroughProps as T, eventName, eventPayload)
+        const mutatedProps = eventHandler(passThroughProps as T, eventName, eventPayload, eventHandlerParameters)
         this.mutatedProps = { ...this.mutatedProps, ...mutatedProps }
       }
     }
@@ -194,66 +213,89 @@ function getOutgoingEventsForm(WrappedComponent: any): Partial<ComponentDefiniti
           },
         },
         {
-          key: `outgoingEventMap.${availableEvent}.simpleMapValue`,
-          valueKey: `outgoingEventMap.${availableEvent}.simpleMapValue`,
-          component: "input",
-          label: "Mapped Event Name",
-          defaultValue: availableEvent,
-          visibilityConditions: {
-            "===": [
-              {
-                var: [`outgoingEventMap.${availableEvent}.type`],
-              },
-              "simple",
-            ],
-          },
-        },
-        {
-          key: `outgoingEventMap.${availableEvent}.lbmId`,
-          valueKey: `outgoingEventMap.${availableEvent}.lbmId`,
-          label: "Event Mapper Function",
-          component: "select",
-          dataHandlerType: "remote-config",
-          remoteConfigType: "Components.EventMapper.EventMapperFunction",
-          visibilityConditions: {
-            "===": [
-              {
-                var: [`outgoingEventMap.${availableEvent}.type`],
-              },
-              "lbm",
-            ],
-          },
-        },
-        {
-          key: `outgoingEventMap.${availableEvent}.lbmParameters`,
-          valueKey: `outgoingEventMap.${availableEvent}.lbmParameters`,
-          label: "Mapper Function Parameters",
-          help: "Give additional properties to the event mapper function",
-          component: "data-dictionary",
-          keyLabel: "Property Name",
-          valueComponent: [
+          gutter: 8,
+          invisible: false,
+          hidden: false,
+          components: [],
+          hideTitle: false,
+          valueKey: "",
+          label: "",
+          hideLabel: true,
+          component: "column",
+          columns: [
             {
-              hidden: false,
-              maxRows: null,
-              minRows: 1,
-              autosize: true,
-              maxLength: null,
-              valueKey: "value",
-              label: "Value",
-              hideLabel: false,
-              component: "input",
+              components: [],
+              hideTitle: false,
+              span: 3,
+            },
+            {
+              components: [
+                {
+                  key: `outgoingEventMap.${availableEvent}.simpleMapValue`,
+                  valueKey: `outgoingEventMap.${availableEvent}.simpleMapValue`,
+                  component: "input",
+                  label: "Mapped Event Name",
+                  defaultValue: availableEvent,
+                  visibilityConditions: {
+                    "===": [
+                      {
+                        var: [`outgoingEventMap.${availableEvent}.type`],
+                      },
+                      "simple",
+                    ],
+                  },
+                },
+                {
+                  key: `outgoingEventMap.${availableEvent}.lbmId`,
+                  valueKey: `outgoingEventMap.${availableEvent}.lbmId`,
+                  label: "Event Mapper Function",
+                  component: "select",
+                  dataHandlerType: "remote-config",
+                  remoteConfigType: "Components.EventMapper.EventMapperFunction",
+                  visibilityConditions: {
+                    "===": [
+                      {
+                        var: [`outgoingEventMap.${availableEvent}.type`],
+                      },
+                      "lbm",
+                    ],
+                  },
+                },
+                {
+                  key: `outgoingEventMap.${availableEvent}.lbmParameters`,
+                  valueKey: `outgoingEventMap.${availableEvent}.lbmParameters`,
+                  label: "Mapper Function Parameters",
+                  help: "Give additional properties to the event mapper function",
+                  component: "data-dictionary",
+                  keyLabel: "Property Name",
+                  valueComponent: [
+                    {
+                      hidden: false,
+                      maxRows: null,
+                      minRows: 1,
+                      autosize: true,
+                      maxLength: null,
+                      valueKey: "value",
+                      label: "Value",
+                      hideLabel: false,
+                      component: "input",
+                    },
+                  ],
+                  defaultValue: [],
+                  multiple: true,
+                  visibilityConditions: {
+                    "===": [
+                      {
+                        var: [`outgoingEventMap.${availableEvent}.type`],
+                      },
+                      "lbm",
+                    ],
+                  },
+                },
+              ],
+              hideTitle: false,
             },
           ],
-          defaultValue: [],
-          multiple: true,
-          visibilityConditions: {
-            "===": [
-              {
-                var: [`outgoingEventMap.${availableEvent}.type`],
-              },
-              "lbm",
-            ],
-          },
         },
       ])
     })

@@ -43,7 +43,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     return this.props.multiple ? MODES.multiple : MODES.default
   }
 
-  static availableEvents = ["valueChanged", "dropdownOpened", "focused"]
+  static availableEvents = ["valueChanged"]
 
   handleChange = (value: string | string[]) => {
     const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props

@@ -152,7 +152,8 @@ export function convertToPieDatum({
     tryCatch(() => new Function(`return ${labelValueFunction}`)()).toUndefined()
 
   // Convert to PieDatum[]
-  const pieDatum = data.reduce((acc, d, index) => {
+  let index: number = 0
+  const pieDatum = data.reduce((acc, d) => {
     const { value, labelName, labelValue } = getSliceRawData({
       data: d,
       labelNameKey,
@@ -174,7 +175,9 @@ export function convertToPieDatum({
       belowThreshold.push(sliceData)
     } else {
       acc.push(sliceData)
+      index++
     }
+
     return acc
   }, [])
 
@@ -185,7 +188,7 @@ export function convertToPieDatum({
   // Gather values below the threshold into an "Other" PieDatum
   if (threshold > 0 && belowThreshold.length > 0) {
     const defaultOtherSlice = createSliceData({
-      id: "",
+      id: (pieDatum.length + 1).toString(),
       labelName: "Others",
       labelValue: "Others",
       value: 0,
@@ -211,7 +214,7 @@ export function convertToPieDatum({
       valueKey,
       props,
     })
-    aggregate.id = (pieDatum.length + 1).toString()
+
     pieDatum.push(aggregate)
   }
   return pieDatum

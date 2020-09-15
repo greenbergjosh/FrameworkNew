@@ -81,21 +81,29 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     }
 
     if (this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction"])) {
-      const { useTooltipFunction, tooltipFunction } = this.props
-      const myProps = this.props
-      const parsedTooltipFunction =
-        useTooltipFunction &&
-        tooltipFunction &&
-        tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
-      let wrappedTooltipFunction: Function | undefined = undefined
-      if (parsedTooltipFunction && this.props.mode !== "edit") {
-        wrappedTooltipFunction = function (item: { data: any }) {
-          return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data, myProps) }} />
-        }
-      }
-
-      this.setState({ tooltipFunction: wrappedTooltipFunction })
+      this.createTooltipFunction()
     }
+  }
+
+  componentDidMount() {
+    if (this.props.useTooltipFunction && this.props.tooltipFunction) {
+      this.createTooltipFunction()
+    }
+  }
+
+  private createTooltipFunction(): void {
+    const { useTooltipFunction, tooltipFunction } = this.props
+    const myProps = this.props
+    const parsedTooltipFunction =
+      useTooltipFunction && tooltipFunction && tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
+    let wrappedTooltipFunction: Function | undefined = undefined
+    if (parsedTooltipFunction && this.props.mode !== "edit") {
+      wrappedTooltipFunction = function (item: { data: any }) {
+        return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data, myProps) }} />
+      }
+    }
+
+    this.setState({ tooltipFunction: wrappedTooltipFunction })
   }
 
   render(): JSX.Element {
