@@ -131,7 +131,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     satisfiedByParentParams: JSONRecord,
     setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
   ) => {
-    console.log("ExecuteInterfaceComponent.handleSubmit", this.props, this.state, "formValues", parameterValues)
     const { queryConfig } = this.state
     if (!queryConfig) return
 
