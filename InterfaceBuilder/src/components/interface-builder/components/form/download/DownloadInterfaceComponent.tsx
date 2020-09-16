@@ -69,9 +69,13 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
       filename,
     } = this.props
     const params = get(paramsValueKey, userInterfaceData) || {}
-    const config = {
+    const config: Partial<RequestInit> = {
       method: httpMethod,
-      body: httpMethod !== "GET" && Object.keys(params).length > 0 ? JSON.stringify(params) : {},
+    }
+    // Exclude body for GET requests. "TypeError: Request with GET/HEAD method cannot have body."
+    if (httpMethod !== "GET") {
+      // NOTE: body data type must match "Content-Type" header
+      config.body = Object.keys(params).length > 0 ? JSON.stringify(params) : null
     }
 
     /*
@@ -135,7 +139,7 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
 
 async function postData(url = "", params = {}, configOverrides = {}) {
   // Default options are marked with *
-  const response = await fetch(url, {
+  const request: RequestInit = {
     method: "GET", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -146,9 +150,13 @@ async function postData(url = "", params = {}, configOverrides = {}) {
     },
     redirect: "follow", // manual, *follow, error
     referrerPolicy: "no-referrer", // no-referrer, *client
-    body: "", // body data type must match "Content-Type" header
+    /*
+     * Removed body due to "TypeError: Request with GET/HEAD method cannot have body."
+     * Otherwise, body data type must match "Content-Type" header
+     */
     ...configOverrides,
-  })
+  }
+  const response = await fetch(url, request)
   const data = await response.blob()
   return {
     headers: response.headers,

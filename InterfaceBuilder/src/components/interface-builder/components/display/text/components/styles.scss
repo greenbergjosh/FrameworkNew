@@ -4,5 +4,7 @@
     color: darkgreen;
     padding: 20px !important;
     display: block;
+    overflow: hidden;
+    overflow-x: auto;
   }
 }
