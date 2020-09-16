@@ -28,7 +28,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
 
   static getLayoutDefinition() {
     return {
-      category: "Custom",
+      category: "Special",
       name: "slot-config",
       title: "Slot Config",
       icon: "border-outer",
