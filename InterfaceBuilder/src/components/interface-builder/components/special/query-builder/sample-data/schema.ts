@@ -49,9 +49,9 @@ const AlienSchema = {
       tooltip: "MealN",
       type: "!group",
       subfields: {
-        PersonSchema
-      }
-    }
+        PersonSchema,
+      },
+    },
   },
 }
 

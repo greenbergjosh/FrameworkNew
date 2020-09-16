@@ -5,6 +5,7 @@ import "react-awesome-query-builder/lib/css/compact_styles.css"
 import { emptyQBData, getConfig, getQueryOrDefault, hasSchema } from "./utils"
 import { QueryBuilderProps } from "../types"
 import { Empty } from "antd"
+import { isEmpty } from "lodash/fp"
 
 const { checkTree, loadFromJsonLogic, loadTree } = Utils
 
@@ -12,8 +13,6 @@ export function QueryBuilder({ schema, query, onChange }: QueryBuilderProps) {
   /* *********************************
    * STATE
    */
-
-  const [isQueryEmpty, setIsQueryEmpty] = React.useState(true)
 
   /* *********************************
    * PROP WATCHERS
@@ -32,6 +31,15 @@ export function QueryBuilder({ schema, query, onChange }: QueryBuilderProps) {
     return { config, qbData }
   }, [schema, query])
 
+  const isQueryEmpty: boolean = React.useMemo(() => {
+    const children1 = qbData.get("children1")
+    if (children1) {
+      // @ts-ignore
+      return children1.size < 1
+    }
+    return true
+  }, [qbData])
+
   /* *********************************
    * EVENT HANDLERS
    */
@@ -46,15 +54,10 @@ export function QueryBuilder({ schema, query, onChange }: QueryBuilderProps) {
     }
 
     // Convert qbData tree to jsonLogic
-    const { logic, data, errors } = Utils.jsonLogicFormat(nextQBData, config)
+    const result = Utils.jsonLogicFormat(nextQBData, config)
 
     // Forward event to parent
-    onChange && onChange(logic)
-    if (logic) {
-      setIsQueryEmpty(false)
-    } else {
-      setIsQueryEmpty(true)
-    }
+    onChange && onChange(result)
   }
 
   /* *********************************

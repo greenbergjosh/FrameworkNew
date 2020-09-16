@@ -4,11 +4,8 @@ import { queryBuilderManageForm } from "./query-builder-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { QueryBuilder } from "./components/QueryBuilder"
 import { QueryBuilderInterfaceComponentProps, QueryBuilderInterfaceComponentState, SchemaType } from "./types"
-import { FieldOrGroup, JsonLogicTree, TypedMap } from "react-awesome-query-builder"
-import { tryCatch } from "fp-ts/lib/Option"
-import JSON5 from "json5"
+import { JsonLogicResult, JsonLogicTree } from "react-awesome-query-builder"
 import { getQueryableFields } from "./components/utils"
-import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   QueryBuilderInterfaceComponentProps,
@@ -51,7 +48,7 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private updateQuery() {
-    const { userInterfaceData, valueKey, mode, schemaRaw } = this.props
+    const { userInterfaceData, valueKey } = this.props
     const query: JsonLogicTree = get(valueKey, userInterfaceData)
 
     // Once we have the query, don't update again or we'll wipe out the user's changes
@@ -61,11 +58,12 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private updateSchema(prevProps?: Readonly<QueryBuilderInterfaceComponentProps>) {
-    const { schemaRaw } = this.props
-    const isSchemaUnchanged = (prevProps && isEqual(schemaRaw, prevProps.schemaRaw)) || false
+    const { schemaKey, userInterfaceData } = this.props
+    const schema: SchemaType = get(schemaKey, userInterfaceData)
+    const prevSchema: SchemaType = prevProps && get(prevProps.schemaKey, prevProps.userInterfaceData)
+    const isSchemaUnchanged = (prevProps && isEqual(schema, prevSchema)) || false
 
-    if (!isEmpty(schemaRaw) && !isSchemaUnchanged) {
-      const schema: SchemaType | undefined = tryCatch(() => JSON5.parse(schemaRaw)).toUndefined()
+    if (!isEmpty(schemaKey) && !isSchemaUnchanged) {
       this.provideQueryableFields(schema)
       this.setState({ schema })
     }
@@ -79,12 +77,17 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  handleChange = (jsonLogic?: JsonLogicTree) => {
+  handleChange = ({ logic, data, errors }: JsonLogicResult) => {
     const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
     const value = get(valueKey, userInterfaceData) || defaultValue
 
-    if (!isEqual(value, jsonLogic)) {
-      onChangeData && onChangeData(set(valueKey, jsonLogic, userInterfaceData))
+    if (errors && errors.length > 0) {
+      console.error("QueryBuilderInterfaceComponent", "handleChange", { errors, logic, data })
+      return
+    }
+
+    if (!isEqual(value, logic)) {
+      onChangeData && onChangeData(set(valueKey, logic, userInterfaceData))
     }
   }
 

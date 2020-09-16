@@ -1,10 +1,19 @@
-import React from "react"
+import React, { CSSProperties } from "react"
 import { textManageForm } from "./text-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { TextInterfaceComponentProps, TextInterfaceComponentState } from "./types"
+import { TextInterfaceComponentProps, TextInterfaceComponentState, TitleSizeType } from "./types"
 import { get, isEmpty, isEqual } from "lodash/fp"
 import { JSONRecord } from "index"
-import { CodeBlock, Paragraph, PlainText, Title } from "./components/TextStyles"
+import { CodeBlock, Paragraph, PlainText, Title } from "./components/TextTypes"
+
+function getHeaderSizeNum(headerSize: string | undefined): TitleSizeType {
+  switch(headerSize) {
+    case "1": return 1
+    case "2": return 2
+    case "3": return 3
+    case "4": return 4
+  }
+}
 
 export class TextInterfaceComponent extends BaseInterfaceComponent<
   TextInterfaceComponentProps,
@@ -76,17 +85,25 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render() {
-    const { textStyle } = this.props
+    const { textType, headerSize, center, marginTop, marginRight, marginBottom, marginLeft } = this.props
+    const style: CSSProperties = {}
+    let headerSizeNum: TitleSizeType = getHeaderSizeNum(headerSize)
 
-    switch (textStyle) {
+    marginTop ? (style.marginTop = marginTop) : null
+    marginRight ? (style.marginRight = marginRight) : null
+    marginBottom ? (style.marginBottom = marginBottom) : null
+    marginLeft ? (style.marginLeft = marginLeft) : null
+    center ? (style.textAlign = "center") : null
+
+    switch (textType) {
       case "code":
-        return <CodeBlock text={this.state.text} />
+        return <CodeBlock text={this.state.text} style={style} />
       case "paragraph":
-        return <Paragraph text={this.state.text} />
+        return <Paragraph text={this.state.text} style={style} />
       case "title":
-        return <Title text={this.state.text} />
+        return <Title text={this.state.text} size={headerSizeNum} style={style} />
       default:
-        return <PlainText text={this.state.text} />
+        return <PlainText text={this.state.text} style={style} />
     }
   }
 }

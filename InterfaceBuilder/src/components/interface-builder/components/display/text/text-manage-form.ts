@@ -37,9 +37,9 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "stringTemplate",
                 valueKey: "stringTemplate",
-                component: "input",
+                component: "textarea",
                 label: "Text",
-                help: "Text can include simple jsonPath tokens (model properties only)",
+                help: "Text can include simple jsonPath tokens as \"{$.propertyName}\" (model properties only)",
                 defaultValue: "",
               },
             ],
@@ -48,9 +48,9 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "appearance",
             components: [
               {
-                key: "textStyle",
-                valueKey: "textStyle",
-                label: "Style",
+                key: "textType",
+                valueKey: "textType",
+                label: "Type",
                 component: "select",
                 defaultValue: "text",
                 dataHandlerType: "local",
@@ -74,6 +74,68 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                     },
                   ],
                 },
+              },
+              {
+                key: "headerSize",
+                valueKey: "headerSize",
+                label: "Heading Size",
+                component: "select",
+                defaultValue: "h2",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "H1",
+                      value: "1",
+                    },
+                    {
+                      label: "H2",
+                      value: "2",
+                    },
+                    {
+                      label: "H3",
+                      value: "3",
+                    },
+                    {
+                      label: "H4",
+                      value: "4",
+                    },
+                  ],
+                },
+                visibilityConditions: {
+                  "===": ["title", { var: "textType" }],
+                },
+              },
+              {
+                key: "center",
+                valueKey: "center",
+                label: "Center",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
+                key: "marginTop",
+                valueKey: "marginTop",
+                label: "Top Margin",
+                component: "number-input",
+              },
+              {
+                key: "marginRight",
+                valueKey: "marginRight",
+                label: "Right Margin",
+                component: "number-input",
+              },
+              {
+                key: "marginBottom",
+                valueKey: "marginBottom",
+                label: "Bottom Margin",
+                component: "number-input",
+              },
+              {
+                key: "marginLeft",
+                valueKey: "marginLeft",
+                label: "Left Margin",
+                component: "number-input",
               },
             ],
           },

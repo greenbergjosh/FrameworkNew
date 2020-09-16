@@ -43,7 +43,7 @@ export function getQueryableFields(schema: SchemaType): string[] {
   const ownKeys = keys(schema)
   return ownKeys.reduce((acc: string[], key) => {
     const prop = schema[key]
-    if (!prop.type.endsWith("group")) {
+    if (prop && prop.type && !prop.type.endsWith("group")) {
       acc.push(key)
     }
     return acc

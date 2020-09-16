@@ -14,7 +14,7 @@ export interface QueryBuilderInterfaceComponentProps extends ComponentDefinition
   mode: UserInterfaceProps["mode"]
 
   // QueryBuilder props
-  schemaRaw: string
+  schemaKey: string
   queryRaw: string
   query: JsonLogicTree
   exposeQueryableFields: boolean
@@ -29,5 +29,5 @@ export interface QueryBuilderInterfaceComponentState {
 export interface QueryBuilderProps {
   schema?: SchemaType // the user defined fields available to query
   query?: JsonLogicTree // the persisted jsonLogic query
-  onChange: (jsonLogic?: JsonLogicTree) => void
+  onChange: (result: JsonLogicResult) => void
 }
