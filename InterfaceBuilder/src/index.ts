@@ -16,6 +16,7 @@ import "./styles/index.scss"
  */
 import * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
 import * as StringTemplate from "./components/interface-builder/components/special/string-template"
+import * as QueryBuilder from "./components/interface-builder/components/special/query-builder"
 
 /**
  * Framework
@@ -23,6 +24,7 @@ import * as StringTemplate from "./components/interface-builder/components/speci
 export { default as DragDropContext } from "./components/interface-builder/dnd/util/DragDropContext"
 export { default as antComponents } from "./plugins/ant.ibplugin"
 export { default as nivoComponents } from "./plugins/nivo.ibplugin"
+export { default as htmlComponents } from "./plugins/html.ibplugin"
 export { BaseInterfaceComponent } from "./components/interface-builder/components/base/BaseInterfaceComponent"
 export { baseManageForm } from "./components/interface-builder/components/base/base-component-form"
 export { ComponentRenderer } from "./components/interface-builder/ComponentRenderer"
@@ -54,7 +56,7 @@ export {
   EditorLang,
   EditorTheme,
 } from "./components/interface-builder/components/special/code-editor/code-editor"
-export { StringTemplate }
+export { StringTemplate, QueryBuilder }
 
 /**
  * Non-Framework Components

@@ -19,6 +19,7 @@ import {
   antComponents,
   DragDropContext,
   nivoComponents,
+  htmlComponents,
   registerMonacoEditorMount,
   registry,
 } from "@opg/interface-builder"
@@ -65,16 +66,27 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   React.useEffect(() => {
+    // Add events to Ant Components
     const wrappedAntComponents: ComponentRegistryCache = {}
     Object.keys(antComponents).forEach((key) => {
       wrappedAntComponents[key] = withEventManager((antComponents as ComponentRegistryCache)[key])
     })
     registry.register(wrappedAntComponents)
+
+    // Add events to Nivo Components
     const wrappedNivoComponents: ComponentRegistryCache = {}
     Object.keys(nivoComponents).forEach((key) => {
       wrappedNivoComponents[key] = withEventManager((nivoComponents as ComponentRegistryCache)[key])
     })
     registry.register(wrappedNivoComponents)
+
+    // Add events to Html Components
+    const wrappedHtmlComponents: ComponentRegistryCache = {}
+    Object.keys(nivoComponents).forEach((key) => {
+      wrappedHtmlComponents[key] = withEventManager((htmlComponents as ComponentRegistryCache)[key])
+    })
+    registry.register(wrappedHtmlComponents)
+
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
     registry.register({ "path-editor": PathEditorInterfaceComponent })

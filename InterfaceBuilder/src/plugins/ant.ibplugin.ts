@@ -15,11 +15,13 @@ import { EmptyInterfaceComponent } from "../components/interface-builder/compone
 import { FormInterfaceComponent } from "../components/interface-builder/components/form/FormInterfaceComponent"
 import { InputInterfaceComponent } from "../components/interface-builder/components/form/input/InputInterfaceComponent"
 import { RepeaterInterfaceComponent } from "../components/interface-builder/components/display/repeater/RepeaterInterfaceComponent"
+import { TextInterfaceComponent } from "../components/interface-builder/components/display/text/TextInterfaceComponent"
 import { ListInterfaceComponent } from "../components/interface-builder/components/display/list/ListInterfaceComponent"
 import { NumberInputInterfaceComponent } from "../components/interface-builder/components/form/number-input/NumberInputInterfaceComponent"
 import { NumberRangeInterfaceComponent } from "../components/interface-builder/components/form/number-range/NumberRangeInterfaceComponent"
 import { PasswordInterfaceComponent } from "../components/interface-builder/components/form/password/PasswordInterfaceComponent"
 import { ProgressInterfaceComponent } from "../components/interface-builder/components/display/progress/ProgressInterfaceComponent"
+import { QueryBuilderInterfaceComponent } from "../components/interface-builder/components/special/query-builder/QueryBuilderInterfaceComponent"
 import { RichTextEditorInterfaceComponent } from "../components/interface-builder/components/form/rich-text-editor/RichTextEditorInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "../components/interface-builder/components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
 import { SelectInterfaceComponent } from "../components/interface-builder/components/form/select/SelectInterfaceComponent"
@@ -58,12 +60,14 @@ export default {
   empty: EmptyInterfaceComponent,
   form: FormInterfaceComponent,
   input: InputInterfaceComponent,
+  text: TextInterfaceComponent,
   list: ListInterfaceComponent,
   repeater: RepeaterInterfaceComponent,
   "number-input": NumberInputInterfaceComponent,
   "number-range": NumberRangeInterfaceComponent,
   password: PasswordInterfaceComponent,
   progress: ProgressInterfaceComponent,
+  "query-builder": QueryBuilderInterfaceComponent,
   "rich-text-editor": RichTextEditorInterfaceComponent,
   "sectioned-navigation": SectionedNavigationInterfaceComponent,
   select: SelectInterfaceComponent,

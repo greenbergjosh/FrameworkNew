@@ -22,6 +22,7 @@ namespace Utility.GenericEntity
         IEnumerable<IGenericEntity> GetL(string path);
         IEnumerable<string> GetLS(string path, bool quoteStrings = false);
         IGenericEntity GetE(string path);
+        IEnumerable<IGenericEntity> GetEs(string path);
         IEnumerable<Tuple<string, string>> GetD(string path);
         IEnumerable<(string key, IGenericEntity entity)> GetDe(string path);
 

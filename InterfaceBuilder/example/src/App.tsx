@@ -1,7 +1,13 @@
 import React from "react"
 import { Breadcrumb, Layout } from "antd"
 import "antd/dist/antd.css"
-import { antComponents, nivoComponents, registry, DragDropContext } from "@opg/interface-builder"
+import {
+  antComponents,
+  nivoComponents,
+  htmlComponents,
+  registry,
+  DragDropContext,
+} from "@opg/interface-builder"
 import TopMenu from "./components/nav/top-menu"
 import SideMenu from "./components/nav/side-menu"
 import DndExample from "./components/examples/dnd"
@@ -11,6 +17,7 @@ import "@opg/interface-builder/dist/main.css"
 const { Header, Content, Sider } = Layout
 registry.register(antComponents)
 registry.register(nivoComponents)
+registry.register(htmlComponents)
 
 const App: React.FC = () => {
   return (
