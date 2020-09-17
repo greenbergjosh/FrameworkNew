@@ -1,22 +1,10 @@
-import { TSEnum as _TSEnum } from "./@types/ts-enum"
-import { JSONRecord as _JSONRecord } from "./components/interface-builder/@types/JSONTypes"
-import {
-  BaseInterfaceComponentProps as _BaseInterfaceComponentProps,
-  ComponentDefinition as _ComponentDefinition,
-  ComponentDefinitionNamedProps as _ComponentDefinitionNamedProps,
-  ComponentRenderMetaProps as _ComponentRenderMetaProps,
-} from "./components/interface-builder/components/base/BaseInterfaceComponent"
-import { FormInterfaceComponentProps as _FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
-import { UserInterfaceProps as _UserInterfaceProps } from "./components/interface-builder/UserInterface"
-import { UserInterfaceContextManager as _UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
-import { EnrichedColumnDefinition as _EnrichedColumnDefinition } from "./components/grid/types"
 import "./styles/index.scss"
 /**
- * Framework Components
+ * Framework Components (to extend in consuming projects)
  */
-import * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
-import * as StringTemplate from "./components/interface-builder/components/special/string-template"
-import * as QueryBuilder from "./components/interface-builder/components/special/query-builder"
+export * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
+export * as StringTemplate from "./components/interface-builder/components/special/string-template"
+export * as QueryBuilder from "./components/interface-builder/components/special/query-builder"
 
 /**
  * Framework
@@ -36,6 +24,24 @@ export { UserInterfaceContext } from "./components/interface-builder/UserInterfa
 export { EventBus, EventBusEventHandler } from "./services/event-bus"
 
 /**
+ * Types
+ */
+export {
+  BaseInterfaceComponentProps,
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  ComponentRenderMetaProps,
+} from "./components/interface-builder/components/base/BaseInterfaceComponent"
+export { ComponentRegistryCache } from "./components/interface-builder/registry"
+export { EnrichedColumnDefinition } from "./components/grid/types"
+export { FormInterfaceComponentProps } from "./components/interface-builder/components/form/FormInterfaceComponent"
+export { JSONRecord } from "./components/interface-builder/@types/JSONTypes"
+export { LayoutDefinition } from "./components/interface-builder/components/base/BaseInterfaceComponent"
+export { TSEnum } from "./@types/ts-enum"
+export { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
+export { UserInterfaceProps } from "./components/interface-builder/UserInterface"
+
+/**
  * Utility
  */
 export { cheapHash } from "./components/interface-builder/util/json"
@@ -46,7 +52,6 @@ export { sanitizeText } from "./components/interface-builder/lib/sanitize-text"
 export { shallowPropCheck } from "./components/interface-builder/dnd"
 export { getIconSelectConfig } from "./components/interface-builder/components/form/_shared/icon-select-form-config"
 
-export { utils }
 export {
   CodeEditor,
   editorLanguages,
@@ -56,25 +61,9 @@ export {
   EditorLang,
   EditorTheme,
 } from "./components/interface-builder/components/special/code-editor/code-editor"
-export { StringTemplate, QueryBuilder }
 
 /**
  * Non-Framework Components
  */
 export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
 export { StandardGrid } from "./components/grid/StandardGrid"
-
-/**
- * Re-exported Types
- * Because you can't export a type directly from another module
- */
-export type BaseInterfaceComponentProps = _BaseInterfaceComponentProps
-export type ComponentDefinition = _ComponentDefinition
-export type ComponentDefinitionNamedProps = _ComponentDefinitionNamedProps
-export type ComponentRenderMetaProps = _ComponentRenderMetaProps
-export type FormInterfaceComponentProps = _FormInterfaceComponentProps
-export type JSONRecord = _JSONRecord
-export type TSEnum<T extends string | undefined> = _TSEnum<T>
-export type UserInterfaceContextManager<T> = _UserInterfaceContextManager<T>
-export type UserInterfaceProps = _UserInterfaceProps
-export type EnrichedColumnDefinition = _EnrichedColumnDefinition
