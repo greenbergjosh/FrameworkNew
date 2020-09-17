@@ -66,6 +66,15 @@ export interface ComponentRenderMetaProps {
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps
 export type BaseInterfaceComponentType = typeof BaseInterfaceComponent
 
+/**
+ * BaseInterfaceComponent
+ *
+ * Events:
+ * @static availableEvents: string[] - Add event names to raise in the component to this array
+ * @method raiseEvent - Raise events by calling this method with an event name and a payload
+ *
+ * TODO: Create an eventManager HOC to provide an onRaiseEvent prop for all components
+ */
 export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentProps, Y = {}> extends React.Component<
   T,
   Y
