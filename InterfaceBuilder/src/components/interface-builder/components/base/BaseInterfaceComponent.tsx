@@ -3,6 +3,7 @@ import { merge, set } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
+import { EventPayloadType } from "services/event-bus"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -41,7 +42,7 @@ export interface ComponentDefinitionNamedProps {
 
   [key: string]: unknown
 
-  onRaiseEvent?: ((eventName: string, eventPayload: object) => void) | undefined
+  onRaiseEvent?: ((eventName: string, eventPayload: EventPayloadType) => void) | undefined
 }
 
 export interface ComponentDefinitionRecursiveProp {
@@ -113,7 +114,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
 
   static availableEvents: string[] = []
 
-  raiseEvent(eventName: string, eventPayload: object) {
+  raiseEvent(eventName: string, eventPayload: EventPayloadType) {
     console.log(`BaseInterfaceComponent Event raised: ${eventName}`, eventPayload)
     if (this.props.onRaiseEvent) {
       this.props.onRaiseEvent(eventName, eventPayload)

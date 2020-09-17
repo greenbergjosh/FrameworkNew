@@ -40,6 +40,7 @@ export { LayoutDefinition } from "./components/interface-builder/components/base
 export { TSEnum } from "./@types/ts-enum"
 export { UserInterfaceContextManager } from "./components/interface-builder/UserInterfaceContextManager"
 export { UserInterfaceProps } from "./components/interface-builder/UserInterface"
+export { EventPayloadType } from "./services/event-bus"
 
 /**
  * Utility

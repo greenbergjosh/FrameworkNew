@@ -1,4 +1,5 @@
-export type EventBusEventHandler = (eventName: string, eventPayload: any) => void
+export type EventPayloadType = object
+export type EventBusEventHandler = (eventName: string, eventPayload: EventPayloadType) => void
 
 export class EventBus {
   private static subscriptions: { [key: string]: Map<number, EventBusEventHandler> } = {}
@@ -26,7 +27,7 @@ export class EventBus {
     return false
   }
 
-  static raiseEvent(eventName: string, eventPayload: any) {
+  static raiseEvent(eventName: string, eventPayload: EventPayloadType): void {
     console.log(`EventBus: raising event ${eventName}`, eventPayload)
     const handlers = this.subscriptions[eventName]
     if (handlers) {
