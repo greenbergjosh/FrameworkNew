@@ -33,12 +33,12 @@ export function getNivoColorScheme(colorScheme: string): OrdinalColorsInstructio
 }
 
 function createSliceData({
-                           id,
-                           labelName,
-                           labelValue,
-                           value,
-                           data,
-                         }: {
+  id,
+  labelName,
+  labelValue,
+  value,
+  data,
+}: {
   id: string
   labelName: string
   labelValue: string
@@ -55,48 +55,51 @@ function createSliceData({
 }
 
 function getLabelValue({
-                         data,
-                         labelValueType,
-                         labelValueKey,
-                         labelValueFn,
-                         valueKey,
-                       }: {
+  data,
+  labelValueType,
+  labelValueKey,
+  labelValueFn,
+  valueKey,
+  props,
+}: {
   data: any
   labelValueType: SliceLabelValueType
   labelValueFn?: Function | ""
   labelValueKey: string
   valueKey: string
+  props: any
 }): string {
   switch (labelValueType) {
     case "default":
       return data[valueKey]
     case "function":
-      return labelValueFn ? tryCatch(() => labelValueFn(data)).getOrElse(data[valueKey]) : data[valueKey]
+      return labelValueFn ? tryCatch(() => labelValueFn(data, props)).getOrElse(data[valueKey]) : data[valueKey]
     case "key":
       return data[labelValueKey]
   }
-
 }
 
 function getSliceRawData({
-                           data,
-                           labelNameKey,
-                           labelValueType,
-                           labelValueKey,
-                           labelValueFn,
-                           valueKey,
-                         }: {
+  data,
+  labelNameKey,
+  labelValueType,
+  labelValueKey,
+  labelValueFn,
+  valueKey,
+  props,
+}: {
   data: any
   labelNameKey: string
   labelValueType: SliceLabelValueType
   labelValueFn?: Function | ""
   labelValueKey: string
   valueKey: string
+  props: any
 }) {
   const rawValue = toNumber(data[valueKey])
   const value = isNaN(rawValue) ? 0 : rawValue
   const labelName: string = data[labelNameKey]
-  const labelValue = getLabelValue({ data, labelValueType, labelValueKey, labelValueFn, valueKey })
+  const labelValue = getLabelValue({ data, labelValueType, labelValueKey, labelValueFn, valueKey, props })
   return { value, labelName, labelValue }
 }
 
@@ -111,18 +114,20 @@ function getSliceRawData({
  * @param dataIsPreSorted
  * @param threshold
  * @param otherAggregatorFunction
+ * @param props
  */
 export function convertToPieDatum({
-                                    data,
-                                    labelNameKey,
-                                    labelValueType,
-                                    labelValueKey,
-                                    labelValueFunction,
-                                    valueKey,
-                                    dataIsPreSorted,
-                                    threshold,
-                                    otherAggregatorFunction,
-                                  }: {
+  data,
+  labelNameKey,
+  labelValueType,
+  labelValueKey,
+  labelValueFunction,
+  valueKey,
+  dataIsPreSorted,
+  threshold,
+  otherAggregatorFunction,
+  props,
+}: {
   data: any[]
   labelNameKey: string
   labelValueType: SliceLabelValueType
@@ -132,6 +137,7 @@ export function convertToPieDatum({
   dataIsPreSorted: boolean
   threshold: number
   otherAggregatorFunction?: string
+  props: any
 }): PieDatumPlus[] {
   // Return if nothing to do
   if (isEmpty(data)) return emptyDataSet
@@ -141,10 +147,13 @@ export function convertToPieDatum({
 
   // Example function: d => `${Math.floor(Number.parseFloat(d.percentage) * 100)}%`
   const parsedLabelValueFunction =
-    labelValueType === "function" && labelValueFunction && tryCatch(() => new Function(`return ${labelValueFunction}`)()).toUndefined()
+    labelValueType === "function" &&
+    labelValueFunction &&
+    tryCatch(() => new Function(`return ${labelValueFunction}`)()).toUndefined()
 
   // Convert to PieDatum[]
-  const pieDatum = data.reduce((acc, d, index) => {
+  let index: number = 0
+  const pieDatum = data.reduce((acc, d) => {
     const { value, labelName, labelValue } = getSliceRawData({
       data: d,
       labelNameKey,
@@ -152,6 +161,7 @@ export function convertToPieDatum({
       labelValueKey,
       labelValueFn: parsedLabelValueFunction,
       valueKey,
+      props,
     })
     const sliceData = createSliceData({
       id: index.toString(),
@@ -165,7 +175,9 @@ export function convertToPieDatum({
       belowThreshold.push(sliceData)
     } else {
       acc.push(sliceData)
+      index++
     }
+
     return acc
   }, [])
 
@@ -176,7 +188,7 @@ export function convertToPieDatum({
   // Gather values below the threshold into an "Other" PieDatum
   if (threshold > 0 && belowThreshold.length > 0) {
     const defaultOtherSlice = createSliceData({
-      id: "",
+      id: (pieDatum.length + 1).toString(),
       labelName: "Others",
       labelValue: "Others",
       value: 0,
@@ -188,7 +200,8 @@ export function convertToPieDatum({
       return acc
     }, defaultOtherSlice)
 
-    const otherAggregator = otherAggregatorFunction && tryCatch(() => new Function(`return ${otherAggregatorFunction}`)()).toUndefined()
+    const otherAggregator =
+      otherAggregatorFunction && tryCatch(() => new Function(`return ${otherAggregatorFunction}`)()).toUndefined()
     if (otherAggregator) {
       aggregate.data = otherAggregator(belowThreshold)
     }
@@ -199,8 +212,9 @@ export function convertToPieDatum({
       labelValueKey,
       labelValueFn: parsedLabelValueFunction,
       valueKey,
+      props,
     })
-    aggregate.id = (pieDatum.length + 1).toString()
+
     pieDatum.push(aggregate)
   }
   return pieDatum

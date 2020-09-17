@@ -3,6 +3,7 @@ import { merge, set } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
+import { EventPayloadType } from "services/event-bus"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -38,7 +39,10 @@ export interface ComponentDefinitionNamedProps {
   hideLabel?: boolean
   label?: string
   visibilityConditions?: JSONObject
+
   [key: string]: unknown
+
+  onRaiseEvent?: ((eventName: string, eventPayload: EventPayloadType) => void) | undefined
 }
 
 export interface ComponentDefinitionRecursiveProp {
@@ -62,13 +66,26 @@ export interface ComponentRenderMetaProps {
 export type BaseInterfaceComponentProps = ComponentDefinition & ComponentRenderMetaProps
 export type BaseInterfaceComponentType = typeof BaseInterfaceComponent
 
+/**
+ * BaseInterfaceComponent
+ *
+ * Events:
+ * @static availableEvents: string[] - Add event names to raise in the component to this array
+ * @method raiseEvent - Raise events by calling this method with an event name and a payload
+ *
+ * TODO: Create an eventManager HOC to provide an onRaiseEvent prop for all components
+ */
 export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentProps, Y = {}> extends React.Component<
   T,
   Y
 > {
   static getLayoutDefinition(): LayoutDefinition {
-    return { name: "__Undefined", title: "__Undefined" } as LayoutDefinition
+    return {
+      name: "__Undefined",
+      title: "__Undefined",
+    } as LayoutDefinition
   }
+
   static getDefinitionDefaultValue(
     componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
   ): { [key: string]: any } {
@@ -95,6 +112,22 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
       return this.props.defaultValue
     }
     return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
+  }
+
+  anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
+    return propsToCheck.some(
+      (prop) =>
+        this.props[prop] !== prevProps[prop] || (this.props[prop] !== undefined && prevProps[prop] === undefined)
+    )
+  }
+
+  static availableEvents: string[] = []
+
+  raiseEvent(eventName: string, eventPayload: EventPayloadType) {
+    console.log(`BaseInterfaceComponent Event raised: ${eventName}`, eventPayload)
+    if (this.props.onRaiseEvent) {
+      this.props.onRaiseEvent(eventName, eventPayload)
+    }
   }
 }
 

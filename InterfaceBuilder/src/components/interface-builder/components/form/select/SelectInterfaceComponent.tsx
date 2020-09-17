@@ -17,6 +17,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     super(props)
   }
 
+  static availableEvents = ["valueChanged"]
+
   static defaultProps = {
     allowClear: true,
     createNewLabel: "Create New...",
@@ -59,6 +61,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
         : value
 
     onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+
+    this.raiseEvent("changed", { value: newValue })
   }
 
   private filterOption = (input: any, option: any) => {

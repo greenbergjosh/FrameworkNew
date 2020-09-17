@@ -1,8 +1,8 @@
 import React from "react"
 import { set } from "lodash/fp"
 import { Icon, Select } from "antd"
-import { BaseInterfaceComponent } from "@opg/interface-builder"
-import { MODES, SelectableChildProps, SelectableProps } from "../_shared/selectable/types"
+import { BaseInterfaceComponent, LayoutDefinition } from "@opg/interface-builder"
+import { MODES, ModeType, SelectableChildProps, SelectableProps } from "../_shared/selectable/types"
 import { Selectable } from "../_shared/selectable/Selectable"
 import { selectManageForm } from "./select-manage-form"
 import { ISelectProps, SelectProps, SelectState } from "./types"
@@ -12,10 +12,6 @@ import { ISelectProps, SelectProps, SelectState } from "./types"
  */
 
 export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
-  constructor(props: SelectProps) {
-    super(props)
-  }
-
   static defaultProps = {
     allowClear: true,
     createNewLabel: "Create New...",
@@ -29,7 +25,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
 
   static manageForm = selectManageForm
 
-  static getLayoutDefinition() {
+  static getLayoutDefinition(): LayoutDefinition {
     return {
       category: "Form",
       name: "select",
@@ -43,11 +39,13 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     }
   }
 
-  protected get mode() {
+  protected get mode(): ModeType {
     return this.props.multiple ? MODES.multiple : MODES.default
   }
 
-  handleChange = (value: string | string[]) => {
+  static availableEvents = ["valueChanged"]
+
+  handleChange = (value: string | string[]): void => {
     const { onChangeData, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
 
     const newValue =
@@ -58,6 +56,8 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
         : value
 
     onChangeData && onChangeData(set(valueKey, newValue, userInterfaceData))
+
+    this.raiseEvent("valueChanged", { value: newValue })
   }
 
   private filterOption = (input: any, option: any) => {
@@ -69,9 +69,7 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
       return true
     } else if (Array.isArray(option.props.children)) {
       return !!option.props.children.find((item: any) => {
-        if (item && typeof item.toLowerCase === "function" && item.toLowerCase().indexOf(input.toLowerCase()) >= 0) {
-          return true
-        }
+        return item && typeof item.toLowerCase === "function" && item.toLowerCase().indexOf(input.toLowerCase()) >= 0
       })
     }
     return false
@@ -87,12 +85,11 @@ export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps
     createNewLabel,
     disabled,
     getCleanValue,
-    loadError,
     loadStatus,
     options,
     handleFocus,
   }: SelectableChildProps) => {
-    const { placeholder, allowClear, multiple, size } = this.props as ISelectProps
+    const { placeholder, allowClear, size } = this.props as ISelectProps
 
     const getKeyFromValue = () => {
       const value = getCleanValue()

@@ -17,6 +17,7 @@ import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
 import {
   antComponents,
+  ComponentRegistryCache,
   DragDropContext,
   nivoComponents,
   htmlComponents,
@@ -32,6 +33,7 @@ import { getCustomEditorConstructionOptions } from "./components/custom-ib-compo
 import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
+import { withEventManager } from "./components/event-manager/event-manager"
 
 const persistor = getPersistor()
 
@@ -53,6 +55,18 @@ function AppLoadingScreen({ title }: AppLoadingScreenProps) {
   )
 }
 
+/**
+ * Wrap InterfaceBuilder components with the EventManager
+ * @param ibComponentLib - An assoc array of InterfaceBuilder components
+ */
+function wrapLibWithEventManager(ibComponentLib: any) {
+  const wrappedComponents: ComponentRegistryCache = {}
+  Object.keys(ibComponentLib).forEach((key) => {
+    wrappedComponents[key] = withEventManager((ibComponentLib as ComponentRegistryCache)[key])
+  })
+  return wrappedComponents
+}
+
 export function App(): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     profile: appState.iam.profile,
@@ -64,16 +78,16 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   React.useEffect(() => {
-    registry.register(antComponents)
-    registry.register(nivoComponents)
-    registry.register(htmlComponents)
+    registry.register(wrapLibWithEventManager(antComponents))
+    registry.register(wrapLibWithEventManager(nivoComponents))
+    registry.register(wrapLibWithEventManager(htmlComponents))
     registry.register({ query: QueryInterfaceComponent })
-    registry.register({ execute: ExecuteInterfaceComponent })
+    registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
     registry.register({ "slot-config": SlotConfigInterfaceComponent })
     registry.register({ "string-template": StringTemplateInterfaceComponent })
-    registry.register({ select: SelectInterfaceComponent })
+    registry.register({ select: withEventManager(SelectInterfaceComponent) })
     registry.register({ tags: TagsInterfaceComponent })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
   }, [])
