@@ -9,6 +9,7 @@ import {
   EventBusEventHandler,
   UserInterfaceContext,
   utils,
+  EventPayloadType,
 } from "@opg/interface-builder"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { loadRemoteLBM } from "../custom-ib-components/_shared/LBM/loadRemoteLBM"
@@ -39,14 +40,14 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
   type EventMapper = (
     props: T,
     eventName: string,
-    eventPayload: any,
+    eventPayload: EventPayloadType,
     parameters: { [key: string]: string }
-  ) => { mappedEventName: string; mappedEventPayload: any }
+  ) => { mappedEventName: string; mappedEventPayload: EventPayloadType }
 
   type EventHandler = (
     props: T,
     eventName: string,
-    eventPayload: any,
+    eventPayload: EventPayloadType,
     eventParameters: { [key: string]: string }
   ) => Record<string, any>
 
@@ -94,13 +95,13 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       })
     }
 
-    private onRaiseEvent(eventName: string, eventPayload: any): void {
+    private onRaiseEvent(eventName: string, eventPayload: EventPayloadType): void {
       if (!this.props.outgoingEventMap) {
         return
       }
       console.log(`EventManager: Component raised event ${eventName}`, eventPayload)
       const eventMapItem: EventMapItem = this.props.outgoingEventMap[eventName]
-      let mappedEventName: string, mappedEventPayload: any
+      let mappedEventName: string, mappedEventPayload: EventPayloadType
       if (eventMapItem.type === "none") {
         return
       } else if (eventMapItem.type === "simple") {
@@ -142,7 +143,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       eventHandler: EventHandler,
       eventHandlerParameters: { [key: string]: string }
     ): EventBusEventHandler {
-      return (eventName: string, eventPayload: any) => {
+      return (eventName: string, eventPayload: EventPayloadType) => {
         console.log(`EventManager: Handling event ${eventName}`, eventPayload)
         const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
         const mutatedProps = eventHandler(passThroughProps as T, eventName, eventPayload, eventHandlerParameters)
@@ -156,7 +157,9 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       return (
         <WrappedComponent
           {...mergedProps}
-          onRaiseEvent={(eventName: string, eventPayload: any) => this.onRaiseEvent(eventName, eventPayload)}
+          onRaiseEvent={(eventName: string, eventPayload: EventPayloadType) =>
+            this.onRaiseEvent(eventName, eventPayload)
+          }
         />
       )
     }
