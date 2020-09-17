@@ -3,7 +3,6 @@ import { merge, set } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
-import { PieInterfaceComponentProps } from "components/interface-builder/components/chart/pie/types"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -105,7 +104,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
     return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
   }
 
-  anyPropsChanged(prevProps: Readonly<PieInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
+  anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
     return propsToCheck.some(
       (prop) =>
         this.props[prop] !== prevProps[prop] || (this.props[prop] !== undefined && prevProps[prop] === undefined)
