@@ -30,8 +30,9 @@ export interface KeyValuePairConfig {
 export type LocalDataHandlerType = "local"
 export type RemoteDataHandlerType = "remote-config" | "remote-kvp" | "remote-query" | "remote-url" | "remote-function"
 export type LoadStatusType = "none" | "loading" | "loaded" | "error"
+export type ModeType = TSEnum<AntdSelectProps["mode"]>
 
-export const MODES: TSEnum<AntdSelectProps["mode"]> = {
+export const MODES: ModeType = {
   default: "default",
   multiple: "multiple",
   tags: "tags",

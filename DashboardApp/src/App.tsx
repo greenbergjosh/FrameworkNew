@@ -17,6 +17,7 @@ import { RouteMeta } from "./state/navigation"
 import { store } from "./state/store"
 import {
   antComponents,
+  ComponentRegistryCache,
   DragDropContext,
   nivoComponents,
   htmlComponents,
@@ -33,7 +34,6 @@ import { SelectInterfaceComponent } from "./components/custom-ib-components/sele
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
 import { withEventManager } from "./components/event-manager/event-manager"
-import { ComponentRegistryCache } from "@opg/interface-builder/dist/components/interface-builder/registry"
 
 const persistor = getPersistor()
 
@@ -55,6 +55,18 @@ function AppLoadingScreen({ title }: AppLoadingScreenProps) {
   )
 }
 
+/**
+ * Wrap InterfaceBuilder components with the EventManager
+ * @param ibComponentLib - An assoc array of InterfaceBuilder components
+ */
+function wrapLibWithEventManager(ibComponentLib: any) {
+  const wrappedComponents: ComponentRegistryCache = {}
+  Object.keys(ibComponentLib).forEach((key) => {
+    wrappedComponents[key] = withEventManager((ibComponentLib as ComponentRegistryCache)[key])
+  })
+  return wrappedComponents
+}
+
 export function App(): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     profile: appState.iam.profile,
@@ -66,27 +78,9 @@ export function App(): JSX.Element {
   }, [dispatch.iam])
 
   React.useEffect(() => {
-    // Add events to Ant Components
-    const wrappedAntComponents: ComponentRegistryCache = {}
-    Object.keys(antComponents).forEach((key) => {
-      wrappedAntComponents[key] = withEventManager((antComponents as ComponentRegistryCache)[key])
-    })
-    registry.register(wrappedAntComponents)
-
-    // Add events to Nivo Components
-    const wrappedNivoComponents: ComponentRegistryCache = {}
-    Object.keys(nivoComponents).forEach((key) => {
-      wrappedNivoComponents[key] = withEventManager((nivoComponents as ComponentRegistryCache)[key])
-    })
-    registry.register(wrappedNivoComponents)
-
-    // Add events to Html Components
-    const wrappedHtmlComponents: ComponentRegistryCache = {}
-    Object.keys(nivoComponents).forEach((key) => {
-      wrappedHtmlComponents[key] = withEventManager((htmlComponents as ComponentRegistryCache)[key])
-    })
-    registry.register(wrappedHtmlComponents)
-
+    registry.register(wrapLibWithEventManager(antComponents))
+    registry.register(wrapLibWithEventManager(nivoComponents))
+    registry.register(wrapLibWithEventManager(htmlComponents))
     registry.register({ query: QueryInterfaceComponent })
     registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
     registry.register({ "path-editor": PathEditorInterfaceComponent })

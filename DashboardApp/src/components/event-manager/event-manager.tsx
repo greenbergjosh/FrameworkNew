@@ -3,12 +3,12 @@ import hoistNonReactStatic from "hoist-non-react-statics"
 import {
   BaseInterfaceComponent,
   BaseInterfaceComponentProps,
+  baseManageForm,
   ComponentDefinition,
   EventBus,
   EventBusEventHandler,
-  utils,
-  baseManageForm,
   UserInterfaceContext,
+  utils,
 } from "@opg/interface-builder"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { loadRemoteLBM } from "../custom-ib-components/_shared/LBM/loadRemoteLBM"
@@ -24,15 +24,15 @@ type EventMapItem = {
 }
 
 type OutgoingEventMap = { [key: string]: EventMapItem }
-type IncomingEventHandlers = {
+type IncomingEventHandler = {
   eventName: string
   handlerFunctionId: PersistedConfig["id"]
   handlerFunctionParameters: { [key: string]: string }
-}[]
+}
 
 class EventManagerProps {
   outgoingEventMap: OutgoingEventMap = {}
-  incomingEventHandlers: IncomingEventHandlers = []
+  incomingEventHandlers: IncomingEventHandler[] = []
 }
 
 export function withEventManager<T extends BaseInterfaceComponentProps, Y>(WrappedComponent: any) {
@@ -68,7 +68,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
     componentDidMount() {
       const { loadById } = this.context as AdminUserInterfaceContextManager
       this.props.incomingEventHandlers &&
-        this.props.incomingEventHandlers.forEach((eventInfo) => {
+        this.props.incomingEventHandlers.forEach((eventInfo: IncomingEventHandler) => {
           if (!eventInfo.handlerFunctionId) {
             console.warn(`No handlerFunctionId for event ${eventInfo.eventName} for component ${this.displayName}`)
             return
@@ -131,7 +131,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
             lbmMappedEventPayload
           )
         } else {
-          throw "Could not load mapper LBM"
+          throw new Error("Could not load mapper LBM")
         }
       }
       console.log("EventManager: calling EventBus")
