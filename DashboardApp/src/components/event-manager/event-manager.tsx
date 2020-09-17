@@ -36,6 +36,16 @@ class EventManagerProps {
   incomingEventHandlers: IncomingEventHandler[] = []
 }
 
+/**
+ * EXAMPLE USAGE:
+ * You can apply this hook when registering InterfaceBuilder components like so...
+ * registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
+ *
+ * NOTE: We tried to define WrappedComponent parameter type and the return type. But both
+ * proved to be beyond our technical abilities. So, we set WrappedComponent to any and
+ * don't define the return type.
+ * @param WrappedComponent
+ */
 export function withEventManager<T extends BaseInterfaceComponentProps, Y>(WrappedComponent: any) {
   type EventMapper = (
     props: T,
