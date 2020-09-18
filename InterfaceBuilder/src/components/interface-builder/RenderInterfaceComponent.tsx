@@ -26,7 +26,8 @@ interface RenderInterfaceComponentState {
 
 enum VISIBILITY_MODES {
   normal,
-  hidden,
+  disabled,
+  blocked,
   invisible,
 }
 
@@ -56,22 +57,21 @@ export class RenderInterfaceComponent extends React.Component<
     } = this.props
     const { error } = this.state
 
-    const shouldBeHidden =
-      componentDefinition.hidden ||
-      (componentDefinition.visibilityConditions &&
-        !tryCatch(() => jsonLogic.apply(componentDefinition.visibilityConditions, data)).foldL(
-          () => {
-            console.warn(
-              "Error occurred while processing the visibility conditions in component definition. Component will render as visible.",
-              componentDefinition,
-              componentDefinition.visibilityConditions
-            )
-            return true
-          },
-          (logicResult) => logicResult
-        ))
+    const disabledViaJsonLogicVisibilityConditions =
+      componentDefinition.visibilityConditions &&
+      !tryCatch(() => jsonLogic.apply(componentDefinition.visibilityConditions, data)).foldL(
+        () => {
+          console.warn(
+            "Error occurred while processing the visibility conditions in component definition. Component will render as visible.",
+            componentDefinition,
+            componentDefinition.visibilityConditions
+          )
+          return true
+        },
+        (logicResult) => logicResult
+      )
 
-    if (shouldBeHidden && mode !== "edit") {
+    if ((componentDefinition.hidden || disabledViaJsonLogicVisibilityConditions) && mode !== "edit") {
       return null
     }
 
@@ -153,7 +153,7 @@ export class RenderInterfaceComponent extends React.Component<
     function getInvisibleComponent(visibilityMode: VISIBILITY_MODES, componentTitle?: string) {
       let color, backgroundColor, border, modeTitle
       switch (visibilityMode) {
-        case VISIBILITY_MODES.hidden:
+        case VISIBILITY_MODES.disabled:
           color = "#C70039" // Red
           backgroundColor = "rgba(199, 0, 57, .03)"
           border = " 1px dashed rgba(199, 0, 57, .4)"
@@ -164,6 +164,12 @@ export class RenderInterfaceComponent extends React.Component<
           backgroundColor = "rgba(0, 178, 255, .05)"
           border = " 1px dashed rgba(0, 178, 255, .5)"
           modeTitle = "Invisible"
+          break
+        case VISIBILITY_MODES.blocked:
+          color = "#b6b6b6" // Grey
+          backgroundColor = "rgba(182, 182, 182, .05)"
+          border = " 1px dashed rgba(182, 182, 182, .5)"
+          modeTitle = "Blocked by Visibility Conditions"
           break
       }
       return mode === "edit" ? (
@@ -189,8 +195,11 @@ export class RenderInterfaceComponent extends React.Component<
       if (componentDefinition.invisible) {
         return getInvisibleComponent(VISIBILITY_MODES.invisible, componentTitle)
       }
-      if (shouldBeHidden) {
-        return getInvisibleComponent(VISIBILITY_MODES.hidden, componentTitle)
+      if (componentDefinition.hidden) {
+        return getInvisibleComponent(VISIBILITY_MODES.disabled, componentTitle)
+      }
+      if (disabledViaJsonLogicVisibilityConditions) {
+        return getInvisibleComponent(VISIBILITY_MODES.blocked, componentTitle)
       }
       return wrapper
     }
