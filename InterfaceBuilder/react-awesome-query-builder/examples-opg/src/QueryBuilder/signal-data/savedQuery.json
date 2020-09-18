@@ -1,0 +1,428 @@
+{
+  "type": "group",
+  "id": "aa8a8899-89ab-4cde-b012-31744af54595",
+  "children1": {
+    "8bbba98a-4567-489a-bcde-f1744aee7ee1": {
+      "type": "group",
+      "children1": {
+        "898aba8a-cdef-4012-b456-71744aee7ec3": {
+          "type": "rule",
+          "properties": {
+            "field": "Gender",
+            "operator": "select_equals",
+            "value": [
+              "Male"
+            ],
+            "valueSrc": [
+              "value"
+            ],
+            "valueType": [
+              "select"
+            ]
+          }
+        },
+        "9aaa898a-89ab-4cde-b012-31744aee7ec4": {
+          "type": "rule",
+          "properties": {
+            "field": "Zip",
+            "operator": "select_equals",
+            "value": [
+              "33444"
+            ],
+            "valueSrc": [
+              "value"
+            ],
+            "valueType": [
+              "select"
+            ]
+          }
+        }
+      },
+      "properties": {
+        "conjunction": "AND",
+        "not": false
+      }
+    },
+    "9a8babb9-cdef-4012-b456-71744aee7f1f": {
+      "type": "group",
+      "children1": {
+        "889bab88-0123-4456-b89a-b1744aee7ee2": {
+          "type": "rule",
+          "properties": {
+            "field": "Gender",
+            "operator": "select_equals",
+            "value": [
+              "Female"
+            ],
+            "valueSrc": [
+              "value"
+            ],
+            "valueType": [
+              "select"
+            ]
+          }
+        },
+        "b88a8b89-cdef-4012-b456-71744aee7ee2": {
+          "type": "rule",
+          "properties": {
+            "field": "Zip",
+            "operator": "select_equals",
+            "value": [
+              "33442"
+            ],
+            "valueSrc": [
+              "value"
+            ],
+            "valueType": [
+              "select"
+            ]
+          }
+        },
+        "8889a899-0123-4456-b89a-b1744aee7f00": {
+          "type": "group",
+          "children1": {
+            "9a888b8b-89ab-4cde-b012-31744aee7ee2": {
+              "type": "rule",
+              "properties": {
+                "field": "EyeColor",
+                "operator": "select_equals",
+                "value": [
+                  "Blue"
+                ],
+                "valueSrc": [
+                  "value"
+                ],
+                "valueType": [
+                  "select"
+                ]
+              }
+            },
+            "bbbaaab9-4567-489a-bcde-f1744aee7ee3": {
+              "type": "rule",
+              "properties": {
+                "field": "HairColor",
+                "operator": "select_equals",
+                "value": [
+                  "Blond"
+                ],
+                "valueSrc": [
+                  "value"
+                ],
+                "valueType": [
+                  "select"
+                ]
+              }
+            }
+          },
+          "properties": {
+            "conjunction": "OR",
+            "not": false
+          }
+        }
+      },
+      "properties": {
+        "conjunction": "AND",
+        "not": true
+      }
+    },
+    "99aaba88-cdef-4012-b456-71744af5458b": {
+      "type": "filter",
+      "children1": {
+        "898b9aa9-0123-4456-b89a-b1744aee7fa1": {
+          "type": "group",
+          "children1": {
+            "9b9a89ab-4567-489a-bcde-f1744af55e7d": {
+              "type": "rule",
+              "properties": {
+                "field": "PeopleN.Gender",
+                "operator": "select_equals",
+                "value": [
+                  "Male"
+                ],
+                "valueSrc": [
+                  "value"
+                ],
+                "valueType": [
+                  "select"
+                ]
+              }
+            },
+            "8ab8aa9a-0123-4456-b89a-b1744af57a01": {
+              "type": "rule",
+              "properties": {
+                "field": "PeopleN.Zip",
+                "operator": "select_equals",
+                "value": [
+                  "33444"
+                ],
+                "valueSrc": [
+                  "value"
+                ],
+                "valueType": [
+                  "select"
+                ]
+              }
+            },
+            "8b9b9a8a-4567-489a-bcde-f1744aee7f81": {
+              "type": "group",
+              "children1": {
+                "aa8889ab-cdef-4012-b456-71744af5e1c0": {
+                  "type": "rule",
+                  "properties": {
+                    "field": "PeopleN.Gender",
+                    "operator": "select_equals",
+                    "value": [
+                      "Female"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "select"
+                    ]
+                  }
+                },
+                "bbabb98a-89ab-4cde-b012-31744af6047b": {
+                  "type": "rule",
+                  "properties": {
+                    "field": "PeopleN.Zip",
+                    "operator": "select_equals",
+                    "value": [
+                      "33442"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "select"
+                    ]
+                  }
+                },
+                "88ab9bb8-4567-489a-bcde-f1744af6687c": {
+                  "type": "group",
+                  "properties": {
+                    "conjunction": "AND"
+                  },
+                  "children1": {
+                    "8a9b9b8b-0123-4456-b89a-b1744af6687d": {
+                      "type": "rule",
+                      "properties": {
+                        "field": "PeopleN.EyeColor",
+                        "operator": "select_equals",
+                        "value": [
+                          "Blue"
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "select"
+                        ]
+                      }
+                    },
+                    "8898ab98-cdef-4012-b456-71744af6ae25": {
+                      "type": "rule",
+                      "properties": {
+                        "field": "PeopleN.HairColor",
+                        "operator": "select_equals",
+                        "value": [
+                          "Blond"
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "select"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "bb9bb99a-89ab-4cde-b012-31744aee7f81": {
+                  "type": "rule_group",
+                  "children1": {},
+                  "properties": {
+                    "conjunction": "AND",
+                    "not": false,
+                    "field": "PeopleN"
+                  }
+                }
+              },
+              "properties": {
+                "conjunction": "AND",
+                "not": true
+              }
+            }
+          },
+          "properties": {
+            "conjunction": "OR",
+            "not": false
+          }
+        }
+      },
+      "properties": {
+        "conjunction": "FILTER",
+        "not": false,
+        "filterFieldName": "PeopleN"
+      }
+    },
+    "89a988b9-cdef-4012-b456-71744af54595": {
+      "type": "filter",
+      "children1": {
+        "889a8b88-0123-4456-b89a-b1744af54595": {
+          "type": "group",
+          "children1": {
+            "b89aa989-0123-4456-b89a-b1744af54591": {
+              "type": "rule_group",
+              "children1": {
+                "8b88a899-89ab-4cde-b012-31744af5458f": {
+                  "type": "rule",
+                  "properties": {
+                    "field": "PeopleN.Gender",
+                    "operator": "select_equals",
+                    "value": [
+                      "Male"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "select"
+                    ]
+                  }
+                },
+                "8b9b8b99-4567-489a-bcde-f1744af54591": {
+                  "type": "rule",
+                  "properties": {
+                    "field": "PeopleN.Zip",
+                    "operator": "select_equals",
+                    "value": [
+                      "33448"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "select"
+                    ]
+                  }
+                }
+              },
+              "properties": {
+                "conjunction": "AND",
+                "not": false,
+                "field": "PeopleN"
+              }
+            },
+            "9ba99ba9-4567-489a-bcde-f1744af54595": {
+              "type": "group",
+              "children1": {
+                "8b898a8a-89ab-4cde-b012-31744af54595": {
+                  "type": "rule_group",
+                  "children1": {
+                    "a89989ab-cdef-4012-b456-71744af54592": {
+                      "type": "rule",
+                      "properties": {
+                        "field": "PeopleN.Gender",
+                        "operator": "select_equals",
+                        "value": [
+                          "Female"
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "select"
+                        ]
+                      }
+                    },
+                    "98a899a8-89ab-4cde-b012-31744af54593": {
+                      "type": "rule",
+                      "properties": {
+                        "field": "PeopleN.Zip",
+                        "operator": "select_equals",
+                        "value": [
+                          "33449"
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "select"
+                        ]
+                      }
+                    },
+                    "89a8ba8b-cdef-4012-b456-71744af54594": {
+                      "type": "rule_group",
+                      "children1": {
+                        "b9ba8b88-4567-489a-bcde-f1744af54593": {
+                          "type": "rule",
+                          "properties": {
+                            "field": "PeopleN.EyeColor",
+                            "operator": "select_equals",
+                            "value": [
+                              "Blue"
+                            ],
+                            "valueSrc": [
+                              "value"
+                            ],
+                            "valueType": [
+                              "select"
+                            ]
+                          }
+                        },
+                        "a9aaa8aa-0123-4456-b89a-b1744af54593": {
+                          "type": "rule",
+                          "properties": {
+                            "field": "PeopleN.HairColor",
+                            "operator": "select_equals",
+                            "value": [
+                              "Blond"
+                            ],
+                            "valueSrc": [
+                              "value"
+                            ],
+                            "valueType": [
+                              "select"
+                            ]
+                          }
+                        }
+                      },
+                      "properties": {
+                        "conjunction": "OR",
+                        "not": false,
+                        "field": "PeopleN"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "conjunction": "AND",
+                    "not": false,
+                    "field": "PeopleN"
+                  }
+                }
+              },
+              "properties": {
+                "conjunction": "AND",
+                "not": true
+              }
+            }
+          },
+          "properties": {
+            "conjunction": "OR",
+            "not": false
+          }
+        }
+      },
+      "properties": {
+        "conjunction": "FILTER",
+        "not": false,
+        "filterFieldName": "PeopleN"
+      }
+    }
+  },
+  "properties": {
+    "conjunction": "OR",
+    "not": false
+  }
+}
