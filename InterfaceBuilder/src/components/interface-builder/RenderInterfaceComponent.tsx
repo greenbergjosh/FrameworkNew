@@ -151,25 +151,28 @@ export class RenderInterfaceComponent extends React.Component<
       )
 
     function getInvisibleComponent(visibilityMode: VISIBILITY_MODES, componentTitle?: string) {
-      let color, backgroundColor, border, modeTitle
+      let color, backgroundColor, border, modeTitle = "Untitled", blockEvents = false
       switch (visibilityMode) {
         case VISIBILITY_MODES.disabled:
           color = "#C70039" // Red
           backgroundColor = "rgba(199, 0, 57, .03)"
           border = " 1px dashed rgba(199, 0, 57, .4)"
           modeTitle = "Disabled"
+          blockEvents = true
           break
         case VISIBILITY_MODES.invisible:
           color = "#00B2FF" // Blue
           backgroundColor = "rgba(0, 178, 255, .05)"
           border = " 1px dashed rgba(0, 178, 255, .5)"
           modeTitle = "Invisible"
+          blockEvents = false
           break
         case VISIBILITY_MODES.blocked:
           color = "#b6b6b6" // Grey
           backgroundColor = "rgba(182, 182, 182, .05)"
           border = " 1px dashed rgba(182, 182, 182, .5)"
           modeTitle = "Blocked by Visibility Conditions"
+          blockEvents = false
           break
       }
       return mode === "edit" ? (
@@ -184,7 +187,7 @@ export class RenderInterfaceComponent extends React.Component<
           <legend style={{ all: "unset", color, padding: 5 }}>
             {modeTitle} <small>({componentTitle})</small>
           </legend>
-          <div style={{ opacity: 0.5, pointerEvents: "none" }}>{wrapper}</div>
+          <div style={{ opacity: 0.5, pointerEvents: blockEvents ? "none" : "inherit" }}>{wrapper}</div>
         </fieldset>
       ) : (
         <div style={{ display: "none" }}>{wrapper}</div>
