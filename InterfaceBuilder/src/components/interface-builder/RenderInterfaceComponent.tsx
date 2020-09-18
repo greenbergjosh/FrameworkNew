@@ -24,6 +24,12 @@ interface RenderInterfaceComponentState {
   error: null | string
 }
 
+enum VISIBILITY_MODES {
+  normal,
+  hidden,
+  invisible,
+}
+
 export class RenderInterfaceComponent extends React.Component<
   RenderInterfaceComponentProps,
   RenderInterfaceComponentState
@@ -65,7 +71,7 @@ export class RenderInterfaceComponent extends React.Component<
           (logicResult) => logicResult
         ))
 
-    if (shouldBeHidden) {
+    if (shouldBeHidden && mode !== "edit") {
       return null
     }
 
@@ -144,25 +150,49 @@ export class RenderInterfaceComponent extends React.Component<
         content
       )
 
-    function getInvisibleComponent() {
+    function getInvisibleComponent(visibilityMode: VISIBILITY_MODES, componentTitle?: string) {
+      let color, backgroundColor, border, modeTitle
+      switch (visibilityMode) {
+        case VISIBILITY_MODES.hidden:
+          color = "#C70039" // Red
+          backgroundColor = "rgba(199, 0, 57, .03)"
+          border = " 1px dashed rgba(199, 0, 57, .4)"
+          modeTitle = "Disabled"
+          break
+        case VISIBILITY_MODES.invisible:
+          color = "#00B2FF" // Blue
+          backgroundColor = "rgba(0, 178, 255, .05)"
+          border = " 1px dashed rgba(0, 178, 255, .5)"
+          modeTitle = "Invisible"
+          break
+      }
       return mode === "edit" ? (
         <fieldset
           style={{
             padding: 10,
-            border: " 1px dashed lightgrey",
-            backgroundColor: "rgba(0,0,0,.02)",
+            border,
+            backgroundColor,
             borderRadius: 5,
+            position: "relative",
           }}>
-          <legend style={{ all: "unset", color: "grey", padding: 5 }}>Invisible</legend>
-          {wrapper}
+          <legend style={{ all: "unset", color, padding: 5 }}>
+            {modeTitle} <small>({componentTitle})</small>
+          </legend>
+          <div style={{ opacity: 0.5, pointerEvents: "none" }}>{wrapper}</div>
         </fieldset>
       ) : (
         <div style={{ display: "none" }}>{wrapper}</div>
       )
     }
 
-    function getVisibilityToggledComponent() {
-      return componentDefinition.invisible ? getInvisibleComponent() : wrapper
+    function getVisibilityToggledComponent(componentTitle?: string) {
+      if (componentDefinition.invisible) {
+        return getInvisibleComponent(VISIBILITY_MODES.invisible, componentTitle)
+      }
+      if (shouldBeHidden) {
+        return getInvisibleComponent(VISIBILITY_MODES.hidden, componentTitle)
+      }
+      return wrapper
     }
 
     return mode === "edit" && !dragDropDisabled ? (
@@ -174,7 +204,7 @@ export class RenderInterfaceComponent extends React.Component<
         title={layoutDefintion && layoutDefintion.title}
         type="INTERFACE_COMPONENT">
         {({ isDragging }) => {
-          return getVisibilityToggledComponent()
+          return getVisibilityToggledComponent(layoutDefintion && layoutDefintion.title)
         }}
       </Draggable>
     ) : (

@@ -93,7 +93,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 valueKey: "hidden",
                 ordinal: 10,
                 component: "toggle",
-                label: "Do not render",
+                label: "Disable",
                 help: "Do not render and block behavior.",
                 defaultValue: false,
               },

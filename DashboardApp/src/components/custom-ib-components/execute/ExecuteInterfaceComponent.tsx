@@ -14,6 +14,7 @@ import { QueryParams } from "../../query/QueryParams"
 import * as record from "fp-ts/lib/Record"
 import { Option, some } from "fp-ts/lib/Option"
 import { HTTPRequestQueryConfig, QueryConfig } from "../../../data/Report"
+import { Empty } from "antd"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -67,11 +68,15 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
    * EVENT HANDLERS
    */
 
+  componentDidMount(): void {
+    this.putQueryConfigIntoState()
+  }
+
   /**
    * Put the query config from Persisted Global Configs into state
    * Originally from Query.tsx
    */
-  componentDidMount(): void {
+  private putQueryConfigIntoState() {
     const { queryType, remoteQuery, remoteUrl, remoteConfigType } = this.props
 
     if (!this.context) {
@@ -114,6 +119,19 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     if (this.autoExecuteTimer) {
       clearInterval(this.autoExecuteTimer)
       this.autoExecuteTimer = null
+    }
+  }
+
+  componentDidUpdate(prevProps: Readonly<ExecuteInterfaceComponentProps>): void {
+    /*
+     * Update queryConfig if any relevant config props have change */
+    if (
+      prevProps.queryType !== this.props.queryType ||
+      prevProps.remoteQuery !== this.props.remoteQuery ||
+      prevProps.remoteConfigType !== this.props.remoteConfigType ||
+      prevProps.remoteUrl !== this.props.remoteUrl
+    ) {
+      this.putQueryConfigIntoState()
     }
   }
 
@@ -215,7 +233,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     const { buttonLabel, buttonProps, userInterfaceData } = this.props
     const { queryConfig, submittingQueryForm } = this.state
 
-    if (!queryConfig) return <></>
+    if (!queryConfig)
+      return (
+        <Empty
+          description="Please configure a Data Source for this Execute component"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
+      )
 
     return (
       <QueryParams queryConfig={queryConfig} parentData={userInterfaceData}>
