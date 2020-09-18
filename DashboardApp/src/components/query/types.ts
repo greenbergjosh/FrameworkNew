@@ -18,6 +18,8 @@ export interface QueryFormProps {
   parameterValues: JSONRecord
   onMount?: (parameterValues: JSONRecord) => void | Promise<unknown>
   onSubmit: (parameterValues: JSONRecord) => void | Promise<unknown>
+  parentSubmitting?: boolean
+  setParentSubmitting?: (submitting: boolean) => void
   submitButtonProps?: buttonProps
   submitButtonLabel?: string // retained for legacy
 }

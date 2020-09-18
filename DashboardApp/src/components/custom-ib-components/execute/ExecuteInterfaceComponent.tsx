@@ -53,7 +53,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       formState: {},
       loadError: null,
       loadStatus: "none",
+      submittingQueryForm: false,
     }
+  }
+
+  submit(): void {
+    console.log("ExecuteInterfaceComponent", "submit")
+    this.setState({ submittingQueryForm: true })
   }
 
   /* ***************************************************************************
@@ -207,7 +213,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     const { buttonLabel, buttonProps, userInterfaceData } = this.props
-    const { queryConfig } = this.state
+    const { queryConfig, submittingQueryForm } = this.state
 
     if (!queryConfig) return <></>
 
@@ -226,6 +232,8 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             parameterValues={parameterValues.getOrElse(record.empty)}
             submitButtonLabel={buttonLabel || "Save"}
             submitButtonProps={buttonProps}
+            parentSubmitting={submittingQueryForm}
+            setParentSubmitting={(submitting: boolean) => this.setState({ submittingQueryForm: submitting })}
           />
         )}
       </QueryParams>

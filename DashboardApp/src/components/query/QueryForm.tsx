@@ -19,6 +19,8 @@ export const QueryForm = React.memo(
     parameterValues,
     onMount,
     onSubmit,
+    parentSubmitting,
+    setParentSubmitting,
     submitButtonLabel,
     submitButtonProps,
   }: QueryFormProps) => {
@@ -99,7 +101,18 @@ export const QueryForm = React.memo(
         })
       }
       setSubmitting(false)
-    }, [submitting, onSubmit, formState])
+      setParentSubmitting && setParentSubmitting(false)
+    }, [submitting, onSubmit, setParentSubmitting, formState])
+
+    /*
+     * Parent Submit Form
+     * Allow parent components to trigger a submit
+     */
+    React.useEffect(() => {
+      if (parentSubmitting) {
+        setSubmitting(true)
+      }
+    }, [parentSubmitting, setSubmitting])
 
     /* ****************************
      *

@@ -16,6 +16,11 @@ interface WizardStep {
   components: ComponentDefinition[]
 }
 
+enum EVENTS {
+  nextClick = "nextClick",
+  prevClick = "prevClick",
+}
+
 export interface IWizardInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "wizard"
   steps: WizardStep[]
@@ -64,11 +69,37 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
 
   static manageForm = wizardManageForm
 
+  static availableEvents = [EVENTS.nextClick, EVENTS.prevClick]
+
   state = { activeStep: 0 }
 
   componentDidMount() {
     if (this.props.defaultActiveStep) {
       this.setState({ activeStep: this.props.defaultActiveStep })
+    }
+  }
+
+  handleNextClick(activeStepIndex: number): () => void {
+    return () => {
+      const activeStep = activeStepIndex + 1
+      const step = this.props.steps[activeStepIndex]
+      const payload = { stepIndex: activeStep, step }
+
+      this.raiseEvent(EVENTS.nextClick, payload)
+      console.log("WizardInterfaceComponent", "handleNextClick", { payload })
+      this.setState({ activeStep })
+    }
+  }
+
+  handlePrevClick(activeStepIndex: number): () => void {
+    return () => {
+      const activeStep = activeStepIndex - 1
+      const step = this.props.steps[activeStepIndex]
+      const payload = { stepIndex: activeStep, step }
+
+      this.raiseEvent(EVENTS.prevClick, payload)
+      console.log("WizardInterfaceComponent", "handlePrevClick", { payload })
+      this.setState({ activeStep })
     }
   }
 
@@ -110,7 +141,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
           </div>
           <div className="steps-action">
             {activeStepIndex < steps.length - 1 && (
-              <Button type="primary" onClick={() => this.setState({ activeStep: activeStepIndex + 1 })}>
+              <Button type="primary" onClick={this.handleNextClick(activeStepIndex)}>
                 Next
               </Button>
             )}
@@ -121,7 +152,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
               </Button>
             )} */}
             {activeStepIndex > 0 && (
-              <Button style={{ marginLeft: 8 }} onClick={() => this.setState({ activeStep: activeStepIndex - 1 })}>
+              <Button style={{ marginLeft: 8 }} onClick={this.handlePrevClick(activeStepIndex)}>
                 Previous
               </Button>
             )}

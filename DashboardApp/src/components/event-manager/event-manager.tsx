@@ -58,12 +58,19 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
     props: T,
     eventName: string,
     eventPayload: EventPayloadType,
-    eventParameters: { [key: string]: string }
+    eventParameters: { [key: string]: string },
+    ref: any
   ) => Record<string, any>
 
   const manageFormWithEvents = getManageForm(WrappedComponent)
 
   class ComponentWithEvents extends BaseInterfaceComponent<T & EventManagerProps, Y> {
+    private currentRef: any
+    constructor(props: T & EventManagerProps) {
+      super(props)
+      this.currentRef = React.createRef()
+    }
+
     displayName = `withEvents(${getDisplayName(WrappedComponent)})`
 
     context!: React.ContextType<typeof UserInterfaceContext>
@@ -156,7 +163,13 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       return (eventName: string, eventPayload: EventPayloadType) => {
         console.log(`EventManager: Handling event ${eventName}`, eventPayload)
         const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
-        const mutatedProps = eventHandler(passThroughProps as T, eventName, eventPayload, eventHandlerParameters)
+        const mutatedProps = eventHandler(
+          passThroughProps as T,
+          eventName,
+          eventPayload,
+          eventHandlerParameters,
+          this.currentRef.current
+        )
         this.mutatedProps = { ...this.mutatedProps, ...mutatedProps }
       }
     }
@@ -166,6 +179,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       const mergedProps = { ...passThroughProps, ...this.mutatedProps }
       return (
         <WrappedComponent
+          ref={this.currentRef}
           {...mergedProps}
           onRaiseEvent={(eventName: string, eventPayload: EventPayloadType) =>
             this.onRaiseEvent(eventName, eventPayload)

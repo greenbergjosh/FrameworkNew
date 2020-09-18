@@ -99,4 +99,5 @@ export interface ExecuteInterfaceComponentState {
    * from Reports.ts
    */
   queryConfig?: QueryConfig
+  submittingQueryForm: boolean
 }
