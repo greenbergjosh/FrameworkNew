@@ -7,6 +7,16 @@ const PersonSchema = {
     operators: ["select_equals"],
     listValues: ["Male", "Female", "TEST"],
   },
+  firstName: {
+    label: "First Name",
+    type: "text",
+    operators: ["equal", "not_equal", "starts_with", "ends_with", "contains"],
+  },
+  DpvZipPlusFour: {
+    label: "DpvZipPlusFour",
+    type: "multiselect",
+    operators: ["multiselect_equals", "multiselect_not_equals"],
+  },
   Zip: {
     label: "Zip",
     type: "select",
@@ -49,9 +59,9 @@ const AlienSchema = {
       tooltip: "MealN",
       type: "!group",
       subfields: {
-        PersonSchema
-      }
-    }
+        PersonSchema,
+      },
+    },
   },
 }
 

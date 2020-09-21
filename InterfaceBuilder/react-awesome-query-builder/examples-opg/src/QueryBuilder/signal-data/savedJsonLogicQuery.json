@@ -17,6 +17,48 @@
             },
             "33444"
           ]
+        },
+        {
+          "starts_with": [
+            {
+              "var": "firstName"
+            },
+            "Rob"
+          ]
+        },
+        {
+          "ends_with": [
+            {
+              "var": "firstName"
+            },
+            "ert"
+          ]
+        },
+        {
+          "contains": [
+            {
+              "var": "firstName"
+            },
+            "ober"
+          ]
+        },
+        {
+          "all": [
+            {
+              "var": "DpvZipPlusFour"
+            },
+            {
+              "in": [
+                {
+                  "var": ""
+                },
+                [
+                  "dog",
+                  "cat"
+                ]
+              ]
+            }
+          ]
         }
       ]
     },

@@ -91,13 +91,13 @@ const mongoFormatOp1 = (mop, mc, not,  field, _op, value, useExpr) => {
     return undefined;
   if (not) {
     return !useExpr
-      ? { [field]: { "$not": { [mop]: mv } } } 
+      ? { [field]: { "$not": { [mop]: mv } } }
       : { "$not": { [mop]: ["$"+field, mv] } };
   } else {
     if (!useExpr && mop == "$eq")
       return { [field]: mv }; // short form
     return !useExpr
-      ? { [field]: { [mop]: mv } } 
+      ? { [field]: { [mop]: mv } }
       : { [mop]: ["$"+field, mv] };
   }
 };
@@ -105,7 +105,7 @@ const mongoFormatOp1 = (mop, mc, not,  field, _op, value, useExpr) => {
 const mongoFormatOp2 = (mops, not,  field, _op, values, useExpr) => {
   if (not) {
     return !useExpr
-      ? { [field]: { "$not": { [mops[0]]: values[0], [mops[1]]: values[1] } } } 
+      ? { [field]: { "$not": { [mops[0]]: values[0], [mops[1]]: values[1] } } }
       : {"$not":
                 {"$and": [
                   { [mops[0]]: [ "$"+field, values[0] ] },
@@ -114,7 +114,7 @@ const mongoFormatOp2 = (mops, not,  field, _op, values, useExpr) => {
       };
   } else {
     return !useExpr
-      ? { [field]: { [mops[0]]: values[0], [mops[1]]: values[1] } } 
+      ? { [field]: { [mops[0]]: values[0], [mops[1]]: values[1] } }
       : {"$and": [
         { [mops[0]]: [ "$"+field, values[0] ] },
         { [mops[1]]: [ "$"+field, values[1] ] },
@@ -223,7 +223,7 @@ const operators = {
       } else return undefined; // not supported
     },
     mongoFormatOp: mongoFormatOp1.bind(null, "$regex", v => (typeof v == "string" ? "^" + escapeRegExp(v) : undefined), false),
-    jsonLogic: undefined, // not supported
+    jsonLogic: "starts_with",
     valueSources: ["value"],
   },
   ends_with: {
@@ -236,7 +236,14 @@ const operators = {
       } else return undefined; // not supported
     },
     mongoFormatOp: mongoFormatOp1.bind(null, "$regex", v => (typeof v == "string" ? escapeRegExp(v) + "$" : undefined), false),
-    jsonLogic: undefined, // not supported
+    jsonLogic: "ends_with",
+    valueSources: ["value"],
+  },
+  contains: {
+    label: "Contains",
+    labelForFormat: "Contains",
+    sqlOp: "CONTAINS",
+    jsonLogic: "contains",
     valueSources: ["value"],
   },
   between: {
@@ -545,6 +552,7 @@ const widgets = {
       return vals.map(v => SqlString.escape(v));
     },
     toJS: (val, fieldSettings) => (val),
+    allowCustomValues: true
   },
   date: {
     type: "date",
@@ -691,6 +699,7 @@ const types = {
           "not_like",
           "starts_with",
           "ends_with",
+          "contains",
           "proximity"
         ],
         widgetProps: {},

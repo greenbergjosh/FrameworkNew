@@ -231,7 +231,7 @@ export interface ConjunctionOption {
 };
 
 export interface ConjsProps {
-  path: string, 
+  path: string,
   readonly?: boolean,
   disabled?: boolean,
   selectedConjunction?: string,
@@ -249,7 +249,7 @@ export interface ConjsProps {
 
 export interface ButtonProps {
   type: "addRule" | "addGroup" | "addFilter" | "delRule" | "delGroup"  | "addRuleGroup" | "delRuleGroup",
-  onClick(): void, 
+  onClick(): void,
   label: string,
   config?: Config,
 };
@@ -265,23 +265,23 @@ export interface ProviderProps {
 };
 
 export type ValueSourceItem = {
-  label: string, 
+  label: string,
 };
 type ValueSourcesItems = TypedKeyMap<ValueSource, ValueSourceItem>;
 
 export interface ValueSourcesProps {
   config?: Config,
-  valueSources: ValueSourcesItems, 
-  valueSrc?: ValueSource, 
-  setValueSrc(valueSrc: string): void, 
+  valueSources: ValueSourcesItems,
+  valueSrc?: ValueSource,
+  setValueSrc(valueSrc: string): void,
   readonly?: boolean,
   title: string,
 };
 
 export interface ConfirmModalProps {
-  onOk(): void, 
-  okText: string, 
-  cancelText?: string, 
+  onOk(): void,
+  okText: string,
+  cancelText?: string,
   title: string,
 };
 
@@ -466,12 +466,12 @@ export type Fields = TypedMap<FieldOrGroup>;
 /////////////////
 
 export type FieldItem = {
-  items?: FieldItems, 
-  key: string, 
-  path?: string, 
-  label: string, 
-  fullLabel?: string, 
-  altLabel?: string, 
+  items?: FieldItems,
+  key: string,
+  path?: string,
+  label: string,
+  fullLabel?: string,
+  altLabel?: string,
   tooltip?: string,
   disabled?: boolean,
 };
@@ -652,6 +652,7 @@ export interface BasicConfig extends Config {
     not_like: BinaryOperator,
     starts_with: BinaryOperator,
     ends_with: BinaryOperator,
+    contains: BinaryOperator,
     between: Operator2,
     not_between: Operator2,
     is_empty: UnaryOperator,
