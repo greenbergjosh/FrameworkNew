@@ -145,6 +145,7 @@ namespace TheGreatWallOfDataLib
                 catch (Exception)
                 {
 	                //don't care;
+                    //identity will be logged with auth.id if it comes back and identity alone is sufficient to trace back later if needed.
                 }
 
                 var tasks = funcs.Select(HandleFunc).ToArray();
@@ -223,7 +224,7 @@ namespace TheGreatWallOfDataLib
 	        var edwEvent = new EdwBulkEvent();
 	        var now = DateTime.Now;
 
-	        edwEvent.AddReportingSequence(requestIdGuid, now, new { UserId = identity }, _greatWallOfDataRsId);
+	        edwEvent.AddReportingSequence(requestIdGuid, now, new { UserId = auth?.GetS("id"), AccessToken = identity }, _greatWallOfDataRsId);
             
 	        var rsIds = new Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)>
 	        {
