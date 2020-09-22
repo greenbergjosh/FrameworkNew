@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TheGreatWallOfDataLib.Routing;
 using Utility;
+using Utility.EDW.Reporting;
 using Utility.GenericEntity;
 using Jw = Utility.JsonWrapper;
 
@@ -17,6 +19,7 @@ namespace TheGreatWallOfDataLib
     {
         public static FrameworkWrapper Fw = null;
         private bool _traceLogResponse = false;
+        private Guid _greatWallOfDataRsId;
 
         public void Config(FrameworkWrapper fw)
         {
@@ -28,6 +31,7 @@ namespace TheGreatWallOfDataLib
                 Authentication.Initialize(fw).Wait();
                 Lbm.Initialize(Fw).GetAwaiter().GetResult();
                 Routing.Routing.Initialize(fw).Wait();
+                _greatWallOfDataRsId = Guid.Parse("b7f50bd9-75bc-4fa8-aa0a-8375f33af614");
             }
             catch (Exception ex)
             {
@@ -44,7 +48,8 @@ namespace TheGreatWallOfDataLib
 
         public async Task Run(HttpContext context)
         {
-            var requestId = Guid.NewGuid().ToString();
+            var requestIdGuid = Guid.NewGuid();
+            var requestId = requestIdGuid.ToString();
             var fResults = new Dictionary<string, string>();
             string requestBody = null;
             var returnHttpFail = false;
@@ -68,20 +73,21 @@ namespace TheGreatWallOfDataLib
                 requestBody = await context.GetRawBodyStringAsync();
 
                 var req = Jw.JsonToGenericEntity(requestBody);
-                await Fw.Trace(nameof(Run), $"Request ({requestId}): {requestBody}");
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
-                var funcs = req.GetD("").Where(p => p.Item1 != "i");
+                var funcs = req.GetD("").Where(p => p.Item1 != "i").ToList();
+                
                 var cancellation = new CancellationTokenSource();
 
-                async Task<(string key, string result)> HandleFunc(Tuple<string, string> p)
+                async Task<(string key, string result, string elapsed)> HandleFunc(Tuple<string, string> p)
                 {
                     var scopeFunc = p.Item1;
                     var args = p.Item2;
+                    var timer = Stopwatch.StartNew();
 
                     if (cancellation.Token.IsCancellationRequested)
                     {
-                        return (scopeFunc, null);
+                        return (scopeFunc, null, timer.Elapsed.ToString());
                     }
 
                     IGenericEntity fResult = null;
@@ -128,7 +134,17 @@ namespace TheGreatWallOfDataLib
                         }
                     }
 
-                    return (scopeFunc, fResult.GetS(""));
+                    return (scopeFunc, fResult.GetS(""), timer.Elapsed.ToString());
+                }
+
+                IGenericEntity auth = null;
+                try
+                {
+	                auth = await Authentication.GetUserDetails(identity, context);
+                }
+                catch (Exception)
+                {
+	                //don't care;
                 }
 
                 var tasks = funcs.Select(HandleFunc).ToArray();
@@ -141,8 +157,11 @@ namespace TheGreatWallOfDataLib
 #else
                 await Task.WhenAll(tasks);
 #endif
+	            var results = tasks.Select(t => t.Result).ToList();
 
-                fResults.AddRange(tasks.Select(t => t.Result).Where(r => r.result != null));
+	            await logAccessToEdw(requestIdGuid, identity, auth, req, results);
+
+                fResults = results.Where(r => r.result != null).ToDictionary(x => x.key, x=> x.result);
             }
             catch (IOException e)
             {
@@ -192,6 +211,36 @@ namespace TheGreatWallOfDataLib
                 await Fw.Error(nameof(Run), $"Unhandled exception writing to response {e.UnwrapForLog()}");
                 await context.WriteFailureRespAsync("");
             }
+        }
+
+        private Task logAccessToEdw(Guid requestIdGuid, string identity, IGenericEntity auth, IGenericEntity funcs, IEnumerable<(string key, string result, string elapsed)> results)
+        {
+	        if (null == Fw.EdwWriter)
+	        {
+		        return Task.WhenAll(Fw.Trace(nameof(Run), $"Request ({requestIdGuid}): {funcs}"),
+			        Fw.Error(nameof(logAccessToEdw), "EdwWriter is not instantiated."));
+	        }
+	        var edwEvent = new EdwBulkEvent();
+	        var now = DateTime.Now;
+
+	        edwEvent.AddReportingSequence(requestIdGuid, now, new { UserId = identity }, _greatWallOfDataRsId);
+            
+	        var rsIds = new Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)>
+	        {
+		        [_greatWallOfDataRsId] = (requestIdGuid, now)
+	        };
+
+
+            edwEvent.AddEvent(requestIdGuid, now, rsIds,
+		        JObject.FromObject(new {et = "GreatWallOfDataAccess", identity}));
+	        
+	        foreach (var (method, _, elapsed) in results)
+	        {
+		        edwEvent.AddEvent(Guid.NewGuid(), now, rsIds,
+			        JObject.FromObject(new {et = method, RequestParams = funcs[method], Requestor = identity, ExecutionTime = elapsed}));
+	        }
+
+	        return Fw.EdwWriter.Write(edwEvent);
         }
 
         private static class RC
