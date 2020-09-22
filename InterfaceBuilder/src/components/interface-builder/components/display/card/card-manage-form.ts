@@ -51,7 +51,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "hoverable",
                 component: "toggle",
                 label: "Hover Effect",
-                defaultValue: true,
+                defaultValue: false,
               },
               {
                 key: "bordered",

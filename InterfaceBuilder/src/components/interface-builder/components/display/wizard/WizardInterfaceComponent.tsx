@@ -1,4 +1,4 @@
-import { Button, Steps } from "antd"
+import { Button, Steps, Icon } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"
@@ -28,6 +28,7 @@ export interface IWizardInterfaceComponentProps extends ComponentDefinitionNamed
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
+  disableStepNumbersChangingTabs?: boolean
 }
 
 interface WizardInterfaceComponentDisplayModeProps extends IWizardInterfaceComponentProps {
@@ -52,6 +53,7 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
 > {
   static defaultProps = {
     steps: [],
+    disableStepNumbersChangingTabs: true,
   }
 
   static getLayoutDefinition() {
@@ -81,39 +83,53 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
 
   handleNextClick(activeStepIndex: number): () => void {
     return () => {
-      const activeStep = activeStepIndex + 1
+      const nextStepIndex = activeStepIndex + 1
       const step = this.props.steps[activeStepIndex]
-      const payload = { stepIndex: activeStep, step }
+      const payload = { stepIndex: nextStepIndex, step }
 
       this.raiseEvent(EVENTS.nextClick, payload)
       console.log("WizardInterfaceComponent", "handleNextClick", { payload })
-      this.setState({ activeStep })
+      this.setState({ activeStep: nextStepIndex })
     }
   }
 
   handlePrevClick(activeStepIndex: number): () => void {
     return () => {
-      const activeStep = activeStepIndex - 1
+      const nextStepIndex = activeStepIndex - 1
       const step = this.props.steps[activeStepIndex]
-      const payload = { stepIndex: activeStep, step }
+      const payload = { stepIndex: nextStepIndex, step }
 
       this.raiseEvent(EVENTS.prevClick, payload)
       console.log("WizardInterfaceComponent", "handlePrevClick", { payload })
-      this.setState({ activeStep })
+      this.setState({ activeStep: nextStepIndex })
+    }
+  }
+
+  handleChangeStep = (activeStepIndex: number): ((nextStepIndex: number) => void) => {
+    if (this.props.disableStepNumbersChangingTabs) return () => null
+
+    return (nextStepIndex: number) => {
+      const step = this.props.steps[activeStepIndex]
+      const payload = { stepIndex: nextStepIndex, step }
+      const eventName = nextStepIndex > activeStepIndex ? EVENTS.nextClick : EVENTS.prevClick
+
+      this.raiseEvent(eventName, payload)
+      console.log("WizardInterfaceComponent", "handleChangeStep", { payload })
+      this.setState({ activeStep: nextStepIndex })
     }
   }
 
   render() {
-    const { onChangeData, steps, userInterfaceData } = this.props
+    const { onChangeData, steps, userInterfaceData, disableStepNumbersChangingTabs } = this.props
     const { activeStep } = this.state
     const activeStepIndex = activeStep || 0
 
     return (
       <DataPathContext path="steps">
         <div>
-          <Steps current={activeStepIndex} onChange={(stepIndex: number) => this.setState({ activeStep: stepIndex })}>
+          <Steps current={activeStepIndex} onChange={this.handleChangeStep(activeStepIndex)}>
             {steps.map(({ title }) => (
-              <Steps.Step key={title} title={title} />
+              <Steps.Step key={title} title={title} disabled={disableStepNumbersChangingTabs} />
             ))}
           </Steps>
           <div className="steps-content">
@@ -140,22 +156,19 @@ export class WizardInterfaceComponent extends BaseInterfaceComponent<
             </DataPathContext>
           </div>
           <div className="steps-action">
-            {activeStepIndex < steps.length - 1 && (
-              <Button type="primary" onClick={this.handleNextClick(activeStepIndex)}>
-                Next
-              </Button>
-            )}
-            {/* {activeStepIndex === steps.length - 1 && (
-              <Button type="primary"
-              onClick={() => console.log("Wizard.render", "Done")}>
-                Done
-              </Button>
-            )} */}
-            {activeStepIndex > 0 && (
-              <Button style={{ marginLeft: 8 }} onClick={this.handlePrevClick(activeStepIndex)}>
+            <Button.Group>
+              <Button type="primary" disabled={activeStepIndex === 0} onClick={this.handlePrevClick(activeStepIndex)}>
+                <Icon type="left" />
                 Previous
               </Button>
-            )}
+              <Button
+                type="primary"
+                disabled={activeStepIndex === steps.length - 1}
+                onClick={this.handleNextClick(activeStepIndex)}>
+                Next
+                <Icon type="right" />
+              </Button>
+            </Button.Group>
           </div>
         </div>
       </DataPathContext>

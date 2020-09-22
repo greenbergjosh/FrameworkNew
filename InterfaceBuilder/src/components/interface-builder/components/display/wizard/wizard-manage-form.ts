@@ -29,6 +29,14 @@ const wizardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: true,
               },
               {
+                key: "disableStepNumbersChangingTabs",
+                valueKey: "disableStepNumbersChangingTabs",
+                component: "toggle",
+                label: "Disable Step Numbers",
+                help: "Prevent clicking on step numbers from changing the active tab.",
+                defaultValue: true,
+              },
+              {
                 key: "steps",
                 valueKey: "steps",
                 component: "list",
