@@ -98,7 +98,7 @@ namespace Utility.DataLayer
                 using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
                 {
                     cn.Open();
-                    using (var cmd = new NpgsqlCommand($"SELECT data.p_submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
+                    using (var cmd = new NpgsqlCommand($"SELECT edw.submit_bulk_payload(@Payload)", cn) { CommandTimeout = timeout })
                     {
                         cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Jsonb, payload);
                         cmd.Parameters.Add(new NpgsqlParameter("@Return", NpgsqlTypes.NpgsqlDbType.Boolean)).Direction = System.Data.ParameterDirection.Output;
