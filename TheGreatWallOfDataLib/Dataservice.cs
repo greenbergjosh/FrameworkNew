@@ -75,7 +75,7 @@ namespace TheGreatWallOfDataLib
                 var req = Jw.JsonToGenericEntity(requestBody);
 
                 var identity = req.GetS("i").IfNullOrWhitespace(Jw.Empty);
-                var funcs = req.GetD("").Where(p => p.Item1 != "i").ToList();
+                var funcs = req.GetD("").Where(p => p.Item1 != "i");
                 
                 var cancellation = new CancellationTokenSource();
 
@@ -160,7 +160,7 @@ namespace TheGreatWallOfDataLib
 #endif
 	            var results = tasks.Select(t => t.Result).ToList();
 
-	            await logAccessToEdw(requestIdGuid, identity, auth, req, results);
+                await logAccessToEdw(requestIdGuid, identity, auth, req, results);
 
                 fResults = results.Where(r => r.result != null).ToDictionary(x => x.key, x=> x.result);
             }
@@ -214,34 +214,42 @@ namespace TheGreatWallOfDataLib
             }
         }
 
-        private Task logAccessToEdw(Guid requestIdGuid, string identity, IGenericEntity auth, IGenericEntity funcs, IEnumerable<(string key, string result, string elapsed)> results)
+        private Task logAccessToEdw(Guid requestIdGuid, string identity, IGenericEntity auth, IGenericEntity request, IEnumerable<(string key, string result, string elapsed)> results)
         {
-	        if (null == Fw.EdwWriter)
-	        {
-		        return Task.WhenAll(Fw.Trace(nameof(Run), $"Request ({requestIdGuid}): {funcs}"),
-			        Fw.Error(nameof(logAccessToEdw), "EdwWriter is not instantiated."));
-	        }
-	        var edwEvent = new EdwBulkEvent();
-	        var now = DateTime.Now;
+            try
+            {
+                if (null == Fw.EdwWriter)
+                {
+                    return Task.WhenAll(Fw.Trace(nameof(Run), $"Request ({requestIdGuid}): {request}"),
+                        Fw.Error(nameof(logAccessToEdw), "EdwWriter is not instantiated."));
+                }
+                var edwEvent = new EdwBulkEvent();
+                var now = DateTime.Now;
 
-	        edwEvent.AddReportingSequence(requestIdGuid, now, new { UserId = auth?.GetS("id"), AccessToken = identity }, _greatWallOfDataRsId);
-            
-	        var rsIds = new Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)>
-	        {
-		        [_greatWallOfDataRsId] = (requestIdGuid, now)
-	        };
+                edwEvent.AddReportingSequence(requestIdGuid, now, new { UserId = auth?.GetS("id"), AccessToken = identity }, _greatWallOfDataRsId);
+
+                var rsIds = new Dictionary<Guid, (Guid rsId, DateTime rsTimestamp)>
+                {
+                    [_greatWallOfDataRsId] = (requestIdGuid, now)
+                };
 
 
-            edwEvent.AddEvent(requestIdGuid, now, rsIds,
-		        JObject.FromObject(new {et = "GreatWallOfDataAccess", identity}));
-	        
-	        foreach (var (method, _, elapsed) in results)
-	        {
-		        edwEvent.AddEvent(Guid.NewGuid(), now, rsIds,
-			        JObject.FromObject(new {et = method, RequestParams = funcs[method], Requestor = identity, ExecutionTime = elapsed}));
-	        }
+                edwEvent.AddEvent(requestIdGuid, now, rsIds,
+                    new { et = "GreatWallOfDataAccess", Requestor = auth?.GetS("id"), AccessToken = identity });
 
-	        return Fw.EdwWriter.Write(edwEvent);
+                foreach (var (method, _, elapsed) in results)
+                {
+                    edwEvent.AddEvent(Guid.NewGuid(), now, rsIds,
+                        new { et = method, RequestParams = request[method], Requestor = auth?.GetS("id"), AccessToken = identity, ExecutionTime = elapsed });
+                }
+
+                return Fw.EdwWriter.Write(edwEvent);
+            }
+            catch (Exception e)
+            {
+	            return Fw.Error(nameof(logAccessToEdw),
+		            $"Failed to write EDW event. {e.UnwrapForLog()}");
+            }
         }
 
         private static class RC
