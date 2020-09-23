@@ -1,6 +1,6 @@
 import { ComponentDefinitionNamedProps } from "components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
-import { FieldOrGroup, ImmutableTree, JsonLogicResult, JsonLogicTree, TypedMap } from "react-awesome-query-builder"
+import { FieldOrGroup, JsonGroup, JsonLogicResult, JsonLogicTree, TypedMap } from "react-awesome-query-builder"
 
 export type SchemaType = TypedMap<FieldOrGroup>
 
@@ -10,24 +10,40 @@ export interface QueryBuilderInterfaceComponentProps extends ComponentDefinition
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
-  valueKey: string
+  valueKey: string // aka, qbData Key
   mode: UserInterfaceProps["mode"]
 
   // QueryBuilder props
+  jsonLogicKey: string
   schemaKey: string
-  queryRaw: string
-  query: JsonLogicTree
   exposeQueryableFields: boolean
   queryableFieldsKey?: string
 }
 
 export interface QueryBuilderInterfaceComponentState {
   schema?: SchemaType
-  query?: JsonLogicTree | string
+  jsonLogic?: JsonLogicTree | string
+  qbDataJsonGroup?: JsonGroup
 }
+
+/* **************************
+ * onChange Event Interface
+ */
+
+export type OnChangePayloadType = {
+  jsonLogic: JsonLogicResult["logic"]
+  errors: JsonLogicResult["errors"]
+  data: JsonLogicResult["data"] // Contains all used fields with null values ("template" data)
+  qbDataJsonGroup: JsonGroup
+}
+
+/* **********************
+ * QueryBuilder
+ */
 
 export interface QueryBuilderProps {
   schema?: SchemaType // the user defined fields available to query
-  query?: JsonLogicTree // the persisted jsonLogic query
-  onChange: (result: JsonLogicResult) => void
+  jsonLogic?: JsonLogicTree // the persisted jsonLogic query
+  qbDataJsonGroup?: JsonGroup // the persisted QueryBuilder query
+  onChange: (result: OnChangePayloadType) => void
 }

@@ -21,7 +21,15 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
               },
               {
                 key: "valueKey",
-                defaultValue: "query",
+                defaultValue: "qbData",
+              },
+              {
+                key: "jsonLogicKey",
+                valueKey: "jsonLogicKey",
+                component: "input",
+                label: "JsonLogic Key",
+                help: "Key to to access the JsonLogic for the query.",
+                defaultValue: "jsonLogic",
               },
               {
                 key: "exposeQueryableFields",

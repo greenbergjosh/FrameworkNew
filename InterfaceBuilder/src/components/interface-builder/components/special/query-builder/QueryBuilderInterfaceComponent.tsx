@@ -3,8 +3,13 @@ import React from "react"
 import { queryBuilderManageForm } from "./query-builder-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { QueryBuilder } from "./components/QueryBuilder"
-import { QueryBuilderInterfaceComponentProps, QueryBuilderInterfaceComponentState, SchemaType } from "./types"
-import { JsonLogicResult, JsonLogicTree } from "react-awesome-query-builder"
+import {
+  OnChangePayloadType,
+  QueryBuilderInterfaceComponentProps,
+  QueryBuilderInterfaceComponentState,
+  SchemaType,
+} from "./types"
+import { JsonGroup, JsonLogicTree } from "react-awesome-query-builder"
 import { getQueryableFields } from "./components/utils"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
@@ -48,12 +53,18 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private updateQuery() {
-    const { userInterfaceData, valueKey } = this.props
-    const query: JsonLogicTree = get(valueKey, userInterfaceData)
+    const { userInterfaceData, valueKey, jsonLogicKey } = this.props
+    const qbDataJsonGroup: JsonGroup = get(valueKey, userInterfaceData)
+    const jsonLogic: JsonLogicTree = get(jsonLogicKey, userInterfaceData)
 
-    // Once we have the query, don't update again or we'll wipe out the user's changes
-    if (isEmpty(this.state.query) && !isEmpty(query)) {
-      this.setState({ query })
+    // Once we have the qbDataJsonGroup, don't update again or we'll wipe out the user's changes
+    if (isEmpty(this.state.qbDataJsonGroup) && !isEmpty(qbDataJsonGroup)) {
+      this.setState({ qbDataJsonGroup })
+    }
+
+    // Once we have the jsonLogic, don't update again or we'll wipe out the user's changes
+    if (isEmpty(this.state.jsonLogic) && !isEmpty(jsonLogic)) {
+      this.setState({ jsonLogic })
     }
   }
 
@@ -72,26 +83,48 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   private provideQueryableFields(schema: SchemaType | undefined) {
     const { userInterfaceData, exposeQueryableFields, onChangeData, queryableFieldsKey } = this.props
     if (schema && exposeQueryableFields && !isEmpty(queryableFieldsKey)) {
-      const queryableFelds = getQueryableFields(schema)
-      onChangeData && onChangeData(set(queryableFieldsKey!, queryableFelds, userInterfaceData))
+      const queryableFields = getQueryableFields(schema)
+      onChangeData && onChangeData(set(queryableFieldsKey!, queryableFields, userInterfaceData))
     }
   }
 
-  handleChange = ({ logic, data, errors }: JsonLogicResult) => {
-    const { defaultValue, onChangeData, userInterfaceData, valueKey } = this.props
-    const value = get(valueKey, userInterfaceData) || defaultValue
+  handleChange = ({
+    jsonLogic: nextJsonLogic,
+    data,
+    errors,
+    qbDataJsonGroup: nextQbDataJsonGroup,
+  }: OnChangePayloadType) => {
+    const { defaultValue, onChangeData, userInterfaceData, valueKey, jsonLogicKey } = this.props
 
     if (errors && errors.length > 0) {
-      console.error("QueryBuilderInterfaceComponent", "handleChange", { errors, logic, data })
+      console.error("QueryBuilderInterfaceComponent", "handleChange", {
+        errors,
+        nextJsonLogic,
+        data,
+        nextQbData: nextQbDataJsonGroup,
+      })
       return
     }
 
-    if (!isEqual(value, logic)) {
-      onChangeData && onChangeData(set(valueKey, logic, userInterfaceData))
+    const prevQbDataJsonGroup: JsonGroup = get(valueKey, userInterfaceData) || defaultValue
+    if (!isEqual(prevQbDataJsonGroup, nextQbDataJsonGroup)) {
+      onChangeData && onChangeData(set(valueKey, nextQbDataJsonGroup, userInterfaceData))
+    }
+
+    const prevJsonLogic = get(jsonLogicKey, userInterfaceData) || defaultValue
+    if (!isEqual(prevJsonLogic, nextJsonLogic)) {
+      onChangeData && onChangeData(set(jsonLogicKey, nextJsonLogic, userInterfaceData))
     }
   }
 
   render(): JSX.Element {
-    return <QueryBuilder schema={this.state.schema} query={this.state.query} onChange={this.handleChange} />
+    return (
+      <QueryBuilder
+        schema={this.state.schema}
+        qbDataJsonGroup={this.state.qbDataJsonGroup}
+        jsonLogic={this.state.jsonLogic}
+        onChange={this.handleChange}
+      />
+    )
   }
 }
