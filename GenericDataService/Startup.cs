@@ -88,6 +88,9 @@ namespace GenericDataService
 
             if (!wwwrootPath.IsNullOrWhitespace())
             {
+                #if DEBUG
+	            wwwrootPath = Path.GetFullPath(wwwrootPath);
+                #endif
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(wwwrootPath)

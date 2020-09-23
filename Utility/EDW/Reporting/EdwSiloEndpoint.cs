@@ -28,7 +28,7 @@ namespace Utility.EDW.Reporting
             var res = await dataLayerClient.InsertEdwPayload(connectionString, w.ToString(), timeoutSeconds)
                 .ConfigureAwait(false);
             var result = res.ToLower();
-            if (result == "success")
+            if (result == "success" || result == "200 ok")
             {
                 return LoadBalancedWriter.Result.Success;
             }
