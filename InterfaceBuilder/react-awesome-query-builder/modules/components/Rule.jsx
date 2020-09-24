@@ -39,6 +39,7 @@ class Rule extends PureComponent {
       setOperator: PropTypes.func,
       setOperatorOption: PropTypes.func,
       removeSelf: PropTypes.func,
+      disableSelf: PropTypes.func,
       setValue: PropTypes.func,
       setValueSrc: PropTypes.func,
       reordableNodesCnt: PropTypes.number,
@@ -99,6 +100,21 @@ class Rule extends PureComponent {
       }
     }
 
+    disableSelf = () => {
+      const {renderConfirm, disableRuleConfirmOptions: confirmOptions} = this.props.config.settings;
+      const doDisable = () => {
+        this.props.disableSelf();
+      };
+      if (confirmOptions && !this.isEmptyCurrentRule()) {
+        renderConfirm({...confirmOptions,
+          onOk: doDisable,
+          onCancel: null
+        });
+      } else {
+        doDisable();
+      }
+    }
+
     isEmptyCurrentRule = () => {
       return !(
         this.props.selectedField !== null
@@ -114,13 +130,13 @@ class Rule extends PureComponent {
         showDragIcon, showOperator, showOperatorLabel, showWidget, showOperatorOptions
       } = this.meta;
       const {
-        deleteLabel, renderBeforeWidget, renderAfterWidget, renderSize, 
+        deleteLabel, disableLabel, renderBeforeWidget, renderAfterWidget, renderSize,
         immutableGroupsMode, immutableFieldsMode, immutableOpsMode, immutableValuesMode,
         renderRuleError, showErrorMessage,
-        renderButton: Btn
+        renderButton: Btn, renderButtonGroup: BtnGrp
       } = config.settings;
 
-      const field 
+      const field
             = <FieldWrapper
               key="field"
               classname={"rule--field"}
@@ -128,9 +144,9 @@ class Rule extends PureComponent {
               selectedField={this.props.selectedField}
               setField={!immutableOpsMode ? this.props.setField : dummyFn}
               parentField={this.props.parentField}
-              readonly={immutableFieldsMode}
+              readonly={immutableFieldsMode || this.props.disabled}
             />;
-      const operator 
+      const operator
             = <OperatorWrapper
               key="operator"
               config={config}
@@ -141,7 +157,7 @@ class Rule extends PureComponent {
               showOperator={showOperator}
               showOperatorLabel={showOperatorLabel}
               selectedFieldWidgetConfig={selectedFieldWidgetConfig}
-              readonly={immutableOpsMode}
+              readonly={immutableOpsMode || this.props.disabled}
             />;
 
       const widget = showWidget
@@ -156,7 +172,7 @@ class Rule extends PureComponent {
                 config={config}
                 setValue={!immutableValuesMode ? this.props.setValue : dummyFn}
                 setValueSrc={!immutableValuesMode ? this.props.setValueSrc : dummyFn}
-                readonly={immutableValuesMode}
+                readonly={immutableValuesMode || this.props.disabled}
               />
             </Col>;
       const operatorOptions = showOperatorOptions
@@ -168,22 +184,22 @@ class Rule extends PureComponent {
                 operatorOptions={this.props.operatorOptions}
                 setOperatorOption={!immutableOpsMode ? this.props.setOperatorOption : dummyFn}
                 config={config}
-                readonly={immutableValuesMode}
+                readonly={immutableValuesMode || this.props.disabled}
               />
             </Col>;
 
-      const beforeWidget = renderBeforeWidget 
+      const beforeWidget = renderBeforeWidget
             && <Col key={"before-widget-for-" +this.props.selectedOperator} className="rule--before-widget">
               {typeof renderBeforeWidget === "function" ? renderBeforeWidget(this.props) : renderBeforeWidget}
             </Col>;
 
-      const afterWidget = renderAfterWidget 
+      const afterWidget = renderAfterWidget
             && <Col key={"after-widget-for-" +this.props.selectedOperator} className="rule--after-widget">
               {typeof renderAfterWidget === "function" ? renderAfterWidget(this.props) : renderAfterWidget}
             </Col>;
-        
+
       const oneValueError = valueError && valueError.toArray().filter(e => !!e).shift() || null;
-      const error = showErrorMessage && oneValueError 
+      const error = showErrorMessage && oneValueError
             && <div className="rule--error">
               {renderRuleError ? renderRuleError({error: oneValueError}) : oneValueError}
             </div>;
@@ -207,9 +223,11 @@ class Rule extends PureComponent {
 
       const del = (
         <div key="rule-header" className="rule--header">
-          {!immutableGroupsMode && <Btn 
+          {!immutableGroupsMode && <BtnGrp config={config}><Btn
             type="delRule" onClick={this.removeSelf} label={deleteLabel} config={config}
-          />}
+          /><Btn
+            type="disableRule" onClick={this.disableSelf} label={disableLabel} config={config}
+          /></BtnGrp>}
         </div>
       );
 
@@ -254,7 +272,7 @@ export class FieldWrapper extends PureComponent {
 class OperatorWrapper extends PureComponent {
   render() {
     const {
-      config, selectedField, selectedOperator, setOperator, 
+      config, selectedField, selectedOperator, setOperator,
       selectedFieldPartsLabels, showOperator, showOperatorLabel, selectedFieldWidgetConfig, readonly
     } = this.props;
     const operator = showOperator

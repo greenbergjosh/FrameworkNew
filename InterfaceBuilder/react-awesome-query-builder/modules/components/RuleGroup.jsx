@@ -28,7 +28,7 @@ class RuleGroup extends Group {
   }
 
   childrenClassName = () => "rule_group--children";
-  
+
   renderHeaderWrapper = () => null;
   renderFooterWrapper = () => null;
   renderConjs = () => null;
@@ -36,6 +36,7 @@ class RuleGroup extends Group {
   canAddRule = () => true;
   canAddFilter = () => true;
   canDeleteGroup = () => false;
+  canDisableGroup = () => false;
 
   reordableNodesCnt() {
     const {children1} = this.props;
@@ -78,7 +79,9 @@ class RuleGroup extends Group {
       addRule={addRule}
       canAddRule={this.canAddRule()}
       canDeleteGroup={this.canDeleteGroup()}
+      canDisableGroup={this.canDisableGroup()}
       removeSelf={this.removeSelf}
+      disableSelf={this.disableSelf}
     />;
   }
 

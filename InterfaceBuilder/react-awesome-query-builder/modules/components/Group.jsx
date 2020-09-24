@@ -41,6 +41,7 @@ export class Group extends PureComponent {
     addGroup: PropTypes.func.isRequired,
     addFilter: PropTypes.func.isRequired,
     removeSelf: PropTypes.func.isRequired,
+    disableSelf: PropTypes.func.isRequired,
     setConjunction: PropTypes.func.isRequired,
     setNot: PropTypes.func.isRequired,
     actions: PropTypes.object.isRequired,
@@ -51,6 +52,7 @@ export class Group extends PureComponent {
     super(props);
 
     this.removeSelf = this.removeSelf.bind(this);
+    this.disableSelf = this.disableSelf.bind(this);
   }
 
   isGroupTopPosition() {
@@ -69,6 +71,21 @@ export class Group extends PureComponent {
       });
     } else {
       doRemove();
+    }
+  }
+
+  disableSelf() {
+    const {renderConfirm, disableGroupConfirmOptions: confirmOptions} = this.props.config.settings;
+    const doDisable = () => {
+      this.props.disableSelf();
+    };
+    if (confirmOptions && !this.isEmptyCurrentGroup()) {
+      renderConfirm({...confirmOptions,
+        onOk: doDisable,
+        onCancel: null
+      });
+    } else {
+      doDisable();
     }
   }
 
@@ -184,7 +201,9 @@ export class Group extends PureComponent {
       canAddRule={this.canAddRule()}
       canAddFilter={this.canAddFilter()}
       canDeleteGroup={this.canDeleteGroup()}
+      canDisableGroup={this.canDisableGroup()}
       removeSelf={this.removeSelf}
+      disableSelf={this.disableSelf}
     />;
   }
 
@@ -211,6 +230,7 @@ export class Group extends PureComponent {
   };
 
   canDeleteGroup = () => !this.props.isRoot;
+  canDisableGroup = () => !this.props.isRoot;
 
   renderChildren() {
     const {children1} = this.props;
@@ -316,7 +336,7 @@ export class Group extends PureComponent {
 
     const renderProps = {
       disabled: children1.size < 2,
-      readonly: immutableGroupsMode,
+      readonly: immutableGroupsMode || this.props.disabled,
       selectedConjunction: selectedConjunction,
       setConjunction: immutableGroupsMode ? dummyFn : setConjunction,
       conjunctionOptions: conjunctionOptions,

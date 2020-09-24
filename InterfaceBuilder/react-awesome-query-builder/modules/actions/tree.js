@@ -40,6 +40,16 @@ export const removeRule = (config, path) => ({
 /**
  * @param {object} config
  * @param {Immutable.List} path
+ */
+export const disableRule = (config, path) => ({
+  type: constants.DISABLE_RULE,
+  path: path,
+  config: config
+});
+
+/**
+ * @param {object} config
+ * @param {Immutable.List} path
  * @param {Immutable.Map} properties
  */
 export const addGroup = (config, path, properties) => ({
@@ -87,8 +97,28 @@ export const removeGroup = (config, path) => ({
  * @param {object} config
  * @param {Immutable.List} path
  */
+export const disableGroup = (config, path) => ({
+  type: constants.DISABLE_GROUP,
+  path: path,
+  config: config
+});
+
+/**
+ * @param {object} config
+ * @param {Immutable.List} path
+ */
 export const removeFilter = (config, path) => ({
   type: constants.REMOVE_FILTER,
+  path: path,
+  config: config
+});
+
+/**
+ * @param {object} config
+ * @param {Immutable.List} path
+ */
+export const disableFilter = (config, path) => ({
+  type: constants.DISABLE_FILTER,
   path: path,
   config: config
 });

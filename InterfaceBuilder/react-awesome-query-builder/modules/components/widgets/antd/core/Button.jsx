@@ -7,10 +7,13 @@ export default ({type, onClick, label, config: {settings}}) => {
     "addGroup": "plus-circle",
     "addFilter": "plus-circle",
     "delRule": "delete",
+    "disableRule": "eye-invisible",
     "delGroup": "delete",
+    "disableGroup": "eye-invisible",
 
     "addRuleGroup": "plus",
     "delRuleGroup": "delete",
+    "disableRuleGroup": "eye-invisible",
   };
 
   const typeToClass = {
@@ -18,10 +21,13 @@ export default ({type, onClick, label, config: {settings}}) => {
     "addGroup": "action action--ADD-GROUP",
     "addFilter": "action action--ADD-GROUP",
     "delRule": "action action--DELETE", //?
+    "disableRule": "action action--DISABLE",
     "delGroup": "action action--DELETE",
+    "disableGroup": "action action--DISABLE",
 
     "addRuleGroup": <Icon type="plus" theme="outlined" />,
     "delRuleGroup": <Icon type="delete" theme="filled" />,
+    "disableRuleGroup": <Icon type="eye-invisible" theme="filled" />,
   };
 
   const typeToType = {

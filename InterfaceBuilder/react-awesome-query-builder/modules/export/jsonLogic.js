@@ -16,9 +16,9 @@ export const jsonLogicFormat = (item, config) => {
     usedFields: [],
     errors: []
   };
-    
+
   const logic = jsonLogicFormatItem(item, config, meta, true);
-    
+
   // build empty data
   const {errors, usedFields} = meta;
   const {fieldSeparator} = config.settings;
@@ -37,7 +37,7 @@ export const jsonLogicFormat = (item, config) => {
       }
     }
   }
-    
+
   return {
     errors,
     logic,
@@ -131,6 +131,9 @@ const jsonLogicFormatItem = (item, config, meta, isRoot) => {
   const type = item.get("type");
   const properties = item.get("properties") || new Map();
   const children = item.get("children1");
+
+  // Is item disabled?
+  if (properties.get("disabled")) return undefined;
 
   if ((type === "group" || type === "rule_group") && children && children.size) {
     const list = children

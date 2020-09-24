@@ -43,6 +43,7 @@ type JsonGroup = {
   properties?: {
     conjunction: string,
     not?: boolean,
+    disabled?: boolean,
   }
 };
 type JsonRuleGroup = {
@@ -51,6 +52,7 @@ type JsonRuleGroup = {
   children1?: {[id: string]: JsonRuleGroup|JsonRule},
   properties?: {
     field: string | Empty,
+    disabled?: boolean,
   }
 };
 type JsonRule = {
@@ -62,6 +64,7 @@ type JsonRule = {
     valueSrc: Array<ValueSource>,
     valueType: Array<string>,
     valueError?: Array<string>,
+    disabled?: boolean,
     operatorOptions?: AnyObject
   }
 };
@@ -248,7 +251,7 @@ export interface ConjsProps {
 /////////////////
 
 export interface ButtonProps {
-  type: "addRule" | "addGroup" | "addFilter" | "delRule" | "delGroup"  | "addRuleGroup" | "delRuleGroup",
+  type: "addRule" | "addGroup" | "addFilter" | "delRule" | "disableRule" | "delGroup" | "disableGroup"  | "addRuleGroup" | "delRuleGroup" | "disableRuleGroup",
   onClick(): void,
   label: string,
   config?: Config,
@@ -523,10 +526,12 @@ export interface LocaleSettings {
   funcLabel?: string,
   operatorPlaceholder?: string,
   deleteLabel?: string,
+  disableLabel?: string,
   addGroupLabel?: string,
   addFilterLabel?: string,
   addRuleLabel?: string,
   delGroupLabel?: string,
+  disableGroupLabel?: string,
   notLabel?: string,
   valueSourcesPopupTitle?: string,
   removeRuleConfirmOptions?: {
@@ -534,7 +539,17 @@ export interface LocaleSettings {
       okText?: string,
       okType?: string,
   },
+  disableRuleConfirmOptions?: {
+      title?: string,
+      okText?: string,
+      okType?: string,
+  },
   removeGroupConfirmOptions?: {
+    title?: string,
+    okText?: string,
+    okType?: string,
+  },
+  disableGroupConfirmOptions?: {
     title?: string,
     okText?: string,
     okType?: string,

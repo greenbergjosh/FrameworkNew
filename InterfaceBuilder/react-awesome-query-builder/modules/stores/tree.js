@@ -1,7 +1,7 @@
 
 import Immutable from "immutable";
 import {
-  expandTreePath, expandTreeSubpath, getItemByPath, fixPathsInTree, 
+  expandTreePath, expandTreeSubpath, getItemByPath, fixPathsInTree,
   getTotalRulesCountInTree, fixEmptyGroupsInTree, fixEmptyFiltersInTree
 } from "../utils/treeUtils";
 import {
@@ -40,7 +40,7 @@ const addNewGroup = (state, path, properties, config) => {
     state = addItem(state, groupPath, "rule", uuid(), defaultRuleProperties(config), config);
   }
   state = fixPathsInTree(state);
-  
+
   return state;
 };
 
@@ -114,6 +114,15 @@ const removeGroup = (state, path, config) => {
  * @param {Immutable.List} path
  * @param {Immutable.Map} properties
  */
+const disableGroup = (state, path, config) => {
+  return disableItem(state, path);
+};
+
+/**
+ * @param {object} config
+ * @param {Immutable.List} path
+ * @param {Immutable.Map} properties
+ */
 const removeFilter = (state, path, config) => {
   state = removeItem(state, path);
 
@@ -128,6 +137,15 @@ const removeFilter = (state, path, config) => {
   }
   state = fixPathsInTree(state);
   return state;
+};
+
+/**
+ * @param {object} config
+ * @param {Immutable.List} path
+ * @param {Immutable.Map} properties
+ */
+const disableFilter = (state, path, config) => {
+  return disableItem(state, path);
 };
 
 /**
@@ -155,6 +173,14 @@ const removeRule = (state, path, config) => {
   }
   state = fixPathsInTree(state);
   return state;
+};
+
+/**
+ * @param {object} config
+ * @param {Immutable.List} path
+ */
+const disableRule = (state, path, config) => {
+  return disableItem(state, path);
 };
 
 /**
@@ -207,6 +233,44 @@ const removeItem = (state, path) => {
 
 /**
  * @param {Immutable.Map} state
+ * @param {Immutable.List} path
+ */
+const disableItem = (state, path) => {
+  const parentPath = path.slice(0, -1);
+  const isParentDisabled = state.getIn(expandTreePath(parentPath, "properties", "disabled"));
+
+  // Don't disable if parent is disabled
+  if (isParentDisabled) {
+    return state;
+  }
+
+  /**
+   * @param {Immutable.Map} item
+   * @param {boolean} isDisabled
+   */
+  function disableRecursive(item, isDisabled) {
+    if (!item) return;
+    const currentPath = item.get("path");
+    const children = item.get("children1");
+
+    // We would be mutating state, but state is an Immutable.Map
+    state = state.setIn(expandTreePath(currentPath, "properties", "disabled"), isDisabled);
+    if (children) {
+      children.map((child, _childId) => {
+        disableRecursive(child, isDisabled);
+      });
+    }
+  }
+
+  const isDisabled = state.getIn(expandTreePath(path, "properties", "disabled")) || false;
+  const startingItem = state.getIn(expandTreePath(path));
+
+  disableRecursive(startingItem, !isDisabled);
+  return state;
+};
+
+/**
+ * @param {Immutable.Map} state
  * @param {Immutable.List} fromPath
  * @param {Immutable.List} toPath
  * @param {string} placement, see constants PLACEMENT_*: PLACEMENT_AFTER, PLACEMENT_BEFORE, PLACEMENT_APPEND, PLACEMENT_PREPEND
@@ -220,7 +284,7 @@ const moveItem = (state, fromPath, toPath, placement, config) => {
 
   const to = getItemByPath(state, toPath);
   const targetPath = (placement == constants.PLACEMENT_APPEND || placement == constants.PLACEMENT_PREPEND) ? toPath : toPath.pop();
-  const target = (placement == constants.PLACEMENT_APPEND || placement == constants.PLACEMENT_PREPEND) 
+  const target = (placement == constants.PLACEMENT_APPEND || placement == constants.PLACEMENT_PREPEND)
     ? to
     : toPath.size > 1 ? getItemByPath(state, targetPath) : null;
   const targetChildren = target ? target.get("children1") : null;
@@ -229,9 +293,9 @@ const moveItem = (state, fromPath, toPath, placement, config) => {
     return state;
 
   const isSameParent = (source.get("id") == target.get("id"));
-  const isSourceInsideTarget = targetPath.size < sourcePath.size 
+  const isSourceInsideTarget = targetPath.size < sourcePath.size
         && deepEqual(targetPath.toArray(), sourcePath.toArray().slice(0, targetPath.size));
-  const isTargetInsideSource = targetPath.size > sourcePath.size 
+  const isTargetInsideSource = targetPath.size > sourcePath.size
         && deepEqual(sourcePath.toArray(), targetPath.toArray().slice(0, sourcePath.size));
   let sourceSubpathFromTarget = null;
   let targetSubpathFromSource = null;
@@ -256,7 +320,7 @@ const moveItem = (state, fromPath, toPath, placement, config) => {
         if (itemId == to.get("id") && placement == constants.PLACEMENT_BEFORE) {
           r.set(from.get("id"), from);
         }
-                
+
         r.set(itemId, item);
 
         if (itemId == to.get("id") && placement == constants.PLACEMENT_AFTER) {
@@ -427,7 +491,7 @@ const setValue = (state, path, delta, value, valueType, config, __isInternal) =>
   const canFix = false;
   const calculatedValueType = valueType || calculateValueType(value, valueSrc, config);
   const [validateError, fixedValue] = validateValue(config, field, field, operator, value, calculatedValueType, valueSrc, canFix, isEndValue);
-    
+
   const isValid = !validateError;
   if (isValid && fixedValue !== value) {
     // eg, get exact value from listValues (not string)
@@ -441,7 +505,7 @@ const setValue = (state, path, delta, value, valueType, config, __isInternal) =>
     const operatorConfig = getOperatorConfig(config, operator, field);
     const operatorCardinality = operator ? defaultValue(operatorConfig.cardinality, 1) : null;
     const valueSrcs = Array.from({length: operatorCardinality}, (_, i) => (state.getIn(expandTreePath(path, "properties", "valueSrc", i + "")) || null));
-        
+
     if (operatorConfig && operatorConfig.validateValues && valueSrcs.filter(vs => vs == "value" || vs == null).length == operatorCardinality) {
       const values = Array.from({length: operatorCardinality}, (_, i) => (i == delta ? value : state.getIn(expandTreePath(path, "properties", "value", i + "")) || null));
       const jsValues = fieldWidgetDefinition && fieldWidgetDefinition.toJS ? values.map(v => fieldWidgetDefinition.toJS(v, fieldWidgetDefinition)) : values;
@@ -450,7 +514,7 @@ const setValue = (state, path, delta, value, valueType, config, __isInternal) =>
       state = state.setIn(expandTreePath(path, "properties", "valueError", operatorCardinality), rangeValidateError);
     }
   }
-    
+
   const lastValue = state.getIn(expandTreePath(path, "properties", "value", delta + ""));
   const lastError = state.getIn(expandTreePath(path, "properties", "valueError", delta));
   const isLastEmpty = lastValue == undefined;
@@ -502,7 +566,7 @@ const setValueSrc = (state, path, delta, srcKey, config) => {
       state = state.setIn(expandTreePath(path, "properties", "valueError", operatorCardinality), null);
     }
   }
-    
+
   if (typeof srcKey === "undefined") {
     state = state.setIn(expandTreePath(path, "properties", "valueSrc", delta + ""), null);
   } else {
@@ -534,7 +598,7 @@ const checkEmptyGroups = (state, config) => {
 
 
 /**
- * 
+ *
  */
 const calculateValueType = (value, valueSrc, config) => {
   let calculatedValueType = null;
@@ -580,7 +644,7 @@ export default (config) => {
   const emptyTree = defaultRoot(config);
   const emptyState = Object.assign({}, {tree: emptyTree}, emptyDrag);
   const unset = {__isInternalValueChange: undefined};
-    
+
   return (state = emptyState, action) => {
     switch (action.type) {
     case constants.SET_TREE:
@@ -604,14 +668,23 @@ export default (config) => {
     case constants.REMOVE_GROUP:
       return Object.assign({}, state, {...unset}, {tree: removeGroup(state.tree, action.path, action.config)});
 
+    case constants.DISABLE_GROUP:
+      return Object.assign({}, state, {...unset}, {tree: disableGroup(state.tree, action.path, action.config)});
+
     case constants.REMOVE_FILTER:
       return Object.assign({}, state, {...unset}, {tree: removeFilter(state.tree, action.path, action.config)});
+
+    case constants.DISABLE_FILTER:
+      return Object.assign({}, state, {...unset}, {tree: disableFilter(state.tree, action.path, action.config)});
 
     case constants.ADD_RULE:
       return Object.assign({}, state, {...unset}, {tree: addItem(state.tree, action.path, "rule", action.id, action.properties, action.config)});
 
     case constants.REMOVE_RULE:
       return Object.assign({}, state, {...unset}, {tree: removeRule(state.tree, action.path, action.config)});
+
+    case constants.DISABLE_RULE:
+      return Object.assign({}, state, {...unset}, {tree: disableRule(state.tree, action.path, action.config)});
 
     case constants.SET_CONJUNCTION:
       return Object.assign({}, state, {...unset}, {tree: setConjunction(state.tree, action.path, action.conjunction)});

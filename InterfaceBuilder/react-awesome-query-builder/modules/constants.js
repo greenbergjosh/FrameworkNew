@@ -2,7 +2,9 @@ export const ADD_GROUP = "ADD_GROUP";
 export const ADD_FILTER = "ADD_FILTER";
 export const SET_FILTER_FIELD = "SET_FILTER_FIELD";
 export const REMOVE_GROUP = "REMOVE_GROUP";
+export const DISABLE_GROUP = "DISABLE_GROUP";
 export const REMOVE_FILTER = "REMOVE_FILTER";
+export const DISABLE_FILTER = "DISABLE_FILTER";
 export const SET_CONJUNCTION = "SET_CONJUNCTION";
 export const SET_NOT = "SET_NOT";
 
@@ -10,6 +12,7 @@ export const ADD_NEW_GROUP = "ADD_NEW_GROUP";
 export const ADD_NEW_FILTER = "ADD_NEW_FILTER";
 export const ADD_RULE = "ADD_RULE";
 export const REMOVE_RULE = "REMOVE_RULE";
+export const DISABLE_RULE = "DISABLE_RULE";
 export const SET_FIELD = "SET_FIELD";
 export const SET_OPERATOR = "SET_OPERATOR";
 export const SET_VALUE = "SET_VALUE";

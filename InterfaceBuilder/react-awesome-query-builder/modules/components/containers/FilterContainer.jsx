@@ -4,6 +4,7 @@ import mapValues from "lodash/mapValues";
 import {pureShouldComponentUpdate} from "../../utils/renderUtils";
 import {connect} from "react-redux";
 import {useOnPropsChanged} from "../../utils/stuff";
+const classNames = require("classnames");
 
 
 export default (Filter) => {
@@ -22,6 +23,7 @@ export default (Filter) => {
       selectedField: PropTypes.string, // for RuleGroup
       parentField: PropTypes.string, //from RuleGroup
       filterFieldName: PropTypes.string,
+      disabled: PropTypes.bool,
       //connected:
       dragging: PropTypes.object, //{id, x, y, w, h}
       isDraggingTempo: PropTypes.bool,
@@ -94,6 +96,10 @@ export default (Filter) => {
       this.props.actions.removeGroup(this.props.path);
     }
 
+    disableSelf = () => {
+      this.props.actions.disableGroup(this.props.path);
+    }
+
     addGroup = () => {
       this.props.actions.addGroup(this.props.path);
     }
@@ -128,7 +134,7 @@ export default (Filter) => {
 
       return (
         <div
-          className={"group-or-rule-container group-container"}
+          className={classNames("group-or-rule-container", "group-container", this.props.disabled ? "filter-disabled" : null)}
           data-id={this.props.id}
         >
           {[
@@ -146,6 +152,7 @@ export default (Filter) => {
               setConjunction={this.dummyFn}
               setNot={this.dummyFn}
               removeSelf={this.dummyFn}
+              disableSelf={this.dummyFn}
               addGroup={this.dummyFn}
               addFilter={this.dummyFn}
               setFilterField={this.dummyFn}
@@ -160,6 +167,7 @@ export default (Filter) => {
               selectedField={this.props.field || null}
               parentField={this.props.parentField || null}
               filterFieldName={this.props.filterFieldName || null}
+              disabled={this.props.disabled}
             /> : null
             ,
             <Filter
@@ -176,6 +184,7 @@ export default (Filter) => {
               setConjunction={isInDraggingTempo ? this.dummyFn : this.setConjunction}
               setNot={isInDraggingTempo ? this.dummyFn : this.setNot}
               removeSelf={isInDraggingTempo ? this.dummyFn : this.removeSelf}
+              disableSelf={isInDraggingTempo ? this.dummyFn : this.disableSelf}
               addGroup={isInDraggingTempo ? this.dummyFn : this.addGroup}
               addFilter={isInDraggingTempo ? this.dummyFn : this.addFilter}
               setFilterField={isInDraggingTempo ? this.dummyFn : this.setFilterField}
@@ -190,6 +199,7 @@ export default (Filter) => {
               selectedField={this.props.field || null}
               parentField={this.props.parentField || null}
               filterFieldName={this.props.filterFieldName || null}
+              disabled={this.props.disabled}
             />
           ]}
         </div>

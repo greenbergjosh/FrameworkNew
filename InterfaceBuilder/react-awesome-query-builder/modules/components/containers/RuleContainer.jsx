@@ -22,6 +22,7 @@ export default (Rule) => {
       operatorOptions: PropTypes.object,
       reordableNodesCnt: PropTypes.number,
       parentField: PropTypes.string, //from RuleGroup
+      disabled: PropTypes.bool,
       //connected:
       dragging: PropTypes.object, //{id, x, y, w, h}
       isDraggingTempo: PropTypes.bool,
@@ -29,7 +30,7 @@ export default (Rule) => {
 
     constructor(props) {
       super(props);
-      
+
       this.dummyFn.isDummyFn = true;
     }
 
@@ -37,6 +38,10 @@ export default (Rule) => {
 
     removeSelf = () => {
       this.props.actions.removeRule(this.props.path);
+    }
+
+    disableSelf = () => {
+      this.props.actions.disableRule(this.props.path);
     }
 
     setField = (field) => {
@@ -98,7 +103,7 @@ export default (Rule) => {
 
       return (
         <div
-          className={classNames("group-or-rule-container", "rule-container", hasError ? "rule-with-error" : null)}
+          className={classNames("group-or-rule-container", "rule-container", hasError ? "rule-with-error" : null, this.props.disabled ? "rule-disabled" : null )}
           data-id={this.props.id}
         >
           {[
@@ -112,6 +117,7 @@ export default (Rule) => {
               setOperator={this.dummyFn}
               setOperatorOption={this.dummyFn}
               removeSelf={this.dummyFn}
+              disableSelf={this.dummyFn}
               setValue={this.dummyFn}
               setValueSrc={this.dummyFn}
               selectedField={this.props.field || null}
@@ -124,6 +130,7 @@ export default (Rule) => {
               config={this.props.config}
               reordableNodesCnt={this.props.reordableNodesCnt}
               totalRulesCnt={this.props.totalRulesCnt}
+              disabled={this.props.disabled}
             /> : null
             ,
             <Rule
@@ -133,6 +140,7 @@ export default (Rule) => {
               isDraggingTempo={isInDraggingTempo}
               onDragStart={this.props.onDragStart}
               removeSelf={isInDraggingTempo ? this.dummyFn : this.removeSelf}
+              disableSelf={isInDraggingTempo ? this.dummyFn : this.disableSelf}
               setField={isInDraggingTempo ? this.dummyFn : this.setField}
               setOperator={isInDraggingTempo ? this.dummyFn : this.setOperator}
               setOperatorOption={isInDraggingTempo ? this.dummyFn : this.setOperatorOption}
@@ -148,6 +156,7 @@ export default (Rule) => {
               config={this.props.config}
               reordableNodesCnt={this.props.reordableNodesCnt}
               totalRulesCnt={this.props.totalRulesCnt}
+              disabled={this.props.disabled}
             />
           ]}
         </div>

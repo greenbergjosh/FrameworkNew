@@ -13,9 +13,9 @@ const defaultPosition = "topRight";
 
 export class FilterActions extends PureComponent {
   render() {
-    const {config, addRule, addGroup, canAddGroup, canAddRule, canDeleteGroup, removeSelf} = this.props;
+    const {config, addRule, addGroup, canAddGroup, canAddRule, canDeleteGroup, canDisableGroup, removeSelf, disableSelf} = this.props;
     const {
-      immutableGroupsMode, addRuleLabel, addGroupLabel, delGroupLabel, groupActionsPosition,
+      immutableGroupsMode, addRuleLabel, addGroupLabel, delGroupLabel, disableGroupLabel, groupActionsPosition,
       renderButton: Btn, renderButtonGroup: BtnGrp
     } = config.settings;
     const position = groupActionsPositionList[groupActionsPosition || defaultPosition];
@@ -29,6 +29,9 @@ export class FilterActions extends PureComponent {
     const delGroupBtn = !immutableGroupsMode && canDeleteGroup && <Btn
       type="delGroup" onClick={removeSelf} label={delGroupLabel} config={config}
     />;
+    const disableGroupBtn = !immutableGroupsMode && canDisableGroup && <Btn
+      type="disableGroup" onClick={disableSelf} label={disableGroupLabel} config={config}
+    />;
 
     return (
       <div className={`group--actions ${position}`}>
@@ -36,6 +39,7 @@ export class FilterActions extends PureComponent {
           {addRuleBtn}
           {addGroupBtn}
           {delGroupBtn}
+          {disableGroupBtn}
         </BtnGrp>
       </div>
     );

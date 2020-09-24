@@ -81,6 +81,11 @@ body.qb-dragging {
   padding: 10px;
 }
 
+.rule-disabled .rule {
+  background-color: rgba(245, 245, 245, 0.2);
+  border: 1px dashed #e8e8e8;
+}
+
 .rule-with-error .rule {
   border: 1px solid #e0a1a1;
 }
@@ -177,6 +182,16 @@ ul.ant-select-selection__rendered {
   border-left: solid 2px #f5f5f5;
 }
 
+.group-disabled > .group > .group--header {
+  background-color: rgba(245, 245, 245, 0.2);
+  border: 1px dashed #e8e8e8;
+}
+
+.filter-disabled > .group > .group--header {
+  background-color: rgba(245, 245, 245, 0.2);
+  border: 1px dashed #e8e8e8;
+}
+
 .group--header,
 .group--footer{
 @extend %flex;
@@ -203,7 +218,7 @@ padding-left: 24px;
         width: 24px;
         height: calc(50% + 8px);
         border-color: #CCC;
-        border-style: solid;    
+        border-style: solid;
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;
         box-sizing: border-box;
@@ -377,7 +392,7 @@ padding-left: 24px;
   margin-right: 8px;
 }
 
-.rule--field, .group--field, .rule--operator, .rule--value, .rule--operator-options, .rule--widget, 
+.rule--field, .group--field, .rule--operator, .rule--value, .rule--operator-options, .rule--widget,
 .widget--widget, .widget--valuesrc, .widget--sep, .operator--options--sep,
 .rule--before-widget, .rule--after-widget {
   display: inline-block;
@@ -466,7 +481,7 @@ div.tooltip-inner {
 /** FUNC **********************************************************************/
 /******************************************************************************/
 
-.rule--func--wrapper, .rule--func, .rule--func--args, .rule--func--arg, .rule--func--arg-value, 
+.rule--func--wrapper, .rule--func, .rule--func--args, .rule--func--arg, .rule--func--arg-value,
 .rule--func--bracket-before, .rule--func--bracket-after, .rule--func--arg-sep,
 .rule--func--arg-label, .rule--func--arg-label-sep {
   display: inline-block;

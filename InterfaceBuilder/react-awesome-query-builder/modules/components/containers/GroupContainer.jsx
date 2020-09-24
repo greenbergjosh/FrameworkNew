@@ -4,6 +4,7 @@ import mapValues from "lodash/mapValues";
 import {pureShouldComponentUpdate} from "../../utils/renderUtils";
 import {connect} from "react-redux";
 import {useOnPropsChanged} from "../../utils/stuff";
+const classNames = require("classnames");
 
 
 export default (Group) => {
@@ -21,6 +22,7 @@ export default (Group) => {
       reordableNodesCnt: PropTypes.number,
       selectedField: PropTypes.string, // for RuleGroup
       parentField: PropTypes.string, //from RuleGroup
+      disabled: PropTypes.bool,
       //connected:
       dragging: PropTypes.object, //{id, x, y, w, h}
       isDraggingTempo: PropTypes.bool,
@@ -93,6 +95,10 @@ export default (Group) => {
       this.props.actions.removeGroup(this.props.path);
     }
 
+    disableSelf = () => {
+      this.props.actions.disableGroup(this.props.path);
+    }
+
     addGroup = () => {
       this.props.actions.addGroup(this.props.path);
     }
@@ -123,7 +129,7 @@ export default (Group) => {
 
       return (
         <div
-          className={"group-or-rule-container group-container"}
+          className={classNames("group-or-rule-container", "group-container", this.props.disabled ? "group-disabled" : null)}
           data-id={this.props.id}
         >
           {[
@@ -141,6 +147,7 @@ export default (Group) => {
               setConjunction={this.dummyFn}
               setNot={this.dummyFn}
               removeSelf={this.dummyFn}
+              disableSelf={this.dummyFn}
               addGroup={this.dummyFn}
               addFilter={this.dummyFn}
               addRule={this.dummyFn}
@@ -153,6 +160,7 @@ export default (Group) => {
               totalRulesCnt={this.props.totalRulesCnt}
               selectedField={this.props.field || null}
               parentField={this.props.parentField || null}
+              disabled={this.props.disabled}
             /> : null
             ,
             <Group
@@ -169,6 +177,7 @@ export default (Group) => {
               setConjunction={isInDraggingTempo ? this.dummyFn : this.setConjunction}
               setNot={isInDraggingTempo ? this.dummyFn : this.setNot}
               removeSelf={isInDraggingTempo ? this.dummyFn : this.removeSelf}
+              disableSelf={isInDraggingTempo ? this.dummyFn : this.disableSelf}
               addGroup={isInDraggingTempo ? this.dummyFn : this.addGroup}
               addFilter={isInDraggingTempo ? this.dummyFn : this.addFilter}
               addRule={isInDraggingTempo ? this.dummyFn : this.addRule}
@@ -181,6 +190,7 @@ export default (Group) => {
               totalRulesCnt={this.props.totalRulesCnt}
               selectedField={this.props.field || null}
               parentField={this.props.parentField || null}
+              disabled={this.props.disabled}
             />
           ]}
         </div>

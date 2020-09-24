@@ -21,7 +21,7 @@ const typeMap = {
     />
   ),
   group: (props) => (
-    <Group 
+    <Group
       {...props.properties.toObject()}
       id={props.id}
       path={props.path}
@@ -37,7 +37,7 @@ const typeMap = {
     />
   ),
   rule_group: (props) => (
-    <RuleGroup 
+    <RuleGroup
       {...props.properties.toObject()}
       id={props.id}
       path={props.path}
@@ -85,6 +85,7 @@ class Item extends PureComponent {
     onDragStart: PropTypes.func,
     parentField: PropTypes.string, //from RuleGroup
     isDraggingTempo: PropTypes.bool,
+    disabled: PropTypes.bool,
   };
 
   render() {
