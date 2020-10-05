@@ -127,7 +127,7 @@ namespace UnsubLib
             return network;
         }
 
-        public async Task ManualDirectory(IGenericEntity network, bool isManual)
+        public async Task ManualDirectory(IGenericEntity network, string networkCampaignId = null)
         {
             var networkName = network.GetS("Name");
             var path = Path.Combine(ManualFilePath, networkName);
@@ -141,7 +141,7 @@ namespace UnsubLib
             }
 
             await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"Before ManualJob: {di}");
-            await ManualJob(di, network);
+            await ManualJob(di, network, networkCampaignId);
             await _fw.Log($"{nameof(ManualDirectory)}-{networkName}", $"After ManualJob: {di}");
         }
 
@@ -231,7 +231,11 @@ namespace UnsubLib
                     return Jw.Serialize(new { ServerException = new { reason = $"networkCampaignId is required" } });
                 }
 
-                _ = Task.Run(async () => await ScheduledUnsubJob(network, networkCampaignId, true));
+                _ = Task.Run(async () =>
+                {
+                    await ScheduledUnsubJob(network, networkCampaignId, true);
+                    await ManualDirectory(network, networkCampaignId);
+                });
 
                 return Jw.Serialize(new { OK = true });
             }
@@ -252,7 +256,7 @@ namespace UnsubLib
             await _fw.Trace($"{nameof(ForceDirectory)}-{networkName}", $"Completed: {dir}");
         }
 
-        public async Task ManualJob(DirectoryInfo dir, IGenericEntity network)
+        public async Task ManualJob(DirectoryInfo dir, IGenericEntity network, string networkCampaignIdFilter = null)
         {
             var networkName = network.GetS("Name");
             var networkId = network.GetS("Id");
@@ -298,6 +302,10 @@ namespace UnsubLib
                     if (cd.type == "c")
                     {
                         var networkCampaignId = cd.id;
+                        if (!string.IsNullOrWhiteSpace(networkCampaignIdFilter) && networkCampaignId != networkCampaignIdFilter)
+                        {
+                            continue;
+                        }
 
                         if (cd.campaignDataFile.Exists)
                         {
@@ -344,7 +352,7 @@ namespace UnsubLib
                             continue;
                         }
 
-                        var cmps = res?.GetL("").ToArray();
+                        var cmps = res?.GetL("").Where(c => string.IsNullOrWhiteSpace(networkCampaignIdFilter) || networkCampaignIdFilter == c.GetS("NetworkCampaignId")).ToArray();
 
                         if (!cmps.Any())
                         {
@@ -1107,18 +1115,18 @@ namespace UnsubLib
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-            try
-            {
-                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+                try
+                {
+                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-            }
-            catch (Exception exClean)
-            {
-                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-            }
+                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+                }
+                catch (Exception exClean)
+                {
+                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+                }
 #if DEBUG
             }
 #endif

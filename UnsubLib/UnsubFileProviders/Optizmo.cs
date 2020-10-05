@@ -144,7 +144,7 @@ namespace UnsubLib.UnsubFileProviders
                 //https://mailer-api.optizmo.net/accesskey/download/m-zvnv-i13-7e6680de24eb50b1e795517478d0c959?token=lp1fURUWHOOkPnEq6ec0hrRAe3ezcfVK&format=md5
                 var optizmoUrl = new StringBuilder("https://mailer-api.optizmo.net/accesskey/download/");
                 optizmoUrl.Append(pathParts[^1]);
-                optizmoUrl.Append($"?token={optizmoToken}&format=md5");
+                optizmoUrl.Append($"?token={optizmoToken}");
                 //503 Service Unavailable
                 var retryCount = 0;
                 var retryWalkaway = new[] { 1, 10, 50, 100, 300 };
