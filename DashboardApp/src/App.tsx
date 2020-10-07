@@ -33,6 +33,7 @@ import { getCustomEditorConstructionOptions } from "./components/custom-ib-compo
 import { SelectInterfaceComponent } from "./components/custom-ib-components/select/SelectInterfaceComponent"
 import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/TagsInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
+import { PieInterfaceComponent } from "./components/custom-ib-components/chart/pie/PieInterfaceComponent"
 import { withEventManager } from "./components/event-manager/event-manager"
 
 const persistor = getPersistor()
@@ -81,14 +82,15 @@ export function App(): JSX.Element {
     registry.register(wrapLibWithEventManager(antComponents))
     registry.register(wrapLibWithEventManager(nivoComponents))
     registry.register(wrapLibWithEventManager(htmlComponents))
-    registry.register({ query: QueryInterfaceComponent })
+    registry.register({ query: withEventManager(QueryInterfaceComponent) })
     registry.register({ execute: withEventManager(ExecuteInterfaceComponent) })
     registry.register({ "path-editor": PathEditorInterfaceComponent })
     registry.register({ "remote-component": RemoteComponentInterfaceComponent })
-    registry.register({ "slot-config": SlotConfigInterfaceComponent })
-    registry.register({ "string-template": StringTemplateInterfaceComponent })
+    registry.register({ "slot-config": withEventManager(SlotConfigInterfaceComponent) })
+    registry.register({ "string-template": withEventManager(StringTemplateInterfaceComponent) })
     registry.register({ select: withEventManager(SelectInterfaceComponent) })
-    registry.register({ tags: TagsInterfaceComponent })
+    registry.register({ tags: withEventManager(TagsInterfaceComponent) })
+    registry.register({ pie: withEventManager(PieInterfaceComponent) })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
   }, [])
 

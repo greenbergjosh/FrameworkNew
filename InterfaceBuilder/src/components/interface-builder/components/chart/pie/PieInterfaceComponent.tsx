@@ -1,13 +1,20 @@
 import React from "react"
 import { pieManageForm } from "./pie-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { ResponsivePie } from "@nivo/pie"
+import { ResponsivePie, PieDatum } from "@nivo/pie"
 import { InheritedColorProp } from "@nivo/colors"
-import { emptyDataSet, legends, convertToPieDatum, getNivoColorScheme } from "./utils"
+import { legends, convertToPieDatum, getNivoColorScheme, emptyDataSet } from "./utils"
 import { get, isEqual } from "lodash/fp"
-import { PieInterfaceComponentProps, PieInterfaceComponentState } from "./types"
+import {
+  PieInterfaceComponentProps,
+  PieInterfaceComponentState,
+  SliceLabelValueFunction,
+  SliceTooltipFunction,
+  OtherSliceAggregatorFunction,
+} from "./types"
 import { Spin } from "antd"
-import { tryCatch } from "fp-ts/lib/Option"
+import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export class PieInterfaceComponent extends BaseInterfaceComponent<
   PieInterfaceComponentProps,
@@ -30,7 +37,11 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
 
   constructor(props: PieInterfaceComponentProps) {
     super(props)
-    this.state = { pieDatum: emptyDataSet, loading: true, tooltipFunction: undefined }
+    this.state = {
+      pieData: emptyDataSet,
+      loading: true,
+      tooltipFunction: undefined,
+    }
   }
 
   componentDidUpdate(prevProps: Readonly<PieInterfaceComponentProps>): void {
@@ -45,10 +56,12 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
         "sliceLabelValueType",
         "sliceLabelValueKey",
         "sliceLabelValueFunction",
+        "sliceLabelValueFunctionSrc",
         "threshold",
         "valueKey",
         "preSorted",
         "otherAggregatorFunction",
+        "otherAggregatorFunctionSrc",
       ])
     ) {
       const {
@@ -57,53 +70,73 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
         sliceLabelValueType,
         sliceLabelValueKey,
         sliceLabelValueFunction,
+        sliceLabelValueFunctionSrc,
         threshold,
         userInterfaceData,
         valueKey,
         preSorted,
         otherAggregatorFunction,
+        otherAggregatorFunctionSrc,
       } = this.props
-      const rawData = get(valueKey, userInterfaceData)
-      const data = convertToPieDatum({
+
+      const rawData: JSONRecord[] = get(valueKey, userInterfaceData)
+
+      const labelValueFunction = sliceLabelValueFunction
+        ? sliceLabelValueFunction
+        : parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
+
+      const otherSliceAggregatorFunction = otherAggregatorFunction
+        ? otherAggregatorFunction
+        : parseLBM<OtherSliceAggregatorFunction>(otherAggregatorFunctionSrc)
+
+      const pieData = convertToPieDatum({
         data: rawData,
         labelNameKey: sliceLabelKey,
         labelValueType: sliceLabelValueType,
         labelValueKey: sliceLabelValueKey,
-        labelValueFunction: sliceLabelValueFunction,
+        labelValueFunction,
         valueKey: sliceValueKey,
         dataIsPreSorted: preSorted,
         threshold,
-        otherAggregatorFunction,
+        otherSliceAggregatorFunction,
         props: this.props,
       })
 
-      this.setState({ pieDatum: data, loading: false })
+      this.setState({ pieData, loading: false })
     }
 
-    if (this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction"])) {
+    if (this.anyPropsChanged(prevProps, ["useTooltipFunction", "tooltipFunction", "tooltipFunctionSrc"])) {
       this.createTooltipFunction()
     }
   }
 
   componentDidMount() {
-    if (this.props.useTooltipFunction && this.props.tooltipFunction) {
+    if (this.props.useTooltipFunction && (this.props.tooltipFunction || this.props.tooltipFunctionSrc)) {
       this.createTooltipFunction()
     }
   }
 
   private createTooltipFunction(): void {
-    const { useTooltipFunction, tooltipFunction } = this.props
-    const myProps = this.props
-    const parsedTooltipFunction =
-      useTooltipFunction && tooltipFunction && tryCatch(() => new Function(`return ${tooltipFunction}`)()).toUndefined()
-    let wrappedTooltipFunction: Function | undefined = undefined
-    if (parsedTooltipFunction && this.props.mode !== "edit") {
-      wrappedTooltipFunction = function (item: { data: any }) {
-        return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(item.data, myProps) }} />
+    const { useTooltipFunction, tooltipFunctionSrc, tooltipFunction } = this.props
+    if (!useTooltipFunction) {
+      this.setState({ tooltipFunction: undefined })
+    } else {
+      const me = this
+      const parsedTooltipFunction = tooltipFunction
+        ? tooltipFunction
+        : parseLBM<SliceTooltipFunction>(tooltipFunctionSrc)
+      let wrappedTooltipFunction: Function | undefined = undefined
+      if (parsedTooltipFunction && this.props.mode !== "edit") {
+        wrappedTooltipFunction = function (item: PieDatum) {
+          const datum = me.state.pieData[parseInt(item.id.toString())]
+          if (datum) {
+            return <div dangerouslySetInnerHTML={{ __html: parsedTooltipFunction(datum.slice, me.props) }} />
+          }
+        }
       }
-    }
 
-    this.setState({ tooltipFunction: wrappedTooltipFunction })
+      this.setState({ tooltipFunction: wrappedTooltipFunction })
+    }
   }
 
   render(): JSX.Element {
@@ -119,7 +152,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             borderColor={borderColor}
             borderWidth={1}
             colors={getNivoColorScheme(colorScheme)}
-            data={this.state.pieDatum || []}
+            data={this.state.pieData.map((item) => item.pieDatum) || []}
+            isInteractive={this.state.pieData != emptyDataSet}
             innerRadius={donut ? 0.5 : undefined}
             legends={showLegend ? legends : undefined}
             margin={margin}
