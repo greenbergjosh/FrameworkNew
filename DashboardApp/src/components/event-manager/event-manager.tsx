@@ -36,6 +36,10 @@ class EventManagerProps {
   incomingEventHandlers: IncomingEventHandler[] = []
 }
 
+class EventManagerState {
+  mutatedProps: Record<string, any> = {}
+}
+
 /**
  * EXAMPLE USAGE:
  * You can apply this hook when registering InterfaceBuilder components like so...
@@ -64,11 +68,12 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
 
   const manageFormWithEvents = getManageForm(WrappedComponent)
 
-  class ComponentWithEvents extends BaseInterfaceComponent<T & EventManagerProps, Y> {
+  class ComponentWithEvents extends BaseInterfaceComponent<T & EventManagerProps, Y & EventManagerState> {
     private currentRef: any
     constructor(props: T & EventManagerProps) {
       super(props)
       this.currentRef = React.createRef()
+      this.state = { ...this.state, mutatedProps: {} }
     }
 
     displayName = `withEvents(${getDisplayName(WrappedComponent)})`
@@ -81,7 +86,6 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
     }
 
     private subscriptionIds: { eventName: string; subscriptionId: number }[] = []
-    private mutatedProps: Record<string, any> = {}
 
     componentDidMount() {
       if (!this.context) {
@@ -177,13 +181,14 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
           eventHandlerParameters,
           this.currentRef.current
         )
-        this.mutatedProps = { ...this.mutatedProps, ...mutatedProps }
+        this.setState((prevState) => ({ ...prevState, mutatedProps }))
       }
     }
 
     render() {
       const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
-      const mergedProps = { ...passThroughProps, ...this.mutatedProps }
+      const mutatedProps = this.state ? this.state.mutatedProps : {}
+      const mergedProps = { ...passThroughProps, ...mutatedProps }
       return (
         <WrappedComponent
           ref={this.currentRef}

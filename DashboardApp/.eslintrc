@@ -66,7 +66,8 @@
     "react/display-name": 0,
     "react/no-children-prop": 0,
     "react/prop-types": 0,
-    "no-console": 0
+    "no-console": 0,
+    "no-multi-str": 0
   },
   "settings": {
     "react": {

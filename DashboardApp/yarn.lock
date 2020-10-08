@@ -10641,7 +10641,7 @@ react-app-rewired@2.1.6:
   dependencies:
     semver "^5.6.0"
 
-"react-awesome-query-builder@link:../../react-awesome-query-builder":
+"react-awesome-query-builder@link:../InterfaceBuilder/react-awesome-query-builder":
   version "0.0.0"
   uid ""
 

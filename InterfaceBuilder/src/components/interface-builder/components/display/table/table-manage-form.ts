@@ -5,7 +5,7 @@ export const tableManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...tableManageFormDefinition, ...extend)
 }
 
-const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
+export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
   {
     key: "base",
     components: [

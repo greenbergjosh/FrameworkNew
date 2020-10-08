@@ -9,6 +9,13 @@ import { DisplayTable } from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
 
 export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfaceComponentProps> {
+
+  static defaultProps = {
+    userInterfaceData: {},
+    valueKey: "data",
+    showBorder: true,
+  }
+
   static getLayoutDefinition() {
     return {
       category: "Display",

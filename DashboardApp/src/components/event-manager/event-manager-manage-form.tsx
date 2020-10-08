@@ -86,7 +86,6 @@ export const eventManagerManageFormDefinition: Partial<ComponentDefinition>[] = 
                     component: "data-dictionary",
                     valueComponent: [
                       {
-                        incomingEventHandlers: [],
                         size: "default",
                         invisible: false,
                         hidden: false,

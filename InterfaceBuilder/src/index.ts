@@ -5,6 +5,8 @@ import "./styles/index.scss"
 export * as utils from "./components/interface-builder/components/_shared/LBM/parseLBM"
 export * as StringTemplate from "./components/interface-builder/components/special/string-template"
 export * as QueryBuilder from "./components/interface-builder/components/special/query-builder"
+export * as Pie from "./components/interface-builder/components/chart/pie"
+export * as Table from "./components/interface-builder/components/display/table"
 
 /**
  * Framework
