@@ -4,6 +4,7 @@ import {
   ComponentDefinitionNamedProps,
 } from "components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 interface ColumnSortOptions {
   allowSorting?: boolean
@@ -18,7 +19,7 @@ interface ColumnGroupOptions {
 
 export type ColumnConfig = ColumnModel & ColumnSortOptions & ColumnGroupOptions
 
-interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
+export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
   allowAdding?: boolean
   allowDeleting?: boolean
@@ -39,6 +40,8 @@ interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey: string
 }
+
+export interface TableInterfaceComponentState {}
 
 export interface TableInterfaceComponentDisplayModeProps extends ITableInterfaceComponentProps {
   mode: "display"
