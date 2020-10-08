@@ -88,6 +88,13 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
     private subscriptionIds: { eventName: string; subscriptionId: number }[] = []
 
     componentDidMount() {
+      if (!this.context) {
+        console.warn(
+          "withEventManager",
+          "Event Manager cannot work properly without a UserInterfaceContext in the React hierarchy"
+        )
+        return
+      }
       const { loadById } = this.context as AdminUserInterfaceContextManager
       this.props.incomingEventHandlers &&
         this.props.incomingEventHandlers.forEach((eventInfo: IncomingEventHandler) => {
