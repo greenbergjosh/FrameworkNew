@@ -1,5 +1,4 @@
-import { baseManageForm } from "../../base/base-component-form"
-import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
+import { baseManageForm, ComponentDefinition } from "@opg/interface-builder"
 
 export const pieManageForm = (...extend: Partial<ComponentDefinition>[]) => {
   return baseManageForm(...PieManageFormDefinition, ...extend)
@@ -41,10 +40,11 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "sliceLabelValueType",
                 valueKey: "sliceLabelValueType",
                 label: "Slice Label Value Type",
-                help: `How to display the slice label:
-                Default: The value of the slice
-                Key: The property to display
-                Function: A function that receives the slice and returns a formatted string displayed as the value of the slice.`,
+                help:
+                  "How to display the slice label: \
+                Default: The value of the slice\
+                Key: The property to display\
+                Function: A function that receives the slice and returns a formatted string displayed as the value of the slice.",
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "default",
@@ -81,12 +81,38 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
               {
-                key: "sliceLabelValueFunctionSrc",
-                valueKey: "sliceLabelValueFunctionSrc",
-                defaultTheme: "vs-dark",
-                defaultLanguage: "javascript",
-                component: "code-editor",
-                height: 100,
+                key: "sliceLabelValueFunctionConfigId",
+                valueKey: "sliceLabelValueFunctionConfigId",
+                label: "Slice Label Value Function",
+                component: "select",
+                dataHandlerType: "remote-config",
+                remoteConfigType: "Components.PieChart.SliceLabelValueFunction",
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["sliceLabelValueType"],
+                    },
+                    "function",
+                  ],
+                },
+              },
+              {
+                keyLabel: "Parameter Name",
+                valueKey: "sliceLabelValueFunctionParameters",
+                label: "Function Parameters",
+                component: "data-dictionary",
+                valueComponent: [
+                  {
+                    size: "default",
+                    invisible: false,
+                    hidden: false,
+                    maxLength: null,
+                    valueKey: "value",
+                    label: "Parameter Value",
+                    hideLabel: true,
+                    component: "input",
+                  },
+                ],
                 visibilityConditions: {
                   "===": [
                     {
@@ -105,12 +131,38 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                   "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
               },
               {
-                key: "tooltipFunctionSrc",
-                valueKey: "tooltipFunctionSrc",
-                defaultTheme: "vs-dark",
-                defaultLanguage: "javascript",
-                component: "code-editor",
-                height: 100,
+                key: "tooltipFunctionConfigId",
+                valueKey: "tooltipFunctionConfigId",
+                label: "Tooltip Function",
+                component: "select",
+                dataHandlerType: "remote-config",
+                remoteConfigType: "Components.PieChart.TooltipFunction",
+                visibilityConditions: {
+                  "===": [
+                    {
+                      var: ["useTooltipFunction"],
+                    },
+                    true,
+                  ],
+                },
+              },
+              {
+                keyLabel: "Parameter Name",
+                valueKey: "tooltipFunctionParameters",
+                label: "Function Parameters",
+                component: "data-dictionary",
+                valueComponent: [
+                  {
+                    size: "default",
+                    invisible: false,
+                    hidden: false,
+                    maxLength: null,
+                    valueKey: "value",
+                    label: "Parameter Value",
+                    hideLabel: true,
+                    component: "input",
+                  },
+                ],
                 visibilityConditions: {
                   "===": [
                     {
@@ -212,15 +264,38 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: 0,
               },
               {
-                key: "otherAggregatorFunctionSrc",
-                valueKey: "otherAggregatorFunctionSrc",
-                label: "Other slice aggregator",
-                help:
-                  'A function that receives all slices below the threshold and returns the data for the "Other" slice. Note: By default the value will be summed.',
-                defaultTheme: "vs-dark",
-                defaultLanguage: "javascript",
-                component: "code-editor",
-                height: 100,
+                key: "otherAggregatorFunctionConfigId",
+                valueKey: "otherAggregatorFunctionConfigId",
+                label: "Other Slice Aggregator Function",
+                component: "select",
+                dataHandlerType: "remote-config",
+                remoteConfigType: "Components.PieChart.OtherSliceAggregatorFunction",
+                visibilityConditions: {
+                  ">": [
+                    {
+                      var: ["threshold"],
+                    },
+                    0,
+                  ],
+                },
+              },
+              {
+                keyLabel: "Parameter Name",
+                valueKey: "otherAggregatorFunctionParameters",
+                label: "Function Parameters",
+                component: "data-dictionary",
+                valueComponent: [
+                  {
+                    size: "default",
+                    invisible: false,
+                    hidden: false,
+                    maxLength: null,
+                    valueKey: "value",
+                    label: "Parameter Value",
+                    hideLabel: true,
+                    component: "input",
+                  },
+                ],
                 visibilityConditions: {
                   ">": [
                     {
