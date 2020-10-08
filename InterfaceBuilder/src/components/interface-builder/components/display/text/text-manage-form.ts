@@ -72,7 +72,115 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                       label: "Title",
                       value: "title",
                     },
+                    {
+                      label: "Success",
+                      value: "success",
+                    },
+                    {
+                      label: "Info",
+                      value: "info",
+                    },
+                    {
+                      label: "Warning",
+                      value: "warning",
+                    },
+                    {
+                      label: "Error",
+                      value: "error",
+                    },
                   ],
+                },
+              },
+              {
+                key: "showIcon",
+                valueKey: "showIcon",
+                label: "Show Icon",
+                component: "toggle",
+                defaultValue: false,
+                visibilityConditions: {
+                  or: [
+                    {
+                      "===": ["success", { var: "textType" }],
+                    },
+                    {
+                      "===": ["info", { var: "textType" }],
+                    },
+                    {
+                      "===": ["warning", { var: "textType" }],
+                    },
+                    {
+                      "===": ["error", { var: "textType" }],
+                    },
+                  ]
+                },
+              },
+              {
+                key: "description",
+                valueKey: "description",
+                component: "input",
+                label: "Description",
+                defaultValue: "",
+                visibilityConditions: {
+                  or: [
+                    {
+                      "===": ["success", { var: "textType" }],
+                    },
+                    {
+                      "===": ["info", { var: "textType" }],
+                    },
+                    {
+                      "===": ["warning", { var: "textType" }],
+                    },
+                    {
+                      "===": ["error", { var: "textType" }],
+                    },
+                  ]
+                },
+              },
+              {
+                key: "banner",
+                valueKey: "banner",
+                label: "Banner",
+                component: "toggle",
+                defaultValue: false,
+                visibilityConditions: {
+                  or: [
+                    {
+                      "===": ["success", { var: "textType" }],
+                    },
+                    {
+                      "===": ["info", { var: "textType" }],
+                    },
+                    {
+                      "===": ["warning", { var: "textType" }],
+                    },
+                    {
+                      "===": ["error", { var: "textType" }],
+                    },
+                  ]
+                },
+              },
+              {
+                key: "closable",
+                valueKey: "closable",
+                label: "Closeable",
+                component: "toggle",
+                defaultValue: false,
+                visibilityConditions: {
+                  or: [
+                    {
+                      "===": ["success", { var: "textType" }],
+                    },
+                    {
+                      "===": ["info", { var: "textType" }],
+                    },
+                    {
+                      "===": ["warning", { var: "textType" }],
+                    },
+                    {
+                      "===": ["error", { var: "textType" }],
+                    },
+                  ]
                 },
               },
               {

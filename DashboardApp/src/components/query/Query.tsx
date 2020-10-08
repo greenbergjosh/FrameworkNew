@@ -229,7 +229,7 @@ export class Query<T = any> extends React.Component<QueryProps<T>, QueryState<T>
     remoteDataFilter: JSONObject | undefined,
     remoteConfigType: PersistedConfig["id"],
     remoteConfigTypeParentName: null | string | Brand<NonEmptyStringBrand>
-  ) {
+  ): (config: PersistedConfig) => boolean {
     return remoteDataFilter
       ? (config: PersistedConfig) => {
           const parsedConfig = {

@@ -1,20 +1,20 @@
 import React from "react"
-import { set } from "lodash/fp"
 import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
-import { JSONRecord } from "../../../data/JSON"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
-import { QueryForm } from "../../query/QueryForm"
 import { executeManageForm } from "./execute-manage-form"
-import { ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState } from "./types"
-import { getConfig, getResultData } from "./queryConfig/utils"
-import { executeRemoteQuery } from "./queryConfig/remoteQuery"
-import { executeRemoteUrl } from "./queryConfig/remoteUrl"
-import { QueryParams } from "../../query/QueryParams"
-import * as record from "fp-ts/lib/Record"
-import { Option, some } from "fp-ts/lib/Option"
-import { HTTPRequestQueryConfig, QueryConfig } from "../../../data/Report"
+import {
+  ActionType,
+  ExecuteInterfaceComponentProps,
+  ExecuteInterfaceComponentState,
+  ExecuteRemoteConfigInterfaceComponentProps,
+  ExecuteRemoteQueryInterfaceComponentProps,
+  ExecuteRemoteUrlInterfaceComponentProps,
+  OnMountType,
+} from "./types"
+import RemoteConfig from "./components/RemoteConfig/RemoteConfig"
+import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
+import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { Empty } from "antd"
+import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -25,7 +25,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     valueKey: "data",
     inboundValueKey: "data",
   }
-
   static getLayoutDefinition() {
     return {
       category: "Special",
@@ -39,11 +38,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       },
     }
   }
-
   static manageForm = executeManageForm
   static contextType = UserInterfaceContext
   context!: React.ContextType<typeof UserInterfaceContext>
-
   autoExecuteTimer?: ReturnType<typeof setInterval> | null
 
   constructor(props: ExecuteInterfaceComponentProps) {
@@ -58,62 +55,19 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  submit(): void {
+  /**
+   * Public method for external clients to trigger a submit
+   * @public
+   */
+  public submit(): void {
     console.log("ExecuteInterfaceComponent", "submit")
     this.setState({ submittingQueryForm: true })
   }
 
-  /* ***************************************************************************
+  /* ******************************************
    *
    * EVENT HANDLERS
    */
-
-  componentDidMount(): void {
-    this.putQueryConfigIntoState()
-  }
-
-  /**
-   * Put the query config from Persisted Global Configs into state
-   * Originally from Query.tsx
-   */
-  private putQueryConfigIntoState() {
-    const { queryType, remoteQuery, remoteUrl, remoteConfigType } = this.props
-
-    if (!this.context) {
-      console.warn(
-        "ExecuteInterfaceComponent",
-        "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
-      )
-      return
-    }
-    if (!queryType) return
-
-    let persistedConfigId: PersistedConfig["id"]
-    switch (queryType) {
-      case "remote-query":
-        persistedConfigId = remoteQuery as PersistedConfig["id"]
-        break
-      case "remote-url":
-        persistedConfigId = remoteUrl as PersistedConfig["id"]
-        break
-      case "remote-config":
-        persistedConfigId = remoteConfigType as PersistedConfig["id"]
-        break
-    }
-
-    const { loadById } = this.context as AdminUserInterfaceContextManager
-    const persistedConfig = loadById(persistedConfigId) as PersistedConfig
-
-    if (!persistedConfig) {
-      console.warn("persistedConfig not found!")
-      return
-    }
-    const newState = getConfig(persistedConfig)
-    this.setState((state) => ({
-      ...state,
-      ...newState,
-    }))
-  }
 
   componentWillUnmount(): void {
     if (this.autoExecuteTimer) {
@@ -122,145 +76,116 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     }
   }
 
-  componentDidUpdate(prevProps: Readonly<ExecuteInterfaceComponentProps>): void {
-    /*
-     * Update queryConfig if any relevant config props have change */
-    if (
-      prevProps.queryType !== this.props.queryType ||
-      prevProps.remoteQuery !== this.props.remoteQuery ||
-      prevProps.remoteConfigType !== this.props.remoteConfigType ||
-      prevProps.remoteUrl !== this.props.remoteUrl
-    ) {
-      this.putQueryConfigIntoState()
+  /**
+   * Start the auto execute timer when the QueryForm mounts
+   * @param handleSubmit
+   */
+  private handleQueryFormMount: OnMountType = (handleSubmit) => {
+    if (!this.props.executeImmediately || this.props.mode === "edit") {
+      return
     }
+    if (this.props.autoExecuteIntervalSeconds) {
+      const ms = this.props.autoExecuteIntervalSeconds * 1000
+      this.autoExecuteTimer = setInterval(handleSubmit, ms)
+    }
+    return handleSubmit()
   }
 
-  handleMount = (
-    parameterValues: JSONRecord,
-    satisfiedByParentParams: JSONRecord,
-    setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
-  ) => {
-    if (this.props.executeImmediately && this.props.mode !== "edit") {
-      if (this.props.autoExecuteIntervalSeconds) {
-        this.autoExecuteTimer = setInterval(
-          () => this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues),
-          this.props.autoExecuteIntervalSeconds * 1000
-        )
-      }
-      return this.handleSubmit(parameterValues, satisfiedByParentParams, setParameterValues)
-    }
+  /**
+   * Setter method for children to trigger a submit
+   * @param submitting
+   */
+  private setParentSubmitting = (submitting: boolean) => {
+    this.setState({ submittingQueryForm: submitting })
   }
 
-  /* Originally from ReportBody.tsx */
-  handleSubmit = (
-    parameterValues: JSONRecord,
-    satisfiedByParentParams: JSONRecord,
-    setParameterValues: (value: React.SetStateAction<Option<JSONRecord>>) => void
-  ) => {
-    const { queryConfig } = this.state
-    if (!queryConfig) return
-
-    setParameterValues(some(parameterValues))
-
-    switch (this.props.queryType) {
-      case "remote-config":
-        console.warn("Remote Config query type is not yet supported.")
-        break
-      case "remote-query":
-        return executeRemoteQuery(
-          queryConfig as QueryConfig,
-          { ...satisfiedByParentParams, ...parameterValues },
-          parameterValues,
-          this.context as AdminUserInterfaceContextManager,
-          !!this.props.isCRUD
-        ).then((newLoadingState) => {
-          // Set the resulting loading state
-          this.setState((state) => ({
-            ...state,
-            ...newLoadingState,
-          }))
-
-          // Load the response data from cache into userInterfaceData
-          const { reportDataByQuery } = this.context as AdminUserInterfaceContextManager
-          const resultData = getResultData(queryConfig.query, satisfiedByParentParams, reportDataByQuery)
-
-          this.handleChangeData({ ...parameterValues, ...resultData })
-        })
-      case "remote-url":
-        return executeRemoteUrl(
-          queryConfig as HTTPRequestQueryConfig,
-          { ...satisfiedByParentParams, ...parameterValues },
-          parameterValues,
-          this.context as AdminUserInterfaceContextManager,
-          !!this.props.isCRUD
-        ).then((newLoadingState) => {
-          // Set the resulting loading state
-          this.setState((state) => ({
-            ...state,
-            ...newLoadingState,
-          }))
-
-          // Load the response data from cache into userInterfaceData
-          const { reportDataByQuery } = this.context as AdminUserInterfaceContextManager
-          const resultData = getResultData(queryConfig.query, satisfiedByParentParams, reportDataByQuery)
-
-          this.handleChangeData({ ...parameterValues, ...resultData })
-        })
-      default:
-    }
-  }
-
-  handleChangeData = (newData: any): void => {
-    const { onChangeData, userInterfaceData, outboundValueKey } = this.props
-
-    if (onChangeData) {
-      // If there's a outboundValueKey, nest the data
-      if (outboundValueKey) {
-        onChangeData(set(outboundValueKey, newData[0], userInterfaceData))
-      } else {
-        // If there's not a outboundValueKey, merge the data at the top level
-        onChangeData({ ...userInterfaceData, ...newData })
-      }
-    }
-  }
-
-  /* ***************************************************************************
+  /* ******************************************
    *
    * RENDER METHOD
    */
 
   render(): JSX.Element {
-    const { buttonLabel, buttonProps, userInterfaceData } = this.props
-    const { queryConfig, submittingQueryForm } = this.state
+    const {
+      buttonLabel,
+      buttonProps,
+      onChangeData,
+      outboundValueKey,
+      remoteConfigType,
+      remoteQuery,
+      remoteUrl,
+      userInterfaceData,
+      valueKey,
+      queryType,
+    } = this.props
+    let castProps
 
-    if (!queryConfig)
-      return (
-        <Empty
-          description="Please configure a Data Source for this Execute component"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        />
-      )
-
-    return (
-      <QueryParams queryConfig={queryConfig} parentData={userInterfaceData}>
-        {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
-          <QueryForm
-            layout={queryConfig.layout}
-            onSubmit={(queryFormValues) =>
-              this.handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)
-            }
-            onMount={(queryFormValues) =>
-              this.handleMount(queryFormValues, satisfiedByParentParams, setParameterValues)
-            }
-            parameters={unsatisfiedByParentParams}
-            parameterValues={parameterValues.getOrElse(record.empty)}
-            submitButtonLabel={buttonLabel || "Save"}
-            submitButtonProps={buttonProps}
-            parentSubmitting={submittingQueryForm}
-            setParentSubmitting={(submitting: boolean) => this.setState({ submittingQueryForm: submitting })}
+    switch (queryType) {
+      case "remote-config":
+        castProps = this.props as ExecuteRemoteConfigInterfaceComponentProps
+        return (
+          <RemoteConfig
+            buttonLabel={buttonLabel}
+            buttonProps={buttonProps}
+            context={this.context}
+            onChangeData={onChangeData}
+            onMount={this.handleQueryFormMount}
+            outboundValueKey={outboundValueKey}
+            parentSubmitting={this.state.submittingQueryForm}
+            persistedConfigId={remoteConfigType as PersistedConfig["id"]}
+            setParentSubmitting={this.setParentSubmitting}
+            userInterfaceData={userInterfaceData}
+            valueKey={valueKey}
+            actionType={castProps.RemoteConfig_actionType}
+            configNameKey={castProps.RemoteConfig_configNameKey}
+            entityTypeId={castProps.RemoteConfig_entityTypeId}
+            remoteConfigId={castProps.RemoteConfig_id}
+            remoteConfigIdKey={castProps.RemoteConfig_idKey}
+            resultsType={castProps.RemoteConfig_resultsType}
           />
-        )}
-      </QueryParams>
-    )
+        )
+      case "remote-query":
+        castProps = this.props as ExecuteRemoteQueryInterfaceComponentProps
+        return (
+          <RemoteQuery
+            buttonLabel={buttonLabel}
+            buttonProps={buttonProps}
+            context={this.context}
+            isCRUD={castProps.RemoteQuery_isCRUD}
+            onChangeData={onChangeData}
+            onMount={this.handleQueryFormMount}
+            outboundValueKey={outboundValueKey}
+            parentSubmitting={this.state.submittingQueryForm}
+            persistedConfigId={remoteQuery as PersistedConfig["id"]}
+            setParentSubmitting={this.setParentSubmitting}
+            userInterfaceData={userInterfaceData}
+            valueKey={valueKey}
+          />
+        )
+      case "remote-url":
+        castProps = this.props as ExecuteRemoteUrlInterfaceComponentProps
+        return (
+          <RemoteUrl
+            buttonLabel={buttonLabel}
+            buttonProps={buttonProps}
+            context={this.context}
+            isCRUD={castProps.RemoteUrl_isCRUD}
+            onChangeData={onChangeData}
+            onMount={this.handleQueryFormMount}
+            outboundValueKey={outboundValueKey}
+            parentSubmitting={this.state.submittingQueryForm}
+            persistedConfigId={remoteUrl as PersistedConfig["id"]}
+            setParentSubmitting={this.setParentSubmitting}
+            userInterfaceData={userInterfaceData}
+            valueKey={valueKey}
+          />
+        )
+      default:
+        return (
+          <Empty
+            description="Please configure a Data Source for this Execute component"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        )
+    }
   }
 }
