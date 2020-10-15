@@ -168,6 +168,11 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 }
 
+/**
+ *
+ * @param stringTemplate
+ * @param value
+ */
 function replaceTokens(stringTemplate: string, value: string | JSONRecord): string | null {
   /*
    * When there is a single value, the user should
