@@ -21,7 +21,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     onMount,
     outboundValueKey,
     parentSubmitting,
-    persistedConfigId,
+    queryConfigId,
     setParentSubmitting,
     userInterfaceData,
     valueKey,
@@ -41,8 +41,8 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(context, persistedConfigId)
-  }, [persistedConfigId, context])
+    return getQueryConfig(context, queryConfigId)
+  }, [queryConfigId, context])
 
   /* *************************************
    *
@@ -60,7 +60,6 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     return executeRemoteQuery(
       queryConfig as QueryConfig,
       queryFormValues,
-      parameterValues,
       context as AdminUserInterfaceContextManager,
       isCRUD
     ).then((newLoadingState) => {

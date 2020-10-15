@@ -1,9 +1,9 @@
 import { FromStore, LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
-import { configToJson, getConfig } from "../utils"
+import { configToJson, getParsedConfig, getRemoteConfigId } from "../utils"
 import { getErrorStatePromise } from "../../utils"
-import { get } from "lodash/fp"
 import { JSONRecord } from "../../../../../../data/JSON"
+import { isEmpty } from "lodash/fp"
 
 /**
  * FETCH
@@ -14,11 +14,10 @@ export function fetch({
   dispatch,
   entityTypeId,
   fromStore,
-  parameterValues,
   queryConfig,
   queryFormValues,
-  remoteConfigId,
   remoteConfigIdKey,
+  remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
@@ -26,35 +25,38 @@ export function fetch({
 }: RemoteConfigActionParams): Promise<LoadStatus> {
   // TODO: What is the predicate filter for? Why did they do this?
   // const remoteConfigTypeParentName = remoteConfigTypeParent && remoteConfigTypeParent.name
-  // const predicate = getRemoteConfigPredicate(remoteDataFilter, remoteConfigId, remoteConfigTypeParentName)
+  // const predicate = getRemoteConfigPredicate(remoteDataFilter, remoteConfigType, remoteConfigTypeParentName)
   // this.setState({
   //   data: (loadByFilter(predicate) as unknown) as T[],
   //   loadStatus: "loaded",
   //   loadError: null,
   // })
 
-  let data: LoadStatus["data"], selectedRemoteConfigId: PersistedConfig["id"], allConfigsOfType: PersistedConfig[]
+  let data: LoadStatus["data"], allConfigsOfType: PersistedConfig[], remoteConfigId: PersistedConfig["id"] | undefined
 
   switch (resultsType) {
     case "all":
       if (!entityTypeId)
         return Promise.reject(Error("Entity type not found. Please check the Execute component settings."))
+
       allConfigsOfType = getAllConfigsOfType(entityTypeId, fromStore)
       data = convertConfigsToJSON(allConfigsOfType)
-
       return Promise.resolve({ data, loadStatus: "loaded" })
     case "selected":
-      selectedRemoteConfigId = remoteConfigIdKey && get(remoteConfigIdKey, userInterfaceData)
-      if (!selectedRemoteConfigId) return getErrorStatePromise("Remote config not found.")
-      data = getConfig(selectedRemoteConfigId, fromStore)
+      if (!remoteConfigIdKey || isEmpty(remoteConfigIdKey))
+        return getErrorStatePromise("Config ID Key is missing. Please check the Execute component settings.")
 
+      remoteConfigId = getRemoteConfigId({ queryFormValues, remoteConfigIdKey, userInterfaceData })
+      if (!remoteConfigId) return getErrorStatePromise("Remote config not found.")
+
+      data = getParsedConfig(remoteConfigId, fromStore)
       return Promise.resolve({ data, loadStatus: "loaded" })
     default:
       // "static" case
-      if (!remoteConfigId)
+      if (!remoteConfigStaticId)
         return getErrorStatePromise("Remote config not found. Please check the Execute component settings.")
-      data = getConfig(remoteConfigId, fromStore)
 
+      data = getParsedConfig(remoteConfigStaticId, fromStore)
       return Promise.resolve({ data, loadStatus: "loaded" })
   }
 }

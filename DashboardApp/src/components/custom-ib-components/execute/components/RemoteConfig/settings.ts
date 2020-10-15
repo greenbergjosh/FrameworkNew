@@ -27,6 +27,26 @@ export const remoteConfigSettings = [
     },
   },
   {
+    key: "RemoteConfig_queryConfigId",
+    valueKey: "RemoteConfig_queryConfigId",
+    label: "Remote Config Query",
+    component: "select",
+    dataHandlerType: "remote-config",
+    remoteConfigType: "Report.Query",
+    visibilityConditions: {
+      and: [
+        {
+          "===": [
+            "remote-config",
+            {
+              var: ["queryType"],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     key: "RemoteConfig_actionType",
     valueKey: "RemoteConfig_actionType",
     label: "Operation",
@@ -247,8 +267,8 @@ export const remoteConfigSettings = [
     },
   },
   {
-    key: "RemoteConfig_id",
-    valueKey: "RemoteConfig_id",
+    key: "RemoteConfig_staticId",
+    valueKey: "RemoteConfig_staticId",
     label: "Config",
     component: "select",
     dataHandlerType: "remote-config",
@@ -316,6 +336,68 @@ export const remoteConfigSettings = [
                 "update",
               ],
             },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteConfig_useDeleteRedirect",
+    valueKey: "RemoteConfig_useDeleteRedirect",
+    component: "toggle",
+    defaultValue: false,
+    label: "Redirect After Delete",
+    visibilityConditions: {
+      and: [
+        {
+          "==": [
+            {
+              var: ["queryType"],
+            },
+            "remote-config",
+          ],
+        },
+        {
+          "==": [
+            {
+              var: ["RemoteConfig_actionType"],
+            },
+            "delete",
+          ],
+        },
+      ],
+    },
+  },
+  {
+    key: "RemoteConfig_deleteRedirectPath",
+    valueKey: "RemoteConfig_deleteRedirectPath",
+    label: "Redirect Path",
+    component: "input",
+    defaultValue: "/dashboard/apps/",
+    visibilityConditions: {
+      and: [
+        {
+          "==": [
+            {
+              var: ["queryType"],
+            },
+            "remote-config",
+          ],
+        },
+        {
+          "==": [
+            {
+              var: ["RemoteConfig_actionType"],
+            },
+            "delete",
+          ],
+        },
+        {
+          "==": [
+            {
+              var: ["RemoteConfig_useDeleteRedirect"],
+            },
+            true,
           ],
         },
       ],

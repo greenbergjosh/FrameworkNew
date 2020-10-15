@@ -14,11 +14,10 @@ export function create({
   dispatch,
   entityTypeId,
   fromStore,
-  parameterValues,
   queryConfig,
   queryFormValues,
-  remoteConfigId,
   remoteConfigIdKey,
+  remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
@@ -34,18 +33,20 @@ export function create({
     return getErrorStatePromise("Config type not found. Please check the Execute component settings.")
   }
 
-  // TODO: verify fields and field types match
-
   // We must have a name
   const name = configNameKey ? get(configNameKey, uiDataSlice) : ""
   if (!name || isEmpty(name)) {
     return getErrorStatePromise("Config name not provided.")
   }
 
-  // TODO: check if name is unique in the global config
+  // Name must be unique
+  const dupeIndex = fromStore.configNames.findIndex((i) => i === name)
+  if (dupeIndex > -1) {
+    return getErrorStatePromise("Config name already taken.")
+  }
 
   const nextState: CreateConfigEventPayload["nextState"] = {
-    config: JSON5.stringify(uiDataSlice),
+    config: JSON5.stringify(uiDataSlice.config),
     name,
     type: parent.name,
   }
@@ -57,6 +58,6 @@ export function create({
 
   return dispatch.globalConfig
     .createRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: "none" } as LoadStatus))
+    .then(() => ({ data: uiDataSlice, loadStatus: "created" } as LoadStatus))
     .catch((e: Error) => getErrorState(e))
 }

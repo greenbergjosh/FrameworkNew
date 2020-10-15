@@ -8,7 +8,6 @@ import { getErrorState } from "../utils"
 /**
  * "Remote Query" is aka "TGWD Stored Procedure"
  * @param queryConfig
- * @param parameterValues
  * @param queryFormValues
  * @param context
  * @param isCRUD
@@ -17,16 +16,12 @@ import { getErrorState } from "../utils"
 export async function executeRemoteQuery(
   queryConfig: QueryConfig,
   queryFormValues: JSONRecord,
-  parameterValues: JSONRecord,
   context: AdminUserInterfaceContextManager,
   isCRUD?: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
   const { executeQuery, executeQueryUpdate, reportDataByQuery } = context
   const executeStrategy = isCRUD ? executeQueryUpdate : executeQuery
-  const queryResultURI = cheapHash(queryConfig.query, {
-    ...parameterValues,
-    ...queryFormValues,
-  })
+  const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
 
   return Promise.resolve(({
     remoteQueryLoggingName: queryConfig.query,
@@ -36,7 +31,7 @@ export async function executeRemoteQuery(
     executeStrategy({
       resultURI: queryResultURI,
       query: queryConfig,
-      params: { ...parameterValues, ...queryFormValues },
+      params: { ...queryFormValues },
     })
       .then(() => ({ data: null, loadStatus: "none" } as LoadStatus))
       .catch((e: Error) => getErrorState(e))

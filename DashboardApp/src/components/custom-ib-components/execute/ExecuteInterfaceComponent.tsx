@@ -2,7 +2,6 @@ import React from "react"
 import { BaseInterfaceComponent, UserInterfaceContext } from "@opg/interface-builder"
 import { executeManageForm } from "./execute-manage-form"
 import {
-  ActionType,
   ExecuteInterfaceComponentProps,
   ExecuteInterfaceComponentState,
   ExecuteRemoteConfigInterfaceComponentProps,
@@ -110,7 +109,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       buttonProps,
       onChangeData,
       outboundValueKey,
-      remoteConfigType,
       remoteQuery,
       remoteUrl,
       userInterfaceData,
@@ -124,23 +122,25 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
         castProps = this.props as ExecuteRemoteConfigInterfaceComponentProps
         return (
           <RemoteConfig
+            actionType={castProps.RemoteConfig_actionType}
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
+            configNameKey={castProps.RemoteConfig_configNameKey}
             context={this.context}
+            deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
+            entityTypeId={castProps.RemoteConfig_entityTypeId}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
-            persistedConfigId={remoteConfigType as PersistedConfig["id"]}
-            setParentSubmitting={this.setParentSubmitting}
-            userInterfaceData={userInterfaceData}
-            valueKey={valueKey}
-            actionType={castProps.RemoteConfig_actionType}
-            configNameKey={castProps.RemoteConfig_configNameKey}
-            entityTypeId={castProps.RemoteConfig_entityTypeId}
-            remoteConfigId={castProps.RemoteConfig_id}
+            queryConfigId={castProps.RemoteConfig_queryConfigId}
             remoteConfigIdKey={castProps.RemoteConfig_idKey}
             resultsType={castProps.RemoteConfig_resultsType}
+            setParentSubmitting={this.setParentSubmitting}
+            remoteConfigStaticId={castProps.RemoteConfig_staticId}
+            useDeleteRedirect={castProps.RemoteConfig_useDeleteRedirect}
+            userInterfaceData={userInterfaceData}
+            valueKey={valueKey}
           />
         )
       case "remote-query":
@@ -155,7 +155,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             onMount={this.handleQueryFormMount}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
-            persistedConfigId={remoteQuery as PersistedConfig["id"]}
+            queryConfigId={remoteQuery as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}
             userInterfaceData={userInterfaceData}
             valueKey={valueKey}
@@ -173,7 +173,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             onMount={this.handleQueryFormMount}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
-            persistedConfigId={remoteUrl as PersistedConfig["id"]}
+            queryConfigId={remoteUrl as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}
             userInterfaceData={userInterfaceData}
             valueKey={valueKey}

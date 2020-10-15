@@ -21,7 +21,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     onMount,
     outboundValueKey,
     parentSubmitting,
-    persistedConfigId,
+    queryConfigId,
     setParentSubmitting,
     userInterfaceData,
     valueKey,
@@ -41,8 +41,8 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(context, persistedConfigId)
-  }, [persistedConfigId, context])
+    return getQueryConfig(context, queryConfigId)
+  }, [queryConfigId, context])
 
   /* *************************************
    *
@@ -60,7 +60,6 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     return executeRemoteUrl(
       queryConfig as HTTPRequestQueryConfig,
       queryFormValues,
-      parameterValues,
       context as AdminUserInterfaceContextManager,
       isCRUD
     ).then((newLoadingState) => {

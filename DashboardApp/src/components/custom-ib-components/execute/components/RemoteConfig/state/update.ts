@@ -2,12 +2,9 @@ import { LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { get, isEmpty } from "lodash/fp"
 import JSON5 from "json5"
-import {
-  CreateConfigEventPayload,
-  DeleteConfigEventPayload,
-  UpdateConfigEventPayload,
-} from "../../../../../../state/global-config"
+import { CreateConfigEventPayload, UpdateConfigEventPayload } from "../../../../../../state/global-config"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
+import { getParsedConfig, getRemoteConfigId } from "../utils"
 
 /**
  * UPDATE
@@ -18,11 +15,10 @@ export function update({
   dispatch,
   entityTypeId,
   fromStore,
-  parameterValues,
   queryConfig,
   queryFormValues,
-  remoteConfigId,
   remoteConfigIdKey,
+  remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
@@ -38,10 +34,16 @@ export function update({
     return getErrorStatePromise("Config type not found. Please check the Execute component settings.")
   }
 
+  // We must have a remote config ID key
+  if (!remoteConfigIdKey)
+    return getErrorStatePromise("Config ID Key is missing. Please check the Execute component settings.")
+
+  // We must have a remote config ID
+  const remoteConfigId = getRemoteConfigId({ remoteConfigIdKey, userInterfaceData, queryFormValues })
+  if (!remoteConfigId) return getErrorStatePromise("Config ID not found.")
+
   // We must have an existing config to modify
-  const selectedRemoteConfigId = remoteConfigIdKey && get(remoteConfigIdKey, userInterfaceData)
-  const prevState: UpdateConfigEventPayload["prevState"] | null =
-    selectedRemoteConfigId && fromStore.loadById(selectedRemoteConfigId)
+  const prevState = remoteConfigId && fromStore.loadById(remoteConfigId)
   if (!prevState) {
     return getErrorStatePromise("Config not found.")
   }
@@ -59,21 +61,29 @@ export function update({
     )
   }
 
-  // TODO: verify fields and field types match
-
   // We must have a name
   const name = configNameKey ? get(configNameKey, userInterfaceData) : ""
   if (!name || isEmpty(name)) {
     return getErrorStatePromise("Config name not provided.")
   }
 
-  // TODO: check if name is unique in the global config
+  // Name must be unique if it has changed
+  if (name !== prevState.name) {
+    const dupeIndex = fromStore.configNames.findIndex((i) => i === name)
+    if (dupeIndex > -1) {
+      return getErrorStatePromise("Config name already taken.")
+    }
+  }
 
   const nextState: CreateConfigEventPayload["nextState"] = {
-    config: JSON5.stringify(uiDataSlice),
+    config: JSON5.stringify(uiDataSlice.config),
     name,
     type: parent.name,
   }
+
+  /* NOTE: We don't allow ID to be changed by not using the userInterfaceData value,
+   * but instead copying it from prevState which comes directly from fromStore.
+   */
   // const parent: UpdateConfigEventPayload["parent"] = record.lookup(prevState.type, fromStore.entityTypes).toUndefined()
   const payload: UpdateConfigEventPayload = {
     prevState: { ...prevState },
@@ -83,6 +93,6 @@ export function update({
 
   return dispatch.globalConfig
     .updateRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: "none" } as LoadStatus))
+    .then(() => ({ data: uiDataSlice, loadStatus: "updated" } as LoadStatus))
     .catch((e: Error) => getErrorState(e))
 }

@@ -14,6 +14,7 @@ export const createUIContext = (
   configs: AppState["globalConfig"]["configs"],
   configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
 ): AdminUserInterfaceContextManager => ({
+  navigation: dispatch.navigation,
   executeQuery: dispatch.reports.executeQuery.bind(dispatch.reports),
   executeQueryUpdate: dispatch.reports.executeQueryUpdate.bind(dispatch.reports),
   executeHTTPRequestQuery: dispatch.reports.executeHTTPRequestQuery.bind(dispatch.reports),

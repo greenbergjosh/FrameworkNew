@@ -6,8 +6,7 @@ import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import jsonLogic from "json-logic-js"
 import { get, isEmpty } from "lodash/fp"
-import * as record from "fp-ts/lib/Record"
-import { FromStore } from "../../types"
+import { ParsedConfig, FromStore } from "../../types"
 import { UserInterfaceProps } from "@opg/interface-builder"
 import { JSONRecord } from "../../../../../data/JSON"
 
@@ -19,7 +18,7 @@ import { JSONRecord } from "../../../../../data/JSON"
  */
 export function getRemoteConfigPredicate(
   remoteDataFilter: JSONObject | undefined,
-  remoteConfigType: PersistedConfig["id"],
+  remoteConfigType: PersistedConfig["type"],
   remoteConfigTypeParentName: null | string | Brand<NonEmptyStringBrand>
 ): (config: PersistedConfig) => boolean {
   return remoteDataFilter
@@ -40,71 +39,56 @@ export function getRemoteConfigPredicate(
 }
 
 /**
- * Get remoteConfigId by first looking to see if the user configured a static configId;
- * otherwise, obtain it from userInterfaceData.
- * @param remoteConfigId
+ * Get remoteConfigId by searching queryFormValues, then userInterfaceData
  * @param remoteConfigIdKey
  * @param userInterfaceData
+ * @param queryFormValues
  */
-export function getRemoteConfigId(
-  remoteConfigId: PersistedConfig["id"] | undefined,
-  remoteConfigIdKey: string | undefined,
-  userInterfaceData: UserInterfaceProps["data"]
-): PersistedConfig["id"] | null {
-  if (remoteConfigId && !isEmpty(remoteConfigId)) {
-    return remoteConfigId
-  }
-  if (remoteConfigIdKey && !isEmpty(remoteConfigIdKey)) {
-    return get(remoteConfigIdKey, userInterfaceData)
-  }
-  return null
-}
-
-/**
- *
- * @param remoteConfigId
- * @param remoteConfigIdKey
- * @param userInterfaceData
- * @param fromStore
- */
-export function getRemoteConfig({
-  fromStore,
-  remoteConfigId,
+export function getRemoteConfigId({
+  queryFormValues,
   remoteConfigIdKey,
   userInterfaceData,
 }: {
-  fromStore: FromStore
-  remoteConfigId?: PersistedConfig["id"] // The config to edit
-  remoteConfigIdKey?: string // The key for the config to edit
+  queryFormValues?: JSONRecord
+  remoteConfigIdKey: string
   userInterfaceData: UserInterfaceProps["data"]
-}): PersistedConfig | undefined {
-  const configId = getRemoteConfigId(remoteConfigId, remoteConfigIdKey, userInterfaceData)
-  if (configId && configId.toLowerCase) {
-    return record.lookup(configId.toLowerCase(), fromStore.configsById).toUndefined()
+}): PersistedConfig["id"] | undefined {
+  if (isEmpty(remoteConfigIdKey)) {
+    return
   }
+  let id
+  // Get the remoteConfigId from queryFormValues which is populated
+  // via querystring params or persisted params from QueryParams component.
+  id = (get(remoteConfigIdKey, queryFormValues) as unknown) as PersistedConfig["id"]
+
+  if (!id) {
+    // Attempt to get the remoteConfigId from a UI control
+    id = get(remoteConfigIdKey, userInterfaceData)
+  }
+  return id
 }
 
 /**
- *
+ * Returns a PersistedConfig-like object but with the config parsed to json
  * @param remoteConfigId
  * @param fromStore
  */
-export function getConfig(remoteConfigId: PersistedConfig["id"], fromStore: FromStore): JSONRecord | null {
+export function getParsedConfig(remoteConfigId: PersistedConfig["id"], fromStore: FromStore): ParsedConfig | null {
   const persistedConfig = remoteConfigId && fromStore.loadById(remoteConfigId)
-  return configToJson(persistedConfig)
+  return persistedConfig && configToJson(persistedConfig)
 }
 
 /**
- *
+ * Returns a PersistedConfig-like object but with the config parsed to json
  * @param persistedConfig
  */
-export function configToJson(persistedConfig: PersistedConfig | null): JSONRecord | null {
+export function configToJson(persistedConfig: PersistedConfig): ParsedConfig {
   const configJson =
     persistedConfig && tryCatch(() => persistedConfig && JSON5.parse(persistedConfig.config.getOrElse(""))).toNullable()
-  const _persistedConfig = {
-    id: persistedConfig && persistedConfig.id,
-    name: persistedConfig && persistedConfig.name,
-    type: persistedConfig && persistedConfig.type,
+  return {
+    id: persistedConfig.id,
+    name: persistedConfig.name,
+    type: persistedConfig.type,
+    config: configJson,
   }
-  return { ...configJson, _persistedConfig }
 }

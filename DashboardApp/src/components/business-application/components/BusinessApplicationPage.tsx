@@ -52,6 +52,7 @@ export const BusinessApplicationPage = ({
 
   const backgroundColor =
     businessApplicationPageConfig && businessApplicationPageConfig.hasWhiteBackground ? "white" : "none"
+  const padding = businessApplicationPageConfig && businessApplicationPageConfig.hasPadding ? 30 : undefined
 
   return (
     <div>
@@ -71,7 +72,7 @@ export const BusinessApplicationPage = ({
       />
       <AdminUserInterfaceContextManagerProvider>
         {(userInterfaceContextManager) => (
-          <div style={{ backgroundColor }}>
+          <div style={{ backgroundColor, padding }}>
             <UserInterface
               mode="display"
               contextManager={userInterfaceContextManager}

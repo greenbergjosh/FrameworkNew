@@ -1,8 +1,9 @@
 import { LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { DeleteConfigEventPayload } from "../../../../../../state/global-config"
-import { get, isEmpty } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
+import { getRemoteConfigId } from "../utils"
 
 /**
  * DELETE
@@ -13,11 +14,10 @@ export function deleteCfg({
   dispatch,
   entityTypeId,
   fromStore,
-  parameterValues,
   queryConfig,
   queryFormValues,
-  remoteConfigId,
   remoteConfigIdKey,
+  remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
@@ -33,10 +33,15 @@ export function deleteCfg({
     return getErrorStatePromise("Config type not found. Please check the Execute component settings.")
   }
 
+  // We must have a remote config ID key
+  if (!remoteConfigIdKey)
+    return getErrorStatePromise("Config ID Key is missing. Please check the Execute component settings.")
+
   // We must have an existing config to delete
-  const selectedRemoteConfigId = remoteConfigIdKey && get(remoteConfigIdKey, userInterfaceData)
-  const prevState: DeleteConfigEventPayload["prevState"] | null =
-    selectedRemoteConfigId && fromStore.loadById(selectedRemoteConfigId)
+  const remoteConfigId = getRemoteConfigId({ remoteConfigIdKey, userInterfaceData, queryFormValues })
+  const prevState: DeleteConfigEventPayload["prevState"] | null = remoteConfigId
+    ? fromStore.loadById(remoteConfigId)
+    : null
   if (!prevState) {
     return getErrorStatePromise("Config not found.")
   }
@@ -61,6 +66,6 @@ export function deleteCfg({
 
   return dispatch.globalConfig
     .deleteRemoteConfigs([payload]) // deleteRemoteConfigs expects an array
-    .then(() => ({ data: null, loadStatus: "none" } as LoadStatus))
+    .then(() => ({ data: null, loadStatus: "deleted" } as LoadStatus))
     .catch((e: Error) => getErrorState(e))
 }

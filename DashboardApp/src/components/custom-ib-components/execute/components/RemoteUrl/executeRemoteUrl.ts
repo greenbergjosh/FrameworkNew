@@ -9,7 +9,6 @@ import { getErrorState } from "../utils"
 /**
  * "Remote URL" is aka "HTTP Request" to another domain
  * @param queryConfig
- * @param parameterValues
  * @param queryFormValues
  * @param context
  * @param isCRUD
@@ -18,15 +17,11 @@ import { getErrorState } from "../utils"
 export async function executeRemoteUrl(
   queryConfig: HTTPRequestQueryConfig,
   queryFormValues: JSONRecord,
-  parameterValues: JSONRecord,
   context: AdminUserInterfaceContextManager,
   isCRUD?: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
   const { executeHTTPRequestQuery, reportDataByQuery } = context
-  const queryResultURI = cheapHash(queryConfig.query, {
-    ...parameterValues,
-    ...queryFormValues,
-  })
+  const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
 
   return Promise.resolve(({
     remoteQueryLoggingName: queryConfig.query,
@@ -36,7 +31,7 @@ export async function executeRemoteUrl(
     executeHTTPRequestQuery({
       resultURI: queryResultURI,
       query: queryConfig,
-      params: { ...parameterValues, ...queryFormValues },
+      params: { ...queryFormValues },
     })
       .then(() => {
         if (isCRUD) {

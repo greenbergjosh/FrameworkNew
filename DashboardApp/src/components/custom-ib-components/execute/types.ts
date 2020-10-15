@@ -17,7 +17,7 @@ import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 export type ShapeType = "circle" | "circle-outline" | "round" | undefined
 export type SizeType = "small" | "large" | undefined
 export type ButtonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
-export type LoadStatusCode = "none" | "loading" | "loaded" | "error"
+export type LoadStatusCode = "none" | "loading" | "loaded" | "created" | "updated" | "deleted" | "error"
 export type LoadError = string | null
 export type QueryType = "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
 export type ActionType = "read" | "create" | "update" | "delete"
@@ -103,15 +103,17 @@ export interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInter
 export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-config"
   remoteDataFilter?: JSONObject // TODO: What is this for?
-  remoteConfigType?: PersistedConfig["id"] // TODO: This may be a duplicate of RemoteConfig_id?
 
   // RemoteConfig Settings
   RemoteConfig_actionType: ActionType
   RemoteConfig_configNameKey?: string
+  RemoteConfig_deleteRedirectPath?: string
   RemoteConfig_entityTypeId?: PersistedConfig["id"]
-  RemoteConfig_id?: PersistedConfig["id"]
+  RemoteConfig_staticId?: PersistedConfig["id"]
   RemoteConfig_idKey?: string
+  RemoteConfig_queryConfigId: PersistedConfig["id"]
   RemoteConfig_resultsType?: ResultsType
+  RemoteConfig_useDeleteRedirect?: boolean
 }
 
 export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
@@ -152,7 +154,7 @@ export interface RemoteComponentProps {
   onMount: OnMountType
   outboundValueKey: IExecuteInterfaceComponentProps["outboundValueKey"]
   parentSubmitting: QueryFormProps["parentSubmitting"]
-  persistedConfigId: PersistedConfig["id"]
+  queryConfigId: PersistedConfig["id"]
   setParentSubmitting: QueryFormProps["setParentSubmitting"]
   userInterfaceData: IExecuteInterfaceComponentProps["userInterfaceData"]
   valueKey: IExecuteInterfaceComponentProps["valueKey"]
@@ -169,10 +171,12 @@ export interface RemoteUrlProps extends RemoteComponentProps {
 export interface RemoteConfigProps extends RemoteComponentProps {
   actionType: ActionType
   configNameKey?: string // The name value key for the config to edit
+  deleteRedirectPath?: string
   entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
-  remoteConfigId?: PersistedConfig["id"] // The config ID to edit
   remoteConfigIdKey?: string // The key for the config ID to edit
+  remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   resultsType?: ResultsType
+  useDeleteRedirect?: boolean
 }
 
 /* ****************************************************************************
@@ -194,16 +198,14 @@ export interface FromStore {
   loadByType: (type: string) => PersistedConfig[] | null
 }
 
-export type ExecuteRemoteConfigParams = {
-  actionType: ActionType
+export type RemoteConfigActionParams = {
   configNameKey?: string // The name value key for the config to edit
   dispatch: AppDispatch
   entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
   fromStore: FromStore
-  parameterValues: JSONRecord
   queryConfig: QueryConfig
   queryFormValues: JSONRecord
-  remoteConfigId?: PersistedConfig["id"] // The config ID to edit
+  remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   remoteConfigIdKey?: string // The key for the config ID to edit
   resultsType?: ResultsType
   uiDataSlice: UserInterfaceProps["data"]
@@ -211,18 +213,13 @@ export type ExecuteRemoteConfigParams = {
   valueKey: string
 }
 
-export type RemoteConfigActionParams = {
-  configNameKey?: string // The name value key for the config to edit
-  dispatch: AppDispatch
-  entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
-  fromStore: FromStore
-  parameterValues: JSONRecord
-  queryConfig: QueryConfig
-  queryFormValues: JSONRecord
-  remoteConfigId?: PersistedConfig["id"] // The config ID to edit
-  remoteConfigIdKey?: string // The key for the config ID to edit
-  resultsType?: ResultsType
-  uiDataSlice: UserInterfaceProps["data"]
-  userInterfaceData: UserInterfaceProps["data"]
-  valueKey: string
+export type ExecuteRemoteConfigParams = RemoteConfigActionParams & {
+  actionType: ActionType
+}
+
+export type ParsedConfig = {
+  id: PersistedConfig["id"]
+  name: PersistedConfig["name"]
+  type: PersistedConfig["type"]
+  config: JSONRecord | null
 }

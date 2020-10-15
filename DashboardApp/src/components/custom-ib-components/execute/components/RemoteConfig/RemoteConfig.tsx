@@ -6,13 +6,13 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { FromStore, OnSubmitType, RemoteConfigProps } from "../../types"
+import { FromStore, LoadStatusCode, OnSubmitType, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
 import { AppDispatch } from "../../../../../state/store.types"
-import { get } from "lodash/fp"
+import { get, isEmpty } from "lodash/fp"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
@@ -21,16 +21,18 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     buttonProps,
     configNameKey,
     context,
+    deleteRedirectPath,
     entityTypeId,
     onChangeData,
     onMount,
     outboundValueKey,
     parentSubmitting,
-    persistedConfigId,
-    remoteConfigId,
+    queryConfigId,
     remoteConfigIdKey,
+    remoteConfigStaticId,
     resultsType,
     setParentSubmitting,
+    useDeleteRedirect,
     userInterfaceData,
     valueKey,
   } = props
@@ -39,6 +41,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    *
    * STATE
    */
+  const [loadStatus, setLoadStatus] = React.useState<LoadStatusCode>("none")
 
   /* *************************************
    *
@@ -68,8 +71,8 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(context, persistedConfigId)
-  }, [persistedConfigId, context])
+    return getQueryConfig(context, queryConfigId)
+  }, [queryConfigId, context])
 
   /* *************************************
    *
@@ -83,7 +86,10 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     // Send parameterValues state back up to <QueryParams>
     setParameterValues(some(parameterValues))
     const queryFormValues: JSONRecord = { ...satisfiedByParentParams, ...parameterValues }
-    const uiDataSlice = get(outboundValueKey, userInterfaceData)
+
+    const uiDataSlice: JSONRecord = !isEmpty(outboundValueKey)
+      ? get(outboundValueKey, userInterfaceData)
+      : userInterfaceData
 
     return executeRemoteConfig({
       actionType,
@@ -91,10 +97,9 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       dispatch,
       entityTypeId,
       fromStore,
-      parameterValues,
-      queryConfig: queryConfig as QueryConfig,
+      queryConfig,
       queryFormValues,
-      remoteConfigId,
+      remoteConfigStaticId,
       remoteConfigIdKey,
       resultsType,
       uiDataSlice,
@@ -108,9 +113,10 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
         })
         return
       }
+      setLoadStatus(newLoadingState.loadStatus)
 
       // Put response data into userInterfaceData via onChangeData
-      if (onChangeData) {
+      if (onChangeData && newLoadingState.loadStatus !== "deleted") {
         const newData = mergeResultDataWithModel({
           outboundValueKey,
           parameterValues,
@@ -122,6 +128,17 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       }
     })
   }
+
+  /**
+   * On delete, redirect user somewhere
+   */
+  React.useEffect(() => {
+    if (useDeleteRedirect && loadStatus === "deleted" && deleteRedirectPath && !isEmpty(deleteRedirectPath)) {
+      // Wipe out userInterfaceData from this view so it doesn't conflict on the next view
+      onChangeData && onChangeData({})
+      dispatch.navigation.navigate(deleteRedirectPath)
+    }
+  }, [dispatch.navigation, loadStatus, useDeleteRedirect, deleteRedirectPath])
 
   /* *************************************
    *

@@ -75,7 +75,7 @@ export function mergeResultDataWithModel({
   userInterfaceData: any
 }): void {
   if (outboundValueKey) {
-    // If there's a outboundValueKey, nest the data
+    // If there's an outboundValueKey, nest the data
     const newData = isArray(resultData) ? resultData : { ...parameterValues, ...resultData }
     return set(outboundValueKey, newData, userInterfaceData)
   }
