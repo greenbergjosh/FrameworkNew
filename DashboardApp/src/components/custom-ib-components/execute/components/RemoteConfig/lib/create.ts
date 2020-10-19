@@ -10,18 +10,15 @@ import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
  * Originally from create.tsx
  */
 export function create({
-  configNameKey,
   dispatch,
   entityTypeId,
   fromStore,
   queryConfig,
   queryFormValues,
-  remoteConfigIdKey,
   remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
-  valueKey,
 }: RemoteConfigActionParams): Promise<LoadStatus> {
   if (!entityTypeId || isEmpty(entityTypeId)) {
     return getErrorStatePromise("Config type not provided. Please check the Execute component settings.")
@@ -34,9 +31,9 @@ export function create({
   }
 
   // We must have a name
-  const name = configNameKey ? get(configNameKey, uiDataSlice) : ""
+  const name = get("name", uiDataSlice)
   if (!name || isEmpty(name)) {
-    return getErrorStatePromise("Config name not provided.")
+    return getErrorStatePromise("Config name not found.")
   }
 
   // Name must be unique

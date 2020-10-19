@@ -6,10 +6,12 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getResultDataFromReportData, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { OnSubmitType, RemoteQueryProps } from "../../types"
+import { OnSubmitType, RemoteQueryFromStore, RemoteQueryProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
-import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager.type"
 import { executeRemoteQuery } from "./executeRemoteQuery"
+import { AppDispatch } from "../../../../../state/store.types"
+import { useRematch } from "../../../../../hooks"
+import { store } from "../../../../../state/store"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
   const {
@@ -18,13 +20,13 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     context,
     isCRUD,
     onChangeData,
+    onRaiseEvent,
     onMount,
     outboundValueKey,
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
     userInterfaceData,
-    valueKey,
   } = props
 
   /* *************************************
@@ -37,12 +39,19 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
    * PROP WATCHERS
    */
 
+  const [fromStore, dispatch]: [RemoteQueryFromStore, AppDispatch] = useRematch((appState) => ({
+    reportDataByQuery: appState.reports.reportDataByQuery,
+    loadById: (id: string) => {
+      return record.lookup(id, store.select.globalConfig.configsById(appState)).toNullable()
+    },
+  }))
+
   /**
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(context, queryConfigId)
-  }, [queryConfigId, context])
+    return getQueryConfig(fromStore, queryConfigId)
+  }, [queryConfigId, fromStore])
 
   /* *************************************
    *
@@ -57,16 +66,13 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     setParameterValues(some(parameterValues))
     const queryFormValues: JSONRecord = { ...satisfiedByParentParams, ...parameterValues }
 
-    return executeRemoteQuery(
-      queryConfig as QueryConfig,
-      queryFormValues,
-      context as AdminUserInterfaceContextManager,
-      isCRUD
-    ).then((newLoadingState) => {
-      const { reportDataByQuery } = context as AdminUserInterfaceContextManager
-
+    return executeRemoteQuery(queryConfig as QueryConfig, queryFormValues, dispatch, isCRUD).then((newLoadingState) => {
       // Load the response data from cache
-      const resultData = getResultDataFromReportData(queryConfig.query, satisfiedByParentParams, reportDataByQuery)
+      const resultData = getResultDataFromReportData(
+        queryConfig.query,
+        satisfiedByParentParams,
+        context.reportDataByQuery
+      )
 
       // Put response data into userInterfaceData (via onChangeData)
       if (onChangeData) {
@@ -78,6 +84,21 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
           userInterfaceData,
         })
         onChangeData(newData)
+      }
+
+      switch (newLoadingState.loadStatus) {
+        case "created":
+          onRaiseEvent("remoteQuery_created", { value: newLoadingState.data })
+          break
+        case "deleted":
+          onRaiseEvent("remoteQuery_deleted", { value: newLoadingState.data })
+          break
+        case "loaded":
+          onRaiseEvent("remoteQuery_loaded", { value: newLoadingState.data })
+          break
+        case "updated":
+          onRaiseEvent("remoteQuery_updated", { value: newLoadingState.data })
+          break
       }
     })
   }

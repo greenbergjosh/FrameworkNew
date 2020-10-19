@@ -6,35 +6,33 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { FromStore, LoadStatusCode, OnSubmitType, RemoteConfigProps } from "../../types"
+import { RemoteConfigFromStore, LoadStatusCode, OnSubmitType, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
-import { executeRemoteConfig } from "./executeRemoteConfig"
+import { executeRemoteConfig } from "./lib/executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
 import { AppDispatch } from "../../../../../state/store.types"
 import { get, isEmpty } from "lodash/fp"
+import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
 
 function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const {
     actionType,
     buttonLabel,
     buttonProps,
-    configNameKey,
     context,
     deleteRedirectPath,
     entityTypeId,
     onChangeData,
+    onRaiseEvent,
     onMount,
     outboundValueKey,
     parentSubmitting,
-    queryConfigId,
-    remoteConfigIdKey,
     remoteConfigStaticId,
     resultsType,
     setParentSubmitting,
     useDeleteRedirect,
     userInterfaceData,
-    valueKey,
   } = props
 
   /* *************************************
@@ -48,7 +46,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    * PROP WATCHERS
    */
 
-  const [fromStore, dispatch]: [FromStore, AppDispatch] = useRematch((appState) => ({
+  const [fromStore, dispatch]: [RemoteConfigFromStore, AppDispatch] = useRematch((appState) => ({
     configNames: store.select.globalConfig.configNames(appState),
     configs: appState.globalConfig.configs,
     configsById: store.select.globalConfig.configsById(appState),
@@ -68,11 +66,14 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   }))
 
   /**
+   * IMPORTANT! There only needs to be one queryConfig for use with RemoteConfigs.
+   * Therefore, the queryConfig ID is hard-coded instead of coming from props.
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(context, queryConfigId)
-  }, [queryConfigId, context])
+    const queryConfigId = "97d37ff4-0585-415d-a3af-4bfb9c22b055" as PersistedConfig["id"]
+    return getQueryConfig(fromStore, queryConfigId)
+  }, [fromStore])
 
   /* *************************************
    *
@@ -93,18 +94,15 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
 
     return executeRemoteConfig({
       actionType,
-      configNameKey,
       dispatch,
       entityTypeId,
       fromStore,
       queryConfig,
       queryFormValues,
       remoteConfigStaticId,
-      remoteConfigIdKey,
       resultsType,
       uiDataSlice,
       userInterfaceData,
-      valueKey,
     }).then((newLoadingState) => {
       if (newLoadingState.loadError) {
         dispatch.feedback.notify({
@@ -125,6 +123,21 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
           userInterfaceData,
         })
         onChangeData(newData)
+      }
+
+      switch (newLoadingState.loadStatus) {
+        case "created":
+          onRaiseEvent("remoteConfig_created", { value: newLoadingState.data })
+          break
+        case "deleted":
+          onRaiseEvent("remoteConfig_deleted", { value: newLoadingState.data })
+          break
+        case "loaded":
+          onRaiseEvent("remoteConfig_loaded", { value: newLoadingState.data })
+          break
+        case "updated":
+          onRaiseEvent("remoteConfig_updated", { value: newLoadingState.data })
+          break
       }
     })
   }

@@ -1,26 +1,25 @@
 import { HTTPRequestQueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager.type"
 import { ExecuteInterfaceComponentState, LoadStatus } from "../../types"
 import { cheapHash } from "../../../../../lib/json"
 import { notification } from "antd"
 import { getErrorState } from "../utils"
+import { AppDispatch } from "../../../../../state/store.types"
 
 /**
  * "Remote URL" is aka "HTTP Request" to another domain
  * @param queryConfig
  * @param queryFormValues
- * @param context
+ * @param dispatch
  * @param isCRUD
  * @return State object with load status (Note: executeHTTPRequestQuery puts the response data into cache.)
  */
 export async function executeRemoteUrl(
   queryConfig: HTTPRequestQueryConfig,
   queryFormValues: JSONRecord,
-  context: AdminUserInterfaceContextManager,
+  dispatch: AppDispatch,
   isCRUD?: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
-  const { executeHTTPRequestQuery, reportDataByQuery } = context
   const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
 
   return Promise.resolve(({
@@ -28,11 +27,12 @@ export async function executeRemoteUrl(
     loadStatus: "loading",
   } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() =>
     // executeHTTPRequestQuery puts the response data into cache and does not return it here.
-    executeHTTPRequestQuery({
-      resultURI: queryResultURI,
-      query: queryConfig,
-      params: { ...queryFormValues },
-    })
+    dispatch.reports
+      .executeHTTPRequestQuery({
+        resultURI: queryResultURI,
+        query: queryConfig,
+        params: { ...queryFormValues },
+      })
       .then(() => {
         if (isCRUD) {
           notification.success({
@@ -41,6 +41,7 @@ export async function executeRemoteUrl(
             duration: 10,
           })
         }
+        // TODO: return loadStatus of "create", "update", "delete", "loaded" to support onRaiseEvent
         return { data: null, loadStatus: "none" } as LoadStatus
       })
       .catch((e: Error) => getErrorState(e))

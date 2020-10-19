@@ -1,27 +1,23 @@
-import { FromStore, LoadStatus, RemoteConfigActionParams } from "../../../types"
+import { RemoteConfigFromStore, LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
-import { configToJson, getParsedConfig, getRemoteConfigId } from "../utils"
 import { getErrorStatePromise } from "../../utils"
+import { configToJson, getParsedConfig, getRemoteConfigId } from "./utils"
 import { JSONRecord } from "../../../../../../data/JSON"
-import { isEmpty } from "lodash/fp"
 
 /**
  * FETCH
  * Originally from Query.tsx
  */
 export function fetch({
-  configNameKey,
   dispatch,
   entityTypeId,
   fromStore,
   queryConfig,
   queryFormValues,
-  remoteConfigIdKey,
   remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
-  valueKey,
 }: RemoteConfigActionParams): Promise<LoadStatus> {
   // TODO: What is the predicate filter for? Why did they do this?
   // const remoteConfigTypeParentName = remoteConfigTypeParent && remoteConfigTypeParent.name
@@ -43,10 +39,7 @@ export function fetch({
       data = convertConfigsToJSON(allConfigsOfType)
       return Promise.resolve({ data, loadStatus: "loaded" })
     case "selected":
-      if (!remoteConfigIdKey || isEmpty(remoteConfigIdKey))
-        return getErrorStatePromise("Config ID Key is missing. Please check the Execute component settings.")
-
-      remoteConfigId = getRemoteConfigId({ queryFormValues, remoteConfigIdKey, userInterfaceData })
+      remoteConfigId = getRemoteConfigId({ queryFormValues, userInterfaceData })
       if (!remoteConfigId) return getErrorStatePromise("Remote config not found.")
 
       data = getParsedConfig(remoteConfigId, fromStore)
@@ -66,7 +59,7 @@ export function fetch({
  * @param entityTypeId
  * @param fromStore
  */
-function getAllConfigsOfType(entityTypeId: PersistedConfig["id"], fromStore: FromStore): PersistedConfig[] {
+function getAllConfigsOfType(entityTypeId: PersistedConfig["id"], fromStore: RemoteConfigFromStore): PersistedConfig[] {
   const parent: PersistedConfig | null = fromStore.loadById(entityTypeId)
   const configs = parent && fromStore.loadByType(parent.name)
   if (configs) {

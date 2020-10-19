@@ -1,4 +1,4 @@
-import { get, isEmpty, isEqual, set } from "lodash/fp"
+import { get, isEmpty, isEqual, set, isString } from "lodash/fp"
 import React from "react"
 import { queryBuilderManageForm } from "./query-builder-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
@@ -11,6 +11,7 @@ import {
 } from "./types"
 import { JsonGroup, JsonLogicTree } from "react-awesome-query-builder"
 import { getQueryableFields } from "./components/utils"
+import { tryCatch } from "fp-ts/lib/Option"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   QueryBuilderInterfaceComponentProps,
@@ -48,14 +49,28 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<QueryBuilderInterfaceComponentProps>): void {
-    this.updateSchema(prevProps)
-    this.updateQuery()
+    if (
+      prevProps.schemaKey !== this.props.schemaKey ||
+      prevProps.valueKey !== this.props.valueKey ||
+      prevProps.jsonLogicKey !== this.props.jsonLogicKey ||
+      !isEqual(prevProps.userInterfaceData, this.props.userInterfaceData)
+    ) {
+      this.updateSchema(prevProps)
+      this.updateQuery()
+    }
   }
 
   private updateQuery() {
     const { userInterfaceData, valueKey, jsonLogicKey } = this.props
-    const qbDataJsonGroup: JsonGroup = get(valueKey, userInterfaceData)
-    const jsonLogic: JsonLogicTree = get(jsonLogicKey, userInterfaceData)
+    const rawQbDataJsonGroup = get(valueKey, userInterfaceData)
+    const rawJsonLogic = get(jsonLogicKey, userInterfaceData)
+
+    const qbDataJsonGroup: JsonGroup = isString(rawQbDataJsonGroup)
+      ? tryCatch(() => rawQbDataJsonGroup && JSON.parse(rawQbDataJsonGroup)).toUndefined()
+      : rawQbDataJsonGroup
+    const jsonLogic: JsonLogicTree = isString(rawJsonLogic)
+      ? tryCatch(() => rawJsonLogic && JSON.parse(rawJsonLogic)).toUndefined()
+      : rawJsonLogic
 
     // Once we have the qbDataJsonGroup, don't update again or we'll wipe out the user's changes
     if (isEmpty(this.state.qbDataJsonGroup) && !isEmpty(qbDataJsonGroup)) {
@@ -70,7 +85,10 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
 
   private updateSchema(prevProps?: Readonly<QueryBuilderInterfaceComponentProps>) {
     const { schemaKey, userInterfaceData } = this.props
-    const schema: SchemaType = get(schemaKey, userInterfaceData)
+    const rawSchema = get(schemaKey, userInterfaceData)
+    const schema: SchemaType = isString(rawSchema)
+      ? tryCatch(() => rawSchema && JSON.parse(rawSchema)).toUndefined()
+      : rawSchema
     const prevSchema: SchemaType = prevProps && get(prevProps.schemaKey, prevProps.userInterfaceData)
     const isSchemaUnchanged = (prevProps && isEqual(schema, prevSchema)) || false
 

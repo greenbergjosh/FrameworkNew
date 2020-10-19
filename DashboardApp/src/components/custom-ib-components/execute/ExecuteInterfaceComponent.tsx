@@ -14,6 +14,7 @@ import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { Empty } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -39,6 +40,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
   static manageForm = executeManageForm
   static contextType = UserInterfaceContext
+  static availableEvents = [
+    "remoteConfig_created",
+    "remoteConfig_updated",
+    "remoteConfig_deleted",
+    "remoteConfig_loaded",
+  ]
   context!: React.ContextType<typeof UserInterfaceContext>
   autoExecuteTimer?: ReturnType<typeof setInterval> | null
 
@@ -98,6 +105,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     this.setState({ submittingQueryForm: submitting })
   }
 
+  private handleRaiseEvent = (eventName: string, eventPayload: any): void => {
+    this.raiseEvent(eventName, eventPayload)
+  }
+
   /* ******************************************
    *
    * RENDER METHOD
@@ -125,22 +136,19 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             actionType={castProps.RemoteConfig_actionType}
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            configNameKey={castProps.RemoteConfig_configNameKey}
-            context={this.context}
+            context={this.context as AdminUserInterfaceContextManager}
             deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
+            onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
-            queryConfigId={castProps.RemoteConfig_queryConfigId}
-            remoteConfigIdKey={castProps.RemoteConfig_idKey}
+            remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
             setParentSubmitting={this.setParentSubmitting}
-            remoteConfigStaticId={castProps.RemoteConfig_staticId}
             useDeleteRedirect={castProps.RemoteConfig_useDeleteRedirect}
             userInterfaceData={userInterfaceData}
-            valueKey={valueKey}
           />
         )
       case "remote-query":
@@ -149,16 +157,16 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteQuery
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            context={this.context}
+            context={this.context as AdminUserInterfaceContextManager}
             isCRUD={castProps.RemoteQuery_isCRUD}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
+            onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}
             userInterfaceData={userInterfaceData}
-            valueKey={valueKey}
           />
         )
       case "remote-url":
@@ -167,16 +175,16 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteUrl
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            context={this.context}
+            context={this.context as AdminUserInterfaceContextManager}
             isCRUD={castProps.RemoteUrl_isCRUD}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
+            onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}
             userInterfaceData={userInterfaceData}
-            valueKey={valueKey}
           />
         )
       default:

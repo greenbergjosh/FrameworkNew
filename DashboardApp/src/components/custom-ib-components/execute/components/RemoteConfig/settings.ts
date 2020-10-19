@@ -27,26 +27,6 @@ export const remoteConfigSettings = [
     },
   },
   {
-    key: "RemoteConfig_queryConfigId",
-    valueKey: "RemoteConfig_queryConfigId",
-    label: "Remote Config Query",
-    component: "select",
-    dataHandlerType: "remote-config",
-    remoteConfigType: "Report.Query",
-    visibilityConditions: {
-      and: [
-        {
-          "===": [
-            "remote-config",
-            {
-              var: ["queryType"],
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
     key: "RemoteConfig_actionType",
     valueKey: "RemoteConfig_actionType",
     label: "Operation",
@@ -208,65 +188,6 @@ export const remoteConfigSettings = [
     },
   },
   {
-    key: "RemoteConfig_idKey",
-    valueKey: "RemoteConfig_idKey",
-    label: "Config ID Key",
-    component: "input",
-    defaultValue: "remoteConfigId",
-    visibilityConditions: {
-      and: [
-        {
-          "==": [
-            {
-              var: ["queryType"],
-            },
-            "remote-config",
-          ],
-        },
-        {
-          or: [
-            {
-              "==": [
-                {
-                  var: ["RemoteConfig_actionType"],
-                },
-                "update",
-              ],
-            },
-            {
-              "==": [
-                {
-                  var: ["RemoteConfig_actionType"],
-                },
-                "delete",
-              ],
-            },
-            {
-              and: [
-                {
-                  "==": [
-                    {
-                      var: ["RemoteConfig_actionType"],
-                    },
-                    "fetch",
-                  ],
-                },
-                {
-                  "==": [
-                    {
-                      var: ["RemoteConfig_resultsType"],
-                    },
-                    "selected",
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
     key: "RemoteConfig_staticId",
     valueKey: "RemoteConfig_staticId",
     label: "Config",
@@ -297,45 +218,6 @@ export const remoteConfigSettings = [
               var: ["RemoteConfig_resultsType"],
             },
             "static",
-          ],
-        },
-      ],
-    },
-  },
-  {
-    key: "RemoteConfig_configNameKey",
-    valueKey: "RemoteConfig_configNameKey",
-    label: "Name Key",
-    component: "input",
-    defaultValue: "configNameValueKey",
-    visibilityConditions: {
-      and: [
-        {
-          "==": [
-            {
-              var: "queryType",
-            },
-            "remote-config",
-          ],
-        },
-        {
-          or: [
-            {
-              "==": [
-                {
-                  var: "RemoteConfig_actionType",
-                },
-                "create",
-              ],
-            },
-            {
-              "==": [
-                {
-                  var: "RemoteConfig_actionType",
-                },
-                "update",
-              ],
-            },
           ],
         },
       ],

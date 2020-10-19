@@ -2,14 +2,13 @@ import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
 import { QueryConfig, QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ExecuteInterfaceComponentState, LoadStatus, LoadStatusCode } from "../types"
+import { ExecuteInterfaceComponentState, FromStore, LoadStatus } from "../types"
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
 import { cheapHash } from "../../../../lib/json"
 import * as record from "fp-ts/lib/Record"
 import { isArray, set } from "lodash/fp"
-import { UserInterfaceContextManager } from "@opg/interface-builder"
 
 /**
  * Extract config from the Persisted Config and parse it.
@@ -89,23 +88,15 @@ export function mergeResultDataWithModel({
 
 /**
  * Originally from Query.tsx
- * @param context
+ * @param fromStore
  * @param persistedConfigId
  * @returns QueryConfig | undefined
  */
 export function getQueryConfig(
-  context: UserInterfaceContextManager | null,
+  fromStore: FromStore,
   persistedConfigId: PersistedConfig["id"]
 ): QueryConfig | undefined {
-  if (!context) {
-    console.warn(
-      "ExecuteInterfaceComponent",
-      "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
-    )
-    return
-  }
-
-  const persistedConfig: PersistedConfig = context.loadById(persistedConfigId)
+  const persistedConfig: PersistedConfig | null = fromStore.loadById(persistedConfigId)
 
   if (!persistedConfig) {
     console.warn("persistedConfig not found!")

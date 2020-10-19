@@ -6,9 +6,11 @@ import { HTTPRequestQueryConfig, QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getResultDataFromReportData, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { OnSubmitType, RemoteUrlProps } from "../../types"
+import { OnSubmitType, RemoteUrlFromStore, RemoteUrlProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
-import { AdminUserInterfaceContextManager } from "../../../../../data/AdminUserInterfaceContextManager.type"
+import { AppDispatch } from "../../../../../state/store.types"
+import { useRematch } from "../../../../../hooks"
+import { store } from "../../../../../state/store"
 import { executeRemoteUrl } from "./executeRemoteUrl"
 
 function RemoteUrl(props: RemoteUrlProps): JSX.Element {
@@ -18,13 +20,13 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     context,
     isCRUD,
     onChangeData,
+    onRaiseEvent,
     onMount,
     outboundValueKey,
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
     userInterfaceData,
-    valueKey,
   } = props
 
   /* *************************************
@@ -37,12 +39,19 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
    * PROP WATCHERS
    */
 
+  const [fromStore, dispatch]: [RemoteUrlFromStore, AppDispatch] = useRematch((appState) => ({
+    reportDataByQuery: appState.reports.reportDataByQuery,
+    loadById: (id: string) => {
+      return record.lookup(id, store.select.globalConfig.configsById(appState)).toNullable()
+    },
+  }))
+
   /**
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(context, queryConfigId)
-  }, [queryConfigId, context])
+    return getQueryConfig(fromStore, queryConfigId)
+  }, [queryConfigId, fromStore])
 
   /* *************************************
    *
@@ -57,29 +66,43 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     setParameterValues(some(parameterValues))
     const queryFormValues: JSONRecord = { ...satisfiedByParentParams, ...parameterValues }
 
-    return executeRemoteUrl(
-      queryConfig as HTTPRequestQueryConfig,
-      queryFormValues,
-      context as AdminUserInterfaceContextManager,
-      isCRUD
-    ).then((newLoadingState) => {
-      const { reportDataByQuery } = context as AdminUserInterfaceContextManager
+    return executeRemoteUrl(queryConfig as HTTPRequestQueryConfig, queryFormValues, dispatch, isCRUD).then(
+      (newLoadingState) => {
+        // Load the response data from cache
+        const resultData = getResultDataFromReportData(
+          queryConfig.query,
+          satisfiedByParentParams,
+          context.reportDataByQuery
+        )
 
-      // Load the response data from cache
-      const resultData = getResultDataFromReportData(queryConfig.query, satisfiedByParentParams, reportDataByQuery)
+        // Put response data into userInterfaceData (via onChangeData)
+        if (onChangeData) {
+          const newData = mergeResultDataWithModel({
+            outboundValueKey,
+            parameterValues,
+            queryConfigQuery: queryConfig.query,
+            resultData,
+            userInterfaceData,
+          })
+          onChangeData(newData)
+        }
 
-      // Put response data into userInterfaceData (via onChangeData)
-      if (onChangeData) {
-        const newData = mergeResultDataWithModel({
-          outboundValueKey,
-          parameterValues,
-          queryConfigQuery: queryConfig.query,
-          resultData,
-          userInterfaceData,
-        })
-        onChangeData(newData)
+        switch (newLoadingState.loadStatus) {
+          case "created":
+            onRaiseEvent("remoteUrl_created", { value: newLoadingState.data })
+            break
+          case "deleted":
+            onRaiseEvent("remoteUrl_deleted", { value: newLoadingState.data })
+            break
+          case "loaded":
+            onRaiseEvent("remoteUrl_loaded", { value: newLoadingState.data })
+            break
+          case "updated":
+            onRaiseEvent("remoteUrl_updated", { value: newLoadingState.data })
+            break
+        }
       }
-    })
+    )
   }
 
   /* *************************************

@@ -1,28 +1,29 @@
 import { LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
+import { getRemoteConfigId } from "./utils"
 import { get, isEmpty } from "lodash/fp"
 import JSON5 from "json5"
-import { CreateConfigEventPayload, UpdateConfigEventPayload } from "../../../../../../state/global-config"
+import {
+  CreateConfigEventPayload,
+  DeleteConfigEventPayload,
+  UpdateConfigEventPayload,
+} from "../../../../../../state/global-config"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
-import { getParsedConfig, getRemoteConfigId } from "../utils"
 
 /**
  * UPDATE
  * Originally from edit.tsx
  */
 export function update({
-  configNameKey,
   dispatch,
   entityTypeId,
   fromStore,
   queryConfig,
   queryFormValues,
-  remoteConfigIdKey,
   remoteConfigStaticId,
   resultsType,
   uiDataSlice,
   userInterfaceData,
-  valueKey,
 }: RemoteConfigActionParams): Promise<LoadStatus> {
   if (!entityTypeId || isEmpty(entityTypeId)) {
     return getErrorStatePromise("Config type not provided. Please check the Execute component settings.")
@@ -34,16 +35,13 @@ export function update({
     return getErrorStatePromise("Config type not found. Please check the Execute component settings.")
   }
 
-  // We must have a remote config ID key
-  if (!remoteConfigIdKey)
-    return getErrorStatePromise("Config ID Key is missing. Please check the Execute component settings.")
-
   // We must have a remote config ID
-  const remoteConfigId = getRemoteConfigId({ remoteConfigIdKey, userInterfaceData, queryFormValues })
+  const remoteConfigId = getRemoteConfigId({ userInterfaceData: uiDataSlice, queryFormValues })
   if (!remoteConfigId) return getErrorStatePromise("Config ID not found.")
 
-  // We must have an existing config to modify
-  const prevState = remoteConfigId && fromStore.loadById(remoteConfigId)
+  // Get an unmodified copy of the config from global config.
+  // This also verifies that this ID is actually from an existing config.
+  const prevState: UpdateConfigEventPayload["prevState"] | null = fromStore.loadById(remoteConfigId)
   if (!prevState) {
     return getErrorStatePromise("Config not found.")
   }
@@ -57,12 +55,12 @@ export function update({
   // The fetched config type must be the type that the user specified
   if (prevState.type !== parent.name) {
     return getErrorStatePromise(
-      `The config of type ${prevState.type} must be of the type ${parent.name}. Please check the Execute component settings.`
+      `The config of type "${prevState.type}" must be of the type "${parent.name}". Please check the Execute component settings.`
     )
   }
 
   // We must have a name
-  const name = configNameKey ? get(configNameKey, userInterfaceData) : ""
+  const name = get("name", uiDataSlice)
   if (!name || isEmpty(name)) {
     return getErrorStatePromise("Config name not provided.")
   }
@@ -81,7 +79,7 @@ export function update({
     type: parent.name,
   }
 
-  /* NOTE: We don't allow ID to be changed by not using the userInterfaceData value,
+  /* NOTE: We don't allow ID to be changed by not using the uiDataSlice value,
    * but instead copying it from prevState which comes directly from fromStore.
    */
   // const parent: UpdateConfigEventPayload["parent"] = record.lookup(prevState.type, fromStore.entityTypes).toUndefined()

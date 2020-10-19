@@ -1,14 +1,14 @@
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
-import { PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 import { Brand } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"
 import jsonLogic from "json-logic-js"
-import { get, isEmpty } from "lodash/fp"
-import { ParsedConfig, FromStore } from "../../types"
+import { get } from "lodash/fp"
+import { RemoteConfigFromStore, ParsedConfig } from "../../../types"
 import { UserInterfaceProps } from "@opg/interface-builder"
-import { JSONRecord } from "../../../../../data/JSON"
+import { JSONRecord } from "../../../../../../data/JSON"
 
 /**
  * From Query.tsx
@@ -40,30 +40,27 @@ export function getRemoteConfigPredicate(
 
 /**
  * Get remoteConfigId by searching queryFormValues, then userInterfaceData
- * @param remoteConfigIdKey
  * @param userInterfaceData
  * @param queryFormValues
  */
 export function getRemoteConfigId({
   queryFormValues,
-  remoteConfigIdKey,
   userInterfaceData,
 }: {
   queryFormValues?: JSONRecord
-  remoteConfigIdKey: string
   userInterfaceData: UserInterfaceProps["data"]
 }): PersistedConfig["id"] | undefined {
-  if (isEmpty(remoteConfigIdKey)) {
-    return
-  }
   let id
   // Get the remoteConfigId from queryFormValues which is populated
   // via querystring params or persisted params from QueryParams component.
-  id = (get(remoteConfigIdKey, queryFormValues) as unknown) as PersistedConfig["id"]
+  id = (get("id", queryFormValues) as unknown) as PersistedConfig["id"]
 
   if (!id) {
+    // TODO: Should we be able to get config ID from any UI control at a designated location?
+    //  We would then also missing the manage-form configID prop.
+    //  The configID prop could be called anything and be at any path.
     // Attempt to get the remoteConfigId from a UI control
-    id = get(remoteConfigIdKey, userInterfaceData)
+    id = get("id", userInterfaceData)
   }
   return id
 }
@@ -73,7 +70,10 @@ export function getRemoteConfigId({
  * @param remoteConfigId
  * @param fromStore
  */
-export function getParsedConfig(remoteConfigId: PersistedConfig["id"], fromStore: FromStore): ParsedConfig | null {
+export function getParsedConfig(
+  remoteConfigId: PersistedConfig["id"],
+  fromStore: RemoteConfigFromStore
+): ParsedConfig | null {
   const persistedConfig = remoteConfigId && fromStore.loadById(remoteConfigId)
   return persistedConfig && configToJson(persistedConfig)
 }
