@@ -4,7 +4,7 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { getQueryConfig, mergeResultDataWithModel } from "../utils"
+import { convertParamKVPMapsToParams, getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
 import { RemoteConfigFromStore, LoadStatusCode, OnSubmitType, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
@@ -20,13 +20,13 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     actionType,
     buttonLabel,
     buttonProps,
-    context,
     deleteRedirectPath,
     entityTypeId,
     onChangeData,
     onRaiseEvent,
     onMount,
     outboundValueKey,
+    paramKVPMaps,
     parentSubmitting,
     remoteConfigStaticId,
     resultsType,
@@ -84,9 +84,13 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
     if (!queryConfig) return
 
-    // Send parameterValues state back up to <QueryParams>
+    /*
+     * From ReportBody.tsx
+     * Send parameterValues back up to <QueryParams>
+     * (Unknown why this is being done)
+     */
     setParameterValues(some(parameterValues))
-    const queryFormValues: JSONRecord = { ...satisfiedByParentParams, ...parameterValues }
+    const queryFormValues: JSONRecord = getQueryFormValues(queryConfig, satisfiedByParentParams, parameterValues)
 
     const uiDataSlice: JSONRecord = !isEmpty(outboundValueKey)
       ? get(outboundValueKey, userInterfaceData)
@@ -151,7 +155,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       onChangeData && onChangeData({})
       dispatch.navigation.navigate(deleteRedirectPath)
     }
-  }, [dispatch.navigation, loadStatus, useDeleteRedirect, deleteRedirectPath])
+  }, [dispatch.navigation, loadStatus, useDeleteRedirect, deleteRedirectPath, onChangeData])
 
   /* *************************************
    *
@@ -166,8 +170,10 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       />
     )
 
+  const params = convertParamKVPMapsToParams(paramKVPMaps, userInterfaceData)
+
   return (
-    <QueryParams queryConfig={queryConfig} parentData={userInterfaceData}>
+    <QueryParams queryConfig={queryConfig} parentData={params}>
       {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
         <QueryForm
           layout={queryConfig.layout}

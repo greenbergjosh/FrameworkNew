@@ -3,7 +3,7 @@ import { remoteConfigSettings } from "./components/RemoteConfig/settings"
 import { remoteQuerySettings } from "./components/RemoteQuery/settings"
 import { remoteUrlSettings } from "./components/RemoteUrl/settings"
 
-export const executeManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+export const executeManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
   return baseManageForm(...executeManageFormDefinition, ...extend)
 }
 
@@ -118,6 +118,23 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
               ...remoteQuerySettings,
               ...remoteConfigSettings,
               ...remoteUrlSettings,
+              {
+                key: "paramKVPMaps",
+                valueKey: "paramKVPMaps.values",
+                label: "Map Params",
+                component: "data-map",
+                multiple: true,
+                keyComponent: {
+                  label: "Param Field Name",
+                  component: "input",
+                  valueKey: "fieldName",
+                },
+                valueComponent: {
+                  label: "Param Value Key",
+                  component: "input",
+                  valueKey: "valueKey",
+                },
+              },
             ],
           },
           {

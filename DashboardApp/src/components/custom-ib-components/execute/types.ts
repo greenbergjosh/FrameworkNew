@@ -2,7 +2,6 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
-  UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { ConfigType, PersistedConfig } from "../../../data/GlobalConfig.Config"
@@ -14,7 +13,6 @@ import { JSONRecord } from "../../../data/JSON"
 import { PropsFromQueryParams } from "../../query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 export type ShapeType = "circle" | "circle-outline" | "round" | undefined
 export type SizeType = "small" | "large" | undefined
@@ -24,6 +22,7 @@ export type LoadError = string | null
 export type QueryType = "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
 export type ActionType = "read" | "create" | "update" | "delete"
 export type ResultsType = "all" | "selected" | "static"
+export type ParamKVPMapsType = { values: { fieldName: string; valueKey: string }[] }
 
 export type ButtonProps = {
   block: boolean
@@ -58,8 +57,9 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   outboundValueKey: string
+  paramKVPMaps: ParamKVPMapsType
   queryType: QueryType
-  userInterfaceData?: UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -67,6 +67,7 @@ export type LoadStatus = {
   data: JSONRecord | JSONRecord[] | null
   loadStatus: LoadStatusCode
   loadError?: LoadError
+  remoteQueryLoggingName?: string
 }
 
 export interface ExecuteInterfaceComponentState {
@@ -148,14 +149,14 @@ export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Pro
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
-  context: AdminUserInterfaceContextManager
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
   onMount: OnMountType
   outboundValueKey: IExecuteInterfaceComponentProps["outboundValueKey"]
+  paramKVPMaps: ParamKVPMapsType
   parentSubmitting: QueryFormProps["parentSubmitting"]
   setParentSubmitting: QueryFormProps["setParentSubmitting"]
-  userInterfaceData: IExecuteInterfaceComponentProps["userInterfaceData"]
+  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export interface FromStore {

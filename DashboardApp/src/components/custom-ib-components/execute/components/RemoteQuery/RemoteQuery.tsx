@@ -4,25 +4,25 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { getQueryConfig, getResultDataFromReportData, mergeResultDataWithModel } from "../utils"
+import { convertParamKVPMapsToParams, getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
 import { OnSubmitType, RemoteQueryFromStore, RemoteQueryProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
-import { executeRemoteQuery } from "./executeRemoteQuery"
 import { AppDispatch } from "../../../../../state/store.types"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
+import { executeRemoteQuery } from "./executeRemoteQuery"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
   const {
     buttonLabel,
     buttonProps,
-    context,
     isCRUD,
     onChangeData,
     onRaiseEvent,
     onMount,
     outboundValueKey,
+    paramKVPMaps,
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
@@ -62,25 +62,22 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
     if (!queryConfig) return
 
-    // Send state back up to <QueryParams>
+    /*
+     * From ReportBody.tsx
+     * Send parameterValues back up to <QueryParams>
+     * (Unknown why this is being done)
+     */
     setParameterValues(some(parameterValues))
-    const queryFormValues: JSONRecord = { ...satisfiedByParentParams, ...parameterValues }
+    const queryFormValues: JSONRecord = getQueryFormValues(queryConfig, satisfiedByParentParams, parameterValues)
 
     return executeRemoteQuery(queryConfig as QueryConfig, queryFormValues, dispatch, isCRUD).then((newLoadingState) => {
-      // Load the response data from cache
-      const resultData = getResultDataFromReportData(
-        queryConfig.query,
-        satisfiedByParentParams,
-        context.reportDataByQuery
-      )
-
       // Put response data into userInterfaceData (via onChangeData)
       if (onChangeData) {
         const newData = mergeResultDataWithModel({
           outboundValueKey,
           parameterValues,
           queryConfigQuery: queryConfig.query,
-          resultData,
+          resultData: newLoadingState.data,
           userInterfaceData,
         })
         onChangeData(newData)
@@ -116,8 +113,10 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       />
     )
 
+  const params = convertParamKVPMapsToParams(paramKVPMaps, userInterfaceData)
+
   return (
-    <QueryParams queryConfig={queryConfig} parentData={userInterfaceData}>
+    <QueryParams queryConfig={queryConfig} parentData={params}>
       {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
         <QueryForm
           layout={queryConfig.layout}

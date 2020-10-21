@@ -14,7 +14,6 @@ import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { Empty } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
-import { AdminUserInterfaceContextManager } from "../../../data/AdminUserInterfaceContextManager.type"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -23,7 +22,6 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "data",
-    inboundValueKey: "data",
   }
   static getLayoutDefinition() {
     return {
@@ -120,6 +118,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       buttonProps,
       onChangeData,
       outboundValueKey,
+      paramKVPMaps,
       remoteQuery,
       remoteUrl,
       userInterfaceData,
@@ -136,13 +135,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             actionType={castProps.RemoteConfig_actionType}
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            context={this.context as AdminUserInterfaceContextManager}
             deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
+            paramKVPMaps={paramKVPMaps}
             parentSubmitting={this.state.submittingQueryForm}
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
@@ -157,12 +156,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteQuery
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            context={this.context as AdminUserInterfaceContextManager}
             isCRUD={castProps.RemoteQuery_isCRUD}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
+            paramKVPMaps={paramKVPMaps}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}
@@ -175,12 +174,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteUrl
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
-            context={this.context as AdminUserInterfaceContextManager}
             isCRUD={castProps.RemoteUrl_isCRUD}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
+            paramKVPMaps={paramKVPMaps}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}

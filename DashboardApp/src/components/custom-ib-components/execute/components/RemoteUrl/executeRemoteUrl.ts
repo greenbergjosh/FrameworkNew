@@ -22,10 +22,10 @@ export async function executeRemoteUrl(
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
   const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
 
-  return Promise.resolve(({
+  return Promise.resolve({
     remoteQueryLoggingName: queryConfig.query,
     loadStatus: "loading",
-  } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() =>
+  }).then(() =>
     // executeHTTPRequestQuery puts the response data into cache and does not return it here.
     dispatch.reports
       .executeHTTPRequestQuery({
@@ -33,7 +33,7 @@ export async function executeRemoteUrl(
         query: queryConfig,
         params: { ...queryFormValues },
       })
-      .then(() => {
+      .then((data) => {
         if (isCRUD) {
           notification.success({
             type: "success",
@@ -42,7 +42,7 @@ export async function executeRemoteUrl(
           })
         }
         // TODO: return loadStatus of "create", "update", "delete", "loaded" to support onRaiseEvent
-        return { data: null, loadStatus: "none" } as LoadStatus
+        return { data, loadStatus: "loaded" } as LoadStatus
       })
       .catch((e: Error) => getErrorState(e))
   )

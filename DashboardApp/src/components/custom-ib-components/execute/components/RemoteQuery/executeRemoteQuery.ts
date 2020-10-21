@@ -22,10 +22,10 @@ export async function executeRemoteQuery(
   const executeStrategy = isCRUD ? dispatch.reports.executeQueryUpdate : dispatch.reports.executeQuery
   const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
 
-  return Promise.resolve(({
+  return Promise.resolve({
     remoteQueryLoggingName: queryConfig.query,
     loadStatus: "loading",
-  } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>).then(() =>
+  }).then((data) =>
     // executeStrategy puts the response data into cache and does not return it here.
     executeStrategy({
       resultURI: queryResultURI,
@@ -33,7 +33,7 @@ export async function executeRemoteQuery(
       params: { ...queryFormValues },
     })
       // TODO: return loadStatus of "create", "update", "delete", "loaded" to support onRaiseEvent
-      .then(() => ({ data: null, loadStatus: "none" } as LoadStatus))
+      .then(() => ({ data, loadStatus: "loaded" } as LoadStatus))
       .catch((e: Error) => getErrorState(e))
   )
 }

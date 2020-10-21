@@ -2,13 +2,14 @@ import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
 import { QueryConfig, QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ExecuteInterfaceComponentState, FromStore, LoadStatus } from "../types"
+import { ExecuteInterfaceComponentState, FromStore, LoadStatus, ParamKVPMapsType } from "../types"
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
 import { cheapHash } from "../../../../lib/json"
 import * as record from "fp-ts/lib/Record"
-import { isArray, set } from "lodash/fp"
+import { get, isArray, set } from "lodash/fp"
+import { UserInterfaceProps } from "@opg/interface-builder"
 
 /**
  * Extract config from the Persisted Config and parse it.
@@ -70,8 +71,8 @@ export function mergeResultDataWithModel({
   outboundValueKey: string
   parameterValues: JSONRecord
   queryConfigQuery: string
-  resultData: JSONRecord | JSONRecord[] | null
-  userInterfaceData: any
+  resultData: JSONRecord | JSONRecord[] | null | undefined
+  userInterfaceData: UserInterfaceProps["data"]
 }): void {
   if (outboundValueKey) {
     // If there's an outboundValueKey, nest the data
@@ -121,4 +122,49 @@ export function getErrorStatePromise(reason: string): Promise<LoadStatus> {
 export function getErrorState(e: Error): LoadStatus {
   console.error("ExecuteInterfaceComponent", e)
   return { data: null, loadStatus: "error", loadError: e.message }
+}
+
+/**
+ * Convert param definitions to params hash
+ * @param paramKVPMaps
+ */
+export function convertParamKVPMapsToParams(
+  paramKVPMaps: ParamKVPMapsType,
+  userInterfaceData: UserInterfaceProps["data"]
+): JSONRecord {
+  if (!paramKVPMaps || !paramKVPMaps.values || !paramKVPMaps.values.reduce) {
+    return userInterfaceData
+  }
+  const params = paramKVPMaps.values.reduce((acc, item) => {
+    const val = get(item.valueKey, userInterfaceData)
+    if (val) acc[item.fieldName] = val
+    return acc
+  }, {} as JSONRecord)
+  return { ...userInterfaceData, ...params }
+}
+
+/**
+ * Combine parent context values with the QueryForm values
+ * @param queryConfig
+ * @param satisfiedByParentParams
+ * @param parameterValues
+ */
+export function getQueryFormValues(
+  queryConfig: QueryConfig,
+  satisfiedByParentParams: JSONRecord,
+  parameterValues: JSONRecord
+): JSONRecord {
+  if (queryConfig.layout.length === 0) {
+    /*
+     * QueryForm is not being used, so ignore it's values.
+     * This prevents parent context data from getting wiped out by the unused QueryForm.
+     * SEE: QueryParams.tsx "Set QueryForm with initial parameters"
+     */
+    return { ...satisfiedByParentParams }
+  }
+  /*
+   * We are using the QueryConfig's internal form layout
+   * So any parent context data should get overridden by the QueryForm values.
+   */
+  return { ...satisfiedByParentParams, ...parameterValues }
 }

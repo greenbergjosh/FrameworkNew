@@ -28,7 +28,13 @@ export interface KeyValuePairConfig {
 }
 
 export type LocalDataHandlerType = "local"
-export type RemoteDataHandlerType = "remote-config" | "remote-kvp" | "remote-query" | "remote-url" | "remote-function"
+export type RemoteDataHandlerType =
+  | "ui-data-key"
+  | "remote-config"
+  | "remote-kvp"
+  | "remote-query"
+  | "remote-url"
+  | "remote-function"
 export type LoadStatusType = "none" | "loading" | "loaded" | "error"
 export type ModeType = TSEnum<AntdSelectProps["mode"]>
 
@@ -74,6 +80,13 @@ export interface SelectablePropsLocalData extends ISelectableProps {
   }
 }
 
+export interface SelectablePropsUiDataKey extends ISelectableProps {
+  dataHandlerType: "ui-data-key"
+  optionsKey?: string
+  optionLabelKey?: string
+  optionValueKey?: string
+}
+
 export interface SelectablePropsRemoteFunctionData extends ISelectableProps {
   dataHandlerType: "remote-function"
   remoteFunctionType?: PersistedConfig["id"]
@@ -113,6 +126,7 @@ export interface SelectableState {
 
 export type SelectableProps = (
   | SelectablePropsLocalData
+  | SelectablePropsUiDataKey
   | SelectablePropsRemoteFunctionData
   | SelectablePropsRemoteConfigData
   | SelectablePropsRemoteKeyValueData
