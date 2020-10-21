@@ -197,17 +197,6 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 },
               },
               {
-                key: "paramsValueKey",
-                valueKey: "paramsValueKey",
-                label: "Params Value Key",
-                help: "",
-                component: "input",
-                defaultValue: "params",
-                visibilityConditions: {
-                  "===": ["POST", { var: ["httpMethod"] }],
-                },
-              },
-              {
                 key: "useFilenameFromServer",
                 valueKey: "useFilenameFromServer",
                 component: "toggle",
@@ -223,6 +212,37 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "",
                 visibilityConditions: {
                   "===": [false, { var: ["useFilenameFromServer"] }],
+                },
+              },
+              {
+                key: "paramsValueKey",
+                valueKey: "paramsValueKey",
+                label: "Params Key (deprecated)",
+                help: "Deprecated, please use Map Params instead",
+                component: "input",
+                defaultValue: "params",
+                visibilityConditions: {
+                  "===": ["POST", { var: ["httpMethod"] }],
+                },
+              },
+              {
+                key: "paramKVPMaps",
+                valueKey: "paramKVPMaps.values",
+                label: "Map Params",
+                component: "data-map",
+                multiple: true,
+                keyComponent: {
+                  label: "Param Field Name",
+                  component: "input",
+                  valueKey: "fieldName",
+                },
+                valueComponent: {
+                  label: "Param Value Key",
+                  component: "input",
+                  valueKey: "valueKey",
+                },
+                visibilityConditions: {
+                  "===": ["POST", { var: ["httpMethod"] }],
                 },
               },
             ],

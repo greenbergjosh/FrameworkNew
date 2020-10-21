@@ -27,12 +27,14 @@ export function getConfig(schema?: SchemaType): Config {
 
 export const emptyQBDataJsonTree: JsonTree = { id: Utils.uuid(), type: "group" }
 
-export function getQueryableFields(schema: SchemaType): string[] {
+type QueryableFieldOption = { label: string; value: string }
+
+export function getQueryableFields(schema: SchemaType): QueryableFieldOption[] {
   const ownKeys = keys(schema)
-  return ownKeys.reduce((acc: string[], key) => {
+  return ownKeys.reduce((acc: QueryableFieldOption[], key) => {
     const prop = schema[key]
     if (prop && prop.type && !prop.type.endsWith("group")) {
-      acc.push(key)
+      acc.push({ label: prop.label || key, value: key })
     }
     return acc
   }, [])
