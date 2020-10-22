@@ -12,6 +12,7 @@ namespace SimpleImportExport
     public class FtpEndPoint : Endpoint
     {
         private readonly bool _isSFtp = false;
+        private readonly bool _isFtps = false;
 
         public FtpEndPoint(IGenericEntity ge) : base(ge)
         {
@@ -22,6 +23,7 @@ namespace SimpleImportExport
             KeyPath = ge.GetS("KeyPath");
             MaxDepth = ge.GetS("MaxDepth").ParseInt() ?? 0;
             _isSFtp = ge.GetB("isSftp");
+            _isFtps = ge.GetB("IsFtps");
 
             if (Password.IsNullOrWhitespace())
             {
@@ -52,7 +54,7 @@ namespace SimpleImportExport
                     await ProtocolClient.GetSFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, Port, User, password: Password);
             }
 
-            return await ProtocolClient.GetFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, User, Password);
+            return await ProtocolClient.GetFtpFileStream(CombineUrl(file.SourceDirectory, file.FileName), Host, User, Password, _isFtps);
         }
 
         public override async Task<(long size, long? records, string destinationDirectoryPath)> SendStream(SourceFileInfo file, Endpoint source)
@@ -75,7 +77,7 @@ namespace SimpleImportExport
                 {
                     await ProtocolClient.UploadSFtpStream(destPath, ms, Host, Port, User, password: Password);
                 }
-                else await ProtocolClient.UploadStream(destPath, ms, Host, User, Password);
+                else await ProtocolClient.UploadStream(destPath, ms, Host, User, Password, _isFtps);
 
                 return (size: ms.Length, records: null, destinationDirectoryPath);
             }
@@ -94,7 +96,7 @@ namespace SimpleImportExport
             }
             else
             {
-                dirFiles = (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password)).Select(r =>
+                dirFiles = (await ProtocolClient.FtpGetFiles(BasePath, Host, User, Password, _isFtps)).Select(r =>
                 {
                     var basePath = new List<string> { BasePath };
                     var spl = r.Split("/", StringSplitOptions.RemoveEmptyEntries);
