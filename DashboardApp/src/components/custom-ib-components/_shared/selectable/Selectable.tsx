@@ -298,9 +298,9 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     if (optionsKey) {
       const prevOptionsKey = (prevProps as SelectablePropsUiDataKey).optionsKey
       const prevRawOptions = prevOptionsKey && get(prevOptionsKey, prevProps.userInterfaceData)
-      const rawOptions: JSONRecord[] = get(optionsKey, userInterfaceData)
+      const rawOptions: JSONRecord[] | undefined = get(optionsKey, userInterfaceData)
 
-      if (!isEqual(rawOptions, prevRawOptions)) {
+      if (rawOptions && !isEqual(rawOptions, prevRawOptions) && rawOptions.reduce) {
         const init: SelectableOption[] = []
         const options = rawOptions.reduce((acc, item) => {
           const label = get(optionLabelKey || "label", item) as string
