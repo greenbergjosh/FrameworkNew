@@ -25,7 +25,7 @@ export async function executeRemoteQuery(
   return Promise.resolve({
     remoteQueryLoggingName: queryConfig.query,
     loadStatus: "loading",
-  }).then((data) =>
+  }).then(() =>
     // executeStrategy puts the response data into cache and does not return it here.
     executeStrategy({
       resultURI: queryResultURI,
@@ -33,7 +33,7 @@ export async function executeRemoteQuery(
       params: { ...queryFormValues },
     })
       // TODO: return loadStatus of "create", "update", "delete", "loaded" to support onRaiseEvent
-      .then(() => ({ data, loadStatus: "loaded" } as LoadStatus))
+      .then((data) => ({ data, loadStatus: "loaded" } as LoadStatus))
       .catch((e: Error) => getErrorState(e))
   )
 }

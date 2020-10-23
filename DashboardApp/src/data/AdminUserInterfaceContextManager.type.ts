@@ -1,5 +1,5 @@
 import { UserInterfaceContextManager } from "@opg/interface-builder"
-import { AppDispatch, AppModels, AppState } from "../state/store.types"
+import { AppDispatch, AppState } from "../state/store.types"
 import { PersistedConfig } from "./GlobalConfig.Config"
 
 export interface AdminUserInterfaceContextManager extends UserInterfaceContextManager<PersistedConfig> {
