@@ -1,4 +1,4 @@
-import { get, isEmpty, isEqual, set } from "lodash/fp"
+import { get, isEmpty, isEqual, set, isString } from "lodash/fp"
 import React from "react"
 import { queryBuilderManageForm } from "./query-builder-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
@@ -9,8 +9,9 @@ import {
   QueryBuilderInterfaceComponentState,
   SchemaType,
 } from "./types"
-import { JsonGroup, JsonLogicTree } from "react-awesome-query-builder"
-import { getQueryableFields } from "./components/utils"
+import { JsonGroup } from "react-awesome-query-builder"
+import { emptyQBDataJsonTree, getQueryableFields } from "./components/utils"
+import { tryCatch } from "fp-ts/lib/Option"
 
 export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
   QueryBuilderInterfaceComponentProps,
@@ -39,55 +40,101 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
 
   constructor(props: QueryBuilderInterfaceComponentProps) {
     super(props)
-    this.state = {}
+    this.state = {
+      schema: undefined,
+      jsonLogic: undefined,
+      qbDataJsonGroup: undefined,
+    }
   }
 
   componentDidMount(): void {
-    this.updateSchema()
-    this.updateQuery()
+    const { schemaKey, valueKey, userInterfaceData } = this.props
+    console.log("QueryBuilderInterfaceComponent", "componentDidMount", { userInterfaceData })
+
+    /* Schema */
+    if (!isEmpty(schemaKey)) {
+      const rawSchema = get(schemaKey, userInterfaceData)
+
+      if (!isEmpty(rawSchema)) {
+        this.updateSchema(rawSchema)
+      }
+    }
+
+    /* qbDataJsonGroup */
+    if (!isEmpty(valueKey)) {
+      const rawQbDataJsonGroup = get(valueKey, userInterfaceData)
+
+      if (!isEmpty(rawQbDataJsonGroup)) {
+        this.updateQbDataJsonGroup(rawQbDataJsonGroup)
+      }
+    }
   }
 
   componentDidUpdate(prevProps: Readonly<QueryBuilderInterfaceComponentProps>): void {
-    this.updateSchema(prevProps)
-    this.updateQuery()
-  }
+    const { schemaKey, valueKey, userInterfaceData } = this.props
+    console.log("QueryBuilderInterfaceComponent", "componentDidUpdate", { userInterfaceData })
 
-  private updateQuery() {
-    const { userInterfaceData, valueKey, jsonLogicKey } = this.props
-    const qbDataJsonGroup: JsonGroup = get(valueKey, userInterfaceData)
-    const jsonLogic: JsonLogicTree = get(jsonLogicKey, userInterfaceData)
+    /* Schema */
+    if (!isEmpty(schemaKey)) {
+      const prevRawSchema = get(prevProps.schemaKey, prevProps.userInterfaceData)
+      const rawSchema = get(schemaKey, userInterfaceData)
 
-    // Once we have the qbDataJsonGroup, don't update again or we'll wipe out the user's changes
-    if (isEmpty(this.state.qbDataJsonGroup) && !isEmpty(qbDataJsonGroup)) {
-      this.setState({ qbDataJsonGroup })
+      if (!isEmpty(rawSchema) && !isEqual(rawSchema, prevRawSchema)) {
+        this.updateSchema(rawSchema)
+      }
     }
 
-    // Once we have the jsonLogic, don't update again or we'll wipe out the user's changes
-    if (isEmpty(this.state.jsonLogic) && !isEmpty(jsonLogic)) {
-      this.setState({ jsonLogic })
-    }
-  }
+    /* qbDataJsonGroup */
+    if (!isEmpty(valueKey)) {
+      const prevRawQuery = get(prevProps.valueKey, prevProps.userInterfaceData)
+      const rawQbDataJsonGroup = get(valueKey, userInterfaceData)
 
-  private updateSchema(prevProps?: Readonly<QueryBuilderInterfaceComponentProps>) {
-    const { schemaKey, userInterfaceData } = this.props
-    const schema: SchemaType = get(schemaKey, userInterfaceData)
-    const prevSchema: SchemaType = prevProps && get(prevProps.schemaKey, prevProps.userInterfaceData)
-    const isSchemaUnchanged = (prevProps && isEqual(schema, prevSchema)) || false
-
-    if (!isEmpty(schemaKey) && !isSchemaUnchanged) {
-      this.provideQueryableFields(schema)
-      this.setState({ schema })
+      if (!isEmpty(rawQbDataJsonGroup) && !isEqual(rawQbDataJsonGroup, prevRawQuery)) {
+        this.updateQbDataJsonGroup(rawQbDataJsonGroup)
+      }
     }
   }
 
-  private provideQueryableFields(schema: SchemaType | undefined) {
+  /**
+   * Get the JsonGroup (persisted qbData) from userInterfaceData
+   */
+  private updateQbDataJsonGroup(rawQbDataJsonGroup: any) {
+    const qbDataJsonGroup: JsonGroup = isString(rawQbDataJsonGroup)
+      ? tryCatch(() => rawQbDataJsonGroup && JSON.parse(rawQbDataJsonGroup)).getOrElse(emptyQBDataJsonTree)
+      : rawQbDataJsonGroup || emptyQBDataJsonTree
+
+    this.setState({ qbDataJsonGroup })
+  }
+
+  /**
+   * Get the schema from userInterfaceData
+   * @param rawSchema
+   */
+  private updateSchema(rawSchema: any) {
+    const schema: SchemaType = isString(rawSchema)
+      ? tryCatch(() => rawSchema && JSON.parse(rawSchema)).toUndefined()
+      : rawSchema
+
+    this.exposeQueryableFields(schema)
+    this.setState({ schema })
+  }
+
+  /**
+   * Creates a list of queryable fields and exposes it on userInterfaceData
+   * @param schema
+   */
+  private exposeQueryableFields(schema: SchemaType | undefined) {
     const { userInterfaceData, exposeQueryableFields, onChangeData, queryableFieldsKey } = this.props
+
     if (schema && exposeQueryableFields && !isEmpty(queryableFieldsKey)) {
       const queryableFields = getQueryableFields(schema)
       onChangeData && onChangeData(set(queryableFieldsKey!, queryableFields, userInterfaceData))
     }
   }
 
+  /**
+   * Output changes from QueryBuilder to userInterfaceData
+   */
   handleChange = ({
     jsonLogic: nextJsonLogic,
     data,
@@ -95,6 +142,7 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
     qbDataJsonGroup: nextQbDataJsonGroup,
   }: OnChangePayloadType) => {
     const { defaultValue, onChangeData, userInterfaceData, valueKey, jsonLogicKey } = this.props
+    console.log("QueryBuilderInterfaceComponent", "handleChange", "starting", { userInterfaceData })
 
     if (errors && errors.length > 0) {
       console.error("QueryBuilderInterfaceComponent", "handleChange", {
@@ -106,15 +154,22 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
       return
     }
 
+    let newData = userInterfaceData
+
+    // Put current JsonGroup into userInterfaceData
     const prevQbDataJsonGroup: JsonGroup = get(valueKey, userInterfaceData) || defaultValue
     if (!isEqual(prevQbDataJsonGroup, nextQbDataJsonGroup)) {
-      onChangeData && onChangeData(set(valueKey, nextQbDataJsonGroup, userInterfaceData))
+      newData = set(valueKey, nextQbDataJsonGroup, newData)
     }
 
+    // Put current jsonLogic into userInterfaceData
     const prevJsonLogic = get(jsonLogicKey, userInterfaceData) || defaultValue
     if (!isEqual(prevJsonLogic, nextJsonLogic)) {
-      onChangeData && onChangeData(set(jsonLogicKey, nextJsonLogic, userInterfaceData))
+      newData = set(jsonLogicKey, nextJsonLogic, newData)
     }
+
+    console.log("QueryBuilderInterfaceComponent", "handleChange", "finished", { newData })
+    onChangeData && onChangeData(newData)
   }
 
   render(): JSX.Element {

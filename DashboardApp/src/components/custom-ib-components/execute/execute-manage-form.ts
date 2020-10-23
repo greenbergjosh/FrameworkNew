@@ -1,6 +1,9 @@
 import { baseManageForm, ComponentDefinition, getIconSelectConfig } from "@opg/interface-builder"
+import { remoteConfigSettings } from "./components/RemoteConfig/settings"
+import { remoteQuerySettings } from "./components/RemoteQuery/settings"
+import { remoteUrlSettings } from "./components/RemoteUrl/settings"
 
-export const executeManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+export const executeManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
   return baseManageForm(...executeManageFormDefinition, ...extend)
 }
 
@@ -28,6 +31,14 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 defaultValue: "data",
                 help: "The key used to get data from the model",
+                visibilityConditions: {
+                  "!==": [
+                    "remote-config",
+                    {
+                      var: ["queryType"],
+                    },
+                  ],
+                },
               },
               {
                 key: "outboundValueKey",
@@ -48,7 +59,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "executeImmediately",
                 component: "toggle",
                 defaultValue: false,
-                label: "Execute immediately?",
+                label: "Execute Immediately?",
                 help: "Should this action be executed when the page loads?",
               },
               {
@@ -93,103 +104,36 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "remote-query",
               },
               {
-                key: "remoteQuery",
-                valueKey: "remoteQuery",
-                label: "Remote Query",
-                component: "select",
-                dataHandlerType: "remote-config",
-                // remoteDataFilter: {
-                //   // Set of both
-                //   or: [
-                //     // Queries with no parameter options
-                //     { "!": { var: "config.parameters" } },
-                //     // and Queries with all parameter options filled in
-                //     { all: [{ var: "config.parameters" }, { "!!": { var: "defaultValue" } }] },
-                //   ],
-                // },
-                remoteConfigType: "Report.Query",
-                visibilityConditions: {
-                  and: [
-                    {
-                      "===": [
-                        "remote-query",
-                        {
-                          var: ["queryType"],
-                        },
-                      ],
-                    },
-                  ],
-                },
+                dashed: false,
+                orientation: "horizontal",
+                textAlignment: "center",
+                text: "",
+                invisible: false,
+                hidden: false,
+                valueKey: "",
+                label: "",
+                hideLabel: false,
+                component: "divider",
               },
+              ...remoteQuerySettings,
+              ...remoteConfigSettings,
+              ...remoteUrlSettings,
               {
-                key: "remoteQueryMapping",
-                valueKey: "remoteQueryMapping",
-                label: "Query Mapping",
-                help: "Forfields that need property name transformations applied, describe these here",
+                key: "paramKVPMaps",
+                valueKey: "paramKVPMaps.values",
+                label: "Map Params",
                 component: "data-map",
-                count: 2,
-                defaultValue: [
-                  { label: "label", value: "" },
-                  { label: "value", value: "" },
-                ],
+                multiple: true,
                 keyComponent: {
-                  label: "Property",
+                  label: "Param Field Name",
                   component: "input",
-                  valueKey: "value",
+                  valueKey: "fieldName",
                 },
                 valueComponent: {
-                  label: "Mapping",
+                  label: "Param Value Key",
                   component: "input",
-                  valueKey: "value",
+                  valueKey: "valueKey",
                 },
-                visibilityConditions: {
-                  "===": [
-                    "remote-query",
-                    {
-                      var: ["queryType"],
-                    },
-                  ],
-                },
-              },
-              {
-                key: "remoteConfigType",
-                valueKey: "remoteConfigType",
-                label: "Remote Config Type",
-                component: "select",
-                dataHandlerType: "remote-config",
-                remoteConfigType: "EntityType",
-                visibilityConditions: {
-                  "===": [
-                    "remote-config",
-                    {
-                      var: ["queryType"],
-                    },
-                  ],
-                },
-              },
-              {
-                key: "remoteUrl",
-                valueKey: "remoteUrl",
-                label: "Remote Url",
-                component: "select",
-                dataHandlerType: "remote-config",
-                remoteConfigType: "Report.Query",
-                visibilityConditions: {
-                  "===": [
-                    "remote-url",
-                    {
-                      var: ["queryType"],
-                    },
-                  ],
-                },
-              },
-              {
-                key: "isCRUD",
-                valueKey: "isCRUD",
-                component: "toggle",
-                defaultValue: false,
-                label: "CRUD Operation",
-                help: "Does this query CReate Update or Delete data?",
               },
             ],
           },

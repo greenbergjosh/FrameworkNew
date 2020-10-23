@@ -18,6 +18,9 @@ export interface QueryBuilderInterfaceComponentProps extends ComponentDefinition
   schemaKey: string
   exposeQueryableFields: boolean
   queryableFieldsKey?: string
+  isParseJsonLogic?: boolean
+  isParseQBData?: boolean
+  isParseSchema?: boolean
 }
 
 export interface QueryBuilderInterfaceComponentState {

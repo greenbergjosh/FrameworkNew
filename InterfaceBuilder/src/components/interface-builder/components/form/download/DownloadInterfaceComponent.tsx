@@ -1,35 +1,18 @@
 import { Button, message, Tooltip } from "antd"
 import { get } from "lodash/fp"
 import React from "react"
-import { UserInterfaceProps } from "../../../UserInterface"
-import { buttonDisplayType, downloadManageForm, shapeType, sizeType } from "./download-manage-form"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
+import { downloadManageForm } from "./download-manage-form"
+import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import fileDownload from "js-file-download"
-
-export interface DownloadInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "button"
-  defaultValue?: string
-  onChangeData: UserInterfaceProps["onChangeData"]
-  placeholder: string
-  userInterfaceData: UserInterfaceProps["data"]
-  paramsValueKey: string
-  url: string
-  httpMethod: "GET" | "POST"
-  useFilenameFromServer: boolean
-  filename: string
-  buttonLabel: string
-  icon: string
-  hideButtonLabel: boolean
-  shape: shapeType
-  size: sizeType
-  displayType: buttonDisplayType
-  block: boolean
-  ghost: boolean
-}
-
-interface DownloadInterfaceComponentState {
-  isDownloading: boolean
-}
+import {
+  convertParamKVPMapsToParams,
+  getFilename,
+  postData,
+} from "components/interface-builder/components/form/download/utils"
+import {
+  DownloadInterfaceComponentProps,
+  DownloadInterfaceComponentState,
+} from "components/interface-builder/components/form/download/types"
 
 export class DownloadInterfaceComponent extends BaseInterfaceComponent<
   DownloadInterfaceComponentProps,
@@ -60,18 +43,20 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
 
   handleClick = ({ target }: React.MouseEvent<HTMLInputElement>) => {
     const {
+      filename,
+      httpMethod,
       onChangeData,
-      userInterfaceData,
+      paramKVPMaps,
       paramsValueKey,
       url,
-      httpMethod,
       useFilenameFromServer,
-      filename,
+      userInterfaceData,
     } = this.props
-    const params = get(paramsValueKey, userInterfaceData) || {}
+    const params = convertParamKVPMapsToParams(paramKVPMaps, userInterfaceData, paramsValueKey)
     const config: Partial<RequestInit> = {
       method: httpMethod,
     }
+
     // Exclude body for GET requests. "TypeError: Request with GET/HEAD method cannot have body."
     if (httpMethod !== "GET") {
       // NOTE: body data type must match "Content-Type" header
@@ -97,17 +82,17 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     const {
-      defaultValue,
-      userInterfaceData,
-      paramsValueKey,
+      block,
       buttonLabel,
-      icon,
+      defaultValue,
+      displayType,
+      ghost,
       hideButtonLabel,
+      icon,
+      paramsValueKey,
       shape,
       size,
-      displayType,
-      block,
-      ghost,
+      userInterfaceData,
     } = this.props
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
@@ -117,68 +102,19 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
     return (
       <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null}>
         <Button
-          onClick={this.handleClick}
-          loading={this.state.isDownloading}
-          value={value}
+          block={block}
+          ghost={ghost}
           icon={icon}
+          loading={this.state.isDownloading}
+          onClick={this.handleClick}
           shape={buttonShape}
           size={size}
           type={displayType}
-          block={block}
-          ghost={ghost}>
+          value={value}
+        >
           {!hideButtonLabel && !isCircle ? buttonLabel : null}
         </Button>
       </Tooltip>
     )
   }
-}
-
-/***********************************
- * Private Functions
- */
-
-async function postData(url = "", params = {}, configOverrides = {}) {
-  // Default options are marked with *
-  const request: RequestInit = {
-    method: "GET", // *GET, POST, PUT, DELETE, etc.
-    mode: "cors", // no-cors, *cors, same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: "same-origin", // include, *same-origin, omit
-    headers: {
-      "Content-Type": "application/json",
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: "follow", // manual, *follow, error
-    referrerPolicy: "no-referrer", // no-referrer, *client
-    /*
-     * Removed body due to "TypeError: Request with GET/HEAD method cannot have body."
-     * Otherwise, body data type must match "Content-Type" header
-     */
-    ...configOverrides,
-  }
-  const response = await fetch(url, request)
-  const data = await response.blob()
-  return {
-    headers: response.headers,
-    data,
-  }
-}
-
-function getFilename(useFilenameFromServer: boolean, response: { headers: Headers; data: Blob }, filename: string) {
-  const filenameFixed = useFilenameFromServer ? getFilenameFromHeaders(response.headers, filename) : filename
-  return filenameFixed
-}
-
-function getFilenameFromHeaders(headers: Headers, defaultFilename: string) {
-  let filename = ""
-  const disposition = headers.get("content-disposition")
-  if (disposition && disposition.indexOf("attachment") !== -1) {
-    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
-    const matches = filenameRegex.exec(disposition)
-    if (matches != null && matches[1]) {
-      filename = matches[1].replace(/['"]/g, "")
-    }
-  }
-  const fixedDefaultFilename = defaultFilename && defaultFilename.length > 0 ? defaultFilename : "download"
-  return filename && filename.length > 0 && filename.indexOf(".") > -1 ? filename : fixedDefaultFilename
 }

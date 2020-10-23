@@ -3,7 +3,7 @@ import { PersistedConfig } from "../../data/GlobalConfig.Config"
 import { ParameterItem, QueryConfig } from "../../data/Report"
 import { JSONRecord } from "../../data/JSON"
 import { AppDispatch } from "../../state/store.types"
-import { buttonProps } from "../custom-ib-components/execute/types"
+import { ButtonProps } from "../custom-ib-components/execute/types"
 import { AdminUserInterfaceContextManager } from "../../data/AdminUserInterfaceContextManager.type"
 import { UserInterfaceContextManager } from "@opg/interface-builder"
 
@@ -20,7 +20,7 @@ export interface QueryFormProps {
   onSubmit: (parameterValues: JSONRecord) => void | Promise<unknown>
   parentSubmitting?: boolean
   setParentSubmitting?: (submitting: boolean) => void
-  submitButtonProps?: buttonProps
+  submitButtonProps?: ButtonProps
   submitButtonLabel?: string // retained for legacy
 }
 
@@ -48,7 +48,7 @@ export interface SubmitButtonProps {
   onSubmit: () => void
   loading?: boolean
   submitButtonLabel?: string
-  submitButtonProps?: buttonProps
+  submitButtonProps?: ButtonProps
 }
 
 /* ****************************************************

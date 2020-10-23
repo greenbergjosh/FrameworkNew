@@ -224,12 +224,23 @@ export const StoredProcQueryConfigCodec = iots.type({
   executeImmediately: iots.union([iots.boolean, iots.undefined]),
 })
 
+export type RemoteConfigQueryConfig = iots.TypeOf<typeof RemoteConfigQueryConfigCodec>
+export const RemoteConfigQueryConfigCodec = iots.type({
+  format: iots.literal("RemoteConfig"),
+  query: iots.string,
+  parameters: iots.array(ParameterItemCodec),
+  layout: iots.array(iots.UnknownRecord),
+  submitButtonLabel: iots.union([iots.string, iots.undefined]),
+  executeImmediately: iots.union([iots.boolean, iots.undefined]),
+})
+
 export type QueryLayoutItem = JSONRecord
 export type QueryConfig = iots.TypeOf<typeof QueryConfigCodec>
 export const QueryConfigCodec = iots.taggedUnion("format", [
   HTTPRequestQueryConfigCodec,
   SQLQueryConfigCodec,
   StoredProcQueryConfigCodec,
+  RemoteConfigQueryConfigCodec,
 ])
 
 // TODO: io-ts codecs for the below?

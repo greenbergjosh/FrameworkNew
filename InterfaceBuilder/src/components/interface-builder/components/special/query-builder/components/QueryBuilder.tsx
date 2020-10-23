@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React from "react"
 import { Builder, BuilderProps, Config, ImmutableTree, Query, Utils } from "react-awesome-query-builder"
 import "react-awesome-query-builder/lib/css/styles.css"
 import "react-awesome-query-builder/lib/css/compact_styles.css"
 import { emptyQBDataJsonTree, getConfig } from "./utils"
 import { QueryBuilderProps } from "../types"
-import { Empty, Spin } from "antd"
+import { Empty } from "antd"
 import { isEmpty } from "lodash/fp"
 
 export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange }: QueryBuilderProps) {
@@ -12,46 +12,46 @@ export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange }: Q
    * STATE
    */
   const [qbData, setQBData] = React.useState(Utils.loadTree(emptyQBDataJsonTree))
-  const [hasData, setHasData] = React.useState(false)
+  const [isEditing, setIsEditing] = React.useState(false)
 
   /* *********************************
    * PROP WATCHERS
    */
+
   const config: Config = React.useMemo(() => {
     return getConfig(schema)
   }, [schema])
 
   /**
-   * Load query into the Builder
-   * Sources can be qbData (ImmutableTree) which is QueryBuilder's native data, or jsonLogic which is converted to qbData
+   * Load qbDataJsonGroup into the Builder on initial load
    */
   React.useEffect(() => {
+    console.log("QueryBuilder", "useEffect", { schema, qbDataJsonGroup, jsonLogic, isEditing })
     // Without a schema the query can't be properly mapped to UI controls
     if (isEmpty(schema)) {
       return
     }
+    // Once the user has started editing, we no longer update the query from external sources
+    if (isEditing) {
+      return
+    }
 
-    // We have qbDataJsonGroup so convert it to ImmutableTree
-    if (!hasData && qbDataJsonGroup && !isEmpty(qbDataJsonGroup)) {
+    /*
+     * Convert qbDataJsonGroup to ImmutableTree.
+     * qbData (ImmutableTree) is QueryBuilder's native data.
+     */
+    if (qbDataJsonGroup && !isEmpty(qbDataJsonGroup)) {
       const uncheckedQbData = Utils.loadTree(qbDataJsonGroup)
       const qbData = Utils.checkTree(uncheckedQbData, config)
-      setHasData(true)
-      setQBData(qbData)
-    }
 
-    // We have jsonLogic, so create qbData from it
-    if (!hasData && jsonLogic && !isEmpty(jsonLogic)) {
-      const uncheckedQBData = Utils.loadFromJsonLogic(jsonLogic, config)
-      const qbData = uncheckedQBData ? Utils.checkTree(uncheckedQBData, config) : Utils.loadTree(emptyQBDataJsonTree)
-      setHasData(true)
+      setIsEditing(true)
       setQBData(qbData)
     }
-  }, [schema, jsonLogic, qbDataJsonGroup])
+  }, [schema, qbDataJsonGroup])
 
   const isQueryChildless: boolean = React.useMemo(() => {
-    const children1 = qbData && qbData.get("children1")
-    if (children1) {
-      // @ts-ignore
+    const children1: any = (qbData && qbData.get("children1"))
+    if (children1 && children1.size) {
       return children1.size < 1
     }
     return true
@@ -67,14 +67,15 @@ export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange }: Q
    */
   const handleChange = (nextQBData: ImmutableTree): void => {
     // The user has begun creating a query
-    setHasData(true)
+    setIsEditing(true)
 
     // Convert qbData tree to jsonLogic
     const { logic, errors, data } = Utils.jsonLogicFormat(nextQBData, config)
 
-    // Convert qbData (Builder's internal data structure) to Json
+    // Convert qbData to JsonGroup
     const qbDataJsonGroup = Utils.getTree(nextQBData)
 
+    console.log("QueryBuilder", "handleChange", { jsonLogic: logic, errors, data, qbDataJsonGroup })
     // Forward event to parent
     onChange && onChange({ jsonLogic: logic, errors, data, qbDataJsonGroup })
   }

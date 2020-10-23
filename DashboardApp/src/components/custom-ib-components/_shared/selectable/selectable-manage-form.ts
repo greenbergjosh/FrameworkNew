@@ -24,8 +24,12 @@ export const baseSelectDataComponents = [
     data: {
       values: [
         {
-          label: "Local",
+          label: "Options List",
           value: "local",
+        },
+        {
+          label: "API Key",
+          value: "ui-data-key",
         },
         {
           label: "Remote (Config)",
@@ -71,6 +75,51 @@ export const baseSelectDataComponents = [
     visibilityConditions: {
       "===": [
         "local",
+        {
+          var: ["dataHandlerType"],
+        },
+      ],
+    },
+  },
+  {
+    key: "optionsKey",
+    valueKey: "optionsKey",
+    label: "Options API Key",
+    component: "input",
+    defaultValue: "options",
+    visibilityConditions: {
+      "===": [
+        "ui-data-key",
+        {
+          var: ["dataHandlerType"],
+        },
+      ],
+    },
+  },
+  {
+    key: "optionLabelKey",
+    valueKey: "optionLabelKey",
+    label: "Option Name Key",
+    component: "input",
+    defaultValue: "label",
+    visibilityConditions: {
+      "===": [
+        "ui-data-key",
+        {
+          var: ["dataHandlerType"],
+        },
+      ],
+    },
+  },
+  {
+    key: "optionValueKey",
+    valueKey: "optionValueKey",
+    label: "Option Value Key",
+    component: "input",
+    defaultValue: "value",
+    visibilityConditions: {
+      "===": [
+        "ui-data-key",
         {
           var: ["dataHandlerType"],
         },

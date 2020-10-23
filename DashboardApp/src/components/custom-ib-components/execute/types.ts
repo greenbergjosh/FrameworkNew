@@ -1,83 +1,128 @@
-import { ComponentDefinition, ComponentDefinitionNamedProps, UserInterfaceProps } from "@opg/interface-builder"
-import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import {
+  BaseInterfaceComponent,
+  ComponentDefinition,
+  ComponentDefinitionNamedProps,
+  UserInterfaceProps,
+} from "@opg/interface-builder"
+import { ConfigType, PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import { QueryConfig } from "../../../data/Report"
-import { AppDispatch } from "../../../state/store.types"
-import { confirmationType } from "../../query/types"
+import { AppDispatch, AppState } from "../../../state/store.types"
+import { confirmationType, QueryFormProps } from "../../query/types"
+import { JSONRecord } from "../../../data/JSON"
+import { PropsFromQueryParams } from "../../query/QueryParams"
+import { Branded } from "io-ts"
+import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 
-export type shapeType = "circle" | "circle-outline" | "round" | undefined
-export type sizeType = "small" | "large" | undefined
-export type buttonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
+export type ShapeType = "circle" | "circle-outline" | "round" | undefined
+export type SizeType = "small" | "large" | undefined
+export type ButtonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
+export type LoadStatusCode = "none" | "loading" | "loaded" | "created" | "updated" | "deleted" | "error"
+export type LoadError = string | null
+export type QueryType = "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
+export type ActionType = "read" | "create" | "update" | "delete"
+export type ResultsType = "all" | "selected" | "static"
+export type ParamKVPMapsType = { values: { fieldName: string; valueKey: string }[] }
 
-export type buttonProps = {
+export type ButtonProps = {
+  block: boolean
+  buttonLabel: string
   component: "button"
-  requireConfirmation: boolean
   confirmation?: confirmationType
   defaultValue?: string
+  displayType: ButtonDisplayType
+  ghost: boolean
+  hideButtonLabel: boolean
+  icon: string
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
+  requireConfirmation: boolean
+  shape: ShapeType
+  size: SizeType
   userInterfaceData: UserInterfaceProps["data"]
   valueKey: string
-  buttonLabel: string
-  icon: string
-  hideButtonLabel: boolean
-  shape: shapeType
-  size: sizeType
-  displayType: buttonDisplayType
-  block: boolean
-  ghost: boolean
 }
 
 interface ExecuteButtonProps {
-  buttonProps: buttonProps
+  buttonProps: ButtonProps
 }
 
 export interface IExecuteInterfaceComponentProps extends ComponentDefinitionNamedProps {
+  autoExecuteIntervalSeconds?: number
+  buttonLabel?: string
   component: "query"
   components: ComponentDefinition[]
   executeImmediately?: boolean
-  autoExecuteIntervalSeconds?: number
+  inboundApiKey: string
   loadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
-  queryType: "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
-  userInterfaceData?: UserInterfaceProps["data"]
-  valueKey: string
   outboundValueKey: string
-  inboundApiKey: string
-  fromStore?: any
-  dispatch?: AppDispatch
-  buttonLabel?: string
+  paramKVPMaps: ParamKVPMapsType
+  queryType: QueryType
+  userInterfaceData: UserInterfaceProps["data"]
+  valueKey: string
 }
 
-interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
+export type LoadStatus = {
+  data: JSONRecord | JSONRecord[] | null
+  loadStatus: LoadStatusCode
+  loadError?: LoadError
+  remoteQueryLoggingName?: string
+}
+
+export interface ExecuteInterfaceComponentState {
+  data: JSONRecord | JSONRecord[] | null
+  loadError: LoadError
+  loadStatus: LoadStatusCode
+  formState: any
+  /**
+   * QueryConfig is type of taggedUnion:
+   * ( HTTPRequestQueryConfigCodec | SQLQueryConfigCodec | StoredProcQueryConfigCodec | RemoteConfigQueryConfigCodec )
+   * from Reports.ts
+   */
+  queryConfig?: QueryConfig
+  submittingQueryForm: boolean
+}
+
+export interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
   mode: "display"
 }
 
-interface ExecuteInterfaceComponentEditModeProps extends IExecuteInterfaceComponentProps {
+export interface ExecuteInterfaceComponentEditModeProps extends IExecuteInterfaceComponentProps {
   mode: "edit"
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition
 }
 
-interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInterfaceComponentProps {
+export interface ExecuteRemoteQueryInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-query"
+  remoteDataFilter?: JSONObject // TODO: What is this for?
+
+  // RemoteQuery Settings
   remoteQuery?: PersistedConfig["id"]
-  remoteDataFilter?: JSONObject
-  isCRUD?: boolean
+  RemoteQuery_isCRUD?: boolean
 }
 
-interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
+export interface ExecuteRemoteConfigInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-config"
-  remoteConfigType?: PersistedConfig["id"]
-  remoteDataFilter?: JSONObject
-  isCRUD?: boolean
+  remoteDataFilter?: JSONObject // TODO: What is this for?
+
+  // RemoteConfig Settings
+  RemoteConfig_actionType: ActionType
+  RemoteConfig_deleteRedirectPath?: string
+  RemoteConfig_entityTypeId?: PersistedConfig["id"]
+  RemoteConfig_staticId?: PersistedConfig["id"]
+  RemoteConfig_resultsType?: ResultsType
+  RemoteConfig_useDeleteRedirect?: boolean
 }
 
-interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
+export interface ExecuteRemoteUrlInterfaceComponentProps extends IExecuteInterfaceComponentProps {
   queryType: "remote-url"
+  remoteDataFilter?: JSONObject // TODO: What is this for?
+
+  // RemoteUrl Settings
   remoteUrl?: PersistedConfig["id"]
-  remoteDataFilter?: JSONObject
-  isCRUD?: boolean
+  RemoteUrl_isCRUD?: boolean
 }
 
 export type ExecuteInterfaceComponentProps = (
@@ -88,16 +133,106 @@ export type ExecuteInterfaceComponentProps = (
   (ExecuteInterfaceComponentDisplayModeProps | ExecuteInterfaceComponentEditModeProps) &
   ExecuteButtonProps
 
-export interface ExecuteInterfaceComponentState {
-  data: any[]
-  loadError: string | null
-  loadStatus: "none" | "loading" | "loaded" | "error"
-  formState: any
-  /**
-   * QueryConfig is type of taggedUnion:
-   * ( HTTPRequestQueryConfigCodec | SQLQueryConfigCodec | StoredProcQueryConfigCodec )
-   * from Reports.ts
-   */
-  queryConfig?: QueryConfig
-  submittingQueryForm: boolean
+/* ****************************************************************************
+ *
+ * COMPONENTS
+ */
+
+export type OnSubmitType = (
+  parameterValues: JSONRecord,
+  satisfiedByParentParams: PropsFromQueryParams["satisfiedByParentParams"],
+  setParameterValues: PropsFromQueryParams["setParameterValues"]
+) => Promise<void> | undefined
+
+export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Promise<void> | undefined
+
+export interface RemoteComponentProps {
+  buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
+  buttonProps: ButtonProps
+  onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
+  onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
+  onMount: OnMountType
+  outboundValueKey: IExecuteInterfaceComponentProps["outboundValueKey"]
+  paramKVPMaps: ParamKVPMapsType
+  parentSubmitting: QueryFormProps["parentSubmitting"]
+  setParentSubmitting: QueryFormProps["setParentSubmitting"]
+  userInterfaceData: UserInterfaceProps["data"]
+}
+
+export interface FromStore {
+  reportDataByQuery: AppState["reports"]["reportDataByQuery"]
+  loadById: (id: string) => PersistedConfig | null
+}
+
+/* ****************************************************************************
+ *
+ * COMPONENTS: REMOTE QUERY
+ */
+
+export interface RemoteQueryFromStore extends FromStore {}
+
+export interface RemoteQueryProps extends RemoteComponentProps {
+  isCRUD?: boolean
+  queryConfigId: PersistedConfig["id"]
+}
+
+/* ****************************************************************************
+ *
+ * COMPONENTS: REMOTE URL
+ */
+
+export interface RemoteUrlFromStore extends FromStore {}
+
+export interface RemoteUrlProps extends RemoteComponentProps {
+  isCRUD?: boolean
+  queryConfigId: PersistedConfig["id"]
+}
+
+/* ****************************************************************************
+ *
+ * COMPONENTS: REMOTE CONFIG
+ */
+
+export interface RemoteConfigProps extends RemoteComponentProps {
+  actionType: ActionType
+  deleteRedirectPath?: string
+  entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
+  remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
+  resultsType?: ResultsType
+  useDeleteRedirect?: boolean
+}
+
+export interface RemoteConfigFromStore extends FromStore {
+  configNames: Branded<string, NonEmptyStringBrand>[] //store.select.globalConfig.configNames(appState),
+  configs: AppState["globalConfig"]["configs"] //appState.globalConfig.configs,
+  configsById: Record<PersistedConfig["id"], PersistedConfig> //store.select.globalConfig.configsById(appState),
+  configsByType: Record<ConfigType, Array<PersistedConfig>> //store.select.globalConfig.configsByType(appState),
+  defaultEntityTypeConfig: AppState["globalConfig"]["defaultEntityTypeConfig"] //appState.globalConfig.defaultEntityTypeConfig,
+  entityTypes: Record<ConfigType, PersistedConfig> //store.select.globalConfig.entityTypeConfigs(appState),
+  isDeletingRemoteConfig: boolean //appState.loading.effects.globalConfig.deleteRemoteConfigs,
+  isUpdatingRemoteConfig: boolean //appState.loading.effects.globalConfig.updateRemoteConfig,
+  loadByType: (type: string) => PersistedConfig[] | null
+}
+
+export type RemoteConfigActionParams = {
+  dispatch: AppDispatch
+  entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
+  fromStore: RemoteConfigFromStore
+  queryConfig: QueryConfig
+  queryFormValues: JSONRecord
+  remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
+  resultsType?: ResultsType
+  uiDataSlice: UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
+}
+
+export type ExecuteRemoteConfigParams = RemoteConfigActionParams & {
+  actionType: ActionType
+}
+
+export type ParsedConfig = {
+  id: PersistedConfig["id"]
+  name: PersistedConfig["name"]
+  type: PersistedConfig["type"]
+  config: JSONRecord | null
 }
