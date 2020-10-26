@@ -2,16 +2,20 @@ import React, { CSSProperties } from "react"
 import { textManageForm } from "./text-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { TextInterfaceComponentProps, TextInterfaceComponentState, TitleSizeType } from "./types"
-import { get, isEmpty, isEqual } from "lodash/fp"
+import { get, isEmpty, isEqual, isObject } from "lodash/fp"
 import { JSONRecord } from "index"
-import { CodeBlock, Paragraph, PlainText, Title } from "./components/TextTypes"
+import { CodeBlock, Error, Info, Paragraph, PlainText, Success, Title, Warning } from "./components/TextTypes"
 
 function getHeaderSizeNum(headerSize: string | undefined): TitleSizeType {
-  switch(headerSize) {
-    case "1": return 1
-    case "2": return 2
-    case "3": return 3
-    case "4": return 4
+  switch (headerSize) {
+    case "1":
+      return 1
+    case "2":
+      return 2
+    case "3":
+      return 3
+    case "4":
+      return 4
   }
 }
 
@@ -23,7 +27,7 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
     super(props)
 
     this.state = {
-      text: null,
+      text: " ",
     }
   }
 
@@ -52,7 +56,7 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
 
   componentDidMount(): void {
     if (!isEmpty(this.props.stringTemplate)) {
-      const nextValue = this.props.userInterfaceData[this.props.valueKey]
+      const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
       const text = this.getText(nextValue)
 
       this.setState({ text })
@@ -60,8 +64,8 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<TextInterfaceComponentProps>): void {
-    const prevValue = prevProps.userInterfaceData[prevProps.valueKey]
-    const nextValue = this.props.userInterfaceData[this.props.valueKey]
+    const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
+    const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
 
     /*
      * Recalculate text if:
@@ -85,7 +89,19 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render() {
-    const { textType, headerSize, center, marginTop, marginRight, marginBottom, marginLeft } = this.props
+    const {
+      textType,
+      headerSize,
+      center,
+      marginTop,
+      marginRight,
+      marginBottom,
+      marginLeft,
+      banner,
+      closable,
+      description,
+      showIcon,
+    } = this.props
     const style: CSSProperties = {}
     let headerSizeNum: TitleSizeType = getHeaderSizeNum(headerSize)
 
@@ -102,20 +118,77 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
         return <Paragraph text={this.state.text} style={style} />
       case "title":
         return <Title text={this.state.text} size={headerSizeNum} style={style} />
+      case "success":
+        return (
+          <Success
+            text={this.state.text}
+            banner={banner}
+            closable={closable}
+            description={description}
+            showIcon={showIcon}
+            style={style}
+          />
+        )
+      case "info":
+        return (
+          <Info
+            text={this.state.text}
+            banner={banner}
+            closable={closable}
+            description={description}
+            showIcon={showIcon}
+            style={style}
+          />
+        )
+      case "warning":
+        return (
+          <Warning
+            text={this.state.text}
+            banner={banner}
+            closable={closable}
+            description={description}
+            showIcon={showIcon}
+            style={style}
+          />
+        )
+      case "error":
+        return (
+          <Error
+            text={this.state.text}
+            banner={banner}
+            closable={closable}
+            description={description}
+            showIcon={showIcon}
+            style={style}
+          />
+        )
       default:
         return <PlainText text={this.state.text} style={style} />
     }
   }
 }
 
+/**
+ *
+ * @param stringTemplate
+ * @param value
+ */
 function replaceTokens(stringTemplate: string, value: string | JSONRecord): string | null {
+  /*
+   * When there is a single value, the user should
+   * just provide {$} in the template string.
+   */
+  if (value && !isObject(value)) {
+    return stringTemplate.replace("{$}", value.toString())
+  }
+
   const matches = stringTemplate && stringTemplate.match(/(\{\$\.([^{]*)\})/gm)
   return (
     matches &&
     matches.reduce((acc, match) => {
       const key = match.slice(3, match.length - 1)
       const val = get(key, value) || "?"
-      return acc.replace(match, val)
+      return acc.replace(match, val.toString())
     }, stringTemplate)
   )
 }

@@ -35,6 +35,7 @@ import { TagsInterfaceComponent } from "./components/custom-ib-components/tags/T
 import { TableInterfaceComponent } from "./components/custom-ib-components/table/TableInterfaceComponent"
 import { StringTemplateInterfaceComponent } from "./components/custom-ib-components/string-template/StringTemplateInterfaceComponent"
 import { PieInterfaceComponent } from "./components/custom-ib-components/chart/pie/PieInterfaceComponent"
+import { LinkInterfaceComponent } from "./components/custom-ib-components/link/LinkInterfaceComponent"
 import { withEventManager } from "./components/event-manager/event-manager"
 
 const persistor = getPersistor()
@@ -93,6 +94,7 @@ export function App(): JSX.Element {
     registry.register({ table: withEventManager(TableInterfaceComponent) })
     registry.register({ tags: withEventManager(TagsInterfaceComponent) })
     registry.register({ pie: withEventManager(PieInterfaceComponent) })
+    registry.register({ link: withEventManager(LinkInterfaceComponent) })
     registerMonacoEditorMount(getCustomEditorConstructionOptions)
   }, [])
 

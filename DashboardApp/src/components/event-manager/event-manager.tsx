@@ -130,7 +130,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       console.log(`EventManager: Component raised event ${eventName}`, eventPayload)
       const eventMapItem: EventMapItem = this.props.outgoingEventMap[eventName]
       let mappedEventName: string, mappedEventPayload: EventPayloadType
-      if (eventMapItem.type === "none") {
+      if (!eventMapItem || eventMapItem.type === "none") {
         return
       } else if (eventMapItem.type === "simple") {
         mappedEventName = eventMapItem.simpleMapValue

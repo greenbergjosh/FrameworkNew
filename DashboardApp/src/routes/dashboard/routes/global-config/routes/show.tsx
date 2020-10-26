@@ -46,6 +46,7 @@ export function ShowGlobalConfig({
     executeQueryUpdate: dispatch.reports.executeQueryUpdate.bind(dispatch.reports),
     executeHTTPRequestQuery: dispatch.reports.executeHTTPRequestQuery.bind(dispatch.reports),
     reportDataByQuery: fromStore.reportDataByQuery,
+    navigation: dispatch.navigation,
     loadByFilter: (predicate: (item: PersistedConfig) => boolean): PersistedConfig[] => {
       return fromStore.configs.map((cfgs) => cfgs.filter(predicate)).toNullable() || []
     },

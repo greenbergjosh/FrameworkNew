@@ -7,4 +7,5 @@ export interface AdminUserInterfaceContextManager extends UserInterfaceContextMa
   executeQueryUpdate: AppDispatch["reports"]["executeQueryUpdate"]
   executeHTTPRequestQuery: AppDispatch["reports"]["executeHTTPRequestQuery"]
   reportDataByQuery: AppState["reports"]["reportDataByQuery"]
+  navigation: AppDispatch["navigation"]
 }

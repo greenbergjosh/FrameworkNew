@@ -94,6 +94,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
                   const gpp = encodeGloballyPersistedParams(params, query.parameters)
                   gpp && !isEmpty(gpp) && dispatch.queries.updateQueryGlobalParams(gpp)
+                  return isArray(payload) ? payload[0] : payload
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
@@ -137,6 +138,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                     type: "success",
                     message: "Successfully saved your changes",
                   })
+                  return isArray(payload) ? payload[0] : payload
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")
@@ -181,6 +183,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                 OK(payload) {
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
                   dispatch.queries.updateQueryGlobalParams(params)
+                  return isArray(payload) ? payload[0] : payload
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")

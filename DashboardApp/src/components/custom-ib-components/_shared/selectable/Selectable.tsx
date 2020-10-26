@@ -16,6 +16,7 @@ import {
   SelectableChildProps,
   SelectableOption,
   SelectableProps,
+  SelectablePropsUiDataKey,
   SelectableState,
 } from "./types"
 import * as remoteFunctionDataHandler from "./dataHandlers/remoteFunction"
@@ -291,6 +292,29 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     }
   }
 
+  updateOptionsFromUIData(prevProps: SelectableProps) {
+    const { optionsKey, optionLabelKey, optionValueKey, userInterfaceData } = this.props as SelectablePropsUiDataKey
+
+    if (optionsKey) {
+      const prevOptionsKey = (prevProps as SelectablePropsUiDataKey).optionsKey
+      const prevRawOptions = prevOptionsKey && get(prevOptionsKey, prevProps.userInterfaceData)
+      const rawOptions: JSONRecord[] | undefined = get(optionsKey, userInterfaceData)
+
+      if (rawOptions && !isEqual(rawOptions, prevRawOptions) && rawOptions.reduce) {
+        const init: SelectableOption[] = []
+        const options = rawOptions.reduce((acc, item) => {
+          const label = get(optionLabelKey || "label", item) as string
+          const value = get(optionValueKey || "value", item) as string
+
+          if (label && value) acc.push({ label, value })
+          return acc
+        }, init)
+
+        this.setState({ options })
+      }
+    }
+  }
+
   componentDidMount() {
     // If the data type is remote, load the data
     if (Selectable.isRemoteDataType(this.props.dataHandlerType)) {
@@ -299,6 +323,17 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
+    const isOptionsKeyUpdated = () =>
+      this.props.dataHandlerType === "ui-data-key" &&
+      (this.props.optionsKey !== prevProps.optionsKey ||
+        this.props.optionsLabelKey !== prevProps.optionsLabelKey ||
+        this.props.optionsValueKey !== prevProps.optionsValueKey ||
+        this.props.userInterfaceData !== prevProps.userInterfaceData)
+
+    if (isOptionsKeyUpdated()) {
+      this.updateOptionsFromUIData(prevProps)
+    }
+
     const isRemoteConfigUpdated = () =>
       this.props.dataHandlerType === "remote-config" &&
       prevProps.dataHandlerType === "remote-config" &&

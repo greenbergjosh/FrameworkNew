@@ -29,7 +29,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
     if (!this.context) {
       console.warn(
         "StringTemplateInterfaceComponent",
-        "Query cannot load any data without a UserInterfaceContext in the React hierarchy"
+        "String Template cannot load any data without a UserInterfaceContext in the React hierarchy"
       )
       return
     }
