@@ -122,19 +122,29 @@ namespace UnsubJob
 
             var refreshCampaigns = args.Any(a => string.Equals(a, "refreshCampaigns", StringComparison.CurrentCultureIgnoreCase));
 
-            foreach (var n in networks)
+            var manualDownloadUrl = args.Where(a => a.StartsWith("md:", StringComparison.CurrentCultureIgnoreCase)).Select(a => a.Substring(3)).FirstOrDefault();
+
+            foreach (var network in networks)
             {
-                var name = n.GetS("Name");
+                var name = network.GetS("Name");
 
                 await Fw.Log(nameof(Main), $"Starting({name})...");
+
+                if (!string.IsNullOrWhiteSpace(manualDownloadUrl))
+                {
+                    await Fw.Log(nameof(Main), $"Starting ManualDownload({name}, {networkCampaignId}, {manualDownloadUrl})...");
+                    await nw.ManualDownload(network, networkCampaignId, manualDownloadUrl);
+                    await Fw.Log(nameof(Main), $"Completed ManualDownload({name}, {networkCampaignId}, {manualDownloadUrl})...");
+                    continue;
+                }
 
                 if (refreshCampaigns)
                 {
                     try
                     {
                         await Fw.Log(nameof(Main), $"Starting GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
-                        var networkProvider = Factory.GetInstance(Fw, n);
-                        await nw.GetCampaignsScheduledJobs(n, networkProvider, skipQueuedCheck);
+                        var networkProvider = Factory.GetInstance(Fw, network);
+                        await nw.GetCampaignsScheduledJobs(network, networkProvider, skipQueuedCheck);
                         await Fw.Log(nameof(Main), $"Completed GetCampaignsScheduledJobs({name}, {networkCampaignId})...");
                     }
                     catch (HaltingException e)
@@ -150,7 +160,7 @@ namespace UnsubJob
                     continue;
                 }
 
-                var unsubMethod = n.GetS("Credentials/UnsubMethod");
+                var unsubMethod = network.GetS("Credentials/UnsubMethod");
 
                 if (unsubMethod == "ScheduledUnsubJob")
                 {
@@ -159,7 +169,7 @@ namespace UnsubJob
                         try
                         {
                             await Fw.Log(nameof(Main), $"Starting ScheduledUnsubJob({name}, {networkCampaignId})...");
-                            await nw.ScheduledUnsubJob(n, networkCampaignId, skipQueuedCheck);
+                            await nw.ScheduledUnsubJob(network, networkCampaignId, skipQueuedCheck);
                             await Fw.Log(nameof(Main), $"Completed ScheduledUnsubJob({name}, {networkCampaignId})...");
                         }
                         catch (HaltingException e)
@@ -174,12 +184,12 @@ namespace UnsubJob
                         }
                     }
 
-                    if (n.GetS("Credentials/IgnoreManualDirectory").ParseBool() != false)
+                    if (network.GetS("Credentials/IgnoreManualDirectory").ParseBool() != false)
                     {
                         try
                         {
                             await Fw.Log(nameof(Main), $"Starting AlsoDoManualDirectory({name})...");
-                            await nw.ManualDirectory(n, true);
+                            await nw.ManualDirectory(network, networkCampaignId);
                             await Fw.Log(nameof(Main), $"Completed AlsoDoManualDirectory({name})...");
                         }
                         catch (Exception exScheduledUnsub)
@@ -193,7 +203,7 @@ namespace UnsubJob
                     try
                     {
                         await Fw.Log(nameof(Main), $"Starting ManualDirectory({name})...");
-                        await nw.ManualDirectory(n, true);
+                        await nw.ManualDirectory(network, networkCampaignId);
                         await Fw.Log(nameof(Main), $"Completed ManualDirectory({name})...");
                     }
                     catch (Exception exScheduledUnsub)

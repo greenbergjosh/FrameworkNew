@@ -180,6 +180,58 @@ namespace UnsubLib
             return Jw.Serialize(new { Result = "Success" });
         }
 
+        public async Task<string> ManualDownload(IGenericEntity dtve)
+        {
+            try
+            {
+                var networkName = dtve.GetS("networkName");
+                var networkCampaignId = dtve.GetS("networkCampaignId");
+                var fileUrl = dtve.GetS("url");
+
+                await _fw.Err(ErrorSeverity.Log, nameof(ManualDownload), ErrorDescriptor.Log, $"Starting {nameof(ManualDownload)}. Network: [{networkName}] Campaign: [{networkCampaignId}] URL: [{fileUrl}]");
+
+                var networks = await Data.CallFn(Conn, "SelectNetwork", Jw.Serialize(new { NetworkName = networkName }), "");
+
+                var network = networks?.GetL("").FirstOrDefault();
+                if (network == null || string.IsNullOrWhiteSpace(network.GetS("Name")))
+                {
+                    await _fw.Error(nameof(ManualDownload), $"{nameof(ManualDownload)}: Network {networkName} not found");
+                    return Jw.Serialize(new { ServerException = new { reason = $"Network [{networkName}] not found" } });
+                }
+
+                if (string.IsNullOrWhiteSpace(networkCampaignId))
+                {
+                    return Jw.Serialize(new { ServerException = new { reason = $"networkCampaignId is required" } });
+                }
+
+                if (string.IsNullOrWhiteSpace(fileUrl))
+                {
+                    return Jw.Serialize(new { ServerException = new { reason = $"url is required" } });
+                }
+
+                _ = Task.Run(async () => await ManualDownload(network, networkCampaignId, fileUrl));
+
+                return Jw.Serialize(new { OK = true });
+            }
+            catch (Exception ex)
+            {
+                await _fw.Error(nameof(ManualDownload), $"Exception: {ex}");
+                return Jw.Serialize(new { ServerException = new { reason = ex.Message } });
+            }
+        }
+
+        public async Task ManualDownload(IGenericEntity network, string networkCampaignId, string fileUrl)
+        {
+            var campaign = await Data.CallFn(Conn, "SelectNetworkCampaign", Jw.Serialize(new { ncid = networkCampaignId, nid = network.GetS("Id") }));
+
+            var uris = new Dictionary<string, List<IGenericEntity>>
+            {
+                [fileUrl] = new List<IGenericEntity> { campaign }
+            };
+
+            await ProcessUnsubFiles(uris, network, new[] { campaign }, false);
+        }
+
         public async Task<string> RefreshCampaigns(IGenericEntity dtve)
         {
             try
