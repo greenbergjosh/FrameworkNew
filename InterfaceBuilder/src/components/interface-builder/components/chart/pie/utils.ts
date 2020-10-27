@@ -139,7 +139,7 @@ export function convertToPieDatum({
   const slices: JSONRecord[] = []
 
   // Convert to PieDatum[]
-  let index: number = 0
+  let index = 0
   const pieData = data.reduce((acc, datum) => {
     const { value, labelName, labelValue } = getSliceRawData({
       data: datum,

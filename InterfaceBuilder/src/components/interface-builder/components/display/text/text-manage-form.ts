@@ -39,7 +39,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "stringTemplate",
                 component: "textarea",
                 label: "Text",
-                help: "Text can include simple jsonPath tokens as \"{$.propertyName}\" (using model properties only)",
+                help: 'Text can include simple jsonPath tokens as "{$.propertyName}" (using model properties only)',
                 defaultValue: "",
               },
             ],
@@ -111,7 +111,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                     {
                       "===": ["error", { var: "textType" }],
                     },
-                  ]
+                  ],
                 },
               },
               {
@@ -134,7 +134,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                     {
                       "===": ["error", { var: "textType" }],
                     },
-                  ]
+                  ],
                 },
               },
               {
@@ -157,7 +157,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                     {
                       "===": ["error", { var: "textType" }],
                     },
-                  ]
+                  ],
                 },
               },
               {
@@ -180,7 +180,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                     {
                       "===": ["error", { var: "textType" }],
                     },
-                  ]
+                  ],
                 },
               },
               {

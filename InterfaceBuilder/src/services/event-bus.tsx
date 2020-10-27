@@ -3,7 +3,7 @@ export type EventBusEventHandler = (eventName: string, eventPayload: EventPayloa
 
 export class EventBus {
   private static subscriptions: { [key: string]: Map<number, EventBusEventHandler> } = {}
-  private static subscriptionId: number = 0
+  private static subscriptionId = 0
 
   static addSubscription(eventName: string, handler: EventBusEventHandler): number {
     console.log(`EventBus: adding subscription for event ${eventName}`)
@@ -32,7 +32,7 @@ export class EventBus {
     const handlers = this.subscriptions[eventName]
     if (handlers) {
       console.log(`EventBus ${eventName} has ${handlers} subscriptions`)
-      for (let [subscriptionId, handler] of handlers) {
+      for (const [subscriptionId, handler] of handlers) {
         console.log(`EventBus ${eventName} invoking subscriptionId ${subscriptionId}`)
         handler(eventName, eventPayload)
       }

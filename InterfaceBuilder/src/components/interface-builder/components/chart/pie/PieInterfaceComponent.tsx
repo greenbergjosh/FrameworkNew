@@ -81,13 +81,11 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
 
       const rawData: JSONRecord[] = get(valueKey, userInterfaceData)
 
-      const labelValueFunction = sliceLabelValueFunction
-        ? sliceLabelValueFunction
-        : parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
+      const labelValueFunction =
+        sliceLabelValueFunction || parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
 
-      const otherSliceAggregatorFunction = otherAggregatorFunction
-        ? otherAggregatorFunction
-        : parseLBM<OtherSliceAggregatorFunction>(otherAggregatorFunctionSrc)
+      const otherSliceAggregatorFunction =
+        otherAggregatorFunction || parseLBM<OtherSliceAggregatorFunction>(otherAggregatorFunctionSrc)
 
       const pieData = convertToPieDatum({
         data: rawData,
@@ -122,10 +120,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
       this.setState({ tooltipFunction: undefined })
     } else {
       const me = this
-      const parsedTooltipFunction = tooltipFunction
-        ? tooltipFunction
-        : parseLBM<SliceTooltipFunction>(tooltipFunctionSrc)
-      let wrappedTooltipFunction: Function | undefined = undefined
+      const parsedTooltipFunction = tooltipFunction || parseLBM<SliceTooltipFunction>(tooltipFunctionSrc)
+      let wrappedTooltipFunction: Function | undefined
       if (parsedTooltipFunction && this.props.mode !== "edit") {
         wrappedTooltipFunction = function (item: PieDatum) {
           const datum = me.state.pieData[parseInt(item.id.toString())]

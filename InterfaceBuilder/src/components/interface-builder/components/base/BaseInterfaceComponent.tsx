@@ -3,7 +3,7 @@ import { merge, set } from "lodash/fp"
 import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
-import { EventPayloadType } from "services/event-bus"
+import { EventPayloadType } from "../../../../services/event-bus"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */

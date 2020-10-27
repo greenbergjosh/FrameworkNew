@@ -16,7 +16,7 @@ export function StateNameMarker({ geo }: StateNameMarkerProps) {
   const fontColor = "grey" //foo
 
   return (
-    <g key={geo.rsmKey + "-name"}>
+    <g key={`${geo.rsmKey}-name`}>
       {cur &&
         centroid[0] > -160 &&
         centroid[0] < -67 &&

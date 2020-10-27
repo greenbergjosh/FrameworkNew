@@ -179,6 +179,7 @@ export class QueryBuilderInterfaceComponent extends BaseInterfaceComponent<
         qbDataJsonGroup={this.state.qbDataJsonGroup}
         jsonLogic={this.state.jsonLogic}
         onChange={this.handleChange}
+        onError={this.props.onError}
       />
     )
   }

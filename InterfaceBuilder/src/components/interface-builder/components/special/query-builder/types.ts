@@ -4,6 +4,11 @@ import { FieldOrGroup, JsonGroup, JsonLogicResult, JsonLogicTree, TypedMap } fro
 
 export type SchemaType = TypedMap<FieldOrGroup>
 
+export type QueryBuilderError = {
+  type: "data-read"
+  message: string
+}
+
 export interface QueryBuilderInterfaceComponentProps extends ComponentDefinitionNamedProps {
   // IB props
   component: "query-builder"
@@ -21,6 +26,7 @@ export interface QueryBuilderInterfaceComponentProps extends ComponentDefinition
   isParseJsonLogic?: boolean
   isParseQBData?: boolean
   isParseSchema?: boolean
+  onError?: (e: QueryBuilderError) => void
 }
 
 export interface QueryBuilderInterfaceComponentState {
@@ -49,4 +55,5 @@ export interface QueryBuilderProps {
   jsonLogic?: JsonLogicTree // the persisted jsonLogic query
   qbDataJsonGroup?: JsonGroup // the persisted QueryBuilder query
   onChange: (result: OnChangePayloadType) => void
+  onError?: (e: QueryBuilderError) => void
 }
