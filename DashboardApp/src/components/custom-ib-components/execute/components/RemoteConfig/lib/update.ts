@@ -2,7 +2,6 @@ import { LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { getRemoteConfigId } from "./utils"
 import { get, isEmpty } from "lodash/fp"
-import JSON5 from "json5"
 import {
   CreateConfigEventPayload,
   DeleteConfigEventPayload,
@@ -74,7 +73,7 @@ export function update({
   }
 
   const nextState: CreateConfigEventPayload["nextState"] = {
-    config: JSON5.stringify(uiDataSlice.config),
+    config: JSON.stringify(uiDataSlice.config, null, 2),
     name,
     type: parent.name,
   }

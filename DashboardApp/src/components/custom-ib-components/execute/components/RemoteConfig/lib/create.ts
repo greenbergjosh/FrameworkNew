@@ -2,7 +2,6 @@ import { LoadStatus, RemoteConfigActionParams } from "../../../types"
 import { get, isEmpty } from "lodash/fp"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { CreateConfigEventPayload } from "../../../../../../state/global-config"
-import JSON5 from "json5"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 
 /**
@@ -43,7 +42,7 @@ export function create({
   }
 
   const nextState: CreateConfigEventPayload["nextState"] = {
-    config: JSON5.stringify(uiDataSlice.config),
+    config: JSON.stringify(uiDataSlice.config, null, 2),
     name,
     type: parent.name,
   }
