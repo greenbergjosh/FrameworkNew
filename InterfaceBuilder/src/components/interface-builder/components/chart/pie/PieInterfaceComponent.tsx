@@ -1,16 +1,16 @@
 import React from "react"
 import { pieManageForm } from "./pie-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { ResponsivePie, PieDatum } from "@nivo/pie"
+import { PieDatum, ResponsivePie } from "@nivo/pie"
 import { InheritedColorProp } from "@nivo/colors"
-import { legends, convertToPieDatum, getNivoColorScheme, emptyDataSet } from "./utils"
+import { convertToPieDatum, emptyDataSet, getNivoColorScheme, legends } from "./utils"
 import { get, isEqual } from "lodash/fp"
 import {
+  OtherSliceAggregatorFunction,
   PieInterfaceComponentProps,
   PieInterfaceComponentState,
   SliceLabelValueFunction,
   SliceTooltipFunction,
-  OtherSliceAggregatorFunction,
 } from "./types"
 import { Spin } from "antd"
 import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"

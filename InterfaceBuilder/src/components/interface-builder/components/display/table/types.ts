@@ -4,7 +4,6 @@ import {
   ComponentDefinitionNamedProps,
 } from "components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 interface ColumnSortOptions {
   allowSorting?: boolean

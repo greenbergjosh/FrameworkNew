@@ -3,10 +3,10 @@ import { Breadcrumb, Layout } from "antd"
 import "antd/dist/antd.css"
 import {
   antComponents,
-  nivoComponents,
-  htmlComponents,
-  registry,
   DragDropContext,
+  htmlComponents,
+  nivoComponents,
+  registry,
 } from "@opg/interface-builder"
 import TopMenu from "./components/nav/top-menu"
 import SideMenu from "./components/nav/side-menu"

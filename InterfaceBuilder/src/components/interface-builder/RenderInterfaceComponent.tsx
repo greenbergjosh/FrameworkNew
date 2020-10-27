@@ -151,7 +151,11 @@ export class RenderInterfaceComponent extends React.Component<
       )
 
     function getInvisibleComponent(visibilityMode: VISIBILITY_MODES, componentTitle?: string) {
-      let color, backgroundColor, border, modeTitle = "Untitled", blockEvents = false
+      let color,
+        backgroundColor,
+        border,
+        modeTitle = "Untitled",
+        blockEvents = false
       switch (visibilityMode) {
         case VISIBILITY_MODES.disabled:
           color = "#C70039" // Red

@@ -1,4 +1,4 @@
-import { get, isEmpty, isEqual, set, isString } from "lodash/fp"
+import { get, isEmpty, isEqual, isString, set } from "lodash/fp"
 import React from "react"
 import { queryBuilderManageForm } from "./query-builder-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"

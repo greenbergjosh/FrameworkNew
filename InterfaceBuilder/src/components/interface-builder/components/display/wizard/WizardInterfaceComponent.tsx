@@ -1,4 +1,4 @@
-import { Button, Steps, Icon } from "antd"
+import { Button, Icon, Steps } from "antd"
 import { set } from "lodash/fp"
 import React from "react"
 import { DataPathContext } from "../../../util/DataPathContext"

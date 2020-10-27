@@ -1,9 +1,9 @@
 import {
+  OtherSliceAggregatorFunction as _OtherSliceAggregatorFunction,
   PieInterfaceComponentProps as _PieInterfaceComponentProps,
   PieInterfaceComponentState as _PieInterfaceComponentState,
   SliceLabelValueFunction as _SliceLabelValueFunction,
   SliceTooltipFunction as _SliceTooltipFunction,
-  OtherSliceAggregatorFunction as _OtherSliceAggregatorFunction,
 } from "./types"
 
 export type PieInterfaceComponentProps = _PieInterfaceComponentProps
