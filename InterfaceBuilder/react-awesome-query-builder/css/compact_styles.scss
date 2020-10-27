@@ -14,8 +14,11 @@
 }
 
 .group {
+  display: block;
   padding-left: 0px;
+  padding-top: 10px;
 }
+
 .rule_group {
   padding-left: 5px;
 }
@@ -30,7 +33,7 @@
         width: 24px;
     }
   }
-  
+
   //& > .group-or-rule-container:first-child > .group-or-rule {
   //    &::before {
   //      top: -7px;
@@ -47,7 +50,7 @@
 .group-or-rule-container {
   margin-top: 5px;
   margin-bottom: 5px;
-  padding-right: 5px;
+  padding-right: 0;
 }
 .group--children {
   margin-top: 5px !important;
