@@ -255,6 +255,7 @@ export interface ButtonProps {
   onClick(): void,
   label: string,
   config?: Config,
+  disabled?: boolean,
 };
 
 export interface ButtonGroupProps {

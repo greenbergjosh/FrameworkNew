@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Icon } from "antd";
 
-export default ({type, onClick, label, config: {settings}}) => {
+export default ({type, onClick, label, config: {settings}, disabled = false}) => {
   const typeToIcon = {
     "addRule": "plus",
     "addGroup": "plus-circle",
@@ -49,6 +49,7 @@ export default ({type, onClick, label, config: {settings}}) => {
       className={typeToClass[type]}
       onClick={onClick}
       size={renderSize}
+      disabled={disabled}
     >{btnLabel}</Button>
   );
 };
