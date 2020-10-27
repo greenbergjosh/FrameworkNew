@@ -15,6 +15,7 @@ import { ColumnConfig, TableInterfaceComponentDisplayModeProps } from "../types"
 export interface DisplayTableProps extends Partial<TableInterfaceComponentDisplayModeProps> {
   columns: ColumnConfig[]
   userInterfaceData: JSONRecord
+  preview?: boolean
 }
 
 /**
@@ -37,6 +38,7 @@ export function DisplayTable({
   rowDetails,
   userInterfaceData,
   valueKey,
+  preview = false,
 }: DisplayTableProps) {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   const loading = loadingKey && get(loadingKey, userInterfaceData)
@@ -49,7 +51,7 @@ export function DisplayTable({
       allowEditing={allowEditing}
       columns={columns}
       contextData={userInterfaceData}
-      data={dataArray}
+      data={preview ? [] : dataArray}
       defaultCollapseAll={defaultCollapseAll}
       autoFitColumns={autoFitColumns}
       useSmallFont={useSmallFont}

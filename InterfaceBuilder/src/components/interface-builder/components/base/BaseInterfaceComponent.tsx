@@ -38,6 +38,7 @@ export interface ComponentDefinitionNamedProps {
   invisible?: boolean
   hideLabel?: boolean
   label?: string
+  preview?: boolean
   visibilityConditions?: JSONObject
 
   [key: string]: unknown

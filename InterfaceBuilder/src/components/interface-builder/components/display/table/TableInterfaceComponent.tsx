@@ -107,6 +107,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                   rowDetails={rowDetails}
                   userInterfaceData={userInterfaceData}
                   valueKey={valueKey}
+                  preview={this.props.preview}
                 />
               )
             }
