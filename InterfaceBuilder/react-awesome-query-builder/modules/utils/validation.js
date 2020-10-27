@@ -1,5 +1,5 @@
 import {
-  getFieldConfig, getOperatorsForField, getOperatorConfig, 
+  getFieldConfig, getOperatorsForField, getOperatorConfig,
   getWidgetForFieldOp, getFieldWidgetConfig, getFuncConfig, getValueSourcesForFieldOp,
 } from "./configUtils";
 import {defaultValue, deepEqual, getTitleInListValues, getValueInListValues, getItemInListValues} from "../utils/stuff";
@@ -34,7 +34,7 @@ function validateItem (item, path, itemId, meta, c) {
   const type = item.get("type");
   const children = item.get("children1");
 
-  if ((type === "group" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || type === "filter" || type === "rule_group") && children && children.size) {
     return validateGroup(item, path, itemId, meta, c);
   } else if (type === "rule") {
     return validateRule(item, path, itemId, meta, c);
@@ -181,7 +181,7 @@ function validateRule (item, path, itemId, meta, c) {
 
 
 /**
- * 
+ *
  * @param {bool} canFix true is useful for func values to remove bad args
  * @param {bool} isEndValue false if value is in process of editing by user
  * @param {bool} isRawValue false is used only internally from validateFuncValue
@@ -210,7 +210,7 @@ export const validateValue = (config, leftField, field, operator, value, valueTy
       const fn = fieldWidgetDefinition.validateValue;
       if (typeof fn == "function") {
         const args = [
-          fixedValue, 
+          fixedValue,
           fieldSettings,
         ];
         if (valueSrc == "field")
@@ -234,7 +234,7 @@ export const validateValue = (config, leftField, field, operator, value, valueTy
 };
 
 /**
-* 
+*
 */
 const validateNormalValue = (leftField, field, value, valueSrc, valueType, config, operator = null, isEndValue = false, canFix = false) => {
   let fixedValue = value;
@@ -284,7 +284,7 @@ const validateNormalValue = (leftField, field, value, valueSrc, valueType, confi
 
 
 /**
-* 
+*
 */
 const validateFieldValue = (leftField, field, value, _valueSrc, valueType, config, operator = null, isEndValue = false, canFix = false) => {
   const {fieldSeparator} = config.settings;
@@ -301,7 +301,7 @@ const validateFieldValue = (leftField, field, value, _valueSrc, valueType, confi
 };
 
 /**
-* 
+*
 */
 const validateFuncValue = (leftField, field, value, _valueSrc, valueType, config, operator = null, isEndValue = false, canFix = false) => {
   let fixedValue = value;
@@ -377,9 +377,9 @@ export const getNewValueForFieldOp = function (config, oldConfig = null, current
   const currentFieldConfig = getFieldConfig(currentField, oldConfig);
   const newFieldConfig = getFieldConfig(newField, config);
 
-  let canReuseValue = currentField && currentOperator && newOperator 
-    && (!changedField 
-      || changedField == "field" && !clearValueOnChangeField 
+  let canReuseValue = currentField && currentOperator && newOperator
+    && (!changedField
+      || changedField == "field" && !clearValueOnChangeField
       || changedField == "operator" && !clearValueOnChangeOp)
     && (currentFieldConfig && newFieldConfig && currentFieldConfig.type == newFieldConfig.type);
 
@@ -466,8 +466,8 @@ export const getNewValueForFieldOp = function (config, oldConfig = null, current
   if (showErrorMessage) {
     if (newOperatorConfig && newOperatorConfig.validateValues && newValueSrc.toJS().filter(vs => vs == "value" || vs == null).length == operatorCardinality) {
       // last element in `valueError` list is for range validation error
-      const jsValues = firstWidgetConfig && firstWidgetConfig.toJS 
-        ? newValue.toJS().map(v => firstWidgetConfig.toJS(v, firstWidgetConfig)) 
+      const jsValues = firstWidgetConfig && firstWidgetConfig.toJS
+        ? newValue.toJS().map(v => firstWidgetConfig.toJS(v, firstWidgetConfig))
         : newValue.toJS();
       const rangeValidateError = newOperatorConfig.validateValues(jsValues);
       if (showErrorMessage) {

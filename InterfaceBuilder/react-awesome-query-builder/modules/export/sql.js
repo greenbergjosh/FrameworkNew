@@ -93,7 +93,7 @@ const sqlFormatValue = (meta, config, currentValue, valueSrc, valueType, fieldWi
         args.push(operatorDefinition);
       }
       if (valueSrc == "field") {
-        const valFieldDefinition = getFieldConfig(currentValue, config) || {}; 
+        const valFieldDefinition = getFieldConfig(currentValue, config) || {};
         args.push(valFieldDefinition);
       }
       ret = fn(...args);
@@ -111,7 +111,7 @@ const sqlFormatItem = (item, config, meta) => {
   const properties = item.get("properties") || new Map();
   const children = item.get("children1");
 
-  if ((type === "group" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || type === "filter" || type === "rule_group") && children && children.size) {
     const not = properties.get("not");
     const list = children
       .map((currentChild) => sqlFormatItem(currentChild, config, meta))
@@ -192,7 +192,7 @@ const sqlFormatItem = (item, config, meta) => {
       meta.errors.push(`Operator ${operator} is not supported`);
       return undefined;
     }
-        
+
     //format field
     let fieldName = field;
     const fieldParts = Array.isArray(field) ? field : field.split(fieldSeparator);
@@ -206,7 +206,7 @@ const sqlFormatItem = (item, config, meta) => {
     const fieldFullLabel = fieldPartsLabels ? fieldPartsLabels.join(config.settings.fieldSeparator) : null;
     const formatField = config.settings.formatField || defaultSettings.formatField;
     const formattedField = formatField(fieldName, fieldParts, fieldFullLabel, fieldDefinition, config);
-        
+
     //format expr
     const args = [
       formattedField,
