@@ -1,0 +1,18 @@
+.editMode {
+  background-color: #dbf1ff;
+
+  /*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * Disables module BEM class name transformations
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+  :global {
+    .ant-col {
+      background-clip: content-box;
+      background-color: #f5fbff;
+      border-left: dashed 1px #95d7ff;
+      border-right: dashed 1px #95d7ff;
+    }
+  }
+}
