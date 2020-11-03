@@ -23,6 +23,7 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   startCollapsed?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
   valueKey?: string
+  mode: UserInterfaceProps["mode"]
 }
 
 export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<RemoteComponentInterfaceComponentProps> {
@@ -74,18 +75,37 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
         const layout = tryCatch(() => JSON5.parse(remoteConfig.config.getOrElse("")).layout).toNullable()
         if (Array.isArray(layout)) {
           const content = (
-            <ComponentRenderer
-              components={layout}
-              data={data}
-              onChangeData={this.handleChange}
-              onChangeSchema={(newSchema) => {
-                console.warn(
-                  "RemoteComponentInterfaceComponent.render",
-                  "TODO: Cannot alter schema inside ComponentRenderer in RemoteComponent",
-                  { newSchema }
-                )
-              }}
-            />
+            <div style={this.props.mode === "edit" ? { pointerEvents: "none" } : undefined}>
+              <ComponentRenderer
+                components={layout}
+                mode="display"
+                data={data}
+                onChangeData={this.handleChange}
+                onChangeSchema={(newSchema) => {
+                  console.warn(
+                    "RemoteComponentInterfaceComponent.render",
+                    "TODO: Cannot alter schema inside ComponentRenderer in RemoteComponent",
+                    { newSchema }
+                  )
+                }}
+              />
+              <div
+                style={
+                  this.props.mode === "edit"
+                    ? {
+                        position: "absolute",
+                        border: "dashed 1px #adb5bd",
+                        borderRadius: 5,
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgb(0 0 0 / 5%)",
+                      }
+                    : undefined
+                }
+              />
+            </div>
           )
 
           const wrappedContent = collapsible ? (
