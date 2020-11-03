@@ -39,10 +39,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = executeManageForm
   static contextType = UserInterfaceContext
   static availableEvents = [
+    "remoteQuery_loaded",
     "remoteConfig_created",
     "remoteConfig_updated",
     "remoteConfig_deleted",
     "remoteConfig_loaded",
+    "remoteUrl_loaded",
   ]
   context!: React.ContextType<typeof UserInterfaceContext>
   autoExecuteTimer?: ReturnType<typeof setInterval> | null
@@ -122,7 +124,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       remoteQuery,
       remoteUrl,
       userInterfaceData,
-      valueKey,
+      // valueKey,
       queryType,
     } = this.props
     let castProps

@@ -32,8 +32,8 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "data",
                 help: "The key used to get data from the model",
                 visibilityConditions: {
-                  "!==": [
-                    "remote-config",
+                  "===": [
+                    "do-not-show",
                     {
                       var: ["queryType"],
                     },
