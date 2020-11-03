@@ -4,6 +4,8 @@ import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
 import { EventPayloadType } from "../../../../services/event-bus"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { getValue } from "components/interface-builder/lib/get-value"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -113,6 +115,24 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
       return this.props.defaultValue
     }
     return ((this.constructor as unknown) as typeof BaseInterfaceComponent).getDefinitionDefaultValue(this.props)
+  }
+
+  /**
+   * Gets the value from local or root UI data.
+   * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
+   * @param valueKey
+   */
+  getValue(
+    valueKey: string,
+    userInterfaceData?: any,
+    rootUserInterfaceData?: any
+  ): JSONRecord | JSONRecord[] | undefined {
+    debugger
+    return getValue(
+      valueKey,
+      userInterfaceData || this.props.userInterfaceData,
+      rootUserInterfaceData || this.props.rootUserInterfaceData
+    )
   }
 
   anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
