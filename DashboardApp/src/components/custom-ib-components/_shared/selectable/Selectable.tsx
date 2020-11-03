@@ -292,27 +292,40 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     }
   }
 
-  updateOptionsFromUIData(prevProps: SelectableProps) {
-    const { optionsKey, optionLabelKey, optionValueKey, userInterfaceData } = this.props as SelectablePropsUiDataKey
+  private updateOptionsFromUIData(prevProps: SelectableProps) {
+    const { optionsKey, optionLabelKey, optionValueKey, userInterfaceData, rootUserInterfaceData } = this
+      .props as SelectablePropsUiDataKey
 
     if (optionsKey) {
-      const prevOptionsKey = (prevProps as SelectablePropsUiDataKey).optionsKey
-      const prevRawOptions = prevOptionsKey && get(prevOptionsKey, prevProps.userInterfaceData)
-      const rawOptions: JSONRecord[] | undefined = get(optionsKey, userInterfaceData)
+      const hasOptions = this.state.options && this.state.options.length > 0
+      const rawOptions = this.getValue(optionsKey, userInterfaceData, rootUserInterfaceData) as JSONRecord[]
 
-      if (rawOptions && !isEqual(rawOptions, prevRawOptions) && rawOptions.reduce) {
-        const init: SelectableOption[] = []
-        const options = rawOptions.reduce((acc, item) => {
-          const label = get(optionLabelKey || "label", item) as string
-          const value = get(optionValueKey || "value", item) as string
-
-          if (label && value) acc.push({ label, value })
-          return acc
-        }, init)
-
+      if (!hasOptions && rawOptions) {
+        // Initial load of options
+        const options = formatOptions(rawOptions, optionLabelKey, optionValueKey)
         this.setState({ options })
+      } else {
+        const prevOptionsKey = (prevProps as SelectablePropsUiDataKey).optionsKey
+        const prevRawOptions =
+          prevOptionsKey && this.getValue(prevOptionsKey, prevProps.userInterfaceData, prevProps.rootUserInterfaceData)
+        const isOptionsChanged = !prevRawOptions || !isEqual(rawOptions, prevRawOptions)
+
+        if (isOptionsChanged && rawOptions && rawOptions.reduce) {
+          // Options have changed so update them
+          const options = formatOptions(rawOptions, optionLabelKey, optionValueKey)
+          this.setState({ options })
+        }
       }
     }
+  }
+
+  private isOptionsKeyUpdated(prevProps: SelectableProps) {
+    return (
+      this.props.optionsKey !== prevProps.optionsKey ||
+      this.props.optionsLabelKey !== prevProps.optionsLabelKey ||
+      this.props.optionsValueKey !== prevProps.optionsValueKey ||
+      this.props.userInterfaceData !== prevProps.userInterfaceData
+    )
   }
 
   componentDidMount() {
@@ -323,14 +336,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   }
 
   componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
-    const isOptionsKeyUpdated = () =>
-      this.props.dataHandlerType === "ui-data-key" &&
-      (this.props.optionsKey !== prevProps.optionsKey ||
-        this.props.optionsLabelKey !== prevProps.optionsLabelKey ||
-        this.props.optionsValueKey !== prevProps.optionsValueKey ||
-        this.props.userInterfaceData !== prevProps.userInterfaceData)
-
-    if (isOptionsKeyUpdated()) {
+    if (this.props.dataHandlerType === "ui-data-key" && this.isOptionsKeyUpdated(prevProps)) {
       this.updateOptionsFromUIData(prevProps)
     }
 
@@ -470,4 +476,20 @@ const cleanText = (text: string, prefix?: string, suffix?: string) => {
     noPrefix && suffix && noPrefix.endsWith(suffix) ? noPrefix.substr(0, noPrefix.length - suffix.length) : noPrefix
 
   return noSuffix
+}
+
+function formatOptions(
+  rawOptions: JSONRecord[],
+  optionLabelKey: string | undefined,
+  optionValueKey: string | undefined
+) {
+  const init: SelectableOption[] = []
+  const options = rawOptions.reduce((acc, item) => {
+    const label = get(optionLabelKey || "label", item) as string
+    const value = get(optionValueKey || "value", item) as string
+
+    if (label && value) acc.push({ label, value })
+    return acc
+  }, init)
+  return options
 }
