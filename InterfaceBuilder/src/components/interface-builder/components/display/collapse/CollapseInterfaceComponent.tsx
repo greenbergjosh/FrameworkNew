@@ -60,7 +60,7 @@ export class CollapseInterfaceComponent extends BaseInterfaceComponent<CollapseI
     return (
       <Collapse accordion={accordion}>
         {sections.map((section, sectionIndex) => (
-          <Collapse.Panel key={section.title} header={section.title}>
+          <Collapse.Panel key={sectionIndex} header={section.title}>
             <DataPathContext path={`sections.${sectionIndex}.components`}>
               <ComponentRenderer
                 components={section.components}
