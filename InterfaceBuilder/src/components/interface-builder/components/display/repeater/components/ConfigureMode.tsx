@@ -13,7 +13,7 @@ export function ConfigureMode({
   preconfigured,
   userInterfaceData,
   valueKey,
-}: ConfigureModeProps) {
+}: ConfigureModeProps): JSX.Element {
   /* Init */
   const data = get(valueKey, userInterfaceData) || []
 
