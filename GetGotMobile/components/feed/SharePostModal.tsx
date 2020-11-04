@@ -32,6 +32,7 @@ export const SharePostModal = ({ visible, onClose }: SharePostModalProps) => {
     Animated.timing(animatedLeftMargin, {
       toValue: leftMargin,
       duration: 300,
+      useNativeDriver: true
     }).start()
   }, [leftMargin])
 
