@@ -10,7 +10,7 @@ namespace QuickTester
     {
         public static void GenerateTestData()
         {
-            var connectionString = "Server=warehouse1.data.techopg.local;Port=5432;Database=lab3;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='Edw Test Data Generator';";
+            var connectionString = "Server=warehouse1.data.techopg.local;Port=5432;Database=edw;User Id=master_app;Password=91cd8896-fb5f-48c1-8799-c6e4dccb027c;Application Name='Edw Test Data Generator';";
 
             using var connection = new NpgsqlConnection(connectionString);
             connection.Open();
@@ -18,15 +18,15 @@ namespace QuickTester
             var rs1ConfigId = Guid.Parse("709cf774-88f5-42d8-8f55-08d5cee342b4");
             var rs2ConfigId = Guid.Parse("395fe415-095f-418b-97a6-dd6a8f9752db");
 
-            var startDate = DateTime.Parse("07/06/2020");
+            var startDate = DateTime.Parse("10/27/2020");
 
-            var dates = Enumerable.Range(0, 2).Select(i => startDate.AddDays(i));  //10
+            var dates = Enumerable.Range(0, 3).Select(i => startDate.AddDays(i));
 
-            var hours = Enumerable.Range(1, 10);  //10
+            var hours = Enumerable.Range(13, 4);
 
-            var subCampaigns = Enumerable.Range(1, 50);  //100
+            var subCampaigns = Enumerable.Range(1, 10);
 
-            var ages = Enumerable.Range(1, 10);  //100
+            var ages = Enumerable.Range(30, 5);
 
             var random = new Random();
 

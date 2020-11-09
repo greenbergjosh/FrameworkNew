@@ -15,9 +15,10 @@ namespace QuickTester
     {
         private static void Main(string[] _args)
         {
-            var ge = JsonWrapper.GenericEntityFromFile(@"json.txt").GetAwaiter().GetResult();
-            string q = ClickhouseQueryGenerator.generateClickhouseQuery(ge);
-            Console.WriteLine(q);
+            //var ge = JsonWrapper.GenericEntityFromFile(@"json.txt").GetAwaiter().GetResult();
+            //string q = ClickhouseQueryGenerator.generateClickhouseQuery(ge);
+            //Console.WriteLine(q);
+            EdwTestDataGenerator.GenerateTestData();
         }
     }
 }
