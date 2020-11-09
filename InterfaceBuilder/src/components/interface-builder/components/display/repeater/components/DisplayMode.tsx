@@ -3,7 +3,7 @@ import { Repeater } from "./Repeater"
 import { Button, Empty } from "antd"
 import React from "react"
 import { DisplayModeProps } from "../types"
-import { get, set } from "lodash/fp"
+import { get, set, isEmpty } from "lodash/fp"
 
 export function DisplayMode({
   addItemLabel,
@@ -16,37 +16,32 @@ export function DisplayMode({
   orientation,
   userInterfaceData,
   valueKey,
-}: DisplayModeProps) {
+}: DisplayModeProps): JSX.Element {
   /* *************************************
    *
    * INIT
    */
 
-  const data = get(valueKey, userInterfaceData) || []
-
   React.useEffect(() => {
+    const data = get(valueKey, userInterfaceData) || []
     const initRecords = []
 
     // Add Initial Record when enabled.
-    if (hasInitialRecord && data.length === 0) {
+    if (hasInitialRecord && data.length <= initRecords.length) {
       initRecords.push({})
     }
+
     // Add Last Item when enabled and components provided.
-    if (hasLastItemComponents && lastItemComponents && lastItemComponents.length > 0) {
+    if (hasLastItemComponents && !isEmpty(lastItemComponents) && data.length <= initRecords.length) {
       initRecords.push({})
     }
+
+    // Update userInterfaceData
     if (initRecords.length > 0) {
       const nextState = [...data, ...initRecords]
       onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
     }
-  }, [
-    valueKey,
-    // userInterfaceData,
-    hasInitialRecord,
-    hasLastItemComponents,
-    lastItemComponents,
-    // onChangeData,
-  ])
+  }, [valueKey, userInterfaceData, hasInitialRecord, hasLastItemComponents, lastItemComponents, onChangeData])
 
   /* *************************************
    *
@@ -74,6 +69,8 @@ export function DisplayMode({
    *
    * RENDER
    */
+
+  const data = get(valueKey, userInterfaceData) || []
 
   return (
     <>

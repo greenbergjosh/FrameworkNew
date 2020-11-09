@@ -135,7 +135,7 @@ const jsonLogicFormatItem = (item, config, meta, isRoot) => {
   // Is item disabled?
   if (properties.get("disabled")) return undefined;
 
-  if ((type === "group" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || type === "filter" || type === "rule_group") && children && children.size) {
     const list = children
       .map((currentChild) => jsonLogicFormatItem(currentChild, config, meta, false))
       .filter((currentChild) => typeof currentChild !== "undefined");

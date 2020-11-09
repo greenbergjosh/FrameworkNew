@@ -14,10 +14,15 @@
 }
 
 .group {
+  display: block;
   padding-left: 0px;
+  padding-top: 10px;
 }
+
 .rule_group {
-  padding-left: 5px;
+  padding-left: 0;
+  display: inline-flex;
+  width: 100%;
 }
 
 .group--children {
@@ -30,7 +35,7 @@
         width: 24px;
     }
   }
-  
+
   //& > .group-or-rule-container:first-child > .group-or-rule {
   //    &::before {
   //      top: -7px;
@@ -47,7 +52,7 @@
 .group-or-rule-container {
   margin-top: 5px;
   margin-bottom: 5px;
-  padding-right: 5px;
+  padding-right: 0;
 }
 .group--children {
   margin-top: 5px !important;
@@ -70,9 +75,14 @@
     margin-left: 5px;
   }
   .rule_group--children {
+    padding-right: 0;
     padding-left: 10px !important;
     &.one--child {
       padding-left: 5px !important;
+    }
+
+    .group-or-rule-container {
+      padding-right: 0;
     }
 
     & > .group-or-rule-container > .group-or-rule {

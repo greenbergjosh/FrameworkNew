@@ -77,14 +77,26 @@ export const ManageComponentModal = ({
               />
             )}
           </Col>
-          <Col span={8} style={{ backgroundColor: "#fafafa", paddingBottom: 20, borderRadius: 5 }}>
-            <Typography.Title level={4}>Preview</Typography.Title>
+          <Col
+            span={8}
+            style={{
+              backgroundColor: "#fafafa",
+              paddingBottom: 20,
+              borderRadius: 5,
+              display: "flex",
+              flexDirection: "column",
+            }}>
+            <Typography.Title level={4} style={{ flex: "0 1 auto" }}>
+              Preview
+            </Typography.Title>
             {Component && layoutDefinition && (
-              <ManageComponentPreview
-                Component={Component}
-                componentDefinition={componentDefinition as ComponentDefinition}
-                layoutDefinition={layoutDefinition}
-              />
+              <div style={{ overflow: "auto", backgroundColor: "white", padding: 1, flex: "1 1 auto" }}>
+                <ManageComponentPreview
+                  Component={Component}
+                  componentDefinition={componentDefinition as ComponentDefinition}
+                  layoutDefinition={layoutDefinition}
+                />
+              </div>
             )}
           </Col>
         </Row>

@@ -110,8 +110,7 @@ export class DownloadInterfaceComponent extends BaseInterfaceComponent<
           shape={buttonShape}
           size={size}
           type={displayType}
-          value={value}
-        >
+          value={value}>
           {!hideButtonLabel && !isCircle ? buttonLabel : null}
         </Button>
       </Tooltip>

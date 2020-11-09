@@ -19,13 +19,14 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hidden: true,
               },
               {
+                key: "valueKey",
+                defaultValue: "remote",
+              },
+              {
                 key: "header",
                 valueKey: "header",
                 component: "input",
-              },
-              {
-                key: "valueKey",
-                defaultValue: "remote",
+                label: "Header Text",
               },
               {
                 key: "remoteId",

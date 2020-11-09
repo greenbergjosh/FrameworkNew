@@ -1,7 +1,7 @@
 import { baseManageForm } from "../../base/base-component-form"
 import { ComponentDefinition } from "../../base/BaseInterfaceComponent"
 
-export const repeaterManageForm = (...extend: Partial<ComponentDefinition>[]) => {
+export const repeaterManageForm = (...extend: Partial<ComponentDefinition>[]): ComponentDefinition[] => {
   return baseManageForm(...repeaterManageFormDefinition, ...extend)
 }
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Icon } from "antd";
 
-export default ({type, onClick, label, config: {settings}}) => {
+export default ({type, onClick, label, config: {settings}, disabled = false}) => {
   const typeToIcon = {
     "addRule": "plus",
     "addGroup": "plus-circle",
@@ -25,9 +25,9 @@ export default ({type, onClick, label, config: {settings}}) => {
     "delGroup": "action action--DELETE",
     "disableGroup": "action action--DISABLE",
 
-    "addRuleGroup": <Icon type="plus" theme="outlined" />,
-    "delRuleGroup": <Icon type="delete" theme="filled" />,
-    "disableRuleGroup": <Icon type="eye-invisible" theme="filled" />,
+    "addRuleGroup": "action action--ADD-RULE-GROUP",
+    "delRuleGroup": "action action--DELETE",
+    "disableRuleGroup": "action action--DISABLE",
   };
 
   const typeToType = {
@@ -39,7 +39,7 @@ export default ({type, onClick, label, config: {settings}}) => {
 
   const {renderSize} = settings;
 
-  const btnLabel = type == "addRuleGroup" ? "" : label;
+  const btnLabel = type === "addRuleGroup" ? "" : label;
 
   return (
     <Button
@@ -49,6 +49,7 @@ export default ({type, onClick, label, config: {settings}}) => {
       className={typeToClass[type]}
       onClick={onClick}
       size={renderSize}
+      disabled={disabled}
     >{btnLabel}</Button>
   );
 };

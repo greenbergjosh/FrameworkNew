@@ -41,13 +41,6 @@ export class IFrameInterfaceComponent extends BaseInterfaceComponent<IFrameInter
    */
   render() {
     const { bordered, components, onChangeData, preconfigured, height, src, userInterfaceData } = this.props
-    return (
-      <iframe
-        src={src}
-        height={height}
-        width="100%"
-        style={{ display: "block", border: "none" }}
-      />
-    )
+    return <iframe src={src} height={height} width="100%" style={{ display: "block", border: "none" }} />
   }
 }

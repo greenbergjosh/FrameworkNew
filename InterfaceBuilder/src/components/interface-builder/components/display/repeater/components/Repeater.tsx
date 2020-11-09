@@ -22,7 +22,7 @@ export function Repeater({
   orientation,
   userInterfaceData,
   valueKey,
-}: RepeaterProps) {
+}: RepeaterProps): JSX.Element {
   /* Constants */
 
   const draganddropId = uuid()
@@ -38,7 +38,7 @@ export function Repeater({
     const lastItemData = hasLastItemComponents ? _data[lastItemIndex] : {}
 
     return { sortableData, lastItemData, lastItemIndex }
-  }, [data, hasInitialRecord, hasLastItemComponents])
+  }, [data, hasLastItemComponents])
 
   /* *************************************
    *

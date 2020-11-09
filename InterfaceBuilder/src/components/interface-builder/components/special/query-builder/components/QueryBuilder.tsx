@@ -7,7 +7,7 @@ import { QueryBuilderProps } from "../types"
 import { Empty } from "antd"
 import { isEmpty } from "lodash/fp"
 
-export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange }: QueryBuilderProps) {
+export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange, onError }: QueryBuilderProps) {
   /* *********************************
    * STATE
    */
@@ -43,14 +43,23 @@ export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange }: Q
     if (qbDataJsonGroup && !isEmpty(qbDataJsonGroup)) {
       const uncheckedQbData = Utils.loadTree(qbDataJsonGroup)
       const qbData = Utils.checkTree(uncheckedQbData, config)
+      const isValid = Utils.isValidTree(qbData)
+      if (!isValid) {
+        console.error("QueryBuilder", "Tree is not valid!", { uncheckedQbData, qbData })
+        onError &&
+          onError({
+            type: "data-read",
+            message: "Error when reading data into Query Builder. Data tree is not valid!",
+          })
+      }
 
       setIsEditing(true)
       setQBData(qbData)
     }
-  }, [schema, qbDataJsonGroup])
+  }, [config, isEditing, jsonLogic, qbDataJsonGroup, schema])
 
   const isQueryChildless: boolean = React.useMemo(() => {
-    const children1: any = (qbData && qbData.get("children1"))
+    const children1: any = qbData && qbData.get("children1")
     if (children1 && children1.size) {
       return children1.size < 1
     }

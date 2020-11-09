@@ -204,6 +204,7 @@ export class Group extends PureComponent {
       canDisableGroup={this.canDisableGroup()}
       removeSelf={this.removeSelf}
       disableSelf={this.disableSelf}
+      disabled={this.props.disabled}
     />;
   }
 

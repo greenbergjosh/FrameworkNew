@@ -3,7 +3,7 @@ import { Colors } from "styles"
 
 export const defaultNavigationOptions = {
   headerStyle: {
-    color: Colors.reverse,
+    // color: Colors.reverse,
     backgroundColor: Colors.ggNavy,
     height: 60,
   },

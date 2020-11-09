@@ -64,7 +64,8 @@
     "react/display-name": 0,
     "react/no-children-prop": 0,
     "react/prop-types": 0,
-    "no-console": 0
+    "no-console": 0,
+    "no-undef": "off" // https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/FAQ.md#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
   },
   "settings": {
     "react": {

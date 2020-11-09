@@ -42,7 +42,7 @@ export interface TextDisplayProps {
   size?: TitleSizeType
 }
 
-export interface AlertDisplayProps extends TextDisplayProps{
+export interface AlertDisplayProps extends TextDisplayProps {
   banner?: boolean
   closable?: boolean
   description?: string

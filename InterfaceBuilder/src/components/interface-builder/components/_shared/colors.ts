@@ -1,4 +1,4 @@
-export default function getColor(colorName: string, opacity: number = 1): string {
+export default function getColor(colorName: string, opacity = 1): string {
   // @ts-ignore
   return `rgb(${colors[colorName]}, ${opacity})`
 }

@@ -11,6 +11,7 @@ import {
   ComponentDefinitionNamedProps,
   getDefaultsFromComponentDefinitions,
 } from "../../base/BaseInterfaceComponent"
+import styles from "./column.module.scss"
 
 interface ColumnModelColumnInterfaceComponent {
   title?: string
@@ -65,17 +66,18 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
   }
 
   render() {
-    const { columns, gutter, onChangeData, userInterfaceData, submit } = this.props
+    const { columns, gutter, onChangeData, userInterfaceData, submit, mode, preview } = this.props
 
     const definedColumnWidths = columns.reduce(
       (acc, { span }) => (span && !isNaN(Number(String(span))) ? { sum: acc.sum + span, count: acc.count + 1 } : acc),
       { sum: 0, count: 0 }
     )
     const colSpan = Math.floor((24 - definedColumnWidths.sum) / (columns.length - definedColumnWidths.count || 1))
+    const rowClassName = mode === "edit" || preview ? styles.editMode : undefined
 
     return (
       <DataPathContext path="columns">
-        <Row type="flex" justify="space-between" gutter={gutter}>
+        <Row type="flex" justify="space-between" gutter={gutter} className={rowClassName}>
           {columns.map(({ components, hideTitle, span, title }, columnIndex) => (
             <DataPathContext path={`${columnIndex}`} key={columnIndex}>
               <Col span={span || colSpan}>

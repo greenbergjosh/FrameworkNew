@@ -103,7 +103,7 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
       showIcon,
     } = this.props
     const style: CSSProperties = {}
-    let headerSizeNum: TitleSizeType = getHeaderSizeNum(headerSize)
+    const headerSizeNum: TitleSizeType = getHeaderSizeNum(headerSize)
 
     marginTop ? (style.marginTop = marginTop) : null
     marginRight ? (style.marginRight = marginRight) : null

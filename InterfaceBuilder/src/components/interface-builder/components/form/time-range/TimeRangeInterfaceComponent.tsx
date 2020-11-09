@@ -69,7 +69,7 @@ export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRang
     this.setUIDataByKey(time, this.props.endTimeKey)
   }
 
-  getValue = (timeKey: string) => {
+  getTimeValue = (timeKey: string) => {
     const { userInterfaceData } = this.props
     const timeValue = get(timeKey, userInterfaceData)
     return typeof timeValue !== "undefined" ? moment.utc(timeValue, TIMEFORMAT) : undefined
@@ -86,7 +86,7 @@ export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRang
       <>
         <Undraggable wrap="shrink">
           <TimePicker
-            value={this.getValue(startTimeKey)}
+            value={this.getTimeValue(startTimeKey)}
             placeholder={startTimePlaceholder}
             format={TIMEFORMAT}
             onChange={this.handleStartTimeChange}
@@ -98,7 +98,7 @@ export class TimeRangeInterfaceComponent extends BaseInterfaceComponent<TimeRang
         <span>&nbsp;to&nbsp;</span>
         <Undraggable wrap="shrink">
           <TimePicker
-            value={this.getValue(endTimeKey)}
+            value={this.getTimeValue(endTimeKey)}
             placeholder={endTimePlaceholder}
             format={TIMEFORMAT}
             onChange={this.handleEndTimeChange}

@@ -61,7 +61,7 @@ const _queryBuilderFormat = (item, config, meta) => {
   const children = item.get("children1");
   const id = item.get("id");
 
-  if ((type === "group" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || (type === "filter") || type === "rule_group") && children && children.size) {
     const list = children
       .map((currentChild) => _queryBuilderFormat(currentChild, config, meta))
       .filter((currentChild) => typeof currentChild !== "undefined");
@@ -130,7 +130,7 @@ const _queryBuilderFormat = (item, config, meta) => {
     let operatorOptions = options ? options.toJS() : null;
     if (operatorOptions && !Object.keys(operatorOptions).length)
       operatorOptions = null;
-        
+
     let ruleQuery = {
       id,
       fieldName,

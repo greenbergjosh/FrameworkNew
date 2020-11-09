@@ -39,7 +39,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "uri",
                 component: "input",
                 label: "Link",
-                help: "The link can include simple jsonPath tokens such as \"?id={$.id}\" (using model properties only)",
+                help: 'The link can include simple jsonPath tokens such as "?id={$.id}" (using model properties only)',
                 defaultValue: "https://",
               },
               {

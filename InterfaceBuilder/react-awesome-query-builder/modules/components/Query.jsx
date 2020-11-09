@@ -136,7 +136,7 @@ export default class QueryContainer extends Component {
     onPropsChanged(nextProps) {
       if (this.props.dontDispatchOnNewProps)
         return;
-        
+
       // compare configs
       const oldConfig = pick(this.props, configKeys);
       let nextConfig = pick(nextProps, configKeys);
@@ -145,7 +145,7 @@ export default class QueryContainer extends Component {
         nextConfig = extendConfig(nextConfig);
         this.setState({config: nextConfig});
       }
-        
+
       // compare trees
       const storeValue = this.state.store.getState().tree;
       const isTreeChanged = !immutableEqual(nextProps.value, this.props.value) && !immutableEqual(nextProps.value, storeValue);

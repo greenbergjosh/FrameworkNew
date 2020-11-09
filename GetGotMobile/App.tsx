@@ -1,8 +1,8 @@
 import { Provider } from "@ant-design/react-native"
 import { ActionSheetProvider } from "@expo/react-native-action-sheet"
 import { AppLoading } from "expo"
-import * as Font from "expo-font"
-import React, { useEffect } from "react"
+import { useFonts } from "expo-font"
+import React from "react"
 import { StatusBar } from "react-native"
 import { Transition } from "react-native-reanimated"
 import { createAppContainer } from "react-navigation"
@@ -16,6 +16,17 @@ import { LegalSection } from "screens/LegalSection"
 import { OnBoardingSection } from "screens/OnBoardingSection"
 import { routes } from "routes"
 import { Colors } from "styles"
+import { LogBox } from "react-native"
+
+/*
+ * Disabled `useNativeDriver` Warning (for now)
+ * 3rd party libs need to set useNativeDriver to true/false. We don't currently use Animated directly from GetGot.
+ * https://stackoverflow.com/questions/61695157/warning-animated-usenativedriver-was-not-specified-react-native-62-2
+ * https://reactnative.dev/blog/2017/02/14/using-native-driver-for-animated#how-do-i-use-this-in-my-app
+ */
+// LogBox.ignoreLogs([
+//   "Animated: `useNativeDriver` was not specified. This is a required option and must be explicitly set to `true` or `false`",
+// ])
 
 export const appRoutes = {
   [routes.App.Landing]: { screen: LandingScreen },
@@ -49,33 +60,18 @@ const RootNavigator = createAppContainer(sectionNavigator)
 const App = () => {
   const [theme, setTheme] = React.useState(null)
   const [currentTheme, setCurrentTheme] = React.useState(null)
-  const [isReady, setIsReady] = React.useState(false)
 
   const changeTheme = (theme, currentTheme) => {
     setTheme(theme)
     setCurrentTheme(currentTheme)
   }
 
-  useEffect(() => {
-    async function init() {
-      await Font.loadAsync(
-        "antoutline",
-        // eslint-disable-next-line
-        require("@ant-design/icons-react-native/fonts/antoutline.ttf")
-      )
+  const [fontsLoaded] = useFonts({
+    antoutline: require("@ant-design/icons-react-native/fonts/antoutline.ttf"),
+    antfill: require("@ant-design/icons-react-native/fonts/antfill.ttf"),
+  })
 
-      await Font.loadAsync(
-        "antfill",
-        // eslint-disable-next-line
-        require("@ant-design/icons-react-native/fonts/antfill.ttf")
-      )
-      setIsReady(true)
-    }
-
-    init()
-  }, [])
-
-  if (!isReady) {
+  if (!fontsLoaded) {
     return <AppLoading />
   }
 

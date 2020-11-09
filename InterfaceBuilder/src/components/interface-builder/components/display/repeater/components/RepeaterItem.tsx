@@ -19,13 +19,13 @@ export function RepeaterItem({
   onChangeData,
   userInterfaceData,
   valueKey,
-}: RepeaterItemProps) {
+}: RepeaterItemProps): JSX.Element {
   /* *************************************
    *
    * EVENT HANDLERS
    */
 
-  function handleChangeData(nextState: object) {
+  function handleChangeData(nextState: any) {
     console.log(
       "RepeaterInterfaceComponent > RepeaterItem.handleChangeData!",
       "\n\tdata:",

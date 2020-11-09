@@ -31,7 +31,11 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
 
   static manageForm = repeaterManageForm
 
-  render() {
+  handleChangeData = (nextState: any): void => {
+    this.props.onChangeData && this.props.onChangeData(nextState)
+  }
+
+  render(): JSX.Element {
     const {
       addItemLabel,
       components,
@@ -39,7 +43,6 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
       hasInitialRecord,
       hasLastItemComponents,
       lastItemComponents,
-      onChangeData,
       orientation,
       preconfigured,
       userInterfaceData,
@@ -59,7 +62,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
                   hasInitialRecord={hasInitialRecord}
                   hasLastItemComponents={hasLastItemComponents}
                   lastItemComponents={lastItemComponents}
-                  onChangeData={onChangeData}
+                  onChangeData={this.handleChangeData}
                   orientation={orientation}
                   userInterfaceData={userInterfaceData}
                   valueKey={valueKey}
@@ -73,7 +76,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
                   components={components}
                   hasLastItemComponents={hasLastItemComponents}
                   lastItemComponents={lastItemComponents}
-                  onChangeData={onChangeData}
+                  onChangeData={this.handleChangeData}
                   preconfigured={preconfigured}
                   userInterfaceData={userInterfaceData}
                   valueKey={valueKey}

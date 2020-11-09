@@ -121,7 +121,7 @@ const mongodbFormatItem = (parents, item, config, meta, _not = false) => {
   const children = item.get("children1");
   const {fieldSeparator, canShortMongoQuery} = config.settings;
 
-  if ((type === "group" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || type === "filter" || type === "rule_group") && children && children.size) {
     const not = _not ? !(properties.get("not")) : (properties.get("not"));
     const list = children
       .map((currentChild) => mongodbFormatItem([...parents, item], currentChild, config, meta, not))
@@ -247,7 +247,7 @@ const mongodbFormatItem = (parents, item, config, meta, _not = false) => {
     if (value.size < cardinality || hasUndefinedValues)
       return undefined;
     const formattedValue = cardinality > 1 ? value.toArray() : (cardinality == 1 ? value.first() : null);
-        
+
     //build rule
     const fn = operatorDefinition.mongoFormatOp;
     if (!fn) {

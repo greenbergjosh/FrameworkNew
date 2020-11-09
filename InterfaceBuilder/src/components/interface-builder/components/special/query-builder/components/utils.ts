@@ -22,6 +22,10 @@ export function getConfig(schema?: SchemaType): Config {
       ...AntdConfig.fields,
       ...schema,
     },
+    settings: {
+      ...AntdConfig.settings,
+      showErrorMessage: true,
+    },
   }
 }
 

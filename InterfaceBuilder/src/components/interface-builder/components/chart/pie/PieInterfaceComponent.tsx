@@ -1,16 +1,16 @@
 import React from "react"
 import { pieManageForm } from "./pie-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { ResponsivePie, PieDatum } from "@nivo/pie"
+import { PieDatum, ResponsivePie } from "@nivo/pie"
 import { InheritedColorProp } from "@nivo/colors"
-import { legends, convertToPieDatum, getNivoColorScheme, emptyDataSet } from "./utils"
+import { convertToPieDatum, emptyDataSet, getNivoColorScheme, legends } from "./utils"
 import { get, isEqual } from "lodash/fp"
 import {
+  OtherSliceAggregatorFunction,
   PieInterfaceComponentProps,
   PieInterfaceComponentState,
   SliceLabelValueFunction,
   SliceTooltipFunction,
-  OtherSliceAggregatorFunction,
 } from "./types"
 import { Spin } from "antd"
 import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"
@@ -81,13 +81,11 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
 
       const rawData: JSONRecord[] = get(valueKey, userInterfaceData)
 
-      const labelValueFunction = sliceLabelValueFunction
-        ? sliceLabelValueFunction
-        : parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
+      const labelValueFunction =
+        sliceLabelValueFunction || parseLBM<SliceLabelValueFunction>(sliceLabelValueFunctionSrc)
 
-      const otherSliceAggregatorFunction = otherAggregatorFunction
-        ? otherAggregatorFunction
-        : parseLBM<OtherSliceAggregatorFunction>(otherAggregatorFunctionSrc)
+      const otherSliceAggregatorFunction =
+        otherAggregatorFunction || parseLBM<OtherSliceAggregatorFunction>(otherAggregatorFunctionSrc)
 
       const pieData = convertToPieDatum({
         data: rawData,
@@ -122,10 +120,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
       this.setState({ tooltipFunction: undefined })
     } else {
       const me = this
-      const parsedTooltipFunction = tooltipFunction
-        ? tooltipFunction
-        : parseLBM<SliceTooltipFunction>(tooltipFunctionSrc)
-      let wrappedTooltipFunction: Function | undefined = undefined
+      const parsedTooltipFunction = tooltipFunction || parseLBM<SliceTooltipFunction>(tooltipFunctionSrc)
+      let wrappedTooltipFunction: Function | undefined
       if (parsedTooltipFunction && this.props.mode !== "edit") {
         wrappedTooltipFunction = function (item: PieDatum) {
           const datum = me.state.pieData[parseInt(item.id.toString())]

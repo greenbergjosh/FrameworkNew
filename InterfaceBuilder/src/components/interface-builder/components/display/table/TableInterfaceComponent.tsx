@@ -9,7 +9,6 @@ import { DisplayTable } from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
 
 export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfaceComponentProps> {
-
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "data",
@@ -108,6 +107,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                   rowDetails={rowDetails}
                   userInterfaceData={userInterfaceData}
                   valueKey={valueKey}
+                  preview={this.props.preview}
                 />
               )
             }

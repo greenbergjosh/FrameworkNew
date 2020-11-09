@@ -75,7 +75,7 @@ const formatValue = (config, currentValue, valueSrc, valueType, fieldWidgetDefin
         args.push(operatorDefinition);
       }
       if (valueSrc == "field") {
-        const valFieldDefinition = getFieldConfig(currentValue, config) || {}; 
+        const valFieldDefinition = getFieldConfig(currentValue, config) || {};
         args.push(valFieldDefinition);
       }
       ret = fn(...args);
@@ -92,7 +92,7 @@ export const queryString = (item, config, isForDisplay = false) => {
   const properties = item.get("properties") || new Map();
   const children = item.get("children1");
 
-  if ((type === "group" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || type === "filter" || type === "rule_group") && children && children.size) {
     const not = properties.get("not");
     const list = children
       .map((currentChild) => queryString(currentChild, config, isForDisplay))
@@ -158,7 +158,7 @@ export const queryString = (item, config, isForDisplay = false) => {
     }
     if (!fn)
       return undefined;
-        
+
     //format field
     let fieldName = field;
     const fieldParts = Array.isArray(field) ? field : field.split(fieldSeparator);
@@ -173,7 +173,7 @@ export const queryString = (item, config, isForDisplay = false) => {
     const fieldLabel2 = fieldDefinition.label2 || fieldFullLabel;
     const formatField = config.settings.formatField || defaultSettings.formatField;
     const formattedField = formatField(fieldName, fieldParts, fieldLabel2, fieldDefinition, config, isForDisplay);
-        
+
     //format expr
     const args = [
       formattedField,
