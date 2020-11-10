@@ -6,6 +6,7 @@ import React from "react"
 import { useFollowsContext } from "data/contextProviders/follows.contextProvider"
 import { SharePost } from "./SharePost"
 import { PostToFeed } from "./PostToFeed"
+import { FollowersType } from "data/api/follows"
 
 interface SharePostModalProps {
   visible: boolean
@@ -21,8 +22,11 @@ export const SharePostModal = ({ visible, onClose }: SharePostModalProps) => {
   const [slidePanelWidthStyle, setSlidePanelWidthStyle] = React.useState<StyleProp<ViewStyle>>({})
   const [childPanelWidthStyle, setChildPanelStyle] = React.useState<StyleProp<ViewStyle>>({})
   const [leftMargin, setLeftMargin] = React.useState(0)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [followers, setFollowers] = React.useState<FollowersType>()
+  const followsContext = useFollowsContext()
 
-  React.useMemo(() => {
+  React.useEffect(() => {
     const screenWidth = getScreenWidth()
     setSlidePanelWidthStyle({ width: screenWidth * 2 })
     setChildPanelStyle({ width: screenWidth })
@@ -32,7 +36,7 @@ export const SharePostModal = ({ visible, onClose }: SharePostModalProps) => {
     Animated.timing(animatedLeftMargin, {
       toValue: leftMargin,
       duration: 300,
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start()
   }, [leftMargin])
 
@@ -41,15 +45,18 @@ export const SharePostModal = ({ visible, onClose }: SharePostModalProps) => {
     leftMargin === 0 ? setLeftMargin(newLeftMargin) : setLeftMargin(0)
   }
 
-  const followsContext = useFollowsContext()
-  if (
-    !followsContext.lastLoadFollowers &&
-    !followsContext.loading.loadFollowers[JSON.stringify([])]
-  ) {
-    followsContext.loadFollowers()
-    return <ActivityIndicator animating toast size="large" text="Loading..." />
-  }
-  const followers = followsContext.followers
+  React.useEffect(() => {
+    if (
+      !followsContext.lastLoadFollowers &&
+      !followsContext.loading.loadFollowers[JSON.stringify([])]
+    ) {
+      setIsLoading(true)
+      followsContext.loadFollowers().then(() => {
+        setIsLoading(false)
+        setFollowers(followsContext.followers)
+      })
+    }
+  }, [useFollowsContext])
 
   return (
     <Modal
@@ -80,12 +87,17 @@ export const SharePostModal = ({ visible, onClose }: SharePostModalProps) => {
             flexWrap: "nowrap",
           },
         ]}>
-        <SharePost
-          style={childPanelWidthStyle}
-          followers={followers}
-          onPost={togglePanel}
-          onClose={onClose}
-        />
+        {isLoading && visible ? (
+          <ActivityIndicator animating toast size="large" text="Loading..." />
+        ) : (
+          <SharePost
+            style={childPanelWidthStyle}
+            followers={followers}
+            onPost={togglePanel}
+            onClose={onClose}
+          />
+        )}
+
         <PostToFeed style={[childPanelWidthStyle]} onClose={onClose} />
       </Animated.View>
       <WhiteSpace size="xl" />
