@@ -1,5 +1,5 @@
-import { JSONRecord } from "../../../../lib"
 import { get } from "lodash/fp"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 /**
  * Gets the value from local or root UI data.
