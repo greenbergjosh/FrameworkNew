@@ -1,6 +1,7 @@
 import { ParamKVPMapsType } from "components/interface-builder/components/form/download/types"
-import { JSONRecord, UserInterfaceProps } from "../../../../../../lib"
 import { get } from "lodash/fp"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 /**
  *
