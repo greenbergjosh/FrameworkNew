@@ -75,7 +75,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
         const layout = tryCatch(() => JSON5.parse(remoteConfig.config.getOrElse("")).layout).toNullable()
         if (Array.isArray(layout)) {
           const content = (
-            <div style={this.props.mode === "edit" ? { pointerEvents: "none" } : undefined}>
+            <div style={this.props.mode === "edit" ? { pointerEvents: "none", margin: "3px 1px 3px 1px" } : undefined}>
               <ComponentRenderer
                 components={layout}
                 mode="display"
@@ -95,12 +95,13 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
                     ? {
                         position: "absolute",
                         border: "dashed 1px #adb5bd",
+                        margin: "-2px -1px -2px -1px",
                         borderRadius: 5,
                         top: 0,
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: "rgb(0 0 0 / 5%)",
+                        backgroundColor: "rgb(255 255 255 / 50%)",
                       }
                     : undefined
                 }
