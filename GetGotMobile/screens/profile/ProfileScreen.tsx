@@ -76,7 +76,7 @@ export const ProfileScreen = (props: ProfileScreenProps) => {
 }
 ProfileScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: null,
-    headerTitle: <HeaderTitle title="Profile" align="left" size="large" />,
+    headerLeft: () => null,
+    headerTitle: () => <HeaderTitle title="Profile" align="left" size="large" />,
   }
 }

@@ -56,13 +56,13 @@ export const CreateChatScreen = ({ navigation }: CreateChatScreenProps) => {
 }
 CreateChatScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton onPress={() => navigation.navigate(routes.Messages.default)} position="left">
         Cancel
       </NavButton>
     ),
-    headerTitle: <HeaderTitle title="New Message" />,
-    headerRight: (
+    headerTitle: () => <HeaderTitle title="New Message" />,
+    headerRight: () => (
       <NavButton
         type="primary"
         onPress={() => navigation.navigate(routes.Messages.Chat)}

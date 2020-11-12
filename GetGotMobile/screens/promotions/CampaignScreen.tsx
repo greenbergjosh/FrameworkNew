@@ -298,7 +298,7 @@ CampaignScreen.navigationOptions = ({ navigation }) => {
           onPress={() => navigation.goBack()}
         />
       ),
-    headerTitle: <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,
+    headerTitle: () => <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,
     headerRight: () =>
       isDraft ? (
         <NavButton

@@ -51,7 +51,7 @@ export const UserFollowsScreen = (props: UserFollowsScreenProps) => {
 }
 UserFollowsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-    headerTitle: <HeaderTitle title="loren" />,
+    headerLeft: () => <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: () => <HeaderTitle title="loren" />,
   }
 }

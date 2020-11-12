@@ -81,13 +81,13 @@ export const AnalyticsScreen = (props: AnalyticsScreenProps) => {
 
 AnalyticsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
         Cancel
       </NavButton>
     ),
-    headerTitle: <HeaderTitle title="Analytics" />,
-    headerRight: (
+    headerTitle: () => <HeaderTitle title="Analytics" />,
+    headerRight: () => (
       <NavButton
         onPress={() => navigation.navigate(routes.Home.Feed)}
         type="primary"

@@ -71,7 +71,7 @@ export const FeedDetailsScreen = (props: FeedDetailsScreenProps) => {
 }
 FeedDetailsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-    headerTitle: <HeaderTitle title="Explore" offset="none" />,
+    headerLeft: () => <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: () => <HeaderTitle title="Explore" offset="none" />,
   }
 }

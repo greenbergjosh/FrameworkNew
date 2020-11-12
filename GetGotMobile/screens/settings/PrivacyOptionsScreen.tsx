@@ -39,13 +39,13 @@ export const PrivacyOptionsScreen = ({ navigation }: PrivacyOptionsScreenProps) 
 
 PrivacyOptionsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
         Cancel
       </NavButton>
     ),
-    headerTitle: <HeaderTitle title="Privacy Options" />,
-    headerRight: (
+    headerTitle: () => <HeaderTitle title="Privacy Options" />,
+    headerRight: () => (
       <NavButton
         onPress={() => navigation.navigate(routes.Home.Feed)}
         type="primary"

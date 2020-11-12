@@ -103,15 +103,15 @@ export const HomeFeedScreen = (props: HomeFeedScreenProps) => {
 
 HomeFeedScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <SettingsDrawerContext.Consumer>
         {({ open, toggle }) => (
           <NavButton iconName="md-menu" onPress={() => toggle()} position="left" />
         )}
       </SettingsDrawerContext.Consumer>
     ),
-    headerTitle: <HeaderLogo />,
-    headerRight: (
+    headerTitle: () => <HeaderLogo />,
+    headerRight: () => (
       <NavButton
         iconName="md-mail"
         onPress={() => navigation.navigate(routes.Home.Messages)}

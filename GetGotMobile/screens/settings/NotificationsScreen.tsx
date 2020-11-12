@@ -80,13 +80,13 @@ export const NotificationsScreen = ({ navigation }: NotificationsScreenProps) =>
 
 NotificationsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
         Cancel
       </NavButton>
     ),
-    headerTitle: <HeaderTitle title="Notifications" />,
-    headerRight: (
+    headerTitle: () => <HeaderTitle title="Notifications" />,
+    headerRight: () => (
       <NavButton
         onPress={() => navigation.navigate(routes.Home.Feed)}
         type="primary"

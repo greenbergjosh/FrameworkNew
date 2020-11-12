@@ -47,13 +47,13 @@ export const BlockedUsersScreen = ({ navigation }: BlockedUsersScreenProps) => {
 
 BlockedUsersScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="left">
         Cancel
       </NavButton>
     ),
-    headerTitle: <HeaderTitle title="Blocked Users" />,
-    headerRight: (
+    headerTitle: () => <HeaderTitle title="Blocked Users" />,
+    headerRight: () => (
       <NavButton onPress={() => navigation.navigate(routes.Home.Feed)} position="right" type="primary">
         Done
       </NavButton>

@@ -75,7 +75,7 @@ export const CampaignListScreen = (props: CampaignListScreenProps) => {
 
 CampaignListScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerLeft: () => <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: () => <HeaderTitle title="Campaigns" offset="none" />,
   }
 }

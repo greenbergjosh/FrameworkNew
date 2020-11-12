@@ -88,9 +88,9 @@ export const CampaignTemplatesScreen = (props: CampaignTemplateScreenProps) => {
 
 CampaignTemplatesScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: null,
-    headerTitle: <HeaderTitle title="Choose a Template" />,
-    headerRight: (
+    headerLeft: () => null,
+    headerTitle: () => <HeaderTitle title="Choose a Template" />,
+    headerRight: () => (
       <NavButton position="right" onPress={() => navigation.navigate(routes.Promotions.Promotions)}>
         Cancel
       </NavButton>

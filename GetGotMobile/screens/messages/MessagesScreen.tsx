@@ -51,15 +51,15 @@ export const MessagesScreen = ({ navigation }: MessagesScreenProps) => {
 }
 MessagesScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton
         iconName="left"
         onPress={() => navigation.goBack()}
         position="left"
       />
     ),
-    headerTitle: <HeaderTitle title="Messages" />,
-    headerRight: (
+    headerTitle: () => <HeaderTitle title="Messages" />,
+    headerRight: () => (
       <NavButton
         iconName="plus"
         onPress={() => navigation.navigate(routes.Messages.CreateChat)}

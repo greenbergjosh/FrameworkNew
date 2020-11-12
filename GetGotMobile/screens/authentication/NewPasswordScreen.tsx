@@ -99,7 +99,7 @@ export const NewPasswordScreen = (props: NewPasswordScreenProps) => {
 
 NewPasswordScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-    headerTitle: <HeaderLogo />,
+    headerLeft: () => <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: () => <HeaderLogo />,
   }
 }

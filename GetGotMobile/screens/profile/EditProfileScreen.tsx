@@ -93,13 +93,13 @@ export const EditProfileScreen = ({}: EditProfileScreenProps) => {
 }
 EditProfileScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerTitle: <HeaderTitle title="Edit Profile" align="center" size="normal" />,
-    headerLeft: (
+    headerTitle: () => <HeaderTitle title="Edit Profile" align="center" size="normal" />,
+    headerLeft: () => (
       <NavButton onPress={() => navigation.navigate(routes.Profile.default)} position="left">
         Cancel
       </NavButton>
     ),
-    headerRight: (
+    headerRight: () => (
       <NavButton
         onPress={() => navigation.navigate(routes.Profile.default)}
         type="primary"

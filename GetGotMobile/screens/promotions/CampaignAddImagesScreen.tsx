@@ -117,7 +117,7 @@ CampaignAddImagesScreen.navigationOptions = ({ navigation }) => {
           Cancel
         </NavButton>
       ),
-    headerTitle: <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,
-    headerRight: <HeaderRightDoneButton navigation={navigation} />,
+    headerTitle: () => <HeaderTitle title={isDraft ? "Create Campaign" : "Campaign"} />,
+    headerRight: () => <HeaderRightDoneButton navigation={navigation} />,
   }
 }

@@ -85,14 +85,14 @@ export const ChatScreen = ({}: ChatScreenProps) => {
 
 ChatScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: (
+    headerLeft: () => (
       <NavButton
         iconName="left"
         onPress={() => navigation.navigate(routes.Messages.default)}
         position="left"
       />
     ),
-    headerTitle: (
+    headerTitle: () => (
       <HeaderTitle
         title={
           mockData.CHAT_MOCK_DATA.title ||
@@ -100,7 +100,7 @@ ChatScreen.navigationOptions = ({ navigation }) => {
         }
       />
     ),
-    headerRight: (
+    headerRight: () => (
       <NavButton
         onPress={() => navigation.navigate(routes.Messages.default)}
         position="right"

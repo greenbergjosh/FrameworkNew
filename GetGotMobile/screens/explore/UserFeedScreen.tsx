@@ -61,7 +61,7 @@ export const UserFeedScreen = (props: UserFeedScreenProps) => {
 
 UserFeedScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
-    headerTitle: <HeaderTitle title="loren" offset="none" />,
+    headerLeft: () => <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerTitle: () => <HeaderTitle title="loren" offset="none" />,
   }
 }

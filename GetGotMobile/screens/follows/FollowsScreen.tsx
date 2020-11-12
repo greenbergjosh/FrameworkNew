@@ -55,7 +55,7 @@ export const FollowsScreen = ({ navigation }: FollowsScreenProps) => {
 
 FollowsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: null,
-    headerTitle: <HeaderTitle title="Follows" align="left" size="large" />,
+    headerLeft: () => null,
+    headerTitle: () => <HeaderTitle title="Follows" align="left" size="large" />,
   }
 }

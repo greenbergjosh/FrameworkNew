@@ -62,7 +62,7 @@ export const PostDetailsScreen = (props: PostDetailsScreenProps) => {
 }
 PostDetailsScreen.navigationOptions = ({ navigation }) => {
   return {
-    headerLeft: <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
+    headerLeft: () => <NavButton iconName="left" onPress={() => navigation.goBack()} position="left" />,
     headerTitle: () => <HeaderTitle title="Posts" offset="none" />,
   }
 }
