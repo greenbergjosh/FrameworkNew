@@ -39,7 +39,7 @@ export const InterfaceComponentChoices = ({}: InterfaceComponentChoicesProps) =>
                       {
                         // Pass a custom icon component to ant icon (usually an SVG wrapped in a component).
                         layoutDefinition.iconComponent && (
-                          <Icon component={layoutDefinition.iconComponent} style={{ marginRight: "1em" }} />
+                          <Icon component={layoutDefinition.iconComponent as any} style={{ marginRight: "1em" }} />
                         )
                       }
                       {layoutDefinition.title}
