@@ -3,27 +3,25 @@ import { Repeater } from "./Repeater"
 import { Button, Empty } from "antd"
 import React from "react"
 import { DisplayModeProps } from "../types"
-import { get, set, isEmpty } from "lodash/fp"
+import { isEmpty } from "lodash/fp"
 
 export function DisplayMode({
   addItemLabel,
   components,
+  data,
   description,
   hasInitialRecord,
   hasLastItemComponents,
   lastItemComponents,
-  onChangeData,
+  onChange,
   orientation,
-  userInterfaceData,
-  valueKey,
 }: DisplayModeProps): JSX.Element {
   /* *************************************
    *
-   * INIT
+   * PROP WATCHERS
    */
 
   React.useEffect(() => {
-    const data = get(valueKey, userInterfaceData) || []
     const initRecords = []
 
     // Add Initial Record when enabled.
@@ -31,7 +29,7 @@ export function DisplayMode({
       initRecords.push({})
     }
 
-    // Add Last Item when enabled and components provided.
+    // Add Last Item when enabled and components are provided.
     if (hasLastItemComponents && !isEmpty(lastItemComponents) && data.length <= initRecords.length) {
       initRecords.push({})
     }
@@ -39,38 +37,35 @@ export function DisplayMode({
     // Update userInterfaceData
     if (initRecords.length > 0) {
       const nextState = [...data, ...initRecords]
-      onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
+      onChange(nextState)
     }
-  }, [valueKey, userInterfaceData, hasInitialRecord, hasLastItemComponents, lastItemComponents, onChangeData])
+  }, [data, hasInitialRecord, hasLastItemComponents, lastItemComponents, onChange])
 
   /* *************************************
    *
    * EVENT HANDLERS
    */
 
-  function handleAddClick() {
-    const prevState = get(valueKey, userInterfaceData) || []
+  function handleAddItem() {
     let nextState
 
     // Append new record as second to last if Last Item is enabled
     if (hasLastItemComponents) {
-      const lastItemIndex = prevState.length - 1
-      const sortableData = hasLastItemComponents ? prevState.slice(0, lastItemIndex) : prevState
-      const lastItemData = hasLastItemComponents ? prevState[lastItemIndex] : {}
+      const lastItemIndex = data.length - 1
+      const sortableData = hasLastItemComponents ? data.slice(0, lastItemIndex) : data
+      const lastItemData = hasLastItemComponents ? data[lastItemIndex] : {}
       nextState = [...sortableData, {}, lastItemData]
     } else {
-      nextState = [...prevState, {}]
+      nextState = [...data, {}]
     }
 
-    onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
+    onChange(nextState)
   }
 
   /* *************************************
    *
    * RENDER
    */
-
-  const data = get(valueKey, userInterfaceData) || []
 
   return (
     <>
@@ -86,16 +81,14 @@ export function DisplayMode({
             hasInitialRecord={hasInitialRecord}
             hasLastItemComponents={hasLastItemComponents}
             lastItemComponents={lastItemComponents}
-            onChangeData={onChangeData}
+            onChange={onChange}
             orientation={orientation}
-            userInterfaceData={userInterfaceData}
-            valueKey={valueKey}
           />
         ) : (
           <Empty description={description} />
         )}
       </div>
-      <Button style={{ display: "block", marginLeft: "25px" }} onClick={handleAddClick}>
+      <Button style={{ display: "block", marginLeft: 25, marginTop: 10 }} onClick={handleAddItem}>
         {addItemLabel}
       </Button>
     </>

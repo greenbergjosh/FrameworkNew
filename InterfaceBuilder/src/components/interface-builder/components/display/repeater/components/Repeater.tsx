@@ -1,16 +1,10 @@
 import React from "react"
 import { RepeaterProps } from "../types"
-import { get, set } from "lodash/fp"
-import {
-  DraggedItemProps,
-  Droppable,
-  DroppableChildProps,
-  DroppableTargetProps,
-} from "components/interface-builder/dnd"
 import { v4 as uuid } from "uuid"
 import { RepeaterItem } from "./RepeaterItem"
 import styles from "../styles.scss"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export function Repeater({
   components,
@@ -18,26 +12,26 @@ export function Repeater({
   hasInitialRecord,
   hasLastItemComponents,
   lastItemComponents,
-  onChangeData,
-  orientation,
-  userInterfaceData,
-  valueKey,
+  onChange,
 }: RepeaterProps): JSX.Element {
-  /* Constants */
+  const repeaterId = React.useMemo(uuid, [])
 
-  const draganddropId = uuid()
+  /* *************************************
+   *
+   * PROP WATCHERS
+   */
 
   /**
    * Split the data array if we are supporting a separate
    * layout for the last item.
    */
-  const { sortableData, lastItemData, lastItemIndex } = React.useMemo(() => {
-    const _data: JSONRecord[] = Array.isArray(data) ? data : []
-    const lastItemIndex = _data.length - 1
-    const sortableData = hasLastItemComponents ? _data.slice(0, lastItemIndex) : _data
-    const lastItemData = hasLastItemComponents ? _data[lastItemIndex] : {}
+  const { sortableItems, lastItemData, lastItemIndex } = React.useMemo(() => {
+    const items: JSONRecord[] = Array.isArray(data) ? data : []
+    const lastItemIndex = items.length - 1
+    const sortableItems = hasLastItemComponents ? items.slice(0, lastItemIndex) : items
+    const lastItemData = hasLastItemComponents ? items[lastItemIndex] : {}
 
-    return { sortableData, lastItemData, lastItemIndex }
+    return { sortableItems, lastItemData, lastItemIndex }
   }, [data, hasLastItemComponents])
 
   /* *************************************
@@ -45,41 +39,94 @@ export function Repeater({
    * EVENT HANDLERS
    */
 
-  function handleItemRearrange(draggedItem: DraggedItemProps, dropTarget: DroppableTargetProps) {
-    const prevState = get(valueKey, userInterfaceData) || []
-    let nextState = prevState
+  /**
+   *
+   * @param index
+   */
+  const handleMoveUp = React.useCallback(
+    (index: number) => {
+      const nextRepeaterItems = [
+        ...data.slice(0, index - 1), // data before new insertion point
+        data[index], // target item
+        ...data.slice(index - 1, index), // data previously between new insertion and target
+        ...data.slice(index + 1), // data after prev index
+      ]
 
-    if (draggedItem.index === dropTarget.dropIndex) {
-      return
-    }
-    if (draggedItem.index < dropTarget.dropIndex) {
-      nextState = [
-        ...prevState.slice(0, draggedItem.index),
-        ...prevState.slice(draggedItem.index + 1, dropTarget.dropIndex),
-        prevState[draggedItem.index],
-        ...prevState.slice(dropTarget.dropIndex),
+      !isNaN(index) && onChange(nextRepeaterItems)
+    },
+    [onChange]
+  )
+
+  /**
+   *
+   * @param index
+   */
+  const handleMoveDown = React.useCallback(
+    (index: number) => {
+      const nextRepeaterItems = [
+        ...data.slice(0, index), // data before prev index
+        ...data.slice(index + 1, index + 2), // item after target
+        data[index], // target item
+        ...data.slice(index + 2), // data after new insertion point
       ]
-    } else {
-      nextState = [
-        ...prevState.slice(0, dropTarget.dropIndex),
-        prevState[draggedItem.index],
-        ...prevState.slice(dropTarget.dropIndex, draggedItem.index),
-        ...prevState.slice(draggedItem.index + 1),
+
+      !isNaN(index) && onChange(nextRepeaterItems)
+    },
+    [onChange]
+  )
+
+  /**
+   *
+   * @param index
+   */
+  const handleAdd = React.useCallback(
+    (index: number) => {
+      const nextRepeaterItems = [
+        ...data.slice(0, index), // data before prev index
+        {},
+        ...data.slice(index), // data after new insertion point
       ]
-    }
-    console.log(
-      "RepeaterInterfaceComponent > Repeater.handleItemRearrange!",
-      "\n\tdraggedItem:",
-      draggedItem,
-      "\n\tdropTarget:",
-      dropTarget,
-      "\n\tprevState:",
-      prevState,
-      "\n\tnextState:",
-      nextState
-    )
-    onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
-  }
+
+      !isNaN(index) && onChange(nextRepeaterItems)
+    },
+    [onChange]
+  )
+
+  /**
+   *
+   * @param index
+   * @param nextItemDataState
+   */
+  const handleChange = React.useCallback(
+    (index: number, nextItemState: UserInterfaceProps["data"]) => {
+      onChange(nextItemState, `[${index}]`)
+    },
+    [onChange]
+  )
+
+  /**
+   *
+   * @param index
+   */
+  const handleDelete = React.useCallback(
+    (index: number): void => {
+      /*
+       * Don't delete the last record when Initial Record is enabled.
+       * Don't delete the second to last when Last Item is enabled.
+       */
+      if (hasInitialRecord) {
+        const hasMinForInitialRecord = data.length > 1 // must be more than one record
+        const hasMinForLastItem = data.length > 2 // must be more than two records
+
+        if (!hasMinForInitialRecord) return
+        if (hasLastItemComponents && !hasMinForLastItem) return
+      }
+
+      const nextRepeaterItems: JSONRecord[] = [...data.slice(0, index), ...data.slice(index + 1)]
+      !isNaN(index) && onChange(nextRepeaterItems)
+    },
+    [hasInitialRecord, hasLastItemComponents, onChange]
+  )
 
   /* *************************************
    *
@@ -88,48 +135,38 @@ export function Repeater({
 
   return (
     <ol className={styles.repeater}>
-      <Droppable
-        data={components}
-        allowDrop
-        droppableId={`REPEATER_${draganddropId}`}
-        onDrop={handleItemRearrange}
-        orientation={orientation}
-        type={`REPEATER_${draganddropId}_ITEM`}>
-        {({ isOver }: DroppableChildProps) =>
-          sortableData.map((dataItem, index) => (
-            <RepeaterItem
-              components={components}
-              data={dataItem}
-              draganddropId={draganddropId}
-              hasInitialRecord={hasInitialRecord}
-              hasLastItemComponents={hasLastItemComponents}
-              index={index}
-              isDraggable={true}
-              key={index}
-              onChangeData={onChangeData}
-              userInterfaceData={userInterfaceData}
-              valueKey={valueKey}
-            />
-          ))
-        }
-      </Droppable>
+      {sortableItems.map((itemData, index) => (
+        <RepeaterItem
+          components={components}
+          itemData={itemData}
+          hasNextSibling={sortableItems.length - 1 > index}
+          index={index}
+          isDraggable={true}
+          key={`REPEATER_${repeaterId}_ITEM_${index}`}
+          onAddRow={handleAdd}
+          onChange={handleChange}
+          onDelete={handleDelete}
+          onMoveDown={handleMoveDown}
+          onMoveUp={handleMoveUp}
+        />
+      ))}
       {/*
        * Last Item layout when enabled.
-       * The last item is not draggable.
+       * The last item is not sortable.
        */}
       {hasLastItemComponents && lastItemComponents ? (
         <RepeaterItem
           components={lastItemComponents}
-          data={lastItemData}
-          draganddropId={draganddropId}
-          hasInitialRecord={hasInitialRecord}
-          hasLastItemComponents={hasLastItemComponents}
+          itemData={lastItemData}
+          hasNextSibling={false}
           index={lastItemIndex}
           isDraggable={false}
-          key={lastItemIndex}
-          onChangeData={onChangeData}
-          userInterfaceData={userInterfaceData}
-          valueKey={valueKey}
+          key={`REPEATER_${repeaterId}_ITEM_${lastItemIndex}`}
+          onAddRow={() => null}
+          onChange={handleChange}
+          onDelete={handleDelete}
+          onMoveDown={() => null}
+          onMoveUp={() => null}
         />
       ) : null}
     </ol>

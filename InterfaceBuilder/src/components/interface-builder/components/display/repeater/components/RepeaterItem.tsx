@@ -1,62 +1,31 @@
 import { RepeaterItemProps } from "../types"
-import { get, set } from "lodash/fp"
-import { Draggable, DraggableChildProps, DraggedItemProps } from "components/interface-builder/dnd"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import React from "react"
-import { Badge, Card, Icon } from "antd"
+import { Badge, Button, Card, Icon, Popconfirm } from "antd"
 import styles from "../styles.scss"
 import classNames from "classnames"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { isEqual } from "lodash/fp"
 
-export function RepeaterItem({
+export function _RepeaterItem({
   components,
-  data,
-  draganddropId,
-  hasInitialRecord,
-  hasLastItemComponents,
+  itemData,
+  hasNextSibling,
   index,
   isDraggable,
-  lastItemComponents,
-  onChangeData,
-  userInterfaceData,
-  valueKey,
+  onAddRow,
+  onChange,
+  onDelete,
+  onMoveDown,
+  onMoveUp,
 }: RepeaterItemProps): JSX.Element {
   /* *************************************
    *
    * EVENT HANDLERS
    */
 
-  function handleChangeData(nextState: any) {
-    console.log(
-      "RepeaterInterfaceComponent > RepeaterItem.handleChangeData!",
-      "\n\tdata:",
-      data,
-      "\n\tindex:",
-      index,
-      "\n\tnextState",
-      nextState,
-      "\n\tuserInterfaceData",
-      userInterfaceData
-    )
-    onChangeData && onChangeData(set(`${valueKey}.${index}`, nextState, userInterfaceData))
-  }
-
-  function handleDelete({ index }: DraggedItemProps) {
-    const prevState = get(valueKey, userInterfaceData) || []
-
-    /*
-     * Don't delete the last record when Initial Record is enabled.
-     * Don't delete the second to last when Last Item is enabled.
-     */
-    if (hasInitialRecord) {
-      const hasMinForInitialRecord = prevState.length > 1 // must be more than one record
-      const hasMinForLastItem = prevState.length > 2 // must be more than two records
-
-      if (!hasMinForInitialRecord) return
-      if (hasLastItemComponents && !hasMinForLastItem) return
-    }
-
-    const nextState = [...prevState.slice(0, index), ...prevState.slice(index + 1)]
-    onChangeData && onChangeData(set(valueKey, nextState, userInterfaceData))
+  function handleChangeData(nextData: JSONRecord): void {
+    !isNaN(index) && onChange(index, nextData)
   }
 
   const handleSchemaChange = (newSchema: any) => {
@@ -75,41 +44,46 @@ export function RepeaterItem({
   return (
     <>
       {isDraggable ? (
-        <Draggable
-          canCopy={false}
-          canEdit={false}
-          canPaste={false}
-          data={data}
-          draggableId={`REPEATER_${draganddropId}_ITEM_${index}`}
-          editable={true}
-          onDelete={handleDelete}
-          index={index}
-          title=""
-          type={`REPEATER_${draganddropId}_ITEM`}>
-          {({ isDragging }: DraggableChildProps) => (
-            <li className={classNames(styles.repeaterItem, styles.topClearance)}>
-              <Card size="small">
-                <ComponentRenderer
-                  components={components}
-                  data={data}
-                  onChangeData={handleChangeData}
-                  onChangeSchema={handleSchemaChange}
-                />
-              </Card>
-            </li>
-          )}
-        </Draggable>
+        <li className={classNames(styles.repeaterItem, styles.topClearance)}>
+          <Card size="small">
+            <ComponentRenderer
+              components={components}
+              data={itemData}
+              onChangeData={handleChangeData}
+              onChangeSchema={handleSchemaChange}
+            />
+          </Card>
+          <Button.Group className={styles.toolbar} size="small">
+            <Button onClick={() => onAddRow(index)} icon="plus" type="default" title="Add Row Above" />
+            <Button onClick={() => onMoveUp(index)} icon="up" type="default" title="Move Up" disabled={index === 0} />
+            <Button
+              onClick={() => onMoveDown(index)}
+              icon="down"
+              type="default"
+              title="Move Down"
+              disabled={!hasNextSibling}
+            />
+            <Popconfirm
+              title="Are you sure delete this item?"
+              onConfirm={() => onDelete(index)}
+              onCancel={() => null}
+              okText="Yes"
+              cancelText="No">
+              <Button icon="delete" type="danger" title="Delete..." />
+            </Popconfirm>
+          </Button.Group>
+        </li>
       ) : (
         /*
          * Last Item layout when enabled.
-         * The last item is not draggable.
+         * The last item is not sortable.
          */
         <li className={styles.repeaterItem}>
           <Badge count={<Icon type="lock" />} className={styles.repeaterItemBadge}>
             <Card size="small">
               <ComponentRenderer
                 components={components}
-                data={data}
+                data={itemData}
                 onChangeData={handleChangeData}
                 onChangeSchema={handleSchemaChange}
               />
@@ -120,3 +94,14 @@ export function RepeaterItem({
     </>
   )
 }
+
+function propsAreEqual(prevProps: RepeaterItemProps, nextProps: RepeaterItemProps) {
+  const eqData = isEqual(prevProps.itemData, nextProps.itemData)
+  const eqIndex = isEqual(prevProps.index, nextProps.index)
+  const eqHasNextSibling = isEqual(prevProps.hasNextSibling, nextProps.hasNextSibling)
+  const eq = eqData && eqIndex && eqHasNextSibling
+
+  return eq
+}
+
+export const RepeaterItem = React.memo(_RepeaterItem, propsAreEqual)

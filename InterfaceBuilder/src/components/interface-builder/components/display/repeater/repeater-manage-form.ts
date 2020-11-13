@@ -17,7 +17,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Components",
+                defaultValue: "Repeater",
               },
               {
                 key: "hideLabel",

@@ -1,10 +1,11 @@
 import React from "react"
-import { ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { repeaterManageForm } from "./repeater-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { RepeaterInterfaceComponentProps } from "./types"
 import { ConfigureMode } from "./components/ConfigureMode"
 import { DisplayMode } from "./components/DisplayMode"
+import { get, set, isEmpty } from "lodash/fp"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterInterfaceComponentProps> {
   static defaultProps = {
@@ -31,11 +32,13 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
 
   static manageForm = repeaterManageForm
 
-  handleChangeData = (nextState: any): void => {
-    this.props.onChangeData && this.props.onChangeData(nextState)
+  handleChange = (nextState: JSONRecord | JSONRecord[], subpath?: string): void => {
+    const { valueKey, userInterfaceData } = this.props
+    const path = !isEmpty(subpath) ? `${valueKey}${subpath}` : valueKey
+    this.props.onChangeData && this.props.onChangeData(set(path, nextState, userInterfaceData))
   }
 
-  render(): JSX.Element {
+  render(): JSX.Element | undefined {
     const {
       addItemLabel,
       components,
@@ -47,45 +50,39 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
       preconfigured,
       userInterfaceData,
       valueKey,
+      mode,
     } = this.props
+    const data = get(valueKey, userInterfaceData) || []
 
-    return (
-      <ComponentRendererModeContext.Consumer>
-        {(mode) => {
-          switch (mode) {
-            case "display": {
-              return (
-                <DisplayMode
-                  addItemLabel={addItemLabel}
-                  components={components}
-                  description={emptyText}
-                  hasInitialRecord={hasInitialRecord}
-                  hasLastItemComponents={hasLastItemComponents}
-                  lastItemComponents={lastItemComponents}
-                  onChangeData={this.handleChangeData}
-                  orientation={orientation}
-                  userInterfaceData={userInterfaceData}
-                  valueKey={valueKey}
-                />
-              )
-            }
-            case "edit": {
-              // Repeat the component once per item in the repeater
-              return (
-                <ConfigureMode
-                  components={components}
-                  hasLastItemComponents={hasLastItemComponents}
-                  lastItemComponents={lastItemComponents}
-                  onChangeData={this.handleChangeData}
-                  preconfigured={preconfigured}
-                  userInterfaceData={userInterfaceData}
-                  valueKey={valueKey}
-                />
-              )
-            }
-          }
-        }}
-      </ComponentRendererModeContext.Consumer>
-    )
+    switch (mode) {
+      case "display": {
+        return (
+          <DisplayMode
+            addItemLabel={addItemLabel}
+            components={components}
+            data={data}
+            description={emptyText}
+            hasInitialRecord={hasInitialRecord}
+            hasLastItemComponents={hasLastItemComponents}
+            lastItemComponents={lastItemComponents}
+            onChange={this.handleChange}
+            orientation={orientation}
+          />
+        )
+      }
+      case "edit": {
+        // Repeat the component once per item in the repeater
+        return (
+          <ConfigureMode
+            components={components}
+            data={data}
+            hasLastItemComponents={hasLastItemComponents}
+            lastItemComponents={lastItemComponents}
+            onChange={this.handleChange}
+            preconfigured={preconfigured}
+          />
+        )
+      }
+    }
   }
 }

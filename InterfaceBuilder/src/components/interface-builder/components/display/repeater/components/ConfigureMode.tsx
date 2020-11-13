@@ -2,22 +2,22 @@ import React from "react"
 import { ConfigureModeProps } from "../types"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import { DataPathContext } from "components/interface-builder/util/DataPathContext"
-import { Card } from "antd"
-import { get } from "lodash/fp"
+import { Badge, Card, Icon } from "antd"
+import classNames from "classnames"
+import styles from "../styles.scss"
 
 export function ConfigureMode({
   components,
+  data,
   hasLastItemComponents,
   lastItemComponents,
-  onChangeData,
+  onChange,
   preconfigured,
-  userInterfaceData,
-  valueKey,
 }: ConfigureModeProps): JSX.Element {
-  /* Init */
-  const data = get(valueKey, userInterfaceData) || []
-
-  /* Event Handlers */
+  /* *************************************
+   *
+   * EVENT HANDLERS
+   */
 
   function handleChangeSchema(newSchema: any) {
     console.warn(
@@ -27,40 +27,49 @@ export function ConfigureMode({
     )
   }
 
-  /* Render */
+  /* *************************************
+   *
+   * RENDER
+   */
 
   return (
-    <>
+    <ol className={styles.repeater}>
       <DataPathContext path="components">
-        <ComponentRenderer
-          components={components}
-          data={data}
-          dragDropDisabled={!!preconfigured}
-          onChangeData={onChangeData}
-          onChangeSchema={handleChangeSchema}
-        />
+        <li className={classNames(styles.repeaterItem, styles.topClearance, styles.configMode)}>
+          <Card size="small">
+            <ComponentRenderer
+              components={components}
+              data={data}
+              dragDropDisabled={!!preconfigured}
+              onChangeData={onChange}
+              onChangeSchema={handleChangeSchema}
+            />
+          </Card>
+        </li>
       </DataPathContext>
       {/*
        * Drag target for Last Item components when enabled.
        */}
       {hasLastItemComponents ? (
         <DataPathContext path="lastItemComponents">
-          <Card
-            title="Last Item"
-            size="small"
-            style={{ marginTop: 40 }}
-            headStyle={{ backgroundColor: "#f0f0f0" }}
-            bodyStyle={{ backgroundColor: "#fafafa" }}>
-            <ComponentRenderer
-              components={lastItemComponents}
-              data={data}
-              dragDropDisabled={!!preconfigured}
-              onChangeData={onChangeData}
-              onChangeSchema={handleChangeSchema}
-            />
-          </Card>
+          <li className={classNames(styles.repeaterItem, styles.configMode)}>
+            <Badge count={<Icon type="lock" />} className={styles.repeaterItemBadge}>
+              <Card
+                size="small"
+                title="Last Item (fixed)"
+                headStyle={{ backgroundColor: "#f5fbff", border: "dashed 1px #95d7ff", color: "#40a9ff" }}>
+                <ComponentRenderer
+                  components={lastItemComponents}
+                  data={data}
+                  dragDropDisabled={!!preconfigured}
+                  onChangeData={onChange}
+                  onChangeSchema={handleChangeSchema}
+                />
+              </Card>
+            </Badge>
+          </li>
         </DataPathContext>
       ) : null}
-    </>
+    </ol>
   )
 }

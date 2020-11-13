@@ -7,6 +7,7 @@ ol.repeater {
 li.repeaterItem {
   counter-increment: item;
   margin-bottom: -1px;
+  position: relative;
 
   display: flex;
   flex-direction: row;
@@ -31,6 +32,25 @@ li.repeaterItem {
     order: 0;
     flex: 0 1 auto;
     align-self: auto;
+  }
+
+  &.configMode {
+    &:before {
+      content: "#";
+    }
+  }
+
+  .toolbar {
+    opacity: 0;
+    &:hover {
+      opacity: 1;
+    }
+    transition: 0.2s;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    text-align: right;
   }
 }
 
