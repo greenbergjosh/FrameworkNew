@@ -4,6 +4,7 @@ import React from "react"
 import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
 import { EventPayloadType } from "../../../../services/event-bus"
+import { IconProps } from "antd/lib/icon"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { getValue } from "components/interface-builder/lib/get-value"
 
@@ -19,7 +20,7 @@ export interface LayoutDefinition {
   /** The AntDesign icon name of this component */
   icon?: string
   /** An SVG icon component to use instead of AntDesign icons */
-  iconComponent?: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  iconComponent?: IconProps["component"]
   /** Whether or not this component is a form control */
   formControl?: boolean
   /** The initial ComponentDefinition when creating an instance of this */
