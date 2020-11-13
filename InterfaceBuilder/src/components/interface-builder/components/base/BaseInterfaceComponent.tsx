@@ -127,7 +127,6 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
     userInterfaceData?: any,
     rootUserInterfaceData?: any
   ): JSONRecord | JSONRecord[] | undefined {
-    debugger
     return getValue(
       valueKey,
       userInterfaceData || this.props.userInterfaceData,
