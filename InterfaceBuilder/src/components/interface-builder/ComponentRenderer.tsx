@@ -4,7 +4,7 @@ import { deepDiff } from "./lib/deep-diff"
 import { DataPathContext } from "./util/DataPathContext"
 import { ComponentDefinition } from "./components/base/BaseInterfaceComponent"
 import { Droppable, DroppableContextType, shallowPropCheck } from "./dnd"
-import { ComponentRegistryContext } from "./registry"
+import { registry } from "./registry"
 import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
 import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
 
@@ -36,45 +36,42 @@ export const _ComponentRenderer = ({
   onChangeSchema,
   submit,
   onDrop,
-}: ComponentRendererProps) => {
-  const { componentRegistry } = React.useContext(ComponentRegistryContext)
+}: ComponentRendererProps): JSX.Element => {
+  // const { componentRegistry } = React.useContext(ComponentRegistryContext)
   const contextMode = React.useContext(ComponentRendererModeContext)
   const mode = propMode || contextMode
+
+  const handleChangeSchema = React.useCallback(
+    (index: number) => (newComponentDefinition: ComponentDefinition) => {
+      if (mode === "edit") {
+        // console.log("ComponentRenderer.render", "onChangeSchema", {
+        //   componentDefinition,
+        //   newComponentDefinition,
+        //   onChangeSchema,
+        //   path,
+        //   index,
+        //   components,
+        // })
+        // onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
+        onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
+      }
+    },
+    [components, mode, onChangeSchema]
+  )
 
   const content = components.map((componentDefinition, index) => (
     <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
       {(path) => (
         <RenderInterfaceComponent
-          Component={componentRegistry.lookup(componentDefinition.component)}
+          Component={registry.lookup(componentDefinition.component)}
           componentDefinition={componentDefinition}
           data={data}
           getRootData={getRootData}
           dragDropDisabled={dragDropDisabled}
           index={index}
           mode={mode}
-          onChangeData={(newData) => {
-            // console.log("ComponentRenderer.render", "onChangeData", {
-            //   componentDefinition,
-            //   newData,
-            //   onChangeData,
-            //   data,
-            // })
-            onChangeData && onChangeData(newData)
-          }}
-          onChangeSchema={(newComponentDefinition) => {
-            if (mode === "edit") {
-              // console.log("ComponentRenderer.render", "onChangeSchema", {
-              //   componentDefinition,
-              //   newComponentDefinition,
-              //   onChangeSchema,
-              //   path,
-              //   index,
-              //   components,
-              // })
-              // onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
-              onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
-            }
-          }}
+          onChangeData={onChangeData}
+          onChangeSchema={handleChangeSchema(index)}
           submit={submit}
           path={path}
         />
@@ -96,7 +93,7 @@ export const _ComponentRenderer = ({
                 droppableId={path || UI_ROOT}
                 onDrop={onDrop}
                 type="INTERFACE_COMPONENT">
-                {({ isOver }) => content}
+                {(/*{ isOver }*/) => content}
               </Droppable>
             )}
           </DataPathContext>
@@ -113,7 +110,6 @@ _ComponentRenderer.defaultProps = {
 }
 
 export const ComponentRenderer = React.memo(_ComponentRenderer, (prevProps, nextProps) => {
-  // @ts-ignore
   const simplePropEquality = shallowPropCheck(["components", "data", "mode"])(prevProps, nextProps)
   const runDeepDiff = () => deepDiff(prevProps, nextProps, (k) => ["onChangeSchema", "onChangeData"].includes(k))
   // console.log("ComponentRenderer.memo", simplePropEquality, runDeepDiff())
