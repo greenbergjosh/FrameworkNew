@@ -4,7 +4,7 @@ import { reporter } from "io-ts-reporters"
 import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
 import jsonLogic from "json-logic-js"
 import JSON5 from "json5"
-import { get, intersectionWith, isEqual, set } from "lodash/fp"
+import { get, set, intersectionWith, isEqual } from "lodash/fp"
 import React from "react"
 import { AdminUserInterfaceContextManager } from "../../../../data/AdminUserInterfaceContextManager.type"
 import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
@@ -292,30 +292,31 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     }
   }
 
-  private updateOptionsFromUIData(prevProps: SelectableProps) {
-    const { optionsKey, optionLabelKey, optionValueKey, userInterfaceData, rootUserInterfaceData } = this
-      .props as SelectablePropsUiDataKey
+  private loadOptionsFromUIData(prevProps?: SelectableProps) {
+    const { optionsKey, optionLabelKey, optionValueKey } = this.props as SelectablePropsUiDataKey
 
-    if (optionsKey) {
-      const hasOptions = this.state.options && this.state.options.length > 0
-      const rawOptions = this.getValue(optionsKey, userInterfaceData, rootUserInterfaceData) as JSONRecord[]
+    if (!optionsKey) {
+      // Can't do much without an optionsKey
+      return
+    }
 
-      if (!hasOptions && rawOptions) {
-        // Initial load of options
-        const options = formatOptions(rawOptions, optionLabelKey, optionValueKey)
-        this.setState({ options })
-      } else {
-        const prevOptionsKey = (prevProps as SelectablePropsUiDataKey).optionsKey
-        const prevRawOptions =
-          prevOptionsKey && this.getValue(prevOptionsKey, prevProps.userInterfaceData, prevProps.rootUserInterfaceData)
-        const isOptionsChanged = !prevRawOptions || !isEqual(rawOptions, prevRawOptions)
+    const getRawOptions = (props: SelectableProps): JSONRecord[] => {
+      const p = props as SelectablePropsUiDataKey
+      return p.optionsKey && this.getValue(p.optionsKey, p.userInterfaceData, p.getRootUserInterfaceData)
+    }
 
-        if (isOptionsChanged && rawOptions && rawOptions.reduce) {
-          // Options have changed so update them
-          const options = formatOptions(rawOptions, optionLabelKey, optionValueKey)
-          this.setState({ options })
-        }
-      }
+    const rawOptions = getRawOptions(this.props)
+    let isOptionsChanged = true
+
+    // If this is an update, then check prevProps
+    if (prevProps) {
+      const prevRawOptions = getRawOptions(prevProps)
+      isOptionsChanged = !prevRawOptions || !isEqual(rawOptions, prevRawOptions)
+    }
+
+    if (isOptionsChanged && Array.isArray(rawOptions)) {
+      const options = formatOptions(rawOptions, optionLabelKey, optionValueKey)
+      this.setState({ options })
     }
   }
 
@@ -333,11 +334,15 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
     if (Selectable.isRemoteDataType(this.props.dataHandlerType)) {
       this.loadRemoteData("componentDidMount")
     }
+    // If the data type is ui-data-key, get options from userInterfaceData
+    if (this.props.dataHandlerType === "ui-data-key") {
+      this.loadOptionsFromUIData()
+    }
   }
 
   componentDidUpdate(prevProps: SelectableProps, prevState: SelectableState) {
     if (this.props.dataHandlerType === "ui-data-key" && this.isOptionsKeyUpdated(prevProps)) {
-      this.updateOptionsFromUIData(prevProps)
+      this.loadOptionsFromUIData(prevProps)
     }
 
     const isRemoteConfigUpdated = () =>
@@ -397,7 +402,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
       const options = remoteFunction
         ? remoteFunctionDataHandler.getOptions(
             this.props.userInterfaceData,
-            this.props.rootUserInterfaceData,
+            this.props.getRootUserInterfaceData,
             remoteFunction
           )
         : []

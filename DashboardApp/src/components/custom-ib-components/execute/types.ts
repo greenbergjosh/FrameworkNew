@@ -60,6 +60,7 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   paramKVPMaps: ParamKVPMapsType
   queryType: QueryType
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 

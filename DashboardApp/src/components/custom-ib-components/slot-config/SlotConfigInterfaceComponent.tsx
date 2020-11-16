@@ -17,6 +17,7 @@ export interface SlotConfigInterfaceComponentProps extends ComponentDefinitionNa
   placeholder: string
   providerType: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -43,7 +44,15 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
   static manageForm = slotConfigManageForm
 
   render(): JSX.Element {
-    const { actionType, defaultValue, onChangeData, providerType, userInterfaceData, valueKey } = this.props
+    const {
+      actionType,
+      defaultValue,
+      onChangeData,
+      providerType,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      valueKey,
+    } = this.props
 
     const dataArray = get(valueKey, userInterfaceData) || defaultValue || []
 
@@ -89,6 +98,7 @@ export class SlotConfigInterfaceComponent extends BaseInterfaceComponent<SlotCon
       <ComponentRenderer
         components={components}
         data={data}
+        getRootData={getRootUserInterfaceData}
         dragDropDisabled
         onChangeData={(newData) => {
           onChangeData &&

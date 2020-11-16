@@ -6,6 +6,7 @@ export interface PathEditorInterfaceComponentProps extends ComponentDefinitionNa
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 

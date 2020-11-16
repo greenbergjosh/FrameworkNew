@@ -33,7 +33,7 @@ export function loadRemoteFunction(
 
 export function getOptions(
   userInterfaceData: UserInterfaceProps["data"],
-  rootUserInterfaceData: UserInterfaceProps["data"],
+  getRootUserInterfaceData: () => UserInterfaceProps["data"],
   remoteFunction: RemoteFunctionType
 ): SelectableOption[] {
   if (isEmpty(userInterfaceData)) {
@@ -41,11 +41,11 @@ export function getOptions(
     return []
   }
   try {
-    const options = remoteFunction(userInterfaceData, rootUserInterfaceData)
+    const options = remoteFunction(userInterfaceData, getRootUserInterfaceData())
     console.log("Selectable.remoteFunction.getOptions", {
       remoteFunction,
       userInterfaceData,
-      rootUserInterfaceData,
+      getRootUserInterfaceData,
       options,
     })
     return options

@@ -22,6 +22,7 @@ export interface RemoteComponentInterfaceComponentProps extends ComponentDefinit
   onChangeData: UserInterfaceProps["onChangeData"]
   startCollapsed?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey?: string
   mode: UserInterfaceProps["mode"]
 }
@@ -63,7 +64,16 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
   }
 
   render(): JSX.Element {
-    const { collapsible, header, indented, remoteId, startCollapsed, userInterfaceData, valueKey } = this.props
+    const {
+      collapsible,
+      header,
+      indented,
+      remoteId,
+      startCollapsed,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      valueKey,
+    } = this.props
     if (this.context) {
       const { loadById } = this.context
       // If there is a valueKey, pull from the nested data
@@ -80,6 +90,7 @@ export class RemoteComponentInterfaceComponent extends BaseInterfaceComponent<Re
                 components={layout}
                 mode="display"
                 data={data}
+                getRootData={getRootUserInterfaceData}
                 onChangeData={this.handleChange}
                 onChangeSchema={(newSchema) => {
                   console.warn(

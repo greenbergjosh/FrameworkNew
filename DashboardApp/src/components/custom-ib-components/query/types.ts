@@ -11,6 +11,7 @@ export interface IQueryInterfaceComponentProps extends ComponentDefinitionNamedP
   onChangeData: UserInterfaceProps["onChangeData"]
   queryType: QueryProps["queryType"]
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 

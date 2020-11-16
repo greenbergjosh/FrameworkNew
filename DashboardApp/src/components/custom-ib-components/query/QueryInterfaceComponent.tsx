@@ -46,6 +46,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
       queryType,
       remoteDataFilter,
       userInterfaceData,
+      getRootUserInterfaceData,
       valueKey,
     } = this.props
 
@@ -54,6 +55,7 @@ export class QueryInterfaceComponent extends BaseInterfaceComponent<
         <ComponentRenderer
           components={components}
           data={{ ...userInterfaceData, [valueKey]: result.data, [loadingKey]: result.loading }}
+          getRootData={getRootUserInterfaceData}
           onChangeData={onChangeData}
           // onChangeSchema={(newSchema) => {
           //   if (this.props.mode === "edit") {

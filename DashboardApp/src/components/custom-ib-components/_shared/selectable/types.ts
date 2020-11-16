@@ -14,8 +14,8 @@ import { JSONObject } from "io-ts-types/lib/JSON/JSONTypeRT"
  */
 
 export type RemoteFunctionType = (
-  userInterfaceData: any | undefined,
-  rootUserInterfaceData: any | undefined
+  userInterfaceData: UserInterfaceProps["data"],
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 ) => SelectableOption[]
 
 export interface KeyValuePair {
@@ -62,6 +62,7 @@ export interface ISelectableProps extends ComponentDefinitionNamedProps {
   disabled?: boolean
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   valuePrefix?: string
   valueSuffix?: string
