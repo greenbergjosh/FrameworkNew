@@ -9,7 +9,10 @@ import React from "react"
 import { Alert } from "react-native"
 import { WebView } from "react-native-webview"
 import { NavigationTabScreenProps } from "react-navigation-tabs"
-import { PhotoSelectStatus, useActionSheetTakeSelectPhoto } from "hooks/useActionSheetTakeSelectPhoto"
+import {
+  PhotoSelectStatus,
+  useActionSheetTakeSelectPhoto,
+} from "hooks/useActionSheetTakeSelectPhoto"
 import { WhiteSpace } from "@ant-design/react-native"
 import { CampaignRouteParams, InfluencerTokens } from "routes/routeParam.interfaces"
 import { copyCampaignLinkHandler } from "hooks/copyCampaignLinkHandler"
@@ -25,60 +28,61 @@ interface CampaignNavigationParams extends CampaignRouteParams {
   requiredTokens: string[]
 }
 
-interface CampaignScreenProps
-  extends NavigationTabScreenProps<CampaignNavigationParams> {}
+interface CampaignScreenProps extends NavigationTabScreenProps<CampaignNavigationParams> {}
 
 export const CampaignScreen = (props: CampaignScreenProps) => {
   const getgotWebView: React.RefObject<WebView> = React.useRef(null)
   const [showMessageModal, setShowMessageModal] = React.useState(false)
   const [promptKey, setPromptKey] = React.useState<string>(null)
-
   const promotionsContext = usePromotionsContext()
 
-  const {
-    campaignId,
-    isDraft = false,
-    influencerTokens = {},
-    promotionId,
-    template: paramsTemplate,
-  } = props.navigation.state.params
+  const { influencerTokens, template, campaignId, isDraft, templateParts } = React.useMemo(() => {
+    const {
+      campaignId,
+      isDraft = false,
+      influencerTokens = {},
+      promotionId,
+      template: paramsTemplate,
+    } = props.navigation.state.params
 
-  // Assume initially the template was selected in the previous screen or defaults to an empty object, for safety
-  let template = paramsTemplate || ({} as Partial<CampaignTemplateType>)
+    // Assume initially the template was selected in the previous screen or defaults to an empty object, for safety
+    let template = paramsTemplate || ({} as Partial<CampaignTemplateType>)
 
-  let templateParts
+    let templateParts
 
-  // If a campaign Id was provided, then this is an existing campaign with an already selected template
-  if (campaignId) {
-    // Look up that loaded campaign from the cache
-    const loadedCampaign = promotionsContext.campaignsById[campaignId]
-    // If the campaign is loaded
-    if (loadedCampaign) {
-      // Acquire the template ID from the campaign
-      // TODO: This could also be a template URL from the messageBodyTemplateUrl property
-      const templateId = promotionsContext.campaignsById[campaignId].messageBodyTemplateId
-      // Look up the loaded template from the cache
-      const loadedTemplate = promotionsContext.campaignTemplatesById[templateId]
+    // If a campaign Id was provided, then this is an existing campaign with an already selected template
+    if (campaignId) {
+      // Look up that loaded campaign from the cache
+      const loadedCampaign = promotionsContext.campaignsById[campaignId]
+      // If the campaign is loaded
+      if (loadedCampaign) {
+        // Acquire the template ID from the campaign
+        // TODO: This could also be a template URL from the messageBodyTemplateUrl property
+        const templateId = promotionsContext.campaignsById[campaignId].messageBodyTemplateId
+        // Look up the loaded template from the cache
+        const loadedTemplate = promotionsContext.campaignTemplatesById[templateId]
 
-      // Assign the template parts
-      templateParts = loadedCampaign.templateParts
+        // Assign the template parts
+        templateParts = loadedCampaign.templateParts
 
-      // If we have the template already loaded in cache, use that one
-      if (loadedTemplate) {
-        template = loadedTemplate
-      } else if (!promotionsContext.loading.loadCampaignTemplates[JSON.stringify([])]) {
-        // If we didn't already have that campaign loaded, then we need to load them
-        // TODO: Might be nice to have a call to load a single campaign template
+        // If we have the template already loaded in cache, use that one
+        if (loadedTemplate) {
+          template = loadedTemplate
+        } else if (!promotionsContext.loading.loadCampaignTemplates[JSON.stringify([])]) {
+          // If we didn't already have that campaign loaded, then we need to load them
+          // TODO: Might be nice to have a call to load a single campaign template
+          // This is asynchronous, so we need to let the view finish loading after this
+          promotionsContext.loadCampaignTemplates()
+        }
+      } else if (!promotionsContext.loading.loadPromotionCampaigns[JSON.stringify([promotionId])]) {
+        // If the campaign wasn't loaded, we need to load the campaigns for this promotion
+        // TODO: Might be nice to have a call to load a single campaign
         // This is asynchronous, so we need to let the view finish loading after this
-        promotionsContext.loadCampaignTemplates()
+        promotionsContext.loadPromotionCampaigns(promotionId)
       }
-    } else if (!promotionsContext.loading.loadPromotionCampaigns[JSON.stringify([promotionId])]) {
-      // If the campaign wasn't loaded, we need to load the campaigns for this promotion
-      // TODO: Might be nice to have a call to load a single campaign
-      // This is asynchronous, so we need to let the view finish loading after this
-      promotionsContext.loadPromotionCampaigns(promotionId)
     }
-  }
+    return { influencerTokens, template, campaignId, isDraft, templateParts }
+  }, [])
 
   const setInfluencerToken = React.useCallback(
     (value, tokenKey?: string) => {
@@ -266,8 +270,14 @@ function initializeGetGotInterface() {
 
 CampaignScreen.navigationOptions = ({ navigation }) => {
   const { navigate } = navigation
-  const { isDraft, influencerTokens = {}, promotionId, campaignId, requiredTokens = [], template } = navigation
-    .state.params as CampaignNavigationParams
+  const {
+    isDraft,
+    influencerTokens = {},
+    promotionId,
+    campaignId,
+    requiredTokens = [],
+    template,
+  } = navigation.state.params as CampaignNavigationParams
   const cancelHandler = () => {
     Alert.alert("Cancel Changes?", "Are you sure you want to cancel and lose your changes?", [
       {
