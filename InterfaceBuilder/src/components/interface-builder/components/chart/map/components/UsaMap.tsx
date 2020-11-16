@@ -42,14 +42,19 @@ const UsaMap: FunctionComponent<MapChartProps> = ({ markers, markerFillColor }) 
             {({ geographies, projection }) => (
               <>
                 {geographies.map((geo) => (
-                  <>
-                    <Geography key={geo.rsmKey} stroke="#FFF" geography={geo} fill="#DDD" />
+                  <React.Fragment key={`map-geo-${geo.rsmKey}`}>
+                    <Geography stroke="#FFF" geography={geo} fill="#DDD" />
                     <StateNameMarker geo={geo} />
-                  </>
+                  </React.Fragment>
                 ))}
                 {markers &&
                   markers.map((marker, index) => (
-                    <MagnitudeMarker key={index} marker={marker} projection={projection} color={markerFillColor} />
+                    <MagnitudeMarker
+                      key={`map-marker-${index}`}
+                      marker={marker}
+                      projection={projection}
+                      color={markerFillColor}
+                    />
                   ))}
               </>
             )}
