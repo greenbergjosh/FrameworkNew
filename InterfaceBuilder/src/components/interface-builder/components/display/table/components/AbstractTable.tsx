@@ -3,10 +3,11 @@ import { get, set } from "lodash/fp"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import { editComponents } from "../config/edit-components"
 import { TableInterfaceComponentEditModeProps } from "../types"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 interface AbstractTableProps extends Partial<TableInterfaceComponentEditModeProps> {
-  userInterfaceData: JSONRecord
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 /**
@@ -15,7 +16,12 @@ interface AbstractTableProps extends Partial<TableInterfaceComponentEditModeProp
  * that use this table cannot edit the abstract table's
  * basic settings (settings popup), but may edit its columns.
  */
-export function AbstractTable({ onChangeData, userInterfaceData, valueKey }: AbstractTableProps) {
+export function AbstractTable({
+  onChangeData,
+  userInterfaceData,
+  getRootUserInterfaceData,
+  valueKey,
+}: AbstractTableProps) {
   const dataArray = get(valueKey!, userInterfaceData) || []
   const data = { columns: dataArray }
 
@@ -23,6 +29,7 @@ export function AbstractTable({ onChangeData, userInterfaceData, valueKey }: Abs
     <ComponentRenderer
       components={editComponents}
       data={data}
+      getRootData={getRootUserInterfaceData}
       dragDropDisabled
       onChangeData={(newData) => {
         // console.log("TableInterfaceComponent.render", "onChangeData", { data, newData })

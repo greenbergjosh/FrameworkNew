@@ -26,6 +26,7 @@ export interface ListInterfaceComponentProps extends ComponentDefinitionNamedPro
   components: ComponentDefinition[]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   preconfigured?: boolean
   unwrapped?: boolean
@@ -37,6 +38,7 @@ export interface ModeProps {
   onChangeData: UserInterfaceProps["onChangeData"]
   unwrapped?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 

@@ -84,7 +84,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render() {
-    const { components, preconfigured, userInterfaceData, valueKey, showBorder } = this.props
+    const { components, preconfigured, userInterfaceData, getRootUserInterfaceData, valueKey, showBorder } = this.props
     const value = userInterfaceData[valueKey]
     const data =
       value && this.props.deserialize
@@ -98,6 +98,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
             <ComponentRenderer
               components={components || ([] as ComponentDefinition[])}
               data={data}
+              getRootData={getRootUserInterfaceData}
               dragDropDisabled={!!preconfigured}
               onChangeData={this.handleChangeData}
               onChangeSchema={(newSchema) => {
@@ -113,6 +114,7 @@ export class StringTemplateInterfaceComponent extends BaseInterfaceComponent<
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
             data={data}
+            getRootData={getRootUserInterfaceData}
             dragDropDisabled={!!preconfigured}
             onChangeData={this.handleChangeData}
             onChangeSchema={(newSchema) => {

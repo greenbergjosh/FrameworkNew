@@ -18,6 +18,7 @@ export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNam
   startDateKey: string
   endDateKey: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 interface DateRangeInterfaceComponentState {}

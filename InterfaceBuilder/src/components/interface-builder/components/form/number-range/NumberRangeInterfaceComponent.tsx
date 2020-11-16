@@ -27,6 +27,7 @@ export interface NumberRangeInterfaceComponentProps extends ComponentDefinitionN
   startKey: string
   endKey: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 interface NumberRangeInterfaceComponentState {}

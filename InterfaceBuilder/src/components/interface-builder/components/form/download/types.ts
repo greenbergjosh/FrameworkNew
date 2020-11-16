@@ -28,6 +28,7 @@ export interface DownloadInterfaceComponentProps extends ComponentDefinitionName
   url: string
   useFilenameFromServer: boolean
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export interface DownloadInterfaceComponentState {

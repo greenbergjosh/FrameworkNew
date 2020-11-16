@@ -48,6 +48,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
       preconfigured,
       unwrapped,
       userInterfaceData,
+      getRootUserInterfaceData,
       valueKey,
     } = this.props
 
@@ -65,6 +66,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                   addItemLabel={addItemLabel}
                   components={components}
                   data={data}
+                  getRootUserInterfaceData={getRootUserInterfaceData}
                   description={emptyText}
                   interleave={interleave}
                   listId={this.listId}
@@ -82,6 +84,7 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                 <EditMode
                   components={components}
                   data={data}
+                  getRootUserInterfaceData={getRootUserInterfaceData}
                   interleave={interleave}
                   onChangeData={onChangeData}
                   preconfigured={preconfigured}

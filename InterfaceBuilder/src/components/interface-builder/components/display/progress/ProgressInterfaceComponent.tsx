@@ -39,6 +39,7 @@ export interface ProgressInterfaceComponentProps extends ComponentDefinitionName
   successPercent?: number
   type: "line" | "circle" | "dashboard"
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   width?: number
 }
 

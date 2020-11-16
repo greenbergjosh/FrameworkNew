@@ -15,6 +15,7 @@ export interface UserInterfaceInterfaceComponentProps extends ComponentDefinitio
   mode: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   submit: UserInterfaceProps["submit"]
 }

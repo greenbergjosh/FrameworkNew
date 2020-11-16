@@ -17,6 +17,7 @@ export interface TabsInterfaceComponentProps extends ComponentDefinitionNamedPro
   onChangeData: UserInterfaceProps["onChangeData"]
   tabs?: ComponentDefinition[]
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterfaceComponentProps> {
@@ -35,7 +36,7 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
   static manageForm = tabsManageForm
 
   render() {
-    const { defaultActiveKey, onChangeData, tabs, userInterfaceData } = this.props
+    const { defaultActiveKey, onChangeData, tabs, userInterfaceData, getRootUserInterfaceData } = this.props
     return (
       <DataPathContext path="tabs">
         <Tabs defaultActiveKey="tab0">
@@ -46,6 +47,7 @@ export class TabsInterfaceComponent extends BaseInterfaceComponent<TabsInterface
                   <ComponentRenderer
                     components={(tab as ComponentDefinitionRecursiveProp).components || ([] as ComponentDefinition[])}
                     data={userInterfaceData}
+                    getRootData={getRootUserInterfaceData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       console.warn(

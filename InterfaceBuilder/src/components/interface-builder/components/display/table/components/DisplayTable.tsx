@@ -8,13 +8,14 @@ import {
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { StandardGrid } from "components/grid/StandardGrid"
 import { ColumnConfig, TableInterfaceComponentDisplayModeProps } from "../types"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export interface DisplayTableProps extends Partial<TableInterfaceComponentDisplayModeProps> {
   columns: ColumnConfig[]
-  userInterfaceData: JSONRecord
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   preview?: boolean
 }
 
@@ -37,6 +38,7 @@ export function DisplayTable({
   onChangeData,
   rowDetails,
   userInterfaceData,
+  getRootUserInterfaceData,
   valueKey,
   preview = false,
 }: DisplayTableProps) {
@@ -73,6 +75,7 @@ export function DisplayTable({
                 <ComponentRenderer
                   components={rowDetails}
                   data={parentData}
+                  getRootData={getRootUserInterfaceData}
                   onChangeData={(newData) => onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))}
                   onChangeSchema={(newSchema) => {
                     console.log("TableInterfaceComponent.DisplayTable", "onChangeSchema X4", {

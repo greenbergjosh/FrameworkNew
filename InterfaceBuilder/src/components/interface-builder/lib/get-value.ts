@@ -1,24 +1,25 @@
 import { get } from "lodash/fp"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 /**
  * Gets the value from local or root UI data.
  * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
  * @param valueKey
  * @param userInterfaceData
- * @param rootUserInterfaceData
+ * @param getRootUserInterfaceData
  */
 export function getValue(
   valueKey: string,
-  userInterfaceData: any,
-  rootUserInterfaceData: any
+  userInterfaceData: UserInterfaceProps["data"],
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 ): JSONRecord | JSONRecord[] | undefined {
   const isRootData = valueKey.startsWith("root.")
   if (isRootData) {
     // Get value from the root UI data
     // strip prefix "root.", then get  data from root UI data
     const key = valueKey.substring(5)
-    return get(key, rootUserInterfaceData)
+    return get(key, getRootUserInterfaceData())
   }
   // Get value from the local UI data
   return get(valueKey, userInterfaceData)

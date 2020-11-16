@@ -9,6 +9,7 @@ import styles from "../styles.scss"
 export function ConfigureMode({
   components,
   data,
+  getRootUserInterfaceData,
   hasLastItemComponents,
   lastItemComponents,
   onChange,
@@ -40,6 +41,7 @@ export function ConfigureMode({
             <ComponentRenderer
               components={components}
               data={data}
+              getRootData={getRootUserInterfaceData}
               dragDropDisabled={!!preconfigured}
               onChangeData={onChange}
               onChangeSchema={handleChangeSchema}
@@ -61,6 +63,7 @@ export function ConfigureMode({
                 <ComponentRenderer
                   components={lastItemComponents}
                   data={data}
+                  getRootData={getRootUserInterfaceData}
                   dragDropDisabled={!!preconfigured}
                   onChangeData={onChange}
                   onChangeSchema={handleChangeSchema}

@@ -16,6 +16,7 @@ export interface CardInterfaceComponentProps extends ComponentDefinitionNamedPro
   onChangeData: UserInterfaceProps["onChangeData"]
   preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   bordered?: boolean
   extra?: string
@@ -53,6 +54,7 @@ export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterface
       size,
       title,
       userInterfaceData,
+      getRootUserInterfaceData,
     } = this.props
     return (
       <Card
@@ -67,6 +69,7 @@ export class CardInterfaceComponent extends BaseInterfaceComponent<CardInterface
           <ComponentRenderer
             components={components || ([] as ComponentDefinition[])}
             data={userInterfaceData}
+            getRootData={getRootUserInterfaceData}
             dragDropDisabled={!!preconfigured}
             onChangeData={onChangeData}
             onChangeSchema={(newSchema) => {

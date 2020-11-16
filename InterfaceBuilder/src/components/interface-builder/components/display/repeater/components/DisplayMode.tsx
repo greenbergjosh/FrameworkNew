@@ -9,6 +9,7 @@ export function DisplayMode({
   addItemLabel,
   components,
   data,
+  getRootUserInterfaceData,
   description,
   hasInitialRecord,
   hasLastItemComponents,
@@ -78,6 +79,7 @@ export function DisplayMode({
           <Repeater
             components={components}
             data={data}
+            getRootUserInterfaceData={getRootUserInterfaceData}
             hasInitialRecord={hasInitialRecord}
             hasLastItemComponents={hasLastItemComponents}
             lastItemComponents={lastItemComponents}

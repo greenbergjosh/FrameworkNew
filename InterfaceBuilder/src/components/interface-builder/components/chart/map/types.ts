@@ -20,6 +20,7 @@ export interface MapInterfaceComponentProps extends ComponentDefinitionNamedProp
   component: "map"
   valueKey: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   // Component specific
   width?: number

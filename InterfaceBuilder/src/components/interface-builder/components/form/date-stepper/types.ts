@@ -13,6 +13,7 @@ export interface DateStepperInterfaceComponentProps extends ComponentDefinitionN
   size: ButtonProps["size"]
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   submit: UserInterfaceProps["submit"]
   executeImmediately: boolean
 }

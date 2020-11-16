@@ -5,8 +5,8 @@ import { registry } from "../../registry"
 import { UserInterfaceProps } from "../../UserInterface"
 import { EventPayloadType } from "../../../../services/event-bus"
 import { IconProps } from "antd/lib/icon"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { getValue } from "components/interface-builder/lib/get-value"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -59,8 +59,8 @@ export type ComponentDefinition =
 
 export interface ComponentRenderMetaProps {
   mode?: UserInterfaceProps["mode"]
-  userInterfaceData?: any
-  rootUserInterfaceData?: any
+  userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   onChangeData?: (newData: ChangeObject) => void
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition
@@ -122,16 +122,18 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
    * Gets the value from local or root UI data.
    * Provide the "root." keyword at the beginning of the valueKey to use root UI data.
    * @param valueKey
+   * @param userInterfaceData -- Optional, provide if using a different source such as from prevProps
+   * @param getRootUserInterfaceData -- Optional, provide if using a different source such as from prevProps
    */
   getValue(
     valueKey: string,
-    userInterfaceData?: any,
-    rootUserInterfaceData?: any
+    userInterfaceData?: UserInterfaceProps["data"],
+    getRootUserInterfaceData?: () => UserInterfaceProps["data"]
   ): JSONRecord | JSONRecord[] | undefined {
     return getValue(
       valueKey,
       userInterfaceData || this.props.userInterfaceData,
-      rootUserInterfaceData || this.props.rootUserInterfaceData
+      getRootUserInterfaceData || this.props.getRootUserInterfaceData
     )
   }
 

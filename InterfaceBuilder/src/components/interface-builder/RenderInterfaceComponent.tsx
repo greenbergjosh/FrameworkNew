@@ -5,12 +5,12 @@ import { tryCatch } from "./lib/Option"
 import { Draggable } from "./dnd"
 import { UserInterfaceProps } from "./UserInterface"
 import { BaseInterfaceComponent, ComponentDefinition } from "./components/base/BaseInterfaceComponent"
-import { RootUserInterfaceDataContext } from "./util/RootUserInterfaceDataContext"
 
 interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
   data: UserInterfaceProps["data"]
+  getRootData: () => UserInterfaceProps["data"]
   dragDropDisabled?: boolean
   index: number
   mode: UserInterfaceProps["mode"]
@@ -96,26 +96,16 @@ export class RenderInterfaceComponent extends React.Component<
     const layoutDefintion = Component && Component.getLayoutDefinition && Component.getLayoutDefinition()
 
     const content = Component ? (
-      <RootUserInterfaceDataContext.Consumer>
-        {(rootData) => (
-          <Component
-            {...componentDefinition}
-            userInterfaceData={data}
-            rootUserInterfaceData={rootData}
-            mode={mode}
-            onChangeData={(props: UserInterfaceProps["data"]) => {
-              console.log("RenderInterfaceComponent.onChangeData", props, onChangeData)
-              onChangeData && onChangeData(props)
-            }}
-            onChangeSchema={(newComponentDefinition: ComponentDefinition) => {
-              console.log("RenderInterfaceComponent.onChangeSchema", newComponentDefinition, onChangeSchema)
-              onChangeSchema && onChangeSchema(newComponentDefinition)
-            }}
-            submit={submit}
-            userInterfaceSchema={componentDefinition}
-          />
-        )}
-      </RootUserInterfaceDataContext.Consumer>
+      <Component
+        {...componentDefinition}
+        userInterfaceData={data}
+        getRootUserInterfaceData={this.props.getRootData}
+        mode={mode}
+        onChangeData={onChangeData}
+        onChangeSchema={onChangeSchema}
+        submit={submit}
+        userInterfaceSchema={componentDefinition}
+      />
     ) : (
       <DebugComponent componentDefinition={componentDefinition} index={index} mode={mode} />
     )

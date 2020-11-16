@@ -24,6 +24,7 @@ export interface ISectionedNavigationInterfaceComponentProps extends ComponentDe
   onChangeData: UserInterfaceProps["onChangeData"]
   title?: string
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 interface SectionedNavigationInterfaceComponentDisplayModeProps extends ISectionedNavigationInterfaceComponentProps {
@@ -76,7 +77,7 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
   }
 
   render() {
-    const { onChangeData, sections, title, userInterfaceData } = this.props
+    const { onChangeData, sections, title, userInterfaceData, getRootUserInterfaceData } = this.props
     const { activeKey } = this.state
     const activeSectionKey = activeKey || (sections[0] && sections[0].title)
 
@@ -103,11 +104,12 @@ export class SectionedNavigationInterfaceComponent extends BaseInterfaceComponen
         <DataPathContext path="sections">
           <>
             {sections.map(({ title, components }, sectionIndex) => (
-              <Card hidden={title !== activeSectionKey} title={title}>
+              <Card key={`section-${sectionIndex}`} hidden={title !== activeSectionKey} title={title}>
                 <DataPathContext path={`${sectionIndex}.components`}>
                   <ComponentRenderer
                     components={components}
                     data={userInterfaceData}
+                    getRootData={getRootUserInterfaceData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       if (this.props.mode === "edit") {

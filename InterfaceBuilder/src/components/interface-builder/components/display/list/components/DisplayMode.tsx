@@ -19,6 +19,7 @@ export default function DisplayMode({
   orientation,
   unwrapped,
   userInterfaceData,
+  getRootUserInterfaceData,
   valueKey,
 }: DisplayModeProps) {
   const finalComponents = repeatedInterleave(interleave, components, data.length)
@@ -122,6 +123,7 @@ export default function DisplayMode({
                   <DraggableListItem
                     key={index}
                     data={data}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
                     index={index}
                     interleave={interleave}
                     component={iteratedComponent}

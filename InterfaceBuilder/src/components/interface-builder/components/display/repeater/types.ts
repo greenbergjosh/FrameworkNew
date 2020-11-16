@@ -21,6 +21,7 @@ export interface RepeaterInterfaceComponentProps extends ComponentDefinitionName
   orientation?: OrientationType
   preconfigured?: boolean
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -31,6 +32,7 @@ export interface ModeProps {
   lastItemComponents?: ComponentDefinition[]
   orientation?: OrientationType
   data: JSONRecord[]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   onChange: (data: JSONRecord | JSONRecord[], subpath?: string) => void | undefined
 }
 
@@ -60,11 +62,13 @@ export interface RepeaterProps {
   onChange: (data: JSONRecord | JSONRecord[], subpath?: string) => void
   orientation?: OrientationType
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export interface RepeaterItemProps {
   components: ComponentDefinition[]
   itemData: JSONRecord
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   hasNextSibling: boolean
   index: number
   isDraggable: boolean

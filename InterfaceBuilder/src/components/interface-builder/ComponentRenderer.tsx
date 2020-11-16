@@ -12,6 +12,7 @@ interface ComponentRendererProps {
   componentLimit?: number
   components: ComponentDefinition[]
   data: UserInterfaceProps["data"]
+  getRootData: () => UserInterfaceProps["data"]
   dragDropDisabled?: boolean
   mode?: UserInterfaceProps["mode"]
   onChangeData: UserInterfaceProps["onChangeData"]
@@ -28,6 +29,7 @@ export const _ComponentRenderer = ({
   componentLimit,
   components,
   data,
+  getRootData,
   dragDropDisabled,
   mode: propMode,
   onChangeData,
@@ -46,6 +48,7 @@ export const _ComponentRenderer = ({
           Component={componentRegistry.lookup(componentDefinition.component)}
           componentDefinition={componentDefinition}
           data={data}
+          getRootData={getRootData}
           dragDropDisabled={dragDropDisabled}
           index={index}
           mode={mode}

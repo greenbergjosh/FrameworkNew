@@ -14,6 +14,7 @@ export interface DateInterfaceComponentProps extends ComponentDefinitionNamedPro
 
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 

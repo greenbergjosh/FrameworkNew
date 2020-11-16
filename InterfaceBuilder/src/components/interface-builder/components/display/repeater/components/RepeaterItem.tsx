@@ -10,6 +10,7 @@ import { isEqual } from "lodash/fp"
 export function _RepeaterItem({
   components,
   itemData,
+  getRootUserInterfaceData,
   hasNextSibling,
   index,
   isDraggable,
@@ -49,6 +50,7 @@ export function _RepeaterItem({
             <ComponentRenderer
               components={components}
               data={itemData}
+              getRootData={getRootUserInterfaceData}
               onChangeData={handleChangeData}
               onChangeSchema={handleSchemaChange}
             />
@@ -84,6 +86,7 @@ export function _RepeaterItem({
               <ComponentRenderer
                 components={components}
                 data={itemData}
+                getRootData={getRootUserInterfaceData}
                 onChangeData={handleChangeData}
                 onChangeSchema={handleSchemaChange}
               />

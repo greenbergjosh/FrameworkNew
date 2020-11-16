@@ -13,6 +13,7 @@ export default function DraggableListItem({
   onChangeData,
   unwrapped,
   userInterfaceData,
+  getRootUserInterfaceData,
   valueKey,
 }: DraggableListItemProps) {
   /* Event Handlers */
@@ -43,6 +44,7 @@ export default function DraggableListItem({
       {() => (
         <ListItem
           data={data}
+          getRootUserInterfaceData={getRootUserInterfaceData}
           index={index}
           interleave={interleave}
           component={component}

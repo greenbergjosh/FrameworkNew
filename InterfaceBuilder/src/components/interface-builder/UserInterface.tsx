@@ -14,7 +14,6 @@ import { ComponentRegistryContext, registry } from "./registry"
 import "./user-interface.module.scss"
 import { UserInterfaceContext, UserInterfaceContextManager } from "./UserInterfaceContextManager"
 import { DataPathContext } from "./util/DataPathContext"
-import { RootUserInterfaceDataContext } from "./util/RootUserInterfaceDataContext"
 
 interface IUserInterfaceProps {
   data?: any
@@ -74,6 +73,8 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     this.setState({ error: error.toString() })
   }
 
+  getRootData = () => this.props.data
+
   render() {
     const { components, contextManager, data, mode, onChangeData, submit } = this.props
     const { clipboardComponent, error, fullscreen, itemToAdd, itemToEdit } = this.state
@@ -88,28 +89,27 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     }
 
     const content = (
-      <RootUserInterfaceDataContext.Provider value={data}>
-        <ComponentRenderer
-          components={components}
-          data={data}
-          mode={mode}
-          onChangeData={onChangeData}
-          onChangeSchema={
-            this.props.mode === "edit"
-              ? this.props.onChangeSchema
-              : (newSchema) => {
-                  console.warn(
-                    "UserInterface.render",
-                    "ComponentRenderer/onChangeSchema",
-                    "Cannot invoke onChangeSchema when UserInterface is not in 'edit' mode",
-                    { newSchema }
-                  )
-                }
-          }
-          submit={submit}
-          onDrop={this.handleDrop}
-        />
-      </RootUserInterfaceDataContext.Provider>
+      <ComponentRenderer
+        components={components}
+        data={data}
+        getRootData={this.getRootData}
+        mode={mode}
+        onChangeData={onChangeData}
+        onChangeSchema={
+          this.props.mode === "edit"
+            ? this.props.onChangeSchema
+            : (newSchema) => {
+                console.warn(
+                  "UserInterface.render",
+                  "ComponentRenderer/onChangeSchema",
+                  "Cannot invoke onChangeSchema when UserInterface is not in 'edit' mode",
+                  { newSchema }
+                )
+              }
+        }
+        submit={submit}
+        onDrop={this.handleDrop}
+      />
     )
 
     const draggableContextHandlers: DraggableContextProps = {

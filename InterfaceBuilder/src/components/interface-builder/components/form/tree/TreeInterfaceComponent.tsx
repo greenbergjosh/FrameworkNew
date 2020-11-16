@@ -40,6 +40,7 @@ export interface TreeInterfaceComponentProps extends ComponentDefinitionNamedPro
   selectable?: boolean
   selectedKey?: string
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
 }
 
@@ -175,6 +176,7 @@ export class TreeInterfaceComponent extends BaseInterfaceComponent<TreeInterface
       onChangeData,
       selectedKey,
       userInterfaceData,
+      getRootUserInterfaceData,
       valueKey,
     } = this.props
     const data = getOr([], valueKey, userInterfaceData) as TreeNodeNormal[]
@@ -203,6 +205,7 @@ export class TreeInterfaceComponent extends BaseInterfaceComponent<TreeInterface
         <ComponentRenderer
           components={components}
           data={selected ? { ...userInterfaceData, ...selected } : userInterfaceData}
+          getRootData={getRootUserInterfaceData}
           onChangeData={(updatedUserInterfaceData) => {
             const updatedSelected = selectedKey && get(selectedKey, updatedUserInterfaceData)
             const updatedData = cloneDeep(getOr([], valueKey, updatedUserInterfaceData))

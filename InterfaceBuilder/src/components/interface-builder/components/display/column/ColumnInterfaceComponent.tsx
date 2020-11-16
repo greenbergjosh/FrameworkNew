@@ -26,6 +26,7 @@ export interface ColumnInterfaceComponentProps extends ComponentDefinitionNamedP
   gutter?: number
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   submit?: UserInterfaceProps["submit"]
 }
@@ -66,7 +67,16 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
   }
 
   render() {
-    const { columns, gutter, onChangeData, userInterfaceData, submit, mode, preview } = this.props
+    const {
+      columns,
+      gutter,
+      onChangeData,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      submit,
+      mode,
+      preview,
+    } = this.props
 
     const definedColumnWidths = columns.reduce(
       (acc, { span }) => (span && !isNaN(Number(String(span))) ? { sum: acc.sum + span, count: acc.count + 1 } : acc),
@@ -86,6 +96,7 @@ export class ColumnInterfaceComponent extends BaseInterfaceComponent<ColumnInter
                   <ComponentRenderer
                     components={components}
                     data={userInterfaceData}
+                    getRootData={getRootUserInterfaceData}
                     onChangeData={onChangeData}
                     onChangeSchema={(newSchema) => {
                       console.warn(

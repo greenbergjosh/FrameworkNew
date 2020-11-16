@@ -49,6 +49,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
       orientation,
       preconfigured,
       userInterfaceData,
+      getRootUserInterfaceData,
       valueKey,
       mode,
     } = this.props
@@ -61,6 +62,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
             addItemLabel={addItemLabel}
             components={components}
             data={data}
+            getRootUserInterfaceData={getRootUserInterfaceData}
             description={emptyText}
             hasInitialRecord={hasInitialRecord}
             hasLastItemComponents={hasLastItemComponents}
@@ -76,6 +78,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
           <ConfigureMode
             components={components}
             data={data}
+            getRootUserInterfaceData={getRootUserInterfaceData}
             hasLastItemComponents={hasLastItemComponents}
             lastItemComponents={lastItemComponents}
             onChange={this.handleChange}

@@ -11,6 +11,7 @@ export interface PasswordInterfaceComponentProps extends ComponentDefinitionName
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   hasShowPasswordToggle?: boolean
 }

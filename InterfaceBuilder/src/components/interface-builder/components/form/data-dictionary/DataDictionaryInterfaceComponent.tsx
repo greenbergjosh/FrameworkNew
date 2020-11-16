@@ -17,6 +17,7 @@ export interface DataDictionaryInterfaceComponentProps extends ComponentDefiniti
   keyLabel?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueComponent: [ComponentDefinition]
   valueKey: string
 }
@@ -56,7 +57,15 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = dataDictionaryManageForm
 
   render(): JSX.Element {
-    const { defaultValue, keyLabel, onChangeData, userInterfaceData, valueComponent, valueKey } = this.props
+    const {
+      defaultValue,
+      keyLabel,
+      onChangeData,
+      userInterfaceData,
+      getRootUserInterfaceData,
+      valueComponent,
+      valueKey,
+    } = this.props
     const dictionary = get(valueKey, userInterfaceData) || defaultValue
     const values = dictionary && Object.entries(dictionary).map(([key, value]) => ({ key, value }))
     return (
@@ -86,6 +95,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
                   },
                 ]}
                 data={dataItem}
+                getRootData={getRootUserInterfaceData}
                 mode="display"
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
@@ -114,6 +124,7 @@ export class DataDictionaryInterfaceComponent extends BaseInterfaceComponent<
                     : []
                 }
                 data={dataItem}
+                getRootData={getRootUserInterfaceData}
                 onChangeData={onChangeData}
                 onChangeSchema={(newSchema) => {
                   console.warn(

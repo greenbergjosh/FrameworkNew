@@ -9,6 +9,7 @@ export interface PieInterfaceComponentProps extends ComponentDefinitionNamedProp
   component: "pie"
   valueKey: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 
   // Pie props
   colorScheme: string

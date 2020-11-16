@@ -9,6 +9,7 @@ import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 export function Repeater({
   components,
   data,
+  getRootUserInterfaceData,
   hasInitialRecord,
   hasLastItemComponents,
   lastItemComponents,
@@ -139,6 +140,7 @@ export function Repeater({
         <RepeaterItem
           components={components}
           itemData={itemData}
+          getRootUserInterfaceData={getRootUserInterfaceData}
           hasNextSibling={sortableItems.length - 1 > index}
           index={index}
           isDraggable={true}
@@ -158,6 +160,7 @@ export function Repeater({
         <RepeaterItem
           components={lastItemComponents}
           itemData={lastItemData}
+          getRootUserInterfaceData={getRootUserInterfaceData}
           hasNextSibling={false}
           index={lastItemIndex}
           isDraggable={false}

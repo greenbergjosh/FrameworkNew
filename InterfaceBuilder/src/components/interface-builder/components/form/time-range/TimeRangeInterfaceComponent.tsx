@@ -12,6 +12,7 @@ export interface TimeRangeInterfaceComponentProps extends ComponentDefinitionNam
   defaultRangeValue: string
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   startTimeKey: string
   endTimeKey: string
   size?: "small" | "default" | "large" | undefined

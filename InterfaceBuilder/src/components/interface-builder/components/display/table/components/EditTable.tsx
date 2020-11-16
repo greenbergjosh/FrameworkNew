@@ -3,12 +3,13 @@ import { get, set } from "lodash/fp"
 import { Typography } from "antd"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import { DataPathContext } from "components/interface-builder/util/DataPathContext"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import { editComponents } from "../config/edit-components"
 import { TableInterfaceComponentEditModeProps } from "../types"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 interface EditTableProps extends Partial<TableInterfaceComponentEditModeProps> {
-  userInterfaceData: JSONRecord
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 /**
@@ -20,6 +21,7 @@ export function EditTable({
   onChangeSchema,
   rowDetails,
   userInterfaceData,
+  getRootUserInterfaceData,
   userInterfaceSchema,
   valueKey,
 }: EditTableProps) {
@@ -31,6 +33,7 @@ export function EditTable({
       <ComponentRenderer
         components={editComponents}
         data={userInterfaceSchema}
+        getRootData={getRootUserInterfaceData}
         mode="display"
         onChangeData={(newData) => {
           // console.log("TableInterfaceComponent.render", "onChangeData", {
@@ -61,6 +64,7 @@ export function EditTable({
           <ComponentRenderer
             components={rowDetails}
             data={data}
+            getRootData={getRootUserInterfaceData}
             onChangeData={(newData) => onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))}
             onChangeSchema={(newSchema) => {
               // console.log("TableInterfaceComponent.render", "onChangeSchema X2", {

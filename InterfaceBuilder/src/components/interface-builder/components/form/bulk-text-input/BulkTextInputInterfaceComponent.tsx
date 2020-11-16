@@ -13,6 +13,7 @@ export interface BulkTextInputInterfaceComponentProps extends ComponentDefinitio
   onChangeData: UserInterfaceProps["onChangeData"]
   placeholder: string
   userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   autosize?: boolean
   minRows?: number

@@ -11,6 +11,7 @@ export default function EditMode({
   onChangeData,
   preconfigured,
   userInterfaceData,
+  getRootUserInterfaceData,
   valueKey,
 }: EditModeProps) {
   /* Event Handlers */
@@ -23,6 +24,7 @@ export default function EditMode({
         components={components}
         componentLimit={interleave === "none" ? 1 : 0}
         data={data}
+        getRootData={getRootUserInterfaceData}
         dragDropDisabled={!!preconfigured}
         onChangeData={(newData) => onChangeData && onChangeData(set(valueKey, newData, userInterfaceData))}
         onChangeSchema={(newSchema) => {

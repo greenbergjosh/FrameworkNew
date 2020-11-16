@@ -25,6 +25,7 @@ export const ManageComponentPreview = ({
       Component={Component}
       componentDefinition={{ ...componentDefinition, preview: true }}
       data={previewData}
+      getRootData={() => previewData}
       index={0}
       mode={"display"}
       onChangeData={setPreviewData}
