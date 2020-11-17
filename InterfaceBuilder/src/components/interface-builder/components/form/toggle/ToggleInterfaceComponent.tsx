@@ -13,6 +13,7 @@ export interface ToggleInterfaceComponentProps extends ComponentDefinitionNamedP
   inverted?: boolean
   onChangeData: UserInterfaceProps["onChangeData"]
   userInterfaceData?: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
   size: SwitchProps["size"]
 }

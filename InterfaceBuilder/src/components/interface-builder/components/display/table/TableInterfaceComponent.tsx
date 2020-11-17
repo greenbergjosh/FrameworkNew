@@ -49,6 +49,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       onChangeData,
       rowDetails,
       userInterfaceData,
+      getRootUserInterfaceData,
       valueKey,
     } = this.props
 
@@ -65,7 +66,12 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
              * basic settings (settings popup), but may edit its columns.
              */
             return (
-              <AbstractTable onChangeData={onChangeData} userInterfaceData={userInterfaceData} valueKey={valueKey} />
+              <AbstractTable
+                onChangeData={onChangeData}
+                userInterfaceData={userInterfaceData}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                valueKey={valueKey}
+              />
             )
           }
           switch (this.props.mode) {
@@ -80,6 +86,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                   onChangeSchema={this.props.onChangeSchema}
                   rowDetails={rowDetails}
                   userInterfaceData={userInterfaceData}
+                  getRootUserInterfaceData={getRootUserInterfaceData}
                   userInterfaceSchema={this.props.userInterfaceSchema}
                   valueKey={valueKey}
                 />
@@ -106,6 +113,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                   onChangeData={onChangeData}
                   rowDetails={rowDetails}
                   userInterfaceData={userInterfaceData}
+                  getRootUserInterfaceData={getRootUserInterfaceData}
                   valueKey={valueKey}
                   preview={this.props.preview}
                 />
