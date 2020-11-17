@@ -36,7 +36,7 @@ export function getOptions(
   getRootUserInterfaceData: () => UserInterfaceProps["data"],
   remoteFunction: RemoteFunctionType
 ): SelectableOption[] {
-  if (isEmpty(userInterfaceData)) {
+  if (isEmpty(userInterfaceData) && isEmpty(getRootUserInterfaceData())) {
     console.log("Selectable.remoteFunction.getOptions", "No userInterfaceData available.")
     return []
   }
