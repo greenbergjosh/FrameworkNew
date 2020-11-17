@@ -1,7 +1,7 @@
 import React from "react"
 import { get, set, sortBy } from "lodash/fp"
 import {
-  ColumnModel,
+  GridComponent,
   GroupSettingsModel,
   PageSettingsModel,
   SortDescriptorModel,
@@ -45,6 +45,7 @@ export function DisplayTable({
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   const loading = loadingKey && get(loadingKey, userInterfaceData)
   const dataArray: any = get(valueKey!, userInterfaceData) || [userInterfaceData]
+  const grid = React.useRef<GridComponent>(null)
 
   return (
     <StandardGrid
@@ -55,6 +56,7 @@ export function DisplayTable({
       contextData={userInterfaceData}
       data={preview ? [] : dataArray}
       defaultCollapseAll={defaultCollapseAll}
+      ref={grid}
       autoFitColumns={autoFitColumns}
       useSmallFont={useSmallFont}
       enableAltRow={enableAltRow}

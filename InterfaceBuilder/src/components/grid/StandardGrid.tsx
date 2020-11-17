@@ -102,8 +102,8 @@ export const StandardGrid = React.forwardRef(
         grid = gridComponent
         if (ref && typeof ref !== "function") {
           /*
-           * If the ref is a forwardRef, then we attach the GridComponent to ref.current
-           * even though the "current" property is supposed to be readonly. The ref that
+           * If the ref below is a forwardRef, then we attach the GridComponent to ref.current
+           * even though the "ref.current" property is supposed to be readonly. The ref that
            * is passed down has a null "current" property. So we ignore the Typescript error.
            */
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
