@@ -50,7 +50,16 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(fromStore, queryConfigId)
+    const defaults = {
+      method: "GET",
+      body: {
+        format: "raw",
+        lang: "json",
+        raw: "",
+      },
+      headers: {},
+    }
+    return getQueryConfig(fromStore, queryConfigId, defaults)
   }, [queryConfigId, fromStore])
 
   /* *************************************

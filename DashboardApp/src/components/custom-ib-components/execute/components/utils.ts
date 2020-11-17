@@ -8,16 +8,24 @@ import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
 import { cheapHash } from "../../../../lib/json"
 import * as record from "fp-ts/lib/Record"
-import { get, isArray, set } from "lodash/fp"
+import { get, isArray, set, merge } from "lodash/fp"
 import { UserInterfaceProps } from "@opg/interface-builder"
 
 /**
  * Extract config from the Persisted Config and parse it.
  * From Query.tsx
  * @param persistedConfig
+ * @param defaults
  */
-export function getConfig(persistedConfig: PersistedConfig): Readonly<Partial<ExecuteInterfaceComponentState>> {
-  const parsedConfig = tryCatch(() => JSON5.parse(persistedConfig.config.getOrElse(""))).toNullable()
+export function getConfig(
+  persistedConfig: PersistedConfig,
+  defaults?: JSONRecord
+): Readonly<Partial<ExecuteInterfaceComponentState>> {
+  let parsedConfig = tryCatch(() => JSON5.parse(persistedConfig.config.getOrElse(""))).toNullable()
+
+  if (defaults) {
+    parsedConfig = merge(defaults, parsedConfig)
+  }
   const queryConfig = QueryConfigCodec.decode(parsedConfig)
 
   return queryConfig.fold(
@@ -91,11 +99,13 @@ export function mergeResultDataWithModel({
  * Originally from Query.tsx
  * @param fromStore
  * @param persistedConfigId
+ * @param defaults
  * @returns QueryConfig | undefined
  */
 export function getQueryConfig(
   fromStore: FromStore,
-  persistedConfigId: PersistedConfig["id"]
+  persistedConfigId: PersistedConfig["id"],
+  defaults?: JSONRecord
 ): QueryConfig | undefined {
   const persistedConfig: PersistedConfig | null = fromStore.loadById(persistedConfigId)
 
@@ -103,7 +113,7 @@ export function getQueryConfig(
     console.warn("persistedConfig not found!")
     return
   }
-  const config = getConfig(persistedConfig)
+  const config = getConfig(persistedConfig, defaults)
   return config.queryConfig
 }
 
