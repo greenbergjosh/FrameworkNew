@@ -125,14 +125,17 @@ export const StandardGrid = React.forwardRef(
 
     //**********************************
     // Aggregates
-    const customAverageAggregate = React.useCallback(getCustomAverageAggregate(usableColumns, columnAverages), [
+    const customAverageAggregate = React.useCallback(() => getCustomAverageAggregate(usableColumns, columnAverages), [
       columnAverages,
+      usableColumns,
     ])
-    const customValueCountAggregate = React.useCallback(getCustomValueCountAggregate(usableColumns, columnCounts), [
+    const customValueCountAggregate = React.useCallback(
+      () => getCustomValueCountAggregate(usableColumns, columnCounts),
+      [columnCounts, usableColumns]
+    )
+    const customNullCountAggregate = React.useCallback(() => getCustomNullCountAggregate(usableColumns, columnCounts), [
       columnCounts,
-    ])
-    const customNullCountAggregate = React.useCallback(getCustomNullCountAggregate(usableColumns, columnCounts), [
-      columnCounts,
+      usableColumns,
     ])
 
     const remoteFunctions = React.useMemo(() => {
@@ -221,7 +224,7 @@ export const StandardGrid = React.forwardRef(
       } else if (grid) {
         grid.dataSource = usableData
       }
-    }, [ref, grid, usableData])
+    }, [ref, usableData])
 
     /**
      * Manage column change.
