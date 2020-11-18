@@ -1,5 +1,5 @@
 import React from "react"
-import { Breadcrumb, Layout } from "antd"
+import { Layout, Menu } from "antd"
 import "antd/dist/antd.css"
 import {
   antComponents,
@@ -8,16 +8,14 @@ import {
   nivoComponents,
   registry,
 } from "@opg/interface-builder"
-import TopMenu from "./components/nav/top-menu"
-import SideMenu from "./components/nav/side-menu"
-import FormExample from "./components/examples/form"
-import QueryBuilderExample from "./components/examples/querybuilder"
-import RepeaterExample from "./components/examples/repeater"
 import "./App.css"
 import "@opg/interface-builder/dist/main.css"
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
+import { BrowserRouter as Router, Link, Route, Switch, useLocation } from "react-router-dom"
+import { ExamplesView } from "./views/examples/ExamplesView"
+import { HomeView } from "./views/HomeView"
+import { QuickStartView } from "./views/QuickStartView"
+import { ReferenceView } from "./views/ReferenceView"
 
-const { Header, Content, Sider } = Layout
 registry.register(antComponents)
 registry.register(nivoComponents)
 registry.register(htmlComponents)
@@ -27,36 +25,37 @@ const App: React.FC = () => {
     <DragDropContext.HTML5>
       <Router>
         <Layout className="App">
-          <Header className="header">
+          <Layout.Header className="header">
             <div className="logo" />
-            <TopMenu />
-          </Header>
-          <Layout>
-            <Sider width={200} style={{ background: "#fff" }}>
-              <SideMenu />
-            </Sider>
-            <Layout style={{ padding: "0 24px 24px" }}>
-              <Breadcrumb style={{ margin: "16px 0" }}>
-                <Breadcrumb.Item>
-                  <Link to="/examples">Examples</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>Form</Breadcrumb.Item>
-              </Breadcrumb>
-              <Content>
-                <Switch>
-                  <Route path="/examples/form">
-                    <FormExample />
-                  </Route>
-                  <Route path="/examples/querybuilder">
-                    <QueryBuilderExample />
-                  </Route>
-                  <Route path="/examples/repeater">
-                    <RepeaterExample />
-                  </Route>
-                </Switch>
-              </Content>
-            </Layout>
-          </Layout>
+            <Menu theme="dark" mode="horizontal" style={{ lineHeight: "64px" }}>
+              <Menu.Item key="1">
+                <Link to="/">Home</Link>
+              </Menu.Item>
+              <Menu.Item key="2">
+                <Link to="/examples">Examples</Link>
+              </Menu.Item>
+              <Menu.Item key="3">
+                <Link to="/quick-start">Quick Start</Link>
+              </Menu.Item>
+              <Menu.Item key="4">
+                <Link to="/reference">Reference</Link>
+              </Menu.Item>
+            </Menu>
+          </Layout.Header>
+          <Switch>
+            <Route exact path="/">
+              <HomeView />
+            </Route>
+            <Route path="/examples">
+              <ExamplesView />
+            </Route>
+            <Route path="/quick-start">
+              <QuickStartView />
+            </Route>
+            <Route path="/reference">
+              <ReferenceView />
+            </Route>
+          </Switch>
         </Layout>
       </Router>
     </DragDropContext.HTML5>
