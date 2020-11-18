@@ -9,7 +9,7 @@ import { UserInterfaceProps } from "../../../../../src/components/interface-buil
 const { Title, Text } = Typography
 const { TabPane } = Tabs
 
-const DndExample: React.FC = () => {
+const FormExample: React.FC = () => {
   const [data, setData] = React.useState({})
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
@@ -20,7 +20,7 @@ const DndExample: React.FC = () => {
       </Helmet>
       <PageHeader
         title="Form Example"
-        subTitle="To change the form, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
+        subTitle="To change the components, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
       />
       <Tabs defaultActiveKey="1">
         {/*************************
@@ -87,4 +87,4 @@ const DndExample: React.FC = () => {
   )
 }
 
-export default DndExample
+export default FormExample

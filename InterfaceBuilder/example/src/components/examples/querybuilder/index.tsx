@@ -10,7 +10,7 @@ import { UserInterfaceProps } from "../../../../../src"
 const { Title, Text } = Typography
 const { TabPane } = Tabs
 
-const DndExample: React.FC = () => {
+const QueryBuilderExample: React.FC = () => {
   const [data, setData] = React.useState(initialData)
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
@@ -89,4 +89,4 @@ const DndExample: React.FC = () => {
   )
 }
 
-export default DndExample
+export default QueryBuilderExample

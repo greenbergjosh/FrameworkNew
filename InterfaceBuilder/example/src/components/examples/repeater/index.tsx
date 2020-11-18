@@ -10,7 +10,7 @@ import { UserInterfaceProps } from "../../../../../src"
 const { Title, Text } = Typography
 const { TabPane } = Tabs
 
-const DndExample: React.FC = () => {
+const RepeaterExample: React.FC = () => {
   const [data, setData] = React.useState(initialData)
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
@@ -21,11 +21,11 @@ const DndExample: React.FC = () => {
   return (
     <Card>
       <Helmet>
-        <title>Form Example | Interface Builder</title>
+        <title>Repeater Example | Interface Builder</title>
       </Helmet>
       <PageHeader
-        title="Form Example"
-        subTitle="To change the form, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
+        title="Repeater Example"
+        subTitle="To change the components, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
       />
       <Tabs defaultActiveKey="1">
         {/*************************
@@ -89,4 +89,4 @@ const DndExample: React.FC = () => {
   )
 }
 
-export default DndExample
+export default RepeaterExample

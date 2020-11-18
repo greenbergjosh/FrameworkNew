@@ -26,29 +26,30 @@
   },
   "dependencies": {
     "@opg/interface-builder": "link:..",
-    "@types/jest": "26.0.3",
-    "@types/node": "14.0.14",
-    "@types/react": "16.9.41",
-    "@types/react-dom": "16.9.8",
-    "@types/react-helmet": "6.0.0",
-    "antd": "3.26.17",
+    "@types/jest": "26.0.15",
+    "@types/node": "14.14.8",
+    "@types/react": "16.9.56",
+    "@types/react-dom": "16.9.9",
+    "@types/react-helmet": "6.1.0",
+    "antd": "3.26.20",
     "classnames": "2.2.6",
     "lodash.debounce": "4.0.8",
     "prop-types": "15.7.2",
-    "react": "16.10.2",
-    "react-dom": "16.10.2",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
     "react-helmet": "6.1.0",
+    "react-router-dom": "5.2.0",
     "react-scripts": "4.0.0"
   },
   "devDependencies": {
-    "eslint-config-prettier": "6.14.0",
+    "eslint-config-prettier": "6.15.0",
     "eslint-config-problems": "5.0.0",
     "eslint-plugin-flowtype": "5.2.0",
     "eslint-plugin-import": "2.22.1",
-    "eslint-plugin-jsx-a11y": "6.4.0",
+    "eslint-plugin-jsx-a11y": "6.4.1",
     "eslint-plugin-prettier": "3.1.4",
     "eslint-plugin-react": "7.21.5",
     "eslint-plugin-react-hooks": "4.2.0",
-    "typescript": "4.0.3"
+    "typescript": "4.0.5"
   }
 }
