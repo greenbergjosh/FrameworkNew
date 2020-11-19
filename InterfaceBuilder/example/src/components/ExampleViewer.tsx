@@ -56,6 +56,21 @@ export function ExampleViewer(props: {
           </TabPane>
 
           {/*************************
+           * EDIT TAB
+           */}
+          <TabPane tab="Edit" key="2">
+            <Card>
+              <UserInterface
+                mode="edit"
+                components={props.components}
+                data={props.data}
+                onChangeData={props.onChangeData1}
+                onChangeSchema={props.onChangeSchema}
+              />
+            </Card>
+          </TabPane>
+
+          {/*************************
            * DATA TAB
            */}
           <TabPane
@@ -77,21 +92,6 @@ export function ExampleViewer(props: {
             <pre>
               <Text code>{JSON.stringify(props.data, null, 2)}</Text>
             </pre>
-          </TabPane>
-
-          {/*************************
-           * CONFIGURE TAB
-           */}
-          <TabPane tab="Configure" key="2">
-            <Card>
-              <UserInterface
-                mode="edit"
-                components={props.components}
-                data={props.data}
-                onChangeData={props.onChangeData1}
-                onChangeSchema={props.onChangeSchema}
-              />
-            </Card>
           </TabPane>
 
           {/*************************
