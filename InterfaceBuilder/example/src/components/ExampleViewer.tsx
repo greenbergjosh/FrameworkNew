@@ -40,7 +40,13 @@ export function ExampleViewer(props: {
         </Helmet>
         <PageHeader
           title={`${props.title} Example`}
-          subTitle="To change the interface, go to the Configure tab and then click the component's edit icon, or drag new components into the interface layout. When you are done, return to the Preview tab. "
+          subTitle={
+            <span>
+              To change the interface, go to the <strong>Configure</strong> tab and then click the
+              component&rsquo;s edit icon, or drag new components into the interface layout. When
+              you are done, return to the <strong>Preview</strong> tab.
+            </span>
+          }
         />
         <Tabs defaultActiveKey="1">
           {/*************************
@@ -71,8 +77,10 @@ export function ExampleViewer(props: {
               </>
             }
             key="3">
-            <Typography.Paragraph type="secondary">
-              <Icon type="info-circle" /> The data generated from input entered into the interface.
+            <Typography.Paragraph type="secondary" style={{ fontStyle: "italic" }}>
+              <Icon type="info-circle" /> The data generated from input entered into the interface
+              components. This data can be persisted and used to re-populate the interface&rsquo;s
+              component values.
             </Typography.Paragraph>
             <pre>
               <Text code>{JSON.stringify(props.data, null, 2)}</Text>
@@ -107,8 +115,9 @@ export function ExampleViewer(props: {
               </>
             }
             key="4">
-            <Typography.Paragraph type="secondary">
-              <Icon type="info-circle" /> The config that defines this interface layout.
+            <Typography.Paragraph type="secondary" style={{ fontStyle: "italic" }}>
+              <Icon type="info-circle" /> The schema that defines this interface layout. This schema
+              can be persisted and used to re-create the interface.
             </Typography.Paragraph>
             <pre>
               <Text code>{JSON.stringify(props.components, null, 2)}</Text>
