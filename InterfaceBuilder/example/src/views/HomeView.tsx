@@ -28,7 +28,7 @@ export function HomeView() {
           <Col span={6}>
             <Typography>
               <Typography.Title level={3} type="secondary">
-                <Icon type="edit" /> Editable
+                <Icon type="edit" /> Config-Driven
               </Typography.Title>
               <Typography.Paragraph type="secondary">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
