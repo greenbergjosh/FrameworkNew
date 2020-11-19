@@ -6,15 +6,34 @@ export function HomeView() {
   return (
     <>
       <Layout.Content>
-        <Row style={{ backgroundColor: "#702eff" }}>
-          <Col
-            style={{
-              lineHeight: "300px",
-              fontSize: 50,
-              color: "white",
-              textAlign: "center",
-            }}>
-            <Icon type="setting" /> Interface Builder
+        <Row style={{ backgroundColor: "#702eff", height: 300 }} type={"flex"} justify="center">
+          <Col>
+            <Typography>
+              <Typography.Title
+                style={{
+                  fontSize: 50,
+                  color: "white",
+                  textAlign: "center",
+                  fontWeight: 400,
+                  margin: 0,
+                  marginTop: 100,
+                }}>
+                <Icon type="setting" /> Interface Builder
+              </Typography.Title>
+              <Typography.Title
+                level={3}
+                style={{
+                  fontSize: 24,
+                  color: "white",
+                  textAlign: "center",
+                  fontWeight: 300,
+                  fontStyle: "italic",
+                  margin: 0,
+                  marginTop: 10,
+                }}>
+                Ut enim ad minima veniam, quis nostrum
+              </Typography.Title>
+            </Typography>
           </Col>
         </Row>
         <Row
