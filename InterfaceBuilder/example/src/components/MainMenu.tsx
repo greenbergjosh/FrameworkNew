@@ -10,16 +10,15 @@ export const MainMenu: React.FC = () => {
   return (
     <>
       <div style={{ display: "inline-block", color: "grey", marginRight: 50 }}>
-        <Icon type="setting" /> InterfaceBuilder
+        <NavLink to="/">
+          <Icon type="setting" /> InterfaceBuilder
+        </NavLink>
       </div>
       <Menu
         theme="dark"
         mode="horizontal"
         style={{ lineHeight: "64px", display: "inline-block" }}
         selectedKeys={[`/${location.pathname.split("/")[1]}`]}>
-        <Menu.Item key="/">
-          <NavLink to="/">Home</NavLink>
-        </Menu.Item>
         <Menu.Item key="/examples">
           <NavLink to="/examples">Examples</NavLink>
         </Menu.Item>
