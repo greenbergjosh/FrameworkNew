@@ -1,7 +1,7 @@
 import React from "react"
 import { ComponentDefinition, UserInterfaceProps } from "@opg/interface-builder"
-import config from "./querybuilder.config.json"
-import initialData from "./example-data.json"
+import config from "./example-config.json"
+import initialData from "./example-data"
 import { ExampleViewer } from "../../../components/ExampleViewer"
 
 const QueryBuilderExample: React.FC = () => {

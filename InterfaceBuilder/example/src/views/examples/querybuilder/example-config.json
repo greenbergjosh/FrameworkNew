@@ -1,0 +1,16 @@
+{
+  "key": "outer",
+  "invisible": false,
+  "hidden": false,
+  "schemaKey": "schema",
+  "exposeQueryableFields": true,
+  "jsonLogicKey": "jsonLogic",
+  "valueKey": "qbDataJsonGroup",
+  "label": "Query Builder",
+  "hideLabel": true,
+  "isParseSchema": true,
+  "isParseJsonLogic": true,
+  "isParseQBData": true,
+  "component": "query-builder",
+  "queryableFieldsKey": "queryableFields"
+}

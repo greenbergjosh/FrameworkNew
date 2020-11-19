@@ -1,0 +1,855 @@
+{
+  "email_id": {
+    "label": "Email Id",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "email": {
+    "label": "Email",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "first_name": {
+    "label": "First Name",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "first_name_standard": {
+    "label": "First Name Standard",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "last_name": {
+    "label": "Last Name",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "last_name_standard": {
+    "label": "Last Name Standard",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "gender": {
+    "label": "Gender",
+    "type": "text",
+    "valueSources": ["value"],
+    "widgets": {
+      "text": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "text",
+    "fieldSettings": {}
+  },
+  "date_of_birth": {
+    "label": "Date Of Birth",
+    "type": "date",
+    "valueSources": ["value"],
+    "widgets": {
+      "date": {
+        "widgetProps": {}
+      },
+      "field": {},
+      "func": {}
+    },
+    "mainWidget": "date",
+    "fieldSettings": {}
+  },
+  "postal": {
+    "label": "Postal",
+    "tooltip": "Postal",
+    "type": "!group",
+    "subfields": {
+      "dpv_address1": {
+        "label": "Dpv Address1",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "dpv_address2": {
+        "label": "Dpv Address2",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "dpv_city": {
+        "label": "Dpv City",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "dpv_state": {
+        "label": "Dpv State",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "dpv_zip_plus_four": {
+        "label": "Dpv Zip Plus Four",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "true_dpv": {
+        "label": "True Dpv",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "verified_date": {
+        "label": "Verified Date",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      }
+    }
+  },
+  "events": {
+    "label": "Events",
+    "tooltip": "Events",
+    "type": "!group",
+    "subfields": {
+      "session_id": {
+        "label": "Session Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "session_ts": {
+        "label": "Session Ts",
+        "type": "datetime",
+        "valueSources": ["value"],
+        "widgets": {
+          "datetime": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "datetime",
+        "fieldSettings": {}
+      },
+      "ip_address": {
+        "label": "Ip Address",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "domain": {
+        "label": "Domain",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "publisher_id": {
+        "label": "Publisher Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "publisher_name": {
+        "label": "Publisher Name",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "root_campaign_id": {
+        "label": "Root Campaign Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "campaign_id": {
+        "label": "Campaign Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "sub_campaign_id": {
+        "label": "Sub Campaign Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "third_party_id": {
+        "label": "Third Party Id",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "path_style_id": {
+        "label": "Path Style Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "path_style_vertical_type_id": {
+        "label": "Path Style Vertical Type Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "browser_name": {
+        "label": "Browser Name",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "device_platform": {
+        "label": "Device Platform",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "is_mobile": {
+        "label": "Is Mobile",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "utm_campaign": {
+        "label": "Utm Campaign",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "utm_ad_group": {
+        "label": "Utm Ad Group",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "utm_ad": {
+        "label": "Utm Ad",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "utm_keyword": {
+        "label": "Utm Keyword",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "event_type": {
+        "label": "Event Type",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "event_ts": {
+        "label": "Event Ts",
+        "type": "datetime",
+        "valueSources": ["value"],
+        "widgets": {
+          "datetime": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "datetime",
+        "fieldSettings": {}
+      },
+      "path_name_id": {
+        "label": "Path Name Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "demarcation_id": {
+        "label": "Demarcation Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "demarcation_page_number": {
+        "label": "Demarcation Page Number",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "slot_number": {
+        "label": "Slot Number",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "offer_id": {
+        "label": "Offer Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "offer_type": {
+        "label": "Offer Type",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "offer_category": {
+        "label": "Offer Category",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "advertiser_id": {
+        "label": "Advertiser Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "offer_set_template_id": {
+        "label": "Offer Set Template Id",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "revenue_projected_generating": {
+        "label": "Revenue Projected Generating",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "revenue_projected": {
+        "label": "Revenue Projected",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "revenue_actual_generating": {
+        "label": "Revenue Actual Generating",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "revenue_actual": {
+        "label": "Revenue Actual",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "expense_generating": {
+        "label": "Expense Generating",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "expense": {
+        "label": "Expense",
+        "type": "number",
+        "valueSources": ["value"],
+        "widgets": {
+          "number": {
+            "widgetProps": {}
+          },
+          "slider": {},
+          "rangeslider": {},
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "number",
+        "fieldSettings": {}
+      },
+      "scrubbed": {
+        "label": "Scrubbed",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "survey_question": {
+        "label": "Survey Question",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "survey_answer": {
+        "label": "Survey Answer",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      }
+    }
+  },
+  "lists": {
+    "label": "Lists",
+    "tooltip": "Lists",
+    "type": "!group",
+    "subfields": {
+      "listid": {
+        "label": "Listid",
+        "type": "text",
+        "valueSources": ["value"],
+        "widgets": {
+          "text": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "text",
+        "fieldSettings": {}
+      },
+      "entry_date": {
+        "label": "Entry Date",
+        "type": "date",
+        "valueSources": ["value"],
+        "widgets": {
+          "date": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "date",
+        "fieldSettings": {}
+      },
+      "entry_time": {
+        "label": "Entry Time",
+        "type": "datetime",
+        "valueSources": ["value"],
+        "widgets": {
+          "datetime": {
+            "widgetProps": {}
+          },
+          "field": {},
+          "func": {}
+        },
+        "mainWidget": "datetime",
+        "fieldSettings": {}
+      }
+    }
+  }
+}
