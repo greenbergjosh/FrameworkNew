@@ -76,6 +76,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
         onChangeData={this.handleChangeData}
         onChangeSchema={this.handleChangeSchema}
         submit={submit}
+        getRootUserInterfaceData={this.props.getRootUserInterfaceData}
       />
     )
   }

@@ -5,17 +5,20 @@ import { registry } from "../registry"
 import { ManageComponentForm } from "./ManageComponentForm"
 import { ManageComponentPreview } from "./ManageComponentPreview"
 import { isEmpty } from "lodash/fp"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export interface ManageComponentModalProps {
   componentDefinition: null | Partial<ComponentDefinition>
   onCancel: () => void
   onConfirm: (componentDefinition: ComponentDefinition) => void
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export const ManageComponentModal = ({
   componentDefinition: propComponentDefinition,
   onCancel,
   onConfirm,
+  getRootUserInterfaceData,
 }: ManageComponentModalProps) => {
   const [componentDefinition, updateComponentDefinition] = React.useState(propComponentDefinition)
 
@@ -74,6 +77,7 @@ export const ManageComponentModal = ({
                 }}
                 manageForm={manageForm}
                 layoutDefinition={layoutDefinition}
+                getRootUserInterfaceData={getRootUserInterfaceData}
               />
             )}
           </Col>

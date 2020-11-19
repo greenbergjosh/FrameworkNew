@@ -3,6 +3,7 @@ import { DividerProps } from "antd/lib/divider"
 import React from "react"
 import { dividerManageForm } from "./divider-manage-form"
 import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export interface DividerInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "divider"
@@ -10,6 +11,7 @@ export interface DividerInterfaceComponentProps extends ComponentDefinitionNamed
   orientation?: DividerProps["type"]
   text?: string
   textAlignment?: DividerProps["orientation"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export class DividerInterfaceComponent extends BaseInterfaceComponent<DividerInterfaceComponentProps> {

@@ -22,6 +22,7 @@ interface IUserInterfaceProps {
   onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
   submit?: () => void
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
 }
 
 export interface DisplayUserInterfaceProps extends IUserInterfaceProps {
@@ -226,6 +227,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                       </Layout>
 
                       <ManageComponentModal
+                        getRootUserInterfaceData={this.props.getRootUserInterfaceData}
                         componentDefinition={
                           (itemToAdd && itemToAdd.componentDefinition) || (itemToEdit && itemToEdit.componentDefinition)
                         }
