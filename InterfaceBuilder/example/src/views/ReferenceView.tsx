@@ -1,7 +1,7 @@
 import { Layout } from "antd"
 import React from "react"
 
-export function ReferenceView() {
+export const ReferenceView: React.FC = (): JSX.Element => {
   return (
     <Layout.Content>
       <h2>Reference (to come)</h2>

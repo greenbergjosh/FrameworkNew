@@ -2,7 +2,7 @@ import { Card, Icon, Layout, PageHeader, Row, Col, Typography } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
 
-export function HomeView() {
+export const HomeView: React.FC = (): JSX.Element => {
   return (
     <>
       <Layout.Content>
@@ -18,7 +18,7 @@ export function HomeView() {
                   margin: 0,
                   marginTop: 100,
                 }}>
-                <Icon type="setting" /> Interface Builder
+                <Icon type="setting" /> InterfaceBuilder
               </Typography.Title>
               <Typography.Title
                 level={3}
