@@ -37,7 +37,7 @@ export function ExampleViewer(props: {
       </Breadcrumb>
       <Layout.Content>
         <Helmet>
-          <title>{props.title} Example | Interface Builder</title>
+          <title>{props.title} Example | InterfaceBuilder.js</title>
         </Helmet>
         <PageHeader title={`${props.title} Example`} subTitle={props.description} />
         <Tabs defaultActiveKey="1">

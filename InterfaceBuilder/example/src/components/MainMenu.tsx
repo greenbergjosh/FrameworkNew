@@ -25,8 +25,8 @@ export const MainMenu: React.FC = () => {
         <Menu.Item key="/quick-start">
           <NavLink to="/quick-start">Quick Start</NavLink>
         </Menu.Item>
-        <Menu.Item key="/reference">
-          <NavLink to="/reference">Reference</NavLink>
+        <Menu.Item key="/docs">
+          <NavLink to="/docs">Docs</NavLink>
         </Menu.Item>
       </Menu>
     </>

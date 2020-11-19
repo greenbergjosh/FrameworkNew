@@ -7,9 +7,9 @@ export const QuickStartView: React.FC = (): JSX.Element => {
     <Layout.Content>
       <Card>
         <Helmet>
-          <title>Quick Start | Interface Builder</title>
+          <title>Quick Start | InterfaceBuilder.js</title>
         </Helmet>
-        <PageHeader title="Interface Builder Quick Start" subTitle="" />
+        <PageHeader title="InterfaceBuilder.js Quick Start" subTitle="" />
 
         <blockquote>
           <p className="has-line-data" data-line-start={2} data-line-end={3}>

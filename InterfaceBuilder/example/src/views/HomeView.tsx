@@ -5,6 +5,9 @@ import { Helmet } from "react-helmet"
 export const HomeView: React.FC = (): JSX.Element => {
   return (
     <>
+      <Helmet>
+        <title>InterfaceBuilder.js</title>
+      </Helmet>
       <Layout.Content>
         <Row style={{ backgroundColor: "#702eff", height: 300 }} type={"flex"} justify="center">
           <Col>
@@ -18,7 +21,7 @@ export const HomeView: React.FC = (): JSX.Element => {
                   margin: 0,
                   marginTop: 100,
                 }}>
-                <Icon type="setting" /> InterfaceBuilder
+                <Icon type="setting" /> InterfaceBuilder.js
               </Typography.Title>
               <Typography.Title
                 level={3}
@@ -146,7 +149,7 @@ export const HomeView: React.FC = (): JSX.Element => {
                 lineHeight: "100px",
                 textAlign: "center",
               }}>
-              Photo
+              Diagram
             </div>
             <Typography.Paragraph type={"secondary"}>
               Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil

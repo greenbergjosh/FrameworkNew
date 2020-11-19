@@ -2,6 +2,64 @@
   "id": "898a99aa-0123-4456-b89a-b17551020d56",
   "type": "group",
   "children1": {
+    "88aaabb9-cdef-4012-b456-717551099aee": {
+      "type": "rule",
+      "properties": {
+        "field": "email",
+        "operator": "equal",
+        "value": ["@gmail.com"],
+        "valueSrc": ["value"],
+        "valueType": ["text"]
+      }
+    },
+    "a9aba9ba-89ab-4cde-b012-31755109b546": {
+      "type": "rule",
+      "properties": {
+        "field": "gender",
+        "operator": "equal",
+        "value": ["M"],
+        "valueSrc": ["value"],
+        "valueType": ["text"]
+      }
+    },
+    "a9ba9988-4567-489a-bcde-f1755109dc39": {
+      "type": "rule",
+      "properties": {
+        "field": "first_name",
+        "operator": "equal",
+        "value": ["Bob"],
+        "valueSrc": ["value"],
+        "valueType": ["text"]
+      }
+    },
+    "a9a99b89-cdef-4012-b456-7175663c0c68": {
+      "type": "group",
+      "properties": {
+        "conjunction": "AND"
+      },
+      "children1": {
+        "9889ab8b-89ab-4cde-b012-3175663c0c69": {
+          "type": "rule_group",
+          "properties": {
+            "conjunction": "AND",
+            "field": "postal"
+          },
+          "children1": {
+            "99999898-4567-489a-bcde-f175663c1e90": {
+              "type": "rule",
+              "properties": {
+                "field": "postal.dpv_city",
+                "operator": "equal",
+                "value": ["Atnalta"],
+                "valueSrc": ["value"],
+                "valueError": [null],
+                "valueType": ["text"]
+              }
+            }
+          }
+        }
+      }
+    },
     "bba988ab-cdef-4012-b456-7175666037f2": {
       "type": "filter",
       "properties": {
@@ -14,46 +72,10 @@
           "properties": {
             "field": "postal.dpv_city",
             "operator": "equal",
-            "value": [
-              "Atnalta2"
-            ],
-            "valueSrc": [
-              "value"
-            ],
-            "valueError": [
-              null
-            ],
-            "valueType": [
-              "text"
-            ]
-          }
-        }
-      }
-    },
-    "a8b8989b-cdef-4012-b456-7175e1c5ee62": {
-      "type": "rule_group",
-      "properties": {
-        "conjunction": "AND",
-        "field": "events"
-      },
-      "children1": {
-        "9bbaa989-89ab-4cde-b012-3175e1c5fdf6": {
-          "type": "rule",
-          "properties": {
-            "field": "events.domain",
-            "operator": "equal",
-            "value": [
-              null
-            ],
-            "valueSrc": [
-              "value"
-            ],
-            "valueError": [
-              null
-            ],
-            "valueType": [
-              "text"
-            ]
+            "value": ["Atnalta2"],
+            "valueSrc": ["value"],
+            "valueError": [null],
+            "valueType": ["text"]
           }
         }
       }

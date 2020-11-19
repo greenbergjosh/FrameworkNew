@@ -10,7 +10,7 @@ export function ExamplesIntroView(): JSX.Element {
       </Breadcrumb>
       <Layout.Content>
         <Helmet>
-          <title>Examples | Interface Builder</title>
+          <title>Examples | InterfaceBuilder.js</title>
         </Helmet>
         <PageHeader
           title="Examples"

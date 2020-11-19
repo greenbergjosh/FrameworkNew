@@ -14,7 +14,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
 import { ExamplesView } from "./views/examples/ExamplesView"
 import { HomeView } from "./views/HomeView"
 import { QuickStartView } from "./views/QuickStartView"
-import { ReferenceView } from "./views/ReferenceView"
+import { DocsView } from "./views/DocsView"
 import { MainMenu } from "./components/MainMenu"
 
 registry.register(antComponents)
@@ -39,8 +39,8 @@ const App: React.FC = () => {
             <Route path="/quick-start">
               <QuickStartView />
             </Route>
-            <Route path="/reference">
-              <ReferenceView />
+            <Route path="/docs">
+              <DocsView />
             </Route>
           </Switch>
         </Layout>
