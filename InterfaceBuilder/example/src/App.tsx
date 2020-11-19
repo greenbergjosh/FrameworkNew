@@ -1,5 +1,5 @@
 import React from "react"
-import { Layout } from "antd"
+import { Icon, Layout, Typography } from "antd"
 import "antd/dist/antd.css"
 import {
   antComponents,
@@ -27,7 +27,6 @@ const App: React.FC = () => {
       <Router>
         <Layout className="App">
           <Layout.Header className="header">
-            <div className="logo" />
             <MainMenu />
           </Layout.Header>
           <Switch>
