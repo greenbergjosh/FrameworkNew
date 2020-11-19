@@ -29,7 +29,7 @@ export function ExamplesView(): JSX.Element {
               <Link to="/examples/form">Form</Link>
             </Menu.Item>
             <Menu.Item key="2">
-              <Link to="/examples/repeater">Repeater (Large)</Link>
+              <Link to="/examples/repeater">Repeater</Link>
             </Menu.Item>
             <Menu.Item key="3">
               <Link to="/examples/querybuilder">QueryBuilder</Link>
