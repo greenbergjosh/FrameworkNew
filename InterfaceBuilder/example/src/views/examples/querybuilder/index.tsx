@@ -15,6 +15,7 @@ const QueryBuilderExample: React.FC = () => {
   return (
     <ExampleViewer
       title={"QueryBuilder"}
+      description="Description of QueryBuilder goes here."
       components={schema}
       data={data}
       onChangeData={handleChangeData}

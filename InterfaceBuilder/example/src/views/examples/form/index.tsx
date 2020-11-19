@@ -15,6 +15,7 @@ const FormExample: React.FC = () => {
   return (
     <ExampleViewer
       title={"Form"}
+      description="Description of Form goes here."
       components={schema}
       data={data}
       onChangeData={handleChangeData}

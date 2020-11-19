@@ -15,6 +15,7 @@ const RepeaterExample: React.FC = () => {
   return (
     <ExampleViewer
       title={"Repeater"}
+      description="Description of Repeater goes here."
       components={schema}
       data={data}
       onChangeData={handleChangeData}

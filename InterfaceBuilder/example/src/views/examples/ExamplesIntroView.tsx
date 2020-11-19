@@ -15,7 +15,13 @@ export function ExamplesIntroView(): JSX.Element {
           </Helmet>
           <PageHeader
             title="Examples"
-            subTitle="To change the components, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
+            subTitle={
+              <span>
+                To change the interface, go to the <strong>Configure</strong> tab and then click the
+                component&rsquo;s edit icon, or drag new components into the interface layout. When
+                you are done, return to the <strong>Preview</strong> tab.
+              </span>
+            }
           />
           <h3>Please select an example.</h3>
         </Card>

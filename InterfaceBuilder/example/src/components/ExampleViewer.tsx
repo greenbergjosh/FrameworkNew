@@ -25,6 +25,7 @@ export function ExampleViewer(props: {
   onChangeData1: (newData: UserInterfaceProps["data"]) => void
   onChangeSchema: (newSchema: ComponentDefinition[]) => void
   title: string
+  description: string
 }) {
   return (
     <>
@@ -38,16 +39,7 @@ export function ExampleViewer(props: {
         <Helmet>
           <title>{props.title} Example | Interface Builder</title>
         </Helmet>
-        <PageHeader
-          title={`${props.title} Example`}
-          subTitle={
-            <span>
-              To change the interface, go to the <strong>Configure</strong> tab and then click the
-              component&rsquo;s edit icon, or drag new components into the interface layout. When
-              you are done, return to the <strong>Preview</strong> tab.
-            </span>
-          }
-        />
+        <PageHeader title={`${props.title} Example`} subTitle={props.description} />
         <Tabs defaultActiveKey="1">
           {/*************************
            * PREVIEW TAB
