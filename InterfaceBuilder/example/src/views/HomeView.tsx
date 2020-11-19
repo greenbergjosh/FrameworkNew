@@ -1,15 +1,64 @@
-import { Breadcrumb, Card, Layout, PageHeader } from "antd"
+import { Card, Icon, Layout, PageHeader, Row, Col, Typography } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
-import { Link } from "react-router-dom"
 
 export function HomeView() {
   return (
-    <Layout style={{ padding: "0 24px 24px" }}>
-      <Breadcrumb style={{ margin: "16px 0" }}>
-        <Breadcrumb.Item>Home</Breadcrumb.Item>
-      </Breadcrumb>
+    <>
       <Layout.Content>
+        <Row style={{ backgroundColor: "#702eff" }}>
+          <Col
+            style={{
+              lineHeight: "300px",
+              fontSize: 50,
+              color: "white",
+              textAlign: "center",
+            }}>
+            <Icon type="setting" /> Interface Builder
+          </Col>
+        </Row>
+        <Row
+          style={{
+            backgroundColor: "#fffdf6",
+            paddingTop: 40,
+            paddingBottom: 20,
+          }}
+          type={"flex"}
+          justify={"space-around"}>
+          <Col span={6}>
+            <Typography>
+              <Typography.Title level={3} type="secondary">
+                <Icon type="edit" /> Editable
+              </Typography.Title>
+              <Typography.Paragraph type="secondary">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
+              </Typography.Paragraph>
+            </Typography>
+          </Col>
+          <Col span={6}>
+            <Typography>
+              <Typography.Title level={3} type="secondary">
+                <Icon type="build" /> Composable
+              </Typography.Title>
+              <Typography.Paragraph type="secondary">
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+                mollit anim id est laborum.
+              </Typography.Paragraph>
+            </Typography>
+          </Col>
+          <Col span={6}>
+            <Typography>
+              <Typography.Title level={3} type="secondary">
+                <Icon type="api" /> Extensible
+              </Typography.Title>
+              <Typography.Paragraph type="secondary">
+                Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil
+                molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+              </Typography.Paragraph>
+            </Typography>
+          </Col>
+        </Row>
         <Card>
           <Helmet>
             <title>Interface Builder</title>
@@ -177,6 +226,6 @@ export function HomeView() {
           </p>
         </Card>
       </Layout.Content>
-    </Layout>
+    </>
   )
 }
