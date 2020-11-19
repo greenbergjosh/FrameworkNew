@@ -1,5 +1,15 @@
 import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
-import { Breadcrumb, Card, Divider, Layout, PageHeader, Tabs, Typography } from "antd"
+import {
+  Breadcrumb,
+  Card,
+  Divider,
+  Layout,
+  PageHeader,
+  Tabs,
+  Typography,
+  Popover,
+  Icon,
+} from "antd"
 import { Link } from "react-router-dom"
 import { Helmet } from "react-helmet"
 import React from "react"
@@ -25,47 +35,55 @@ export function ExampleViewer(props: {
         <Breadcrumb.Item>{props.title}</Breadcrumb.Item>
       </Breadcrumb>
       <Layout.Content>
-        <Card>
-          <Helmet>
-            <title>{props.title} Example | Interface Builder</title>
-          </Helmet>
-          <PageHeader
-            title={`${props.title} Example`}
-            subTitle="To change the component, click the Configure tab and drag components into the layout. When you are done, click the Preview tab."
-          />
-          <Tabs defaultActiveKey="1">
-            {/*************************
-             * PREVIEW TAB
-             */}
-            <TabPane tab="Preview" key="1">
-              <Title level={3}>Rendered View</Title>
-              <Layout>
-                <Layout.Content
-                  style={{
-                    margin: "16px",
-                    padding: 24,
-                    background: "#fff",
-                    minHeight: 280,
-                  }}>
-                  <UserInterface
-                    mode="display"
-                    components={props.components}
-                    data={props.data}
-                    onChangeData={props.onChangeData}
-                  />
-                </Layout.Content>
-              </Layout>
-              <Divider />
-              <Title level={3}>Data Model</Title>
-              <pre>
-                <Text code>{JSON.stringify(props.data, null, 2)}</Text>
-              </pre>
-            </TabPane>
+        <Helmet>
+          <title>{props.title} Example | Interface Builder</title>
+        </Helmet>
+        <PageHeader
+          title={`${props.title} Example`}
+          subTitle="To change the interface, go to the Configure tab and then click the component's edit icon, or drag new components into the interface layout. When you are done, return to the Preview tab. "
+        />
+        <Tabs defaultActiveKey="1">
+          {/*************************
+           * PREVIEW TAB
+           */}
+          <TabPane tab="Preview" key="1">
+            <Card>
+              <UserInterface
+                mode="display"
+                components={props.components}
+                data={props.data}
+                onChangeData={props.onChangeData}
+              />
+            </Card>
+          </TabPane>
 
-            {/*************************
-             * CONFIGURE TAB
-             */}
-            <TabPane tab="Configure" key="2">
+          {/*************************
+           * DATA TAB
+           */}
+          <TabPane
+            tab={
+              <>
+                Data{" "}
+                <Popover
+                  content={"Shows the data generated from input entered into the interface."}>
+                  <Icon type="question-circle" />
+                </Popover>
+              </>
+            }
+            key="3">
+            <Typography.Paragraph type="secondary">
+              <Icon type="info-circle" /> The data generated from input entered into the interface.
+            </Typography.Paragraph>
+            <pre>
+              <Text code>{JSON.stringify(props.data, null, 2)}</Text>
+            </pre>
+          </TabPane>
+
+          {/*************************
+           * CONFIGURE TAB
+           */}
+          <TabPane tab="Configure" key="2">
+            <Card>
               <UserInterface
                 mode="edit"
                 components={props.components}
@@ -73,19 +91,30 @@ export function ExampleViewer(props: {
                 onChangeData={props.onChangeData1}
                 onChangeSchema={props.onChangeSchema}
               />
-            </TabPane>
+            </Card>
+          </TabPane>
 
-            {/*************************
-             * SCHEMA TAB
-             */}
-            <TabPane tab="Schema" key="3">
-              <Title level={3}>Interface Schema</Title>
-              <pre>
-                <Text code>{JSON.stringify(props.components, null, 2)}</Text>
-              </pre>
-            </TabPane>
-          </Tabs>
-        </Card>
+          {/*************************
+           * SCHEMA TAB
+           */}
+          <TabPane
+            tab={
+              <>
+                Schema{" "}
+                <Popover content={"Shows the config that defines this interface layout."}>
+                  <Icon type="question-circle" />
+                </Popover>
+              </>
+            }
+            key="4">
+            <Typography.Paragraph type="secondary">
+              <Icon type="info-circle" /> The config that defines this interface layout.
+            </Typography.Paragraph>
+            <pre>
+              <Text code>{JSON.stringify(props.components, null, 2)}</Text>
+            </pre>
+          </TabPane>
+        </Tabs>
       </Layout.Content>
     </>
   )
