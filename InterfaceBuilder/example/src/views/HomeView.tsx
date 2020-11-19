@@ -1,6 +1,9 @@
 import { Card, Icon, Layout, PageHeader, Row, Col, Typography } from "antd"
 import React from "react"
 import { Helmet } from "react-helmet"
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import diagram from "../resources/diagram-fpo.png"
 
 export const HomeView: React.FC = (): JSX.Element => {
   return (
@@ -41,7 +44,7 @@ export const HomeView: React.FC = (): JSX.Element => {
         </Row>
         <Row
           style={{
-            backgroundColor: "#fffbea",
+            backgroundColor: "#f1f1f1",
             paddingTop: 40,
             paddingBottom: 20,
           }}
@@ -139,18 +142,18 @@ export const HomeView: React.FC = (): JSX.Element => {
             backgroundColor: "white",
           }}>
           <Col span={10}>
-            <div
+            <img
+              src={diagram}
+              alt="Diagram FPO"
               style={{
-                backgroundColor: "lightgrey",
                 height: 200,
                 width: "100%",
                 marginBottom: 20,
                 color: "grey",
                 lineHeight: "100px",
                 textAlign: "center",
-              }}>
-              Diagram
-            </div>
+              }}
+            />
             <Typography.Paragraph type={"secondary"}>
               Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil
               molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
