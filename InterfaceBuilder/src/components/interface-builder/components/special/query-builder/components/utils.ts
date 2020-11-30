@@ -1,5 +1,4 @@
-import { Config, JsonTree, Utils } from "react-awesome-query-builder"
-import AntdConfig from "react-awesome-query-builder/lib/config/antd"
+import { AntdConfig, Config, JsonTree, Utils } from "react-awesome-query-builder"
 import { SchemaType } from "../types"
 import { keys } from "lodash/fp"
 
