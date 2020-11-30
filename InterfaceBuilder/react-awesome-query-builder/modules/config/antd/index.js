@@ -42,7 +42,7 @@ const settings = {
 
   renderOperator: (props) => <FieldSelect {...props} />,
   // renderOperator: (props) => <FieldDropdown {...props} />,
-  
+
   renderFunc: (props) => <FieldSelect {...props} />,
   renderConjs: (props) => <Conjs {...props} />,
   renderButton: (props) => <Button {...props} />,
