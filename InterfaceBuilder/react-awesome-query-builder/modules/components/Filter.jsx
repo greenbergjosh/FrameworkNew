@@ -4,7 +4,7 @@ import startsWith from "lodash/startsWith";
 import FilterContainer from "./containers/FilterContainer";
 import Draggable from "./containers/Draggable";
 import Item from "./Item";
-import {GroupActions} from "./GroupActions";
+import {FilterActions} from "./FilterActions";
 import Field from "./Field";
 import isEmpty from "lodash/isEmpty";
 import keys from "lodash/keys";
@@ -213,7 +213,7 @@ export class Filter extends PureComponent {
   renderActions() {
     const {config, addRule, addGroup, addFilter} = this.props;
 
-    return <GroupActions
+    return <FilterActions
       config={config}
       addRule={addRule}
       addGroup={addGroup}
