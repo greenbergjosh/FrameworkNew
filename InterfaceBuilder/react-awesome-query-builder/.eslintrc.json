@@ -1,4 +1,5 @@
 {
+    "root": true,
     "env": {
         "browser": true,
         "es6": true,
@@ -72,13 +73,13 @@
             }
         ],
         "no-unused-vars": [
-            "off", 
+            "off",
             {
                 "todo": "set to warn",
-                "args": "all", 
-                "argsIgnorePattern": "^_", 
-                "ignoreRestSiblings": true, 
-                "caughtErrors": "none", 
+                "args": "all",
+                "argsIgnorePattern": "^_",
+                "ignoreRestSiblings": true,
+                "caughtErrors": "none",
                 "varsIgnorePattern": "^_"
             }
         ],

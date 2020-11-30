@@ -19,7 +19,6 @@ export default {
       antd: "antd",
       "lodash/fp": "fp",
       "react-awesome-query-builder": "reactAwesomeQueryBuilder",
-      "react-awesome-query-builder/lib/config/antd": "AntdConfig",
       react: "React",
       "@nivo/pie": "pie",
       classnames: "classNames",
