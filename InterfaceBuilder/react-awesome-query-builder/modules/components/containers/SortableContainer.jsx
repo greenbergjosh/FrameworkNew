@@ -33,7 +33,7 @@ export default (Builder, CanMoveFn = null) => {
     shouldComponentUpdate(nextProps, nextState) {
       let prevProps = this.props;
       let prevState = this.state;
-  
+
       let should = pureShouldComponentUpdate(this)(nextProps, nextState);
       if (should) {
         if (prevState == nextState && prevProps != nextProps) {
@@ -131,7 +131,7 @@ export default (Builder, CanMoveFn = null) => {
     _getScrollParent(node) {
       if (node == null)
         return null;
-    
+
       if (node === document.body || this._isScrollable(node)) {
         return node;
       } else {
@@ -146,7 +146,7 @@ export default (Builder, CanMoveFn = null) => {
       let treeElContainer = treeEl.closest(".query-builder-container") || treeEl;
       treeElContainer = this._getScrollParent(treeElContainer) || document.body;
       const scrollTop = treeElContainer.scrollTop;
-      
+
       const _dragEl = this._getDraggableNodeEl(treeEl);
       const _plhEl = this._getPlaceholderNodeEl(treeEl);
 
@@ -424,7 +424,7 @@ export default (Builder, CanMoveFn = null) => {
                   }
                 }
               }
-              
+
               //sanitize
               availMoves = availMoves.filter(am => {
                 const placement = am[0];
@@ -513,19 +513,73 @@ export default (Builder, CanMoveFn = null) => {
       const isPend = placement == constants.PLACEMENT_PREPEND || placement == constants.PLACEMENT_APPEND;
       const isParentChange = fromII.parent != toII.parent;
       const isStructChange = isPend || isParentChange;
-      const isForbiddenStructChange = fromII.parentType == "rule_group" || toII.type == "rule_group" 
+      const isForbiddenStructChange = fromII.parentType == "rule_group" || toII.type == "rule_group"
         || toII.parentType == "rule_group";
 
       if (maxNesting && (newLev + 1) > maxNesting)
         return false;
-      
+
       if (isStructChange && (!canRegroup || isForbiddenStructChange))
         return false;
-      
+
       let res = true;
       if (canMoveFn)
         res = canMoveFn(fromII.node.toJS(), toII.node.toJS(), placement, toParentII ? toParentII.node.toJS() : null);
+      if (res)
+        res = this.canMoveFilterComponentRules(fromII, toII, placement, toParentII);
       return res;
+    }
+
+    canMoveFilterComponentRules (fromII, toII, placement, toParentII) {
+      if(!toII) {
+        return true;
+      }
+      const isMoveToSibling = placement === "before" || placement === "after";
+      const isMoveToChild = placement === "prepend" || placement === "append";
+      const isFilter = fromII.type === "filter";
+      const isTargetFilter = toII && toII.type === "filter";
+      const isTargetFilterGroup = toII && toII.type === "group" && toII.parentType === "filter";
+
+      const filterAncestorId = fromII.path.find((item) => {
+        const treeNode = this.tree.items[item];
+        if (treeNode.type === "filter") {
+          return treeNode.id;
+        }
+      });
+
+      const targetFilterAncestorId = !isTargetFilter && toII.path.find((item) => {
+        const treeNode = this.tree.items[item];
+        if (treeNode.type === "filter") {
+          return treeNode.id;
+        }
+      });
+
+      // Filter cannot have items dragged to direct children
+      if (isMoveToChild && isTargetFilter) {
+        return false;
+      }
+
+      // FilterGroup cannot have items dragged as a sibling
+      if (isMoveToSibling && isTargetFilterGroup) {
+        return false;
+      }
+
+      // Filter descendants cannot be dragged out of a filter's tree
+      if (!isFilter && filterAncestorId && filterAncestorId !== targetFilterAncestorId) {
+        return false;
+      }
+
+      // Filter cannot be dragged into another filter's tree
+      if (isFilter && targetFilterAncestorId) {
+        return false;
+      }
+
+      // Item outside a filter cannot be dragged into a filter's tree
+      if (!filterAncestorId && targetFilterAncestorId) {
+        return false;
+      }
+
+      return true;
     }
 
     move (fromII, toII, placement, toParentII) {

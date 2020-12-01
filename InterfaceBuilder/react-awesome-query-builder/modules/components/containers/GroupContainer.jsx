@@ -1,16 +1,19 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import mapValues from "lodash/mapValues";
-import {pureShouldComponentUpdate} from "../../utils/renderUtils";
-import {connect} from "react-redux";
-import {useOnPropsChanged} from "../../utils/stuff";
+import { pureShouldComponentUpdate } from "../../utils/renderUtils";
+import { connect } from "react-redux";
+import { useOnPropsChanged } from "../../utils/stuff";
+import { expandTreePath } from "../../utils/treeUtils";
+import Immutable from "immutable";
+
 const classNames = require("classnames");
 
 
 export default (Group) => {
   class GroupContainer extends Component {
     static propTypes = {
-      //tree: PropTypes.instanceOf(Immutable.Map).isRequired,
+      tree: PropTypes.instanceOf(Immutable.Map).isRequired,
       config: PropTypes.object.isRequired,
       actions: PropTypes.object.isRequired, //{setConjunction: Funciton, removeGroup, addGroup, addRule, ...}
       path: PropTypes.any.isRequired, //instanceOf(Immutable.List)
@@ -81,6 +84,22 @@ export default (Group) => {
       }));
     }
 
+    getParent = () => {
+      // console.log({
+      //   tree: this.props.tree,
+      //   path: this.props.path,
+      //   current: this.props.tree.getIn(expandTreePath(this.props.path.pop())),
+      // });
+      return this.props.tree.getIn(expandTreePath(this.props.path.pop()));
+    };
+
+    hasParentFilter = () => {
+      const parent = this.getParent();
+      const parentType = parent ? parent.get("type") : "";
+
+      return parentType === "filter";
+    };
+
     setConjunction = (conj = null) => {
       this.props.actions.setConjunction(this.props.path, conj);
     }
@@ -138,6 +157,7 @@ export default (Group) => {
               id={this.props.id}
               isDraggingMe={true}
               isDraggingTempo={true}
+              isDraggable={!this.hasParentFilter()}
               dragging={this.props.dragging}
               isRoot={isRoot}
               allowFurtherNesting={allowFurtherNesting}
@@ -161,6 +181,7 @@ export default (Group) => {
               selectedField={this.props.field || null}
               parentField={this.props.parentField || null}
               disabled={this.props.disabled}
+              getParent={this.getParent}
             /> : null
             ,
             <Group
@@ -168,6 +189,7 @@ export default (Group) => {
               id={this.props.id}
               isDraggingMe={isDraggingMe}
               isDraggingTempo={isInDraggingTempo}
+              isDraggable={!this.hasParentFilter()}
               onDragStart={this.props.onDragStart}
               isRoot={isRoot}
               allowFurtherNesting={allowFurtherNesting}
@@ -191,6 +213,7 @@ export default (Group) => {
               selectedField={this.props.field || null}
               parentField={this.props.parentField || null}
               disabled={this.props.disabled}
+              getParent={this.getParent}
             />
           ]}
         </div>
@@ -203,6 +226,7 @@ export default (Group) => {
     (state) => {
       return {
         dragging: state.dragging,
+        tree: state.tree,
       };
     }
   )(GroupContainer);

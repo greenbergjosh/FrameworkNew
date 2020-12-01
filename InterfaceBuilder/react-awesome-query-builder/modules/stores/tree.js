@@ -65,6 +65,9 @@ const addNewFilter = (state, path, properties, config) => {
   // The current filter should always have a conjunction of FILTER
   // state = state.setIn(expandTreePath(filterPath, "properties", "conjunction"), "FILTER");
 
+  // The current filter should always have a conjunction as a first child
+  state = addNewGroup(state, filterPath, defaultGroupProperties(config).merge(properties || {}), config);
+
   // if (canAddNewRule) {
   // state = addItem(state, filterPath, "rule", uuid(), defaultRuleProperties(config), config);
   // }

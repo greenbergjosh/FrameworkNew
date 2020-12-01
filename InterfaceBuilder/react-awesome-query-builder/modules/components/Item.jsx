@@ -85,6 +85,7 @@ class Item extends PureComponent {
     onDragStart: PropTypes.func,
     parentField: PropTypes.string, //from RuleGroup
     isDraggingTempo: PropTypes.bool,
+    isDraggable: PropTypes.bool,
     disabled: PropTypes.bool,
   };
 

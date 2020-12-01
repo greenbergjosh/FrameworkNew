@@ -46,6 +46,7 @@ export class Group extends PureComponent {
     setNot: PropTypes.func.isRequired,
     actions: PropTypes.object.isRequired,
     parentField: PropTypes.string,
+    getParent: PropTypes.func.isRequired,
   };
 
   constructor(props) {
@@ -210,7 +211,7 @@ export class Group extends PureComponent {
 
   canAddGroup = () => {
     return this.props.allowFurtherNesting;
-  }
+  };
 
   canAddRule = () => {
     const {maxNumberOfRules} = this.props.config.settings;
@@ -221,16 +222,21 @@ export class Group extends PureComponent {
     return true;
   };
 
-  canAddFilter = () => {
-    const parentFieldConfig = this.props.config.fields[this.props.parentField];
-    const availableFields = (parentFieldConfig && parentFieldConfig.subfields) || this.props.config.fields;
-    if (!isEmpty(availableFields) && !hasGroupFields(availableFields)) {
-      return false;
-    }
-    return this.props.allowFurtherNesting;
+  hasParentFilter = () => {
+    const parent = this.props.getParent();
+    const parentType = parent ? parent.get("type") : "";
+
+    return parentType === "filter";
   };
 
-  canDeleteGroup = () => !this.props.isRoot;
+  canAddFilter = () => {
+    return !this.hasParentFilter() && this.props.allowFurtherNesting;
+  };
+
+  canDeleteGroup = () => {
+    return !this.hasParentFilter() && !this.props.isRoot;
+  };
+
   canDisableGroup = () => !this.props.isRoot;
 
   renderChildren() {
@@ -262,6 +268,7 @@ export class Group extends PureComponent {
           totalRulesCnt={this.props.totalRulesCnt}
           onDragStart={onDragStart}
           isDraggingTempo={this.props.isDraggingTempo}
+          isDraggable={!this.hasParentFilter()}
           parentField={parentField}
         />
         :
@@ -281,6 +288,7 @@ export class Group extends PureComponent {
           totalRulesCnt={this.props.totalRulesCnt}
           onDragStart={onDragStart}
           isDraggingTempo={this.props.isDraggingTempo}
+          isDraggable={!this.hasParentFilter()}
           // parentField={parentField}
         />
 
@@ -298,9 +306,9 @@ export class Group extends PureComponent {
   renderDrag() {
     const {
       config, isRoot, reordableNodesCnt,
-      handleDraggerMouseDown
+      handleDraggerMouseDown, isDraggable
     } = this.props;
-    const showDragIcon = config.settings.canReorder && !isRoot && reordableNodesCnt > 1;
+    const showDragIcon = isDraggable && config.settings.canReorder && !isRoot && reordableNodesCnt > 1;
     const drag = showDragIcon
       && <span
         key="group-drag-icon"

@@ -1,5 +1,6 @@
 import React, { PureComponent } from "react";
 import PropTypes from "prop-types";
+
 const classNames = require("classnames");
 
 
@@ -7,6 +8,7 @@ export default (className) => (GroupOrRule) => {
   return class Draggable extends PureComponent {
     static propTypes = {
       isDraggingTempo: PropTypes.bool,
+      isDraggable: PropTypes.bool,
       isDraggingMe: PropTypes.bool,
       onDragStart: PropTypes.func,
       dragging: PropTypes.object, //{id, x, y, w, h}
@@ -20,7 +22,7 @@ export default (className) => (GroupOrRule) => {
     handleDraggerMouseDown = (e) => {
       var nodeId = this.props.id;
       var dom = this.wrapper.current;
-        
+
       if (this.props.onDragStart) {
         this.props.onDragStart(nodeId, dom, e);
       }
@@ -29,6 +31,7 @@ export default (className) => (GroupOrRule) => {
     render () {
       let {
         isDraggingTempo,
+        isDraggable = true,
         isDraggingMe,
         dragging,
         ...otherProps
@@ -44,9 +47,13 @@ export default (className) => (GroupOrRule) => {
       }
 
       const cn = classNames(className, "group-or-rule",
-        isDraggingMe && isDraggingTempo ? "qb-draggable" : null,
-        isDraggingMe && !isDraggingTempo ? "qb-placeholder" : null,
+        isDraggable && isDraggingMe && isDraggingTempo ? "qb-draggable" : null,
+        isDraggable && isDraggingMe && !isDraggingTempo ? "qb-placeholder" : null,
       );
+
+      if (!isDraggable) {
+        return <GroupOrRule isDraggable={false} {...otherProps} />;
+      }
 
       return (
         <div
@@ -59,6 +66,7 @@ export default (className) => (GroupOrRule) => {
             handleDraggerMouseDown={this.handleDraggerMouseDown}
             isDraggingMe={isDraggingMe}
             isDraggingTempo={isDraggingTempo}
+            isDraggable={true}
             {...otherProps}
           />
         </div>
