@@ -42,7 +42,7 @@ export default class SelectWidget extends PureComponent {
   }
 
   filterOption = (input, option) => {
-    const dataForFilter = option.children || option.value;
+    const dataForFilter = option.props.children || option.props.value;
     return dataForFilter.toLowerCase().indexOf(input.toLowerCase()) >= 0;
   }
 

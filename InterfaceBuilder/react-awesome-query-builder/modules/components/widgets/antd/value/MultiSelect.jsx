@@ -46,7 +46,7 @@ export default class MultiSelectWidget extends PureComponent {
   }
 
   filterOption = (input, option) => {
-    const dataForFilter = option.children || option.value;
+    const dataForFilter = option.props.children || option.props.value;
     return dataForFilter.toLowerCase().indexOf(input.toLowerCase()) >= 0;
   }
 
@@ -57,7 +57,7 @@ export default class MultiSelectWidget extends PureComponent {
     const _value = value && value.length ? value : undefined;
     const width = _value ? null : placeholderWidth + SELECT_WIDTH_OFFSET_RIGHT;
     const dropdownWidth = this.optionsMaxWidth + SELECT_WIDTH_OFFSET_RIGHT;
-    
+
     return (
       <Select
         disabled={readonly}
