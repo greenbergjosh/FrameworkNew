@@ -22,7 +22,7 @@ interface IUserInterfaceProps {
   onChangeData?: (data: UserInterfaceProps["data"]) => void
   components: ComponentDefinition[]
   submit?: () => void
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  getRootUserInterfaceData?: () => UserInterfaceProps["data"]
 }
 
 export interface DisplayUserInterfaceProps extends IUserInterfaceProps {
@@ -74,19 +74,14 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
     this.setState({ error: error.toString() })
   }
 
-  getRootData = () => this.props.data
+  getRootData = () => (this.props.getRootUserInterfaceData && this.props.getRootUserInterfaceData()) || this.props.data
 
   render() {
     const { components, contextManager, data, mode, onChangeData, submit } = this.props
     const { clipboardComponent, error, fullscreen, itemToAdd, itemToEdit } = this.state
 
     if (error) {
-      return (
-        <img
-          src={rainy_window_png /* eslint-disable-line @typescript-eslint/camelcase */}
-          alt="A window showing a rainy day with text 'Something went wrong'"
-        />
-      )
+      return <img src={rainy_window_png} alt="A window showing a rainy day with text 'Something went wrong'" />
     }
 
     const content = (
@@ -227,7 +222,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
                       </Layout>
 
                       <ManageComponentModal
-                        getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+                        getRootUserInterfaceData={this.getRootData}
                         componentDefinition={
                           (itemToAdd && itemToAdd.componentDefinition) || (itemToEdit && itemToEdit.componentDefinition)
                         }
