@@ -52,25 +52,13 @@ const addNewGroup = (state, path, properties, config) => {
  */
 const addNewFilter = (state, path, properties, config) => {
   const filterUuid = uuid();
-  // const rulesNumber = getTotalRulesCountInTree(state);
-  // const {maxNumberOfRules} = config.settings;
-  // const canAddNewRule = !(maxNumberOfRules && (rulesNumber + 1) > maxNumberOfRules);
 
   state = addItem(state, path, "filter", filterUuid, defaultFilterProperties().merge(properties || {}), config);
 
   const filterPath = path.push(filterUuid);
+
   // If we don't set the empty map, then the following merge of addItem will create a Map rather than an OrderedMap for some reason
   state = state.setIn(expandTreePath(filterPath, "children1"), new Immutable.OrderedMap());
-
-  // The current filter should always have a conjunction of FILTER
-  // state = state.setIn(expandTreePath(filterPath, "properties", "conjunction"), "FILTER");
-
-  // The current filter should always have a conjunction as a first child
-  state = addNewGroup(state, filterPath, defaultGroupProperties(config).merge(properties || {}), config);
-
-  // if (canAddNewRule) {
-  // state = addItem(state, filterPath, "rule", uuid(), defaultRuleProperties(config), config);
-  // }
   state = fixPathsInTree(state);
 
   return state;
@@ -85,9 +73,11 @@ const addNewFilter = (state, path, properties, config) => {
  */
 const setFilterField = (state, path, properties, config, fieldName) => {
   state = state.setIn(expandTreePath(path, "properties", "filterFieldName"), fieldName);
-  // TODO: Delete children1 items
-  state = fixPathsInTree(state);
 
+  // The current filter should always have a conjunction as a first child
+  state = addNewGroup(state, path, defaultGroupProperties(config).merge(properties || {}), config);
+
+  state = fixPathsInTree(state);
   return state;
 };
 
