@@ -135,7 +135,7 @@ const jsonLogicFormatItem = (item, config, meta, isRoot) => {
   // Is item disabled?
   if (properties.get("disabled")) return undefined;
 
-  if ((type === "group" || type === "filter" || type === "rule_group") && children && children.size) {
+  if ((type === "group" || type === "rule_group") && children && children.size) {
     const list = children
       .map((currentChild) => jsonLogicFormatItem(currentChild, config, meta, false))
       .filter((currentChild) => typeof currentChild !== "undefined");
@@ -147,7 +147,7 @@ const jsonLogicFormatItem = (item, config, meta, isRoot) => {
       conjunction = defaultConjunction(config);
     let conj = conjunction.toLowerCase();
     const not = properties.get("not");
-    if (conj != "and" && conj != "or" && conj != "filter") {
+    if (conj != "and" && conj != "or") {
       meta.errors.push(`Conjunction ${conj} is not supported`);
       return undefined;
     }
@@ -173,7 +173,7 @@ const jsonLogicFormatItem = (item, config, meta, isRoot) => {
       conjunction = defaultConjunction(config);
     let conj = conjunction.toLowerCase();
     const not = properties.get("not");
-    if (conj != "and" && conj != "or" && conj != "filter") {
+    if (conj != "filter") {
       meta.errors.push(`Conjunction ${conj} is not supported`);
       return undefined;
     }
