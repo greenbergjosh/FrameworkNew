@@ -7,11 +7,18 @@ import { QueryBuilderProps } from "../types"
 import { Empty } from "antd"
 import { isEmpty } from "lodash/fp"
 
-export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange, onError }: QueryBuilderProps) {
+export function QueryBuilder({
+  schema,
+  jsonLogic,
+  qbDataJsonGroup,
+  onChange,
+  onError,
+}: QueryBuilderProps): JSX.Element {
   /* *********************************
    * STATE
    */
   const [qbData, setQBData] = React.useState(Utils.loadTree(emptyQBDataJsonTree))
+  const [qbDataChildren1Size, setQBDataChildren1Size] = React.useState(0)
   const [isEditing, setIsEditing] = React.useState(false)
 
   /* *********************************
@@ -56,15 +63,7 @@ export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange, onE
       setIsEditing(true)
       setQBData(qbData)
     }
-  }, [config, isEditing, jsonLogic, qbDataJsonGroup, schema])
-
-  const isQueryChildless: boolean = React.useMemo(() => {
-    const children1: any = qbData && qbData.get("children1")
-    if (children1 && children1.size) {
-      return children1.size < 1
-    }
-    return true
-  }, [qbData])
+  }, [config, isEditing, jsonLogic, qbDataJsonGroup, schema, onError])
 
   /* *********************************
    * EVENT HANDLERS
@@ -77,6 +76,8 @@ export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange, onE
   const handleChange = (nextQBData: ImmutableTree): void => {
     // The user has begun creating a query
     setIsEditing(true)
+
+    setQBDataChildren1Size((nextQBData.get("children1") as any).size)
 
     // Convert qbData tree to jsonLogic
     const { logic, errors, data } = Utils.jsonLogicFormat(nextQBData, config)
@@ -105,7 +106,7 @@ export function QueryBuilder({ schema, jsonLogic, qbDataJsonGroup, onChange, onE
       renderBuilder={(builderProps: BuilderProps) => (
         <div className="query-builder qb-lite">
           <Builder {...builderProps} />
-          {isQueryChildless && (
+          {qbDataChildren1Size < 1 && (
             <Empty
               description="Add a group, filter, and at least one rule to create a query"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
