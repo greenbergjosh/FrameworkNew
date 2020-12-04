@@ -3,6 +3,9 @@ import PropTypes from "prop-types";
 import {getFieldConfig} from "../../utils/configUtils";
 import {pureShouldComponentUpdate} from "../../utils/renderUtils";
 import {connect} from "react-redux";
+import Immutable from "immutable";
+import { isEmpty } from "lodash";
+import { expandTreePath } from "../../utils/treeUtils";
 const classNames = require("classnames");
 
 
@@ -26,6 +29,7 @@ export default (Rule) => {
       //connected:
       dragging: PropTypes.object, //{id, x, y, w, h}
       isDraggingTempo: PropTypes.bool,
+      tree: PropTypes.instanceOf(Immutable.Map).isRequired,
     };
 
     constructor(props) {
@@ -90,6 +94,18 @@ export default (Rule) => {
       return should;
     }
 
+    getFilterAncestor(path) {
+      if (isEmpty(path) || path.size < 2) {
+        return null;
+      }
+      const parentPath = path.pop();
+      const parent = this.props.tree.getIn(expandTreePath(parentPath));
+      if (parent && parent.get("type") === "filter") {
+        return parent;
+      }
+      return this.getFilterAncestor(parentPath);
+    }
+
     render() {
       const isDraggingMe = this.props.dragging.id == this.props.id;
       const fieldConfig = getFieldConfig(this.props.field, this.props.config);
@@ -100,6 +116,7 @@ export default (Rule) => {
       const valueError = this.props.valueError;
       const oneValueError = valueError && valueError.toArray().filter(e => !!e).shift() || null;
       const hasError = oneValueError != null && showErrorMessage;
+      const hasFilterAncestor = !!this.getFilterAncestor(this.props.path);
 
       return (
         <div
@@ -131,6 +148,7 @@ export default (Rule) => {
               reordableNodesCnt={this.props.reordableNodesCnt}
               totalRulesCnt={this.props.totalRulesCnt}
               disabled={this.props.disabled}
+              hasFilterAncestor={hasFilterAncestor}
             /> : null
             ,
             <Rule
@@ -157,6 +175,7 @@ export default (Rule) => {
               reordableNodesCnt={this.props.reordableNodesCnt}
               totalRulesCnt={this.props.totalRulesCnt}
               disabled={this.props.disabled}
+              hasFilterAncestor={hasFilterAncestor}
             />
           ]}
         </div>
@@ -170,6 +189,7 @@ export default (Rule) => {
     (state) => {
       return {
         dragging: state.dragging,
+        tree: state.tree,
       };
     }
   )(RuleContainer);

@@ -1,10 +1,11 @@
 import React, { PureComponent } from "react";
 import PropTypes from "prop-types";
-import {getFieldConfig, getOperatorConfig} from "../utils/configUtils";
+import { getFieldConfig, getOperatorConfig } from "../utils/configUtils";
 import keys from "lodash/keys";
 import pickBy from "lodash/pickBy";
 import mapValues from "lodash/mapValues";
-import {useOnPropsChanged} from "../utils/stuff";
+import omitBy from "lodash/omitBy";
+import { useOnPropsChanged } from "../utils/stuff";
 
 
 export default class Operator extends PureComponent {
@@ -15,6 +16,7 @@ export default class Operator extends PureComponent {
     readonly: PropTypes.bool,
     //actions
     setOperator: PropTypes.func.isRequired,
+    hasFilterAncestor: PropTypes.bool,
   };
 
   constructor(props) {
@@ -39,15 +41,13 @@ export default class Operator extends PureComponent {
     const operatorOptions = mapValues(pickBy(config.operators, (item, key) =>
       fieldConfig && fieldConfig.operators && fieldConfig.operators.indexOf(key) !== -1
     ), (_opts, op) => getOperatorConfig(config, op, selectedField));
-      
-    const items = this.buildOptions(config, operatorOptions);
-
-    const isOpSelected = !!selectedOperator;
-    const currOp = isOpSelected ? operatorOptions[selectedOperator] : null;
+    const filteredOperatorOptions = this.filterOperatorOptions(operatorOptions);
+    const items = this.buildOptions(config, filteredOperatorOptions);
+    const currOp = filteredOperatorOptions[selectedOperator];
+    const selectedKey = currOp ? selectedOperator : null;
     const selectedOpts = currOp || {};
     const placeholder = this.props.config.settings.operatorPlaceholder;
-    const selectedKey = selectedOperator;
-    const selectedKeys = isOpSelected ? [selectedKey] : null;
+    const selectedKeys = currOp ? [selectedKey] : null;
     const selectedPath = selectedKeys;
     const selectedLabel = selectedOpts.label;
 
@@ -55,6 +55,23 @@ export default class Operator extends PureComponent {
       placeholder, items,
       selectedKey, selectedKeys, selectedPath, selectedLabel, selectedOpts
     };
+  }
+
+  /**
+   * Filter options by set operators or intrinsic operators.
+   * @param operatorOptions
+   * @return {*}
+   */
+  filterOperatorOptions(operatorOptions) {
+    const isSelectedFieldASet = this.props.selectedField.includes(".");
+    // Sets inside Filter are no longer referencing a set and require intrinsic operators.
+    // Sets outside Filter require set operators.
+    const isSetOperator = !this.props.hasFilterAncestor && isSelectedFieldASet;
+
+    return omitBy(operatorOptions, (op) => {
+      // Current option is omitted when we return true
+      return isSetOperator ? !op.isSetOperator : op.isSetOperator;
+    });
   }
 
   buildOptions(config, fields) {
@@ -76,8 +93,8 @@ export default class Operator extends PureComponent {
     const {config, customProps, setOperator, readonly} = this.props;
     const {renderOperator} = config.settings;
     const renderProps = {
-      config, 
-      customProps, 
+      config,
+      customProps,
       readonly,
       setField: setOperator,
       ...this.meta

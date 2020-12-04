@@ -323,6 +323,22 @@ const operators = {
     mongoFormatOp: mongoFormatOp1.bind(null, "$exists", v => true, false),
     jsonLogic: "!!",
   },
+  select_in: {
+    label: "In",
+    labelForFormat: "IN",
+    sqlOp: "IN",
+    mongoFormatOp: mongoFormatOp1.bind(null, "$eq", v => v, false),
+    reversedOp: "select_not_in",
+    jsonLogic: "in",
+  },
+  select_not_in: {
+    label: "Not in",
+    labelForFormat: "NOT IN",
+    sqlOp: "NOT IN",
+    mongoFormatOp: mongoFormatOp1.bind(null, "$eq", v => v, false),
+    reversedOp: "select_in",
+    jsonLogic: "not_in",
+  },
   select_equals: {
     label: "==",
     labelForFormat: "==",
@@ -347,7 +363,7 @@ const operators = {
   },
   select_any_in: {
     label: "Any in",
-    labelForFormat: "IN",
+    labelForFormat: "ANY IN",
     sqlOp: "IN",
     formatOp: (field, op, values, valueSrc, valueType, opDef, operatorOptions, isForDisplay) => {
       if (valueSrc == "value")
@@ -360,7 +376,8 @@ const operators = {
     },
     mongoFormatOp: mongoFormatOp1.bind(null, "$in", v => v, false),
     reversedOp: "select_not_any_in",
-    jsonLogic: "in",
+    jsonLogic: "any_in",
+    isSetOperator: true,
   },
   select_not_any_in: {
     label: "Not in",
@@ -377,6 +394,25 @@ const operators = {
     },
     mongoFormatOp: mongoFormatOp1.bind(null, "$nin", v => v, false),
     reversedOp: "select_any_in",
+    isSetOperator: true,
+  },
+  select_all_in: {
+    label: "All in",
+    labelForFormat: "ALL IN",
+    sqlOp: "ALL IN",
+    mongoFormatOp: mongoFormatOp1.bind(null, "$in", v => v, false),
+    reversedOp: "select_not_all_in",
+    jsonLogic: "all_in",
+    isSetOperator: true,
+  },
+  select_not_all_in: {
+    label: "Not all in",
+    labelForFormat: "NOT ALL IN",
+    sqlOp: "NOT ALL IN",
+    mongoFormatOp: mongoFormatOp1.bind(null, "$in", v => v, false),
+    reversedOp: "select_all_in",
+    jsonLogic: "not_all_in",
+    isSetOperator: true,
   },
   multiselect_equals: {
     label: "Equals",
@@ -821,8 +857,12 @@ const types = {
       },
       multiselect: {
         operators: [
+          "select_in",
+          "select_not_in",
           "select_any_in",
-          "select_not_any_in"
+          "select_not_any_in",
+          "select_all_in",
+          "select_not_all_in"
         ],
       },
     },

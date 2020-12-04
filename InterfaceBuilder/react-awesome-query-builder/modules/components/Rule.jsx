@@ -43,6 +43,7 @@ class Rule extends PureComponent {
       setValue: PropTypes.func,
       setValueSrc: PropTypes.func,
       reordableNodesCnt: PropTypes.number,
+      hasFilterAncestor: PropTypes.bool.isRequired,
     };
 
     constructor(props) {
@@ -158,6 +159,7 @@ class Rule extends PureComponent {
               showOperatorLabel={showOperatorLabel}
               selectedFieldWidgetConfig={selectedFieldWidgetConfig}
               readonly={immutableOpsMode || this.props.disabled}
+              hasFilterAncestor={this.props.hasFilterAncestor}
             />;
 
       const widget = showWidget
@@ -272,7 +274,7 @@ export class FieldWrapper extends PureComponent {
 class OperatorWrapper extends PureComponent {
   render() {
     const {
-      config, selectedField, selectedOperator, setOperator,
+      config, selectedField, selectedOperator, setOperator, hasFilterAncestor,
       selectedFieldPartsLabels, showOperator, showOperatorLabel, selectedFieldWidgetConfig, readonly
     } = this.props;
     const operator = showOperator
@@ -287,6 +289,7 @@ class OperatorWrapper extends PureComponent {
                 selectedOperator={selectedOperator}
                 setOperator={setOperator}
                 readonly={readonly}
+                hasFilterAncestor={hasFilterAncestor}
               />
             </Col>;
     const hiddenOperator = showOperatorLabel
