@@ -3,7 +3,6 @@ import { dataInjectorManageForm } from "./data-injector-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { DataInjectorInterfaceComponentProps, DataInjectorInterfaceComponentState } from "./types"
 import { set } from "lodash/fp"
-import styles from "./styles.scss"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
