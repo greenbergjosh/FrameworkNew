@@ -63,6 +63,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "The JSON data to be injected.",
                 defaultTheme: "vs-dark",
                 defaultLanguage: "json",
+                defaultValue: "{}",
                 hidden: false,
                 hideLabel: false,
                 component: "code-editor",
