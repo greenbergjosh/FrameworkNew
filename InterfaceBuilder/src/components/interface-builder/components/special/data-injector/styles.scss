@@ -6,9 +6,8 @@
   position: relative;
 
   legend {
+    all: unset;
+    padding: 5px;
     color: rgb(0, 178, 255);
-    font-size: 14px;
-    display: inline-block;
-    width: auto;
   }
 }
