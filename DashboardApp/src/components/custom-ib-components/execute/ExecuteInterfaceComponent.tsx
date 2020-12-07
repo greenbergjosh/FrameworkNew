@@ -12,7 +12,7 @@ import {
 import RemoteConfig from "./components/RemoteConfig/RemoteConfig"
 import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
-import { Empty } from "antd"
+import { Empty, Icon } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
@@ -114,7 +114,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
    * RENDER METHOD
    */
 
-  render(): JSX.Element {
+  getQueryStrategy(): JSX.Element {
     const {
       buttonLabel,
       buttonProps,
@@ -196,5 +196,44 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           />
         )
     }
+  }
+
+  render(): JSX.Element {
+    const diagnosticsPanelStyle = !this.props.invisible
+      ? {
+          padding: 10,
+          border: "1px dashed rgba(0, 178, 255, 0.5)",
+          backgroundColor: "rgba(0, 178, 255, 0.05)",
+          borderRadius: 5,
+          color: "rgb(172 177 180)",
+          fontSize: 10,
+          display: "inline-block",
+        }
+      : {
+          fontSize: 10,
+        }
+
+    if (this.props.mode === "edit") {
+      return (
+        <>
+          <div style={diagnosticsPanelStyle}>
+            <div>Execute</div>
+            <div>
+              <strong>Type:</strong> {this.props.queryType}
+            </div>
+            <div>
+              <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
+            </div>
+            {this.props.executeImmediately && (
+              <div>
+                <Icon type="check-square" /> <strong>Execute Immediately</strong>
+              </div>
+            )}
+          </div>
+          {this.getQueryStrategy()}
+        </>
+      )
+    }
+    return this.getQueryStrategy()
   }
 }
