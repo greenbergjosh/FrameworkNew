@@ -28,6 +28,9 @@ export const ExamplesMenu: React.FC = () => {
         <Menu.Item key="/examples/querybuilder">
           <Link to="/examples/querybuilder">QueryBuilder</Link>
         </Menu.Item>
+        <Menu.Item key="/examples/data-injector">
+          <Link to="/examples/data-injector">Data Injector</Link>
+        </Menu.Item>
       </Menu.SubMenu>
     </Menu>
   )

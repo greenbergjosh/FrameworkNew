@@ -1,0 +1,12 @@
+{
+  "key": "outer",
+  "invisible": false,
+  "hidden": false,
+  "valueKey": "data",
+  "label": "Text",
+  "hideLabel": true,
+  "component": "data-injector",
+  "components": [],
+  "dataType": "json",
+  "jsonValue": "{\n    \"test\": \"some value\"\n}"
+}

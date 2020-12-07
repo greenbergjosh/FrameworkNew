@@ -2,6 +2,7 @@ import { Layout } from "antd"
 import FormExample from "../examples/form"
 import QueryBuilderExample from "../examples/querybuilder"
 import RepeaterExample from "../examples/repeater"
+import DataInjectorExample from "../examples/data-injector"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
@@ -28,6 +29,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/repeater`}>
             <RepeaterExample />
+          </Route>
+          <Route path={`${path}/data-injector`}>
+            <DataInjectorExample />
           </Route>
         </Switch>
       </Layout>
