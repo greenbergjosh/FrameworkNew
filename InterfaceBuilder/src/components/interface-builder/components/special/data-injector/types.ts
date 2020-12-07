@@ -25,3 +25,7 @@ export interface DataInjectorInterfaceComponentProps extends ComponentDefinition
 export interface DataInjectorInterfaceComponentState {
   text: string
 }
+
+export enum EVENTS {
+  VALUE_CHANGED = "valueChanged",
+}

@@ -1,7 +1,7 @@
 import React from "react"
 import { dataInjectorManageForm } from "./data-injector-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { DataInjectorInterfaceComponentProps, DataInjectorInterfaceComponentState } from "./types"
+import { DataInjectorInterfaceComponentProps, DataInjectorInterfaceComponentState, EVENTS } from "./types"
 import { set } from "lodash/fp"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
@@ -10,6 +10,7 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   DataInjectorInterfaceComponentProps,
   DataInjectorInterfaceComponentState
 > {
+  static availableEvents = [EVENTS.VALUE_CHANGED]
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "data",
@@ -67,6 +68,8 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
     const value = this.getValueByType()
 
     onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
+
+    this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
   }
 
   getValueByType = (): JSONRecord | string | boolean | number => {
