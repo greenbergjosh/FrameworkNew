@@ -17,7 +17,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
             components: [
               {
                 key: "label",
-                defaultValue: "Text",
+                defaultValue: "Data",
               },
               {
                 key: "hideLabel",

@@ -34,7 +34,6 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
   static manageForm = dataInjectorManageForm
 
   componentDidMount(): void {
-    debugger
     this.updateValue()
   }
 
@@ -93,8 +92,15 @@ export class DataInjectorInterfaceComponent extends BaseInterfaceComponent<
       const value = this.props.dataType === "json" ? JSON.stringify(rawValue) : rawValue.toString()
 
       return (
-        <fieldset className={styles.editMode}>
-          <legend>Data Injector</legend>
+        <fieldset
+          style={{
+            padding: 10,
+            border: "1px dashed rgba(0, 178, 255, 0.5)",
+            backgroundColor: "rgba(0, 178, 255, 0.05)",
+            borderRadius: 5,
+            position: "relative",
+          }}>
+          <legend style={{ all: "unset", color: "rgb(0, 178, 255)", padding: 5 }}>Data Injector</legend>
           <code>
             {this.props.valueKey}: {value}
           </code>
