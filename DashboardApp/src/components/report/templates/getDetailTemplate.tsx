@@ -13,24 +13,34 @@ import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
+import { UserInterfaceProps } from "@opg/interface-builder"
 
 /***************************************************************************
  *
  * Public Functions
  */
 
-export const getDetailTemplate = (
-  dispatch: AppDispatch,
-  details: string | ReportDetailsType | LocalReportConfig,
-  parameterValues?: JSONRecord,
-  parentData?: JSONRecord,
+export const getDetailTemplate = ({
+  dispatch,
+  details,
+  getRootUserInterfaceData,
+  parameterValues,
+  parentData,
+  handleChangeData,
+}: {
+  dispatch: AppDispatch
+  details: string | ReportDetailsType | LocalReportConfig
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  parameterValues?: JSONRecord
+  parentData?: JSONRecord
   handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
-) => {
+}) => {
   const resolved = resolveDetails(details)
   if (!resolved) return null
   if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
     return (rowData: JSONRecord) => (
       <Report
+        getRootUserInterfaceData={getRootUserInterfaceData}
         isChildReport
         report={resolved}
         data={getData(details, parentData, parameterValues, rowData)}
@@ -43,6 +53,7 @@ export const getDetailTemplate = (
       <ReportDetails
         details={details}
         dispatch={dispatch}
+        getRootUserInterfaceData={getRootUserInterfaceData}
         rowData={rowData}
         parameterValues={parameterValues}
         parentData={parentData}

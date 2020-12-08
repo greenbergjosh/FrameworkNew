@@ -11,7 +11,7 @@ import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 
 export function TableWrapper(props: TableInterfaceComponentProps) {
-  const { columns, onChangeData, parameterValues, parentData } = props
+  const { columns, getRootUserInterfaceData, onChangeData, parameterValues, parentData } = props
 
   /* **********************************************************************
    *
@@ -50,13 +50,14 @@ export function TableWrapper(props: TableInterfaceComponentProps) {
         // accepts React JSX Elements, so we ignore the Typescript error.
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        columnConfig.template = getDetailTemplate(
+        columnConfig.template = getDetailTemplate({
           dispatch,
-          columnConfig.details,
-          parameterValues.toUndefined(),
+          details: columnConfig.details,
+          getRootUserInterfaceData,
+          parameterValues: parameterValues.toUndefined(),
           parentData,
-          onChangeData
-        )
+          handleChangeData: onChangeData,
+        })
       }
 
       /*

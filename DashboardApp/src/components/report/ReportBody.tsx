@@ -27,6 +27,7 @@ import { some } from "fp-ts/lib/Option"
 
 export const ReportBody = React.memo(
   ({
+    getRootUserInterfaceData,
     isChildReport,
     parameterValues,
     parentData,
@@ -177,7 +178,14 @@ export const ReportBody = React.memo(
      * Detail Template
      */
     const getMemoizedDetailTemplate = React.useMemo(() => {
-      return getDetailTemplate(dispatch, reportConfig.details, parameterValues.toUndefined(), parentData, onChangeData)
+      return getDetailTemplate({
+        dispatch,
+        details: reportConfig.details,
+        getRootUserInterfaceData,
+        parameterValues: parameterValues.toUndefined(),
+        parentData,
+        handleChangeData: onChangeData,
+      })
     }, [dispatch, onChangeData, reportConfig.details, parameterValues, /*parameterValues.toUndefined(),*/ parentData])
 
     const sortSettings: SortSettingsModel = {
@@ -232,13 +240,14 @@ export const ReportBody = React.memo(
           // accepts React JSX Elements, so we ignore the Typescript error.
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          columnConfig.template = getDetailTemplate(
+          columnConfig.template = getDetailTemplate({
             dispatch,
-            columnConfig.details,
-            parameterValues.toUndefined(),
+            details: columnConfig.details,
+            getRootUserInterfaceData,
+            parameterValues: parameterValues.toUndefined(),
             parentData,
-            onChangeData
-          )
+            handleChangeData: onChangeData,
+          })
         }
 
         /*

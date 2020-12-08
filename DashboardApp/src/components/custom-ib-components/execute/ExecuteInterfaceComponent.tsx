@@ -14,6 +14,7 @@ import RemoteQuery from "./components/RemoteQuery/RemoteQuery"
 import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { Empty, Icon } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
+import { JSONRecord } from "../../../data/JSON"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -109,6 +110,19 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     this.raiseEvent(eventName, eventPayload)
   }
 
+  private getParamsFromParamKVPMaps = (): JSONRecord => {
+    const { paramKVPMaps, userInterfaceData } = this.props
+    if (!paramKVPMaps || !paramKVPMaps.values || !paramKVPMaps.values.reduce) {
+      return userInterfaceData
+    }
+    const params = paramKVPMaps.values.reduce((acc, item) => {
+      const val = this.getValue(item.valueKey)
+      if (val) acc[item.fieldName] = val
+      return acc
+    }, {} as JSONRecord)
+    return { ...userInterfaceData, ...params }
+  }
+
   /* ******************************************
    *
    * RENDER METHOD
@@ -139,11 +153,11 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             buttonProps={buttonProps}
             deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
+            getParams={this.getParamsFromParamKVPMaps}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
-            paramKVPMaps={paramKVPMaps}
             parentSubmitting={this.state.submittingQueryForm}
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
@@ -158,12 +172,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteQuery
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
+            getParams={this.getParamsFromParamKVPMaps}
             isCRUD={castProps.RemoteQuery_isCRUD}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
-            paramKVPMaps={paramKVPMaps}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}
@@ -176,12 +190,12 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteUrl
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
+            getParams={this.getParamsFromParamKVPMaps}
             isCRUD={castProps.RemoteUrl_isCRUD}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
-            paramKVPMaps={paramKVPMaps}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
             setParentSubmitting={this.setParentSubmitting}

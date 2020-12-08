@@ -2,7 +2,7 @@ import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
 import { QueryConfig, QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ExecuteInterfaceComponentState, FromStore, LoadStatus, ParamKVPMapsType } from "../types"
+import { ExecuteInterfaceComponentState, FromStore, LoadStatus, ParamKVPMapsType, RemoteComponentProps } from "../types"
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
@@ -132,25 +132,6 @@ export function getErrorStatePromise(reason: string): Promise<LoadStatus> {
 export function getErrorState(e: Error): LoadStatus {
   console.error("ExecuteInterfaceComponent", e)
   return { data: null, loadStatus: "error", loadError: e.message }
-}
-
-/**
- * Convert param definitions to params hash
- * @param paramKVPMaps
- */
-export function convertParamKVPMapsToParams(
-  paramKVPMaps: ParamKVPMapsType,
-  userInterfaceData: UserInterfaceProps["data"]
-): JSONRecord {
-  if (!paramKVPMaps || !paramKVPMaps.values || !paramKVPMaps.values.reduce) {
-    return userInterfaceData
-  }
-  const params = paramKVPMaps.values.reduce((acc, item) => {
-    const val = get(item.valueKey, userInterfaceData)
-    if (val) acc[item.fieldName] = val
-    return acc
-  }, {} as JSONRecord)
-  return { ...userInterfaceData, ...params }
 }
 
 /**

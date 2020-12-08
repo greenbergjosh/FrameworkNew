@@ -154,10 +154,10 @@ export interface RemoteComponentProps {
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
   onMount: OnMountType
   outboundValueKey: IExecuteInterfaceComponentProps["outboundValueKey"]
-  paramKVPMaps: ParamKVPMapsType
   parentSubmitting: QueryFormProps["parentSubmitting"]
   setParentSubmitting: QueryFormProps["setParentSubmitting"]
   userInterfaceData: UserInterfaceProps["data"]
+  getParams: () => JSONRecord
 }
 
 export interface FromStore {

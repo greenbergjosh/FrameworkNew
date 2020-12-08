@@ -56,6 +56,14 @@ export const Report = (props: ReportProps): JSX.Element => {
     [fromStore.decodedQueryConfigsById, reportConfig]
   )
 
+  /**
+   * If this is a nested report, then return getRootUserInterfaceData;
+   * if this is the root report then return props.data
+   */
+  const getRootData = () => {
+    return (props.getRootUserInterfaceData && props.getRootUserInterfaceData()) || props.data
+  }
+
   return (
     <div>
       <ReportOrErrors reportConfig={reportConfig} reportId={reportId} queryConfig={queryConfig}>
@@ -63,6 +71,7 @@ export const Report = (props: ReportProps): JSX.Element => {
           <QueryParams queryConfig={queryConfig} parentData={props.data}>
             {({ parameterValues, satisfiedByParentParams, setParameterValues, unsatisfiedByParentParams }) => (
               <ReportBody
+                getRootUserInterfaceData={getRootData}
                 isChildReport={props.isChildReport}
                 parameterValues={parameterValues}
                 parentData={props.data}

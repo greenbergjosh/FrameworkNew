@@ -4,7 +4,7 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { HTTPRequestQueryConfig, QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { convertParamKVPMapsToParams, getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
+import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
 import { OnSubmitType, RemoteUrlFromStore, RemoteUrlProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
@@ -17,12 +17,12 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
   const {
     buttonLabel,
     buttonProps,
+    getParams,
     isCRUD,
     onChangeData,
     onRaiseEvent,
     onMount,
     outboundValueKey,
-    paramKVPMaps,
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
@@ -124,7 +124,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
       />
     )
 
-  const params = convertParamKVPMapsToParams(paramKVPMaps, userInterfaceData)
+  const params = getParams()
 
   return (
     <QueryParams queryConfig={queryConfig} parentData={params}>
