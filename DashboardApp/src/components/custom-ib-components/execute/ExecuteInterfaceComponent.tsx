@@ -134,11 +134,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       buttonProps,
       onChangeData,
       outboundValueKey,
-      paramKVPMaps,
       remoteQuery,
       remoteUrl,
       userInterfaceData,
-      // valueKey,
       queryType,
     } = this.props
     let castProps

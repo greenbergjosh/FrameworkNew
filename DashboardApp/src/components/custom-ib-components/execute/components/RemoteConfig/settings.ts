@@ -335,33 +335,4 @@ export const remoteConfigSettings = [
       ],
     },
   },
-  {
-    key: "paramKVPMaps",
-    valueKey: "paramKVPMaps.values",
-    label: "Map Params",
-    component: "data-map",
-    multiple: true,
-    keyComponent: {
-      label: "Param Field Name",
-      component: "input",
-      valueKey: "fieldName",
-    },
-    valueComponent: {
-      label: "Param Value Key",
-      component: "input",
-      valueKey: "valueKey",
-    },
-    visibilityConditions: {
-      and: [
-        {
-          "===": [
-            "remote-config",
-            {
-              var: ["queryType"],
-            },
-          ],
-        },
-      ],
-    },
-  },
 ]

@@ -32,8 +32,10 @@ export function fetch({
 
   switch (resultsType) {
     case "all":
-      if (!entityTypeId)
-        return Promise.reject(Error("Entity type not found. Please check the Execute component settings."))
+      if (!entityTypeId) {
+        console.error("Entity type not found. Please check the Execute component settings.")
+        return Promise.reject()
+      }
 
       allConfigsOfType = getAllConfigsOfType(entityTypeId, fromStore)
       data = convertConfigsToJSON(allConfigsOfType)

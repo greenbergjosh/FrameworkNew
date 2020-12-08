@@ -75,34 +75,4 @@ export const remoteQuerySettings = [
       ],
     },
   },
-  {
-    key: "remoteQueryMapping",
-    valueKey: "remoteQueryMapping",
-    label: "Query Fields",
-    help: "For fields that need property name transformations applied, describe these here",
-    component: "data-map",
-    count: 2,
-    defaultValue: [
-      { label: "label", value: "" },
-      { label: "value", value: "" },
-    ],
-    keyComponent: {
-      label: "Property",
-      component: "input",
-      valueKey: "value",
-    },
-    valueComponent: {
-      label: "Mapping",
-      component: "input",
-      valueKey: "value",
-    },
-    visibilityConditions: {
-      "===": [
-        "remote-query",
-        {
-          var: ["queryType"],
-        },
-      ],
-    },
-  },
 ]
