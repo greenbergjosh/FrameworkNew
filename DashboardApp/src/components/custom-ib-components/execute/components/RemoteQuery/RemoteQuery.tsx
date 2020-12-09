@@ -6,7 +6,7 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { OnSubmitType, RemoteQueryFromStore, RemoteQueryProps } from "../../types"
+import { OnSubmitType, RemoteQueryFromStore, RemoteQueryProps, ErrorResponse } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
 import { AppDispatch } from "../../../../../state/store.types"
 import { useRematch } from "../../../../../hooks"
@@ -72,6 +72,19 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
 
     return executeRemoteQuery(queryConfig as QueryConfig, queryFormValues, dispatch, isCRUD).then((newLoadingState) => {
       // Put response data into userInterfaceData (via onChangeData)
+
+      // TODO: Move this error checking to the DAL and expect server to respond
+      //  like previously defined api responses in the DAL codecs.
+      const dataStatus = (newLoadingState.data as unknown) as ErrorResponse
+      if (dataStatus && dataStatus.status && dataStatus.status === "error") {
+        dispatch.feedback.notify({
+          type: "error",
+          message: `Remote Query failed. The server responded with an error: ${dataStatus.error}`,
+        })
+        console.error("RemoteQuery API responded with an error", dataStatus.error)
+        return
+      }
+
       if (onChangeData) {
         const newData = mergeResultDataWithModel({
           outboundValueKey,

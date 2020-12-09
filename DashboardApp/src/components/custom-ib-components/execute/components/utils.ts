@@ -2,7 +2,7 @@ import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
 import { QueryConfig, QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ExecuteInterfaceComponentState, FromStore, LoadStatus } from "../types"
+import { ErrorResponse, ExecuteInterfaceComponentState, FromStore, LoadStatus } from "../types"
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
@@ -79,7 +79,7 @@ export function mergeResultDataWithModel({
   outboundValueKey: string
   parameterValues: JSONRecord
   queryConfigQuery: string
-  resultData: JSONRecord | JSONRecord[] | null | undefined
+  resultData: ErrorResponse | JSONRecord | JSONRecord[] | null | undefined
   userInterfaceData: UserInterfaceProps["data"]
 }): void {
   if (outboundValueKey) {

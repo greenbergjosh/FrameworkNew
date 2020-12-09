@@ -64,6 +64,12 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   valueKey: string
 }
 
+export interface ErrorResponse {
+  data: JSONRecord | JSONRecord[] | null
+  error: string
+  status: "error"
+}
+
 export type LoadStatus = {
   data: JSONRecord | JSONRecord[] | null
   loadStatus: LoadStatusCode
@@ -71,10 +77,7 @@ export type LoadStatus = {
   remoteQueryLoggingName?: string
 }
 
-export interface ExecuteInterfaceComponentState {
-  data: JSONRecord | JSONRecord[] | null
-  loadError: LoadError
-  loadStatus: LoadStatusCode
+export interface ExecuteInterfaceComponentState extends LoadStatus {
   formState: any
   /**
    * QueryConfig is type of taggedUnion:
