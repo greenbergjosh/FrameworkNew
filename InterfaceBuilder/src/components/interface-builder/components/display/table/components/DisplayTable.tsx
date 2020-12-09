@@ -44,7 +44,7 @@ export function DisplayTable({
 }: DisplayTableProps) {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   const loading = loadingKey && get(loadingKey, userInterfaceData)
-  const dataArray: any = get(valueKey!, userInterfaceData) || [userInterfaceData]
+  const dataArray: any = get(valueKey!, userInterfaceData) || []
   const grid = React.useRef<GridComponent>(null)
 
   return (
