@@ -14,6 +14,7 @@ export function Repeater({
   hasLastItemComponents,
   lastItemComponents,
   onChange,
+  readonly,
 }: RepeaterProps): JSX.Element {
   const repeaterId = React.useMemo(uuid, [])
 
@@ -150,6 +151,7 @@ export function Repeater({
           onDelete={handleDelete}
           onMoveDown={handleMoveDown}
           onMoveUp={handleMoveUp}
+          readonly={readonly}
         />
       ))}
       {/*
@@ -170,6 +172,7 @@ export function Repeater({
           onDelete={handleDelete}
           onMoveDown={() => null}
           onMoveUp={() => null}
+          readonly={readonly}
         />
       ) : null}
     </ol>

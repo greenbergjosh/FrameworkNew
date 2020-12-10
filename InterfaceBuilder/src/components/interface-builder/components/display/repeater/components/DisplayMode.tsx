@@ -16,6 +16,7 @@ export function DisplayMode({
   lastItemComponents,
   onChange,
   orientation,
+  readonly,
 }: DisplayModeProps): JSX.Element {
   /* *************************************
    *
@@ -85,14 +86,17 @@ export function DisplayMode({
             lastItemComponents={lastItemComponents}
             onChange={onChange}
             orientation={orientation}
+            readonly={readonly}
           />
         ) : (
           <Empty description={description} />
         )}
       </div>
-      <Button style={{ display: "block", marginLeft: 25, marginTop: 10 }} onClick={handleAddItem}>
-        {addItemLabel}
-      </Button>
+      {!readonly && (
+        <Button style={{ display: "block", marginLeft: 25, marginTop: 10 }} onClick={handleAddItem}>
+          {addItemLabel}
+        </Button>
+      )}
     </>
   )
 }

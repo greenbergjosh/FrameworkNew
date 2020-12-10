@@ -59,6 +59,18 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
             ],
           },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "readonly",
+                valueKey: "readonly",
+                label: "Read Only",
+                component: "toggle",
+                defaultValue: false,
+              },
+            ],
+          },
         ],
       },
     ],

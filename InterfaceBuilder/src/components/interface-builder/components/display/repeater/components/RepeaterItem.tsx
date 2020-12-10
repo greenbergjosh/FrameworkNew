@@ -19,6 +19,7 @@ export function _RepeaterItem({
   onDelete,
   onMoveDown,
   onMoveUp,
+  readonly,
 }: RepeaterItemProps): JSX.Element {
   /* *************************************
    *
@@ -55,25 +56,27 @@ export function _RepeaterItem({
               onChangeSchema={handleSchemaChange}
             />
           </Card>
-          <Button.Group className={styles.toolbar} size="small">
-            <Button onClick={() => onAddRow(index)} icon="plus" type="default" title="Add Row Above" />
-            <Button onClick={() => onMoveUp(index)} icon="up" type="default" title="Move Up" disabled={index === 0} />
-            <Button
-              onClick={() => onMoveDown(index)}
-              icon="down"
-              type="default"
-              title="Move Down"
-              disabled={!hasNextSibling}
-            />
-            <Popconfirm
-              title="Are you sure delete this item?"
-              onConfirm={() => onDelete(index)}
-              onCancel={() => null}
-              okText="Yes"
-              cancelText="No">
-              <Button icon="delete" type="danger" title="Delete..." />
-            </Popconfirm>
-          </Button.Group>
+          {!readonly && (
+            <Button.Group className={styles.toolbar} size="small">
+              <Button onClick={() => onAddRow(index)} icon="plus" type="default" title="Add Row Above" />
+              <Button onClick={() => onMoveUp(index)} icon="up" type="default" title="Move Up" disabled={index === 0} />
+              <Button
+                onClick={() => onMoveDown(index)}
+                icon="down"
+                type="default"
+                title="Move Down"
+                disabled={!hasNextSibling}
+              />
+              <Popconfirm
+                title="Are you sure delete this item?"
+                onConfirm={() => onDelete(index)}
+                onCancel={() => null}
+                okText="Yes"
+                cancelText="No">
+                <Button icon="delete" type="danger" title="Delete..." />
+              </Popconfirm>
+            </Button.Group>
+          )}
         </li>
       ) : (
         /*

@@ -33,6 +33,18 @@ const checkboxManageFormDefinition: Partial<ComponentDefinition>[] = [
               },
             ],
           },
+          {
+            key: "appearance",
+            components: [
+              {
+                key: "disabled",
+                valueKey: "disabled",
+                label: "Read Only",
+                component: "toggle",
+                defaultValue: false,
+              },
+            ],
+          },
         ],
       },
     ],

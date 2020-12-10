@@ -15,6 +15,7 @@ export interface CheckboxInterfaceComponentProps extends ComponentDefinitionName
   userInterfaceData: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
+  disabled: boolean
 }
 
 interface CheckboxInterfaceComponentState {
@@ -60,13 +61,13 @@ export class CheckboxInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey } = this.props
+    const { defaultValue, userInterfaceData, valueKey, disabled } = this.props
     const rawValue = get(valueKey, userInterfaceData)
 
     const value = typeof rawValue === "boolean" ? rawValue : defaultValue
     return (
       <Undraggable wrap="shrink">
-        <Checkbox onChange={this.handleChange} checked={value} />
+        <Checkbox onChange={this.handleChange} checked={value} disabled={disabled} />
       </Undraggable>
     )
   }

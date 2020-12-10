@@ -52,6 +52,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
       getRootUserInterfaceData,
       valueKey,
       mode,
+      readonly,
     } = this.props
     const data = get(valueKey, userInterfaceData) || []
 
@@ -69,6 +70,7 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
             lastItemComponents={lastItemComponents}
             onChange={this.handleChange}
             orientation={orientation}
+            readonly={readonly}
           />
         )
       }

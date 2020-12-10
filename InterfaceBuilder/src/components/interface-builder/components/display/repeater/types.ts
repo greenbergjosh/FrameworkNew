@@ -23,6 +23,7 @@ export interface RepeaterInterfaceComponentProps extends ComponentDefinitionName
   userInterfaceData?: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
+  readonly: boolean
 }
 
 export interface ModeProps {
@@ -51,6 +52,7 @@ export interface ConfigureModeProps extends ModeProps {
 export interface DisplayModeProps extends ModeProps {
   addItemLabel: string
   description?: string
+  readonly: boolean
 }
 
 export interface RepeaterProps {
@@ -63,6 +65,7 @@ export interface RepeaterProps {
   orientation?: OrientationType
   userInterfaceData?: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  readonly: boolean
 }
 
 export interface RepeaterItemProps {
@@ -77,4 +80,5 @@ export interface RepeaterItemProps {
   onDelete: (index: number) => void
   onMoveDown: (index: number) => void
   onMoveUp: (index: number) => void
+  readonly: boolean
 }
