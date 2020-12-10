@@ -70,12 +70,14 @@ export function getResultDataFromReportData(
  * @param userInterfaceData
  */
 export function mergeResultDataWithModel({
+  getRootUserInterfaceData,
   outboundValueKey,
   parameterValues,
   queryConfigQuery,
   resultData,
   userInterfaceData,
 }: {
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   outboundValueKey: string
   parameterValues: JSONRecord
   queryConfigQuery: string
@@ -85,6 +87,11 @@ export function mergeResultDataWithModel({
   if (outboundValueKey) {
     // If there's an outboundValueKey, nest the data
     const newData = isArray(resultData) ? resultData : { ...parameterValues, ...resultData }
+    if (outboundValueKey.startsWith("root.")) {
+      // Put data in root userInterfaceData
+      const key = outboundValueKey.substring(5)
+      return set(key, newData, getRootUserInterfaceData())
+    }
     return set(outboundValueKey, newData, userInterfaceData)
   }
   // No outboundValueKey, so merge the data at the top level

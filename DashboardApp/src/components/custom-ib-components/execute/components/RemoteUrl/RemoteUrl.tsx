@@ -18,6 +18,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     buttonLabel,
     buttonProps,
     getParams,
+    getRootUserInterfaceData,
     isCRUD,
     onChangeData,
     onRaiseEvent,
@@ -84,6 +85,7 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
         // Put response data into userInterfaceData (via onChangeData)
         if (onChangeData) {
           const newData = mergeResultDataWithModel({
+            getRootUserInterfaceData,
             outboundValueKey,
             parameterValues,
             queryConfigQuery: queryConfig.query,

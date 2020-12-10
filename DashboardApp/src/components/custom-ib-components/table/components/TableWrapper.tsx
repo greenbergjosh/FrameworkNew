@@ -56,7 +56,7 @@ export function TableWrapper(props: TableInterfaceComponentProps) {
           getRootUserInterfaceData,
           parameterValues: parameterValues.toUndefined(),
           parentData,
-          handleChangeData: onChangeData,
+          onChangeData,
         })
       }
 

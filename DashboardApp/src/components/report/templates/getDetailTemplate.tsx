@@ -133,8 +133,10 @@ function handleChangeDataFromChildren(
   details: ReportDetailsProps["details"],
   rowData: JSONRecord,
   newData: JSONRecord,
-  handleChangeData?: (rowData: JSONRecord, newData: JSONRecord) => void
+  handleChangeData?: (rowData: JSONRecord, newData: JSONRecord) => void, // Used by Reports.tsx
+  onChangeData?: UserInterfaceProps["onChangeData"] // Used by Interface Builder components
 ) {
+  onChangeData && onChangeData(newData)
   if (!handleChangeData) {
     // No point in calculating return value
     return

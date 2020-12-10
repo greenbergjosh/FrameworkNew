@@ -23,6 +23,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     deleteRedirectPath,
     entityTypeId,
     getParams,
+    getRootUserInterfaceData,
     onChangeData,
     onRaiseEvent,
     onMount,
@@ -120,6 +121,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       // Put response data into userInterfaceData via onChangeData
       if (onChangeData && newLoadingState.loadStatus !== "deleted") {
         const newData = mergeResultDataWithModel({
+          getRootUserInterfaceData,
           outboundValueKey,
           parameterValues,
           queryConfigQuery: queryConfig.query,

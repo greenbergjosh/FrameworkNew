@@ -4,6 +4,7 @@ import {
   ComponentDefinitionNamedProps,
 } from "components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 interface ColumnSortOptions {
   allowSorting?: boolean
@@ -66,4 +67,16 @@ export function visiblityConditionType(type: string) {
       },
     ],
   }
+}
+
+export interface DisplayTableProps extends Partial<TableInterfaceComponentDisplayModeProps> {
+  columns: ColumnConfig[]
+  userInterfaceData: UserInterfaceProps["data"]
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  preview?: boolean
+  getValue: (
+    valueKey: string,
+    userInterfaceData?: UserInterfaceProps["data"],
+    getRootUserInterfaceData?: () => UserInterfaceProps["data"]
+  ) => JSONRecord | JSONRecord[] | undefined
 }

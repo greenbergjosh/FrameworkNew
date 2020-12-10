@@ -153,6 +153,7 @@ export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Pro
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
+  getRootUserInterfaceData: () => UserInterfaceProps["data"]
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
   onMount: OnMountType

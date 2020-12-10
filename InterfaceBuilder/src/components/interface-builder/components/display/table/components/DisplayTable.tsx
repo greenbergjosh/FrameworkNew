@@ -1,5 +1,5 @@
 import React from "react"
-import { get, set, sortBy } from "lodash/fp"
+import { get, isArray, isEmpty, matches, set, sortBy } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -9,15 +9,8 @@ import {
 } from "@syncfusion/ej2-react-grids"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import { StandardGrid } from "components/grid/StandardGrid"
-import { ColumnConfig, TableInterfaceComponentDisplayModeProps } from "../types"
-import { UserInterfaceProps } from "components/interface-builder/UserInterface"
-
-export interface DisplayTableProps extends Partial<TableInterfaceComponentDisplayModeProps> {
-  columns: ColumnConfig[]
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  preview?: boolean
-}
+import { ColumnConfig, DisplayTableProps } from "../types"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 /**
  * Display Table
@@ -39,13 +32,42 @@ export function DisplayTable({
   rowDetails,
   userInterfaceData,
   getRootUserInterfaceData,
+  getValue,
   valueKey,
   preview = false,
 }: DisplayTableProps) {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   const loading = loadingKey && get(loadingKey, userInterfaceData)
-  const dataArray: any = get(valueKey!, userInterfaceData) || []
+  let dataArray: JSONRecord[] = []
+  if (valueKey) {
+    const val = getValue(valueKey)
+    if (val && !isEmpty(val)) {
+      if (isArray(val)) {
+        dataArray = val
+      } else {
+        dataArray = [val]
+      }
+    }
+  }
   const grid = React.useRef<GridComponent>(null)
+
+  /**
+   * From DashboardApp: ReportBody.tsx "onChangeData"
+   */
+  const updateGridData = React.useCallback((oldData: JSONRecord, newData: JSONRecord) => {
+    if (grid && grid.current) {
+      /*
+       * If the dataSource is an array of JavaScript objects, then Grid will create instance of DataManager.
+       * https://ej2.syncfusion.com/react/documentation/api/grid/
+       */
+      const ds = grid.current.dataSource as JSONRecord[]
+      const idx = ds.findIndex((item) => matches(item)(oldData))
+      if (idx && idx > -1) {
+        ds[idx] = { ...newData }
+        grid.current.refresh()
+      }
+    }
+  }, [])
 
   return (
     <StandardGrid
@@ -78,7 +100,10 @@ export function DisplayTable({
                   components={rowDetails}
                   data={parentData}
                   getRootData={getRootUserInterfaceData}
-                  onChangeData={(newData) => onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))}
+                  onChangeData={(newData) => {
+                    updateGridData(parentData, newData)
+                    onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))
+                  }}
                   onChangeSchema={(newSchema) => {
                     console.log("TableInterfaceComponent.DisplayTable", "onChangeSchema X4", {
                       newSchema,

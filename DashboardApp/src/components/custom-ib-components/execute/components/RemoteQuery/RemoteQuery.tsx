@@ -18,6 +18,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     buttonLabel,
     buttonProps,
     getParams,
+    getRootUserInterfaceData,
     isCRUD,
     onChangeData,
     onRaiseEvent,
@@ -87,6 +88,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
 
       if (onChangeData) {
         const newData = mergeResultDataWithModel({
+          getRootUserInterfaceData,
           outboundValueKey,
           parameterValues,
           queryConfigQuery: queryConfig.query,
