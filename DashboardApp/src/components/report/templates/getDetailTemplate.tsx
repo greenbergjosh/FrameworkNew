@@ -27,6 +27,7 @@ export const getDetailTemplate = ({
   parameterValues,
   parentData,
   handleChangeData,
+  onChangeData,
 }: {
   dispatch: AppDispatch
   details: string | ReportDetailsType | LocalReportConfig
@@ -34,6 +35,7 @@ export const getDetailTemplate = ({
   parameterValues?: JSONRecord
   parentData?: JSONRecord
   handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
+  onChangeData?: UserInterfaceProps["onChangeData"]
 }) => {
   const resolved = resolveDetails(details)
   if (!resolved) return null
@@ -58,7 +60,9 @@ export const getDetailTemplate = ({
         parameterValues={parameterValues}
         parentData={parentData}
         layout={resolved.layout}
-        onChangeData={(newData: any) => handleChangeDataFromChildren(details, rowData, newData, handleChangeData)}
+        onChangeData={(newData: any) =>
+          handleChangeDataFromChildren(details, rowData, newData, handleChangeData, onChangeData)
+        }
       />
     )
   }
