@@ -196,6 +196,20 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: true,
               },
               {
+                key: "enableSliceLabels",
+                valueKey: "enableSliceLabels",
+                label: "Slice Labels",
+                component: "toggle",
+                defaultValue: true,
+              },
+              {
+                key: "enableRadialLabels",
+                valueKey: "enableRadialLabels",
+                label: "Radial Labels",
+                component: "toggle",
+                defaultValue: true,
+              },
+              {
                 key: "showLegend",
                 valueKey: "showLegend",
                 label: "Legend",

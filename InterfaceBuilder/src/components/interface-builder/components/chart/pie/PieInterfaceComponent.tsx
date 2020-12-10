@@ -136,7 +136,14 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render(): JSX.Element {
-    const { colorScheme, donut = true, showLegend = false, sliceGap = 2 } = this.props
+    const {
+      colorScheme,
+      donut = true,
+      showLegend = false,
+      sliceGap = 2,
+      enableRadialLabels = true,
+      enableSliceLabels = true,
+    } = this.props
     const margin = { top: 40, right: 40, bottom: 40, left: 40 }
     const borderColor: InheritedColorProp = { from: "color", modifiers: [["darker", 0.5]] }
 
@@ -149,6 +156,8 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
             borderWidth={1}
             colors={getNivoColorScheme(colorScheme)}
             data={this.state.pieData.map((item) => item.pieDatum) || []}
+            enableRadialLabels={enableRadialLabels}
+            enableSlicesLabels={enableSliceLabels}
             isInteractive={this.state.pieData != emptyDataSet}
             innerRadius={donut ? 0.5 : undefined}
             legends={showLegend ? legends : undefined}

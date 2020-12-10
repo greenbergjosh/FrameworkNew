@@ -14,6 +14,8 @@ export interface PieInterfaceComponentProps extends ComponentDefinitionNamedProp
   // Pie props
   colorScheme: string
   donut: boolean
+  enableRadialLabels: boolean
+  enableSliceLabels: boolean
   showLegend: boolean
   sliceLabelKey: string
   sliceValueKey: string

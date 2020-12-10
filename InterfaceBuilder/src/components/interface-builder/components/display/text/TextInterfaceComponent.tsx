@@ -2,7 +2,7 @@ import React, { CSSProperties } from "react"
 import { textManageForm } from "./text-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { TextInterfaceComponentProps, TextInterfaceComponentState, TitleSizeType } from "./types"
-import { get, isEmpty, isEqual, isObject } from "lodash/fp"
+import { get, isEmpty, isEqual, isObject, isNull, isUndefined } from "lodash/fp"
 import { JSONRecord } from "index"
 import { CodeBlock, Error, Info, Paragraph, PlainText, Success, Title, Warning } from "./components/TextTypes"
 
@@ -178,7 +178,7 @@ function replaceTokens(stringTemplate: string, value: string | JSONRecord): stri
    * When there is a single value, the user should
    * just provide {$} in the template string.
    */
-  if (value && !isObject(value)) {
+  if (!isNull(value) && !isUndefined(value) && !isEmpty(value.toString()) && !isObject(value)) {
     return stringTemplate.replace("{$}", value.toString())
   }
 
