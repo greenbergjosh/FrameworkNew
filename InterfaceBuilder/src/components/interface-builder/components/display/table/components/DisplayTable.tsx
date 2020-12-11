@@ -1,5 +1,5 @@
 import React from "react"
-import { get, isArray, isEmpty, matches, set, sortBy } from "lodash/fp"
+import { get, isArray, isEmpty, matches, set, sortBy, isEqual } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -16,7 +16,7 @@ import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
  * Display Table
  * View the actual grid with data.
  */
-export function DisplayTable({
+export function _DisplayTable({
   allowAdding,
   allowEditing,
   columns,
@@ -124,6 +124,17 @@ export function DisplayTable({
     />
   )
 }
+
+function propsAreEqual(prevProps: DisplayTableProps, nextProps: DisplayTableProps) {
+  const prevData = prevProps.valueKey && get(prevProps.valueKey, prevProps.userInterfaceData)
+  const nextData = nextProps.valueKey && get(nextProps.valueKey, nextProps.userInterfaceData)
+  const eqData = isEqual(prevData, nextData)
+  const eq = eqData
+
+  return eq
+}
+
+export const DisplayTable = React.memo(_DisplayTable, propsAreEqual)
 
 function getDisplaySettings(columns: ColumnConfig[], defaultPageSize: number | string | undefined) {
   const sortSettings: SortSettingsModel = {
