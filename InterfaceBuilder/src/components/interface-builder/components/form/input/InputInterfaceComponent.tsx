@@ -13,7 +13,7 @@ export interface InputInterfaceComponentProps extends ComponentDefinitionNamedPr
   component: "input"
   defaultValue?: string
   onChangeData: UserInterfaceProps["onChangeData"]
-  placeholder: string
+  placeholder?: string
   userInterfaceData: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   valueKey: string
@@ -56,7 +56,7 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
   }
 
   render(): JSX.Element {
-    const { defaultValue, userInterfaceData, valueKey, maxLength, size } = this.props
+    const { defaultValue, userInterfaceData, valueKey, maxLength, size, placeholder } = this.props
     const rawValue = get(valueKey, userInterfaceData)
     const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     return (
@@ -68,6 +68,7 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
             maxLength={maxLength}
             className={styles.input}
             size={size}
+            placeholder={placeholder}
           />
         </Undraggable>
         <CharCounter text={value} maxLength={maxLength} className={styles.counter} />

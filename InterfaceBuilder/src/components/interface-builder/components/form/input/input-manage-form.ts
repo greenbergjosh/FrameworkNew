@@ -37,6 +37,12 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "appearance",
             components: [
               {
+                key: "placeholder",
+                valueKey: "placeholder",
+                component: "input",
+                label: "Placeholder",
+              },
+              {
                 key: "size",
                 valueKey: "size",
                 ordinal: 10,
