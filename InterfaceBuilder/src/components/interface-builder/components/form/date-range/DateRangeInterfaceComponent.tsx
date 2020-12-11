@@ -3,30 +3,17 @@ import { RangePickerValue } from "antd/lib/date-picker/interface"
 import { get, set } from "lodash/fp"
 import moment from "moment"
 import React from "react"
-import { getTimeFormat, TimeSettings } from "../_shared/common-include-time-form"
-import { UserInterfaceProps } from "../../../UserInterface"
+import { getTimeFormat } from "../_shared/common-include-time-form"
 import { dateRangeManageForm } from "./date-range-manage-form"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
+import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { Undraggable } from "../../_shared/Undraggable"
-
-export interface DateRangeInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "date-range"
-  defaultRangeValue: string
-  timeSettings?: TimeSettings
-
-  onChangeData: UserInterfaceProps["onChangeData"]
-  startDateKey: string
-  endDateKey: string
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-}
-
-interface DateRangeInterfaceComponentState {}
+import { DateRangeInterfaceComponentProps, DateRangeInterfaceComponentState, EVENTS } from "./types"
 
 export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
   DateRangeInterfaceComponentProps,
   DateRangeInterfaceComponentState
 > {
+  static availableEvents = [EVENTS.VALUE_CHANGED]
   static defaultProps = {
     startDateKey: "startDate",
     endDateKey: "endDate",
@@ -78,6 +65,7 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     const [startDate, endDate] = this.getValues()
 
     onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+    this.raiseEvent(EVENTS.VALUE_CHANGED, { startDate, endDate })
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
