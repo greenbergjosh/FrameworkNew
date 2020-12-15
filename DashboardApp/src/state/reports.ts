@@ -171,7 +171,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
           method: query.method,
           body: query.body.format === "raw" ? prepareQueryBody(query, params) : new URLSearchParams(query.body.content),
           headers: query.headers,
-          params,
+          params: query.body.format === "raw" && query.body.lang === "json-tokenized" ? {} : params,
         })
         .then((x) =>
           x.fold(
@@ -276,7 +276,8 @@ const prepareQueryBody = (query: HTTPRequestQueryConfig, params: JSONRecord | JS
 
 function replaceQueryParamTokens(raw: string, query: HTTPRequestQueryConfig, params: JSONRecord | JSONArray) {
   function getRegex(name: string): RegExp {
-    return new RegExp(`\\\$\\{${name}}`, "gmi")
+    // We also capture type annotation if provided
+    return new RegExp(`\\\$\\{${name}:?([a-zA-Z{}[\\]]+)?}`, "gmi")
   }
 
   function getValue(params: any, parameter: ParameterItem): string {
@@ -290,6 +291,21 @@ function replaceQueryParamTokens(raw: string, query: HTTPRequestQueryConfig, par
   return query.parameters.reduce((acc: string, parameter: ParameterItem) => {
     // Arrays are not strings with tokens, so bail
     if (isArray(params) || !parameter.name) return acc
-    return acc.replace(getRegex(parameter.name), getValue(params, parameter))
+    const regex = getRegex(parameter.name)
+    const value = getValue(params, parameter)
+    const matches = regex.exec(acc)
+
+    /*
+     * Handle substitutions with type annotations
+     */
+    if (matches) {
+      if (matches[1] === "string") {
+        // If the token contains string type annotation,
+        // then add surrounding quotes or return null.
+        const formattedString = isEmpty(value) ? "null" : `"${value}"`
+        return acc.replace(regex, formattedString)
+      }
+    }
+    return acc.replace(regex, value)
   }, raw)
 }

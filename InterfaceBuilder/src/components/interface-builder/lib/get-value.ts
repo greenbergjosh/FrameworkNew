@@ -14,8 +14,10 @@ export function getValue(
   userInterfaceData: UserInterfaceProps["data"],
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
 ): JSONRecord | JSONRecord[] | undefined {
-  const isRootData = valueKey.startsWith("root.")
-  if (isRootData) {
+  if (valueKey === "root") {
+    return getRootUserInterfaceData()
+  }
+  if (valueKey.startsWith("root.")) {
     // Get value from the root UI data
     // strip prefix "root.", then get  data from root UI data
     const key = valueKey.substring(5)

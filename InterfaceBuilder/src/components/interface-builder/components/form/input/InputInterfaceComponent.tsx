@@ -50,6 +50,15 @@ export class InputInterfaceComponent extends BaseInterfaceComponent<InputInterfa
     super(props)
   }
 
+  /**
+   * Public method for external clients to trigger a submit
+   * @public
+   */
+  public reset(): void {
+    const { onChangeData, userInterfaceData, valueKey, defaultValue } = this.props
+    onChangeData && onChangeData(set(valueKey, defaultValue || "", userInterfaceData))
+  }
+
   handleChange = ({ target: { value } }: React.ChangeEvent<HTMLInputElement>) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
     onChangeData && onChangeData(set(valueKey, value, userInterfaceData))
