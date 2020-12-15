@@ -9,6 +9,7 @@ import { DataMapInterfaceComponent } from "../components/interface-builder/compo
 import { DateInterfaceComponent } from "../components/interface-builder/components/form/date/DateInterfaceComponent"
 import { DateRangeInterfaceComponent } from "../components/interface-builder/components/form/date-range/DateRangeInterfaceComponent"
 import { DateStepperInterfaceComponent } from "../components/interface-builder/components/form/date-stepper/DateStepperInterfaceComponent"
+import { DevToolsInterfaceComponent } from "../components/interface-builder/components/display/dev-tools/DevToolsInterfaceComponent"
 import { DividerInterfaceComponent } from "../components/interface-builder/components/display/divider/DividerInterfaceComponent"
 import { DownloadInterfaceComponent } from "../components/interface-builder/components/form/download/DownloadInterfaceComponent"
 import { EmptyInterfaceComponent } from "../components/interface-builder/components/display/empty/EmptyInterfaceComponent"
@@ -55,6 +56,7 @@ export default {
   date: DateInterfaceComponent,
   "date-range": DateRangeInterfaceComponent,
   "date-stepper": DateStepperInterfaceComponent,
+  "dev-tools": DevToolsInterfaceComponent,
   divider: DividerInterfaceComponent,
   download: DownloadInterfaceComponent,
   // menu: MenuInterfaceComponent,
