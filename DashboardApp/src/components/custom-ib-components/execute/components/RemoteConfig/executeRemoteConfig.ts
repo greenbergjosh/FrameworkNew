@@ -1,8 +1,8 @@
-import { ExecuteInterfaceComponentState, ExecuteRemoteConfigParams, LoadStatus } from "../../../types"
-import { deleteCfg } from "./delete"
-import { update } from "./update"
-import { create } from "./create"
-import { fetch } from "./fetch"
+import { ExecuteInterfaceComponentState, ExecuteRemoteConfigParams, LoadStatus } from "../../types"
+import { deleteCfg } from "./lib/delete"
+import { update } from "./lib/update"
+import { create } from "./lib/create"
+import { fetch } from "./lib/fetch"
 
 /**
  * "Remote Config" is aka a config that is stored in the "Global Config"

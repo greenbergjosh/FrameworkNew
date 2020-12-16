@@ -1,23 +1,22 @@
 import { HTTPRequestQueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { ExecuteInterfaceComponentState, LoadStatus } from "../../types"
+import { ExecuteInterfaceComponentState, LoadStatus, RemoteUrlFromStore } from "../../types"
 import { cheapHash } from "../../../../../lib/json"
 import { notification } from "antd"
 import { getErrorState } from "../utils"
-import { AppDispatch } from "../../../../../state/store.types"
 
 /**
  * "Remote URL" is aka "HTTP Request" to another domain
  * @param queryConfig
  * @param queryFormValues
- * @param dispatch
+ * @param executeHTTPRequestQuery
  * @param isCRUD
  * @return State object with load status (Note: executeHTTPRequestQuery puts the response data into cache.)
  */
 export async function executeRemoteUrl(
   queryConfig: HTTPRequestQueryConfig,
   queryFormValues: JSONRecord,
-  dispatch: AppDispatch,
+  executeHTTPRequestQuery: RemoteUrlFromStore["executeHTTPRequestQuery"],
   isCRUD?: boolean
 ): Promise<Readonly<Partial<ExecuteInterfaceComponentState>>> {
   const queryResultURI = cheapHash(queryConfig.query, { ...queryFormValues })
@@ -27,12 +26,11 @@ export async function executeRemoteUrl(
     loadStatus: "loading",
   }).then(() =>
     // executeHTTPRequestQuery puts the response data into cache and does not return it here.
-    dispatch.reports
-      .executeHTTPRequestQuery({
-        resultURI: queryResultURI,
-        query: queryConfig,
-        params: { ...queryFormValues },
-      })
+    executeHTTPRequestQuery({
+      resultURI: queryResultURI,
+      query: queryConfig,
+      params: { ...queryFormValues },
+    })
       .then((data) => {
         if (isCRUD) {
           notification.success({

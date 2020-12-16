@@ -1,4 +1,4 @@
-import { Empty } from "antd"
+import { Empty, notification } from "antd"
 import { some } from "fp-ts/lib/Option"
 import * as record from "fp-ts/lib/Record"
 import React from "react"
@@ -6,11 +6,8 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { OnSubmitType, RemoteQueryFromStore, RemoteQueryProps, ErrorResponse } from "../../types"
+import { ErrorResponse, OnSubmitType, RemoteQueryProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
-import { AppDispatch } from "../../../../../state/store.types"
-import { useRematch } from "../../../../../hooks"
-import { store } from "../../../../../state/store"
 import { executeRemoteQuery } from "./executeRemoteQuery"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
@@ -28,6 +25,9 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     queryConfigId,
     setParentSubmitting,
     userInterfaceData,
+    loadById,
+    executeQuery,
+    executeQueryUpdate,
   } = props
 
   /* *************************************
@@ -40,19 +40,12 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
    * PROP WATCHERS
    */
 
-  const [fromStore, dispatch]: [RemoteQueryFromStore, AppDispatch] = useRematch((appState) => ({
-    reportDataByQuery: appState.reports.reportDataByQuery,
-    loadById: (id: string) => {
-      return record.lookup(id, store.select.globalConfig.configsById(appState)).toNullable()
-    },
-  }))
-
   /**
    * Put the query config from Persisted Global Configs into state
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
-    return getQueryConfig(fromStore, queryConfigId)
-  }, [queryConfigId, fromStore])
+    return getQueryConfig({ loadById, persistedConfigId: queryConfigId })
+  }, [queryConfigId, loadById])
 
   /* *************************************
    *
@@ -71,16 +64,23 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     setParameterValues(some(parameterValues))
     const queryFormValues: JSONRecord = getQueryFormValues(queryConfig, satisfiedByParentParams, parameterValues)
 
-    return executeRemoteQuery(queryConfig as QueryConfig, queryFormValues, dispatch, isCRUD).then((newLoadingState) => {
+    return executeRemoteQuery(
+      queryConfig as QueryConfig,
+      queryFormValues,
+      executeQuery,
+      executeQueryUpdate,
+      isCRUD
+    ).then((newLoadingState) => {
       // Put response data into userInterfaceData (via onChangeData)
 
       // TODO: Move this error checking to the DAL and expect server to respond
       //  like previously defined api responses in the DAL codecs.
       const dataStatus = (newLoadingState.data as unknown) as ErrorResponse
       if (dataStatus && dataStatus.status && dataStatus.status === "error") {
-        dispatch.feedback.notify({
+        notification.error({
           type: "error",
           message: `Remote Query failed. The server responded with an error: ${dataStatus.error}`,
+          duration: 10,
         })
         console.error("RemoteQuery API responded with an error", dataStatus.error)
         return

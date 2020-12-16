@@ -8,7 +8,7 @@ import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "..
 import { QueryForm } from "../../../../query/QueryForm"
 import { LoadStatusCode, OnSubmitType, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
-import { executeRemoteConfig } from "./lib/executeRemoteConfig"
+import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
 import { store } from "../../../../../state/store"
 import { AppDispatch } from "../../../../../state/store.types"
@@ -73,7 +73,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    */
   const queryConfig: QueryConfig | undefined = React.useMemo(() => {
     const queryConfigId = "97d37ff4-0585-415d-a3af-4bfb9c22b055" as PersistedConfig["id"]
-    return getQueryConfig(fromStore, queryConfigId)
+    return getQueryConfig({ fromStore, loadById: fromStore.loadByType, persistedConfigId: queryConfigId })
   }, [fromStore])
 
   /* *************************************

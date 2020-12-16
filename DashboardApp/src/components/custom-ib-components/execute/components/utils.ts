@@ -6,8 +6,6 @@ import { ErrorResponse, ExecuteInterfaceComponentState, FromStore, LoadStatus } 
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
-import { cheapHash } from "../../../../lib/json"
-import * as record from "fp-ts/lib/Record"
 import { isArray, merge, set } from "lodash/fp"
 import { UserInterfaceProps } from "@opg/interface-builder"
 
@@ -42,23 +40,6 @@ export function getConfig(
       } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
     })
   )
-}
-
-/**
- * Get api response data from context (e.g., "context.reportDataByQuery")
- * @param query
- * @param satisfiedByParentParams
- * @param reportDataByQuery
- */
-export function getResultDataFromReportData(
-  query: QueryConfig["query"],
-  satisfiedByParentParams: JSONRecord,
-  reportDataByQuery: Record<string, JSONRecord[]>
-): JSONRecord | JSONRecord[] | null {
-  const queryResultURI = cheapHash(query, satisfiedByParentParams)
-  const queryResult = record.lookup<JSONRecord[]>(queryResultURI, reportDataByQuery)
-
-  return queryResult.toNullable()
 }
 
 /**
@@ -109,12 +90,18 @@ export function mergeResultDataWithModel({
  * @param defaults
  * @returns QueryConfig | undefined
  */
-export function getQueryConfig(
-  fromStore: FromStore,
-  persistedConfigId: PersistedConfig["id"],
+export function getQueryConfig({
+  fromStore,
+  loadById,
+  persistedConfigId,
+  defaults,
+}: {
+  fromStore?: FromStore
+  loadById: FromStore["loadById"]
+  persistedConfigId: PersistedConfig["id"]
   defaults?: JSONRecord
-): QueryConfig | undefined {
-  const persistedConfig: PersistedConfig | null = fromStore.loadById(persistedConfigId)
+}): QueryConfig | undefined {
+  const persistedConfig: PersistedConfig | null = loadById(persistedConfigId)
 
   if (!persistedConfig) {
     console.warn("persistedConfig not found!")

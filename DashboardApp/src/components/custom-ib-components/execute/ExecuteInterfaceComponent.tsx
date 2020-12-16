@@ -15,6 +15,7 @@ import RemoteUrl from "./components/RemoteUrl/RemoteUrl"
 import { Empty, Icon } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../../data/JSON"
+import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -47,7 +48,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     "remoteConfig_loaded",
     "remoteUrl_loaded",
   ]
-  context!: React.ContextType<typeof UserInterfaceContext>
+  context!: React.ContextType<typeof AdminUserInterfaceContext>
   autoExecuteTimer?: ReturnType<typeof setInterval> | null
 
   constructor(props: ExecuteInterfaceComponentProps) {
@@ -171,15 +172,19 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteQuery
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
+            executeQuery={this.context!.executeQuery}
+            executeQueryUpdate={this.context!.executeQueryUpdate}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             isCRUD={castProps.RemoteQuery_isCRUD}
+            loadById={this.context!.loadById}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
+            reportDataByQuery={this.context!.reportDataByQuery}
             setParentSubmitting={this.setParentSubmitting}
             userInterfaceData={userInterfaceData}
           />
@@ -190,15 +195,18 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
           <RemoteUrl
             buttonLabel={buttonLabel}
             buttonProps={buttonProps}
+            executeHTTPRequestQuery={this.context!.executeHTTPRequestQuery}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             isCRUD={castProps.RemoteUrl_isCRUD}
+            loadById={this.context!.loadById}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submittingQueryForm}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
+            reportDataByQuery={this.context!.reportDataByQuery}
             setParentSubmitting={this.setParentSubmitting}
             userInterfaceData={userInterfaceData}
           />

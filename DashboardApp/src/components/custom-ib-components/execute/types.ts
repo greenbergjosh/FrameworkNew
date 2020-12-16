@@ -2,6 +2,7 @@ import {
   BaseInterfaceComponent,
   ComponentDefinition,
   ComponentDefinitionNamedProps,
+  UserInterfaceContextManager,
   UserInterfaceProps,
 } from "@opg/interface-builder"
 import { ConfigType, PersistedConfig } from "../../../data/GlobalConfig.Config"
@@ -166,7 +167,7 @@ export interface RemoteComponentProps {
 
 export interface FromStore {
   reportDataByQuery: AppState["reports"]["reportDataByQuery"]
-  loadById: (id: string) => PersistedConfig | null
+  loadById: UserInterfaceContextManager["loadById"]
 }
 
 /* ****************************************************************************
@@ -174,9 +175,12 @@ export interface FromStore {
  * COMPONENTS: REMOTE QUERY
  */
 
-export interface RemoteQueryFromStore extends FromStore {}
+export interface RemoteQueryFromStore extends FromStore {
+  executeQuery: AppDispatch["reports"]["executeQuery"]
+  executeQueryUpdate: AppDispatch["reports"]["executeQueryUpdate"]
+}
 
-export interface RemoteQueryProps extends RemoteComponentProps {
+export interface RemoteQueryProps extends RemoteComponentProps, RemoteQueryFromStore {
   isCRUD?: boolean
   queryConfigId: PersistedConfig["id"]
 }
@@ -186,9 +190,11 @@ export interface RemoteQueryProps extends RemoteComponentProps {
  * COMPONENTS: REMOTE URL
  */
 
-export interface RemoteUrlFromStore extends FromStore {}
+export interface RemoteUrlFromStore extends FromStore {
+  executeHTTPRequestQuery: AppDispatch["reports"]["executeHTTPRequestQuery"]
+}
 
-export interface RemoteUrlProps extends RemoteComponentProps {
+export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore {
   isCRUD?: boolean
   queryConfigId: PersistedConfig["id"]
 }
