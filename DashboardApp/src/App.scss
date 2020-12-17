@@ -16,9 +16,6 @@ which causes antd components used in interface-builder only to have broken style
  */
 @import "~antd/dist/antd.css";
 
-/* SyncFusion Theme Overrides */
-@import "./styles/syncfusion/bootstrap4-orange.css";
-
 /* OnPoint overrides for SyncFusion styles */
 @import "./styles/syncfusion/grid.scss";
 

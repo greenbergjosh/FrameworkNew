@@ -15,10 +15,9 @@
   ],
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "yarn clean-syncfusion && rollup -cw",
-    "build": "yarn clean-syncfusion && rollup -c",
-    "lint": "eslint './src/**/*.{ts,tsx}' --fix",
-    "clean-syncfusion": "rimraf ./node_modules/@syncfusion/**/styles/bootstrap4.scss"
+    "start": "rollup -cw",
+    "build": "rollup -c",
+    "lint": "eslint './src/**/*.{ts,tsx}' --fix"
   },
   "keywords": [
     "react",
