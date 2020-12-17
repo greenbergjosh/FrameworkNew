@@ -1,4 +1,5 @@
 import { BulkTextInputInterfaceComponent } from "../components/interface-builder/components/form/bulk-text-input/BulkTextInputInterfaceComponent"
+import { ButtonInterfaceComponent } from "../components/interface-builder/components/form/button/ButtonInterfaceComponent"
 import { CardInterfaceComponent } from "../components/interface-builder/components/display/card/CardInterfaceComponent"
 import { CheckboxInterfaceComponent } from "../components/interface-builder/components/form/checkbox/CheckboxInterfaceComponent"
 import { CodeEditorInterfaceComponent } from "../components/interface-builder/components/special/code-editor/CodeEditorInterfaceComponent"
@@ -40,11 +41,9 @@ import { UserInterfaceInterfaceComponent } from "../components/interface-builder
 import { WizardInterfaceComponent } from "../components/interface-builder/components/display/wizard/WizardInterfaceComponent"
 /* TODO: Menu needs to implement data fetching and updates with Selectable. Patrick mentioned possibly changing Selectable to use Query. */
 // import { MenuInterfaceComponent } from "../components/interface-builder/components/display/menu/MenuInterfaceComponent"
-/* TODO: Button needs to execute LBMs */
-// import { ButtonInterfaceComponent } from "../components/interface-builder/components/form/button/ButtonInterfaceComponent"
 
 export default {
-  // button: ButtonInterfaceComponent,
+  button: ButtonInterfaceComponent,
   card: CardInterfaceComponent,
   checkbox: CheckboxInterfaceComponent,
   "code-editor": CodeEditorInterfaceComponent,

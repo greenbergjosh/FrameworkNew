@@ -19,6 +19,9 @@ export const ExamplesMenu: React.FC = () => {
             Examples
           </span>
         }>
+        <Menu.Item key="/examples/button">
+          <Link to="/examples/button">Button</Link>
+        </Menu.Item>
         <Menu.Item key="/examples/form">
           <Link to="/examples/form">Form</Link>
         </Menu.Item>

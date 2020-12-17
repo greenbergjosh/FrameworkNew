@@ -3,6 +3,7 @@ import FormExample from "../examples/form"
 import QueryBuilderExample from "../examples/querybuilder"
 import RepeaterExample from "../examples/repeater"
 import DataInjectorExample from "../examples/data-injector"
+import ButtonExample from "../examples/button"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
@@ -20,6 +21,9 @@ export function ExamplesView(): JSX.Element {
         <Switch>
           <Route exact path={path}>
             <ExamplesIntroView />
+          </Route>
+          <Route path={`${path}/button`}>
+            <ButtonExample />
           </Route>
           <Route path={`${path}/form`}>
             <FormExample />

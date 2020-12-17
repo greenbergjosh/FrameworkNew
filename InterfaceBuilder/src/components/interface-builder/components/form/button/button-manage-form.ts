@@ -10,111 +10,128 @@ export type shapeType = "circle" | "circle-outline" | "round" | undefined
 export type sizeType = "small" | "large" | undefined
 export type buttonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
 
-const actionTab = {
-  key: "action",
-  component: "tab",
-  hideLabel: true,
-  label: "Action",
+const dataTab = {
+  key: "data",
   components: [
     {
-      key: "requireConfirmation",
-      valueKey: "requireConfirmation",
-      ordinal: 5,
-      component: "toggle",
-      defaultValue: false,
-      label: "Require Confirmation",
-      help: "Requires the user to confirm this action before it will be executed.",
+      key: "label",
+      hidden: true,
     },
     {
-      key: "confirmation.title",
-      valueKey: "confirmation.title",
-      ordinal: 10,
+      key: "valueKey",
+      hidden: true,
+    },
+    {
+      key: "paramKVPMaps",
+      valueKey: "paramKVPMaps.values",
+      label: "Map Params",
+      component: "data-map",
+      multiple: true,
+      keyComponent: {
+        label: "Param Source Key",
+        help: "Where to get the data",
+        component: "input",
+        valueKey: "sourceKey",
+      },
+      valueComponent: {
+        label: "Param Target Key",
+        help: "Where to put the data for other components to use",
+        component: "input",
+        valueKey: "targetKey",
+      },
+    },
+    {
+      key: "loadingKey",
+      valueKey: "loadingKey",
       component: "input",
-      defaultValue: "Are you sure?",
-      label: "Confirmation Title",
-      visibilityConditions: {
-        "===": [true, { var: "requireConfirmation" }],
-      },
-    },
-    {
-      key: "confirmation.message",
-      valueKey: "confirmation.message",
-      ordinal: 12,
-      component: "input",
-      defaultValue: "This action cannot be undone and may take a while. Are you sure?",
-      label: "Confirmation Message",
-      visibilityConditions: {
-        "===": [true, { var: "requireConfirmation" }],
-      },
-    },
-    {
-      key: "confirmation.okText",
-      valueKey: "confirmation.okText",
-      ordinal: 14,
-      component: "input",
-      defaultValue: "Continue",
-      label: "OK Option Text",
-      visibilityConditions: {
-        "===": [true, { var: "requireConfirmation" }],
-      },
-    },
-    {
-      key: "confirmation.cancelText",
-      valueKey: "confirmation.cancelText",
-      ordinal: 16,
-      component: "input",
-      defaultValue: "Cancel",
-      label: "Cancel Option Text",
-      visibilityConditions: {
-        "===": [true, { var: "requireConfirmation" }],
-      },
-    },
-    {
-      key: "action.type",
-      valueKey: "action.type",
-      ordinal: 20,
-      component: "select",
-      label: "Remote Action Type",
-      dataHandlerType: "local",
-      data: {
-        values: [
-          {
-            label: "LBM",
-            value: "lbm",
-          },
-          {
-            label: "Stored Proc",
-            value: "proc",
-          },
-        ],
-      },
-    },
-    {
-      key: "action.lbm",
-      valueKey: "action.lbm",
-      ordinal: 22,
-      component: "select",
-      label: "Remote Action Method",
-      dataHandlerType: "remote-config",
-      remoteConfigType: "LBM.CS",
-      visibilityConditions: {
-        "===": ["lbm", { var: "action.type" }],
-      },
-    },
-    {
-      key: "action.proc",
-      valueKey: "action.proc",
-      ordinal: 22,
-      component: "select",
-      label: "Remote Procedure",
-      dataHandlerType: "remote-config",
-      remoteConfigType: "Report.Query",
-      visibilityConditions: {
-        "===": ["proc", { var: "action.type" }],
-      },
+      defaultValue: "loading",
+      label: "Loading Key",
+      help: "Property to indicate if the button displays a spinner",
     },
   ],
 }
+
+const confirmationSettings = [
+  {
+    hidden: false,
+    dashed: false,
+    orientation: "horizontal",
+    textAlignment: "center",
+    text: "",
+    valueKey: "",
+    label: "",
+    hideLabel: false,
+    component: "divider",
+  },
+  {
+    center: false,
+    headerSize: "4",
+    textType: "title",
+    invisible: false,
+    hidden: false,
+    stringTemplate: "Confirmation Dialog",
+    useTokens: false,
+    valueKey: "data",
+    label: "Text",
+    hideLabel: true,
+    component: "text",
+    marginBottom: 20,
+    components: [],
+  },
+  {
+    key: "requireConfirmation",
+    valueKey: "requireConfirmation",
+    ordinal: 5,
+    component: "toggle",
+    defaultValue: false,
+    label: "Require Confirm",
+    help: "Requires the user to confirm this action before it will be executed.",
+  },
+  {
+    key: "confirmation.title",
+    valueKey: "confirmation.title",
+    ordinal: 10,
+    component: "input",
+    defaultValue: "Are you sure?",
+    label: "Title",
+    visibilityConditions: {
+      "===": [true, { var: "requireConfirmation" }],
+    },
+  },
+  {
+    key: "confirmation.message",
+    valueKey: "confirmation.message",
+    ordinal: 12,
+    component: "input",
+    defaultValue: "This action cannot be undone and may take a while. Are you sure?",
+    label: "Message",
+    visibilityConditions: {
+      "===": [true, { var: "requireConfirmation" }],
+    },
+  },
+  {
+    key: "confirmation.okText",
+    valueKey: "confirmation.okText",
+    ordinal: 14,
+    component: "input",
+    defaultValue: "Continue",
+    label: "OK Button Label",
+    visibilityConditions: {
+      "===": [true, { var: "requireConfirmation" }],
+    },
+  },
+  {
+    key: "confirmation.cancelText",
+    valueKey: "confirmation.cancelText",
+    ordinal: 16,
+    component: "input",
+    defaultValue: "Cancel",
+    label: "Cancel Button Label",
+    visibilityConditions: {
+      "===": [true, { var: "requireConfirmation" }],
+    },
+  },
+]
 
 const appearanceTab = {
   key: "appearance",
@@ -256,6 +273,7 @@ const appearanceTab = {
       label: "Contrast",
       help: "Increase contrast when placed over a dark background",
     },
+    ...confirmationSettings,
   ],
 }
 
@@ -265,23 +283,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
     components: [
       {
         key: "tabs",
-        tabs: [
-          {
-            key: "data",
-            components: [
-              {
-                key: "label",
-                defaultValue: "Take Action",
-              },
-              {
-                key: "valueKey",
-                hidden: true,
-              },
-            ],
-          },
-          appearanceTab,
-          actionTab,
-        ],
+        tabs: [dataTab, appearanceTab],
       },
     ],
   },

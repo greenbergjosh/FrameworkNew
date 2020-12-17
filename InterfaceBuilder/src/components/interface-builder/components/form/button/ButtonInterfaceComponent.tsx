@@ -1,40 +1,13 @@
-import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
+import { Button, Col, Popover, Row, Spin, Tooltip, Typography } from "antd"
 import { get, merge } from "lodash/fp"
 import React from "react"
-import { UserInterfaceProps } from "../../../UserInterface"
-import { buttonDisplayType, buttonManageForm, shapeType, sizeType } from "./button-manage-form"
-import { BaseInterfaceComponent, ComponentDefinitionNamedProps } from "../../base/BaseInterfaceComponent"
-
-interface ConfirmationProps {
-  title?: string
-  message?: string
-  okText?: string
-  cancelText?: string
-}
-
-export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedProps {
-  component: "button"
-  requireConfirmation: boolean
-  confirmation?: ConfirmationProps
-  defaultValue?: string
-  onChangeData: UserInterfaceProps["onChangeData"]
-  placeholder: string
-  userInterfaceData: UserInterfaceProps["data"]
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  valueKey: string
-  buttonLabel: string
-  icon: string
-  hideButtonLabel: boolean
-  shape: shapeType
-  size: sizeType
-  displayType: buttonDisplayType
-  block: boolean
-  ghost: boolean
-}
-
-interface ButtonInterfaceComponentState {
-  isShowingConfirmation: boolean
-}
+import { buttonManageForm } from "./button-manage-form"
+import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
+import {
+  ButtonInterfaceComponentProps,
+  ButtonInterfaceComponentState,
+} from "components/interface-builder/components/form/button/types"
+import { EVENTS } from "components/interface-builder/components/special/data-injector/types"
 
 export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   ButtonInterfaceComponentProps,
@@ -58,30 +31,48 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   }
 
   static manageForm = buttonManageForm
+  static availableEvents = ["valueChanged"]
 
   constructor(props: ButtonInterfaceComponentProps) {
     super(props)
 
     this.state = {
       isShowingConfirmation: false,
+      loading: false,
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
+  componentDidUpdate(prevProps: Readonly<ButtonInterfaceComponentProps>): void {
+    const nextValue = this.getValue(this.props.loadingKey) as boolean
+
+    if (this.state.loading !== nextValue) {
+      this.setState({ loading: nextValue })
+    }
+  }
+
+  // eslint-disable-next-line no-unused-vars
   handleClick = ({ target }: React.MouseEvent<HTMLInputElement>) => {
-    const { requireConfirmation } = this.props
+    const { requireConfirmation, onChangeData, paramKVPMaps } = this.props
     const { isShowingConfirmation } = this.state
 
     if (requireConfirmation && !isShowingConfirmation) {
       this.setState({ isShowingConfirmation: true })
     } else {
-      // Do action
-      console.log("ButtonInterfaceComponent.handleClick", "TODO: Perform action here")
+      onChangeData &&
+        paramKVPMaps.values.forEach((map) => {
+          const value = this.getValue(map.sourceKey)
+
+          this.setValue(map.targetKey, value)
+          this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
+        })
 
       // Close Popup
       this.setState({ isShowingConfirmation: false })
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   handleCloseConfirmation = ({ target }: React.MouseEvent<HTMLInputElement>) => {
     if (this.state.isShowingConfirmation) {
       this.setState({ isShowingConfirmation: false })
@@ -94,9 +85,6 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
 
   render(): JSX.Element {
     const {
-      defaultValue,
-      userInterfaceData,
-      valueKey,
       buttonLabel,
       icon,
       hideButtonLabel,
@@ -108,8 +96,6 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
 
       requireConfirmation,
     } = this.props
-    const rawValue = get(valueKey, userInterfaceData)
-    const value = typeof rawValue !== "undefined" ? rawValue : defaultValue
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
 
@@ -123,12 +109,12 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
       <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null}>
         <Button
           onClick={this.handleClick}
-          value={value}
           icon={icon}
           shape={buttonShape}
           size={size}
           type={displayType}
           block={block}
+          loading={this.state.loading}
           ghost={ghost}>
           {!hideButtonLabel && !isCircle ? buttonLabel : null}
         </Button>
