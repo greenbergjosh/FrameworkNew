@@ -154,6 +154,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getParams={this.getParamsFromParamKVPMaps}
             getRootUserInterfaceData={this.props.getRootUserInterfaceData}
+            mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
@@ -178,6 +179,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             isCRUD={castProps.RemoteQuery_isCRUD}
             loadById={this.context!.loadById}
+            mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
@@ -200,6 +202,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             isCRUD={castProps.RemoteUrl_isCRUD}
             loadById={this.context!.loadById}
+            mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}

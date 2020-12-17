@@ -24,6 +24,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     entityTypeId,
     getParams,
     getRootUserInterfaceData,
+    mode,
     onChangeData,
     onRaiseEvent,
     onMount,
@@ -83,7 +84,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
 
   /* Originally from ReportBody.tsx */
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
-    if (!queryConfig) return
+    if (!queryConfig || mode === "edit") return
 
     /*
      * From ReportBody.tsx

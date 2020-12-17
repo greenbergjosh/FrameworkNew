@@ -155,6 +155,7 @@ export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  mode: "display" | "edit"
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
   onMount: OnMountType

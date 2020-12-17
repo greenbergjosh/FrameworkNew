@@ -17,6 +17,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     getParams,
     getRootUserInterfaceData,
     isCRUD,
+    mode,
     onChangeData,
     onRaiseEvent,
     onMount,
@@ -54,7 +55,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
 
   /* Originally from ReportBody.tsx */
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
-    if (!queryConfig) return
+    if (!queryConfig || mode === "edit") return
 
     /*
      * From ReportBody.tsx
