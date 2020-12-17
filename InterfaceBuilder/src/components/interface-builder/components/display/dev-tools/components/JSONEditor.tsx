@@ -6,12 +6,14 @@ import styles from "./styles.scss"
 export default function JSONEditor({
   data,
   onChange,
+  height,
 }: {
   data: JSONRecord | JSONRecord[] | undefined
   onChange: (data: any) => void
+  height: number
 }) {
   return (
-    <div className={styles.jsonViewer}>
+    <div className={styles.jsonViewer} style={{ height }}>
       <ReactJson
         src={data as Record<string, unknown>}
         theme="shapeshifter:inverted"

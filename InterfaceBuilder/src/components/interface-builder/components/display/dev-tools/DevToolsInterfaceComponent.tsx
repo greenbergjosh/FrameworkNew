@@ -4,7 +4,6 @@ import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { DevToolsInterfaceComponentProps, DevToolsInterfaceComponentState } from "./types"
 import JSONEditor from "./components/JSONEditor"
 import { Button } from "antd"
-import { set } from "lodash/fp"
 
 export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
   DevToolsInterfaceComponentProps,
@@ -53,7 +52,7 @@ export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
   }
 
   render() {
-    const { userInterfaceData } = this.props
+    const { userInterfaceData, height } = this.props
 
     return (
       <div>
@@ -68,7 +67,9 @@ export class DevToolsInterfaceComponent extends BaseInterfaceComponent<
             UI Data
           </Button>
         </Button.Group>
-        {this.state.showDataViewer && <JSONEditor data={userInterfaceData} onChange={this.handleChange} />}
+        {this.state.showDataViewer && (
+          <JSONEditor data={userInterfaceData} onChange={this.handleChange} height={height} />
+        )}
       </div>
     )
   }

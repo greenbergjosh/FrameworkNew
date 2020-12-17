@@ -15,6 +15,7 @@ export interface DevToolsInterfaceComponentProps extends ComponentDefinitionName
   valueKey: string
 
   // Additional props
+  height: number
 }
 
 export interface DevToolsInterfaceComponentState {

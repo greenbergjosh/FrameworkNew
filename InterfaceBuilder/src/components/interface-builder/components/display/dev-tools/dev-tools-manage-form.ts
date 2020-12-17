@@ -31,7 +31,15 @@ export const devToolsManageFormDefinition: Partial<ComponentDefinition>[] = [
           },
           {
             key: "appearance",
-            components: [],
+            components: [
+              {
+                key: "height",
+                valueKey: "height",
+                component: "number-input",
+                label: "Height",
+                defaultValue: 150,
+              },
+            ],
           },
         ],
       },
