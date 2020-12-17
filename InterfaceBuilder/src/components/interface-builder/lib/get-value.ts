@@ -14,6 +14,7 @@ export function getValue(
   userInterfaceData: UserInterfaceProps["data"],
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
 ): JSONRecord | JSONRecord[] | undefined {
+  if (!valueKey) return
   if (valueKey === "root") {
     return getRootUserInterfaceData()
   }
