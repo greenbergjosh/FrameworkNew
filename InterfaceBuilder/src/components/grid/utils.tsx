@@ -106,6 +106,12 @@ export function getUsableColumns(columns: ColumnModel[], useSmallFont?: boolean)
       delete col.type
     }
 
+    // BOOLEAN COLUMN
+    // Managing custom formatting options for Booleans
+    if (["boolean"].includes(col.type || "")) {
+      col.displayAsCheckBox = true
+    }
+
     // NUMBER COLUMN
     // Managing custom formatting options for number types
     else if (["number"].includes(col.type || "")) {

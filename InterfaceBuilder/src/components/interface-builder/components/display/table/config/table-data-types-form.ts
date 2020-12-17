@@ -50,6 +50,13 @@ export const tableDataTypes = [
   },
   {
     option: {
+      label: "Boolean",
+      value: "boolean",
+    },
+    form: [],
+  },
+  {
+    option: {
       label: "Date (Without Time)",
       value: "date",
     },
