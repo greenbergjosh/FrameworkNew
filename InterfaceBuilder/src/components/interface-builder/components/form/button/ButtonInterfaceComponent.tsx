@@ -1,5 +1,5 @@
-import { Button, Col, Popover, Row, Spin, Tooltip, Typography } from "antd"
-import { get, merge } from "lodash/fp"
+import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
+import { isUndefined, merge } from "lodash/fp"
 import React from "react"
 import { buttonManageForm } from "./button-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
@@ -8,6 +8,7 @@ import {
   ButtonInterfaceComponentState,
 } from "components/interface-builder/components/form/button/types"
 import { EVENTS } from "components/interface-builder/components/special/data-injector/types"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   ButtonInterfaceComponentProps,
@@ -46,7 +47,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
   componentDidUpdate(prevProps: Readonly<ButtonInterfaceComponentProps>): void {
     const nextValue = this.getValue(this.props.loadingKey) as boolean
 
-    if (this.state.loading !== nextValue) {
+    if (!isUndefined(nextValue) && this.state.loading !== nextValue) {
       this.setState({ loading: nextValue })
     }
   }
@@ -59,13 +60,14 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
     if (requireConfirmation && !isShowingConfirmation) {
       this.setState({ isShowingConfirmation: true })
     } else {
-      onChangeData &&
-        paramKVPMaps.values.forEach((map) => {
-          const value = this.getValue(map.sourceKey)
+      if (onChangeData) {
+        const eventPayload: JSONRecord = {}
 
-          this.setValue(map.targetKey, value)
-          this.raiseEvent(EVENTS.VALUE_CHANGED, { value })
+        paramKVPMaps.values.forEach((map) => {
+          eventPayload[map.sourceKey] = this.getValue(map.sourceKey)
         })
+        this.raiseEvent(EVENTS.VALUE_CHANGED, eventPayload)
+      }
 
       // Close Popup
       this.setState({ isShowingConfirmation: false })

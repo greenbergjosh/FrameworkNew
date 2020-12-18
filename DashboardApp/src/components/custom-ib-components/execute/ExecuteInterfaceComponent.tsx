@@ -60,16 +60,18 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       loadError: null,
       loadStatus: "none",
       submittingQueryForm: false,
+      transientParams: {},
     }
   }
 
   /**
    * Public method for external clients to trigger a submit
    * @public
+   * @param transientParams
    */
-  public submit(): void {
+  public submit(transientParams: JSONRecord = {}): void {
     console.log("ExecuteInterfaceComponent", "submit")
-    this.setState({ submittingQueryForm: true })
+    this.setState({ submittingQueryForm: true, transientParams })
   }
 
   /* ******************************************
@@ -114,14 +116,14 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   private getParamsFromParamKVPMaps = (): JSONRecord => {
     const { paramKVPMaps, userInterfaceData } = this.props
     if (!paramKVPMaps || !paramKVPMaps.values || !paramKVPMaps.values.reduce) {
-      return userInterfaceData
+      return { ...userInterfaceData, ...this.state.transientParams }
     }
     const params = paramKVPMaps.values.reduce((acc, item) => {
       const val = this.getValue(item.valueKey)
       if (val) acc[item.fieldName] = val
       return acc
     }, {} as JSONRecord)
-    return { ...userInterfaceData, ...params }
+    return { ...userInterfaceData, ...params, ...this.state.transientParams }
   }
 
   /* ******************************************

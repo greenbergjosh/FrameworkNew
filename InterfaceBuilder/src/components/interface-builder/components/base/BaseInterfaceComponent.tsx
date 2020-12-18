@@ -137,27 +137,6 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
     )
   }
 
-  setValue(key: string, value: any): void {
-    const { getRootUserInterfaceData, userInterfaceData, onChangeData } = this.props
-    let newData
-
-    if (key) {
-      if (key === "root") {
-        newData = { ...getRootUserInterfaceData(), ...value }
-      } else if (key.startsWith("root.")) {
-        const rootKey = key.substring(5) // skip chars in "root."
-
-        newData = set(rootKey, value, getRootUserInterfaceData())
-      } else {
-        newData = set(key, value, userInterfaceData as any)
-      }
-    } else {
-      // No key, so just merge the data
-      newData = { ...userInterfaceData, ...value }
-    }
-    onChangeData && onChangeData(newData)
-  }
-
   anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
     return propsToCheck.some(
       (prop) =>

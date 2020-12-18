@@ -87,6 +87,7 @@ export interface ExecuteInterfaceComponentState extends LoadStatus {
    */
   queryConfig?: QueryConfig
   submittingQueryForm: boolean
+  transientParams: JSONRecord
 }
 
 export interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
