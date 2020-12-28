@@ -59,19 +59,25 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       formState: {},
       loadError: null,
       loadStatus: "none",
-      submittingQueryForm: false,
+      submitting: false,
       transientParams: {},
     }
   }
 
   /**
    * Public method for external clients to trigger a submit
+   *
+   * QueryForm.tsx contains the form that needs to be submitted. So we pass our "submitting" state
+   * and "setSubmitting" setter through props to QueryForm. When submitting is set to true,
+   * QueryForm's update lifecycle detects the change, submits its form, and resets submitting back to false.
+   * See QueryForm.tsx useEffect hooks for submitting the form.
+   *
    * @public
-   * @param transientParams
+   * @param transientParams - Params passed from an LBM that are retained only during a single submit cycle.
    */
   public submit(transientParams: JSONRecord = {}): void {
     console.log("ExecuteInterfaceComponent", "submit")
-    this.setState({ submittingQueryForm: true, transientParams })
+    this.setState({ submitting: true, transientParams })
   }
 
   /* ******************************************
@@ -103,10 +109,20 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
 
   /**
    * Setter method for children to trigger a submit
+   *
+   * QueryForm.tsx contains the form that needs to be submitted. So we pass our "submitting" state
+   * and "setSubmitting" setter through props to QueryForm. When submitting is set to true,
+   * QueryForm's update lifecycle detects the change, submits its form, and resets submitting back to false.
+   * See QueryForm.tsx useEffect hooks for submitting the form.
+   *
    * @param submitting
    */
-  private setParentSubmitting = (submitting: boolean) => {
-    this.setState({ submittingQueryForm: submitting })
+  private setSubmitting = (submitting: boolean) => {
+    this.setState({ submitting })
+    if (!submitting) {
+      // The submit cycle is done, so reset transientParams.
+      this.setState({ transientParams: {} })
+    }
   }
 
   private handleRaiseEvent = (eventName: string, eventPayload: any): void => {
@@ -161,10 +177,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
-            parentSubmitting={this.state.submittingQueryForm}
+            parentSubmitting={this.state.submitting}
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
             resultsType={castProps.RemoteConfig_resultsType}
-            setParentSubmitting={this.setParentSubmitting}
+            setParentSubmitting={this.setSubmitting}
             useDeleteRedirect={castProps.RemoteConfig_useDeleteRedirect}
             userInterfaceData={userInterfaceData}
           />
@@ -186,10 +202,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
-            parentSubmitting={this.state.submittingQueryForm}
+            parentSubmitting={this.state.submitting}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
             reportDataByQuery={this.context!.reportDataByQuery}
-            setParentSubmitting={this.setParentSubmitting}
+            setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
           />
         )
@@ -209,10 +225,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
             outboundValueKey={outboundValueKey}
-            parentSubmitting={this.state.submittingQueryForm}
+            parentSubmitting={this.state.submitting}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
             reportDataByQuery={this.context!.reportDataByQuery}
-            setParentSubmitting={this.setParentSubmitting}
+            setParentSubmitting={this.setSubmitting}
             userInterfaceData={userInterfaceData}
           />
         )
