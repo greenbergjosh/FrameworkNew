@@ -86,8 +86,8 @@ export interface ExecuteInterfaceComponentState extends LoadStatus {
    * from Reports.ts
    */
   queryConfig?: QueryConfig
-  submittingQueryForm: boolean
-  transientParams: JSONRecord
+  submitting: boolean
+  transientParams: JSONRecord // Params passed from an LBM that are retained only during a single submit cycle.
 }
 
 export interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
