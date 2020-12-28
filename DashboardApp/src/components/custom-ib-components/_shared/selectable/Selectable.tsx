@@ -413,7 +413,7 @@ export class Selectable extends BaseInterfaceComponent<SelectableProps, Selectab
   /**
    *
    */
-  getCleanValue = () => {
+  getCleanValue = (): string | string[] | undefined => {
     const { defaultValue, userInterfaceData, valueKey, valuePrefix, valueSuffix } = this.props
     const { options } = this.state
 
