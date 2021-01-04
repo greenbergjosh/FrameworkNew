@@ -1,5 +1,5 @@
 import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
-import { isUndefined, merge } from "lodash/fp"
+import { merge } from "lodash/fp"
 import React from "react"
 import { buttonManageForm } from "./button-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
@@ -39,23 +39,18 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
 
     this.state = {
       isShowingConfirmation: false,
-      loading: false,
     }
   }
 
   // eslint-disable-next-line no-unused-vars
-  componentDidUpdate(prevProps: Readonly<ButtonInterfaceComponentProps>): void {
-    const nextValue = this.getValue(this.props.loadingKey) as boolean
-
-    if (!isUndefined(nextValue) && this.state.loading !== nextValue) {
-      this.setState({ loading: nextValue })
-    }
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  handleClick = ({ target }: React.MouseEvent<HTMLInputElement>) => {
-    const { requireConfirmation, onChangeData, paramKVPMaps } = this.props
+  handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    const { requireConfirmation, onChangeData, paramKVPMaps, disabled } = this.props
     const { isShowingConfirmation } = this.state
+
+    if (disabled) {
+      e.stopPropagation()
+      return
+    }
 
     if (requireConfirmation && !isShowingConfirmation) {
       this.setState({ isShowingConfirmation: true })
@@ -95,8 +90,9 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
       displayType,
       block,
       ghost,
-
       requireConfirmation,
+      disabled = false,
+      loading = false,
     } = this.props
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
@@ -116,14 +112,15 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
           size={size}
           type={displayType}
           block={block}
-          loading={this.state.loading}
+          disabled={disabled}
+          loading={loading}
           ghost={ghost}>
           {!hideButtonLabel && !isCircle ? buttonLabel : null}
         </Button>
       </Tooltip>
     )
 
-    return requireConfirmation ? (
+    return requireConfirmation && !disabled ? (
       <Popover
         content={
           <>

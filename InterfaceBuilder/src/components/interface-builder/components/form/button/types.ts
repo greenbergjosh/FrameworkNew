@@ -34,10 +34,10 @@ export interface ButtonInterfaceComponentProps extends ComponentDefinitionNamedP
   displayType: buttonDisplayType
   block: boolean
   ghost: boolean
-  loadingKey: string
+  disabled: boolean
+  loading: boolean
 }
 
 export interface ButtonInterfaceComponentState {
   isShowingConfirmation: boolean
-  loading: boolean
 }

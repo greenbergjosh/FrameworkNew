@@ -40,14 +40,6 @@ const dataTab = {
         valueKey: "targetKey",
       },
     },
-    {
-      key: "loadingKey",
-      valueKey: "loadingKey",
-      component: "input",
-      defaultValue: "loading",
-      label: "Loading Key",
-      help: "Property to indicate if the button displays a spinner",
-    },
   ],
 }
 

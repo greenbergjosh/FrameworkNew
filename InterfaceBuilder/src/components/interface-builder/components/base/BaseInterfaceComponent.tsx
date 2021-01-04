@@ -6,7 +6,7 @@ import { UserInterfaceProps } from "../../UserInterface"
 import { EventPayloadType } from "../../../../services/event-bus"
 import { IconProps } from "antd/lib/icon"
 import { getValue } from "components/interface-builder/lib/get-value"
-import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { v4 as uuid } from "uuid"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -46,7 +46,7 @@ export interface ComponentDefinitionNamedProps {
 
   [key: string]: unknown
 
-  onRaiseEvent?: ((eventName: string, eventPayload: EventPayloadType) => void) | undefined
+  onRaiseEvent?: ((eventName: string, eventPayload: EventPayloadType, source: any) => void) | undefined
 }
 
 export interface ComponentDefinitionRecursiveProp {
@@ -83,6 +83,15 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   T,
   Y
 > {
+  private _componentId: string | null = null
+
+  public get componentId() {
+    if (!this._componentId) {
+      this._componentId = uuid()
+    }
+    return this._componentId
+  }
+
   static getLayoutDefinition(): LayoutDefinition {
     return {
       name: "__Undefined",
@@ -149,7 +158,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   raiseEvent(eventName: string, eventPayload: EventPayloadType) {
     console.log(`BaseInterfaceComponent Event raised: ${eventName}`, eventPayload)
     if (this.props.onRaiseEvent) {
-      this.props.onRaiseEvent(eventName, eventPayload)
+      this.props.onRaiseEvent(eventName, eventPayload, this)
     }
   }
 }
