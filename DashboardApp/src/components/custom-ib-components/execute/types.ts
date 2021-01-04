@@ -15,10 +15,27 @@ import { PropsFromQueryParams } from "../../query/QueryParams"
 import { Branded } from "io-ts"
 import { NonEmptyStringBrand } from "io-ts-types/lib/NonEmptyString"
 
+export enum LOADSTATUSCODES {
+  none = "none",
+  loading = "loading",
+  loaded = "loaded",
+  created = "created",
+  updated = "updated",
+  deleted = "deleted",
+  error = "error",
+}
+
 export type ShapeType = "circle" | "circle-outline" | "round" | undefined
 export type SizeType = "small" | "large" | undefined
 export type ButtonDisplayType = "primary" | "ghost" | "dashed" | "danger" | "link" | undefined
-export type LoadStatusCode = "none" | "loading" | "loaded" | "created" | "updated" | "deleted" | "error"
+export type LoadStatusCode =
+  | LOADSTATUSCODES.none
+  | LOADSTATUSCODES.loading
+  | LOADSTATUSCODES.loaded
+  | LOADSTATUSCODES.created
+  | LOADSTATUSCODES.updated
+  | LOADSTATUSCODES.deleted
+  | LOADSTATUSCODES.error
 export type LoadError = string | null
 export type QueryType = "remote-query" | "remote-query-update" | "remote-config" | "remote-url"
 export type ActionType = "read" | "create" | "update" | "delete"
@@ -88,10 +105,13 @@ export interface ExecuteInterfaceComponentState extends LoadStatus {
   queryConfig?: QueryConfig
   submitting: boolean
   transientParams: JSONRecord // Params passed from an LBM that are retained only during a single submit cycle.
+  onExecute?: () => void
+  onComplete?: () => void
 }
 
 export interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInterfaceComponentProps {
   mode: "display"
+  submitEventSource: any
 }
 
 export interface ExecuteInterfaceComponentEditModeProps extends IExecuteInterfaceComponentProps {
@@ -165,6 +185,8 @@ export interface RemoteComponentProps {
   setParentSubmitting: QueryFormProps["setParentSubmitting"]
   userInterfaceData: UserInterfaceProps["data"]
   getParams: () => JSONRecord
+  onExecute?: () => void
+  onComplete?: () => void
 }
 
 export interface FromStore {

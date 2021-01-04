@@ -6,7 +6,7 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { LoadStatusCode, OnSubmitType, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
+import { LoadStatusCode, LOADSTATUSCODES, OnSubmitType, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
 import { executeRemoteConfig } from "./executeRemoteConfig"
 import { useRematch } from "../../../../../hooks"
@@ -41,7 +41,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    *
    * STATE
    */
-  const [loadStatus, setLoadStatus] = React.useState<LoadStatusCode>("none")
+  const [loadStatus, setLoadStatus] = React.useState<LoadStatusCode>(LOADSTATUSCODES.none)
 
   /* *************************************
    *
@@ -120,7 +120,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       setLoadStatus(newLoadingState.loadStatus)
 
       // Put response data into userInterfaceData via onChangeData
-      if (onChangeData && newLoadingState.loadStatus !== "deleted") {
+      if (onChangeData && newLoadingState.loadStatus !== LOADSTATUSCODES.deleted) {
         const newData = mergeResultDataWithModel({
           getRootUserInterfaceData,
           outboundValueKey,
@@ -131,21 +131,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
         })
         onChangeData(newData)
       }
-
-      switch (newLoadingState.loadStatus) {
-        case "created":
-          onRaiseEvent("remoteConfig_created", { value: newLoadingState.data })
-          break
-        case "deleted":
-          onRaiseEvent("remoteConfig_deleted", { value: newLoadingState.data })
-          break
-        case "loaded":
-          onRaiseEvent("remoteConfig_loaded", { value: newLoadingState.data })
-          break
-        case "updated":
-          onRaiseEvent("remoteConfig_updated", { value: newLoadingState.data })
-          break
-      }
+      onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
     })
   }
 
@@ -153,7 +139,12 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
    * On delete, redirect user somewhere
    */
   React.useEffect(() => {
-    if (useDeleteRedirect && loadStatus === "deleted" && deleteRedirectPath && !isEmpty(deleteRedirectPath)) {
+    if (
+      useDeleteRedirect &&
+      loadStatus === LOADSTATUSCODES.deleted &&
+      deleteRedirectPath &&
+      !isEmpty(deleteRedirectPath)
+    ) {
       // Wipe out userInterfaceData from this view so it doesn't conflict on the next view
       onChangeData && onChangeData({})
       dispatch.navigation.navigate(deleteRedirectPath)

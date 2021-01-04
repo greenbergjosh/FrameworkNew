@@ -1,4 +1,4 @@
-import { RemoteConfigFromStore, LoadStatus, RemoteConfigActionParams } from "../../../types"
+import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams, RemoteConfigFromStore } from "../../../types"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 import { getErrorStatePromise } from "../../utils"
 import { configToJson, getParsedConfig, getRemoteConfigId } from "./utils"
@@ -24,7 +24,7 @@ export function fetch({
   // const predicate = getRemoteConfigPredicate(remoteDataFilter, remoteConfigType, remoteConfigTypeParentName)
   // this.setState({
   //   data: (loadByFilter(predicate) as unknown) as T[],
-  //   loadStatus: "loaded",
+  //   loadStatus: LOADSTATUSCODES.loaded,
   //   loadError: null,
   // })
 
@@ -39,20 +39,20 @@ export function fetch({
 
       allConfigsOfType = getAllConfigsOfType(entityTypeId, fromStore)
       data = convertConfigsToJSON(allConfigsOfType)
-      return Promise.resolve({ data, loadStatus: "loaded" })
+      return Promise.resolve({ data, loadStatus: LOADSTATUSCODES.loaded })
     case "selected":
       remoteConfigId = getRemoteConfigId({ queryFormValues, userInterfaceData })
       if (!remoteConfigId) return getErrorStatePromise("Remote config not found.")
 
       data = getParsedConfig(remoteConfigId, fromStore)
-      return Promise.resolve({ data, loadStatus: "loaded" })
+      return Promise.resolve({ data, loadStatus: LOADSTATUSCODES.loaded })
     default:
       // "static" case
       if (!remoteConfigStaticId)
         return getErrorStatePromise("Remote config not found. Please check the Execute component settings.")
 
       data = getParsedConfig(remoteConfigStaticId, fromStore)
-      return Promise.resolve({ data, loadStatus: "loaded" })
+      return Promise.resolve({ data, loadStatus: LOADSTATUSCODES.loaded })
   }
 }
 

@@ -63,7 +63,8 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
     eventName: string,
     eventPayload: EventPayloadType,
     eventParameters: { [key: string]: string },
-    ref: any
+    target: any,
+    source: any
   ) => Record<string, any>
 
   const manageFormWithEvents = getManageForm(WrappedComponent)
@@ -123,7 +124,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       })
     }
 
-    private onRaiseEvent(eventName: string, eventPayload: EventPayloadType): void {
+    private onRaiseEvent(eventName: string, eventPayload: EventPayloadType, source: any): void {
       if (!this.props.outgoingEventMap) {
         return
       }
@@ -164,14 +165,14 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
         }
       }
       console.log("EventManager: calling EventBus")
-      EventBus.raiseEvent(mappedEventName, mappedEventPayload)
+      EventBus.raiseEvent(mappedEventName, mappedEventPayload, source)
     }
 
     private makeEventHandler(
       eventHandler: EventHandler,
       eventHandlerParameters: { [key: string]: string }
     ): EventBusEventHandler {
-      return (eventName: string, eventPayload: EventPayloadType) => {
+      return (eventName: string, eventPayload: EventPayloadType, source: any) => {
         console.log(`EventManager: Handling event ${eventName}`, eventPayload)
         const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
         const mutatedProps = eventHandler(
@@ -179,7 +180,8 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
           eventName,
           eventPayload,
           eventHandlerParameters,
-          this.currentRef.current
+          this.currentRef.current,
+          source
         )
         this.setState((prevState) => ({ ...prevState, mutatedProps }))
       }
@@ -193,8 +195,8 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
         <WrappedComponent
           ref={this.currentRef}
           {...mergedProps}
-          onRaiseEvent={(eventName: string, eventPayload: EventPayloadType) =>
-            this.onRaiseEvent(eventName, eventPayload)
+          onRaiseEvent={(eventName: string, eventPayload: EventPayloadType, source: any) =>
+            this.onRaiseEvent(eventName, eventPayload, source)
           }
         />
       )

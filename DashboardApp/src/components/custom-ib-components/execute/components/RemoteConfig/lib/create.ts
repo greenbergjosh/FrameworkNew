@@ -1,4 +1,4 @@
-import { LoadStatus, RemoteConfigActionParams } from "../../../types"
+import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../types"
 import { get, isEmpty } from "lodash/fp"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { CreateConfigEventPayload } from "../../../../../../state/global-config"
@@ -54,6 +54,6 @@ export function create({
 
   return dispatch.globalConfig
     .createRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: "created" } as LoadStatus))
+    .then(() => ({ data: uiDataSlice, loadStatus: LOADSTATUSCODES.created } as LoadStatus))
     .catch((e: Error) => getErrorState(e))
 }

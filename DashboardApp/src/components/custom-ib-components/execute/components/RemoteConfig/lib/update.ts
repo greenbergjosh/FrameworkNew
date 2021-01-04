@@ -1,12 +1,8 @@
-import { LoadStatus, RemoteConfigActionParams } from "../../../types"
+import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../types"
 import { getErrorState, getErrorStatePromise } from "../../utils"
 import { getRemoteConfigId } from "./utils"
 import { get, isEmpty } from "lodash/fp"
-import {
-  CreateConfigEventPayload,
-  DeleteConfigEventPayload,
-  UpdateConfigEventPayload,
-} from "../../../../../../state/global-config"
+import { CreateConfigEventPayload, UpdateConfigEventPayload } from "../../../../../../state/global-config"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 
 /**
@@ -90,6 +86,6 @@ export function update({
 
   return dispatch.globalConfig
     .updateRemoteConfig(payload)
-    .then(() => ({ data: uiDataSlice, loadStatus: "updated" } as LoadStatus))
+    .then(() => ({ data: uiDataSlice, loadStatus: LOADSTATUSCODES.updated } as LoadStatus))
     .catch((e: Error) => getErrorState(e))
 }

@@ -2,7 +2,7 @@ import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
 import { QueryConfig, QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ErrorResponse, ExecuteInterfaceComponentState, FromStore, LoadStatus } from "../types"
+import { ErrorResponse, ExecuteInterfaceComponentState, FromStore, LoadStatus, LOADSTATUSCODES } from "../types"
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
@@ -30,7 +30,7 @@ export function getConfig(
     () => {
       console.error("ExecuteInterfaceComponent.getConfig", "Invalid Query", reporter(queryConfig))
       return ({
-        loadStatus: "error",
+        loadStatus: LOADSTATUSCODES.error,
         loadError: "Query was invalid. Check developer tools for details.",
       } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
     },
@@ -125,7 +125,7 @@ export function getErrorStatePromise(reason: string): Promise<LoadStatus> {
  */
 export function getErrorState(e: Error): LoadStatus {
   console.error("ExecuteInterfaceComponent", e)
-  return { data: null, loadStatus: "error", loadError: e.message }
+  return { data: null, loadStatus: LOADSTATUSCODES.error, loadError: e.message }
 }
 
 /**

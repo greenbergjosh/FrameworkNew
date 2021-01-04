@@ -7,6 +7,8 @@ import {
   ExecuteRemoteConfigInterfaceComponentProps,
   ExecuteRemoteQueryInterfaceComponentProps,
   ExecuteRemoteUrlInterfaceComponentProps,
+  LoadStatusCode,
+  LOADSTATUSCODES,
   OnMountType,
 } from "./types"
 import RemoteConfig from "./components/RemoteConfig/RemoteConfig"
@@ -40,13 +42,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
   static manageForm = executeManageForm
   static contextType = UserInterfaceContext
-  static availableEvents = [
-    "remoteQuery_loaded",
-    "remoteConfig_created",
-    "remoteConfig_updated",
-    "remoteConfig_deleted",
-    "remoteConfig_loaded",
-    "remoteUrl_loaded",
+  static availableEvents: LoadStatusCode[] = [
+    LOADSTATUSCODES.loading,
+    LOADSTATUSCODES.loaded,
+    LOADSTATUSCODES.created,
+    LOADSTATUSCODES.updated,
+    LOADSTATUSCODES.deleted,
+    LOADSTATUSCODES.error,
   ]
   context!: React.ContextType<typeof AdminUserInterfaceContext>
   autoExecuteTimer?: ReturnType<typeof setInterval> | null
@@ -58,7 +60,7 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       data: [],
       formState: {},
       loadError: null,
-      loadStatus: "none",
+      loadStatus: LOADSTATUSCODES.none,
       submitting: false,
       transientParams: {},
     }

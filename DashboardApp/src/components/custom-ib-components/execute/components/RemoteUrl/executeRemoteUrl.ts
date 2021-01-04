@@ -1,6 +1,6 @@
 import { HTTPRequestQueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { ExecuteInterfaceComponentState, LoadStatus, RemoteUrlFromStore } from "../../types"
+import { ExecuteInterfaceComponentState, LoadStatus, LOADSTATUSCODES, RemoteUrlFromStore } from "../../types"
 import { cheapHash } from "../../../../../lib/json"
 import { notification } from "antd"
 import { getErrorState } from "../utils"
@@ -23,7 +23,7 @@ export async function executeRemoteUrl(
 
   return Promise.resolve({
     remoteQueryLoggingName: queryConfig.query,
-    loadStatus: "loading",
+    loadStatus: LOADSTATUSCODES.loading,
   }).then(() =>
     // executeHTTPRequestQuery puts the response data into cache and does not return it here.
     executeHTTPRequestQuery({
@@ -40,7 +40,7 @@ export async function executeRemoteUrl(
           })
         }
         // TODO: return loadStatus of "create", "update", "delete", "loaded" to support onRaiseEvent
-        return { data, loadStatus: "loaded" } as LoadStatus
+        return { data, loadStatus: LOADSTATUSCODES.loaded } as LoadStatus
       })
       .catch((e: Error) => getErrorState(e))
   )

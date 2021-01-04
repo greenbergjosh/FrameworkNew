@@ -6,7 +6,7 @@ import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
 import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
 import { QueryForm } from "../../../../query/QueryForm"
-import { ErrorResponse, OnSubmitType, RemoteQueryProps } from "../../types"
+import { ErrorResponse, LOADSTATUSCODES, OnSubmitType, RemoteQueryProps } from "../../types"
 import { QueryParams } from "../../../../query/QueryParams"
 import { executeRemoteQuery } from "./executeRemoteQuery"
 
@@ -56,6 +56,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
   /* Originally from ReportBody.tsx */
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
     if (!queryConfig || mode === "edit") return
+    onRaiseEvent(LOADSTATUSCODES.loading, { value: {} })
 
     /*
      * From ReportBody.tsx
@@ -98,21 +99,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
         })
         onChangeData(newData)
       }
-
-      switch (newLoadingState.loadStatus) {
-        case "created":
-          onRaiseEvent("remoteQuery_created", { value: newLoadingState.data })
-          break
-        case "deleted":
-          onRaiseEvent("remoteQuery_deleted", { value: newLoadingState.data })
-          break
-        case "loaded":
-          onRaiseEvent("remoteQuery_loaded", { value: newLoadingState.data })
-          break
-        case "updated":
-          onRaiseEvent("remoteQuery_updated", { value: newLoadingState.data })
-          break
-      }
+      newLoadingState.loadStatus && onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
     })
   }
 
