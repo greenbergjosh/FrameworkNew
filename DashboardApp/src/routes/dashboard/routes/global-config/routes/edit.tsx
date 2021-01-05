@@ -22,6 +22,7 @@ import { WithRouteProps } from "../../../../../state/navigation"
 import { store } from "../../../../../state/store"
 import { CodeEditor, ComponentDefinition, EditorLangCodec, UserInterface } from "@opg/interface-builder"
 import { InProgressRemoteUpdateDraft, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import * as iots from "io-ts"
 
 interface Props {
   configId: string
@@ -167,14 +168,19 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
           .getOrElse(ROOT_CONFIG_COMPONENTS) as ComponentDefinition[]
       })()
 
-  const configLang = React.useMemo(() => {
-    return entityTypeConfig
-      .chain((etc) => etc.config)
-      .chain(fromStrToJSONRec)
+  const { configLang, configNameMaxLength } = React.useMemo(() => {
+    const configOption = entityTypeConfig.chain((etc) => etc.config).chain(fromStrToJSONRec)
+    const configLang = configOption
       .chain((config) => record.lookup("lang", config))
       .chain((lang) => fromEither(EditorLangCodec.decode(lang)))
       .getOrElse(fromStore.defaultEntityTypeConfig.lang)
-  }, [entityTypeConfig, fromStore.defaultEntityTypeConfig.lang])
+    const configNameMaxLength = configOption
+      .chain((config) => record.lookup("nameMaxLength", config))
+      .chain((nameMaxLength) => fromEither(iots.union([iots.undefined, iots.number]).decode(nameMaxLength)))
+      .getOrElse(fromStore.defaultEntityTypeConfig.nameMaxLength)
+
+    return { configLang, configNameMaxLength }
+  }, [entityTypeConfig, fromStore.defaultEntityTypeConfig])
 
   const existingConfigNames = React.useMemo(() => {
     return fromStore.configNames.filter((name) => name !== props.config.name)
@@ -340,6 +346,7 @@ function UpdatePersistedConfigForm(props: { config: PersistedConfig }) {
                     value={form.values.name}
                     onBlur={form.handleBlur}
                     onChange={form.handleChange}
+                    maxLength={configNameMaxLength}
                   />
                 </Form.Item>
 

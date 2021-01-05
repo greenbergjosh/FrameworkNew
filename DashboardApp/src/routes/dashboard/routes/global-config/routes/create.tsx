@@ -29,6 +29,7 @@ import {
 import { Alert, Button, Card, Col, Form, Icon, Input, Modal, Row, Select, Skeleton, Tabs } from "antd"
 import { fromEither, getSetoid as getOptionSetoid, none, Option, option, some, tryCatch } from "fp-ts/lib/Option"
 import { InProgressLocalDraftConfig, PersistedConfig } from "../../../../../data/GlobalConfig.Config"
+import * as iots from "io-ts"
 
 interface Props {
   configId: "create"
@@ -95,7 +96,7 @@ export function CreateGlobalConfig({
 
   const initialFormState = React.useMemo(() => {
     const formState = {
-      config: '{"lang":"json"}',
+      config: JSON.stringify(fromStore.defaultEntityTypeConfig),
       name: "",
       type: "",
       ...queryString.parse(window.location.search),
@@ -117,6 +118,18 @@ export function CreateGlobalConfig({
 
     return formState
   }, [window.location.search, fromStore.entityTypes, fromStore.configsByType, fromStore.configsById])
+
+  const getConfigNameMaxLengthCallback = React.useCallback(
+    () => (typeId: string) =>
+      record
+        .lookup(typeId, fromStore.entityTypes)
+        .chain((etc) => etc.config)
+        .chain(fromStrToJSONRec)
+        .chain((config) => record.lookup("nameMaxLength", config))
+        .chain((nameMaxLength) => fromEither(iots.union([iots.undefined, iots.number]).decode(nameMaxLength)))
+        .getOrElse(fromStore.defaultEntityTypeConfig.nameMaxLength),
+    [fromStore.entityTypes, fromStore.defaultEntityTypeConfig.nameMaxLength]
+  )
 
   const [previewData, setPreviewData] = React.useState({})
 
@@ -288,6 +301,7 @@ export function CreateGlobalConfig({
                       value={form.values.name}
                       onBlur={form.handleBlur}
                       onChange={form.handleChange}
+                      maxLength={getConfigNameMaxLengthCallback()(form.values.type)}
                     />
                   </Form.Item>
 
@@ -343,7 +357,7 @@ export function CreateGlobalConfig({
                             }}
                             mode="display"
                             components={tryCatch(() => {
-                              const layout = JSON5.parse(form.values.config).layout
+                              const { layout } = JSON5.parse(form.values.config)
                               return layout && (Array.isArray(layout) ? layout : [layout])
                             }).getOrElse([])}
                           />

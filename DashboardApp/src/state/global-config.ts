@@ -31,7 +31,7 @@ declare module "./store.types" {
 export interface State {
   /** configs from the database */
   configs: RemoteData<Error, Array<GC.PersistedConfig>>
-  readonly defaultEntityTypeConfig: { lang: "json" }
+  readonly defaultEntityTypeConfig: { lang: "json"; nameMaxLength?: number }
   /** a place to hold edits to a config prior to persisting changes */
 }
 
@@ -94,7 +94,7 @@ export const globalConfig: Store.AppModel<State, Reducers, Effects, Selectors> =
           type: c.Type,
         }))
       ),
-    defaultEntityTypeConfig: { lang: "json" },
+    defaultEntityTypeConfig: { lang: "json", nameMaxLength: undefined },
   },
 
   reducers: {
