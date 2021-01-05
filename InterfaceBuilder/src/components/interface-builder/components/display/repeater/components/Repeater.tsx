@@ -47,6 +47,7 @@ export function Repeater({
    */
   const handleMoveUp = React.useCallback(
     (index: number) => {
+      console.log("handleMoveUp")
       const nextRepeaterItems = [
         ...data.slice(0, index - 1), // data before new insertion point
         data[index], // target item
@@ -56,7 +57,7 @@ export function Repeater({
 
       !isNaN(index) && onChange(nextRepeaterItems)
     },
-    [onChange]
+    [onChange, data]
   )
 
   /**
@@ -74,7 +75,7 @@ export function Repeater({
 
       !isNaN(index) && onChange(nextRepeaterItems)
     },
-    [onChange]
+    [onChange, data]
   )
 
   /**
@@ -91,7 +92,7 @@ export function Repeater({
 
       !isNaN(index) && onChange(nextRepeaterItems)
     },
-    [onChange]
+    [onChange, data]
   )
 
   /**
@@ -127,7 +128,7 @@ export function Repeater({
       const nextRepeaterItems: JSONRecord[] = [...data.slice(0, index), ...data.slice(index + 1)]
       !isNaN(index) && onChange(nextRepeaterItems)
     },
-    [hasInitialRecord, hasLastItemComponents, onChange]
+    [hasInitialRecord, hasLastItemComponents, onChange, data]
   )
 
   /* *************************************

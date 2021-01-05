@@ -1,18 +1,28 @@
 {
   "inset": false,
-  "key": "outer",
   "size": "small",
   "bordered": false,
   "hoverable": false,
   "invisible": false,
   "hidden": false,
   "extra": "",
-  "title": "Card Title",
+  "title": "Repeater Example",
   "valueKey": "data",
   "label": "Card",
   "hideLabel": true,
+  "key": "outer",
   "component": "card",
   "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
     {
       "size": "default",
       "invisible": false,
