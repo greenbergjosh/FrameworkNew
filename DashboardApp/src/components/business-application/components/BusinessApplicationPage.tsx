@@ -50,9 +50,9 @@ export const BusinessApplicationPage = ({
     businessApplicationPageConfig,
   })
 
-  const backgroundColor =
-    businessApplicationPageConfig && businessApplicationPageConfig.hasWhiteBackground ? "white" : "none"
-  const padding = businessApplicationPageConfig && businessApplicationPageConfig.hasPadding ? 30 : undefined
+  const { hasWhiteBackground = false, hasPadding = false } = businessApplicationPageConfig || {}
+  const backgroundColor = hasWhiteBackground ? "white" : "none"
+  const padding = hasPadding ? 30 : undefined
 
   return (
     <div>
