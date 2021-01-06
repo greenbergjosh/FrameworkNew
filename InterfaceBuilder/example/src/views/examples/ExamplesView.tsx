@@ -1,5 +1,4 @@
 import { Layout } from "antd"
-import FormExample from "../examples/form"
 import QueryBuilderExample from "../examples/querybuilder"
 import RepeaterExample from "../examples/repeater"
 import DataInjectorExample from "../examples/data-injector"
@@ -25,9 +24,6 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/button`}>
             <ButtonExample />
-          </Route>
-          <Route path={`${path}/form`}>
-            <FormExample />
           </Route>
           <Route path={`${path}/querybuilder`}>
             <QueryBuilderExample />

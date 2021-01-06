@@ -14,5 +14,7 @@
       "value3": { "subKey": "Value 4 Value 3B" }
     }
   ],
-  "value5": ""
+  "value5": "",
+  "value6": 0,
+  "value7": false
 }
