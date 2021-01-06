@@ -1,0 +1,18 @@
+{
+  "value1": "Value 1",
+  "value2": "Value 2",
+  "value3": { "subKey": "Value 3" },
+  "value4": [
+    {
+      "value1": "Value 4 Value 1A",
+      "value2": "Value 4 Value 2A",
+      "value3": { "subKey": "Value 4 Value 3A" }
+    },
+    {
+      "value1": "Value 4 Value 1B",
+      "value2": "Value 4 Value 2B",
+      "value3": { "subKey": "Value 4 Value 3B" }
+    }
+  ],
+  "value5": ""
+}

@@ -2,7 +2,7 @@ import React, { CSSProperties } from "react"
 import { textManageForm } from "./text-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { TextInterfaceComponentProps, TextInterfaceComponentState, TitleSizeType } from "./types"
-import { get, isEmpty, isEqual, isObject, isNull, isUndefined } from "lodash/fp"
+import { get, isBoolean, isEmpty, isEqual, isNumber, isString } from "lodash/fp"
 import { JSONRecord } from "index"
 import { CodeBlock, Error, Info, Paragraph, PlainText, Success, Title, Warning } from "./components/TextTypes"
 
@@ -56,7 +56,7 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
 
   componentDidMount(): void {
     if (!isEmpty(this.props.stringTemplate)) {
-      const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
+      const nextValue = this.getValue(this.props.valueKey)
       const text = this.getText(nextValue)
 
       this.setState({ text })
@@ -64,8 +64,8 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 
   componentDidUpdate(prevProps: Readonly<TextInterfaceComponentProps>): void {
-    const prevValue = get(prevProps.valueKey, prevProps.userInterfaceData)
-    const nextValue = get(this.props.valueKey, this.props.userInterfaceData)
+    const prevValue = this.getValue(prevProps.valueKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
+    const nextValue = this.getValue(this.props.valueKey)
 
     /*
      * Recalculate text if:
@@ -84,8 +84,8 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private getText(value: string | JSONRecord): string | null {
-    const { stringTemplate, useTokens } = this.props
-    return useTokens ? replaceTokens(stringTemplate, value) : stringTemplate
+    const { stringTemplate, useTokens, valueKey } = this.props
+    return useTokens ? replaceTokens(stringTemplate, value, valueKey) : stringTemplate
   }
 
   render() {
@@ -173,22 +173,33 @@ export class TextInterfaceComponent extends BaseInterfaceComponent<
  * @param stringTemplate
  * @param value
  */
-function replaceTokens(stringTemplate: string, value: string | JSONRecord): string | null {
+function replaceTokens(stringTemplate: string, value: string | JSONRecord, valueKey: string): string | null {
   /*
-   * When there is a single value, the user should
-   * just provide {$} in the template string.
+   * When value is a primitive, we skip all the regex work and just replace the value.
+   * The user should have provided {$} in the template string.
    */
-  if (!isNull(value) && !isUndefined(value) && !isEmpty(value.toString()) && !isObject(value)) {
+  if (isString(value) || isNumber(value) || isBoolean(value)) {
     return stringTemplate.replace("{$}", value.toString())
   }
 
-  const matches = stringTemplate && stringTemplate.match(/(\{\$\.([^{]*)\})/gm)
+  const matches = stringTemplate && stringTemplate.match(/(\{(\$\.?[^{]*)\})/gm)
   return (
     matches &&
-    matches.reduce((acc, match) => {
-      const key = match.slice(3, match.length - 1)
-      const val = get(key, value) || "?"
-      return acc.replace(match, val.toString())
+    matches.reduce((acc, token) => {
+      console.log("replaceToken", { stringTemplate, value, matches, acc, token })
+
+      // The token is simple "{$}"
+      if (token === "{$}") {
+        const defaultValue = `{${valueKey}}`
+        const val = value ? value.toString() : defaultValue
+        return acc.replace(token, val)
+      }
+
+      // The token is a property such as "$.propertyName"
+      const key = token.slice(3, token.length - 1)
+      const defaultValue = `{${valueKey}.${key}}`
+      const val = get(key, value) || defaultValue
+      return acc.replace(token, val.toString())
     }, stringTemplate)
   )
 }

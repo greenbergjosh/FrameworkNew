@@ -4,7 +4,7 @@ import config from "./example-config.json"
 import initialData from "./example-data.json"
 import { ExampleViewer } from "../../../components/ExampleViewer"
 
-const ButtonExample: React.FC = () => {
+const TextExample: React.FC = () => {
   const [data, setData] = React.useState(initialData)
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
@@ -14,8 +14,8 @@ const ButtonExample: React.FC = () => {
 
   return (
     <ExampleViewer
-      title={"Button"}
-      description="Description of Button goes here."
+      title={"Text"}
+      description="Description of Text goes here."
       components={schema}
       data={data}
       onChangeData={handleChangeData}
@@ -31,4 +31,4 @@ const ButtonExample: React.FC = () => {
   )
 }
 
-export default ButtonExample
+export default TextExample

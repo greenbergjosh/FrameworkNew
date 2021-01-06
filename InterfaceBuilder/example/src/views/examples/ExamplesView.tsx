@@ -3,6 +3,7 @@ import FormExample from "../examples/form"
 import QueryBuilderExample from "../examples/querybuilder"
 import RepeaterExample from "../examples/repeater"
 import DataInjectorExample from "../examples/data-injector"
+import TextExample from "../examples/text"
 import ButtonExample from "../examples/button"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
@@ -36,6 +37,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/data-injector`}>
             <DataInjectorExample />
+          </Route>
+          <Route path={`${path}/text`}>
+            <TextExample />
           </Route>
         </Switch>
       </Layout>
