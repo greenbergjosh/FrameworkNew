@@ -4,6 +4,7 @@ import RepeaterExample from "../examples/repeater"
 import DataInjectorExample from "../examples/data-injector"
 import TextExample from "../examples/text"
 import ButtonExample from "../examples/button"
+import DateStepperExample from "./date-stepper"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
@@ -36,6 +37,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/text`}>
             <TextExample />
+          </Route>
+          <Route path={`${path}/date-stepper`}>
+            <DateStepperExample />
           </Route>
         </Switch>
       </Layout>

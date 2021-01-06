@@ -22,14 +22,16 @@ export const today: DateAction = (date, bound) => {
 export function stepSingleDateValue(
   dateKey: string,
   userInterfaceData: UserInterfaceProps["data"],
-  action: DateAction
+  action: DateAction,
+  timeZone = "local"
 ): DateValuesType {
   const strDate = get(dateKey, userInterfaceData)
   let date = moment(strDate)
 
   if (!date.isValid()) {
     console.warn(`Date Stepper received an invalid date: "${strDate}". Defaulting to today.`)
-    date = moment()
+    // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
+    date = timeZone === "gmt" ? moment.utc() : moment()
   }
   return set(dateKey, action(date, "none"), {})
 }
@@ -38,22 +40,26 @@ export function stepDateRangeValues(
   startDateKey: string,
   endDateKey: string,
   userInterfaceData: UserInterfaceProps["data"],
-  action: DateAction
+  action: DateAction,
+  timeZone = "local"
 ): DateValuesType {
   const strStartDate = get(startDateKey, userInterfaceData)
   const strEndDate = get(endDateKey, userInterfaceData)
-  let startDate = moment(strStartDate)
-  let endDate = moment(strEndDate)
+  // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
+  let startDate = timeZone === "gmt" ? moment.utc(strStartDate) : moment(strStartDate)
+  let endDate = timeZone === "gmt" ? moment.utc(strEndDate) : moment(strEndDate)
   let newValue = {}
 
   if (!startDate.isValid()) {
-    console.warn(`Date Stepper received an invalid Start Date: "${strStartDate}". Defaulting to today.`)
-    startDate = moment()
+    console.warn(`Date Stepper received an invalid Starßt Date: "${strStartDate}". Defaulting to today.`)
+    // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
+    startDate = timeZone === "gmt" ? moment.utc() : moment()
   }
 
   if (!endDate.isValid()) {
     console.warn(`Date Stepper received an invalid End Date: "${strEndDate}". Defaulting to today.`)
-    endDate = moment()
+    // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
+    endDate = timeZone === "gmt" ? moment.utc() : moment()
   }
 
   newValue = set(startDateKey, action(startDate, "start"), newValue)

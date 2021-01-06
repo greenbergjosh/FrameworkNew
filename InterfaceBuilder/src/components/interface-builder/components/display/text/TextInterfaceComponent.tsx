@@ -2,7 +2,7 @@ import React, { CSSProperties } from "react"
 import { textManageForm } from "./text-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { TextInterfaceComponentProps, TextInterfaceComponentState, TitleSizeType } from "./types"
-import { get, isBoolean, isEmpty, isEqual, isNumber, isString } from "lodash/fp"
+import { get, isBoolean, isEmpty, isEqual, isNumber, isString, isDate } from "lodash/fp"
 import { JSONRecord } from "index"
 import { CodeBlock, Error, Info, Paragraph, PlainText, Success, Title, Warning } from "./components/TextTypes"
 
@@ -178,7 +178,7 @@ function replaceTokens(stringTemplate: string, value: string | JSONRecord, value
    * When value is a primitive, we skip all the regex work and just replace the value.
    * The user should have provided {$} in the template string.
    */
-  if (isString(value) || isNumber(value) || isBoolean(value)) {
+  if (isString(value) || isNumber(value) || isBoolean(value) || isDate(value)) {
     return stringTemplate.replace("{$}", value.toString())
   }
 

@@ -9,6 +9,7 @@ export interface DateStepperInterfaceComponentProps extends ComponentDefinitionN
   isDateRange: boolean
   dateKey: string
   startDateKey: string
+  timeZone?: string
   endDateKey: string
   size: ButtonProps["size"]
   onChangeData: UserInterfaceProps["onChangeData"]

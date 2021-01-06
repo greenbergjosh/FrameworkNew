@@ -32,9 +32,28 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
               },
               {
+                key: "timeZone",
+                valueKey: "timeZone",
+                component: "select",
+                label: "Time Zone",
+                defaultValue: "local",
+                dataHandlerType: "local",
+                data: {
+                  values: [
+                    {
+                      label: "Local",
+                      value: "local",
+                    },
+                    {
+                      label: "GMT",
+                      value: "gmt",
+                    },
+                  ],
+                },
+              },
+              {
                 key: "isDateRange",
                 valueKey: "isDateRange",
-                ordinal: 11,
                 component: "toggle",
                 defaultValue: true,
                 label: "Date Range",
@@ -42,11 +61,10 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "dateKey",
                 valueKey: "dateKey",
-                ordinal: 10,
                 component: "input",
                 defaultValue: "startDate",
-                label: "Date API Name",
-                help: "The name of the date field in the API endpoint.",
+                label: "Date Key",
+                help: "The name of the date field.",
                 visibilityConditions: {
                   "===": [false, { var: ["isDateRange"] }],
                 },
@@ -54,11 +72,10 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "startDateKey",
                 valueKey: "startDateKey",
-                ordinal: 10,
                 component: "input",
                 defaultValue: "startDate",
-                label: "Start Date API Name",
-                help: "The name of the start date field in the API endpoint.",
+                label: "Start Date Key",
+                help: "The name of the start date field.",
                 visibilityConditions: {
                   "===": [true, { var: ["isDateRange"] }],
                 },
@@ -66,11 +83,10 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "endDateKey",
                 valueKey: "endDateKey",
-                ordinal: 11,
                 component: "input",
                 defaultValue: "endDate",
-                label: "End Date API Name",
-                help: "The name of the end date field in the API endpoint.",
+                label: "End Date Key",
+                help: "The name of the end date field.",
                 visibilityConditions: {
                   "===": [true, { var: ["isDateRange"] }],
                 },
@@ -83,7 +99,6 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "size",
                 valueKey: "size",
-                ordinal: 10,
                 defaultValue: "default",
                 label: "Size",
                 component: "select",

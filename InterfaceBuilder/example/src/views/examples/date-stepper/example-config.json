@@ -1,0 +1,52 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "timeSettings": {
+        "use24Clock": false,
+        "includeHour": false,
+        "includeMinute": false,
+        "includeSecond": false,
+        "includeTime": false
+      },
+      "invisible": false,
+      "hidden": false,
+      "wrapperObjectKey": "dateRange",
+      "useWrapperObject": false,
+      "endDateKey": "endDate",
+      "startDateKey": "startDate",
+      "defaultRangeValue": "Today",
+      "label": "Date Range",
+      "hideLabel": true,
+      "component": "date-range"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "endDateKey": "endDate",
+      "startDateKey": "startDate",
+      "dateKey": "startDate",
+      "isDateRange": true,
+      "executeImmediately": false,
+      "label": "Date Stepper",
+      "hideLabel": true,
+      "component": "date-stepper"
+    }
+  ]
+}
