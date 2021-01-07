@@ -31,30 +31,30 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
               },
-              {
-                key: "timeFormat",
-                valueKey: "timeFormat",
-                component: "select",
-                label: "Time Zone",
-                defaultValue: "local",
-                dataHandlerType: "local",
-                data: {
-                  values: [
-                    {
-                      label: "ISO-8601",
-                      value: "iso-8601",
-                    },
-                    {
-                      label: "Locale",
-                      value: "locale",
-                    },
-                    {
-                      label: "GMT",
-                      value: "gmt",
-                    },
-                  ],
-                },
-              },
+              // {
+              //   key: "dateFormat",
+              //   valueKey: "dateFormat",
+              //   component: "select",
+              //   label: "Format",
+              //   defaultValue: "local",
+              //   dataHandlerType: "local",
+              //   data: {
+              //     values: [
+              //       {
+              //         label: "ISO-8601",
+              //         value: "iso-8601",
+              //       },
+              //       {
+              //         label: "Locale",
+              //         value: "locale",
+              //       },
+              //       {
+              //         label: "GMT",
+              //         value: "gmt",
+              //       },
+              //     ],
+              //   },
+              // },
               {
                 key: "isDateRange",
                 valueKey: "isDateRange",

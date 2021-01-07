@@ -1,11 +1,11 @@
 import { get, set, isEmpty } from "lodash/fp"
 import moment, { Moment } from "moment"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
-import { DateAction, DateValuesType, TimeFormat } from "./types"
+import { DateAction, DateValuesType, DateFormat } from "./types"
 
-function parseDate(timeFormat: TimeFormat, strDate?: string): Moment {
+function parseDate(dateFormat: DateFormat, strDate?: string): Moment {
   return !isEmpty(strDate) ? moment(strDate) : moment()
-  // switch (timeFormat) {
+  // switch (dateFormat) {
   //   case "iso-8601":
   //     // Format: YYYY-MM-DDTHH:mm:ss.sssZ
   //     // Example: "2012-01-20T16:51:36.000Z"
@@ -22,9 +22,9 @@ function parseDate(timeFormat: TimeFormat, strDate?: string): Moment {
   // }
 }
 
-function formatDate(date: Moment, timeFormat: TimeFormat): string {
+function formatDate(date: Moment, dateFormat: DateFormat): string {
   return date.toDate().toISOString()
-  // switch (timeFormat) {
+  // switch (dateFormat) {
   //   case "iso-8601":
   //     // Format: YYYY-MM-DDTHH:mm:ss.sssZ
   //     // Example: "2012-01-20T16:51:36.000Z"
@@ -40,19 +40,19 @@ function formatDate(date: Moment, timeFormat: TimeFormat): string {
   // }
 }
 
-export const next: DateAction = (date, timeFormat) => formatDate(date.add(1, "days"), timeFormat)
+export const next: DateAction = (date, dateFormat) => formatDate(date.add(1, "days"), dateFormat)
 
-export const prev: DateAction = (date, timeFormat) => formatDate(date.subtract(1, "days"), timeFormat)
+export const prev: DateAction = (date, dateFormat) => formatDate(date.subtract(1, "days"), dateFormat)
 
-export const today: DateAction = (date, timeFormat, bound) => {
-  const today = parseDate(timeFormat)
+export const today: DateAction = (date, dateFormat, bound) => {
+  const today = parseDate(dateFormat)
   switch (bound) {
     case "start":
-      return formatDate(today.startOf("day"), timeFormat)
+      return formatDate(today.startOf("day"), dateFormat)
     case "end":
-      return formatDate(today.endOf("day"), timeFormat)
+      return formatDate(today.endOf("day"), dateFormat)
     default:
-      return formatDate(today.startOf("day"), timeFormat)
+      return formatDate(today.startOf("day"), dateFormat)
   }
 }
 
@@ -60,16 +60,16 @@ export function stepSingleDateValue(
   dateKey: string,
   userInterfaceData: UserInterfaceProps["data"],
   action: DateAction,
-  timeFormat: TimeFormat = "locale"
+  dateFormat: DateFormat = "locale"
 ): DateValuesType {
   const strDate = get(dateKey, userInterfaceData)
-  let date = parseDate(timeFormat, strDate)
+  let date = parseDate(dateFormat, strDate)
 
   if (!date.isValid()) {
     console.warn(`Date Stepper received an invalid date: "${strDate}". Defaulting to today.`)
-    date = parseDate(timeFormat)
+    date = parseDate(dateFormat)
   }
-  return set(dateKey, action(date, timeFormat, "none"), {})
+  return set(dateKey, action(date, dateFormat, "none"), {})
 }
 
 export function stepDateRangeValues(
@@ -77,25 +77,25 @@ export function stepDateRangeValues(
   endDateKey: string,
   userInterfaceData: UserInterfaceProps["data"],
   action: DateAction,
-  timeFormat: TimeFormat = "locale"
+  dateFormat: DateFormat = "locale"
 ): DateValuesType {
   const strStartDate = get(startDateKey, userInterfaceData)
   const strEndDate = get(endDateKey, userInterfaceData)
-  let startDate = parseDate(timeFormat, strStartDate)
-  let endDate = parseDate(timeFormat, strEndDate)
+  let startDate = parseDate(dateFormat, strStartDate)
+  let endDate = parseDate(dateFormat, strEndDate)
   let newValue = {}
 
   if (!startDate.isValid()) {
     console.warn(`Date Stepper received an invalid Starßt Date: "${strStartDate}". Defaulting to today.`)
-    startDate = parseDate(timeFormat)
+    startDate = parseDate(dateFormat)
   }
 
   if (!endDate.isValid()) {
     console.warn(`Date Stepper received an invalid End Date: "${strEndDate}". Defaulting to today.`)
-    endDate = parseDate(timeFormat)
+    endDate = parseDate(dateFormat)
   }
 
-  newValue = set(startDateKey, action(startDate, timeFormat, "start"), newValue)
-  newValue = set(endDateKey, action(endDate, timeFormat, "end"), newValue)
+  newValue = set(startDateKey, action(startDate, dateFormat, "start"), newValue)
+  newValue = set(endDateKey, action(endDate, dateFormat, "end"), newValue)
   return newValue
 }

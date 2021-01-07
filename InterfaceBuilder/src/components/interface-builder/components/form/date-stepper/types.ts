@@ -3,7 +3,7 @@ import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 import { ButtonProps } from "antd/lib/button"
 import { Moment } from "moment"
 
-export type TimeFormat = "iso-8601" | "locale" | "gmt" | undefined
+export type DateFormat = "iso-8601" | "locale" | "gmt" | undefined
 
 export interface DateStepperInterfaceComponentProps extends ComponentDefinitionNamedProps {
   component: "date-stepper"
@@ -11,7 +11,7 @@ export interface DateStepperInterfaceComponentProps extends ComponentDefinitionN
   isDateRange: boolean
   dateKey: string
   startDateKey: string
-  timeFormat: TimeFormat
+  dateFormat: DateFormat
   endDateKey: string
   size: ButtonProps["size"]
   onChangeData: UserInterfaceProps["onChangeData"]
@@ -23,6 +23,6 @@ export interface DateStepperInterfaceComponentProps extends ComponentDefinitionN
 
 export interface DateStepperInterfaceComponentState {}
 
-export type DateAction = (date: Moment, timeFormat: TimeFormat, bound: "start" | "end" | "none") => string
+export type DateAction = (date: Moment, dateFormat: DateFormat, bound: "start" | "end" | "none") => string
 
 export type DateValuesType = { [p: string]: string }
