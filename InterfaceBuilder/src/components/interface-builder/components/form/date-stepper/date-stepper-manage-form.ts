@@ -32,8 +32,8 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
               },
               {
-                key: "timeZone",
-                valueKey: "timeZone",
+                key: "timeFormat",
+                valueKey: "timeFormat",
                 component: "select",
                 label: "Time Zone",
                 defaultValue: "local",
@@ -41,8 +41,12 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 data: {
                   values: [
                     {
-                      label: "Local",
-                      value: "local",
+                      label: "ISO-8601",
+                      value: "iso-8601",
+                    },
+                    {
+                      label: "Locale",
+                      value: "locale",
                     },
                     {
                       label: "GMT",

@@ -1,4 +1,14 @@
 {
-  "startDate": "2020-12-24T00:00:00.000Z",
-  "endDate": "2020-12-24T23:59:59.999Z"
+  "isoDate": {
+    "startDate": "2020-12-24T00:00:00.000Z",
+    "endDate": "2020-12-24T23:59:59.999Z"
+  },
+  "localeDate": {
+    "startDate": "12/23/2020, 7:00:00 PM",
+    "endDate": "12/24/2020, 6:59:59 PM"
+  },
+  "gmtDate": {
+    "startDate": "Thu, 24 Dec 2020 00:00:00 GMT",
+    "endDate": "Thu, 24 Dec 2020 23:59:59 GMT"
+  }
 }
