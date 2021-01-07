@@ -4,38 +4,40 @@ import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 import { DateAction, DateValuesType, TimeFormat } from "./types"
 
 function parseDate(timeFormat: TimeFormat, strDate?: string): Moment {
-  switch (timeFormat) {
-    case "iso-8601":
-      // Format: YYYY-MM-DDTHH:mm:ss.sssZ
-      // Example: "2012-01-20T16:51:36.000Z"
-      return !isEmpty(strDate) ? moment(strDate) : moment()
-    case "gmt":
-      // UTC time is the same as GMT time
-      // Example: "Thu, 24 Dec 2020 23:59:59 GMT"
-      return !isEmpty(strDate) ? moment.utc(strDate) : moment.utc()
-    default:
-      // "locale"
-      // Example: "1/7/2021, 10:37:56 AM"
-      // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
-      return !isEmpty(strDate) ? moment(strDate) : moment()
-  }
+  return !isEmpty(strDate) ? moment(strDate) : moment()
+  // switch (timeFormat) {
+  //   case "iso-8601":
+  //     // Format: YYYY-MM-DDTHH:mm:ss.sssZ
+  //     // Example: "2012-01-20T16:51:36.000Z"
+  //     return !isEmpty(strDate) ? moment(strDate) : moment()
+  //   case "gmt":
+  //     // UTC time is the same as GMT time
+  //     // Example: "Thu, 24 Dec 2020 23:59:59 GMT"
+  //     return !isEmpty(strDate) ? moment.utc(strDate) : moment.utc()
+  //   default:
+  //     // "locale"
+  //     // Example: "1/7/2021, 10:37:56 AM"
+  //     // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
+  //     return !isEmpty(strDate) ? moment(strDate) : moment()
+  // }
 }
 
 function formatDate(date: Moment, timeFormat: TimeFormat): string {
-  switch (timeFormat) {
-    case "iso-8601":
-      // Format: YYYY-MM-DDTHH:mm:ss.sssZ
-      // Example: "2012-01-20T16:51:36.000Z"
-      return date.toDate().toISOString()
-    case "gmt":
-      // UTC time is the same as GMT time
-      // Example: "Thu, 24 Dec 2020 23:59:59 GMT"
-      return date.toDate().toUTCString()
-    default:
-      // "locale"
-      // Example: "1/7/2021, 10:37:56 AM"
-      return date.toDate().toLocaleString()
-  }
+  return date.toDate().toISOString()
+  // switch (timeFormat) {
+  //   case "iso-8601":
+  //     // Format: YYYY-MM-DDTHH:mm:ss.sssZ
+  //     // Example: "2012-01-20T16:51:36.000Z"
+  //     return date.toDate().toISOString()
+  //   case "gmt":
+  //     // UTC time is the same as GMT time
+  //     // Example: "Thu, 24 Dec 2020 23:59:59 GMT"
+  //     return date.toDate().toUTCString()
+  //   default:
+  //     // "locale"
+  //     // Example: "1/7/2021, 10:37:56 AM"
+  //     return date.toDate().toLocaleString()
+  // }
 }
 
 export const next: DateAction = (date, timeFormat) => formatDate(date.add(1, "days"), timeFormat)
