@@ -1,5 +1,4 @@
 import React from "react"
-import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import { TableInterfaceComponentProps } from "../types"
 import { EnrichedColumnDefinition, Table } from "@opg/interface-builder"
 import { cloneDeep } from "lodash/fp"
@@ -91,7 +90,7 @@ export function TableWrapper(props: TableInterfaceComponentProps) {
 
       return columnConfig
     })
-  }, [onChangeData, dispatch, fromStore.configsById, columns, parameterValues, parentData])
+  }, [onChangeData, dispatch, fromStore.configsById, columns, parameterValues, parentData, getRootUserInterfaceData])
 
   return <Table.TableInterfaceComponent {...props} columns={enrichedColumns} />
 }
