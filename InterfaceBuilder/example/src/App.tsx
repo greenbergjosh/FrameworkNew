@@ -1,5 +1,5 @@
 import React from "react"
-import { Icon, Layout, Typography } from "antd"
+import { Layout } from "antd"
 import "antd/dist/antd.css"
 import {
   antComponents,
@@ -18,7 +18,11 @@ import { DocsView } from "./views/DocsView"
 import { MainMenu } from "./components/MainMenu"
 
 registry.register(antComponents)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 registry.register(nivoComponents)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 registry.register(htmlComponents)
 
 const App: React.FC = () => {

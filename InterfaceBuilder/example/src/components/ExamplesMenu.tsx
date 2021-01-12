@@ -37,6 +37,9 @@ export const ExamplesMenu: React.FC = () => {
         <Menu.Item key="/examples/date-stepper">
           <Link to="/examples/date-stepper">Date Stepper</Link>
         </Menu.Item>
+        <Menu.Item key="/examples/table">
+          <Link to="/examples/table">Table</Link>
+        </Menu.Item>
       </Menu.SubMenu>
     </Menu>
   )

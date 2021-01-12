@@ -5,6 +5,7 @@ import DataInjectorExample from "../examples/data-injector"
 import TextExample from "../examples/text"
 import ButtonExample from "../examples/button"
 import DateStepperExample from "./date-stepper"
+import TableExample from "./table"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
@@ -40,6 +41,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/date-stepper`}>
             <DateStepperExample />
+          </Route>
+          <Route path={`${path}/table`}>
+            <TableExample />
           </Route>
         </Switch>
       </Layout>
