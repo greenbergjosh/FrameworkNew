@@ -17,7 +17,7 @@ import {
   SortDescriptorModel,
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
-import { getDetailTemplate } from "./templates/getDetailTemplate"
+import { getDetailTemplate } from "./detailTemplate/getDetailTemplate"
 import { ColumnConfig } from "../custom-ib-components/table/types"
 import { getCustomAggregateFunction } from "../custom-ib-components/table/templates/customAggregateFunction"
 import { getCellFormatter } from "../custom-ib-components/table/templates/cellFormatter"
