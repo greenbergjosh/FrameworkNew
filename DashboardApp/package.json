@@ -13,7 +13,7 @@
     "@rematch/loading": "1.2.1",
     "@rematch/persist": "1.1.6",
     "@rematch/select": "2.0.5",
-    "@syncfusion/ej2-react-grids": "18.2.58",
+    "@syncfusion/ej2-react-grids": "18.4.34",
     "antd": "3.26.17",
     "axios": "0.18.1",
     "classnames": "2.2.6",
@@ -68,6 +68,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@syncfusion/ej2-base": "18.4.34",
     "@types/classnames": "2.2.11",
     "@types/gapi.auth2": "0.0.52",
     "@types/jest": "26.0.15",

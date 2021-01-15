@@ -72,7 +72,7 @@ export interface IExecuteInterfaceComponentProps extends ComponentDefinitionName
   components: ComponentDefinition[]
   executeImmediately?: boolean
   inboundApiKey: string
-  loadingKey?: string
+  outboundLoadingKey?: string
   onChangeData: UserInterfaceProps["onChangeData"]
   outboundValueKey: string
   paramKVPMaps: ParamKVPMapsType
