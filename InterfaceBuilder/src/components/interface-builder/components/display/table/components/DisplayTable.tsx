@@ -1,5 +1,5 @@
 import React from "react"
-import { get, isArray, isEmpty, matches, set, sortBy, isEqual } from "lodash/fp"
+import { get, isArray, isEmpty, matches, set, sortBy, isEqual, isBoolean } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -8,7 +8,7 @@ import {
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
-import { StandardGrid } from "components/grid/StandardGrid"
+import StandardGrid from "components/grid/StandardGrid"
 import { ColumnConfig, DisplayTableProps } from "../types"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
@@ -37,7 +37,6 @@ export function _DisplayTable({
   preview = false,
 }: DisplayTableProps) {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
-  const loading = loadingKey && get(loadingKey, userInterfaceData)
   let dataArray: JSONRecord[] = []
   if (valueKey) {
     const val = getValue(valueKey)
@@ -50,6 +49,12 @@ export function _DisplayTable({
     }
   }
   const grid = React.useRef<GridComponent>(null)
+  const loading = React.useMemo(() => {
+    const loadingValue = loadingKey ? getValue(loadingKey) : false
+    const loading = isBoolean(loadingValue) ? loadingValue : false
+    console.log("DisplayTable", { loading })
+    return loading
+  }, [loadingKey, getValue])
 
   /**
    * From DashboardApp: ReportBody.tsx "onChangeData"
@@ -85,7 +90,7 @@ export function _DisplayTable({
       enableVirtualization={enableVirtualization}
       height={height}
       groupSettings={groupSettings}
-      loading={!!loading}
+      loading={loading}
       pageSettings={pageSettings}
       sortSettings={sortSettings}
       detailTemplate={
@@ -128,7 +133,9 @@ export function _DisplayTable({
 function propsAreEqual(prevProps: DisplayTableProps, nextProps: DisplayTableProps) {
   const prevData = prevProps.valueKey && get(prevProps.valueKey, prevProps.userInterfaceData)
   const nextData = nextProps.valueKey && get(nextProps.valueKey, nextProps.userInterfaceData)
-  const eqData = isEqual(prevData, nextData)
+  const prevLoading = prevProps.loadingKey && get(prevProps.loadingKey, prevProps.userInterfaceData)
+  const nextLoading = nextProps.loadingKey && get(nextProps.loadingKey, nextProps.userInterfaceData)
+  const eqData = isEqual(prevData, nextData) && isEqual(prevLoading, nextLoading)
   const eq = eqData
 
   return eq

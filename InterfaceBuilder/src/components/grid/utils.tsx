@@ -1,7 +1,6 @@
-import React from "react"
 import moment from "moment"
 import { tryCatch } from "fp-ts/lib/Either"
-import { cloneDeep, merge, sortBy } from "lodash/fp"
+import { cloneDeep, merge, sortBy, isEmpty } from "lodash/fp"
 import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import { evalExpression } from "components/interface-builder/lib/eval-expression"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
@@ -17,6 +16,9 @@ export function getUsableData(data: JSONRecord[], columns: ColumnModel[]) {
    * Iterate on the data
    */
   return cloneDeep(data).map((dataRow) => {
+    if (isEmpty(dataRow)) {
+      return {}
+    }
     /*
      *  Iterate on the columns
      */

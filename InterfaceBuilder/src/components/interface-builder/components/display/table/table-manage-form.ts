@@ -84,6 +84,13 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                   ],
                 },
               },
+              {
+                key: "loadingKey",
+                valueKey: "loadingKey",
+                component: "input",
+                defaultValue: "loading",
+                label: "Loading Key",
+              },
             ],
           },
           {

@@ -1,8 +1,8 @@
 import {
-  AggregateColumnModel,
   AggregateType,
   ColumnModel,
   CustomSummaryType,
+  GridComponent,
   GroupSettingsModel,
   PageSettingsModel,
   SortSettingsModel,
@@ -34,6 +34,7 @@ export interface StandardGridComponentProps {
   //   pagerTemplate?: string | Function | any
   //   rowTemplate?: string | Function | any
   //   toolbarTemplate?: string | Function | any
+  ref?: React.RefObject<GridComponent>
 }
 
 type DataMapOption = { key: string; value: string }

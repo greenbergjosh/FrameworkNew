@@ -100,6 +100,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
               return (
                 <DisplayTable
                   allowAdding={allowAdding}
+                  allowDeleting={allowDeleting}
                   allowEditing={allowEditing}
                   columns={columns}
                   defaultCollapseAll={defaultCollapseAll}
