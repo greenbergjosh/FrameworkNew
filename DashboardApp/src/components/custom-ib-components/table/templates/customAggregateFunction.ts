@@ -1,5 +1,5 @@
 import { EnrichedColumnDefinition } from "@opg/interface-builder"
-import { AppSelectors } from "../../../state/store.types"
+import { AppSelectors } from "../../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import { tryCatch } from "fp-ts/lib/Option"
 import JSON5 from "json5"

@@ -18,9 +18,9 @@ import {
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import { getDetailTemplate } from "./templates/getDetailTemplate"
-import { ColumnConfig } from "./templates/types"
-import { getCustomAggregateFunction } from "./templates/customAggregateFunction"
-import { getCellFormatter } from "./templates/cellFormatter"
+import { ColumnConfig } from "../custom-ib-components/table/types"
+import { getCustomAggregateFunction } from "../custom-ib-components/table/templates/customAggregateFunction"
+import { getCellFormatter } from "../custom-ib-components/table/templates/cellFormatter"
 import { ReportBodyProps } from "./types"
 import { cheapHash } from "../../lib/json"
 import { some } from "fp-ts/lib/Option"

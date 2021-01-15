@@ -1,10 +1,10 @@
 import { EnrichedColumnDefinition } from "@opg/interface-builder"
-import { AppSelectors } from "../../../state/store.types"
+import { AppSelectors } from "../../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import { CustomSummaryType } from "@syncfusion/ej2-react-grids"
 import { tryCatch } from "fp-ts/lib/Option"
-import { JSONRecord } from "../../../data/JSON"
+import { JSONRecord } from "../../../../data/JSON"
 
 /*
  * cellFormatterQueryParams.queryParams

@@ -6,7 +6,6 @@ import {
   ReportDetailsAsNone,
   SimpleLayoutConfig,
 } from "../../../data/Report"
-import { EnrichedColumnDefinition } from "@opg/interface-builder"
 
 export type ReportDetailsType =
   | string
@@ -22,8 +21,4 @@ export type Values = {
   name?: string //Branded<string, NonEmptyStringBrand>
   id?: string
   type?: string
-}
-
-export interface ColumnConfig extends EnrichedColumnDefinition {
-  details: ReportDetailsType
 }
