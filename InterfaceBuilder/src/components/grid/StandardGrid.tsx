@@ -65,8 +65,16 @@ const StandardGrid = (
    * CONSTANTS
    */
 
-  // Columns and Data
-  const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [columns, useSmallFont])
+  /*
+   * Columns and Data
+   */
+
+  /* Getting "usableColumns" only on component mount because Syncfusion mutates
+   * its internal copy of columns (adds formatFn property). And when the data
+   * is empty and then repopulated, the internal copy of columns is not updated
+   * when it receives a new usableColumns. (So it will be missing formatFn
+   * causing the native cell formatting to be lost). */
+  const usableColumns = React.useMemo(() => getUsableColumns(columns, useSmallFont), [])
   const usableData = React.useMemo(() => getUsableData(data, columns), [data, columns])
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -128,7 +136,7 @@ const StandardGrid = (
     usableColumns.map((col) => {
       // Custom Aggregate Functions
       if (col.aggregationFunction === "Custom" && col.customAggregateFunction && col.customAggregateId) {
-        fns[getCustomAggregateFunctionKey(col)] = col.customAggregateFunction(
+        fns[getCustomAggregateFunctionKey(col.customAggregateId, col.field)] = col.customAggregateFunction(
           usableColumns,
           columnCounts,
           col.customAggregateOptions
@@ -225,7 +233,7 @@ const StandardGrid = (
     } else if (grid) {
       grid.dataSource = usableData
     }
-  }, [ref, usableData])
+  }, [ref, usableData, isLoading])
 
   /**
    * Manage column change.
@@ -259,13 +267,19 @@ const StandardGrid = (
    */
   React.useEffect(() => {
     if (ref && typeof ref === "object" && ref.current) {
-      ref.current.aggregates.forEach(({ columns }) => {
-        console.log("StandardGrid", "Update Custom Aggregate", columns)
-        columns &&
-          columns.forEach((column) => {
-            const usableColumn = usableColumns.find(({ field }) => field === column.field)
+      ref.current.aggregates.forEach(({ columns: aggregateColumnModels }) => {
+        console.log("StandardGrid", "Update Custom Aggregate", aggregateColumnModels)
+        aggregateColumnModels &&
+          aggregateColumnModels.forEach((aggregateColumnModel) => {
+            const usableColumn = usableColumns.find(({ field }) => field === aggregateColumnModel.field)
             if (usableColumn && usableColumn.aggregationFunction) {
-              column.customAggregate = getCustomAggregateFunction(usableColumn, customAggregateFunctions)
+              aggregateColumnModel.customAggregate = getCustomAggregateFunction(
+                usableColumn.aggregationFunction,
+                usableColumn.customAggregateFunction,
+                usableColumn.customAggregateId,
+                usableColumn.field,
+                customAggregateFunctions
+              )
             }
           })
       })

@@ -1,10 +1,10 @@
-import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import {
   ComponentDefinition,
   ComponentDefinitionNamedProps,
 } from "components/interface-builder/components/base/BaseInterfaceComponent"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { EnrichedColumnDefinition } from "components/grid/types"
 
 interface ColumnSortOptions {
   allowSorting?: boolean
@@ -17,14 +17,14 @@ interface ColumnGroupOptions {
   groupOrder?: number
 }
 
-export type ColumnConfig = ColumnModel & ColumnSortOptions & ColumnGroupOptions
+export type SortableGroupableColumnModel = EnrichedColumnDefinition & ColumnSortOptions & ColumnGroupOptions
 
 export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedProps {
   abstract?: boolean
   allowAdding?: boolean
   allowDeleting?: boolean
   allowEditing?: boolean
-  columns: ColumnConfig[]
+  columns: SortableGroupableColumnModel[]
   component: "table"
   defaultCollapseAll?: boolean
   autoFitColumns?: boolean
@@ -58,7 +58,7 @@ export type TableInterfaceComponentProps =
   | TableInterfaceComponentDisplayModeProps
   | TableInterfaceComponentEditModeProps
 
-export function visiblityConditionType(type: string) {
+export function visiblityConditionType(type: string): JSONRecord {
   return {
     "===": [
       type,
@@ -70,7 +70,7 @@ export function visiblityConditionType(type: string) {
 }
 
 export interface DisplayTableProps extends Partial<TableInterfaceComponentDisplayModeProps> {
-  columns: ColumnConfig[]
+  columns: EnrichedColumnDefinition[]
   userInterfaceData: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   preview?: boolean

@@ -21,7 +21,7 @@ export function AbstractTable({
   userInterfaceData,
   getRootUserInterfaceData,
   valueKey,
-}: AbstractTableProps) {
+}: AbstractTableProps): JSX.Element {
   const dataArray = get(valueKey!, userInterfaceData) || []
   const data = { columns: dataArray }
 

@@ -19,7 +19,7 @@ export interface StandardGridComponentProps {
   enableAltRow?: boolean
   enableVirtualization?: boolean
   height?: number
-  columns: ColumnModel[]
+  columns: EnrichedColumnDefinition[]
   contextData?: JSONRecord
   data: JSONRecord[]
   defaultCollapseAll?: boolean
@@ -39,7 +39,12 @@ export interface StandardGridComponentProps {
 
 type DataMapOption = { key: string; value: string }
 
-export interface EnrichedColumnDefinition extends ColumnModel {
+/**
+ * NOTE:
+ * Syncfusion grid does not type or document that "template" accepts React JSX Elements.
+ * So we omit the original property and redefine it below.
+ */
+export interface EnrichedColumnDefinition extends Omit<ColumnModel, "template"> {
   allowHTMLText?: boolean
   aggregationFunction?: AggregateType // Not actually a function, but a string!
   customAggregateId?: string
@@ -49,9 +54,10 @@ export interface EnrichedColumnDefinition extends ColumnModel {
   removeCellPadding?: boolean
   skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
   precision?: number // integer
-  visibilityConditions?: JSONObject // JSON Logic
+  visibilityConditions?: JSONObject // Must be JSON Logic
   cellFormatter?: string
   cellFormatterOptions?: DataMapOption[]
+  template: ColumnModel["template"] | ((rowData: JSONRecord) => JSX.Element | null) // See comments for this interface
 }
 
 export type CustomAggregateFunctions = { [key: string]: CustomSummaryType }

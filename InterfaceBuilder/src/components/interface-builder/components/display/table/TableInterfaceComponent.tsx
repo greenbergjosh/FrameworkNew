@@ -1,11 +1,10 @@
 import React from "react"
-import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import { ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { tableManageForm } from "./table-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import { TableInterfaceComponentProps } from "./types"
 import { EditTable } from "./components/EditTable"
-import { DisplayTable } from "./components/DisplayTable"
+import DisplayTable from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
 
 export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfaceComponentProps> {
