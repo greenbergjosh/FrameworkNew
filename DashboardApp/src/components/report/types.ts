@@ -2,7 +2,8 @@ import { JSONRecord } from "../../data/JSON"
 import { GlobalConfigReference, LocalReportConfig, QueryConfig } from "../../data/Report"
 import { Option } from "fp-ts/lib/Option"
 import { PropsFromQueryParams } from "../query/QueryParams"
-import { UserInterfaceProps } from "@opg/interface-builder"
+import { EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
+import { GroupSettingsModel, PageSettingsModel, SortSettingsModel } from "@syncfusion/ej2-react-grids"
 
 export interface ReportProps {
   data?: JSONRecord
@@ -21,4 +22,21 @@ export interface ReportBodyProps extends PropsFromQueryParams {
   reportId: Option<string>
   title?: string
   withoutHeader?: boolean
+}
+
+export interface DisplayTableProps {
+  autoFitColumns?: boolean
+  columns: EnrichedColumnDefinition[]
+  contextData: JSONRecord
+  data: JSONRecord[]
+  defaultCollapseAll?: boolean
+  detailTemplate: EnrichedColumnDefinition["template"]
+  enableAltRow?: boolean
+  enableVirtualization?: boolean
+  groupSettings: GroupSettingsModel
+  height?: number
+  loading: boolean
+  pageSettings: PageSettingsModel | undefined
+  sortSettings: SortSettingsModel
+  useSmallFont?: boolean
 }

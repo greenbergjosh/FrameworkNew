@@ -5,7 +5,6 @@ import * as record from "fp-ts/lib/Record"
 import { empty as emptyArray, isEmpty as fptsIsEmpty } from "fp-ts/lib/Array"
 import { cloneDeep, matches, sortBy } from "lodash/fp"
 import { Button, PageHeader } from "antd"
-import { EnrichedColumnDefinition } from "@opg/interface-builder"
 import { JSONRecord } from "../../data/JSON"
 import { QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
@@ -20,7 +19,7 @@ import {
 import { getDetailTemplate } from "./detailTemplate/getDetailTemplate"
 import { ColumnConfig } from "../custom-ib-components/table/types"
 import { getCustomAggregateFunction } from "../custom-ib-components/table/customFormatters/customAggregateFunction"
-import { getCellFormatter } from "../custom-ib-components/table/customFormatters/cellFormatter"
+import { getCustomCellFormatter } from "../custom-ib-components/table/customFormatters/customCellFormatter"
 import { ReportBodyProps } from "./types"
 import { cheapHash } from "../../lib/json"
 import { some } from "fp-ts/lib/Option"
@@ -182,20 +181,14 @@ const ReportBody = ({
   const getMemoizedDetailTemplate = React.useMemo(() => {
     return getDetailTemplate({
       dispatch,
-      details: reportConfig.details,
+      columnDetails: reportConfig.details,
       getRootUserInterfaceData,
       parameterValues: parameterValues.toUndefined(),
       parentData,
       handleChangeData: onChangeData,
+      columnType: "layout",
     })
-  }, [
-    dispatch,
-    onChangeData,
-    reportConfig.details,
-    parameterValues,
-    /*parameterValues.toUndefined(),*/ parentData,
-    getRootUserInterfaceData,
-  ])
+  }, [dispatch, onChangeData, reportConfig.details, parameterValues, parentData, getRootUserInterfaceData])
 
   const sortSettings: SortSettingsModel = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -231,77 +224,53 @@ const ReportBody = ({
   const contextData = React.useMemo(() => {
     const cd: JSONRecord = { ...parentData, ...parameterValues.getOrElse(record.empty) }
     return cd
-  }, [
-    parameterValues,
-    // parameterValues.getOrElse(record.empty),
-    parentData,
-  ])
+  }, [parameterValues, parentData])
 
   /*
-   * COLUMN TEMPLATES
-   * Provide layout components and formatters to columns
+   * ADD COLUMN TEMPLATES & FORMATTERS
+   * Provide layout components and formatters to columns.
+   * Since we are in display mode, we only need to update
+   * the columns when mounting this component.
    */
-  const columns: EnrichedColumnDefinition[] = React.useMemo(() => {
-    // Intentionally mutating a clone
-    return cloneDeep(reportConfig.columns).map((column) => {
-      const columnConfig = (column as unknown) as ColumnConfig
-
-      // Render a UserInterface (with JSX Elements) into a cell.
-      if (columnConfig.type === "layout") {
-        // NOTE: Syncfusion grid does not type or document that "template"
-        // accepts React JSX Elements, so we ignore the Typescript error.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        columnConfig.template = getDetailTemplate({
+  const columns: ColumnConfig[] = React.useMemo(() => {
+    return reportConfig.columns.map(
+      (column: ColumnConfig): ColumnConfig => {
+        const template = getDetailTemplate({
           dispatch,
-          details: columnConfig.details,
+          columnDetails: column.details,
           getRootUserInterfaceData,
           parameterValues: parameterValues.toUndefined(),
           parentData,
           handleChangeData: onChangeData,
+          columnType: column.type,
         })
-      }
 
-      /*
-       * Render a formatted string (that may include HTML) into a cell.
-       * NOTE: A cell can have either a "layout" or a "formatter" but not both.
-       */
-      if (columnConfig.cellFormatter && columnConfig.type !== "layout") {
-        const formatter = getCellFormatter(
-          columnConfig.formatter,
-          columnConfig.cellFormatter,
-          columnConfig.cellFormatterOptions,
-          fromStore.configsById,
-          parameterValues.toUndefined()
-        )
-        if (typeof formatter === "function") {
-          columnConfig.formatter = formatter
-          columnConfig.disableHtmlEncode = false
-        }
-      }
+        /*
+         * Render a formatted string (that may include HTML) into a cell.
+         * NOTE: A cell can have either a "layout" or a "formatter" but not both.
+         */
+        const formatter = getCustomCellFormatter({
+          cellFormatter: column.cellFormatter,
+          cellFormatterOptions: column.cellFormatterOptions,
+          columnType: column.type,
+          configsById: fromStore.configsById,
+          formatter: column.formatter,
+          queryParams: parameterValues.toUndefined(),
+        })
 
-      // Render a formatted string (that may include HTML) into a summary row cell.
-      if (columnConfig.aggregationFunction === "Custom" && columnConfig.customAggregateId) {
+        /*
+         * Render a formatted string (that may include HTML) into a summary row cell.
+         */
         const customAggregateFunction = getCustomAggregateFunction(
-          columnConfig.customAggregateId,
-          fromStore.configsById
+          column.customAggregateId,
+          fromStore.configsById,
+          column.aggregationFunction
         )
-        if (typeof customAggregateFunction === "function") {
-          columnConfig.customAggregateFunction = customAggregateFunction
-        }
-      }
 
-      return columnConfig
-    })
-  }, [
-    onChangeData,
-    dispatch,
-    fromStore.configsById,
-    reportConfig.columns,
-    parameterValues,
-    parentData,
-    getRootUserInterfaceData,
-  ])
+        return { ...cloneDeep(column), template, formatter, customAggregateFunction }
+      }
+    )
+  }, []) // Since we are in display mode, we only need to create the columns when mounting this component.
 
   /* **********************************************************************
    *

@@ -39,7 +39,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
   //  won't respond to things like the querystring Query Params.
   //  For now we just provide default values for parentData and parameterValues.
 
-  render() {
+  render(): JSX.Element {
     return <TableWrapper {...this.props} parentData={{}} parameterValues={some({})} />
   }
 }

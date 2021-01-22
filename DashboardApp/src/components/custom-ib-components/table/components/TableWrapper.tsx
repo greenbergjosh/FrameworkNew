@@ -1,14 +1,14 @@
 import React from "react"
 import { ColumnConfig, TableInterfaceComponentProps } from "../types"
-import { EnrichedColumnDefinition, Table } from "@opg/interface-builder"
+import { Table } from "@opg/interface-builder"
 import { cloneDeep } from "lodash/fp"
 import { getDetailTemplate } from "../../../report/detailTemplate/getDetailTemplate"
-import { getCellFormatter } from "../customFormatters/cellFormatter"
+import { getCustomCellFormatter } from "../customFormatters/customCellFormatter"
 import { getCustomAggregateFunction } from "../customFormatters/customAggregateFunction"
 import { useRematch } from "../../../../hooks"
 import { store } from "../../../../state/store"
 
-export function TableWrapper(props: TableInterfaceComponentProps) {
+export function TableWrapper(props: TableInterfaceComponentProps): JSX.Element {
   const { columns, getRootUserInterfaceData, onChangeData, parameterValues, parentData } = props
 
   /* **********************************************************************
@@ -37,58 +37,35 @@ export function TableWrapper(props: TableInterfaceComponentProps) {
    * COLUMN TEMPLATES
    * Provide layout components and formatters to columns
    */
-  const enrichedColumns: EnrichedColumnDefinition[] = React.useMemo(() => {
-    // Intentionally mutating a clone
-    return cloneDeep(columns).map((column) => {
-      const columnConfig = (column as unknown) as ColumnConfig
-
-      // Render a UserInterface (with JSX Elements) into a cell.
-      if (columnConfig.type === "layout") {
-        // NOTE: Syncfusion grid does not type or document that "template"
-        // accepts React JSX Elements, so we ignore the Typescript error.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        columnConfig.template = getDetailTemplate({
+  const enrichedColumns = React.useMemo((): ColumnConfig[] => {
+    return columns.map(
+      (column: ColumnConfig): ColumnConfig => {
+        const template = getDetailTemplate({
+          columnDetails: column.details,
+          columnType: column.type,
           dispatch,
-          details: columnConfig.details,
           getRootUserInterfaceData,
+          onChangeData,
           parameterValues: parameterValues.toUndefined(),
           parentData,
-          onChangeData,
         })
-      }
-
-      /*
-       * Render a formatted string (that may include HTML) into a cell.
-       * NOTE: A cell can have either a "layout" or a "formatter" but not both.
-       */
-      if (columnConfig.cellFormatter && columnConfig.type !== "layout") {
-        const formatter = getCellFormatter(
-          columnConfig.formatter,
-          columnConfig.cellFormatter,
-          columnConfig.cellFormatterOptions,
-          fromStore.configsById,
-          parameterValues.toUndefined()
-        )
-        if (typeof formatter === "function") {
-          columnConfig.formatter = formatter
-          columnConfig.disableHtmlEncode = false
-        }
-      }
-
-      // Render a formatted string (that may include HTML) into a summary row cell.
-      if (columnConfig.aggregationFunction === "Custom" && columnConfig.customAggregateId) {
+        const formatter = getCustomCellFormatter({
+          cellFormatter: column.cellFormatter,
+          cellFormatterOptions: column.cellFormatterOptions,
+          columnType: column.type,
+          configsById: fromStore.configsById,
+          formatter: column.formatter,
+          queryParams: parameterValues.toUndefined(),
+        })
         const customAggregateFunction = getCustomAggregateFunction(
-          columnConfig.customAggregateId,
-          fromStore.configsById
+          column.customAggregateId,
+          fromStore.configsById,
+          column.aggregationFunction
         )
-        if (typeof customAggregateFunction === "function") {
-          columnConfig.customAggregateFunction = customAggregateFunction
-        }
-      }
 
-      return columnConfig
-    })
+        return { ...cloneDeep(column), template, formatter, customAggregateFunction }
+      }
+    )
   }, [onChangeData, dispatch, fromStore.configsById, columns, parameterValues, parentData, getRootUserInterfaceData])
 
   return <Table.TableInterfaceComponent {...props} columns={enrichedColumns} />

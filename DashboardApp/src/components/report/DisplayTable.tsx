@@ -1,25 +1,8 @@
 import React from "react"
-import { GridComponent, GroupSettingsModel, PageSettingsModel, SortSettingsModel } from "@syncfusion/ej2-react-grids"
-import { EnrichedColumnDefinition, StandardGrid } from "@opg/interface-builder"
-import { JSONRecord } from "../../data/JSON"
+import { GridComponent } from "@syncfusion/ej2-react-grids"
+import { StandardGrid } from "@opg/interface-builder"
 import { isEqual } from "lodash/fp"
-
-interface DisplayTableProps {
-  autoFitColumns?: boolean
-  columns: EnrichedColumnDefinition[]
-  contextData: JSONRecord
-  data: JSONRecord[]
-  defaultCollapseAll?: boolean
-  detailTemplate: null | ((rowData: JSONRecord) => any) | ((rowData: JSONRecord) => any)
-  enableAltRow?: boolean
-  enableVirtualization?: boolean
-  groupSettings: GroupSettingsModel
-  height?: number
-  loading: boolean
-  pageSettings: PageSettingsModel | undefined
-  sortSettings: SortSettingsModel
-  useSmallFont?: boolean
-}
+import { DisplayTableProps } from "./types"
 
 export function DisplayTable(
   {

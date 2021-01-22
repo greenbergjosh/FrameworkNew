@@ -2,6 +2,7 @@ import { ComponentDefinition } from "@opg/interface-builder"
 import * as iots from "io-ts"
 import * as iotst from "io-ts-types"
 import { JSONRecord } from "./JSON"
+import { ColumnConfig } from "../components/custom-ib-components/table/types"
 
 export type TableLayoutItem = iots.TypeOf<typeof TableLayoutItemCodec>
 export const TableLayoutItemCodec = iots.type({
@@ -26,7 +27,7 @@ export type RemoteReportConfig = {
 export type LocalReportConfig = {
   type: "ReportConfig"
   query: string
-  columns: [iots.UnknownRecordC]
+  columns: ColumnConfig[]
   details: string | ReportDetails | LocalReportConfig
   dataMapping?: DataMappingItem[]
   defaultCollapseAll?: boolean
