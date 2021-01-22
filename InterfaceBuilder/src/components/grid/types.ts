@@ -57,7 +57,13 @@ export interface EnrichedColumnDefinition extends Omit<ColumnModel, "template"> 
   visibilityConditions?: JSONObject // Must be JSON Logic
   cellFormatter?: string
   cellFormatterOptions?: DataMapOption[]
-  template: ColumnModel["template"] | ((rowData: JSONRecord) => JSX.Element | null) // See comments for this interface
+  /*
+   * NOTE: In EnrichedColumnDefinition "template" is a React functional component,
+   * but in ColumnModel (Syncfusion's type) "template" is a string. Syncfusion does not
+   * document or type that "template" will accept a React functional component.
+   * So we omit the original property and redefine it here.
+   */
+  template: ColumnModel["template"] | ((rowData: JSONRecord) => JSX.Element | null)
 }
 
 export type CustomAggregateFunctions = { [key: string]: CustomSummaryType }
