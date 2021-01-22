@@ -17,7 +17,10 @@ export type TableInterfaceComponentProps =
   | AugmentedTableInterfaceComponentDisplayModeProps
   | AugmentedTableInterfaceComponentEditModeProps
 
-export interface TableInterfaceComponentState extends Table.TableInterfaceComponentState {}
+export interface TableInterfaceComponentState extends Table.TableInterfaceComponentState {
+  serialize: () => undefined
+  deserialize: () => undefined
+}
 
 export interface ColumnConfig extends EnrichedColumnDefinition {
   details: ReportDetailsType

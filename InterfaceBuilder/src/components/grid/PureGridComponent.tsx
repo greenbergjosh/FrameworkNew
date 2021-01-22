@@ -8,7 +8,7 @@ import { deepDiff } from "components/interface-builder/lib/deep-diff"
  */
 export const PureGridComponent = React.memo(GridComponent, (prevProps, nextProps) => {
   // True if props are equal
-  const simplePropEquality = shallowPropCheck(["columns", "dataSource", "loading"])(prevProps, nextProps)
+  const simplePropEquality = shallowPropCheck(["columns", "dataSource"])(prevProps, nextProps)
 
   // Null if props are equal, otherwise a hash of the changed props
   const runDeepDiff = () =>

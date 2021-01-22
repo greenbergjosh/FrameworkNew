@@ -15,6 +15,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
     super(props)
 
     this.state = {
+      loading: false,
       serialize: () => undefined,
       deserialize: () => undefined,
     }

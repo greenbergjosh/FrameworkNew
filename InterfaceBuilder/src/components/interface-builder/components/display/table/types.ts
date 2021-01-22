@@ -42,7 +42,9 @@ export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedP
   valueKey: string
 }
 
-export interface TableInterfaceComponentState {}
+export interface TableInterfaceComponentState {
+  loading: boolean
+}
 
 export interface TableInterfaceComponentDisplayModeProps extends ITableInterfaceComponentProps {
   mode: "display"

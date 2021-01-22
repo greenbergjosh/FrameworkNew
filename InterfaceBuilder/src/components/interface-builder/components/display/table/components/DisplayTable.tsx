@@ -1,5 +1,5 @@
 import React from "react"
-import { get, isArray, isBoolean, isEmpty, isEqual, matches, set, sortBy } from "lodash/fp"
+import { get, isArray, isEmpty, isEqual, matches, set, sortBy } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -27,7 +27,6 @@ export function DisplayTable({
   enableVirtualization,
   height,
   defaultPageSize,
-  loadingKey,
   onChangeData,
   rowDetails,
   userInterfaceData,
@@ -49,12 +48,6 @@ export function DisplayTable({
     }
   }
   const grid = React.useRef<GridComponent>(null)
-  const loading = React.useMemo(() => {
-    const loadingValue = loadingKey ? getValue(loadingKey) : false
-    const loading = isBoolean(loadingValue) ? loadingValue : false
-    console.log("DisplayTable", { loading })
-    return loading
-  }, [loadingKey, getValue])
 
   /**
    * From DashboardApp: ReportBody.tsx "onChangeData"
@@ -90,7 +83,6 @@ export function DisplayTable({
       enableVirtualization={enableVirtualization}
       height={height}
       groupSettings={groupSettings}
-      loading={loading}
       pageSettings={pageSettings}
       sortSettings={sortSettings}
       detailTemplate={

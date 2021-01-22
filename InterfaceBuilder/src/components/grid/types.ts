@@ -25,7 +25,6 @@ export interface StandardGridComponentProps {
   defaultCollapseAll?: boolean
   detailTemplate?: string | Function | any
   groupSettings?: GroupSettingsModel
-  loading?: boolean
   pageSettings?: PageSettingsModel
   sortSettings?: SortSettingsModel
   //   editSettingsTemplate?: string | Function | any

@@ -35,7 +35,6 @@ export interface DisplayTableProps {
   enableVirtualization?: boolean
   groupSettings: GroupSettingsModel
   height?: number
-  loading: boolean
   pageSettings: PageSettingsModel | undefined
   sortSettings: SortSettingsModel
   useSmallFont?: boolean

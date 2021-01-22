@@ -4,7 +4,7 @@ import * as Reach from "@reach/router"
 import * as record from "fp-ts/lib/Record"
 import { empty as emptyArray, isEmpty as fptsIsEmpty } from "fp-ts/lib/Array"
 import { cloneDeep, matches, sortBy } from "lodash/fp"
-import { Button, PageHeader } from "antd"
+import { Button, PageHeader, Spin } from "antd"
 import { JSONRecord } from "../../data/JSON"
 import { QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
@@ -306,24 +306,25 @@ const ReportBody = ({
         )}
 
       <div>
-        <DisplayTable
-          autoFitColumns={reportConfig.autoFitColumns}
-          columns={columns}
-          contextData={contextData}
-          data={data}
-          defaultCollapseAll={reportConfig.defaultCollapseAll}
-          detailTemplate={getMemoizedDetailTemplate}
-          enableAltRow={reportConfig.enableAltRow}
-          enableVirtualization={reportConfig.enableVirtualization}
-          groupSettings={groupSettings}
-          height={reportConfig.height}
-          key={reportId.getOrElse("no-report-id")}
-          loading={fromStore.isExecutingQuery}
-          pageSettings={pageSettings}
-          ref={grid}
-          sortSettings={sortSettings}
-          useSmallFont={reportConfig.useSmallFont}
-        />
+        <Spin spinning={fromStore.isExecutingQuery}>
+          <DisplayTable
+            autoFitColumns={reportConfig.autoFitColumns}
+            columns={columns}
+            contextData={contextData}
+            data={data}
+            defaultCollapseAll={reportConfig.defaultCollapseAll}
+            detailTemplate={getMemoizedDetailTemplate}
+            enableAltRow={reportConfig.enableAltRow}
+            enableVirtualization={reportConfig.enableVirtualization}
+            groupSettings={groupSettings}
+            height={reportConfig.height}
+            key={reportId.getOrElse("no-report-id")}
+            pageSettings={pageSettings}
+            ref={grid}
+            sortSettings={sortSettings}
+            useSmallFont={reportConfig.useSmallFont}
+          />
+        </Spin>
       </div>
     </>
   )

@@ -54,7 +54,6 @@ const StandardGrid = (
     defaultCollapseAll,
     detailTemplate,
     groupSettings,
-    loading,
     pageSettings,
     sortSettings,
   }: StandardGridComponentProps,
@@ -298,17 +297,6 @@ const StandardGrid = (
       } as PageSettingsModel),
     [pageSettings]
   )
-
-  /**
-   * Show Spinner?
-   */
-  React.useEffect(() => {
-    if (loading) {
-      setIsLoading(true)
-    } else {
-      setIsLoading(false)
-    }
-  }, [setIsLoading, loading])
 
   /***************************************************
    *

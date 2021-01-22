@@ -16,7 +16,6 @@ export function DisplayTable(
     enableVirtualization,
     groupSettings,
     height,
-    loading,
     pageSettings,
     sortSettings,
     useSmallFont,
@@ -33,7 +32,6 @@ export function DisplayTable(
       contextData={contextData}
       data={data}
       detailTemplate={detailTemplate}
-      loading={loading}
       sortSettings={sortSettings}
       groupSettings={groupSettings}
       pageSettings={pageSettings}
@@ -48,7 +46,7 @@ export function DisplayTable(
 }
 
 function propsAreEqual(prevProps: DisplayTableProps, nextProps: DisplayTableProps) {
-  return isEqual(prevProps.data, nextProps.data) && isEqual(prevProps.loading, nextProps.loading)
+  return isEqual(prevProps.data, nextProps.data)
 }
 
 export default React.memo(React.forwardRef(DisplayTable), propsAreEqual)

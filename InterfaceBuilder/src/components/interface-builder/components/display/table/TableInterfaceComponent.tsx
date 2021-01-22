@@ -2,12 +2,24 @@ import React from "react"
 import { ComponentRendererModeContext } from "../../../ComponentRenderer"
 import { tableManageForm } from "./table-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
-import { TableInterfaceComponentProps } from "./types"
+import { TableInterfaceComponentProps, TableInterfaceComponentState } from "./types"
 import { EditTable } from "./components/EditTable"
 import DisplayTable from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
+import { isBoolean } from "lodash/fp"
+import { Spin } from "antd"
 
-export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfaceComponentProps> {
+export class TableInterfaceComponent extends BaseInterfaceComponent<
+  TableInterfaceComponentProps,
+  TableInterfaceComponentState
+> {
+  constructor(props: TableInterfaceComponentProps) {
+    super(props)
+
+    this.state = {
+      loading: false,
+    }
+  }
   static defaultProps = {
     userInterfaceData: {},
     valueKey: "data",
@@ -30,6 +42,21 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
 
   static manageForm = tableManageForm
 
+  componentDidUpdate(prevProps: Readonly<TableInterfaceComponentProps>): void {
+    if (this.props.mode === "display") {
+      const prevLoadingValue = prevProps.loadingKey
+        ? this.getValue(prevProps.loadingKey, prevProps.userInterfaceData, prevProps.getRootUserInterfaceData)
+        : false
+      const nextLoadingValue = this.props.loadingKey ? this.getValue(this.props.loadingKey) : false
+      const prevLoading = isBoolean(prevLoadingValue) ? prevLoadingValue : false
+      const nextLoading = isBoolean(nextLoadingValue) ? nextLoadingValue : false
+
+      if (prevLoading !== nextLoading) {
+        this.setState({ loading: nextLoading })
+      }
+    }
+  }
+
   render() {
     const {
       abstract,
@@ -44,7 +71,6 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
       enableVirtualization,
       height,
       defaultPageSize,
-      loadingKey = "loading",
       onChangeData,
       rowDetails,
       userInterfaceData,
@@ -97,27 +123,28 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<TableInterfa
                * View the actual grid with data.
                */
               return (
-                <DisplayTable
-                  allowAdding={allowAdding}
-                  allowDeleting={allowDeleting}
-                  allowEditing={allowEditing}
-                  columns={columns}
-                  defaultCollapseAll={defaultCollapseAll}
-                  autoFitColumns={autoFitColumns}
-                  useSmallFont={useSmallFont}
-                  enableAltRow={enableAltRow}
-                  enableVirtualization={enableVirtualization}
-                  height={height}
-                  defaultPageSize={defaultPageSize}
-                  loadingKey={loadingKey}
-                  onChangeData={onChangeData}
-                  rowDetails={rowDetails}
-                  userInterfaceData={userInterfaceData}
-                  getRootUserInterfaceData={getRootUserInterfaceData}
-                  getValue={this.getValue.bind(this)}
-                  valueKey={valueKey}
-                  preview={this.props.preview}
-                />
+                <Spin spinning={this.state.loading}>
+                  <DisplayTable
+                    allowAdding={allowAdding}
+                    allowDeleting={allowDeleting}
+                    allowEditing={allowEditing}
+                    columns={columns}
+                    defaultCollapseAll={defaultCollapseAll}
+                    autoFitColumns={autoFitColumns}
+                    useSmallFont={useSmallFont}
+                    enableAltRow={enableAltRow}
+                    enableVirtualization={enableVirtualization}
+                    height={height}
+                    defaultPageSize={defaultPageSize}
+                    onChangeData={onChangeData}
+                    rowDetails={rowDetails}
+                    userInterfaceData={userInterfaceData}
+                    getRootUserInterfaceData={getRootUserInterfaceData}
+                    getValue={this.getValue.bind(this)}
+                    valueKey={valueKey}
+                    preview={this.props.preview}
+                  />
+                </Spin>
               )
             }
           }
