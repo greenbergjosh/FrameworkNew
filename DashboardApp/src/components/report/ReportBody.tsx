@@ -229,8 +229,6 @@ const ReportBody = ({
   /*
    * ADD COLUMN TEMPLATES & FORMATTERS
    * Provide layout components and formatters to columns.
-   * Since we are in display mode, we only need to update
-   * the columns when mounting this component.
    */
   const columns: ColumnConfig[] = React.useMemo(() => {
     return reportConfig.columns.map(
@@ -270,7 +268,15 @@ const ReportBody = ({
         return { ...cloneDeep(column), template, formatter, customAggregateFunction }
       }
     )
-  }, []) // Since we are in display mode, we only need to create the columns when mounting this component.
+  }, [
+    onChangeData,
+    dispatch,
+    fromStore.configsById,
+    reportConfig.columns,
+    parameterValues,
+    parentData,
+    getRootUserInterfaceData,
+  ]) // Even though we are in display mode, we still need to update columns.
 
   /* **********************************************************************
    *
