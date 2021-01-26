@@ -3,10 +3,10 @@ import { Helmet } from "react-helmet"
 import * as Reach from "@reach/router"
 import * as record from "fp-ts/lib/Record"
 import { empty as emptyArray, isEmpty as fptsIsEmpty } from "fp-ts/lib/Array"
-import { cloneDeep, matches, sortBy } from "lodash/fp"
+import { cloneDeep, matches, sortBy, isEmpty } from "lodash/fp"
 import { Button, PageHeader, Spin } from "antd"
 import { JSONRecord } from "../../data/JSON"
-import { QueryForm } from "../query/QueryForm"
+import { getDefaultFormValues, QueryForm } from "../query/QueryForm"
 import { store } from "../../state/store"
 import { useRematch } from "../../hooks"
 import {
@@ -75,6 +75,9 @@ const ReportBody = ({
     }
   }, [])
 
+  /**
+   * Execute Query on user submit
+   */
   const handleQueryFormSubmit = React.useCallback(
     (parameterValues: JSONRecord) => {
       const queryResultURI = cheapHash(queryConfig.query, {
@@ -106,6 +109,10 @@ const ReportBody = ({
     [dispatch.reports, satisfiedByParentParams, queryConfig, setParameterValues]
   )
 
+  function handleQueryFormMount(parameterValues: JSONRecord) {
+    console.log("Submitted Form Data", parameterValues)
+  }
+
   /* **********************************************************************
    *
    * PROPERTY WATCHERS
@@ -131,8 +138,8 @@ const ReportBody = ({
     return { queryResultDataIsNone: isNone, data }
   }, [fromStore.reportDataByQuery, hashKey])
 
-  /*
-   * Execute Query
+  /**
+   * Execute Query on page mount when executeImmediately is not turned off.
    */
   React.useEffect(() => {
     if (
@@ -141,12 +148,24 @@ const ReportBody = ({
       queryResultDataIsNone &&
       (!unsatisfiedByParentParams.length || withoutHeader)
     ) {
+      // ExecuteImmediately is performed by default (not set) or when toggled on.
       if (queryConfig.executeImmediately === undefined || queryConfig.executeImmediately) {
+        const defaultFormValues = getDefaultFormValues(queryConfig.layout, queryConfig.parameters, {})
+        const params = { ...satisfiedByParentParams }
+
+        // Add query form field default values to the params
+        // but only when there is already an existing param.
+        for (const defaultFormValuesKey in defaultFormValues) {
+          if (isEmpty(satisfiedByParentParams[defaultFormValuesKey])) {
+            params[defaultFormValuesKey] = defaultFormValues[defaultFormValuesKey]
+          }
+        }
+
         dispatch.reports
           .executeQuery({
             resultURI: cheapHash(queryConfig.query, satisfiedByParentParams),
             query: queryConfig,
-            params: satisfiedByParentParams,
+            params,
           })
           .catch((ex) => {
             console.error(
@@ -307,6 +326,7 @@ const ReportBody = ({
               parameters={unsatisfiedByParentParams}
               parameterValues={parameterValues.getOrElse(record.empty)}
               onSubmit={handleQueryFormSubmit}
+              onMount={handleQueryFormMount}
             />
           </PageHeader>
         )}
