@@ -29,15 +29,12 @@
       "allowEditing": false,
       "allowAdding": false,
       "abstract": false,
-      "valueKey": "reports[\"CoregRollup:DemographicsSummary\"].result[0]",
+      "valueKey": "reports[\"CoregRollup:DemographicsSummary\"].result",
       "label": "Table",
       "hideLabel": false,
       "component": "table",
       "columns": [
         {
-          "details": {
-            "type": "layout"
-          },
           "customFormat": "MM/dd/yyyy hh:mm:ss a",
           "skeletonFormat": "short",
           "precision": 2,
@@ -48,9 +45,6 @@
           "aggregationFunction": "Sum"
         },
         {
-          "details": {
-            "type": "layout"
-          },
           "customFormat": "MM/dd/yyyy hh:mm:ss a",
           "skeletonFormat": "short",
           "precision": 2,
@@ -61,9 +55,6 @@
           "aggregationFunction": "Sum"
         },
         {
-          "details": {
-            "type": "layout"
-          },
           "customFormat": "MM/dd/yyyy hh:mm:ss a",
           "skeletonFormat": "short",
           "precision": 2,
@@ -72,6 +63,30 @@
           "headerText": "Path Only Rev/Lead",
           "field": "PathOnlyRevenuePerLead",
           "aggregationFunction": "Sum"
+        },
+        {
+          "details": {
+            "type": "layout"
+          },
+          "customFormat": "MM/dd/yyyy hh:mm:ss a",
+          "skeletonFormat": "short",
+          "precision": 2,
+          "format": "standard",
+          "type": "date",
+          "headerText": "First Seen",
+          "field": "first_seen_date"
+        },
+        {
+          "details": {
+            "type": "layout"
+          },
+          "customFormat": "MM/dd/yyyy hh:mm:ss a",
+          "skeletonFormat": "medium",
+          "precision": 2,
+          "format": "standard",
+          "type": "dateTime",
+          "headerText": "Last Seen",
+          "field": "last_seen_date"
         }
       ],
       "rowDetails": []

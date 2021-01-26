@@ -1,6 +1,9 @@
 import { EnrichedColumnDefinition } from "components/grid/types"
 import { ColumnModel } from "@syncfusion/ej2-react-grids"
+import { DateFormatOptions } from "@syncfusion/ej2-base"
 import { cloneDeep, merge, omit } from "lodash/fp"
+
+type FormatOptions = { options: Partial<ColumnModel>; keysToDelete: string[] }
 
 /**
  * Defines the schema of columns. Add custom cell formatters, row detail templates, and aggregate functions.
@@ -8,7 +11,11 @@ import { cloneDeep, merge, omit } from "lodash/fp"
  * at creating the columns array with the SyncFusion Grid.
  * We memoize it the first time, and then we can never regenerate columns
  * or else we'll get tons of exceptions in the grid.
- * @param data
+ *
+ * For Types see:
+ * node_modules/@syncfusion/ej2-grids/src/grid/models/column.d.ts
+ * node_modules/@syncfusion/ej2-base/src/internationalization.d.ts
+ *
  * @param columns
  * @param useSmallFont
  */
@@ -36,7 +43,7 @@ export function getUsableColumns(
        * So we delete the property; otherwise, it will produce undesired results.
        */
       const fixedColumn = omit(
-        [...dateOptions.keysToDelete, "customFormat"],
+        [...dateOptions.keysToDelete, ...booleanOptions.keysToDelete, ...numberOptions.keysToDelete, "customFormat"],
         cloneDeep(column)
       ) as EnrichedColumnDefinition
 
@@ -44,8 +51,9 @@ export function getUsableColumns(
         ...fixedColumn,
         ...disableHtmlEncodeOptions,
         ...styleOptions,
-        ...booleanOptions,
-        ...numberOptions,
+        ...dateOptions.options,
+        ...booleanOptions.options,
+        ...numberOptions.options,
         ...customCellFormatter,
       }
     }
@@ -107,19 +115,26 @@ function getStyleOptions(
 
 /**
  * DATE COLUMN: Managing custom formatting options for Dates
+ * https://ej2.syncfusion.com/react/documentation/common/internationalization/#custom-formats
  * @param type
  * @param skeletonFormat
  * @param customFormat
  */
 function getDateOptions(
-  type: EnrichedColumnDefinition["type"],
+  type: ColumnModel["type"],
   skeletonFormat: EnrichedColumnDefinition["skeletonFormat"],
   customFormat: EnrichedColumnDefinition["customFormat"]
-): { options: Partial<ColumnModel>; keysToDelete: string[] } {
+): FormatOptions {
   if (["date", "dateTime"].includes(type || "")) {
-    const format =
-      skeletonFormat === "custom" ? { type, format: customFormat } : { type, skeleton: skeletonFormat || "short" }
-    return { options: { format }, keysToDelete: ["type"] }
+    if (skeletonFormat === "custom") {
+      const format: DateFormatOptions = { type, format: customFormat }
+      return { options: { format }, keysToDelete: [] }
+    }
+    const format: DateFormatOptions = { type, skeleton: skeletonFormat || "short" }
+    return {
+      options: { format },
+      keysToDelete: ["skeletonFormat", "type"],
+    }
   }
   return { options: {}, keysToDelete: [] }
 }
@@ -128,25 +143,28 @@ function getDateOptions(
  * BOOLEAN COLUMN: Managing custom formatting options for Booleans
  * @param type
  */
-function getBooleanOptions(type: EnrichedColumnDefinition["type"]): Partial<ColumnModel> | undefined {
+function getBooleanOptions(type: ColumnModel["type"]): FormatOptions {
   if (["boolean"].includes(type || "")) {
-    return { displayAsCheckBox: true }
+    const displayAsCheckBox: ColumnModel["displayAsCheckBox"] = true
+    return { options: { displayAsCheckBox }, keysToDelete: [] }
   }
+  return { options: {}, keysToDelete: [] }
 }
 
 /**
  * NUMBER COLUMN: Managing custom formatting options for number types
+ * https://ej2.syncfusion.com/react/documentation/common/internationalization/#number-formatting
  * @param type
  * @param format
  * @param precision
  */
 function getNumberOptions(
-  type: EnrichedColumnDefinition["type"],
+  type: ColumnModel["type"],
   format: EnrichedColumnDefinition["format"],
   precision: EnrichedColumnDefinition["precision"]
-): Partial<ColumnModel> | undefined {
+): FormatOptions {
   if (["number"].includes(type || "")) {
-    let newFormat
+    let newFormat: ColumnModel["format"]
     switch (format) {
       case "standard":
         newFormat = `N${typeof precision === "number" ? precision : 2}`
@@ -160,6 +178,7 @@ function getNumberOptions(
       default:
         newFormat = undefined
     }
-    return { textAlign: "Right", headerTextAlign: "Left", format: newFormat }
+    return { options: { textAlign: "Right", headerTextAlign: "Left", format: newFormat }, keysToDelete: [] }
   }
+  return { options: {}, keysToDelete: [] }
 }
