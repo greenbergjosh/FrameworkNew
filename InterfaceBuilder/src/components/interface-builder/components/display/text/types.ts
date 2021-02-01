@@ -31,6 +31,10 @@ export interface TextInterfaceComponentProps extends ComponentDefinitionNamedPro
   useTokens: boolean
 }
 
+export interface TextInterface extends TextInterfaceComponentProps {
+  data: any
+}
+
 export interface TextInterfaceComponentState {
   text: string | null
 }
@@ -49,3 +53,4 @@ export interface AlertDisplayProps extends TextDisplayProps {
   description?: string
   showIcon?: boolean
 }
+
