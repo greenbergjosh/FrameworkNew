@@ -2,31 +2,17 @@ import React, { useState } from "react"
 import { useRematch } from "../../../hooks"
 import { store } from "../../../state/store"
 import { UserInterface } from "@opg/interface-builder"
-import {
-  BusinessApplicationConfig,
-  BusinessApplicationId,
-  BusinessApplicationPageConfig,
-  BusinessApplicationPageId,
-} from "../types"
+import { BusinessApplicationProps } from "../types"
 import { AdminUserInterfaceContextManagerProvider } from "../../../data/AdminUserInterfaceContextManager"
 import { Button, PageHeader } from "antd"
 import * as Reach from "@reach/router"
+import { Helmet } from "react-helmet"
 
-export interface BusinessApplicationProps {
-  applicationId: BusinessApplicationId
-  pageId?: BusinessApplicationPageId
-  businessApplicationConfig: BusinessApplicationConfig
-  businessApplicationPageConfig?: BusinessApplicationPageConfig
-  title: string
-}
-
-/** Rendering of a business application page */
 export const BusinessApplicationPage = ({
   applicationId,
   pageId,
   businessApplicationConfig,
   businessApplicationPageConfig,
-  title,
 }: BusinessApplicationProps): JSX.Element => {
   /*
    * Not sure what Patrick had in mind here,
@@ -44,7 +30,7 @@ export const BusinessApplicationPage = ({
    */
   const [data, setData] = useState({})
 
-  console.log("BusinessApplication.render", {
+  console.log("BusinessApplicationPage.render", {
     applicationId,
     businessApplicationConfig,
     businessApplicationPageConfig,
@@ -56,6 +42,9 @@ export const BusinessApplicationPage = ({
 
   return (
     <div>
+      <Helmet>
+        <title>{businessApplicationPageConfig.title} | Channel Admin | OPG</title>
+      </Helmet>
       <PageHeader
         extra={
           applicationId && (
@@ -67,8 +56,8 @@ export const BusinessApplicationPage = ({
           )
         }
         style={{ padding: "15px" }}
-        title={title}
-        // subTitle={businessApplicationConfig.description}
+        title={businessApplicationPageConfig.title}
+        subTitle={businessApplicationPageConfig.description}
       />
       <AdminUserInterfaceContextManagerProvider>
         {(userInterfaceContextManager) => (

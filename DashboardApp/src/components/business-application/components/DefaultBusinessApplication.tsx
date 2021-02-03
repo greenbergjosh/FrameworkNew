@@ -4,33 +4,29 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { useRematch } from "../../../hooks"
 import { store } from "../../../state/store"
-import { BusinessApplicationConfig, BusinessApplicationId } from "../types"
+import { DefaultBusinessApplicationProps } from "../types"
+import { Helmet } from "react-helmet"
 
-export interface BusinessApplicationProps {
-  applicationId: BusinessApplicationId
-  businessApplicationConfig: BusinessApplicationConfig
-  title: string
-}
-
-/** Default rendering of a business application */
 export const DefaultBusinessApplication = ({
   applicationId,
   businessApplicationConfig,
-  title,
-}: BusinessApplicationProps): JSX.Element => {
+}: DefaultBusinessApplicationProps): JSX.Element => {
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
     reportPath: appState.navigation.routes.dashboard.subroutes.reports.abs,
   }))
 
-  console.log("BusinessApplication.render", {
+  console.log("DefaultBusinessApplication.render", {
     applicationId,
     businessApplicationConfig,
   })
 
   return (
     <div>
+      <Helmet>
+        <title>{businessApplicationConfig.title} | Channel Admin | OPG</title>
+      </Helmet>
       <PageHeader
         extra={
           applicationId && (
@@ -42,8 +38,8 @@ export const DefaultBusinessApplication = ({
           )
         }
         style={{ padding: "15px" }}
-        subTitle={businessApplicationConfig.description}
-        title={title}>
+        title={businessApplicationConfig.title}
+        subTitle={businessApplicationConfig.description}>
         <Row>
           <Col span={12}>
             <Card title="Reports" bordered={false}>
