@@ -19,15 +19,22 @@ namespace Utility.EDW
         }
 
         public delegate Task<List<IEndpoint>> InitializeEndpointsDelegate();
+
         public delegate Task<List<IEndpoint>> PollEndpointsDelegate();
+
         public delegate Task InitiateWalkawayDelegate(object w, int timeoutSeconds);
+
         public delegate Task NoValidEndpointsDelegate(object w);
+
         public delegate Task FailureDelegate(object w);
+
         public delegate Task UnhandledExceptionDelegate(object w, Exception ex);
+
         public delegate IEndpoint SelectEndpointDelegate(ConcurrentDictionary<IEndpoint, Tuple<bool, int>> endpoints, List<IEndpoint> alreadyChosen);
+
         public delegate int NextWalkawayValueDelegate(int previousValue);
 
-        private ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim();
 
         public int writeTimeoutSec = 120;
         public int endpointPollingInterval;

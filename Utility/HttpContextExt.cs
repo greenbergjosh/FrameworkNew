@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Net;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
-using System.Linq;
-using Utility.GenericEntity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
+using Utility.GenericEntity;
 
 namespace Utility
 {
@@ -28,9 +25,9 @@ namespace Utility
                 }
                 else return trans(s);
             }
-            catch (Exception ex)
+            catch
             {
-                if (throwExc) throw ex;
+                if (throwExc) throw;
                 return defVal;
             }
         }
@@ -41,7 +38,6 @@ namespace Utility
             return Get(context, name, defVal, x => x, throwIfNotFound, throwExc);
         }
 
-
         public static void SetCookie(this HttpContext ctx, string key, string value, int expiresInMinsFromNow)
         {
             SetCookie(ctx, key, value, DateTime.UtcNow + TimeSpan.FromMinutes(expiresInMinsFromNow));
@@ -49,10 +45,12 @@ namespace Utility
 
         public static void SetCookie(this HttpContext ctx, string key, string value, DateTime? expireTime = null)
         {
-            CookieOptions option = new CookieOptions();
-            option.Path = "/";
-            option.SameSite = SameSiteMode.None;
-            option.HttpOnly = false;
+            CookieOptions option = new CookieOptions
+            {
+                Path = "/",
+                SameSite = SameSiteMode.None,
+                HttpOnly = false
+            };
 
             if (expireTime.HasValue)
                 option.Expires = expireTime.Value;
@@ -86,48 +84,38 @@ namespace Utility
             if (encoding == null)
                 encoding = Encoding.UTF8;
 
-            using (var reader = new StreamReader(ctx.Request.Body, encoding))
-                return await reader.ReadToEndAsync();
+            using var reader = new StreamReader(ctx.Request.Body, encoding);
+            return await reader.ReadToEndAsync();
         }
 
         public static async Task<IGenericEntity> GetGenericEntityAsync(this HttpContext ctx, Encoding encoding = null)
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            
-            using (var reader = new HttpRequestStreamReader(ctx.Request.Body, encoding))
-            {
-                return await JsonWrapper.JsonToGenericEntityAsync(reader);
-            }
+
+            using var reader = new HttpRequestStreamReader(ctx.Request.Body, encoding);
+            return await JsonWrapper.JsonToGenericEntityAsync(reader);
         }
 
         public static async Task<byte[]> GetRawBodyBytesAsync(this HttpContext ctx)
         {
-            using (var ms = new MemoryStream(2048))
-            {
-                await ctx.Request.Body.CopyToAsync(ms);
-                return ms.ToArray();
-            }
+            using var ms = new MemoryStream(2048);
+            await ctx.Request.Body.CopyToAsync(ms);
+            return ms.ToArray();
         }
 
         public static async Task WriteSuccessRespAsync(this HttpContext ctx, string response, Encoding enc = null, string contentType = "application/json")
         {
-            var bytes = enc == null ? Encoding.UTF8.GetBytes(response ?? "") : enc.GetBytes(response ?? "");
-
             ctx.Response.StatusCode = 200;
             ctx.Response.ContentType = contentType;
-            ctx.Response.ContentLength = bytes.Length;
-            await ctx.Response.Body.WriteAsync(bytes);
+            await ctx.Response.WriteAsync(response, enc ?? Encoding.UTF8);
         }
 
         public static async Task WriteFailureRespAsync(this HttpContext ctx, string response, Encoding enc = null, string contentType = "application/json")
         {
-            var bytes = enc == null ? Encoding.UTF8.GetBytes(response ?? "") : enc.GetBytes(response ?? "");
-
             ctx.Response.StatusCode = 500;
             ctx.Response.ContentType = contentType;
-            ctx.Response.ContentLength = bytes.Length;
-            await ctx.Response.Body.WriteAsync(bytes);
+            await ctx.Response.WriteAsync(response, enc ?? Encoding.UTF8);
         }
 
         public static void AddCorsAccessForOriginHost(this HttpContext ctx, IGenericEntity ge)

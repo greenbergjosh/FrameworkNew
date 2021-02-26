@@ -328,6 +328,8 @@ namespace Utility.DataLayer
             }
         }
 
+        public static bool ContainsFunction(string connectionName, string method) => Connections.TryGetValue(connectionName, out var connection) && connection.Functions.ContainsKey(method);
+
         private class Connection
         {
             public Connection(string id, IDataLayerClient client, string connStr)

@@ -113,6 +113,11 @@ namespace Utility
             return RunFunction(sd.Key, parms, state);
         }
 
+        public void ClearCache()
+        {
+            functions.Clear();
+        }
+
         public Task<object> Evaluate(Guid name, string code, object parms, StateWrapper state)
         {
             var (debug, debugDir) = GetDefaultDebugValues();

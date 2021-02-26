@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace Utility.GenericEntity
 {
+    [Newtonsoft.Json.JsonConverter(typeof(GenercEntityJsonNewtonsoftJsonConverter))]
     public class GenericEntityJson : GenericEntityBase
     {
         public JToken _root;
@@ -15,6 +17,13 @@ namespace Utility.GenericEntity
         {
             var entity = new GenericEntityJson();
             entity.InitializeEntity(rw, null, data);
+            return entity;
+        }
+
+        public static IGenericEntity Parse(string data, RoslynWrapper rw = null)
+        {
+            var entity = new GenericEntityJson();
+            entity.InitializeEntity(rw, null, JToken.Parse(data));
             return entity;
         }
 
@@ -138,7 +147,7 @@ namespace Utility.GenericEntity
 
         public override IEnumerable<IGenericEntity> GetEs(string path)
         {
-            foreach(var node in _root.SelectTokens(ConvertPath(path)))
+            foreach (var node in _root.SelectTokens(ConvertPath(path)))
             {
                 yield return CreateFromObject(node, this.rw);
             }
@@ -178,5 +187,11 @@ namespace Utility.GenericEntity
         //            ((JProperty)((JObject)je).First).Value.ToString());
         //    }
         //}
+
+        public class GenercEntityJsonNewtonsoftJsonConverter : Newtonsoft.Json.JsonConverter<GenericEntityJson>
+        {
+            public override GenericEntityJson ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, [AllowNull] GenericEntityJson existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer) => (GenericEntityJson)CreateFromObject(JToken.Parse((string)reader.Value));
+            public override void WriteJson(Newtonsoft.Json.JsonWriter writer, [AllowNull] GenericEntityJson value, Newtonsoft.Json.JsonSerializer serializer) => value._root.WriteTo(writer);
+        }
     }
 }

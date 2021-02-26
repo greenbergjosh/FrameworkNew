@@ -27,7 +27,7 @@ namespace Utility.EDW.Reporting
 
         public static Task<List<IEndpoint>> InitializeEndpoints(IGenericEntity config)
         {
-			var endpoints = new List<IEndpoint>();
+            var endpoints = new List<IEndpoint>();
             foreach (var silo in config.GetL("Config/EdwSilos")) endpoints.Add(new EdwSiloEndpoint(silo.GetS("DataLayerType"), silo.GetS("ConnectionString")));
             return Task.FromResult(endpoints);
         }
@@ -157,9 +157,10 @@ namespace Utility.EDW.Reporting
             if (Cd != null && Cd.Count > 0) sb.Append(JsonWrapper.Json("CD", Cd, false, false) + ",");
             if (Evt != null && Evt.Count > 0) sb.Append(JsonWrapper.Json("E", Evt, false, false) + ",");
             if (sb.Length > 1) sb.Remove(sb.Length - 1, 1);
-            sb.Append("}");
+            sb.Append('}');
             return sb.ToString();
         }
+
         //CK, CD
         /* {
 "IM":
@@ -179,7 +180,7 @@ namespace Utility.EDW.Reporting
                   <another IM>
     },
     {
-                  <another IM>			
+                  <another IM>
     }
 ],
 "E":
@@ -198,6 +199,5 @@ namespace Utility.EDW.Reporting
     }
 ]
 }*/
-
     }
 }

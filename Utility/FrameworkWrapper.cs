@@ -12,10 +12,10 @@ using Utility.EDW.Logging;
 using Utility.EDW.Queueing;
 using Utility.EDW.Reporting;
 using Utility.GenericEntity;
+using Utility.LongRunningWorkflow;
 
 namespace Utility
 {
-
     public class FrameworkWrapper
     {
         public string[] ConfigurationKeys;
@@ -23,10 +23,13 @@ namespace Utility
         public RoslynWrapper RoslynWrapper;
         public IGenericEntity StartupConfiguration;
         public EdwSiloLoadBalancedWriter EdwWriter;
+        public LongRunningWorkflowSiloLoadBalancedWriter LrwWriter;
         public PostingQueueSiloLoadBalancedWriter PostingQueueWriter;
         public ErrorSiloLoadBalancedWriter ErrorWriter;
         public ErrorDelegate Err;
+
         public delegate Task ErrorDelegate(int severity, string method, string descriptor, string message);
+
         public bool TraceLogging = true;
         public bool TraceToConsole = false;
         public IDistributedCache Cache;
@@ -69,6 +72,7 @@ namespace Utility
                 }
 
                 EdwWriter = EdwSiloLoadBalancedWriter.InitializeEdwSiloLoadBalancedWriter(StartupConfiguration);
+                LrwWriter = LongRunningWorkflowSiloLoadBalancedWriter.InitializeLongRunningWorkflowSiloLoadBalancedWriter(StartupConfiguration);
                 PostingQueueWriter = PostingQueueSiloLoadBalancedWriter.InitializePostingQueueSiloLoadBalancedWriter(StartupConfiguration);
                 ErrorWriter = ErrorSiloLoadBalancedWriter.InitializeErrorSiloLoadBalancedWriter(StartupConfiguration);
                 var appName = StartupConfiguration.GetS("Config/ErrorLogAppName") ?? ConfigurationKeys.Join("::");
@@ -105,7 +109,7 @@ namespace Utility
             {
                 StartupConfiguration = newConfig;
 
-                // ToDo: poke Roslyn cache
+                RoslynWrapper.ClearCache();
 
                 Entities = new ConfigEntityRepo(Data.GlobalConfigConnName);
 
@@ -118,12 +122,15 @@ namespace Utility
         public string LogMethodPrefix { get; set; } = "";
 
         public Task Log(string method, string message) => Err(ErrorSeverity.Log, LogMethodPrefix + method, ErrorDescriptor.Log, message);
+
         public Task Trace(string method, string message) => Err(ErrorSeverity.Log, LogMethodPrefix + method, ErrorDescriptor.Trace, message);
+
         public Task Error(string method, string message) => Err(ErrorSeverity.Error, LogMethodPrefix + method, ErrorDescriptor.Exception, message);
+
         public Task Fatal(string method, string message) => Err(ErrorSeverity.Fatal, LogMethodPrefix + method, ErrorDescriptor.Fatal, message);
 
         public Task Alert(string method, string label, string message, int severity = ErrorSeverity.Log) => Alert(LogMethodPrefix + method, new EmailAlertPayload(new[] { new EmailAlertPayloadItem(label, message) }));
+
         public Task Alert(string method, EmailAlertPayload payload, int severity = ErrorSeverity.Log) => Err(severity, LogMethodPrefix + method, ErrorDescriptor.EmailAlert, JsonConvert.SerializeObject(payload));
     }
-
 }
