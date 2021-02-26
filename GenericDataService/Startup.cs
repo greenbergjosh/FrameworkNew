@@ -189,7 +189,7 @@ namespace GenericDataService
                 }
                 catch (Exception ex)
                 {
-                    File.AppendAllText("DataService.log", $@"Run::{DateTime.Now}::{ex.ToString()}{Environment.NewLine}");
+                    File.AppendAllText("DataService.log", $@"Run::{DateTime.Now}::{ex}{Environment.NewLine}");
                 }
             });
         }
