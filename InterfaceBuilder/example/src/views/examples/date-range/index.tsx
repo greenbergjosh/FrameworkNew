@@ -4,7 +4,7 @@ import config from "./example-config.json"
 import initialData from "./example-data.json"
 import { ExampleViewer } from "../../../components/ExampleViewer"
 
-const FormExample: React.FC = () => {
+const DateRangeExample: React.FC = () => {
   const [data, setData] = React.useState(initialData)
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
@@ -14,8 +14,8 @@ const FormExample: React.FC = () => {
 
   return (
     <ExampleViewer
-      title={"Form"}
-      description="Description of Form goes here."
+      title={"Date Range"}
+      description="Description of Date Range goes here."
       components={schema}
       data={data}
       onChangeData={handleChangeData}
@@ -31,4 +31,4 @@ const FormExample: React.FC = () => {
   )
 }
 
-export default FormExample
+export default DateRangeExample

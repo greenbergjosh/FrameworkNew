@@ -13,7 +13,7 @@ export const InterfaceComponentChoices = ({}: InterfaceComponentChoicesProps) =>
 
   return (
     <div>
-      <Collapse accordion defaultActiveKey={["Form"]}>
+      <Collapse accordion>
         {Object.entries(sortedGroupedComponents(componentRegistry.cache)).map(([category, layoutDefinitions]) => (
           <Collapse.Panel header={category} key={category}>
             {layoutDefinitions.map((layoutDefinition, index) => (

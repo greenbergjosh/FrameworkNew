@@ -1,6 +1,6 @@
 import { DatePicker } from "antd"
 import { RangePickerValue } from "antd/lib/date-picker/interface"
-import { get, set } from "lodash/fp"
+import { get, set, isEmpty } from "lodash/fp"
 import moment from "moment"
 import React from "react"
 import { getTimeFormat } from "../_shared/common-include-time-form"
@@ -62,17 +62,22 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
 
   componentDidMount(): void {
     const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
-    const [startDate, endDate] = this.getValues()
+    const persistedStartDate = this.getValue(startDateKey)
+    const persistedEndDate = this.getValue(endDateKey)
 
-    onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
-    this.raiseEvent(EVENTS.VALUE_CHANGED, { startDate, endDate })
+    if (isEmpty(persistedStartDate) && isEmpty(persistedEndDate)) {
+      const range = this.getDefaultValue()
+      const startDate = get(startDateKey, range)
+      const endDate = get(endDateKey, range)
+
+      onChangeData && onChangeData(set(startDateKey, startDate, set(endDateKey, endDate, userInterfaceData)))
+      this.raiseEvent(EVENTS.VALUE_CHANGED, { startDate, endDate })
+    }
   }
 
   handleChange = (dates: RangePickerValue, dateStrings: [string, string]) => {
     const { endDateKey, startDateKey, onChangeData, timeSettings, userInterfaceData } = this.props
-
     const { includeTime } = timeSettings || { includeTime: false }
-
     const alignmentTimePeriod =
       timeSettings && includeTime
         ? timeSettings.includeSecond
@@ -83,7 +88,6 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
           ? "hour"
           : "day"
         : "day"
-
     const startDate = Array.isArray(dates) && dates[0] ? dates[0].startOf(alignmentTimePeriod).toISOString() : null
     const endDate = Array.isArray(dates) && dates[1] ? dates[1].endOf(alignmentTimePeriod).toISOString() : null
 
@@ -94,15 +98,10 @@ export class DateRangeInterfaceComponent extends BaseInterfaceComponent<
     return DateRangeInterfaceComponent.getDefinitionDefaultValue(this.props)
   }
 
-  getValues = () => {
-    const { endDateKey, startDateKey, userInterfaceData } = this.props
-
-    return [get(startDateKey, userInterfaceData), get(endDateKey, userInterfaceData)]
-  }
-
   render(): JSX.Element {
-    const { timeSettings } = this.props
-    const [startDateValue, endDateValue] = this.getValues()
+    const { timeSettings, startDateKey, endDateKey } = this.props
+    const startDateValue = this.getValue(startDateKey)
+    const endDateValue = this.getValue(endDateKey)
     const timeFormat = getTimeFormat(timeSettings)
     return (
       <Undraggable wrap>

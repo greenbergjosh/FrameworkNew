@@ -62,7 +62,10 @@ export const QueryForm = React.memo(
      */
     React.useEffect(() => {
       if (!onMount) return
-      const promise = onMount(formState)
+      const newState = getDefaultFormValues(layout, parameters, parameterValues)
+      const promise = onMount(newState)
+
+      updateFormState(newState)
       if (promise) {
         setLoading(true)
         promise.finally(() => {
@@ -76,9 +79,7 @@ export const QueryForm = React.memo(
      * Update form state when layout or parameters change
      */
     React.useEffect(() => {
-      const defaultComponentValues = getDefaultComponentValues(layout)
-      const defaultParameters = getDefaultParameters(parameters)
-      const newState = merge(merge(defaultParameters, defaultComponentValues), parameterValues)
+      const newState = getDefaultFormValues(layout, parameters, parameterValues)
 
       updateFormState(newState)
     }, [layout, parameters, parameterValues])
@@ -167,14 +168,25 @@ export const QueryForm = React.memo(
 
 /* ************************************************************************************
  *
- * Private Functions
+ * Static Functions
  */
+
+export function getDefaultFormValues(
+  layout: QueryFormProps["layout"],
+  parameters: QueryFormProps["parameters"],
+  parameterValues: JSONRecord
+) {
+  const defaultComponentValues = getDefaultComponentValues(layout)
+  const defaultParameters = getDefaultParameters(parameters)
+
+  return merge(merge(defaultParameters, defaultComponentValues), parameterValues)
+}
 
 /**
  *
  * @param parameters
  */
-function getDefaultParameters(parameters: QueryConfig["parameters"]): JSONRecord {
+export function getDefaultParameters(parameters: QueryConfig["parameters"]): JSONRecord {
   const emptyParameters: { [key: string]: any } = {}
 
   return (
@@ -192,7 +204,7 @@ function getDefaultParameters(parameters: QueryConfig["parameters"]): JSONRecord
  *
  * @param layout
  */
-function getDefaultComponentValues(layout: QueryConfig["layout"]): JSONRecord {
+export function getDefaultComponentValues(layout: QueryConfig["layout"]): JSONRecord {
   const emptyComponentValues: JSONRecord = {}
   const layoutOrEmptySet = (layout || []) as ComponentDefinition[]
 

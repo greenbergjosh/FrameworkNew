@@ -1,62 +1,101 @@
-import { get, set } from "lodash/fp"
-import moment from "moment"
+import { get, set, isEmpty } from "lodash/fp"
+import moment, { Moment } from "moment"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
-import { DateAction, DateValuesType } from "./types"
+import { DateAction, DateValuesType, DateFormat } from "./types"
 
-export const next: DateAction = (date) => date.add(1, "days").toISOString()
+function parseDate(dateFormat: DateFormat, strDate?: string): Moment {
+  return !isEmpty(strDate) ? moment(strDate) : moment()
+  // switch (dateFormat) {
+  //   case "iso-8601":
+  //     // Format: YYYY-MM-DDTHH:mm:ss.sssZ
+  //     // Example: "2012-01-20T16:51:36.000Z"
+  //     return !isEmpty(strDate) ? moment(strDate) : moment()
+  //   case "gmt":
+  //     // UTC time is the same as GMT time
+  //     // Example: "Thu, 24 Dec 2020 23:59:59 GMT"
+  //     return !isEmpty(strDate) ? moment.utc(strDate) : moment.utc()
+  //   default:
+  //     // "locale"
+  //     // Example: "1/7/2021, 10:37:56 AM"
+  //     // moment(...) is local mode (see https://momentjs.com/docs/#/parsing/)
+  //     return !isEmpty(strDate) ? moment(strDate) : moment()
+  // }
+}
 
-export const prev: DateAction = (date) => date.subtract(1, "days").toISOString()
+function formatDate(date: Moment, dateFormat: DateFormat): string {
+  return date.toDate().toISOString()
+  // switch (dateFormat) {
+  //   case "iso-8601":
+  //     // Format: YYYY-MM-DDTHH:mm:ss.sssZ
+  //     // Example: "2012-01-20T16:51:36.000Z"
+  //     return date.toDate().toISOString()
+  //   case "gmt":
+  //     // UTC time is the same as GMT time
+  //     // Example: "Thu, 24 Dec 2020 23:59:59 GMT"
+  //     return date.toDate().toUTCString()
+  //   default:
+  //     // "locale"
+  //     // Example: "1/7/2021, 10:37:56 AM"
+  //     return date.toDate().toLocaleString()
+  // }
+}
 
-export const today: DateAction = (date, bound) => {
-  const today = moment.utc()
+export const next: DateAction = (date, dateFormat) => formatDate(date.add(1, "days"), dateFormat)
+
+export const prev: DateAction = (date, dateFormat) => formatDate(date.subtract(1, "days"), dateFormat)
+
+export const today: DateAction = (date, dateFormat, bound) => {
+  const today = parseDate(dateFormat)
   switch (bound) {
     case "start":
-      return today.startOf("day").toISOString()
+      return formatDate(today.startOf("day"), dateFormat)
     case "end":
-      return today.endOf("day").toISOString()
+      return formatDate(today.endOf("day"), dateFormat)
     default:
-      return today.startOf("day").toISOString()
+      return formatDate(today.startOf("day"), dateFormat)
   }
 }
 
 export function stepSingleDateValue(
   dateKey: string,
   userInterfaceData: UserInterfaceProps["data"],
-  action: DateAction
+  action: DateAction,
+  dateFormat: DateFormat = "locale"
 ): DateValuesType {
   const strDate = get(dateKey, userInterfaceData)
-  let date = moment(strDate)
+  let date = parseDate(dateFormat, strDate)
 
   if (!date.isValid()) {
     console.warn(`Date Stepper received an invalid date: "${strDate}". Defaulting to today.`)
-    date = moment()
+    date = parseDate(dateFormat)
   }
-  return set(dateKey, action(date, "none"), {})
+  return set(dateKey, action(date, dateFormat, "none"), {})
 }
 
 export function stepDateRangeValues(
   startDateKey: string,
   endDateKey: string,
   userInterfaceData: UserInterfaceProps["data"],
-  action: DateAction
+  action: DateAction,
+  dateFormat: DateFormat = "locale"
 ): DateValuesType {
   const strStartDate = get(startDateKey, userInterfaceData)
   const strEndDate = get(endDateKey, userInterfaceData)
-  let startDate = moment(strStartDate)
-  let endDate = moment(strEndDate)
+  let startDate = parseDate(dateFormat, strStartDate)
+  let endDate = parseDate(dateFormat, strEndDate)
   let newValue = {}
 
   if (!startDate.isValid()) {
-    console.warn(`Date Stepper received an invalid Start Date: "${strStartDate}". Defaulting to today.`)
-    startDate = moment()
+    console.warn(`Date Stepper received an invalid Starßt Date: "${strStartDate}". Defaulting to today.`)
+    startDate = parseDate(dateFormat)
   }
 
   if (!endDate.isValid()) {
     console.warn(`Date Stepper received an invalid End Date: "${strEndDate}". Defaulting to today.`)
-    endDate = moment()
+    endDate = parseDate(dateFormat)
   }
 
-  newValue = set(startDateKey, action(startDate, "start"), newValue)
-  newValue = set(endDateKey, action(endDate, "end"), newValue)
+  newValue = set(startDateKey, action(startDate, dateFormat, "start"), newValue)
+  newValue = set(endDateKey, action(endDate, dateFormat, "end"), newValue)
   return newValue
 }

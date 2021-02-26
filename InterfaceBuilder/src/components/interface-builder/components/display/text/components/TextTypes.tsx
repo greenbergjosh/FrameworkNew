@@ -1,33 +1,26 @@
 import { AlertDisplayProps, TextDisplayProps } from "../types"
-import { Alert, Skeleton, Typography } from "antd"
-import { isEmpty } from "lodash/fp"
+import { Alert, Typography } from "antd"
 import React from "react"
 import styles from "./styles.scss"
 
 export function PlainText({ text, style }: TextDisplayProps) {
   return (
-    <Skeleton paragraph={{ rows: 1 }} loading={isEmpty(text)}>
+    <>
       <Typography.Text style={style}>{text}</Typography.Text>{" "}
-    </Skeleton>
+    </>
   )
 }
 
 export function Title({ text, style, size }: TextDisplayProps) {
   return (
-    <Skeleton paragraph={{ rows: 1 }} loading={isEmpty(text)}>
-      <Typography.Title style={style} level={size}>
-        {text}
-      </Typography.Title>
-    </Skeleton>
+    <Typography.Title style={style} level={size}>
+      {text}
+    </Typography.Title>
   )
 }
 
 export function Paragraph({ text, style }: TextDisplayProps) {
-  return (
-    <Skeleton loading={isEmpty(text)}>
-      <Typography.Paragraph style={style}>{text}</Typography.Paragraph>
-    </Skeleton>
-  )
+  return <Typography.Paragraph style={style}>{text}</Typography.Paragraph>
 }
 
 export function Success({ text, description, banner, showIcon, closable, style }: AlertDisplayProps) {

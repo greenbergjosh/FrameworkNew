@@ -34,16 +34,31 @@ export interface BusinessApplicationConfig {
   ingest_config: PersistedConfig["id"][]
   owner: PersistedConfig["id"][]
   report: PersistedConfig["id"][]
+  title: string
 
   // Pages
   navigation: BusinessAppNavigationItem[]
 }
 
 export interface BusinessApplicationPageConfig {
+  description: string
   layout: ComponentDefinition[]
   hasWhiteBackground: boolean
   hasPadding: boolean
+  title: string
 }
 
 export type BusinessApplicationId = string
 export type BusinessApplicationPageId = string
+
+export interface BusinessApplicationProps {
+  applicationId: BusinessApplicationId
+  pageId?: BusinessApplicationPageId
+  businessApplicationConfig: BusinessApplicationConfig
+  businessApplicationPageConfig: BusinessApplicationPageConfig
+}
+
+export interface DefaultBusinessApplicationProps {
+  applicationId: BusinessApplicationId
+  businessApplicationConfig: BusinessApplicationConfig
+}

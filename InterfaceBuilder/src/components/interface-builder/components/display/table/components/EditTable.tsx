@@ -24,7 +24,7 @@ export function EditTable({
   getRootUserInterfaceData,
   userInterfaceSchema,
   valueKey,
-}: EditTableProps) {
+}: EditTableProps): JSX.Element {
   const dataArray = get(valueKey!, userInterfaceData) || []
   const data = { columns: dataArray }
 

@@ -70,4 +70,4 @@ export {
  * Non-Framework Components
  */
 export { ConfirmableDeleteButton } from "./components/button/confirmable-delete"
-export { StandardGrid } from "./components/grid/StandardGrid"
+export { default as StandardGrid } from "./components/grid/StandardGrid"

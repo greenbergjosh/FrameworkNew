@@ -13,39 +13,55 @@ import * as record from "fp-ts/lib/Record"
 import { ReportDetails, ReportDetailsProps } from "./ReportDetails"
 import { mapData, unMapData } from "./mapData"
 import { ReportDetailsType } from "./types"
-import { UserInterfaceProps } from "@opg/interface-builder"
+import { EnrichedColumnDefinition, UserInterfaceProps } from "@opg/interface-builder"
+import { ColumnConfig } from "../../custom-ib-components/table/types"
 
 /***************************************************************************
  *
  * Public Functions
  */
 
+/**
+ * Render a UserInterface (with JSX Elements) into a cell.
+ * @param dispatch
+ * @param details
+ * @param getRootUserInterfaceData
+ * @param parameterValues
+ * @param parentData
+ * @param handleChangeData
+ * @param onChangeData
+ * @param type
+ */
 export const getDetailTemplate = ({
   dispatch,
-  details,
+  columnDetails,
   getRootUserInterfaceData,
   parameterValues,
   parentData,
   handleChangeData,
   onChangeData,
+  columnType,
 }: {
   dispatch: AppDispatch
-  details: string | ReportDetailsType | LocalReportConfig
+  columnDetails: ColumnConfig["details"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
   parameterValues?: JSONRecord
   parentData?: JSONRecord
   handleChangeData?: (oldData: JSONRecord, newData: JSONRecord) => void
   onChangeData?: UserInterfaceProps["onChangeData"]
-}) => {
-  const resolved = resolveDetails(details)
-  if (!resolved) return null
+  columnType: ColumnConfig["type"]
+}): EnrichedColumnDefinition["template"] => {
+  if (columnType !== "layout") return
+  const resolved = resolveDetails(columnDetails)
+
+  if (!resolved) return
   if (resolved.type === "GlobalConfigReference" || resolved.type === "ReportConfig") {
     return (rowData: JSONRecord) => (
       <Report
         getRootUserInterfaceData={getRootUserInterfaceData}
         isChildReport
         report={resolved}
-        data={getData(details, parentData, parameterValues, rowData)}
+        data={getData(columnDetails, parentData, parameterValues, rowData)}
         withoutHeader
       />
     )
@@ -53,7 +69,7 @@ export const getDetailTemplate = ({
   if (resolved.type === "SimpleLayoutConfig") {
     return (rowData: JSONRecord) => (
       <ReportDetails
-        details={details}
+        details={columnDetails}
         dispatch={dispatch}
         getRootUserInterfaceData={getRootUserInterfaceData}
         rowData={rowData}
@@ -61,12 +77,11 @@ export const getDetailTemplate = ({
         parentData={parentData}
         layout={resolved.layout}
         onChangeData={(newData: any) =>
-          handleChangeDataFromChildren(details, rowData, newData, handleChangeData, onChangeData)
+          handleChangeDataFromChildren(columnDetails, rowData, newData, handleChangeData, onChangeData)
         }
       />
     )
   }
-  return null
 }
 
 /***************************************************************************

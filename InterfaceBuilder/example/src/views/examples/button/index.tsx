@@ -4,7 +4,7 @@ import config from "./example-config.json"
 import initialData from "./example-data.json"
 import { ExampleViewer } from "../../../components/ExampleViewer"
 
-const FormExample: React.FC = () => {
+const ButtonExample: React.FC = () => {
   const [data, setData] = React.useState(initialData)
   const [schema, setSchema] = React.useState<ComponentDefinition[]>([config])
 
@@ -31,4 +31,4 @@ const FormExample: React.FC = () => {
   )
 }
 
-export default FormExample
+export default ButtonExample

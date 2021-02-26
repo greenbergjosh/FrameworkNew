@@ -1,0 +1,40 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "timeSettings": {
+        "use24Clock": false,
+        "includeHour": false,
+        "includeMinute": false,
+        "includeSecond": false,
+        "includeTime": false
+      },
+      "invisible": false,
+      "hidden": false,
+      "wrapperObjectKey": "dateRange",
+      "useWrapperObject": false,
+      "endDateKey": "end_date",
+      "startDateKey": "start_date",
+      "defaultRangeValue": "Today",
+      "label": "Take Action",
+      "hideLabel": true,
+      "valueKey": "value",
+      "component": "date-range"
+    }
+  ]
+}

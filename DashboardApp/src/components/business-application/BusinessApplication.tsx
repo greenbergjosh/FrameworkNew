@@ -3,7 +3,7 @@ import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
 import React from "react"
 import { useRematch } from "../../hooks"
-import { NavigationGroupWithChildren, NavigationItem } from "../../state/navigation"
+import { NavigationGroupWithChildren, NavigationItem, WithRouteProps } from "../../state/navigation"
 import { store } from "../../state/store"
 import { AppSelectors } from "../../state/store.types"
 import { BusinessApplicationPage } from "./components/BusinessApplicationPage"
@@ -15,6 +15,7 @@ import {
   BusinessApplicationPageId,
   BusinessAppNavigationItem,
 } from "./types"
+import { DEFAULT_BUSINESS_APPLICATION_CONFIG, DEFAULT_BUSINESS_APPLICATION_PAGE_CONFIG } from "./constants"
 
 export interface BusinessApplicationProps {
   applicationId: BusinessApplicationId
@@ -22,18 +23,6 @@ export interface BusinessApplicationProps {
   title: string
 }
 
-export const DEFAULT_BUSINESS_APPLICATION_CONFIG: BusinessApplicationConfig = {
-  administered_types: [],
-  application_config: [],
-  description: "",
-  export_config: [],
-  ingest_config: [],
-  owner: [],
-  report: [],
-  navigation: [],
-}
-
-/** Page style rendering of a business application */
 export const BusinessApplication = ({ applicationId, pageId, title }: BusinessApplicationProps): JSX.Element => {
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
@@ -47,18 +36,21 @@ export const BusinessApplication = ({ applicationId, pageId, title }: BusinessAp
   )
 
   const businessApplicationPageRecord = record.lookup((pageId || "").toLowerCase(), fromStore.configsById)
-  const businessApplicationPageConfig = businessApplicationPageRecord
-    .chain((appRecord) =>
-      appRecord.config.chain((cfg) => {
-        try {
-          JSON5.parse(cfg)
-        } catch (e) {
-          console.error("BusinessApplication.getAppConfig", "Error parsing JSON", cfg, e)
-        }
-        return tryCatch(() => JSON5.parse(cfg))
-      })
-    )
-    .getOrElse({}) as BusinessApplicationPageConfig
+  const businessApplicationPageConfig = {
+    ...DEFAULT_BUSINESS_APPLICATION_PAGE_CONFIG,
+    ...(businessApplicationPageRecord
+      .chain((appRecord) =>
+        appRecord.config.chain((cfg) => {
+          try {
+            JSON5.parse(cfg)
+          } catch (e) {
+            console.error("BusinessApplication.getAppConfig", "Error parsing JSON", cfg, e)
+          }
+          return tryCatch(() => JSON5.parse(cfg))
+        })
+      )
+      .getOrElse({}) as BusinessApplicationPageConfig),
+  }
 
   console.log("BusinessApplication.render", {
     businessApplicationRecord,
@@ -67,20 +59,22 @@ export const BusinessApplication = ({ applicationId, pageId, title }: BusinessAp
     businessApplicationPageConfig,
   })
 
-  return businessApplicationConfig.navigation.length === 0 || !pageId ? (
-    <DefaultBusinessApplication
-      applicationId={applicationId}
-      businessApplicationConfig={businessApplicationConfig}
-      title={title}
-    />
-  ) : (
-    <BusinessApplicationPage
-      applicationId={applicationId}
-      pageId={pageId}
-      businessApplicationConfig={businessApplicationConfig}
-      businessApplicationPageConfig={businessApplicationPageConfig}
-      title={title}
-    />
+  return (
+    <>
+      {businessApplicationConfig.navigation.length === 0 || !pageId ? (
+        <DefaultBusinessApplication
+          applicationId={applicationId}
+          businessApplicationConfig={businessApplicationConfig}
+        />
+      ) : (
+        <BusinessApplicationPage
+          applicationId={applicationId}
+          pageId={pageId}
+          businessApplicationConfig={businessApplicationConfig}
+          businessApplicationPageConfig={businessApplicationPageConfig}
+        />
+      )}
+    </>
   )
 }
 

@@ -6,19 +6,22 @@ import {
   ComponentDefinition,
   LayoutDefinition,
 } from "../components/base/BaseInterfaceComponent"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export interface ManageComponentPreviewProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
   layoutDefinition: LayoutDefinition
+  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export const ManageComponentPreview = ({
   Component,
   componentDefinition,
   layoutDefinition,
+  userInterfaceData,
 }: ManageComponentPreviewProps) => {
-  const [previewData, setPreviewData] = React.useState({})
+  const [previewData, setPreviewData] = React.useState(userInterfaceData || {})
 
   const renderedComponent = (
     <RenderInterfaceComponent

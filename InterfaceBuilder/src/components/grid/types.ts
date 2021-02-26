@@ -1,8 +1,8 @@
 import {
-  AggregateColumnModel,
   AggregateType,
   ColumnModel,
   CustomSummaryType,
+  GridComponent,
   GroupSettingsModel,
   PageSettingsModel,
   SortSettingsModel,
@@ -19,13 +19,12 @@ export interface StandardGridComponentProps {
   enableAltRow?: boolean
   enableVirtualization?: boolean
   height?: number
-  columns: ColumnModel[]
+  columns: EnrichedColumnDefinition[]
   contextData?: JSONRecord
   data: JSONRecord[]
   defaultCollapseAll?: boolean
   detailTemplate?: string | Function | any
   groupSettings?: GroupSettingsModel
-  loading?: boolean
   pageSettings?: PageSettingsModel
   sortSettings?: SortSettingsModel
   //   editSettingsTemplate?: string | Function | any
@@ -34,11 +33,17 @@ export interface StandardGridComponentProps {
   //   pagerTemplate?: string | Function | any
   //   rowTemplate?: string | Function | any
   //   toolbarTemplate?: string | Function | any
+  ref?: React.RefObject<GridComponent>
 }
 
 type DataMapOption = { key: string; value: string }
 
-export interface EnrichedColumnDefinition extends ColumnModel {
+/**
+ * NOTE:
+ * Syncfusion grid does not type or document that "template" accepts React JSX Elements.
+ * So we omit the original property and redefine it below.
+ */
+export interface EnrichedColumnDefinition extends Omit<ColumnModel, "template"> {
   allowHTMLText?: boolean
   aggregationFunction?: AggregateType // Not actually a function, but a string!
   customAggregateId?: string
@@ -48,9 +53,16 @@ export interface EnrichedColumnDefinition extends ColumnModel {
   removeCellPadding?: boolean
   skeletonFormat: "short" | "medium" | "long" | "full" | "custom"
   precision?: number // integer
-  visibilityConditions?: JSONObject // JSON Logic
+  visibilityConditions?: JSONObject // Must be JSON Logic
   cellFormatter?: string
   cellFormatterOptions?: DataMapOption[]
+  /*
+   * NOTE: In EnrichedColumnDefinition "template" is a React functional component,
+   * but in ColumnModel (Syncfusion's type) "template" is a string. Syncfusion does not
+   * document or type that "template" will accept a React functional component.
+   * So we omit the original property and redefine it here.
+   */
+  template: ColumnModel["template"] | ((rowData: JSONRecord) => JSX.Element | null)
 }
 
 export type CustomAggregateFunctions = { [key: string]: CustomSummaryType }

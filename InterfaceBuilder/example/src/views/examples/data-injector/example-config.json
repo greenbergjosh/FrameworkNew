@@ -1,12 +1,32 @@
 {
-  "key": "outer",
   "invisible": false,
   "hidden": false,
-  "valueKey": "data",
-  "label": "Text",
+  "orientation": "vertical",
+  "label": "Form",
   "hideLabel": true,
-  "component": "data-injector",
-  "components": [],
-  "dataType": "json",
-  "jsonValue": "{\n    \"test\": \"some value\"\n}"
+  "component": "form",
+  "key": "outer",
+  "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Text",
+      "hideLabel": true,
+      "component": "data-injector",
+      "components": [],
+      "dataType": "json",
+      "jsonValue": "{\n    \"test\": \"some value\"\n}"
+    }
+  ]
 }

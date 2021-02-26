@@ -1,9 +1,12 @@
 import { Layout } from "antd"
-import FormExample from "../examples/form"
 import QueryBuilderExample from "../examples/querybuilder"
 import RepeaterExample from "../examples/repeater"
 import DataInjectorExample from "../examples/data-injector"
+import TextExample from "../examples/text"
 import ButtonExample from "../examples/button"
+import DateStepperExample from "./date-stepper"
+import DateRangeExample from "./date-range"
+import TableExample from "./table"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
@@ -25,9 +28,6 @@ export function ExamplesView(): JSX.Element {
           <Route path={`${path}/button`}>
             <ButtonExample />
           </Route>
-          <Route path={`${path}/form`}>
-            <FormExample />
-          </Route>
           <Route path={`${path}/querybuilder`}>
             <QueryBuilderExample />
           </Route>
@@ -36,6 +36,18 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/data-injector`}>
             <DataInjectorExample />
+          </Route>
+          <Route path={`${path}/text`}>
+            <TextExample />
+          </Route>
+          <Route path={`${path}/date-stepper`}>
+            <DateStepperExample />
+          </Route>
+          <Route path={`${path}/date-range`}>
+            <DateRangeExample />
+          </Route>
+          <Route path={`${path}/table`}>
+            <TableExample />
           </Route>
         </Switch>
       </Layout>

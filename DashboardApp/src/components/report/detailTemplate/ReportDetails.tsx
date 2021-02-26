@@ -7,9 +7,8 @@ import { Form } from "antd"
 import { Identity } from "fp-ts/lib/Identity"
 import { isWhitespace } from "../../../lib/string"
 import { JSONRecord } from "../../../data/JSON"
-import { none, Option, some, tryCatch } from "fp-ts/lib/Option"
+import { none, some, tryCatch } from "fp-ts/lib/Option"
 import { ComponentDefinition, UserInterface, UserInterfaceProps } from "@opg/interface-builder"
-import { InProgressRemoteUpdateDraft } from "../../../data/GlobalConfig.Config"
 import { mapData } from "./mapData"
 import { ReportDetailsType, Values } from "./types"
 
@@ -33,8 +32,8 @@ export const ReportDetails = ({
   parameterValues,
   parentData,
   layout,
-}: ReportDetailsProps) => {
-  const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
+}: ReportDetailsProps): JSX.Element => {
+  // const [updatedConfig, setUpdatedConfig] = React.useState<Option<InProgressRemoteUpdateDraft>>(none)
   const initialFormState = { config: JSON.stringify(rowData) }
   const dataResolver = getDataResolver(details, parentData)
 
@@ -42,6 +41,7 @@ export const ReportDetails = ({
    * EVENT HANDLERS
    */
 
+  // TODO: Why is this here and commented out?
   /* afterCreate */
   // React.useEffect(() => {
   //   updatedConfig.chain(findInStore).foldL(
@@ -88,7 +88,7 @@ export const ReportDetails = ({
   }
 
   const handleChangeDataFromChildren = (form: Formik.FormikProps<Values>) => (value: JSONRecord) => {
-    console.log("ReportBody.handleChangeData!", value)
+    console.log("ReportDetails.handleChangeData!", value)
     form.setFieldValue("config", JSON.stringify(value, null, 2))
     form.setFieldTouched("config", true)
     if (onChangeData) {

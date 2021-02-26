@@ -9,26 +9,28 @@ import { sanitizeText } from "components/interface-builder/lib/sanitize-text"
 import { CustomAggregateFunctions, EnrichedColumnDefinition } from "components/grid/types"
 
 export function getCustomAggregateFunction(
-  usableColumn: EnrichedColumnDefinition,
+  aggregationFunction: EnrichedColumnDefinition["aggregationFunction"],
+  customAggregateFunction: EnrichedColumnDefinition["customAggregateFunction"],
+  customAggregateId: EnrichedColumnDefinition["customAggregateId"],
+  field: EnrichedColumnDefinition["field"],
   customAggregateFunctions: CustomAggregateFunctions
 ): CustomSummaryType {
-  let customAggregateFunction: CustomSummaryType
-  if (
-    usableColumn.aggregationFunction === "Custom" &&
-    usableColumn.customAggregateFunction &&
-    usableColumn.customAggregateId
-  ) {
-    // Config provided custom function
-    customAggregateFunction = customAggregateFunctions[getCustomAggregateFunctionKey(usableColumn)]
+  let fn: CustomSummaryType
+  if (aggregationFunction === "Custom" && customAggregateFunction && customAggregateId) {
+    // Custom function from cache
+    fn = customAggregateFunctions[getCustomAggregateFunctionKey(customAggregateId, field)]
   } else {
     // Library provided custom function
-    customAggregateFunction = customAggregateFunctions[usableColumn.aggregationFunction!]
+    fn = customAggregateFunctions[aggregationFunction!]
   }
-  return customAggregateFunction
+  return fn
 }
 
-export function getCustomAggregateFunctionKey(column: EnrichedColumnDefinition) {
-  return `${column.customAggregateId}_${column.field}`
+export function getCustomAggregateFunctionKey(
+  customAggregateId: EnrichedColumnDefinition["customAggregateId"],
+  field: EnrichedColumnDefinition["field"]
+): string {
+  return `${customAggregateId}_${field}`
 }
 
 /**
@@ -74,7 +76,13 @@ export default function getAggregateRows(
 ): AggregateRowModel[] {
   const aggregateColumns = usableColumns.reduce((acc, col) => {
     if (col.aggregationFunction) {
-      const customAggregateFunction = getCustomAggregateFunction(col, customAggregateFunctions)
+      const customAggregateFunction = getCustomAggregateFunction(
+        col.aggregationFunction,
+        col.customAggregateFunction,
+        col.customAggregateId,
+        col.field,
+        customAggregateFunctions
+      )
       const aggregateColumn = getAggregateColumn(
         col.aggregationFunction, // aka: aggregateType
         col.field,

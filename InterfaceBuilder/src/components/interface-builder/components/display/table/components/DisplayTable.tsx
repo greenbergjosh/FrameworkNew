@@ -1,5 +1,5 @@
 import React from "react"
-import { get, isArray, isEmpty, matches, set, sortBy, isEqual } from "lodash/fp"
+import { get, isArray, isEmpty, isEqual, matches, set, sortBy } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -8,15 +8,15 @@ import {
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
 import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
-import { StandardGrid } from "components/grid/StandardGrid"
-import { ColumnConfig, DisplayTableProps } from "../types"
+import StandardGrid from "components/grid/StandardGrid"
+import { SortableGroupableColumnModel, DisplayTableProps } from "../types"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 /**
  * Display Table
  * View the actual grid with data.
  */
-export function _DisplayTable({
+export function DisplayTable({
   allowAdding,
   allowEditing,
   columns,
@@ -27,7 +27,6 @@ export function _DisplayTable({
   enableVirtualization,
   height,
   defaultPageSize,
-  loadingKey,
   onChangeData,
   rowDetails,
   userInterfaceData,
@@ -35,9 +34,8 @@ export function _DisplayTable({
   getValue,
   valueKey,
   preview = false,
-}: DisplayTableProps) {
+}: DisplayTableProps): JSX.Element {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
-  const loading = loadingKey && get(loadingKey, userInterfaceData)
   let dataArray: JSONRecord[] = []
   if (valueKey) {
     const val = getValue(valueKey)
@@ -85,7 +83,6 @@ export function _DisplayTable({
       enableVirtualization={enableVirtualization}
       height={height}
       groupSettings={groupSettings}
-      loading={!!loading}
       pageSettings={pageSettings}
       sortSettings={sortSettings}
       detailTemplate={
@@ -134,9 +131,9 @@ function propsAreEqual(prevProps: DisplayTableProps, nextProps: DisplayTableProp
   return eq
 }
 
-export const DisplayTable = React.memo(_DisplayTable, propsAreEqual)
+export default React.memo(DisplayTable, propsAreEqual)
 
-function getDisplaySettings(columns: ColumnConfig[], defaultPageSize: number | string | undefined) {
+function getDisplaySettings(columns: SortableGroupableColumnModel[], defaultPageSize: number | string | undefined) {
   const sortSettings: SortSettingsModel = {
     columns: sortBy("sortOrder", columns).reduce((acc, column) => {
       if (column.sortDirection && column.field) {

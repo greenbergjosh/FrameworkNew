@@ -12,6 +12,7 @@ export interface ManageComponentModalProps {
   onCancel: () => void
   onConfirm: (componentDefinition: ComponentDefinition) => void
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
 }
 
 export const ManageComponentModal = ({
@@ -19,6 +20,7 @@ export const ManageComponentModal = ({
   onCancel,
   onConfirm,
   getRootUserInterfaceData,
+  userInterfaceData,
 }: ManageComponentModalProps) => {
   const [componentDefinition, updateComponentDefinition] = React.useState(propComponentDefinition)
 
@@ -99,6 +101,7 @@ export const ManageComponentModal = ({
                   Component={Component}
                   componentDefinition={componentDefinition as ComponentDefinition}
                   layoutDefinition={layoutDefinition}
+                  userInterfaceData={userInterfaceData}
                 />
               </div>
             )}

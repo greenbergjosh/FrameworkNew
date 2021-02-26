@@ -1,5 +1,5 @@
 import React from "react"
-import { Icon, Layout, Typography } from "antd"
+import { Layout } from "antd"
 import "antd/dist/antd.css"
 import {
   antComponents,
@@ -16,10 +16,18 @@ import { HomeView } from "./views/HomeView"
 import { QuickStartView } from "./views/QuickStartView"
 import { DocsView } from "./views/DocsView"
 import { MainMenu } from "./components/MainMenu"
+import { TableInterfaceComponent } from "./components/custom-ib/table/TableInterfaceComponent"
 
 registry.register(antComponents)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 registry.register(nivoComponents)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 registry.register(htmlComponents)
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+registry.register({ table: TableInterfaceComponent })
 
 const App: React.FC = () => {
   return (

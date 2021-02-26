@@ -223,6 +223,7 @@ export class UserInterface extends React.Component<UserInterfaceProps, UserInter
 
                       <ManageComponentModal
                         getRootUserInterfaceData={this.getRootData}
+                        userInterfaceData={data}
                         componentDefinition={
                           (itemToAdd && itemToAdd.componentDefinition) || (itemToEdit && itemToEdit.componentDefinition)
                         }

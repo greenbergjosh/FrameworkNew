@@ -22,9 +22,6 @@ export const ExamplesMenu: React.FC = () => {
         <Menu.Item key="/examples/button">
           <Link to="/examples/button">Button</Link>
         </Menu.Item>
-        <Menu.Item key="/examples/form">
-          <Link to="/examples/form">Form</Link>
-        </Menu.Item>
         <Menu.Item key="/examples/repeater">
           <Link to="/examples/repeater">Repeater</Link>
         </Menu.Item>
@@ -33,6 +30,18 @@ export const ExamplesMenu: React.FC = () => {
         </Menu.Item>
         <Menu.Item key="/examples/data-injector">
           <Link to="/examples/data-injector">Data Injector</Link>
+        </Menu.Item>
+        <Menu.Item key="/examples/text">
+          <Link to="/examples/text">Text</Link>
+        </Menu.Item>
+        <Menu.Item key="/examples/date-stepper">
+          <Link to="/examples/date-stepper">Date Stepper</Link>
+        </Menu.Item>
+        <Menu.Item key="/examples/date-range">
+          <Link to="/examples/date-range">Date Range</Link>
+        </Menu.Item>
+        <Menu.Item key="/examples/table">
+          <Link to="/examples/table">Table</Link>
         </Menu.Item>
       </Menu.SubMenu>
     </Menu>

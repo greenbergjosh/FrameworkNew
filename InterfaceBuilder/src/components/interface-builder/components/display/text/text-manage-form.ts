@@ -28,13 +28,6 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "data",
               },
               {
-                key: "useTokens",
-                valueKey: "useTokens",
-                label: "Replace Tokens",
-                component: "toggle",
-                defaultValue: false,
-              },
-              {
                 key: "stringTemplate",
                 valueKey: "stringTemplate",
                 component: "textarea",

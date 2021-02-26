@@ -49,6 +49,14 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "The key used to put data into the model",
               },
               {
+                key: "outboundLoadingKey",
+                valueKey: "outboundLoadingKey",
+                label: "Loading Key",
+                component: "input",
+                defaultValue: "loading",
+                help: "The key used to put loading state (true|false) into the model",
+              },
+              {
                 key: "header",
                 valueKey: "header",
                 component: "input",

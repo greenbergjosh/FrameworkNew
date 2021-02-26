@@ -1,10 +1,10 @@
 import { EnrichedColumnDefinition } from "@opg/interface-builder"
-import { AppSelectors } from "../../../state/store.types"
+import { AppSelectors } from "../../../../state/store.types"
 import * as record from "fp-ts/lib/Record"
 import JSON5 from "json5"
-import { CustomSummaryType } from "@syncfusion/ej2-react-grids"
+import { ColumnModel } from "@syncfusion/ej2-react-grids"
 import { tryCatch } from "fp-ts/lib/Option"
-import { JSONRecord } from "../../../data/JSON"
+import { JSONRecord } from "../../../../data/JSON"
 
 /*
  * cellFormatterQueryParams.queryParams
@@ -17,20 +17,29 @@ export const cellFormatterQueryParams: { queryParams?: JSONRecord } = { queryPar
 /**
  * Render a formatted string (that may include HTML) into a cell.
  * User must provide an Remote Config LBM Javascript function that returns html for the cell.
+ * @param columnType
  * @param formatter
  * @param cellFormatter
  * @param cellFormatterOptions
  * @param configsById
  * @param queryParams
  */
-export function getCellFormatter(
-  formatter: any,
-  cellFormatter: EnrichedColumnDefinition["cellFormatter"],
-  cellFormatterOptions: EnrichedColumnDefinition["cellFormatterOptions"],
-  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>,
+export function getCustomCellFormatter({
+  cellFormatter,
+  cellFormatterOptions,
+  columnType,
+  configsById,
+  formatter,
+  queryParams,
+}: {
+  cellFormatter: EnrichedColumnDefinition["cellFormatter"]
+  cellFormatterOptions: EnrichedColumnDefinition["cellFormatterOptions"]
+  columnType: EnrichedColumnDefinition["type"]
+  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
+  formatter: EnrichedColumnDefinition["formatter"]
   queryParams?: JSONRecord
-): CustomSummaryType | undefined {
-  if (!cellFormatter) return
+}): EnrichedColumnDefinition["formatter"] {
+  if (!cellFormatter && columnType === "layout") return
 
   // See note above for cellFormatterQueryParams
   cellFormatterQueryParams.queryParams = queryParams
@@ -40,10 +49,10 @@ export function getCellFormatter(
     return
   }
 
-  const remoteConfig = record.lookup(cellFormatter, configsById).toUndefined()
+  const remoteConfig = cellFormatter && record.lookup(cellFormatter, configsById).toUndefined()
   if (remoteConfig && remoteConfig.config) {
     // Retrieve formatter
-    const code = JSON5.parse(remoteConfig.config.getOrElse("")).code
+    const { code } = JSON5.parse(remoteConfig.config.getOrElse(""))
     const formatter = tryCatch(() => new Function(code)()).toNullable()
 
     /*
@@ -59,22 +68,19 @@ export function getCellFormatter(
       }, {})
 
     if (typeof formatter === "function") {
-      return (data, column) => {
+      return (column: EnrichedColumnDefinition, data: any) => {
         /*
          * Wrap the LBM with a try-catch because the LBM may have a bug,
          * and also LBMs use column.formatFn(value) which will throw
-         * if the value is null.
+         * if the value is null.x
          */
         try {
           // Partially apply formatter function with options and query params.
-          return formatter(data, column, options, cellFormatterQueryParams.queryParams)
+          return formatter(column, data, options, cellFormatterQueryParams.queryParams)
         } catch (e) {
           return ""
         }
       }
     }
-
-    // LBM formatter is not a valid function, so provide a default
-    return () => ""
   }
 }
