@@ -2,7 +2,7 @@
   "profiles": {
     "UnsubJob": {
       "commandName": "Project",
-      "commandLineArgs": "skipClean skipQueuedCheck n:\"Ad1MediaAndy\" c:11660 md:\"https://google.com\""
+      "commandLineArgs": "skipClean skipQueuedCheck n:\"OB Bing direct feed\" c:2493"
     }
   }
 }

@@ -27,6 +27,7 @@ namespace UnsubLib
     {
         // Set to true for debugging - always false in production
         public bool CallLocalLoadUnsubFiles;
+
         public bool UseLocalNetworkFile;
         public string LocalNetworkFilePath;
         public string ServerWorkingDirectory;
@@ -322,7 +323,7 @@ namespace UnsubLib
                 string type = null;
                 string id = null;
 
-                if (ms?.Count() == 1 && ms.First().Success)
+                if (ms?.Count == 1 && ms.First().Success)
                 {
                     var m = ms.First();
 
@@ -640,7 +641,6 @@ namespace UnsubLib
                 var res = await Data.CallFn(Conn, "UpdateNetworkCampaignsUnsubFiles", "", Jw.Json("Id", "FId", campaignsWithPositiveDelta));
 
                 if (res?.GetS("result") != "success") await _fw.Error($"{nameof(ProcessUnsubFiles)}-{networkName}", $"Failed to update unsub files. Response: {res?.GetS("") ?? "[null]"}");
-
             }
             catch (Exception exUpdateCampaigns)
             {
@@ -748,11 +748,11 @@ namespace UnsubLib
 
                 await task;
             }
-            catch (Exception ex)
+            catch
             {
                 foreach (var e in task.Exception.InnerExceptions)
                 {
-                    if (e is HaltingException) throw ex;
+                    if (e is HaltingException) throw;
                 }
 
                 await _fw.Error($"{nameof(GetUnsubUris)}-{networkName}", $"Parallelism threw unhandled exception {task.Exception.UnwrapForLog()}");
@@ -769,7 +769,7 @@ namespace UnsubLib
 
             parallelism = MaxParallelism < parallelism ? MaxParallelism : parallelism;
 
-            await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting file downloads for [{networkName}] Count: {uris?.Count()}");
+            await _fw.Log($"{nameof(DownloadUnsubFiles)}-{networkName}", $"Starting file downloads for [{networkName}] Count: {uris?.Count}");
 
             var networkCampaignFiles = new ConcurrentDictionary<string, string>();
             var networkDomainFiles = new ConcurrentDictionary<string, string>();
@@ -1023,10 +1023,10 @@ namespace UnsubLib
             var sbDiff = new StringBuilder("");
             if (diffs.Count > 0)
             {
-                sbDiff.Append("[");
+                sbDiff.Append('[');
                 foreach (var t in diffs)
                     sbDiff.Append(Jw.Json(new { oldf = t.Item1.ToLower(), newf = t.Item2.ToLower() }) + ",");
-                sbDiff.Remove(sbDiff.Length - 1, 1).Append("]");
+                sbDiff.Remove(sbDiff.Length - 1, 1).Append(']');
             }
             else
             {
@@ -1473,7 +1473,6 @@ namespace UnsubLib
                 }
 
                 return fi.Length;
-
             }
             catch (Exception fileSizeException)
             {
@@ -1731,7 +1730,7 @@ namespace UnsubLib
                 var fileId = c.GetS("MostRecentUnsubFileId")?.ToLower();
                 var type = c.GetS("SuppressionDigestType");
                 var mostRecentFileDateString = c.GetS("MostRecentUnsubFileDate");
-                DateTime.TryParse(mostRecentFileDateString, out var mostRecentFileDate);
+                _ = DateTime.TryParse(mostRecentFileDateString, out var mostRecentFileDate);
                 int? unsubRefreshPeriod = c.GetS("UnsubRefreshPeriod").ParseInt();
 
                 if (fileId == null)
@@ -1860,7 +1859,7 @@ namespace UnsubLib
                 new Dictionary<string, string>() { { "", proxyRequest } }, 10 * 60, "application/json");
         }
 
-        private JArray FlexStringArray(IGenericEntity ge, string path)
+        private static JArray FlexStringArray(IGenericEntity ge, string path)
         {
             var tok = Jw.TryParse(ge.GetS(path));
 
@@ -2018,7 +2017,8 @@ namespace UnsubLib
                 new UnsubFileProviders.Unsubly(_fw),
                 new UnsubFileProviders.Ad1Media(),
                 new UnsubFileProviders.SuppMeNow(),
-                new UnsubFileProviders.WeOpt()
+                new UnsubFileProviders.WeOpt(),
+                new UnsubFileProviders.SiteMath()
             };
 
             try
@@ -2039,7 +2039,6 @@ namespace UnsubLib
 
                     if (providers.Any())
                     {
-
                         uri = providers.Select(p => p.GetFileUrl(network, unsubRelationshipId, locationUrl).Result).FirstOrDefault(u => !u.IsNullOrWhitespace());
 
                         if (uri.IsNullOrWhitespace())
@@ -2056,7 +2055,6 @@ namespace UnsubLib
                 {
                     await _fw.Error($"{nameof(GetSuppressionFileUri)}-{networkName}", $"Failed to retrieve unsub url for unsub file from: {networkName}:{unsubRelationshipId} {locationUrl}");
                 }
-
             }
             catch (HaltingException)
             {
@@ -2121,7 +2119,6 @@ namespace UnsubLib
                         dr = new Dictionary<string, object>();
                     }
                 }
-
 
                 if (dr?.Any() == false) await _fw.Error($"{nameof(DownloadSuppressionFiles)}-{networkName}", $"No file downloaded {networkName} {unsubUrl} {logContext}");
             }

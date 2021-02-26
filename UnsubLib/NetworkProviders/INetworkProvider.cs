@@ -22,6 +22,7 @@ namespace UnsubLib.NetworkProviders
                 "W4" => new W4(fw),
                 "Tune" => new Tune(fw),
                 "Everflow" => new Everflow(fw),
+                "SiteMath" => new SiteMath(fw),
                 _ => new Other(fw),
             };
         }
