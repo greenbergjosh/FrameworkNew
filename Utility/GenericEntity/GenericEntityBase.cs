@@ -82,6 +82,8 @@ namespace Utility.GenericEntity
             throw new NotImplementedException();
         }
 
+        public abstract bool HasPath(string path);
+
         public virtual object Get(string path)
         {
             return this[path];

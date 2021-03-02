@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -41,8 +40,7 @@ namespace TheGreatWallOfDataLib.Routing
             }),
             ("test", new [] {("*",  (ApiFunc) RunTests )})
         };
-        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ApiFunc>> CsFuncs =
-            new ScopeDic(__.Select(s => new ScopeKvp(s.scope, new FuncDic(s.funcs.Select(f => new FuncKvp(f.funcName, f.func))))));
+        private static readonly ScopeDic CsFuncs = new ScopeDic(__.Select(s => new ScopeKvp(s.scope, new FuncDic(s.funcs.Select(f => new FuncKvp(f.funcName, f.func))))));
 
         public static Task Initialize(FrameworkWrapper fw)
         {

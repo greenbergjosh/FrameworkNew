@@ -26,6 +26,7 @@ namespace Utility.GenericEntity
         IEnumerable<Tuple<string, string>> GetD(string path);
         IEnumerable<(string key, IGenericEntity entity)> GetDe(string path);
 
+        bool HasPath(string path);
         object Get(string path);
         object Run(string fname);
         object Get(string path, string fname);

@@ -26,7 +26,7 @@ namespace GenericApi
     {
         private FrameworkWrapper _fw;
         private ILogger<Startup> _logger;
-        private Dictionary<string, Guid> _lbms;
+        private Dictionary<string, IGenericEntity> _lbms;
         private Guid _rsConfigId;
 
         public void ConfigureServices(IServiceCollection services)
@@ -80,6 +80,7 @@ namespace GenericApi
                 _fw = new FrameworkWrapper();
                 _ = Guid.TryParse(_fw.StartupConfiguration.GetS("Config/RsConfigId"), out _rsConfigId);
                 LoadLbms().GetAwaiter().GetResult();
+                Auth.Initialize(_fw).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -204,20 +205,27 @@ namespace GenericApi
                     try
                     {
                         var method = kvp.Key;
-                        if (!await Auth.HasPermission(identity, kvp.Key))
-                        {
-                            await DropEvent(requestRsId, requestRsTimestamp, new
-                            {
-                                et = "RequestMethodUnauthorized",
-                                Method = kvp.Key,
-                                Identity = identity
-                            });
 
-                            results[kvp.Key] = new
+                        async Task<bool> CheckAuth()
+                        {
+                            if (!await Auth.HasPermission(identity, kvp.Key))
                             {
-                                r = 106
-                            };
-                            continue;
+                                await DropEvent(requestRsId, requestRsTimestamp, new
+                                {
+                                    et = "RequestMethodUnauthorized",
+                                    Method = kvp.Key,
+                                    Identity = identity
+                                });
+
+                                results[kvp.Key] = new
+                                {
+                                    r = 106
+                                };
+
+                                return false;
+                            }
+
+                            return true;
                         }
 
                         IGenericEntity result = null;
@@ -231,6 +239,11 @@ namespace GenericApi
 
                             if (Data.ContainsFunction(connectionName, command))
                             {
+                                if (!await CheckAuth())
+                                {
+                                    continue;
+                                }
+
                                 string args;
                                 string payload = null;
                                 if (kvp.Value is JObject obj && obj.Count == 2 && obj["args"] != null && obj["payload"] != null)
@@ -248,10 +261,15 @@ namespace GenericApi
                             }
                         }
 
-                        if (!processed && _lbms.TryGetValue(method, out var lbmId))
+                        if (!processed && _lbms.TryGetValue(method, out var lbm))
                         {
+                            if (!lbm.GetB("skipAuth") && !await CheckAuth())
+                            {
+                                continue;
+                            }
+
                             result = (IGenericEntity)await _fw.RoslynWrapper.RunFunction(
-                                lbmId.ToString(),
+                                lbm.GetS("id"),
                                 new
                                 {
                                     _httpContext = context,
@@ -270,11 +288,18 @@ namespace GenericApi
                             throw new InvalidOperationException($"Unknown method {method}");
                         }
 
-                        results[kvp.Key] = new
+                        if (result.HasPath("r"))
                         {
-                            r = 0,
-                            result
-                        };
+                            results[kvp.Key] = result;
+                        }
+                        else
+                        {
+                            results[kvp.Key] = new
+                            {
+                                r = 0,
+                                result
+                            };
+                        }
 
                         await DropEvent(requestRsId, requestRsTimestamp, new
                         {
@@ -349,13 +374,13 @@ namespace GenericApi
 
         private async Task LoadLbms()
         {
-            var lbms = new Dictionary<string, Guid>();
+            var lbms = new Dictionary<string, IGenericEntity>();
 
-            foreach (var tuple in _fw.StartupConfiguration.GetD("Config/LBMs"))
+            foreach (var tuple in _fw.StartupConfiguration.GetDe("Config/LBMs"))
             {
-                var name = tuple.Item1;
-
-                var id = Guid.Parse(tuple.Item2);
+                var name = tuple.key;
+                var config = tuple.entity;
+                var id = Guid.Parse(config.GetS("id"));
 
                 var lbm = await _fw.Entities.GetEntity(id);
                 if (lbm == null)
@@ -371,7 +396,7 @@ namespace GenericApi
                 var (debug, debugDir) = _fw.RoslynWrapper.GetDefaultDebugValues();
                 _fw.RoslynWrapper.CompileAndCache(new ScriptDescriptor(id, id.ToString(), lbm.GetS("Config"), debug, debugDir), true);
 
-                lbms.Add(name, id);
+                lbms.Add(name, config);
             }
 
             _lbms = lbms;

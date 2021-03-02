@@ -28,6 +28,8 @@ namespace Utility.GenericEntity
             }
         }
 
+        public override bool HasPath(string path) => throw new System.NotImplementedException();
+
         public override IEnumerable<IGenericEntity> GetL(string path)
         {
             foreach (Dictionary<string, object> item in ((List<Dictionary<string, object>>)this[path]))

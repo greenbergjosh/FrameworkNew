@@ -70,6 +70,8 @@ namespace Utility.GenericEntity
 
         public override object this[string path] => _root.SelectToken(ConvertPath(path));
 
+        public override bool HasPath(string path) => _root.SelectToken(ConvertPath(path)) != null;
+
         public override string GetS(string path, bool quoteStrings = false)
         {
             var s = _root.SelectToken(ConvertPath(path));

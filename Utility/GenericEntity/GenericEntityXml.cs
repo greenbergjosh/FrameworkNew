@@ -13,7 +13,9 @@ namespace Utility.GenericEntity
         {
             if (data is XmlNode) _root = (data as XmlNode);
         }
-       
+
+        public override bool HasPath(string path) => _root.SelectSingleNode(path) != null;
+
         public override object this[string path]
         {
             get
