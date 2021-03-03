@@ -1,5 +1,5 @@
 import React from "react"
-import { message, Spin } from "antd"
+import { message, Spin, Icon } from "antd"
 import { getOr, set } from "lodash/fp"
 import { UserInterfaceProps } from "../../../UserInterface"
 import { uploadManageForm } from "./upload-manage-form"
@@ -296,7 +296,7 @@ export class UploadInterfaceComponent extends BaseInterfaceComponent<
     return (
       <div className={standaloneButton ? "hideDropArea" : ""}>
         <span>{acceptType && `Accepts ${acceptType} files only.`}</span>
-        <Spin spinning={this.state.isUploading && !showFileList}>
+        <Spin spinning={this.state.isUploading && !showFileList} indicator={<Icon type="loading" />}>
           <UploaderComponent
             id="chunkUpload"
             type="file"

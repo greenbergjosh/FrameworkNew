@@ -6,7 +6,7 @@ import getThermometer from "./components"
 import { ThermometerInterfaceComponentProps, ThermometerInterfaceComponentState } from "./types"
 import { ThermometerIcon } from "./components/ThermometerIcon"
 import getColor from "../../_shared/colors"
-import { Spin, Tooltip } from "antd"
+import { Spin, Tooltip, Icon } from "antd"
 import { formatNumber } from "components/interface-builder/util/utils"
 
 export class ThermometerInterfaceComponent extends BaseInterfaceComponent<
@@ -64,7 +64,7 @@ export class ThermometerInterfaceComponent extends BaseInterfaceComponent<
     const title = thermometerLabel && displayValue && `${thermometerLabel}: ${formattedActualValue} (${displayValue})`
 
     return (
-      <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
+      <Spin spinning={this.state.loading && this.props.mode === "display"} indicator={<Icon type="loading" />}>
         <Tooltip title={title}>
           <div style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "center" }}>
             <div style={{ flex: "0 1 auto", alignSelf: "auto" }}>

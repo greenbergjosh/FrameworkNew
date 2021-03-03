@@ -12,7 +12,7 @@ import {
   SliceLabelValueFunction,
   SliceTooltipFunction,
 } from "./types"
-import { Spin } from "antd"
+import { Spin, Icon } from "antd"
 import { parseLBM } from "components/interface-builder/components/_shared/LBM/parseLBM"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
@@ -148,7 +148,7 @@ export class PieInterfaceComponent extends BaseInterfaceComponent<
     const borderColor: InheritedColorProp = { from: "color", modifiers: [["darker", 0.5]] }
 
     return (
-      <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
+      <Spin spinning={this.state.loading && this.props.mode === "display"} indicator={<Icon type="loading" />}>
         <div style={{ height: 250 }}>
           <ResponsivePie
             animate={true}

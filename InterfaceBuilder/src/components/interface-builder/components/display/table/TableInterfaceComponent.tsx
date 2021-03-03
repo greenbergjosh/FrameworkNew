@@ -7,7 +7,7 @@ import { EditTable } from "./components/EditTable"
 import DisplayTable from "./components/DisplayTable"
 import { AbstractTable } from "./components/AbstractTable"
 import { isBoolean } from "lodash/fp"
-import { Spin } from "antd"
+import { Spin, Icon } from "antd"
 
 export class TableInterfaceComponent extends BaseInterfaceComponent<
   TableInterfaceComponentProps,
@@ -123,7 +123,9 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                * View the actual grid with data.
                */
               return (
-                <Spin spinning={this.state.loading}>
+                <Spin
+                  spinning={this.state.loading}
+                  indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
                   <DisplayTable
                     allowAdding={allowAdding}
                     allowDeleting={allowDeleting}
