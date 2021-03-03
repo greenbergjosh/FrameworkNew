@@ -28,11 +28,31 @@ export const ErrorPayload = iots.type({
   r: ErrorCodeCodec,
 })
 
+export const requestInfoCodec = iots.union([
+  ErrorPayload,
+  iots.type({
+    r: iots.literal(0),
+    requestRsId: iots.string,
+    requestRsTimestamp: iots.string,
+  }),
+])
+
 export const authLoginPayloadCodec = iots.type({
+  Email: NonEmptyString,
+  Id: iots.nullType,
+  ImageUrl: iots.string,
   LoginToken: iots.string,
   Name: iots.string,
-  Email: NonEmptyString,
-  ImageUrl: iots.string,
+  Phone: iots.literal(""),
+})
+
+export const authUserDetailsPayloadCodec = iots.type({
+  handle: iots.string,
+  id: NonEmptyString,
+  image: iots.string,
+  name: iots.string,
+  primaryemail: NonEmptyString,
+  t: NonEmptyString,
 })
 
 export const authResponsePayloadCodec = {
@@ -44,6 +64,17 @@ export const authResponsePayloadCodec = {
         result: authLoginPayloadCodec,
       }),
     ]),
+    requestInfo: requestInfoCodec,
+  }),
+  userDetails: iots.type({
+    "auth:userDetails": iots.union([
+      ErrorPayload,
+      iots.type({
+        r: iots.literal(0),
+        result: authUserDetailsPayloadCodec,
+      }),
+    ]),
+    requestInfo: requestInfoCodec,
   }),
 }
 
@@ -52,6 +83,7 @@ export const globalConfigResponsePayloadCodec = {
     "config:delete": iots.type({
       r: ResponseCodeCodec,
     }),
+    requestInfo: requestInfoCodec,
   }),
 
   get: iots.type({
@@ -62,11 +94,13 @@ export const globalConfigResponsePayloadCodec = {
       }),
       ErrorPayload,
     ]),
+    requestInfo: requestInfoCodec,
   }),
 
   insert: iots.union([
     iots.type({
       "config:insert": ErrorPayload,
+      requestInfo: requestInfoCodec,
     }),
     iots.type({
       "config:insert": iots.type({
@@ -78,6 +112,7 @@ export const globalConfigResponsePayloadCodec = {
           })
         ),
       }),
+      requestInfo: requestInfoCodec,
     }),
   ]),
 
@@ -85,6 +120,7 @@ export const globalConfigResponsePayloadCodec = {
     "config:update": iots.type({
       r: ResponseCodeCodec,
     }),
+    requestInfo: requestInfoCodec,
   }),
 }
 

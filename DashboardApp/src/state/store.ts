@@ -1,22 +1,24 @@
-import Rematch from "@rematch/core"
+import * as Rematch from "@rematch/core"
 import createLoadingPlugin from "@rematch/loading"
 import createPersistPlugin from "@rematch/persist"
 import createSelectPlugin from "@rematch/select"
 import storage from "redux-persist/lib/storage"
 import { Omit } from "utility-types"
-import { adminConfig } from "./admin-config"
+import { apps } from "./apps"
+import { adminConfig } from "./admin-config/admin-config"
 import { feedback } from "./feedback"
-import { globalConfig } from "./global-config"
-import { iam } from "./iam"
+import { globalConfig } from "./global-config/global-config"
+import { iam } from "./iam/iam"
 import { logger } from "./logger"
 import { navigation } from "./navigation"
 import { remoteDataClient } from "./remote-data-client"
-import { reports } from "./reports"
-import { queries } from "./queries"
+import { reports } from "./queries/reports"
+import { queries } from "./queries/queries"
 import { importIngestionReport } from "./import-ingestion-report"
 import * as Store from "./store.types"
 
 const appModels: Omit<Store.AppModelConfigs, "loading"> = {
+  apps,
   adminConfig,
   feedback,
   globalConfig,

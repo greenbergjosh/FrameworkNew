@@ -2,7 +2,6 @@ import { Either } from "fp-ts/lib/Either"
 import { fromEquals } from "fp-ts/lib/Setoid"
 import * as iots from "io-ts"
 import { createOptionFromNullable } from "io-ts-types/lib/fp-ts/createOptionFromNullable"
-import { lensesFromInterface } from "io-ts-types/lib/monocle-ts/lensesFromInterface"
 import { NonEmptyString } from "io-ts-types/lib/NonEmptyString"
 import { failure } from "io-ts/lib/PathReporter"
 
@@ -47,7 +46,7 @@ export const PersistedConfigCodec = iots.type(
 
 export type PersistedConfigArray = iots.TypeOf<typeof PersistedConfigArrayCodec>
 export const PersistedConfigArrayCodec = iots.array(PersistedConfigCodec)
-export const PersistedConfigLens = lensesFromInterface(PersistedConfigCodec)
+// export const PersistedConfigLens = lensesFromInterface(PersistedConfigCodec)
 export const setoidPersistedConfig = fromEquals<PersistedConfig>((a, b) => a.id === b.id)
 export const setoidConfigType = fromEquals<ConfigType>((a, b) => a === b)
 
