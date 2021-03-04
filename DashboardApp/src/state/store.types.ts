@@ -1,5 +1,7 @@
 import * as Reselect from "reselect"
 import { Action, Dispatch } from "redux"
+import { Parameterizer } from "@rematch/select"
+import { Models } from "@rematch/core"
 
 /**
  * ------------ APP MODELS --------------
@@ -82,7 +84,7 @@ export interface AppModel<S, R extends object, E extends object, PublicSelectors
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-type PublicEffects2EffectConfig<Effects extends object> = {
+export type PublicEffects2EffectConfig<Effects extends object> = {
   [K in keyof Effects]: Effects[K] extends (payload: infer P, meta: infer M) => infer R
     ? (payload: P, rootState: AppState, meta: M) => R
     : Effects[K] extends (payload: infer P) => infer R
@@ -94,5 +96,6 @@ type PublicEffects2EffectConfig<Effects extends object> = {
 
 export type AppModelToSelectorFactory<ModelState, PublicSelectors> = (
   slice: <T>(selfSelectFn: (ownState: ModelState) => T) => (root: AppState) => T,
-  createSelector: typeof Reselect["createSelector"]
+  createSelector: typeof Reselect["createSelector"],
+  hasProps: any //Parameterizer<any, any>
 ) => { [K in keyof PublicSelectors]: (rootSelectors: AppSelectors) => PublicSelectors[K] }

@@ -29,6 +29,13 @@
           height: 100vh;
         }
 
+        *,
+        *::before,
+        *::after {
+          -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+        }
+
         .App {
           position: absolute;
           top: 0;
@@ -37,251 +44,109 @@
           right: 0;
           display: flex;
           flex-direction: column;
-
-          font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-            "Segoe UI Symbol";
         }
 
-        .App_appLoadingIndicator {
+        .splashScreen {
+          height: calc(100vh - 72px);
           display: flex;
+          flex-direction: column;
+          flex-wrap: nowrap;
           justify-content: center;
-          align-content: center;
+          align-content: stretch;
           align-items: center;
-          flex: 1 1;
-          height: 100vh;
-        }
-
-        /* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
-        /* stylelint-disable no-duplicate-selectors */
-        /* stylelint-disable */
-        /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
-        .ant-spin {
           box-sizing: border-box;
-          margin: 0;
-          padding: 0;
+
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+            "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+          -webkit-font-smoothing: antialiased;
           color: rgba(0, 0, 0, 0.65);
           font-size: 14px;
-          font-variant: tabular-nums;
           line-height: 1.5;
-          list-style: none;
-          -webkit-font-feature-settings: "tnum";
-          font-feature-settings: "tnum", "tnum";
-          position: absolute;
-          display: none;
-          color: #1890ff;
+        }
+
+        .splashScreen > .anticon {
+          box-sizing: border-box;
+          font-size: 36px;
+        }
+
+        .splashScreen > img {
+          box-sizing: border-box;
+          height: 116px;
+          width: 256px;
+          margin-top: 32px;
+          margin-bottom: 24px;
+        }
+
+        .anticon {
+          display: inline-block;
+          color: inherit;
+          font-style: normal;
+          line-height: 0;
           text-align: center;
-          vertical-align: middle;
-          opacity: 0;
-          -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-          transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-          transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-          transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86),
-            -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+          text-transform: none;
+          vertical-align: -0.125em;
+          text-rendering: optimizeLegibility;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
         }
-        .ant-spin-spinning {
-          position: static;
+
+        .anticon svg {
           display: inline-block;
-          opacity: 1;
         }
-        .ant-spin-nested-loading {
-          position: relative;
-        }
-        .ant-spin-nested-loading > div > .ant-spin {
-          position: absolute;
-          top: 0;
-          left: 0;
-          z-index: 4;
-          display: block;
-          width: 100%;
-          height: 100%;
-          max-height: 400px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin .ant-spin-dot {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          margin: -10px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin .ant-spin-text {
-          position: absolute;
-          top: 50%;
-          width: 100%;
-          padding-top: 5px;
-          text-shadow: 0 1px 2px #fff;
-        }
-        .ant-spin-nested-loading > div > .ant-spin.ant-spin-show-text .ant-spin-dot {
-          margin-top: -20px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin-sm .ant-spin-dot {
-          margin: -7px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin-sm .ant-spin-text {
-          padding-top: 2px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin-sm.ant-spin-show-text .ant-spin-dot {
-          margin-top: -17px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin-lg .ant-spin-dot {
-          margin: -16px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin-lg .ant-spin-text {
-          padding-top: 11px;
-        }
-        .ant-spin-nested-loading > div > .ant-spin-lg.ant-spin-show-text .ant-spin-dot {
-          margin-top: -26px;
-        }
-        .ant-spin-container {
-          position: relative;
-          -webkit-transition: opacity 0.3s;
-          transition: opacity 0.3s;
-        }
-        .ant-spin-container::after {
-          position: absolute;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          z-index: 10;
-          display: none \9;
-          width: 100%;
-          height: 100%;
-          background: #fff;
-          opacity: 0;
-          -webkit-transition: all 0.3s;
-          transition: all 0.3s;
-          content: "";
-          pointer-events: none;
-        }
-        .ant-spin-blur {
-          clear: both;
+
+        svg:not(:root) {
           overflow: hidden;
-          opacity: 0.5;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          pointer-events: none;
         }
-        .ant-spin-blur::after {
-          opacity: 0.4;
-          pointer-events: auto;
+
+        @-webkit-keyframes loadingCircle {
+          to {
+            -webkit-transform: rotate(1turn);
+            transform: rotate(1turn);
+          }
         }
-        .ant-spin-tip {
-          color: rgba(0, 0, 0, 0.45);
+        @keyframes loadingCircle {
+          to {
+            -webkit-transform: rotate(1turn);
+            transform: rotate(1turn);
+          }
         }
-        .ant-spin-dot {
-          position: relative;
+
+        .anticon-spin::before {
           display: inline-block;
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
+          -webkit-animation: loadingCircle 1s infinite linear;
+          animation: loadingCircle 1s infinite linear;
         }
-        .ant-spin-dot-item {
-          position: absolute;
-          display: block;
-          width: 9px;
-          height: 9px;
-          background-color: #1890ff;
-          border-radius: 100%;
-          -webkit-transform: scale(0.75);
-          transform: scale(0.75);
-          -webkit-transform-origin: 50% 50%;
-          transform-origin: 50% 50%;
-          opacity: 0.3;
-          -webkit-animation: antSpinMove 1s infinite linear alternate;
-          animation: antSpinMove 1s infinite linear alternate;
+
+        .anticon-spin {
+          display: inline-block;
+          -webkit-animation: loadingCircle 1s infinite linear;
+          animation: loadingCircle 1s infinite linear;
         }
-        .ant-spin-dot-item:nth-child(1) {
-          top: 0;
-          left: 0;
-        }
-        .ant-spin-dot-item:nth-child(2) {
-          top: 0;
-          right: 0;
-          -webkit-animation-delay: 0.4s;
-          animation-delay: 0.4s;
-        }
-        .ant-spin-dot-item:nth-child(3) {
-          right: 0;
-          bottom: 0;
-          -webkit-animation-delay: 0.8s;
-          animation-delay: 0.8s;
-        }
-        .ant-spin-dot-item:nth-child(4) {
-          bottom: 0;
-          left: 0;
-          -webkit-animation-delay: 1.2s;
-          animation-delay: 1.2s;
-        }
-        .ant-spin-dot-spin {
-          -webkit-transform: rotate(45deg);
-          transform: rotate(45deg);
-          -webkit-animation: antRotate 1.2s infinite linear;
-          animation: antRotate 1.2s infinite linear;
-        }
-        .ant-spin-sm .ant-spin-dot {
-          font-size: 14px;
-          width: 14px;
-          height: 14px;
-        }
-        .ant-spin-sm .ant-spin-dot i {
-          width: 6px;
-          height: 6px;
-        }
-        .ant-spin-lg .ant-spin-dot {
-          font-size: 32px;
-          width: 32px;
-          height: 32px;
-        }
-        .ant-spin-lg .ant-spin-dot i {
-          width: 14px;
-          height: 14px;
-        }
-        .ant-spin.ant-spin-show-text .ant-spin-text {
-          display: block;
-        }
-        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-          /* IE10+ */
-          .ant-spin-blur {
-            background: #fff;
-            opacity: 0.5;
-          }
-        }
-        @-webkit-keyframes antSpinMove {
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes antSpinMove {
-          to {
-            opacity: 1;
-          }
-        }
-        @-webkit-keyframes antRotate {
-          to {
-            -webkit-transform: rotate(405deg);
-            transform: rotate(405deg);
-          }
-        }
-        @keyframes antRotate {
-          to {
-            -webkit-transform: rotate(405deg);
-            transform: rotate(405deg);
-          }
+
+        .anticon > * {
+          line-height: 1;
         }
       </style>
       <div class="App">
-        <div class="transition-group">
-          <div class="App_appLoadingIndicator">
-            <div class="ant-spin ant-spin-lg ant-spin-spinning ant-spin-show-text">
-              <span class="ant-spin-dot ant-spin-dot-spin"
-                ><i class="ant-spin-dot-item"></i><i class="ant-spin-dot-item"></i
-                ><i class="ant-spin-dot-item"></i><i class="ant-spin-dot-item"></i
-              ></span>
-              <div class="ant-spin-text">Initializing OnPoint Admin</div>
-            </div>
-          </div>
+        <div class="splashScreen">
+          <i aria-label="icon: loading" title="Initializing OnPoint Admin..." class="anticon anticon-loading">
+            <svg
+              viewBox="0 0 1024 1024"
+              focusable="false"
+              class="anticon-spin"
+              data-icon="loading"
+              width="1em"
+              height="1em"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M988 548c-19.9 0-36-16.1-36-36 0-59.4-11.6-117-34.6-171.3a440.45 440.45 0 0 0-94.3-139.9 437.71 437.71 0 0 0-139.9-94.3C629 83.6 571.4 72 512 72c-19.9 0-36-16.1-36-36s16.1-36 36-36c69.1 0 136.2 13.5 199.3 40.3C772.3 66 827 103 874 150c47 47 83.9 101.8 109.7 162.7 26.7 63.1 40.2 130.2 40.2 199.3.1 19.9-16 36-35.9 36z"
+              ></path>
+            </svg>
+          </i>
+          <img alt="OnPoint Global" src="%PUBLIC_URL%/onpoint_logo_animated.gif" />
+          <div>Initializing OnPoint Admin...</div>
         </div>
       </div>
     </div>

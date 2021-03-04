@@ -1,5 +1,5 @@
 import { Dialog } from "@syncfusion/ej2-popups"
-import { Spin } from "antd"
+import { Spin, Icon } from "antd"
 import React from "react"
 import {
   ColumnChooser,
@@ -381,7 +381,7 @@ const StandardGrid = (
    */
 
   return (
-    <Spin spinning={isLoading}>
+    <Spin spinning={isLoading} indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
       <PureGridComponent
         // Forwarding ref to children ( see above const StandardGrid = React.forwardRef() )
         // ref={ref}

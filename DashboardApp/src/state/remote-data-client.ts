@@ -24,8 +24,7 @@ declare module "./store.types" {
   }
 }
 
-const apiUrl = "https://data.techopg.com/pr"
-// const apiUrl = "https://stage.data.techopg.com"
+const apiUrl = "https://adminapi.data.techopg.com"
 
 export interface State {
   token: null | string
@@ -114,29 +113,42 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
       return request({
         body: {
           i: remoteDataClient.token,
-          "auth:userDetails": {},
+          "auth:userDetails": {
+            t: remoteDataClient.token,
+          },
         },
         expect: AdminApi.authResponsePayloadCodec.login,
         headers: {},
         method: "POST",
         timeout: none,
+        /**
+         * Since the API doesn't send back the same shape as auth:login like
+         * one would expect, we map auth:userDetails to auth:Login.
+         * NOTE: transformResponse runs BEFORE codec validation.
+         * @param data
+         */
         transformResponse: (data) => {
           const jsonThingHopefullyIsData = JSON5.parse(data)
-          return typeof jsonThingHopefullyIsData["auth:userDetails"].r === "undefined"
-            ? {
-                "auth:login": {
-                  r: 0,
-                  result: {
-                    // The API doesn't send back the same shape as auth:login like one would expect
-                    LoginToken: jsonThingHopefullyIsData["auth:userDetails"]["t"],
-                    Email: jsonThingHopefullyIsData["auth:userDetails"]["primaryemail"],
-                    ImageUrl: jsonThingHopefullyIsData["auth:userDetails"]["image"],
-                    Name: jsonThingHopefullyIsData["auth:userDetails"]["name"],
-                    ...jsonThingHopefullyIsData["auth:userDetails"],
-                  },
+          if (typeof jsonThingHopefullyIsData["auth:userDetails"].result !== "undefined") {
+            const { result } = jsonThingHopefullyIsData["auth:userDetails"]
+            // Map the data
+            return {
+              "auth:login": {
+                r: 0,
+                result: {
+                  Email: result.primaryemail,
+                  Id: null,
+                  ImageUrl: result.image,
+                  LoginToken: result.t,
+                  Name: result.name,
+                  Phone: "",
                 },
-              }
-            : data
+              },
+              requestInfo: jsonThingHopefullyIsData.requestInfo,
+            }
+          }
+          // The data is malformed, so return it for error logging
+          return data
         },
         url: apiUrl,
         withCredentials: false,
@@ -160,17 +172,6 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON5.parse(data)
-          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
-            ? {
-                "auth:login": {
-                  r: 0,
-                  result: jsonThingHopefullyIsData["auth:login"],
-                },
-              }
-            : data
-        },
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
@@ -195,17 +196,6 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON5.parse(data)
-          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
-            ? {
-                "auth:login": {
-                  r: 0,
-                  result: jsonThingHopefullyIsData["auth:login"],
-                },
-              }
-            : data
-        },
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>
@@ -230,17 +220,6 @@ export const remoteDataClient: Store.AppModel<State, Reducers, Effects, Selector
         headers: {},
         method: "POST",
         timeout: none,
-        transformResponse: (data) => {
-          const jsonThingHopefullyIsData = JSON5.parse(data)
-          return typeof jsonThingHopefullyIsData["auth:login"].r === "undefined"
-            ? {
-                "auth:login": {
-                  r: 0,
-                  result: jsonThingHopefullyIsData["auth:login"],
-                },
-              }
-            : data
-        },
         url: apiUrl,
         withCredentials: false,
       }).then((result) =>

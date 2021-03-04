@@ -1,7 +1,7 @@
 import { LoadStatus, LOADSTATUSCODES, RemoteConfigActionParams } from "../../../types"
 import { get, isEmpty } from "lodash/fp"
 import { getErrorState, getErrorStatePromise } from "../../utils"
-import { CreateConfigEventPayload } from "../../../../../../state/global-config"
+import { CreateConfigEventPayload } from "../../../../../../state/global-config/global-config"
 import { PersistedConfig } from "../../../../../../data/GlobalConfig.Config"
 
 /**

@@ -1,26 +1,23 @@
 import * as Reach from "@reach/router"
 import { getPersistor } from "@rematch/persist"
-import { Spin } from "antd"
 import { flatten } from "fp-ts/lib/Array"
 import { toArray } from "fp-ts/lib/Record"
 import React from "react"
-import { Helmet } from "react-helmet"
 import * as ReactRedux from "react-redux"
 import { PersistGate } from "redux-persist/integration/react"
-import styles from "./App.module.css"
+import styles from "./App.module.scss"
 import "./App.scss"
 import "@opg/interface-builder/dist/main.css"
 import { None, Some } from "./data/Option"
 import { useRematch } from "./hooks/use-rematch"
-import { NotFound } from "./routes/not-found"
-import { RouteMeta } from "./state/navigation"
+import { NotFound } from "./views/not-found"
 import { store } from "./state/store"
 import {
   antComponents,
   ComponentRegistryCache,
   DragDropContext,
-  nivoComponents,
   htmlComponents,
+  nivoComponents,
   registerMonacoEditorMount,
   registry,
 } from "@opg/interface-builder"
@@ -37,26 +34,10 @@ import { StringTemplateInterfaceComponent } from "./components/custom-ib-compone
 import { PieInterfaceComponent } from "./components/custom-ib-components/chart/pie/PieInterfaceComponent"
 import { LinkInterfaceComponent } from "./components/custom-ib-components/link/LinkInterfaceComponent"
 import { withEventManager } from "./components/event-manager/event-manager"
+import { RouteMeta } from "./state/navigation"
+import { SplashScreen } from "./components/SplashScreen/SplashScreen"
 
 const persistor = getPersistor()
-
-interface AppLoadingScreenProps {
-  title?: string
-}
-
-function AppLoadingScreen({ title }: AppLoadingScreenProps) {
-  return (
-    <>
-      <Helmet>
-        <title>Loading... | Channel Admin | OPG</title>
-      </Helmet>
-
-      <div className={`${styles.appLoadingIndicator}`}>
-        <Spin size="large" tip={`Initializing OnPoint Admin${title ? `... ${title}` : ""}`} />
-      </div>
-    </>
-  )
-}
 
 /**
  * Wrap InterfaceBuilder components with the EventManager
@@ -99,12 +80,12 @@ export function App(): JSX.Element {
   }, [])
 
   return (
-    <PersistGate persistor={persistor} loading={<AppLoadingScreen title="Restoring Application State" />}>
+    <PersistGate persistor={persistor} loading={<SplashScreen title="Restoring Application State..." />}>
       <div className={`${styles.app}`}>
         <ReactRedux.Provider store={store}>
           <DragDropContext.HTML5>
             {fromStore.isCheckingSession && fromStore.profile.isNone() ? (
-              <AppLoadingScreen title="Checking Session Authentication" />
+              <SplashScreen title="Checking Session Authentication..." />
             ) : (
               <Routes />
             )}
@@ -163,25 +144,3 @@ function Routes() {
     </Reach.Router>
   )
 }
-
-// function Route<P>(props: React.PropsWithChildren<P>): JSX.Element {
-//   return <FadeTransitionRouter>{props.children}</FadeTransitionRouter>
-// }
-
-// const FadeTransitionRouter = (props: React.PropsWithChildren<{}>) => (
-//   <Reach.Location>
-//     {({ location }) => (
-//       <TransitionGroup className="transition-group">
-//         <CSSTransition key={location.key} classNames="fade" timeout={500}>
-//           {/* the only difference between a router animation and
-//               any other animation is that you have to pass the
-//               location to the router so the old screen renders
-//               the "old location" */}
-//           <Reach.Router location={location} className="router">
-//             {props.children}
-//           </Reach.Router>
-//         </CSSTransition>
-//       </TransitionGroup>
-//     )}
-//   </Reach.Location>
-// )

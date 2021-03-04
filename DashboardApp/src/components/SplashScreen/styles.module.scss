@@ -1,0 +1,19 @@
+.splashScreen {
+  height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-content: stretch;
+  align-items: center;
+
+  i {
+    font-size: 36px;
+  }
+
+  img {
+    height: 96px;
+    margin-top: 52px;
+    margin-bottom: 4px;
+  }
+}

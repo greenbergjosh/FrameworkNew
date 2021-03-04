@@ -4,7 +4,7 @@ import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
 import UsaMap from "./components/UsaMap"
 import { MapInterfaceComponentProps, MapInterfaceComponentState, MarkerType } from "./types"
 import { get, intersectionWith, isEqual } from "lodash/fp"
-import { Empty, Spin } from "antd"
+import { Empty, Spin, Icon } from "antd"
 
 export class MapInterfaceComponent extends BaseInterfaceComponent<
   MapInterfaceComponentProps,
@@ -46,7 +46,7 @@ export class MapInterfaceComponent extends BaseInterfaceComponent<
     const markers = markerLimit && markerLimit > 0 ? rawMarkers.slice(0, markerLimit) : rawMarkers
 
     return (
-      <Spin spinning={this.state.loading && this.props.mode === "display"} size="small">
+      <Spin spinning={this.state.loading && this.props.mode === "display"} indicator={<Icon type="loading" />}>
         <div style={{ width }}>
           {mapType === "usaStates" ? (
             <UsaMap markers={markers} markerFillColor={markerFillColor} />

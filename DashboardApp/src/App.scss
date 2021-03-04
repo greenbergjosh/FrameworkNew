@@ -16,22 +16,28 @@ which causes antd components used in interface-builder only to have broken style
  */
 @import "~antd/dist/antd.css";
 
-/* OnPoint overrides for SyncFusion styles */
-@import "./styles/syncfusion/grid.scss";
+/***************************************************************************
+*
+* OnPoint overrides for AntDesign styles
+*/
 
-/* OnPoint overrides for AntDesign styles */
-@import "./styles/antd.overrides.scss";
+.ant-select-dropdown {
+  z-index: 10000 !important;
+}
 
-// #grained {
-//   pointer-events: none;
-//   position: fixed !important;
-//   z-index: 10000;
-//   top: 0;
-//   left: 0;
-//   height: 100vh;
-//   width: 100vw;
-// }
+.component-preview .component-btn-group {
+  display: none;
+}
 
-// #grained::before {
-//   position: fixed !important;
-// }
+.label-wrapper .ant-progress-line {
+  padding-right: 15px;
+}
+
+/*
+ * Fix for layout covering footer. Ant value was zero,
+ * causing <Main> wrapping component to be too short
+ * and content overflowed the container covering the footer.
+ */
+main.ant-layout-content {
+  min-height: initial !important;
+}
