@@ -208,7 +208,7 @@ namespace GenericApi
 
                         async Task<bool> CheckAuth()
                         {
-                            if (!await Auth.HasPermission(identity, kvp.Key))
+                            if (!await Auth.HasPermission(identity, kvp.Key.Replace(":", ".")))
                             {
                                 await DropEvent(requestRsId, requestRsTimestamp, new
                                 {
