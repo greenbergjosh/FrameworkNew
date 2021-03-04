@@ -48,20 +48,21 @@ function getMenuItems(navigationTree: NavigationNode[], path: string): JSX.Eleme
 
   return navigationTree.map((node) => {
     const currentPath = `${path}/${node.uri}`
+    const title = !isEmpty(node.shortTitle) ? node.shortTitle : node.title
 
     if (isEmpty(node.navigation)) {
       return (
         <AntMenu.Item key={currentPath}>
           {node.uri &&
             (node.uri.match(/https?:\/\//) ? (
-              <a href={node.uri} target="new">
+              <a href={node.uri} target={node.uri.match(/.*techopg\.com.*/) ? "" : "new"}>
                 {node.icon && <Icon type={node.icon} />}
-                <>{node.title}</>
+                <>{title}</>
               </a>
             ) : (
               <Reach.Link to={`/${currentPath}`}>
                 {node.icon && <Icon type={node.icon} />}
-                <>{node.title}</>
+                <>{title}</>
               </Reach.Link>
             ))}
         </AntMenu.Item>
@@ -73,7 +74,7 @@ function getMenuItems(navigationTree: NavigationNode[], path: string): JSX.Eleme
         title={
           <>
             {node.icon && <Icon type={node.icon} />}
-            {node.title}
+            {title}
             {node.id && (
               <Reach.Link to={`/${currentPath}`}>
                 <Icon type="link" style={{ marginLeft: 5 }} />

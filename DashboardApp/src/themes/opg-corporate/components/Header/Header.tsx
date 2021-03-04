@@ -1,7 +1,6 @@
-import { AppState } from "../../../../state/store.types"
 import { Effects as IamEffects } from "../../../../state/iam/iam"
 import { Effects as GlobalConfigEffects } from "../../../../state/global-config/global-config"
-import { Layout, Typography } from "antd"
+import { Button, Icon, Layout, Menu, Typography, Tooltip } from "antd"
 import styles from "../../theme.module.scss"
 import React from "react"
 import { ClickParam } from "antd/lib/menu"
@@ -45,6 +44,15 @@ export function Header({ appConfig, appRootPath, loadRemoteConfigs, logout }: He
             appUri={appConfig.uri}
             views={appConfig.views}
           />
+
+          <Tooltip title="Sync data">
+            <Button
+              onClick={() => dispatch.globalConfig.loadRemoteConfigs()}
+              icon="sync"
+              type="link"
+              className={styles.appsMenuIcon}
+            />
+          </Tooltip>
 
           <AppsMenu />
 

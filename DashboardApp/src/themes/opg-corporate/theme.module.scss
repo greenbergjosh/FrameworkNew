@@ -2,6 +2,7 @@ $opg-blue-light: #4c92e7;
 $opg-blue: #125dcb;
 $opg-orange: #fe5b02;
 $opg-orange-light: #ffab00;
+$opg-orange-dark: darken($opg-orange, 10%);
 $opg-gray-light: #f8f9fa;
 $opg-gray: #d3d3d3;
 $opg-gray-medium: #919191;
@@ -208,4 +209,12 @@ $sidebarButtonBorderWidth: 1px;
 
 .appsMenuIcon {
   color: $opg-gray-medium !important;
+
+  &:hover {
+    color: $opg-orange !important;
+  }
+
+  &:active {
+    color: $opg-orange-dark !important;
+  }
 }

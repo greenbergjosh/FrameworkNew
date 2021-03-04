@@ -15,6 +15,7 @@ export function SideBar(props: {
   location: Reach.WindowLocation<unknown>
   pagePath?: string
   subroutes: IRouteMeta["subroutes"]
+  globalConfigPath: string
 }): JSX.Element {
   const [collapsed, setCollapsed] = React.useState(false)
 
@@ -33,6 +34,8 @@ export function SideBar(props: {
         icon={props.appConfig.icon}
         siderCollapsed={collapsed}
         title={props.appConfig.title}
+        appId={props.appConfig.id}
+        globalConfigPath={props.globalConfigPath}
       />
       <VerticalInlineMenu
         appRootPath={props.appRootPath}

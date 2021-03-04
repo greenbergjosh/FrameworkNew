@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import { Helmet } from "react-helmet"
-import { Button, PageHeader, Tooltip } from "antd"
+import { Button, PageHeader, Tooltip, Icon } from "antd"
 import * as Reach from "@reach/router"
 import { AdminUserInterfaceContextManagerProvider } from "../data/AdminUserInterfaceContextManager"
 import { UserInterface } from "@opg/interface-builder"
@@ -40,10 +40,11 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
         style={{ padding: "16px 0 20px 0" }}
         title={
           <>
+            {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
             {appPageConfig.title}
             {appPageConfig.id && (
-              <Tooltip title="Edit Config">
-                <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
+              <Tooltip title="Edit Page">
+                <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}/edit`}>
                   <Button type="link" icon="edit" size="small" />
                 </Reach.Link>
               </Tooltip>

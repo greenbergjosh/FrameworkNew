@@ -11,6 +11,7 @@ import { ThemeProps } from "../../types"
 export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
   const [fromStore, dispatch] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
+    globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))
 
   return (
@@ -21,6 +22,7 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
         location={props.location}
         pagePath={props.pagePath}
         subroutes={props.subroutes}
+        globalConfigPath={fromStore.globalConfigPath}
       />
       <Layout>
         <Header

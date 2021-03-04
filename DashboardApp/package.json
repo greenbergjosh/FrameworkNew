@@ -48,7 +48,7 @@
     "watch-css": "tcm --watch -p src/**/*.module.css",
     "watch-scss": "tsm --watch src/**/*.module.scss",
     "start-rewired": "react-app-rewired start",
-    "build": "react-app-rewired --max_old_space_size=4096 build",
+    "build": "react-app-rewired --max_old_space_size=8192 build",
     "test": "react-app-rewired test",
     "lint": "eslint './src/**/*.{ts,tsx}' --fix",
     "eject": "react-scripts eject",

@@ -1,114 +1,60 @@
-import { AppSelectors } from "../store.types"
 import { isEmpty } from "lodash/fp"
-import * as record from "fp-ts/lib/Record"
-import { AppConfigTypes, AppEntity, NavigationNode } from "./types"
+import { AppConfig, AppEntity, AppPageConfig, NavigationNode } from "./types"
 import { DEFAULT_APP_PAGE_CONFIG } from "./constants"
 import JSON5 from "json5"
-import { Option, tryCatch } from "fp-ts/lib/Option"
+import { tryCatch } from "fp-ts/lib/Option"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
-
-/**
- * URI may be a GUID or a human-readable snake-case string
- * @param configsById
- * @param configsByType
- * @param defaultConfig
- * @param uri
- * @param configType
- */
-export function getConfig<T extends AppEntity>({
-  configsById,
-  configsByType,
-  defaultConfig,
-  uri,
-  configType,
-}: {
-  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
-  configsByType: ReturnType<AppSelectors["globalConfig"]["configsByType"]>
-  defaultConfig: T
-  uri?: AppEntity["uri"] | AppEntity["id"] | null
-  configType: AppConfigTypes
-}): T {
-  if (!isEmpty(configsById) && uri && !isEmpty(uri)) {
-    const isGUID = isURIaGUID(uri)
-    let appEntity: AppEntity | undefined
-
-    if (isGUID) {
-      // Search configs by id
-      const persistedConfigOption = record.lookup(uri.toLowerCase(), configsById)
-      appEntity = parsePersistedConfigOption(persistedConfigOption, defaultConfig)
-    } else {
-      // Search page configs by uri
-      // TODO: Finding URI for every AppPage.config is probably not performant
-      const appPagesOption = record.lookup(configType, configsByType)
-      const appPage = appPagesOption.getOrElse([])
-      const activePersistedConfig = appPage.find((persistedConfig) => {
-        const cfg = parseConfigOption(persistedConfig.config).getOrElse(defaultConfig)
-        return cfg.uri === uri
-      })
-      if (activePersistedConfig) {
-        appEntity = parseConfigOption(activePersistedConfig.config).getOrElse(defaultConfig)
-        appEntity.id = activePersistedConfig.id
-      } else {
-        appEntity = defaultConfig
-      }
-    }
-
-    return {
-      ...defaultConfig,
-      ...appEntity,
-    }
-  }
-  return { ...defaultConfig }
-}
 
 /**
  * Fetches each page config to get missing properties
  * because AppConfig NavigationNodes only have node.id and overridden properties.
+ * @param appPagePersistedConfigs
  * @param nodes
- * @param configsById
  */
 export function hydrateAppNavigationNodes(
   nodes: NavigationNode[],
-  configsById: ReturnType<AppSelectors["globalConfig"]["configsById"]>
+  appPagePersistedConfigs: PersistedConfig[]
 ): NavigationNode[] {
   return nodes.map((node) => {
-    const navigation = !isEmpty(node.navigation) ? hydrateAppNavigationNodes(node.navigation, configsById) : []
+    const navigation = !isEmpty(node.navigation)
+      ? hydrateAppNavigationNodes(node.navigation, appPagePersistedConfigs)
+      : []
+
+    // This is a nav group (not a page)
     if (isEmpty(node.id)) {
-      // This is a nav group and not a page
       return {
         ...DEFAULT_APP_PAGE_CONFIG,
         ...node,
         navigation,
       }
     }
-    const appPageRecordOption = record.lookup(node.id.toLowerCase(), configsById)
+
+    // This is a page
+    const appPagePersistedConfig = appPagePersistedConfigs.find((page) => page.id === node.id)
+    const appPageConfig =
+      appPagePersistedConfig &&
+      getAppEntityFromPersistedConfig<AppPageConfig>(appPagePersistedConfig, DEFAULT_APP_PAGE_CONFIG)
     return {
       ...DEFAULT_APP_PAGE_CONFIG,
-      ...parsePersistedConfigOption(appPageRecordOption, DEFAULT_APP_PAGE_CONFIG),
+      ...appPageConfig,
       ...node,
       navigation,
     }
   })
 }
 
-export function parsePersistedConfigOption(
-  appRecordOption: Option<PersistedConfig>,
-  defaultConfig: AppEntity
-): AppEntity {
-  return appRecordOption.chain((persistedConfig) => parseConfigOption(persistedConfig.config)).getOrElse(defaultConfig)
-}
-
-export function parseConfigOption(config: PersistedConfig["config"]): Option<AppEntity> {
-  return config.chain(parseConfig)
-}
-
-export function parseConfig(cfg: string): Option<AppEntity> {
-  try {
-    JSON5.parse(cfg)
-  } catch (e) {
-    console.error("Shell.utils.getAppConfig", "Error parsing JSON", cfg, e)
-  }
-  return tryCatch(() => JSON5.parse(cfg))
+/**
+ *
+ * @param persistedConfig
+ * @param defaultConfig
+ */
+export function getAppEntityFromPersistedConfig<T extends AppEntity>(
+  persistedConfig: PersistedConfig,
+  defaultConfig: T
+): T {
+  const appEntity = persistedConfig.config.chain((cfg) => tryCatch(() => JSON5.parse(cfg))).getOrElse(defaultConfig)
+  appEntity.id = persistedConfig.id
+  return appEntity
 }
 
 /**
@@ -117,19 +63,44 @@ export function parseConfig(cfg: string): Option<AppEntity> {
  * @param appEntities
  * @param defaultConfig
  */
-export function getAppEntityConfig<T extends AppEntity>(appEntities: T[], defaultConfig: T, uri?: string): T {
+export function getAppEntityByIdOrUri<T extends AppEntity>(
+  appEntities: AppEntity[],
+  defaultConfig: T,
+  uri?: string
+): T {
   const isGUID = isURIaGUID(uri)
-  return (
-    appEntities.find((cfg) => {
-      if (isGUID) {
-        return cfg.id === uri
-      }
-      return cfg.uri === uri
-    }) || {
-      ...defaultConfig,
+  return (appEntities.find((cfg) => {
+    if (isGUID) {
+      return cfg.id === uri
     }
-  )
+    return cfg.uri === uri
+  }) || {
+    ...defaultConfig,
+  }) as T
 }
+
+/**
+ *
+ * @param appPagePersistedConfigs
+ * @param appConfig
+ * @param appPageConfig
+ */
+export function getNotFoundPage(
+  appPagePersistedConfigs: PersistedConfig[],
+  appConfig: AppConfig,
+  appPageConfig: AppPageConfig
+): AppPageConfig {
+  const appPagePersistedConfig = appPagePersistedConfigs.find((page) => page.id === appConfig.notFoundPageId)
+  if (appPagePersistedConfig) {
+    appPageConfig = getAppEntityFromPersistedConfig<AppPageConfig>(appPagePersistedConfig, DEFAULT_APP_PAGE_CONFIG)
+  }
+  return appPageConfig
+}
+
+/* *********************************************
+ *
+ * PRIVATE FUNCTIONS
+ */
 
 function isURIaGUID(uri?: string): boolean {
   if (!uri || isEmpty(uri)) {
