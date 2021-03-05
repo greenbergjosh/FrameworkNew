@@ -9,7 +9,7 @@ node_modules
 # builds
 build
 dist
-lib
+/lib
 .rpt2_cache
 
 # misc
