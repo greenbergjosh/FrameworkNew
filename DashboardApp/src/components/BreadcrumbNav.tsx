@@ -33,7 +33,7 @@ function BreadcrumbNav(props: {
         }
         return (
           <Breadcrumb.Item key={crumb.link}>
-            <Reach.Link to={crumb.link}>{crumb.title}</Reach.Link>
+            <Reach.Link to={`/${crumb.link}`}>{crumb.title}</Reach.Link>
           </Breadcrumb.Item>
         )
       })}

@@ -44,7 +44,7 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
             {appPageConfig.title}
             {appPageConfig.id && (
               <Tooltip title="Edit Page">
-                <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}/edit`}>
+                <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
                   <Button type="link" icon="edit" size="small" />
                 </Reach.Link>
               </Tooltip>

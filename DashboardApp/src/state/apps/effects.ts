@@ -21,17 +21,18 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
         // App
         const appUri = pathParts[0]
         const rootUri = "app"
+        const appRootPath = !isEmpty(appUri) ? `${rootUri}/${appUri}` : rootUri
         pathParts.shift() // remove the app name
 
         // Page
         const lastPart = pathParts[pathParts.length - 1]
         const pageUri = isEmpty(lastPart) ? undefined : lastPart
-
-        const appRootPath = !isEmpty(appUri) ? `${rootUri}/${appUri}` : rootUri
         const pagePath = pathParts.length === 1 && isEmpty(pathParts[0]) ? [] : pathParts
+
+        // Dispatch results
         const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePath, currentUrl }
-        // console.log("store.apps.effects.updateAppPaths", { appPaths })
         dispatch.apps.update({ appPaths })
+        // console.log("store.apps.effects.updateAppPaths", { appPaths })
       } else {
         /*
          * USE SUBDOMAIN TO GET APP
@@ -45,8 +46,8 @@ const effects: AppsStoreModel["effects"] = (dispatch: Store.AppDispatch) => {
         const appUri = matches && matches.groups ? matches.groups.appname : ""
         const pagePath = pathParts
         const appPaths = { rootUri, appUri, pageUri, appRootPath, pagePath, currentUrl }
-        // console.log("store.apps.effects.updateAppPaths", { appPaths })
         dispatch.apps.update({ appPaths })
+        // console.log("store.apps.effects.updateAppPaths", { appPaths })
       }
     },
   }

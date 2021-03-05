@@ -193,6 +193,7 @@ $sidebarButtonBorderWidth: 1px;
     &:active {
       .anticon {
         background-color: lighten($opg-orange-light, 20%);
+        color: $opg-orange-dark
       }
     }
 

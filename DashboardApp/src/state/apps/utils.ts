@@ -58,26 +58,63 @@ export function getAppEntityFromPersistedConfig<T extends AppEntity>(
 }
 
 /**
- *
+ * Finds an AppEntity from the URI either as a GUID or a snake-case string
  * @param uri
- * @param appEntities
+ * @param navigationNodes
  * @param defaultConfig
  */
 export function getAppEntityByIdOrUri<T extends AppEntity>(
-  appEntities: AppEntity[],
+  navigationNodes: NavigationNode[],
   defaultConfig: T,
   uri?: string
 ): T {
-  const isGUID = isURIaGUID(uri)
-  return (appEntities.find((cfg) => {
-    if (isGUID) {
-      return cfg.id === uri
-    }
-    return cfg.uri === uri
-  }) || {
-    ...defaultConfig,
-  }) as T
+  if (isEmpty(uri)) {
+    return {
+      ...defaultConfig,
+    } as T
+  }
+  const isGUIDKey = isKeyaGUID(uri)
+  const appEntity = getAppEntityFromNavigationNodes(navigationNodes, isGUIDKey, uri)
+  return (
+    (appEntity as T) ||
+    ({
+      ...defaultConfig,
+    } as T)
+  )
 }
+
+function getAppEntityFromNavigationNodes(
+  navigationNodes: NavigationNode[],
+  isGUIDKey: boolean,
+  uri: string | undefined
+): AppEntity | undefined {
+  let i = 0
+
+  while (i < navigationNodes.length) {
+    const currentNode = navigationNodes[i]
+    if (isGUIDKey && currentNode.id === uri) {
+      // Key is a GUID
+      return currentNode
+    }
+    if (currentNode.uri === uri) {
+      // Key is a snake-case string
+      return currentNode
+    }
+    if (!isEmpty(currentNode.navigation)) {
+      const appEntity = getAppEntityFromNavigationNodes(currentNode.navigation, isGUIDKey, uri)
+      if (!isEmpty(appEntity)) {
+        return appEntity
+      }
+    }
+    i += 1
+  }
+}
+
+/**
+ * Singleton cache for NotFound pages
+ */
+// TODO: Move this to the redux store "apps" state
+const _notFoundPageConfigByAppId: { [key: string]: AppPageConfig } = {}
 
 /**
  *
@@ -87,14 +124,22 @@ export function getAppEntityByIdOrUri<T extends AppEntity>(
  */
 export function getNotFoundPage(
   appPagePersistedConfigs: PersistedConfig[],
-  appConfig: AppConfig,
-  appPageConfig: AppPageConfig
-): AppPageConfig {
+  appConfig: AppConfig
+): AppPageConfig | null {
+  if (isEmpty(appConfig.notFoundPageId)) {
+    return null
+  }
+  if (_notFoundPageConfigByAppId[appConfig.id]) {
+    return _notFoundPageConfigByAppId[appConfig.id]
+  }
   const appPagePersistedConfig = appPagePersistedConfigs.find((page) => page.id === appConfig.notFoundPageId)
   if (appPagePersistedConfig) {
-    appPageConfig = getAppEntityFromPersistedConfig<AppPageConfig>(appPagePersistedConfig, DEFAULT_APP_PAGE_CONFIG)
+    _notFoundPageConfigByAppId[appConfig.id] = getAppEntityFromPersistedConfig<AppPageConfig>(
+      appPagePersistedConfig,
+      DEFAULT_APP_PAGE_CONFIG
+    )
   }
-  return appPageConfig
+  return _notFoundPageConfigByAppId[appConfig.id]
 }
 
 /* *********************************************
@@ -102,11 +147,11 @@ export function getNotFoundPage(
  * PRIVATE FUNCTIONS
  */
 
-function isURIaGUID(uri?: string): boolean {
-  if (!uri || isEmpty(uri)) {
+function isKeyaGUID(key?: string): boolean {
+  if (!key || isEmpty(key)) {
     return false
   }
-  const formattedUri = uri.toLowerCase()
+  const formattedUri = key.toLowerCase()
   const guidValidator = new RegExp(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
   return guidValidator.test(formattedUri)
 }

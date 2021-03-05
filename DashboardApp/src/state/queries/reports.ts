@@ -100,8 +100,7 @@ export const reports: Store.AppModel<State, Reducers, Effects, Selectors> = {
                   dispatch.reports.updateReportDataByQuery({ [lookupKey]: payload })
                   const gpp = encodeGloballyPersistedParams(params, query.parameters)
                   gpp && !isEmpty(gpp) && dispatch.queries.updateQueryGlobalParams(gpp)
-                  // The response shouldn't contain an array, but if it does then return on a property "data".
-                  return isArray(payload) ? { ...payload[0], data: payload } : payload
+                  return payload
                 },
                 Unauthorized() {
                   dispatch.logger.logError("unauthed")

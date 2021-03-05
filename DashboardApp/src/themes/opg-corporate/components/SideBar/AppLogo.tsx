@@ -27,7 +27,7 @@ export function AppLogo(props: {
           </Reach.Link>
           {props.appId && (
             <Tooltip title="Edit App">
-              <Reach.Link to={`${props.globalConfigPath}/${props.appId}/edit`}>
+              <Reach.Link to={`${props.globalConfigPath}/${props.appId}`}>
                 <Button type="link" icon="edit" size="small" />
               </Reach.Link>
             </Tooltip>

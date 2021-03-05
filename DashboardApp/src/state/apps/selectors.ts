@@ -65,12 +65,14 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
       select.apps.appPagePersistedConfigs,
       slice((state) => state.appPaths),
       (appConfig, appPagePersistedConfigs, appPaths) => {
-        let appPageConfig: AppPageConfig
+        let appPageConfig: AppPageConfig = { ...DEFAULT_APP_PAGE_CONFIG }
 
         if (isEmpty(appPaths.pageUri)) {
-          // Get the app's default view
-          appPageConfig =
-            ((appConfig.views.find((view) => view.default) as AppEntity) as AppPageConfig) || DEFAULT_APP_PAGE_CONFIG
+          if (!isEmpty(appConfig.id)) {
+            // Get the app's default view
+            appPageConfig =
+              ((appConfig.views.find((view) => view.default) as AppEntity) as AppPageConfig) || DEFAULT_APP_PAGE_CONFIG
+          }
         } else {
           // Get the page
           appPageConfig = getAppEntityByIdOrUri<AppPageConfig>(
@@ -82,7 +84,10 @@ const selectors: AppsStoreModel["selectors"] = (slice, createSelector, hasProps)
 
         // Otherwise get the Not Found Page
         if (isEmpty(appPageConfig.id) && !isEmpty(appConfig.notFoundPageId)) {
-          appPageConfig = getNotFoundPage(appPagePersistedConfigs, appConfig, appPageConfig)
+          const notFoundPage = getNotFoundPage(appPagePersistedConfigs, appConfig)
+          if (notFoundPage) {
+            appPageConfig = notFoundPage
+          }
         }
         return appPageConfig
       }
