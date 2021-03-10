@@ -810,33 +810,19 @@ namespace Utility
             return (responseBody, responseHeaders);
         }
 
-        public static async Task<string> HttpPostAsync(string uri, string content, string mediaType, int timeoutSeconds = 60)
+        public static async Task<string> HttpPostAsync(string uri, string content = null, string mediaType = null, int timeoutSeconds = 60)
         {
-            var bytes = string.IsNullOrEmpty(content) ? Array.Empty<byte>() : Encoding.UTF8.GetBytes(content);
+            var client = GetHttpClient(timeoutSeconds: timeoutSeconds);
 
-            var http = (HttpWebRequest)WebRequest.Create(new Uri(uri));
-            http.Accept = mediaType;
-            http.ContentType = mediaType;
-            http.Method = "POST";
-            http.Timeout = timeoutSeconds * 1000;
-            http.ContentLength = bytes.Length;
+            var httpContent = new StringContent(content ?? string.Empty, Encoding.UTF8, mediaType);
 
-            using (var newStream = await http.GetRequestStreamAsync())
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
             {
-                await newStream.WriteAsync(bytes, 0, bytes.Length);
-                await newStream.FlushAsync();
-            }
+                Content = httpContent
+            };
 
-            using (var response = await http.GetResponseAsync())
-            {
-                using (var stream = response.GetResponseStream())
-                {
-                    using (var sr = new StreamReader(stream))
-                    {
-                        return await sr.ReadToEndAsync();
-                    }
-                }
-            }
+            using var response = await client.SendAsync(requestMessage);
+            return await response.Content.ReadAsStringAsync();
         }
 
         public static async Task<IGenericEntity> HttpGetAsync(IGenericEntity ge)

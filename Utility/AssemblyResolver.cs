@@ -12,11 +12,9 @@ namespace Utility
 {
     public class AssemblyResolver : IDisposable
     {
-        public static object _dllCacheLock = new object();
-        public static ConcurrentDictionary<string, Assembly> _dllCache
-            = new ConcurrentDictionary<string, Assembly>();
-        public static ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache
-            = new ConcurrentDictionary<Tuple<string, string, string>, MethodInfo>();
+        private static readonly object _dllCacheLock = new object();
+        private static readonly ConcurrentDictionary<string, Assembly> _dllCache = new ConcurrentDictionary<string, Assembly>();
+        private static readonly ConcurrentDictionary<Tuple<string, string, string>, MethodInfo> _cache = new ConcurrentDictionary<Tuple<string, string, string>, MethodInfo>();
 
         private readonly ICompilationAssemblyResolver assemblyResolver;
         private readonly DependencyContext dependencyContext;
@@ -49,12 +47,12 @@ namespace Utility
                 }).Where(p => p != null));
             }
 
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => ResolveAssemblyFromPath(sender, args, assemblyDirs);
+            AppDomain.CurrentDomain.AssemblyResolve += (_, args) => ResolveAssemblyFromPath(args, assemblyDirs);
         }
 
 
         // Modified From: https://stackoverflow.com/questions/5260404/resolve-assembly-references-from-another-folder
-        public static Assembly ResolveAssemblyFromPath(object sender, ResolveEventArgs args, IEnumerable<DirectoryInfo> assemblyDirs)
+        private static Assembly ResolveAssemblyFromPath(ResolveEventArgs args, IEnumerable<DirectoryInfo> assemblyDirs)
         {
             try
             {
@@ -88,7 +86,11 @@ namespace Utility
 
         public Assembly Assembly { get; }
 
-        public void Dispose() => loadContext.Resolving -= OnResolving;
+        public void Dispose()
+        {
+            loadContext.Resolving -= OnResolving;
+            GC.SuppressFinalize(this);
+        }
 
         private Assembly OnResolving(AssemblyLoadContext context, AssemblyName name)
         {
@@ -151,10 +153,8 @@ namespace Utility
             {
                 a = _dllCache.GetOrAdd(dllPath, _ =>
                 {
-                    using (var dynamicContext = new Utility.AssemblyResolver(dllPath, assemblyPaths))
-                    {
-                        return dynamicContext.Assembly;
-                    }
+                    using var dynamicContext = new AssemblyResolver(dllPath, assemblyPaths);
+                    return dynamicContext.Assembly;
                 });
             }
 

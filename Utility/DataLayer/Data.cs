@@ -21,7 +21,7 @@ namespace Utility.DataLayer
         private static Connection _configConn;
         private static string _configFunction;
         private static string[] _commandLineArgs;
-        private static List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
+        private static readonly List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
 
         private static void TraceLog(string location, string log) => _traceLog.Add((DateTime.Now, location, log));
 

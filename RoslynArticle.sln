@@ -120,6 +120,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericApi", "GenericApi\Ge
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LongRunningWorkflowLib", "LongRunningWorkflowLib\LongRunningWorkflowLib.csproj", "{7A2CD41E-C918-4954-92FE-55D7DE2B1F1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdwRollupLib", "EdwRollupLib\EdwRollupLib.csproj", "{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -421,6 +423,12 @@ Global
 		{7A2CD41E-C918-4954-92FE-55D7DE2B1F1F}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{7A2CD41E-C918-4954-92FE-55D7DE2B1F1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A2CD41E-C918-4954-92FE-55D7DE2B1F1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -468,6 +476,7 @@ Global
 		{C5CBC976-6778-4F61-B5C2-43C6501B873E} = {DF546381-2D80-49E2-B592-BFA9F34A8D98}
 		{B38A6485-A949-4ED2-BC13-55D5336BBAE6} = {FB853D06-E58C-4C48-B507-7EA2A41BB9F8}
 		{7A2CD41E-C918-4954-92FE-55D7DE2B1F1F} = {62C1BDD4-C651-4341-884A-948D5922D737}
+		{38450D18-BE9D-4EE1-A315-696CE5E2BFA4} = {62C1BDD4-C651-4341-884A-948D5922D737}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {69E8167B-7D44-4C05-A2A6-F4AA6F413B33}

@@ -273,6 +273,7 @@ namespace GenericApi
                                 new
                                 {
                                     _httpContext = context,
+                                    method,
                                     payload = GenericEntityJson.CreateFromObject(kvp.Value),
                                     _fw,
                                     requestRsId,
@@ -288,7 +289,7 @@ namespace GenericApi
                             throw new InvalidOperationException($"Unknown method {method}");
                         }
 
-                        if (result.HasPath("r"))
+                        if (result?.HasPath("r") == true)
                         {
                             results[kvp.Key] = result;
                         }

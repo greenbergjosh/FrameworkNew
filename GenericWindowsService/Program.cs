@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using Utility;
 
 namespace GenericWindowsService
@@ -19,25 +19,32 @@ namespace GenericWindowsService
         public static bool HasOnStart = false;
         public static bool HasOnStop = false;
 
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
             Fw = LoadFramework(args);
             if (args.Contains("console"))
             {
-                ValidateAndConfigureService(args).Build().Run();
+                await ValidateAndConfigureService(args).Build().RunAsync();
             }
             else
             {
                 var svc = ValidateAndConfigureService(args);
 
-                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Building Host{Environment.NewLine}");
+                File.AppendAllText(LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Building Host{Environment.NewLine}");
 
                 var wh = svc.Build();
 
-                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Running Host{Environment.NewLine}");
+                File.AppendAllText(LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::Running Host{Environment.NewLine}");
 
-                wh.RunAsService();
+                if (OperatingSystem.IsWindows())
+                {
+                    wh.RunAsService();
+                }
+                else
+                {
+                    await wh.RunAsync();
+                }
             }
         }
 
@@ -127,7 +134,7 @@ namespace GenericWindowsService
             }
             catch (Exception ex)
             {
-                File.AppendAllText(Program.LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::{ex}{Environment.NewLine}");
+                File.AppendAllText(LogPath, $@"{nameof(ValidateAndConfigureService)}::{DateTime.Now}::{ex}{Environment.NewLine}");
                 throw;
             }
         }
@@ -147,11 +154,9 @@ namespace GenericWindowsService
             }
             catch (Exception ex)
             {
-                File.AppendAllText(Program.LogPath, $@"{nameof(LoadFramework)}::{DateTime.Now}::{ex}{Environment.NewLine}");
+                File.AppendAllText(LogPath, $@"{nameof(LoadFramework)}::{DateTime.Now}::{ex}{Environment.NewLine}");
                 throw;
             }
-
         }
-
     }
 }

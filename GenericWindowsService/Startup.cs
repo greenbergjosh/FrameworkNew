@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Newtonsoft.Json;
-using Utility;
-using System.Reflection;
-using System.Text;
-using Jw = Utility.JsonWrapper;
-using Utility.Http;
 using Microsoft.Extensions.Hosting;
+using Utility;
+using Utility.Http;
 
 namespace GenericWindowsService
 {
@@ -25,6 +19,26 @@ namespace GenericWindowsService
 
         public void ConfigureServices(IServiceCollection services)
         {
+            _ = services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    // https://docs.microsoft.com/en-us/aspnet/core/migration/21-to-22?view=aspnetcore-2.2&tabs=visual-studio 
+                    // We don't want a "*", because no browser supports that.  The lambda below returns the origin
+                    // domain explicitly, which is what we were doing before the upgrade above.
+                    .SetIsOriginAllowed(x => { return true; })
+                    );
+            })
+            .Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => false;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
             File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::ConfigureServices...{Environment.NewLine}");
         }
 
@@ -70,7 +84,17 @@ namespace GenericWindowsService
                 {
                     app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(wwwrootPath) });
                 }
-                else app.UseStaticFiles();
+                else
+                {
+                    app.UseStaticFiles();
+                }
+
+                app.UseCors("CorsPolicy");
+
+                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                });
 
                 File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Configuring Http Handler..." + Environment.NewLine);
 
@@ -92,13 +116,12 @@ namespace GenericWindowsService
                     }
                     catch (Exception ex)
                     {
-                        File.AppendAllText(Program.LogPath, $@"Run::{DateTime.Now}::{ex.ToString()}{Environment.NewLine}");
+                        File.AppendAllText(Program.LogPath, $@"Run::{DateTime.Now}::{ex}{Environment.NewLine}");
                     }
                 });
 
                 if (Program.HasOnStart)
                 {
-
                     File.AppendAllText(Program.LogPath, $@"{DateTime.Now}::Starting service..." + Environment.NewLine);
 
                     Program.Service.OnStart();
