@@ -25,7 +25,7 @@ export function ExampleViewer(props: {
   onChangeData1: (newData: UserInterfaceProps["data"]) => void
   onChangeSchema: (newSchema: ComponentDefinition[]) => void
   title: string
-  description: string
+  description: string | React.ReactNode
 }) {
   return (
     <>

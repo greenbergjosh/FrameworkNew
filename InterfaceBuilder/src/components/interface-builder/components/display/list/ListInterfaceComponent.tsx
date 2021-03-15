@@ -78,6 +78,24 @@ export class ListInterfaceComponent extends BaseInterfaceComponent<ListInterface
                 />
               )
             }
+            case "preview": {
+              return (
+                <DisplayMode
+                  addItemLabel={addItemLabel}
+                  components={components}
+                  data={[]}
+                  getRootUserInterfaceData={() => null}
+                  description={emptyText}
+                  interleave={interleave}
+                  listId={this.listId}
+                  onChangeData={() => null}
+                  orientation={orientation}
+                  unwrapped={unwrapped}
+                  userInterfaceData={userInterfaceData}
+                  valueKey={valueKey}
+                />
+              )
+            }
             case "edit": {
               // Repeat the component once per item in the list
               return (

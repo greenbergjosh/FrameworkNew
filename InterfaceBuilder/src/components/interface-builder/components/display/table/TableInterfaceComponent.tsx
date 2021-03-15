@@ -143,6 +143,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                     userInterfaceData={userInterfaceData}
                     getRootUserInterfaceData={getRootUserInterfaceData}
                     getValue={this.getValue.bind(this)}
+                    setValue={this.setValue.bind(this)}
                     valueKey={valueKey}
                     preview={this.props.preview}
                   />

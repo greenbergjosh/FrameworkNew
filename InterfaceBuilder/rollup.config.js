@@ -18,6 +18,7 @@ export default {
     globals: {
       antd: "antd",
       "lodash/fp": "fp",
+      lodash: "lodash",
       "react-awesome-query-builder": "reactAwesomeQueryBuilder",
       react: "React",
       "@nivo/pie": "pie",

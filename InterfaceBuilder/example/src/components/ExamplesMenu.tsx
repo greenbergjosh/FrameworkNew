@@ -43,6 +43,9 @@ export const ExamplesMenu: React.FC = () => {
         <Menu.Item key="/examples/table">
           <Link to="/examples/table">Table</Link>
         </Menu.Item>
+        <Menu.Item key="/examples/prop-tokens">
+          <Link to="/examples/prop-tokens">Prop Tokens</Link>
+        </Menu.Item>
       </Menu.SubMenu>
     </Menu>
   )

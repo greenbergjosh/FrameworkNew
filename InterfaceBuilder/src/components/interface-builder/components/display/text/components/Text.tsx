@@ -1,7 +1,6 @@
 import React, { CSSProperties } from "react"
 import { TextInterface, TitleSizeType } from "../types"
 import { CodeBlock, Error, Info, Paragraph, PlainText, Success, Title, Warning } from "./TextTypes"
-import { hasTokens, replaceTokens } from "lib/tokenReplacer"
 
 export function Text({
   textType,
@@ -16,16 +15,7 @@ export function Text({
   description,
   showIcon,
   stringTemplate,
-  valueKey,
-  data,
 }: TextInterface): JSX.Element {
-  const text = React.useMemo(() => {
-    if (!hasTokens(stringTemplate)) {
-      return stringTemplate
-    }
-    return replaceTokens(stringTemplate, data, valueKey)
-  }, [data, stringTemplate, valueKey])
-
   const style: CSSProperties = {}
   const headerSizeNum: TitleSizeType = getHeaderSizeNum(headerSize)
 
@@ -37,15 +27,15 @@ export function Text({
 
   switch (textType) {
     case "code":
-      return <CodeBlock text={text} style={style} />
+      return <CodeBlock text={stringTemplate} style={style} />
     case "paragraph":
-      return <Paragraph text={text} style={style} />
+      return <Paragraph text={stringTemplate} style={style} />
     case "title":
-      return <Title text={text} size={headerSizeNum} style={style} />
+      return <Title text={stringTemplate} size={headerSizeNum} style={style} />
     case "success":
       return (
         <Success
-          text={text}
+          text={stringTemplate}
           banner={banner}
           closable={closable}
           description={description}
@@ -56,7 +46,7 @@ export function Text({
     case "info":
       return (
         <Info
-          text={text}
+          text={stringTemplate}
           banner={banner}
           closable={closable}
           description={description}
@@ -67,7 +57,7 @@ export function Text({
     case "warning":
       return (
         <Warning
-          text={text}
+          text={stringTemplate}
           banner={banner}
           closable={closable}
           description={description}
@@ -78,7 +68,7 @@ export function Text({
     case "error":
       return (
         <Error
-          text={text}
+          text={stringTemplate}
           banner={banner}
           closable={closable}
           description={description}
@@ -87,7 +77,7 @@ export function Text({
         />
       )
     default:
-      return <PlainText text={text} style={style} />
+      return <PlainText text={stringTemplate} style={style} />
   }
 }
 
