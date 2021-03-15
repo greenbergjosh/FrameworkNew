@@ -114,6 +114,11 @@ export interface ExecuteInterfaceComponentDisplayModeProps extends IExecuteInter
   submitEventSource: any
 }
 
+export interface ExecuteInterfaceComponentPreviewModeProps extends IExecuteInterfaceComponentProps {
+  mode: "preview"
+  submitEventSource: any
+}
+
 export interface ExecuteInterfaceComponentEditModeProps extends IExecuteInterfaceComponentProps {
   mode: "edit"
   onChangeSchema?: (newSchema: ComponentDefinition) => void
@@ -156,7 +161,11 @@ export type ExecuteInterfaceComponentProps = (
   | ExecuteRemoteConfigInterfaceComponentProps
   | ExecuteRemoteUrlInterfaceComponentProps
 ) &
-  (ExecuteInterfaceComponentDisplayModeProps | ExecuteInterfaceComponentEditModeProps) &
+  (
+    | ExecuteInterfaceComponentDisplayModeProps
+    | ExecuteInterfaceComponentPreviewModeProps
+    | ExecuteInterfaceComponentEditModeProps
+  ) &
   ExecuteButtonProps
 
 /* ****************************************************************************
@@ -175,8 +184,7 @@ export type OnMountType = (handleSubmit: () => Promise<void> | undefined) => Pro
 export interface RemoteComponentProps {
   buttonLabel: IExecuteInterfaceComponentProps["buttonLabel"]
   buttonProps: ButtonProps
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  mode: "display" | "edit"
+  mode: "display" | "preview" | "edit"
   onChangeData: IExecuteInterfaceComponentProps["onChangeData"]
   onRaiseEvent: BaseInterfaceComponent<ExecuteInterfaceComponentProps, ExecuteInterfaceComponentState>["raiseEvent"]
   onMount: OnMountType
@@ -206,6 +214,7 @@ export interface RemoteQueryFromStore extends FromStore {
 
 export interface RemoteQueryProps extends RemoteComponentProps, RemoteQueryFromStore {
   isCRUD?: boolean
+  onResults: IExecuteInterfaceComponentProps["onChangeData"]
   queryConfigId: PersistedConfig["id"]
 }
 
@@ -220,6 +229,7 @@ export interface RemoteUrlFromStore extends FromStore {
 
 export interface RemoteUrlProps extends RemoteComponentProps, RemoteUrlFromStore {
   isCRUD?: boolean
+  onResults: IExecuteInterfaceComponentProps["onChangeData"]
   queryConfigId: PersistedConfig["id"]
 }
 
@@ -232,6 +242,7 @@ export interface RemoteConfigProps extends RemoteComponentProps {
   actionType: ActionType
   deleteRedirectPath?: string
   entityTypeId?: PersistedConfig["id"] // The type ID of the config to edit
+  onResults: IExecuteInterfaceComponentProps["onChangeData"]
   remoteConfigStaticId?: PersistedConfig["id"] // A fixed config ID to fetch
   resultsType?: ResultsType
   useDeleteRedirect?: boolean

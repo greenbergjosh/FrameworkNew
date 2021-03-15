@@ -2,12 +2,11 @@ import { PersistedConfig } from "../../../../data/GlobalConfig.Config"
 import JSON5 from "json5"
 import { QueryConfig, QueryConfigCodec } from "../../../../data/Report"
 import { reporter } from "io-ts-reporters"
-import { ErrorResponse, ExecuteInterfaceComponentState, FromStore, LoadStatus, LOADSTATUSCODES } from "../types"
+import { ExecuteInterfaceComponentState, FromStore, LoadStatus, LOADSTATUSCODES } from "../types"
 import { Right } from "../../../../data/Either"
 import { tryCatch } from "fp-ts/lib/Option"
 import { JSONRecord } from "../../../../data/JSON"
-import { isArray, merge, set } from "lodash/fp"
-import { UserInterfaceProps } from "@opg/interface-builder"
+import { merge } from "lodash/fp"
 
 /**
  * Extract config from the Persisted Config and parse it.
@@ -40,47 +39,6 @@ export function getConfig(
       } as unknown) as Readonly<Partial<ExecuteInterfaceComponentState>>
     })
   )
-}
-
-/**
- *
- * @param outboundValueKey
- * @param parameterValues
- * @param queryConfigQuery
- * @param resultData
- * @param userInterfaceData
- */
-export function mergeResultDataWithModel({
-  getRootUserInterfaceData,
-  outboundValueKey,
-  parameterValues,
-  queryConfigQuery,
-  resultData,
-  userInterfaceData,
-}: {
-  getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  outboundValueKey: string
-  parameterValues: JSONRecord
-  queryConfigQuery: string
-  resultData: ErrorResponse | JSONRecord | JSONRecord[] | null | undefined
-  userInterfaceData: UserInterfaceProps["data"]
-}): void {
-  if (outboundValueKey) {
-    // If there's an outboundValueKey, nest the data
-    const newData = isArray(resultData) ? resultData : { ...parameterValues, ...resultData }
-    if (outboundValueKey.startsWith("root.")) {
-      // Put data in root userInterfaceData
-      const key = outboundValueKey.substring(5)
-      return set(key, newData, getRootUserInterfaceData())
-    }
-    return set(outboundValueKey, newData, userInterfaceData)
-  }
-  // No outboundValueKey, so merge the data at the top level
-  // If the data is an array, then use the query path as the data key
-  const newData = isArray(resultData)
-    ? { ...parameterValues, ...{ [queryConfigQuery]: resultData } }
-    : { ...parameterValues, ...resultData }
-  return { ...userInterfaceData, ...newData }
 }
 
 /**

@@ -4,7 +4,7 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
+import { getQueryConfig, getQueryFormValues } from "../utils"
 import { QueryForm } from "../../../../Query/QueryForm"
 import { LoadStatusCode, LOADSTATUSCODES, OnSubmitType, RemoteConfigFromStore, RemoteConfigProps } from "../../types"
 import { QueryParams } from "../../../../Query/QueryParams"
@@ -23,9 +23,9 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
     deleteRedirectPath,
     entityTypeId,
     getParams,
-    getRootUserInterfaceData,
     mode,
     onChangeData,
+    onResults,
     onRaiseEvent,
     onMount,
     outboundValueKey,
@@ -85,6 +85,7 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
   /* Originally from ReportBody.tsx */
   const handleSubmit: OnSubmitType = (parameterValues, satisfiedByParentParams, setParameterValues) => {
     if (!queryConfig || mode === "edit") return
+    onRaiseEvent(LOADSTATUSCODES.loading, { value: {} })
 
     /*
      * From ReportBody.tsx
@@ -119,19 +120,11 @@ function RemoteConfig(props: RemoteConfigProps): JSX.Element {
       }
       setLoadStatus(newLoadingState.loadStatus)
 
-      // Put response data into userInterfaceData via onChangeData
-      if (onChangeData && newLoadingState.loadStatus !== LOADSTATUSCODES.deleted) {
-        const newData = mergeResultDataWithModel({
-          getRootUserInterfaceData,
-          outboundValueKey,
-          parameterValues,
-          queryConfigQuery: queryConfig.query,
-          resultData: newLoadingState.data,
-          userInterfaceData,
-        })
-        onChangeData(newData)
+      // Put response data into userInterfaceData via onResults
+      if (onResults) {
+        onResults(newLoadingState.data)
       }
-      onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
+      newLoadingState.loadStatus && onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
     })
   }
 

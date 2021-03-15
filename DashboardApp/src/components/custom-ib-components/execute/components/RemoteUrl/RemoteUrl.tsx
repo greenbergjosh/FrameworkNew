@@ -4,7 +4,7 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { HTTPRequestQueryConfig, QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
+import { getQueryConfig, getQueryFormValues } from "../utils"
 import { QueryForm } from "../../../../Query/QueryForm"
 import { OnSubmitType, RemoteUrlProps } from "../../types"
 import { QueryParams } from "../../../../Query/QueryParams"
@@ -15,10 +15,9 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
     buttonLabel,
     buttonProps,
     getParams,
-    getRootUserInterfaceData,
     isCRUD,
     mode,
-    onChangeData,
+    onResults,
     onRaiseEvent,
     onMount,
     outboundValueKey,
@@ -79,33 +78,11 @@ function RemoteUrl(props: RemoteUrlProps): JSX.Element {
       executeHTTPRequestQuery,
       isCRUD
     ).then((newLoadingState) => {
-      // Put response data into userInterfaceData (via onChangeData)
-      if (onChangeData) {
-        const newData = mergeResultDataWithModel({
-          getRootUserInterfaceData,
-          outboundValueKey,
-          parameterValues,
-          queryConfigQuery: queryConfig.query,
-          resultData: newLoadingState.data,
-          userInterfaceData,
-        })
-        onChangeData(newData)
+      // Put response data into userInterfaceData (via onResults)
+      if (onResults) {
+        onResults(newLoadingState.data)
       }
-
-      switch (newLoadingState.loadStatus) {
-        case "created":
-          onRaiseEvent("remoteUrl_created", { value: newLoadingState.data })
-          break
-        case "deleted":
-          onRaiseEvent("remoteUrl_deleted", { value: newLoadingState.data })
-          break
-        case "loaded":
-          onRaiseEvent("remoteUrl_loaded", { value: newLoadingState.data })
-          break
-        case "updated":
-          onRaiseEvent("remoteUrl_updated", { value: newLoadingState.data })
-          break
-      }
+      newLoadingState.loadStatus && onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
     })
   }
 
