@@ -174,7 +174,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   static availableEvents: string[] = []
 
   raiseEvent(eventName: string, eventPayload: EventPayloadType) {
-    console.log(`BaseInterfaceComponent Event raised: ${eventName}`, eventPayload)
+    console.log(`BaseInterfaceComponent: Component raised event "${eventName}"`, eventPayload)
     if (this.props.onRaiseEvent) {
       this.props.onRaiseEvent(eventName, eventPayload, this)
     }
