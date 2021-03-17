@@ -26,6 +26,8 @@ export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedP
   allowEditing?: boolean
   columns: SortableGroupableColumnModel[]
   component: "table"
+  showToolbar?: boolean
+  useSmallPager?: boolean
   defaultCollapseAll?: boolean
   autoFitColumns?: boolean
   useSmallFont?: boolean

@@ -97,6 +97,14 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
             key: "appearance",
             components: [
               {
+                key: "showToolbar",
+                valueKey: "showToolbar",
+                label: "Show Toolbar",
+                component: "toggle",
+                defaultValue: true,
+                help: "Make the top toolbar visible.",
+              },
+              {
                 key: "defaultCollapseAll",
                 valueKey: "defaultCollapseAll",
                 label: "Default Collapse Groups",
@@ -117,6 +125,13 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "useSmallFont",
                 valueKey: "useSmallFont",
                 label: "Small Font Size",
+                component: "toggle",
+                defaultValue: false,
+              },
+              {
+                key: "useSmallPager",
+                valueKey: "useSmallPager",
+                label: "Small Pager",
                 component: "toggle",
                 defaultValue: false,
               },

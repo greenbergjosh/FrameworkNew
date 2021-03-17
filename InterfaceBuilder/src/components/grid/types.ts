@@ -34,6 +34,8 @@ export interface StandardGridComponentProps {
   //   rowTemplate?: string | Function | any
   //   toolbarTemplate?: string | Function | any
   ref?: React.RefObject<GridComponent>
+  showToolbar?: boolean
+  useSmallPager?: boolean
 }
 
 type DataMapOption = { key: string; value: string }

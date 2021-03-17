@@ -1,0 +1,63 @@
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  :local(.hideToolbar) {
+    > .e-toolbar {
+      display: none;
+    }
+  }
+
+  :local(.smallPager) {
+    > .e-gridpager {
+      &.e-pager {
+        font-size: 0.9em;
+        padding-left: 0;
+        padding-right: 0;
+
+        .e-spacing,
+        .e-numericitem:hover,
+        .e-currentitem {
+          padding: 3px 11px 3px 11px; // 11px 11px 11px 11px
+        }
+
+        /* Page Size Dropdown */
+        .e-pagerdropdown {
+          height: 25px; // 34px;
+          margin-top: 0; // -20px;
+        }
+
+        div.e-parentmsgbar {
+          padding-bottom: 1px; // 9px;
+          padding-top: 0; // 8px;
+        }
+
+        /* "Items per page" */
+        .e-pagerconstant {
+          margin: 0 0 -3px 0; // 11px 0 6px 8px;
+        }
+      }
+
+      /* Paging controls */
+      .e-pagercontainer .e-icons {
+        padding: 3px 10px 0 8px; // 13px 10px 12px 8px
+      }
+
+      /* Page Size Dropdown */
+      input.e-input,
+      textarea.e-input,
+      .e-input-group,
+      .e-input-group.e-control-wrapper {
+        font-size: 1em;
+        line-height: 1em; // 1.4;
+        height: 20px; // 29px
+
+        .e-input-group-icon {
+          min-height: 20px; // 29px;
+        }
+      }
+    }
+  }
+}

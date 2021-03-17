@@ -64,6 +64,8 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
       allowDeleting,
       allowEditing,
       columns,
+      showToolbar,
+      useSmallPager,
       defaultCollapseAll,
       autoFitColumns,
       useSmallFont,
@@ -75,6 +77,7 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
       rowDetails,
       userInterfaceData,
       getRootUserInterfaceData,
+      preview,
       valueKey,
     } = this.props
 
@@ -145,7 +148,9 @@ export class TableInterfaceComponent extends BaseInterfaceComponent<
                     getValue={this.getValue.bind(this)}
                     setValue={this.setValue.bind(this)}
                     valueKey={valueKey}
-                    preview={this.props.preview}
+                    preview={preview}
+                    showToolbar={showToolbar}
+                    useSmallPager={useSmallPager}
                   />
                 </Spin>
               )

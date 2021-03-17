@@ -35,6 +35,8 @@ import { CustomAggregateFunctions, StandardGridComponentProps } from "./types"
 import { average, count, getUsableColumns, getUsableData } from "./utils"
 import { getCustomAggregateFunctionKey } from "components/grid/aggregates/getAggregateRows"
 import { AggregateSafe } from "services/AggregateSafe"
+import styles from "./styles.scss"
+import classNames from "classnames"
 
 let grid: GridComponent | null = null
 
@@ -56,6 +58,8 @@ const StandardGrid = (
     groupSettings,
     pageSettings,
     sortSettings,
+    showToolbar = true,
+    useSmallPager = false,
   }: StandardGridComponentProps,
   ref?: React.Ref<GridComponent>
 ) => {
@@ -380,6 +384,10 @@ const StandardGrid = (
    * RENDER
    */
 
+  const class1 = showToolbar ? null : styles.hideToolbar
+  const class2 = useSmallPager ? styles.smallPager : null
+  const classes = classNames(class1, class2)
+
   return (
     <Spin spinning={isLoading} indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}>
       <PureGridComponent
@@ -402,6 +410,7 @@ const StandardGrid = (
         allowResizing={true}
         allowSorting={true}
         allowTextWrap={true}
+        className={classes}
         columnMenuItems={["SortAscending", "SortDescending"]}
         columns={usableColumns}
         // dataSource={usableData}

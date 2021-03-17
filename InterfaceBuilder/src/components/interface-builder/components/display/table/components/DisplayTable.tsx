@@ -34,6 +34,8 @@ export function DisplayTable({
   getValue,
   valueKey,
   preview = false,
+  showToolbar,
+  useSmallPager,
 }: DisplayTableProps): JSX.Element {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   let dataArray: JSONRecord[] = []
@@ -66,6 +68,8 @@ export function DisplayTable({
       height={height}
       groupSettings={groupSettings}
       pageSettings={pageSettings}
+      showToolbar={showToolbar}
+      useSmallPager={useSmallPager}
       sortSettings={sortSettings}
       detailTemplate={
         rowDetails && rowDetails.length
