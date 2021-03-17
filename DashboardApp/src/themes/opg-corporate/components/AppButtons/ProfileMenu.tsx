@@ -1,8 +1,8 @@
 import { ClickParam } from "antd/lib/menu"
 import { Profile } from "../../../../state/iam/iam"
-import { Avatar, Button, Popover, Icon, Menu } from "antd"
+import { Avatar, Button, Icon, Menu, Popover } from "antd"
 import React from "react"
-import styles from "../../theme.module.scss"
+import styles from "../Header/header.module.scss"
 
 export function ProfileMenu(props: { onClick: (evt: ClickParam) => void; profile: Profile }): JSX.Element {
   return (

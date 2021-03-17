@@ -1,0 +1,47 @@
+@import "src/themes/opg-corporate/theme.module";
+
+/**************************************************************************
+ *
+ * APPS MENU
+ */
+
+/*
+* :global {...} disables module BEM class name transformations
+* For more info, see: https://github.com/css-modules/css-modules
+*/
+:global {
+  :local(.appsMenuPopover) {
+    .ant-popover-inner-content {
+      display: grid;
+      grid-template-columns: auto auto;
+      background-color: $opg-gray-light;
+    }
+  }
+
+  :local(.appsMenuItem) {
+    text-align: center;
+    padding: $padding 12px;
+
+    &:hover {
+      .anticon {
+        background-color: lighten($opg-orange-light, 40%);
+      }
+    }
+
+    &:active {
+      .anticon {
+        background-color: lighten($opg-orange-light, 20%);
+        color: $opg-orange-dark;
+      }
+    }
+
+    .anticon {
+      background-color: white;
+      border-radius: 12px;
+      padding: 12px;
+      color: $opg-orange;
+      font-size: 24px;
+      transition: background-color 0.1s;
+    }
+  }
+}

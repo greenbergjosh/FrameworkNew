@@ -1,0 +1,131 @@
+@import "src/themes/opg-corporate/theme.module";
+
+/**************************************************************************
+ *
+ * SIDEBAR
+ */
+
+/*
+* :global {...} disables module BEM class name transformations
+* For more info, see: https://github.com/css-modules/css-modules
+*/
+:global {
+  :local(.sidebar) {
+    background-color: $opg-gray-light;
+
+    .ant-menu {
+      background-color: $opg-gray-light;
+      border: none !important;
+    }
+  }
+}
+
+.sidebarToggle {
+  flex: 0 1 auto;
+  align-self: auto;
+  line-height: $header-height;
+  height: $header-height;
+}
+
+.sidebarHeader {
+  font-size: 20px;
+  color: white;
+  height: $header-height;
+  background: $opg-orange;
+  padding-left: $padding;
+  padding-right: $padding;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: all ease-in 0.5s;
+
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+
+  &.sidebarHeaderCollapsed {
+    justify-content: center;
+  }
+
+  & a {
+    color: white;
+  }
+}
+
+.sidebarHeaderIcon {
+  @extend .appIcon;
+  font-size: 0.9em;
+  color: white !important;
+
+  &:hover {
+    color: $opg-orange-light !important;
+  }
+  &:active {
+    color: $opg-orange-dark !important;
+  }
+  &.selected {
+    color: darken($opg-orange, 20%) !important;
+  }
+}
+
+.sidebarTitle {
+  order: 0;
+  flex: 1 0 auto;
+  align-self: center;
+}
+
+.sidebarPinButton {
+  order: 0;
+  flex: 0 1 auto;
+  align-self: flex-start;
+  padding: 6px;
+}
+
+/**************************************************************************
+ *
+ * MENU
+ */
+
+/*
+* :global {...} disables module BEM class name transformations
+* For more info, see: https://github.com/css-modules/css-modules
+*/
+:global {
+  :local(.menu) {
+    .ant-menu-item:active,
+    .ant-menu-submenu-title:active {
+      background-color: lighten($opg-gray, 10%) !important;
+    }
+
+    .ant-menu-submenu-selected {
+      color: darken($opg-orange, 10%);
+    }
+
+    .ant-menu-item-active,
+    .ant-menu-submenu-active {
+      & > a,
+      * {
+        color: $opg-orange;
+      }
+    }
+
+    .ant-menu-item-selected {
+      background-color: lighten($opg-gray, 10%) !important;
+
+      & > a {
+        color: darken($opg-orange, 10%);
+        font-weight: 500;
+      }
+
+      & > a:hover {
+        color: $opg-orange;
+      }
+
+      &::after {
+        border-right-color: $opg-orange;
+      }
+    }
+  }
+}

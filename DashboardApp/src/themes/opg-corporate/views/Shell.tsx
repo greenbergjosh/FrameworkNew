@@ -1,10 +1,10 @@
 import React from "react"
 import { useRematch } from "../../../hooks"
-import styles from "../theme.module.scss"
+import styles from "./shell.module.scss"
 import { Icon, Layout, Spin } from "antd"
 import { ContentPanel } from "../../../components/ContentPanel"
 import { Header } from "../components/Header/Header"
-import { SideBar } from "../components/SideBar/SideBar"
+import { Sidebar } from "../components/Sidebar/Sidebar"
 import { WithRouteProps } from "../../../state/navigation"
 import { ThemeProps } from "../../types"
 
@@ -14,24 +14,42 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
     globalConfigPath: appState.navigation.routes.dashboard.subroutes["global-config"].abs,
   }))
 
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+  const [sidebarPinned, setSidebarPinned] = React.useState(true)
+
+  // const handleContentClick = () => {
+  //   if (!sidebarCollapsed && !sidebarPinned) {
+  //     setSidebarCollapsed(true)
+  //   }
+  // }
+
   return (
     <Layout className={styles.layoutContainer} hasSider={true}>
-      <SideBar
+      <Sidebar
         appConfig={props.appConfig}
         appRootPath={props.appRootPath}
+        globalConfigPath={fromStore.globalConfigPath}
         location={props.location}
         pagePath={props.pagePath}
         subroutes={props.subroutes}
-        globalConfigPath={fromStore.globalConfigPath}
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+        pinned={sidebarPinned}
+        setPinned={setSidebarPinned}
       />
       <Layout>
         <Header
           appConfig={props.appConfig}
           appRootPath={props.appRootPath}
-          loadRemoteConfigs={dispatch.globalConfig.loadRemoteConfigs}
-          logout={dispatch.iam.logout}
+          style={{ marginLeft: sidebarPinned ? 225 : 60, transition: "margin-left ease-out 0.1s" }}
+          sidebarCollapsed={sidebarCollapsed}
         />
-        <Layout.Content style={{ minHeight: "initial !important" }}>
+        <Layout.Content
+          style={{
+            minHeight: "initial !important",
+            marginLeft: sidebarPinned ? 225 : 60,
+            transition: "margin-left ease-out 0.1s",
+          }}>
           <Spin
             spinning={fromStore.loadingGlobalConfigs}
             size="large"

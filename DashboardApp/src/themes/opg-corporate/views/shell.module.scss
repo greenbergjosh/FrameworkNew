@@ -1,0 +1,19 @@
+@import "src/themes/opg-corporate/theme.module";
+
+/*
+* :global {...} disables module BEM class name transformations
+* For more info, see: https://github.com/css-modules/css-modules
+*/
+:global {
+  :local(.layoutContainer) {
+    height: 100vh;
+
+    > .ant-layout {
+      background-color: white;
+
+      > .ant-layout-footer {
+        background-color: white;
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { NavigationNode } from "../../../../state/apps"
 import * as Reach from "@reach/router"
 import { Button, Tooltip } from "antd"
-import styles from "../../theme.module.scss"
+import themeStyles from "../../theme.module.scss"
 import React from "react"
 import { isEmpty } from "lodash/fp"
 
@@ -32,7 +32,7 @@ export function AppViewButtons(props: {
                   size="large"
                   icon={view.icon ? view.icon : undefined}
                   ghost={true}
-                  className={styles.appsMenuIcon}
+                  className={themeStyles.appIcon}
                 />
               </Reach.Link>
             </Tooltip>
