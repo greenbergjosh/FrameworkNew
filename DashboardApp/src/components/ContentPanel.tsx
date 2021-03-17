@@ -41,13 +41,19 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
         title={
           <>
             {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
-            {appPageConfig.title}
-            {appPageConfig.id && (
-              <Tooltip title="Edit Page">
-                <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
-                  <Button type="link" icon="edit" size="small" />
-                </Reach.Link>
+            {appPageConfig.id ? (
+              <Tooltip
+                title={
+                  <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
+                    <Button type="link" icon="edit" size="small">
+                      Edit Page
+                    </Button>
+                  </Reach.Link>
+                }>
+                {appPageConfig.title}
               </Tooltip>
+            ) : (
+              <>{appPageConfig.title}</>
             )}
           </>
         }
