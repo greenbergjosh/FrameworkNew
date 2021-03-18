@@ -34,7 +34,7 @@ export class RadioInterfaceComponent extends BaseInterfaceComponent<RadioProps> 
       category: "Form",
       name: "radio",
       title: "Radio",
-      icon: "bars",
+      icon: "check-circle",
       formControl: true,
       componentDefinition: {
         component: "radio",
