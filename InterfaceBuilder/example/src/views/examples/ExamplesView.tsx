@@ -8,6 +8,7 @@ import DateStepperExample from "./date-stepper"
 import DateRangeExample from "./date-range"
 import TableExample from "./table"
 import PropTokensExample from "./prop-tokens"
+import RadioExample from "./radio"
 import React from "react"
 import { Route, Switch, useRouteMatch } from "react-router-dom"
 import { ExamplesIntroView } from "./ExamplesIntroView"
@@ -52,6 +53,9 @@ export function ExamplesView(): JSX.Element {
           </Route>
           <Route path={`${path}/prop-tokens`}>
             <PropTokensExample />
+          </Route>
+          <Route path={`${path}/radio`}>
+            <RadioExample />
           </Route>
         </Switch>
       </Layout>

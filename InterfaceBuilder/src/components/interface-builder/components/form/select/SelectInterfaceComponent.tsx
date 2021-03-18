@@ -8,10 +8,6 @@ import { selectManageForm } from "./select-manage-form"
 import { ISelectProps, SelectProps, SelectState } from "./types"
 import { Undraggable } from "../../_shared/Undraggable"
 
-/******************************
- * Component
- */
-
 export class SelectInterfaceComponent extends BaseInterfaceComponent<SelectProps, SelectState> {
   constructor(props: SelectProps) {
     super(props)

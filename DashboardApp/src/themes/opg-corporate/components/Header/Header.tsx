@@ -10,7 +10,7 @@ import { ProfileButton } from "../AppButtons/ProfileButton"
 export function Header(props: {
   appConfig: AppConfig
   appRootPath: string
-  style: React.CSSProperties | undefined
+  style?: React.CSSProperties
   sidebarCollapsed: boolean
 }): JSX.Element {
   return (

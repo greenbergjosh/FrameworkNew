@@ -17,12 +17,6 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
   const [sidebarPinned, setSidebarPinned] = React.useState(true)
 
-  // const handleContentClick = () => {
-  //   if (!sidebarCollapsed && !sidebarPinned) {
-  //     setSidebarCollapsed(true)
-  //   }
-  // }
-
   return (
     <Layout className={styles.layoutContainer} hasSider={true}>
       <Sidebar
@@ -37,17 +31,15 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
         pinned={sidebarPinned}
         setPinned={setSidebarPinned}
       />
-      <Layout>
-        <Header
-          appConfig={props.appConfig}
-          appRootPath={props.appRootPath}
-          style={{ marginLeft: sidebarPinned ? 225 : 60, transition: "margin-left ease-out 0.1s" }}
-          sidebarCollapsed={sidebarCollapsed}
-        />
+      <Layout
+        style={{
+          marginLeft: sidebarPinned ? 225 : 60,
+          transition: "margin-left ease-out 0.1s",
+        }}>
+        <Header appConfig={props.appConfig} appRootPath={props.appRootPath} sidebarCollapsed={sidebarCollapsed} />
         <Layout.Content
           style={{
             minHeight: "initial !important",
-            marginLeft: sidebarPinned ? 225 : 60,
             transition: "margin-left ease-out 0.1s",
           }}>
           <Spin

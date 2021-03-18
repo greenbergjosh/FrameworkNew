@@ -23,6 +23,7 @@ import { NumberRangeInterfaceComponent } from "../components/interface-builder/c
 import { PasswordInterfaceComponent } from "../components/interface-builder/components/form/password/PasswordInterfaceComponent"
 import { ProgressInterfaceComponent } from "../components/interface-builder/components/display/progress/ProgressInterfaceComponent"
 import { QueryBuilderInterfaceComponent } from "../components/interface-builder/components/special/query-builder/QueryBuilderInterfaceComponent"
+import { RadioInterfaceComponent } from "../components/interface-builder/components/form/radio/RadioInterfaceComponent"
 import { RepeaterInterfaceComponent } from "../components/interface-builder/components/display/repeater/RepeaterInterfaceComponent"
 import { RichTextEditorInterfaceComponent } from "../components/interface-builder/components/form/rich-text-editor/RichTextEditorInterfaceComponent"
 import { SectionedNavigationInterfaceComponent } from "../components/interface-builder/components/display/sectioned-navigation/SectionedNavigationInterfaceComponent"
@@ -71,6 +72,7 @@ export default {
   password: PasswordInterfaceComponent,
   progress: ProgressInterfaceComponent,
   "query-builder": QueryBuilderInterfaceComponent,
+  radio: RadioInterfaceComponent,
   "rich-text-editor": RichTextEditorInterfaceComponent,
   "sectioned-navigation": SectionedNavigationInterfaceComponent,
   select: SelectInterfaceComponent,
