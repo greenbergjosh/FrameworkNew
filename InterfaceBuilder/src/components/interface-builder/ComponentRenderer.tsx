@@ -110,11 +110,9 @@ _ComponentRenderer.defaultProps = {
 
 export const ComponentRenderer = React.memo(_ComponentRenderer, (prevProps, nextProps) => {
   const simplePropEquality = shallowPropCheck(["components", "data", "mode"])(prevProps, nextProps)
-  // const isComponentsEq = isEqual(prevProps.components, nextProps.components)
   const runDeepDiff = () => deepDiff(prevProps, nextProps, (k) => ["onChangeSchema", "onChangeData"].includes(k))
   // console.log("ComponentRenderer.memo", simplePropEquality, runDeepDiff())
 
-  // return simplePropEquality && isComponentsEq && !runDeepDiff()
   return simplePropEquality && !runDeepDiff()
 })
 
