@@ -1,4 +1,4 @@
-import { set } from "lodash/fp"
+import { set, isEqual, isEmpty } from "lodash/fp"
 import { forIn } from "lodash"
 import React from "react"
 import { deepDiff } from "./lib/deep-diff"
@@ -9,6 +9,7 @@ import { registry } from "./registry"
 import { RenderInterfaceComponent, RenderInterfaceComponentProps } from "./RenderInterfaceComponent"
 import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
 import { hasTokens, replaceTokens } from "lib/tokenReplacer"
+import { v4 as uuid } from "uuid"
 
 interface ComponentRendererProps {
   componentLimit?: number
@@ -53,8 +54,12 @@ export const _ComponentRenderer = ({
   )
 
   const content = components.map((componentDefinition, index) => {
+    if (isEmpty(componentDefinition.key)) {
+      componentDefinition.key = uuid()
+    }
+
     return (
-      <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
+      <DataPathContext path={index} key={`${componentDefinition.component}-${index}-${componentDefinition.key}`}>
         {(path) => (
           <DetokenizedComponent
             componentDefinition={componentDefinition}
@@ -105,9 +110,11 @@ _ComponentRenderer.defaultProps = {
 
 export const ComponentRenderer = React.memo(_ComponentRenderer, (prevProps, nextProps) => {
   const simplePropEquality = shallowPropCheck(["components", "data", "mode"])(prevProps, nextProps)
+  // const isComponentsEq = isEqual(prevProps.components, nextProps.components)
   const runDeepDiff = () => deepDiff(prevProps, nextProps, (k) => ["onChangeSchema", "onChangeData"].includes(k))
   // console.log("ComponentRenderer.memo", simplePropEquality, runDeepDiff())
 
+  // return simplePropEquality && isComponentsEq && !runDeepDiff()
   return simplePropEquality && !runDeepDiff()
 })
 
