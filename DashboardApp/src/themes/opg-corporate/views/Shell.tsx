@@ -47,7 +47,12 @@ export function Shell(props: WithRouteProps<ThemeProps>): JSX.Element {
             size="large"
             indicator={<Icon type="loading" style={{ color: "rgba(0, 0, 0, 0.65)" }} />}
             style={{ width: "100%", height: "50vh", maxHeight: "50vh" }}>
-            <ContentPanel pagePath={props.pagePath} appConfig={props.appConfig} />
+            <ContentPanel
+              pagePath={props.pagePath}
+              appConfig={props.appConfig}
+              data={props.data}
+              onChangeData={props.onChangeData}
+            />
           </Spin>
         </Layout.Content>
         <Layout.Footer

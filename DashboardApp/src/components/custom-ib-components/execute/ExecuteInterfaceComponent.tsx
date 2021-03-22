@@ -264,12 +264,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     const diagnosticsPanelStyle = !this.props.invisible
       ? {
           padding: 10,
-          border: "1px dashed rgba(0, 178, 255, 0.5)",
-          backgroundColor: "rgba(0, 178, 255, 0.05)",
+          border: "1px dashed rgba(180, 0, 255, 0.5)",
+          backgroundColor: "rgba(180, 0, 255, 0.05)",
           borderRadius: 5,
           color: "rgb(172 177 180)",
           fontSize: 10,
           display: "inline-block",
+          width: "100%",
         }
       : {
           fontSize: 10,
@@ -277,23 +278,42 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
 
     if (this.props.mode === "edit") {
       return (
-        <>
-          <div style={diagnosticsPanelStyle}>
-            <div>Execute</div>
-            <div>
-              <strong>Type:</strong> {this.props.queryType}
-            </div>
-            <div>
-              <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
-            </div>
-            {this.props.executeImmediately && (
-              <div>
-                <Icon type="check-square" /> <strong>Execute Immediately</strong>
-              </div>
-            )}
+        <div style={diagnosticsPanelStyle}>
+          <div>Execute</div>
+          <div>
+            <strong>Type:</strong> {this.props.queryType}
           </div>
-          {this.getQueryStrategy()}
-        </>
+          <div>
+            <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
+          </div>
+          {this.props.executeImmediately && (
+            <div>
+              <Icon type="check-square" /> <strong>Execute Immediately</strong>
+            </div>
+          )}
+          <div
+            style={{
+              position: "relative",
+              padding: 5,
+              pointerEvents: "none",
+            }}>
+            {this.getQueryStrategy()}
+            <div
+              style={{
+                position: "absolute",
+                borderRadius: 5,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(180, 0, 255, 0.05)",
+                color: "rgb(172 177 180)",
+                zIndex: 100,
+              }}>
+              &nbsp;
+            </div>
+          </div>
+        </div>
       )
     }
     return this.getQueryStrategy()

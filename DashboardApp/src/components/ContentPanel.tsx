@@ -10,11 +10,6 @@ import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
 
 export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
-  /*
-   * For now, the user interacts with state, but it is not persisted.
-   */
-  const [data, setData] = useState({})
-
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     configsByType: store.select.globalConfig.configsByType(appState),
@@ -65,8 +60,8 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
             mode="display"
             contextManager={userInterfaceContextManager}
             components={(appPageConfig && appPageConfig.layout) || []}
-            data={data}
-            onChangeData={(newData) => setData(newData)}
+            data={props.data}
+            onChangeData={props.onChangeData}
           />
         )}
       </AdminUserInterfaceContextManagerProvider>
