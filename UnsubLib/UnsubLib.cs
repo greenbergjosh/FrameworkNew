@@ -1103,18 +1103,23 @@ namespace UnsubLib
             {
                 try
                 {
-                    if (c.GetS("MostRecentUnsubFileId") != null)
+                    var refreshPeriod = c.GetS("UnsubRefreshPeriod").ParseInt() ?? _fw.StartupConfiguration.GetS("Config/DefaultUnsubRefreshPeriod").ParseInt() ?? 10;
+                    if (!string.IsNullOrWhiteSpace(c.GetS("MostRecentUnsubFileId")) && (DateTime.Now - DateTime.Parse(c.GetS("MostRecentUnsubFileDate"))).TotalDays <= refreshPeriod)
+                    {
                         refdFiles.Add(c.GetS("MostRecentUnsubFileId").ToLower());
+                    }
                 }
                 catch
                 {
                 }
             }
 
+            DirectoryInfo sourceDir;
+            FileInfo[] files;
             if (!string.IsNullOrEmpty(FileCacheDirectory))
             {
-                var sourceDir = new DirectoryInfo(FileCacheDirectory);
-                var files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
+                sourceDir = new DirectoryInfo(FileCacheDirectory);
+                files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
                 foreach (var file in files)
                 {
                     var fileParts = file.Name.Split(new char[] { '.' });
@@ -1145,8 +1150,8 @@ namespace UnsubLib
             }
             else
             {
-                var sourceDir = new DirectoryInfo(ClientWorkingDirectory);
-                var files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
+                sourceDir = new DirectoryInfo(ClientWorkingDirectory);
+                files = sourceDir.GetFiles("*.srt", SearchOption.TopDirectoryOnly);
                 foreach (var file in files)
                 {
                     var fileParts = file.Name.Split(new char[] { '.' });
@@ -1156,29 +1161,39 @@ namespace UnsubLib
                 }
             }
 
-            var sourceDirLocal = new DirectoryInfo(ClientWorkingDirectory);
-            var filesLocal = sourceDirLocal.GetFiles("*", SearchOption.TopDirectoryOnly);
-            foreach (var file in filesLocal)
+            sourceDir = new DirectoryInfo(ClientWorkingDirectory);
+            files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
+            foreach (var file in files)
             {
                 Fs.TryDeleteFile(file);
             }
+
+            sourceDir = new DirectoryInfo(SearchDirectory);
+            files = sourceDir.GetFiles("*", SearchOption.TopDirectoryOnly);
+            foreach (var file in files)
+            {
+                var fileParts = file.Name.Split(new char[] { '.' });
+                if (!refdFiles.Contains(fileParts[0].ToLower()))
+                    Fs.TryDeleteFile(file);
+            }
+
 
 #if DEBUG
             if (!System.Diagnostics.Debugger.IsAttached)
             {
 #endif
-                try
-                {
-                    await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
+            try
+            {
+                await _fw.Log(nameof(CleanUnusedFiles), "Starting HttpPostAsync CleanUnusedFilesServer");
 
-                    await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
+                await ProtocolClient.HttpPostAsync(UnsubServerUri, Jw.Json(new { m = "CleanUnusedFilesServer" }), "application/json", 1000 * 60);
 
-                    await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
-                }
-                catch (Exception exClean)
-                {
-                    await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
-                }
+                await _fw.Trace(nameof(CleanUnusedFiles), "Completed HttpPostAsync CleanUnusedFilesServer");
+            }
+            catch (Exception exClean)
+            {
+                await _fw.Error(nameof(CleanUnusedFiles), $"HttpPostAsync CleanUnusedFilesServer: {exClean}");
+            }
 #if DEBUG
             }
 #endif
