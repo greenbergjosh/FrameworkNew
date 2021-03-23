@@ -9,7 +9,6 @@ import { registry } from "./registry"
 import { RenderInterfaceComponent, RenderInterfaceComponentProps } from "./RenderInterfaceComponent"
 import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
 import { hasTokens, replaceTokens } from "lib/tokenReplacer"
-import { v4 as uuid } from "uuid"
 
 interface ComponentRendererProps {
   componentLimit?: number
@@ -54,12 +53,8 @@ export const _ComponentRenderer = ({
   )
 
   const content = components.map((componentDefinition, index) => {
-    if (isEmpty(componentDefinition.key)) {
-      componentDefinition.key = uuid()
-    }
-
     return (
-      <DataPathContext path={index} key={`${componentDefinition.component}-${index}-${componentDefinition.key}`}>
+      <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
         {(path) => (
           <DetokenizedComponent
             componentDefinition={componentDefinition}
