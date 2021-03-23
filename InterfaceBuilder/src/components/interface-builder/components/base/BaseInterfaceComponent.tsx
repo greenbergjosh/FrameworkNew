@@ -61,7 +61,7 @@ export interface ComponentRenderMetaProps {
   mode?: UserInterfaceProps["mode"]
   userInterfaceData?: UserInterfaceProps["data"]
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
-  onChangeData?: (newData: ChangeObject) => void
+  onChangeData?: UserInterfaceProps["onChangeData"]
   onChangeSchema?: (newSchema: ComponentDefinition) => void
   userInterfaceSchema?: ComponentDefinition
   submit?: UserInterfaceProps["submit"]
@@ -146,6 +146,24 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
     )
   }
 
+  /**
+   * Sets the value to local or root UI parentRowData.
+   * Provide the "$root." keyword at the beginning of the valueKey to use root UI parentRowData.
+   * @param targetKey
+   * @param value
+   * @param userInterfaceData
+   */
+  setValue(targetKey: string, value: any, userInterfaceData?: UserInterfaceProps["data"]) {
+    const pathSegments = targetKey.split(".")
+    const isTargetingRoot = pathSegments[0] === "$root"
+    if (isTargetingRoot) {
+      pathSegments.shift()
+    }
+    const path = pathSegments.join(".")
+    const uiData = isTargetingRoot ? this.props.getRootUserInterfaceData() : userInterfaceData
+    this.props.onChangeData && this.props.onChangeData(set(path, value, uiData), isTargetingRoot)
+  }
+
   anyPropsChanged(prevProps: Readonly<BaseInterfaceComponentProps>, propsToCheck: Array<string>): boolean {
     return propsToCheck.some(
       (prop) =>
@@ -156,7 +174,7 @@ export abstract class BaseInterfaceComponent<T extends BaseInterfaceComponentPro
   static availableEvents: string[] = []
 
   raiseEvent(eventName: string, eventPayload: EventPayloadType) {
-    console.log(`BaseInterfaceComponent Event raised: ${eventName}`, eventPayload)
+    console.log(`BaseInterfaceComponent: Component raised event "${eventName}"`, eventPayload)
     if (this.props.onRaiseEvent) {
       this.props.onRaiseEvent(eventName, eventPayload, this)
     }

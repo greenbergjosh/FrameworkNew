@@ -1,0 +1,9 @@
+{
+  "textOverrides": {
+    "textType": "success",
+    "showIcon": true,
+    "banner": false,
+    "closable": false,
+    "center": false
+  }
+}

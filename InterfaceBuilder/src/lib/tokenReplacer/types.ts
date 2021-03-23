@@ -1,1 +1,1 @@
-export type MatchReducer = (acc: string, match: string[]) => string
+export type MatchReducer = (acc: string, match: RegExpExecArray) => string

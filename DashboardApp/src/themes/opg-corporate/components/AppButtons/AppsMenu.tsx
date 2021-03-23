@@ -1,5 +1,6 @@
 import { Button, Icon, Popover } from "antd"
-import styles from "../../theme.module.scss"
+import styles from "./styles.module.scss"
+import themeStyles from "../../theme.module.scss"
 import React from "react"
 import * as Reach from "@reach/router"
 import { useRematch } from "../../../../hooks"
@@ -30,7 +31,7 @@ export function AppsMenu(): JSX.Element {
           })}
         </>
       }>
-      <Button htmlType="button" type="link" size="large" icon="appstore" ghost={true} className={styles.appsMenuIcon} />
+      <Button htmlType="button" type="link" size="large" icon="appstore" ghost={true} className={themeStyles.appIcon} />
     </Popover>
   )
 }

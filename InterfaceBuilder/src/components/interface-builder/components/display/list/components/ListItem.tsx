@@ -19,7 +19,7 @@ export function ListItem({
   const handleChangeData = (index: number) => (newData: object) => {
     const data = get(valueKey, userInterfaceData) || []
 
-    console.log("ListInterfaceComponent.handleChangeData", {
+    console.log("ListInterfaceComponent.onChangeData", {
       data,
       newData,
     })

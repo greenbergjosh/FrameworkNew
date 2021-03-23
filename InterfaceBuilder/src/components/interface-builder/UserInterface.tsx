@@ -18,8 +18,8 @@ import { DataPathContext } from "./util/DataPathContext"
 interface IUserInterfaceProps {
   data?: any
   contextManager?: UserInterfaceContextManager
-  mode: "display" | "edit"
-  onChangeData?: (data: UserInterfaceProps["data"]) => void
+  mode: "display" | "edit" | "preview"
+  onChangeData?: (data: UserInterfaceProps["data"], isTargetingRoot?: boolean) => void
   components: ComponentDefinition[]
   submit?: () => void
   getRootUserInterfaceData?: () => UserInterfaceProps["data"]
@@ -29,12 +29,16 @@ export interface DisplayUserInterfaceProps extends IUserInterfaceProps {
   mode: "display"
 }
 
+export interface PreviewUserInterfaceProps extends IUserInterfaceProps {
+  mode: "preview"
+}
+
 export interface EditUserInterfaceProps extends IUserInterfaceProps {
   mode: "edit"
   onChangeSchema: (schema: ComponentDefinition[]) => void
 }
 
-export type UserInterfaceProps = DisplayUserInterfaceProps | EditUserInterfaceProps
+export type UserInterfaceProps = DisplayUserInterfaceProps | EditUserInterfaceProps | PreviewUserInterfaceProps
 
 export interface UserInterfaceState extends DropHelperResult {
   clipboardComponent: null | DraggedItemProps

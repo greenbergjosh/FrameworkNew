@@ -74,6 +74,23 @@ export class RepeaterInterfaceComponent extends BaseInterfaceComponent<RepeaterI
           />
         )
       }
+      case "preview": {
+        return (
+          <DisplayMode
+            addItemLabel={addItemLabel}
+            components={components}
+            data={[]}
+            getRootUserInterfaceData={() => null}
+            description={emptyText}
+            hasInitialRecord={hasInitialRecord}
+            hasLastItemComponents={hasLastItemComponents}
+            lastItemComponents={lastItemComponents}
+            onChange={() => void 0}
+            orientation={orientation}
+            readonly={readonly}
+          />
+        )
+      }
       case "edit": {
         // Repeat the component once per item in the repeater
         return (

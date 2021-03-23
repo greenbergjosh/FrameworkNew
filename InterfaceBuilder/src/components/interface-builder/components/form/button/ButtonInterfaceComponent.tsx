@@ -1,5 +1,4 @@
 import { Button, Col, Popover, Row, Tooltip, Typography } from "antd"
-import { merge } from "lodash/fp"
 import React from "react"
 import { buttonManageForm } from "./button-manage-form"
 import { BaseInterfaceComponent } from "../../base/BaseInterfaceComponent"
@@ -59,7 +58,7 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
         const eventPayload: JSONRecord = {}
 
         paramKVPMaps.values.forEach((map) => {
-          eventPayload[map.sourceKey] = this.getValue(map.sourceKey)
+          eventPayload[map.targetKey] = this.getValue(map.sourceKey)
         })
         this.raiseEvent(EVENTS.VALUE_CHANGED, eventPayload)
       }
@@ -96,12 +95,10 @@ export class ButtonInterfaceComponent extends BaseInterfaceComponent<
     } = this.props
     const isCircle = shape === "circle" || shape === "circle-outline"
     const buttonShape = displayType !== "link" ? shape : undefined
-
-    // Merge any incoming confirmation properties on top of the defaults
-    const confirmation = merge(
-      this.props.confirmation || {},
-      ButtonInterfaceComponent.getManageFormDefaults().confirmation
-    )
+    const confirmation = {
+      ...ButtonInterfaceComponent.getManageFormDefaults().confirmation,
+      ...this.props.confirmation,
+    }
 
     const content = (
       <Tooltip title={hideButtonLabel || isCircle ? buttonLabel : null}>

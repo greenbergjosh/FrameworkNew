@@ -61,7 +61,7 @@ export class UserInterfaceInterfaceComponent extends BaseInterfaceComponent<
 
   handleChangeSchema = (schema: ComponentDefinition[]) => {
     const { onChangeData, userInterfaceData, valueKey } = this.props
-    // console.log("UserInterfaceInterfaceComponent.handleChangeSchema", schema, onChangeData)
+    // console.log("UserInterfaceInterfaceComponent.onChangeSchema", schema, onChangeData)
     onChangeData && onChangeData(set(valueKey, schema, userInterfaceData))
   }
 

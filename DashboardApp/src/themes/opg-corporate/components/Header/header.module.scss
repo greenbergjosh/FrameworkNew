@@ -1,0 +1,51 @@
+@import "src/themes/opg-corporate/theme.module";
+
+/**************************************************************************
+ *
+ * HEADER
+ */
+
+.header {
+  background-color: white;
+  height: $header-height;
+  line-height: $header-height;
+  padding: 0 30px;
+  border-bottom: solid 1px $opg-gray;
+  overflow: hidden;
+
+  align-content: stretch;
+  align-items: flex-start;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+
+  .appDescription {
+    order: 0;
+    flex: 1 1 auto;
+    align-self: auto;
+    font-size: 0.9em;
+    line-height: $header-height + 8px;
+  }
+
+  .headerRightPanel {
+    order: 0;
+    flex: 0 0 auto;
+    align-self: auto;
+  }
+}
+
+.userAvatar {
+  background-color: $opg-gray;
+  color: white;
+  border: solid 2px $opg-gray-light;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  margin-right: -2px; // The hover border extends an extra 2px, so we remove that for right alignment
+
+  &:hover {
+    border-color: $opg-orange;
+  }
+}

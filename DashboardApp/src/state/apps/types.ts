@@ -1,4 +1,4 @@
-import { ComponentDefinition } from "@opg/interface-builder"
+import { ComponentDefinition, UserInterfaceProps } from "@opg/interface-builder"
 import * as Store from "../store.types"
 import { PersistedConfig } from "../../data/GlobalConfig.Config"
 

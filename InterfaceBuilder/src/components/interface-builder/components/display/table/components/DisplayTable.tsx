@@ -1,5 +1,5 @@
 import React from "react"
-import { get, isArray, isEmpty, isEqual, matches, set, sortBy } from "lodash/fp"
+import { get, isArray, isEmpty, isEqual, sortBy } from "lodash/fp"
 import {
   GridComponent,
   GroupSettingsModel,
@@ -7,10 +7,10 @@ import {
   SortDescriptorModel,
   SortSettingsModel,
 } from "@syncfusion/ej2-react-grids"
-import { ComponentRenderer } from "components/interface-builder/ComponentRenderer"
 import StandardGrid from "components/grid/StandardGrid"
-import { SortableGroupableColumnModel, DisplayTableProps } from "../types"
+import { DisplayTableProps, SortableGroupableColumnModel } from "../types"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
+import { RowDetail } from "./RowDetail"
 
 /**
  * Display Table
@@ -34,6 +34,8 @@ export function DisplayTable({
   getValue,
   valueKey,
   preview = false,
+  showToolbar,
+  useSmallPager,
 }: DisplayTableProps): JSX.Element {
   const { sortSettings, pageSettings, groupSettings } = getDisplaySettings(columns, defaultPageSize)
   let dataArray: JSONRecord[] = []
@@ -48,24 +50,6 @@ export function DisplayTable({
     }
   }
   const grid = React.useRef<GridComponent>(null)
-
-  /**
-   * From DashboardApp: ReportBody.tsx "onChangeData"
-   */
-  const updateGridData = React.useCallback((oldData: JSONRecord, newData: JSONRecord) => {
-    if (grid && grid.current) {
-      /*
-       * If the dataSource is an array of JavaScript objects, then Grid will create instance of DataManager.
-       * https://ej2.syncfusion.com/react/documentation/api/grid/
-       */
-      const ds = grid.current.dataSource as JSONRecord[]
-      const idx = ds.findIndex((item) => matches(item)(oldData))
-      if (idx && idx > -1) {
-        ds[idx] = { ...newData }
-        grid.current.refresh()
-      }
-    }
-  }, [])
 
   return (
     <StandardGrid
@@ -84,38 +68,20 @@ export function DisplayTable({
       height={height}
       groupSettings={groupSettings}
       pageSettings={pageSettings}
+      showToolbar={showToolbar}
+      useSmallPager={useSmallPager}
       sortSettings={sortSettings}
       detailTemplate={
         rowDetails && rowDetails.length
-          ? (parentData: any) => {
-              // console.log("TableInterfaceComponent.render", "Display Child", {
-              //   rowDetails,
-              //   parentData,
-              // })
-              return (
-                <ComponentRenderer
-                  components={rowDetails}
-                  data={parentData}
-                  getRootData={getRootUserInterfaceData}
-                  onChangeData={(newData) => {
-                    updateGridData(parentData, newData)
-                    onChangeData && onChangeData(set(valueKey!, newData, userInterfaceData))
-                  }}
-                  onChangeSchema={(newSchema) => {
-                    console.log("TableInterfaceComponent.DisplayTable", "onChangeSchema X4", {
-                      newSchema,
-                      // onChangeSchema,
-                      // userInterfaceSchema,
-                    })
-                    // onChangeSchema &&
-                    //   userInterfaceSchema &&
-                    //   onChangeSchema(
-                    //     set("rowDetails", newSchema, userInterfaceSchema)
-                    //   )
-                  }}
-                />
-              )
-            }
+          ? (parentData: any) => (
+              <RowDetail
+                components={rowDetails}
+                getRootUserInterfaceData={getRootUserInterfaceData}
+                mode="display"
+                onChangeData={onChangeData}
+                parentRowData={parentData}
+              />
+            )
           : undefined
       }
     />

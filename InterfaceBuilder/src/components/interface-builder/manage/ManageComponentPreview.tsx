@@ -30,7 +30,7 @@ export const ManageComponentPreview = ({
       data={previewData}
       getRootData={() => previewData}
       index={0}
-      mode={"display"}
+      mode={"preview"}
       onChangeData={setPreviewData}
       path={"PREVIEW"}
     />

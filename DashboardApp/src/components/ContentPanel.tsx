@@ -10,11 +10,6 @@ import BreadcrumbNav from "./BreadcrumbNav"
 import { ContentPanelProps } from "../themes/types"
 
 export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
-  /*
-   * For now, the user interacts with state, but it is not persisted.
-   */
-  const [data, setData] = useState({})
-
   const [fromStore, dispatch] = useRematch((appState) => ({
     configsById: store.select.globalConfig.configsById(appState),
     configsByType: store.select.globalConfig.configsByType(appState),
@@ -41,13 +36,19 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
         title={
           <>
             {appPageConfig.icon && <Icon type={appPageConfig.icon} style={{ marginRight: 10 }} />}
-            {appPageConfig.title}
-            {appPageConfig.id && (
-              <Tooltip title="Edit Page">
-                <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
-                  <Button type="link" icon="edit" size="small" />
-                </Reach.Link>
+            {appPageConfig.id ? (
+              <Tooltip
+                title={
+                  <Reach.Link to={`${globalConfigPath}/${appPageConfig.id}`}>
+                    <Button type="link" icon="edit" size="small">
+                      Edit Page
+                    </Button>
+                  </Reach.Link>
+                }>
+                {appPageConfig.title}
               </Tooltip>
+            ) : (
+              <>{appPageConfig.title}</>
             )}
           </>
         }
@@ -59,8 +60,8 @@ export const ContentPanel = (props: ContentPanelProps): JSX.Element => {
             mode="display"
             contextManager={userInterfaceContextManager}
             components={(appPageConfig && appPageConfig.layout) || []}
-            data={data}
-            onChangeData={(newData) => setData(newData)}
+            data={props.data}
+            onChangeData={props.onChangeData}
           />
         )}
       </AdminUserInterfaceContextManagerProvider>

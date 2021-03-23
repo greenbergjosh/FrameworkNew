@@ -1,12 +1,15 @@
-import { set } from "lodash/fp"
+import { set, isEqual, isEmpty } from "lodash/fp"
+import { forIn } from "lodash"
 import React from "react"
 import { deepDiff } from "./lib/deep-diff"
 import { DataPathContext } from "./util/DataPathContext"
 import { ComponentDefinition } from "./components/base/BaseInterfaceComponent"
 import { Droppable, DroppableContextType, shallowPropCheck } from "./dnd"
 import { registry } from "./registry"
-import { RenderInterfaceComponent } from "./RenderInterfaceComponent"
+import { RenderInterfaceComponent, RenderInterfaceComponentProps } from "./RenderInterfaceComponent"
 import { EditUserInterfaceProps, UserInterfaceProps } from "./UserInterface"
+import { hasTokens, replaceTokens } from "lib/tokenReplacer"
+import { v4 as uuid } from "uuid"
 
 interface ComponentRendererProps {
   componentLimit?: number
@@ -44,40 +47,36 @@ export const _ComponentRenderer = ({
   const handleChangeSchema = React.useCallback(
     (index: number) => (newComponentDefinition: ComponentDefinition) => {
       if (mode === "edit") {
-        // console.log("ComponentRenderer.render", "onChangeSchema", {
-        //   componentDefinition,
-        //   newComponentDefinition,
-        //   onChangeSchema,
-        //   path,
-        //   index,
-        //   components,
-        // })
-        // onChangeSchema && onChangeSchema(set(path, newComponentDefinition, components))
         onChangeSchema && onChangeSchema(set(index, newComponentDefinition, components))
       }
     },
     [components, mode, onChangeSchema]
   )
 
-  const content = components.map((componentDefinition, index) => (
-    <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
-      {(path) => (
-        <RenderInterfaceComponent
-          Component={registry.lookup(componentDefinition.component)}
-          componentDefinition={componentDefinition}
-          data={data}
-          getRootData={getRootData}
-          dragDropDisabled={dragDropDisabled}
-          index={index}
-          mode={mode}
-          onChangeData={onChangeData}
-          onChangeSchema={handleChangeSchema(index)}
-          submit={submit}
-          path={path}
-        />
-      )}
-    </DataPathContext>
-  ))
+  const content = components.map((componentDefinition, index) => {
+    if (isEmpty(componentDefinition.key)) {
+      componentDefinition.key = uuid()
+    }
+
+    return (
+      <DataPathContext path={index} key={`${componentDefinition.component}-${index}-${componentDefinition.key}`}>
+        {(path) => (
+          <DetokenizedComponent
+            componentDefinition={componentDefinition}
+            data={data}
+            dragDropDisabled={dragDropDisabled}
+            getRootData={getRootData}
+            index={index}
+            mode={mode}
+            onChangeData={onChangeData}
+            onChangeSchema={handleChangeSchema(index)}
+            path={path}
+            submit={submit}
+          />
+        )}
+      </DataPathContext>
+    )
+  })
 
   // console.log("ComponentRenderer.render", { components, data })
 
@@ -116,3 +115,67 @@ export const ComponentRenderer = React.memo(_ComponentRenderer, (prevProps, next
 
   return simplePropEquality && !runDeepDiff()
 })
+
+function DetokenizedComponent(props: {
+  componentDefinition: ComponentDefinition & { valueKey?: string; defaultValue?: any }
+  data: UserInterfaceProps["data"]
+  dragDropDisabled?: boolean
+  getRootData: () => UserInterfaceProps["data"]
+  index: number
+  mode: UserInterfaceProps["mode"]
+  onChangeData: UserInterfaceProps["onChangeData"]
+  onChangeSchema: RenderInterfaceComponentProps["onChangeSchema"]
+  path: string
+  submit?: UserInterfaceProps["submit"]
+}) {
+  const {
+    componentDefinition,
+    data,
+    dragDropDisabled,
+    getRootData,
+    index,
+    mode,
+    onChangeData,
+    onChangeSchema,
+    path,
+    submit,
+  } = props
+
+  /**
+   * Allow any prop to use a token that gets parentRowData from the model.
+   * @param componentDefinition
+   * @param data
+   */
+  const componentDef = React.useMemo(() => {
+    if (mode === "edit") {
+      return componentDefinition
+    }
+    const newDef: ComponentDefinition = { ...componentDefinition }
+
+    forIn(newDef, (value: any, key: string) => {
+      let newValue = value
+      if (typeof value === "string" && hasTokens(value)) {
+        newValue = replaceTokens(newDef[key] as string, data, componentDefinition.valueKey || "", mode)
+      }
+      newDef[key] = newValue
+    })
+    // console.log("replacePropTokens", { componentDefinition, newDef })
+    return newDef
+  }, [componentDefinition, data])
+
+  return (
+    <RenderInterfaceComponent
+      Component={registry.lookup(componentDef.component)}
+      componentDefinition={componentDef}
+      data={data}
+      dragDropDisabled={dragDropDisabled}
+      getRootData={getRootData}
+      index={index}
+      mode={mode}
+      onChangeData={onChangeData}
+      onChangeSchema={onChangeSchema}
+      path={path}
+      submit={submit}
+    />
+  )
+}

@@ -18,7 +18,6 @@ import { Empty, Icon } from "antd"
 import { PersistedConfig } from "../../../data/GlobalConfig.Config"
 import { JSONRecord } from "../../../data/JSON"
 import { AdminUserInterfaceContext } from "../../../data/AdminUserInterfaceContextManager"
-import { set } from "lodash/fp"
 
 export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   ExecuteInterfaceComponentProps,
@@ -103,6 +102,9 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     if (!this.props.executeImmediately || this.props.mode === "edit") {
       return
     }
+    if (this.props.mode === "preview") {
+      return
+    }
     if (this.props.autoExecuteIntervalSeconds) {
       const ms = this.props.autoExecuteIntervalSeconds * 1000
       this.autoExecuteTimer = setInterval(handleSubmit, ms)
@@ -129,10 +131,10 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
   }
 
   private handleRaiseEvent = (eventName: string, eventPayload: any): void => {
-    const { onChangeData, outboundLoadingKey, userInterfaceData } = this.props
-    if (outboundLoadingKey && onChangeData) {
+    const { outboundLoadingKey, userInterfaceData } = this.props
+    if (outboundLoadingKey) {
       const isLoading = eventName === "loading"
-      onChangeData(set(outboundLoadingKey, isLoading, userInterfaceData))
+      this.setValue(outboundLoadingKey, isLoading, userInterfaceData)
     }
     this.raiseEvent(eventName, eventPayload)
   }
@@ -148,6 +150,14 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
       return acc
     }, {} as JSONRecord)
     return { ...userInterfaceData, ...params, ...this.state.transientParams }
+  }
+
+  private handleResults = (data: any) => {
+    const { onChangeData, outboundValueKey, userInterfaceData } = this.props
+
+    console.log("handleChangeData", { data })
+    // onChangeData && onChangeData(set(outboundValueKey, data, userInterfaceData))
+    this.setValue(outboundValueKey, data, userInterfaceData)
   }
 
   /* ******************************************
@@ -179,11 +189,11 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             deleteRedirectPath={castProps.RemoteConfig_deleteRedirectPath}
             entityTypeId={castProps.RemoteConfig_entityTypeId}
             getParams={this.getParamsFromParamKVPMaps}
-            getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
+            onResults={this.handleResults}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submitting}
             remoteConfigStaticId={castProps.RemoteConfig_staticId}
@@ -202,13 +212,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             executeQuery={this.context!.executeQuery}
             executeQueryUpdate={this.context!.executeQueryUpdate}
             getParams={this.getParamsFromParamKVPMaps}
-            getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             isCRUD={castProps.RemoteQuery_isCRUD}
             loadById={this.context!.loadById}
             mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
+            onResults={this.handleResults}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submitting}
             queryConfigId={remoteQuery as PersistedConfig["id"]}
@@ -225,13 +235,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
             buttonProps={buttonProps}
             executeHTTPRequestQuery={this.context!.executeHTTPRequestQuery}
             getParams={this.getParamsFromParamKVPMaps}
-            getRootUserInterfaceData={this.props.getRootUserInterfaceData}
             isCRUD={castProps.RemoteUrl_isCRUD}
             loadById={this.context!.loadById}
             mode={this.props.mode}
             onChangeData={onChangeData}
             onMount={this.handleQueryFormMount}
             onRaiseEvent={this.handleRaiseEvent}
+            onResults={this.handleResults}
             outboundValueKey={outboundValueKey}
             parentSubmitting={this.state.submitting}
             queryConfigId={remoteUrl as PersistedConfig["id"]}
@@ -254,12 +264,13 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
     const diagnosticsPanelStyle = !this.props.invisible
       ? {
           padding: 10,
-          border: "1px dashed rgba(0, 178, 255, 0.5)",
-          backgroundColor: "rgba(0, 178, 255, 0.05)",
+          border: "1px dashed rgba(180, 0, 255, 0.5)",
+          backgroundColor: "rgba(180, 0, 255, 0.05)",
           borderRadius: 5,
           color: "rgb(172 177 180)",
           fontSize: 10,
           display: "inline-block",
+          width: "100%",
         }
       : {
           fontSize: 10,
@@ -267,23 +278,42 @@ export class ExecuteInterfaceComponent extends BaseInterfaceComponent<
 
     if (this.props.mode === "edit") {
       return (
-        <>
-          <div style={diagnosticsPanelStyle}>
-            <div>Execute</div>
-            <div>
-              <strong>Type:</strong> {this.props.queryType}
-            </div>
-            <div>
-              <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
-            </div>
-            {this.props.executeImmediately && (
-              <div>
-                <Icon type="check-square" /> <strong>Execute Immediately</strong>
-              </div>
-            )}
+        <div style={diagnosticsPanelStyle}>
+          <div>Execute</div>
+          <div>
+            <strong>Type:</strong> {this.props.queryType}
           </div>
-          {this.getQueryStrategy()}
-        </>
+          <div>
+            <strong>Outbound Value Key:</strong> {this.props.outboundValueKey}
+          </div>
+          {this.props.executeImmediately && (
+            <div>
+              <Icon type="check-square" /> <strong>Execute Immediately</strong>
+            </div>
+          )}
+          <div
+            style={{
+              position: "relative",
+              padding: 5,
+              pointerEvents: "none",
+            }}>
+            {this.getQueryStrategy()}
+            <div
+              style={{
+                position: "absolute",
+                borderRadius: 5,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(180, 0, 255, 0.05)",
+                color: "rgb(172 177 180)",
+                zIndex: 100,
+              }}>
+              &nbsp;
+            </div>
+          </div>
+        </div>
       )
     }
     return this.getQueryStrategy()

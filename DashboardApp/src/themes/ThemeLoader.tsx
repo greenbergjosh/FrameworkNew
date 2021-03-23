@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { useRematch } from "../hooks"
 import { store } from "../state/store"
 import OpgCorporateTheme from "../themes/opg-corporate"
@@ -7,6 +7,11 @@ import { WithRouteProps } from "../state/navigation"
 import { ITheme, ThemeProps } from "./types"
 
 export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
+  /*
+   * For now, the user interacts with state, but it is not persisted.
+   */
+  const [data, setData] = useState({})
+
   const [fromStore, dispatch] = useRematch((appState) => ({
     loadingGlobalConfigs: appState.loading.effects.globalConfig.loadRemoteConfigs,
     profile: appState.iam.profile,
@@ -23,6 +28,7 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
   React.useEffect(() => {
     const url = `${props.location.hostname}/${props.location.pathname}`
     if (url !== fromStore.appPaths.currentUrl) {
+      setData({})
       dispatch.apps.updateAppPaths()
     }
   }, [dispatch, fromStore.appPaths.currentUrl, props.location.hostname, props.location.pathname])
@@ -43,6 +49,8 @@ export function ThemeLoader(props: WithRouteProps<ThemeProps>): JSX.Element {
       appConfig={fromStore.appConfig}
       children={props.children}
       appRootPath={fromStore.appPaths.appRootPath}
+      data={data}
+      onChangeData={(newData) => setData(newData)}
     />
   )
 }

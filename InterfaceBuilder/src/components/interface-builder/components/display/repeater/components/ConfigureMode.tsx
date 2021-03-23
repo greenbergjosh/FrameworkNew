@@ -5,6 +5,7 @@ import { DataPathContext } from "components/interface-builder/util/DataPathConte
 import { Badge, Card, Icon } from "antd"
 import classNames from "classnames"
 import styles from "../styles.scss"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export function ConfigureMode({
   components,
@@ -20,9 +21,13 @@ export function ConfigureMode({
    * EVENT HANDLERS
    */
 
+  function handleChangeData(nextData: JSONRecord): void {
+    onChange(nextData)
+  }
+
   function handleChangeSchema(newSchema: any) {
     console.warn(
-      "RepeaterInterfaceComponent > ConfigureMode.handleChangeSchema!",
+      "RepeaterInterfaceComponent > ConfigureMode.onChangeSchema!",
       "TODO: Cannot alter schema inside ComponentRenderer in Repeater",
       { newSchema }
     )
@@ -43,7 +48,7 @@ export function ConfigureMode({
               data={data}
               getRootData={getRootUserInterfaceData}
               dragDropDisabled={!!preconfigured}
-              onChangeData={onChange}
+              onChangeData={handleChangeData}
               onChangeSchema={handleChangeSchema}
             />
           </Card>
@@ -65,7 +70,7 @@ export function ConfigureMode({
                   data={data}
                   getRootData={getRootUserInterfaceData}
                   dragDropDisabled={!!preconfigured}
-                  onChangeData={onChange}
+                  onChangeData={handleChangeData}
                   onChangeSchema={handleChangeSchema}
                 />
               </Card>

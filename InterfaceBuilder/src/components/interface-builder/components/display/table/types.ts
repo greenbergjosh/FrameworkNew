@@ -26,6 +26,8 @@ export interface ITableInterfaceComponentProps extends ComponentDefinitionNamedP
   allowEditing?: boolean
   columns: SortableGroupableColumnModel[]
   component: "table"
+  showToolbar?: boolean
+  useSmallPager?: boolean
   defaultCollapseAll?: boolean
   autoFitColumns?: boolean
   useSmallFont?: boolean
@@ -81,4 +83,5 @@ export interface DisplayTableProps extends Partial<TableInterfaceComponentDispla
     userInterfaceData?: UserInterfaceProps["data"],
     getRootUserInterfaceData?: () => UserInterfaceProps["data"]
   ) => JSONRecord | JSONRecord[] | undefined
+  setValue: (targetKey: string, value: any, userInterfaceData?: UserInterfaceProps["data"]) => void
 }

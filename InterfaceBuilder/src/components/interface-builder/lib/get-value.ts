@@ -15,22 +15,22 @@ export function getValue(
   getRootUserInterfaceData: () => UserInterfaceProps["data"]
 ): JSONRecord | JSONRecord[] | undefined {
   if (!valueKey) return
-  if (valueKey === "root") {
+  if (valueKey === "$root") {
     return getRootUserInterfaceData()
   }
-  if (valueKey === "currentRoot") {
+  if (valueKey === "$") {
     return userInterfaceData
   }
-  if (valueKey.startsWith("root.")) {
+  if (valueKey.startsWith("$root.")) {
     // Get value from the root UI data
-    // strip prefix "root.", then get  data from root UI data
-    const key = valueKey.substring(5)
+    // strip prefix "$root.", then get  data from root UI data
+    const key = valueKey.substring(6)
     return get(key, getRootUserInterfaceData())
   }
-  if (valueKey.startsWith("currentRoot.")) {
+  if (valueKey.startsWith("$.")) {
     // Get value from the UI data
-    // strip prefix "currentRoot.", then get  data from UI data
-    const key = valueKey.substring(12)
+    // strip prefix "$.", then get  data from UI data
+    const key = valueKey.substring(2)
     return get(key, userInterfaceData)
   }
   // Get value from the local UI data

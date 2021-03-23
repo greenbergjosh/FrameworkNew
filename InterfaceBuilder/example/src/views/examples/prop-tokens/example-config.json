@@ -1,0 +1,116 @@
+{
+  "invisible": false,
+  "key": "outer",
+  "hidden": false,
+  "orientation": "vertical",
+  "label": "Form",
+  "hideLabel": true,
+  "component": "form",
+  "components": [
+    {
+      "height": 150,
+      "invisible": false,
+      "hidden": false,
+      "valueKey": "data",
+      "label": "Dev Tools",
+      "hideLabel": false,
+      "component": "dev-tools",
+      "components": []
+    },
+    {
+      "center": "{$.textOverrides.center}",
+      "headerSize": "h2",
+      "closable": "{$.textOverrides.closable}",
+      "banner": "{$.textOverrides.banner}",
+      "description": "",
+      "showIcon": "{$.textOverrides.showIcon}",
+      "textType": "{$.textOverrides.textType}",
+      "invisible": false,
+      "hidden": false,
+      "stringTemplate": "Some text here",
+      "valueKey": "data",
+      "label": "Text",
+      "hideLabel": true,
+      "component": "text",
+      "marginBottom": 30,
+      "components": []
+    },
+    {
+      "size": "default",
+      "allowClear": true,
+      "placeholder": null,
+      "invisible": false,
+      "hidden": false,
+      "data": {
+        "values": [
+          {
+            "label": "paragraph",
+            "value": "paragraph"
+          },
+          {
+            "label": "title",
+            "value": "title"
+          },
+          {
+            "label": "success",
+            "value": "success"
+          },
+          {
+            "label": "warning",
+            "value": "warning"
+          },
+          {
+            "label": "error",
+            "value": "error"
+          }
+        ]
+      },
+      "dataHandlerType": "local",
+      "multiple": false,
+      "valueKey": "textOverrides.textType",
+      "label": "Text Type",
+      "hideLabel": false,
+      "component": "select"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.showIcon",
+      "label": "Show Icon",
+      "hideLabel": false,
+      "component": "toggle"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.banner",
+      "label": "Banner",
+      "hideLabel": false,
+      "component": "toggle"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.closable",
+      "label": "Closable",
+      "hideLabel": false,
+      "component": "toggle"
+    },
+    {
+      "size": "default",
+      "invisible": false,
+      "hidden": false,
+      "inverted": false,
+      "valueKey": "textOverrides.center",
+      "label": "Center",
+      "hideLabel": false,
+      "component": "toggle"
+    }
+  ]
+}

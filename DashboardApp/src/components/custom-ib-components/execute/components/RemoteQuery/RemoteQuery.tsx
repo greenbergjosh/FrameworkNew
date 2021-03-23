@@ -4,10 +4,10 @@ import * as record from "fp-ts/lib/Record"
 import React from "react"
 import { QueryConfig } from "../../../../../data/Report"
 import { JSONRecord } from "../../../../../data/JSON"
-import { getQueryConfig, getQueryFormValues, mergeResultDataWithModel } from "../utils"
-import { QueryForm } from "../../../../Query/QueryForm"
+import { getQueryConfig, getQueryFormValues } from "../utils"
+import { getDefaultFormValues, QueryForm } from "../../../../Query/QueryForm"
 import { ErrorResponse, LOADSTATUSCODES, OnSubmitType, RemoteQueryProps } from "../../types"
-import { QueryParams } from "../../../../Query/QueryParams"
+import { PropsFromQueryParams, QueryParams } from "../../../../Query/QueryParams"
 import { executeRemoteQuery } from "./executeRemoteQuery"
 
 function RemoteQuery(props: RemoteQueryProps): JSX.Element {
@@ -15,13 +15,11 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
     buttonLabel,
     buttonProps,
     getParams,
-    getRootUserInterfaceData,
     isCRUD,
     mode,
-    onChangeData,
+    onResults,
     onRaiseEvent,
     onMount,
-    outboundValueKey,
     parentSubmitting,
     queryConfigId,
     setParentSubmitting,
@@ -73,7 +71,7 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
       executeQueryUpdate,
       isCRUD
     ).then((newLoadingState) => {
-      // Put response data into userInterfaceData (via onChangeData)
+      // Put response data into userInterfaceData (via onResults)
 
       // TODO: Move this error checking to the DAL and expect server to respond
       //  like previously defined api responses in the DAL codecs.
@@ -88,16 +86,8 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
         return
       }
 
-      if (onChangeData) {
-        const newData = mergeResultDataWithModel({
-          getRootUserInterfaceData,
-          outboundValueKey,
-          parameterValues,
-          queryConfigQuery: queryConfig.query,
-          resultData: newLoadingState.data,
-          userInterfaceData,
-        })
-        onChangeData(newData)
+      if (onResults) {
+        onResults(newLoadingState.data)
       }
       newLoadingState.loadStatus && onRaiseEvent(newLoadingState.loadStatus, { value: newLoadingState.data })
     })
@@ -107,6 +97,16 @@ function RemoteQuery(props: RemoteQueryProps): JSX.Element {
    *
    * RENDER METHOD
    */
+
+  // function getOnMount(
+  //   satisfiedByParentParams: JSONRecord,
+  //   setParameterValues: PropsFromQueryParams["setParameterValues"]
+  // ) {
+  //   return (queryFormValues: JSONRecord) =>
+  //     onMount(() => {
+  //       return handleSubmit(queryFormValues, satisfiedByParentParams, setParameterValues)
+  //     })
+  // }
 
   if (!queryConfig)
     return (

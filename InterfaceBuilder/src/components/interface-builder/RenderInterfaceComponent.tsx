@@ -6,7 +6,7 @@ import { Draggable } from "./dnd"
 import { UserInterfaceProps } from "./UserInterface"
 import { BaseInterfaceComponent, ComponentDefinition } from "./components/base/BaseInterfaceComponent"
 
-interface RenderInterfaceComponentProps {
+export interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
   data: UserInterfaceProps["data"]

@@ -1,71 +1,46 @@
-import { Effects as IamEffects } from "../../../../state/iam/iam"
-import { Effects as GlobalConfigEffects } from "../../../../state/global-config/global-config"
-import { Button, Icon, Layout, Menu, Typography, Tooltip } from "antd"
-import styles from "../../theme.module.scss"
+import { Layout, Typography } from "antd"
+import styles from "./header.module.scss"
 import React from "react"
-import { ClickParam } from "antd/lib/menu"
-import { AppsMenu } from "./AppsMenu"
-import { ProfileMenu } from "./ProfileMenu"
+import { AppsMenu } from "../AppButtons/AppsMenu"
 import { AppConfig } from "../../../../state/apps"
-import { AppViewButtons } from "./AppViewButtons"
-import { useRematch } from "../../../../hooks"
+import { AppViewButtons } from "../AppButtons/AppViewButtons"
+import { SyncConfigButton } from "../AppButtons/SyncConfigButton"
+import { ProfileButton } from "../AppButtons/ProfileButton"
 
-interface HeaderProps {
+export function Header(props: {
   appConfig: AppConfig
   appRootPath: string
-  loadRemoteConfigs: GlobalConfigEffects["loadRemoteConfigs"] //dispatch.globalConfig.loadRemoteConfigs
-  logout: IamEffects["logout"] // dispatch.iam.logout
-}
-
-export function Header({ appConfig, appRootPath, loadRemoteConfigs, logout }: HeaderProps): JSX.Element {
-  const [fromStore, dispatch] = useRematch((appState) => ({
-    profile: appState.iam.profile,
-  }))
-
-  const handleClick = (evt: ClickParam): void => {
-    if (evt.key === "logout") {
-      logout()
-    } else if (evt.key === "refreshGlobalConfigs") {
-      loadRemoteConfigs()
-    }
-  }
-
+  style?: React.CSSProperties
+  sidebarCollapsed: boolean
+}): JSX.Element {
   return (
     <>
-      <Layout.Header className={styles.header}>
+      <Layout.Header className={styles.header} style={props.style}>
+        {props.sidebarCollapsed && (
+          <Typography.Text ellipsis={true} style={{ fontSize: 20, marginRight: 20 }}>
+            {props.appConfig.title}
+          </Typography.Text>
+        )}
         <Typography.Text type="secondary" className={styles.appDescription} ellipsis={true}>
-          {appConfig.description}
+          {props.appConfig.description}
         </Typography.Text>
 
         <div className={styles.headerRightPanel}>
           <AppViewButtons
-            appRootPath={appRootPath}
-            appTitle={appConfig.title}
-            appUri={appConfig.uri}
-            views={appConfig.views}
+            appRootPath={props.appRootPath}
+            appTitle={props.appConfig.title}
+            appUri={props.appConfig.uri}
+            views={props.appConfig.views}
           />
-
-          <Tooltip title="Sync data">
-            <Button
-              onClick={() => dispatch.globalConfig.loadRemoteConfigs()}
-              icon="sync"
-              type="link"
-              className={styles.appsMenuIcon}
-            />
-          </Tooltip>
-
+          <SyncConfigButton />
           <AppsMenu />
-
           <img
             alt="OnPoint Global"
             src={require("../../../../images/on_point_tm_logo.svg")}
             height={32}
             style={{ marginRight: 24, marginLeft: 24 }}
           />
-
-          {fromStore.profile
-            .map((profile) => <ProfileMenu key={profile.Email} onClick={handleClick} profile={profile} />)
-            .getOrElse(<></>)}
+          <ProfileButton />
         </div>
       </Layout.Header>
     </>

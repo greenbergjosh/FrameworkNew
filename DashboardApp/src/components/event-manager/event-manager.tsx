@@ -106,7 +106,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
           const handlerSrc = loadRemoteLBM(loadById, eventInfo.handlerFunctionId)
           const handler = utils.parseLBM<EventHandler>(handlerSrc)
           if (handler) {
-            console.log(`EventManager: Subscribing to event ${eventInfo.eventName}`)
+            console.log(`EventManager: Subscribing to event "${eventInfo.eventName}"`)
             this.subscriptionIds.push({
               eventName: eventInfo.eventName,
               subscriptionId: EventBus.addSubscription(
@@ -128,7 +128,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       if (!this.props.outgoingEventMap) {
         return
       }
-      console.log(`EventManager: Component raised event ${eventName}`, eventPayload)
+      console.log(`EventManager: Component raised event "${eventName}"`, eventPayload)
       const eventMapItem: EventMapItem = this.props.outgoingEventMap[eventName]
       let mappedEventName: string, mappedEventPayload: EventPayloadType
       if (!eventMapItem || eventMapItem.type === "none") {
@@ -137,11 +137,11 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
         mappedEventName = eventMapItem.simpleMapValue
         mappedEventPayload = eventPayload
         console.log(
-          `EventManager: Component raised event ${eventName} has been simple mapped to ${mappedEventName}`,
+          `EventManager: Component raised event "${eventName}" has been simple mapped to "${mappedEventName}"`,
           eventPayload
         )
       } else {
-        console.log(`EventManager: Invoking eventMapper for event ${eventName}`, eventPayload)
+        console.log(`EventManager: Invoking eventMapper for event "${eventName}"`, eventPayload)
         // TODO: Add lazy LBM caching
         const { loadById } = this.context as AdminUserInterfaceContextManager
         const mapperSrc = loadRemoteLBM(loadById, eventMapItem.lbmId)
@@ -157,7 +157,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
           mappedEventName = lbmMappedEventName
           mappedEventPayload = lbmMappedEventPayload
           console.log(
-            `EventManager: EventMapper mapped event ${eventName} to ${lbmMappedEventName}`,
+            `EventManager: EventMapper mapped event "${eventName}" to "${lbmMappedEventName}"`,
             lbmMappedEventPayload
           )
         } else {
@@ -173,7 +173,7 @@ export function withEventManager<T extends BaseInterfaceComponentProps, Y>(Wrapp
       eventHandlerParameters: { [key: string]: string }
     ): EventBusEventHandler {
       return (eventName: string, eventPayload: EventPayloadType, source: any) => {
-        console.log(`EventManager: Handling event ${eventName}`, eventPayload)
+        console.log(`EventManager: Handling event "${eventName}"`, eventPayload)
         const { outgoingEventMap, incomingEventHandlers, ...passThroughProps } = this.props
         const mutatedProps = eventHandler(
           passThroughProps as T,
