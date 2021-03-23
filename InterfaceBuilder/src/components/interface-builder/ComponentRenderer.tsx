@@ -1,4 +1,4 @@
-import { set, isEqual, isEmpty } from "lodash/fp"
+import { isEmpty, set } from "lodash/fp"
 import { forIn } from "lodash"
 import React from "react"
 import { deepDiff } from "./lib/deep-diff"
@@ -161,7 +161,7 @@ function DetokenizedComponent(props: {
     })
     // console.log("replacePropTokens", { componentDefinition, newDef })
     return newDef
-  }, [componentDefinition, data])
+  }, [componentDefinition, data, mode])
 
   return (
     <RenderInterfaceComponent
