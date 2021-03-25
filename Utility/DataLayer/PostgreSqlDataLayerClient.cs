@@ -73,7 +73,7 @@ namespace Utility.DataLayer
             await using (var cn = new NpgsqlConnection(PrepareConnectionString(connectionString)))
             {
                 cn.Open();
-                await using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload)", cn) { CommandTimeout = timeout })
+                await using (var cmd = new NpgsqlCommand($"SELECT {sproc}(@Args, @Payload) /* {args.Replace("/*", "/ *").Replace("*/", "* /")} */", cn) { CommandTimeout = timeout })
                 {
                     cmd.Parameters.AddWithValue("@Args", NpgsqlTypes.NpgsqlDbType.Json, args.IfNullOrWhitespace(JsonWrapper.Empty));
                     cmd.Parameters.AddWithValue("@Payload", NpgsqlTypes.NpgsqlDbType.Text, payload ?? string.Empty);

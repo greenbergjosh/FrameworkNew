@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -18,7 +19,7 @@ namespace EdwRollupLib
     {
         private static FrameworkWrapper _fw;
         private IScheduler _scheduler;
-        private readonly Random _random = new Random();
+        private readonly Random _random = new();
         private readonly Guid _edwConfigId = Guid.Parse("af89426b-d7e9-4f89-b67c-4e57d2335cb3");
 
         public void Config(FrameworkWrapper fw)
@@ -28,6 +29,7 @@ namespace EdwRollupLib
                 _fw = fw;
                 fw.TraceLogging = fw.StartupConfiguration.GetS("Config/Trace").ParseBool() ?? false;
                 RollupJob.FrameworkWrapper = fw;
+                MaintenanceJob.FrameworkWrapper = fw;
             }
             catch (Exception ex)
             {
@@ -68,6 +70,10 @@ namespace EdwRollupLib
             var factory = new StdSchedulerFactory(props);
             _scheduler = await factory.GetScheduler();
 
+            _scheduler.Context["exclusiveQueueNextId"] = 0;
+            _scheduler.Context["exclusiveQueueCurrentlyRunningId"] = 0;
+            _scheduler.Context["exclusiveLock"] = new object();
+
             var rsConfigId = _fw.StartupConfiguration.GetS("Config/RsConfigId");
 
             var threadGroups = await Data.CallFn("config", "SelectConfigBody", JsonWrapper.Json(new
@@ -95,14 +101,17 @@ namespace EdwRollupLib
                     ["RsConfigId"] = rsConfigId
                 };
 
-                foreach (var period in threadGroup.GetL("Config/rollup_group_periods").Select(p => p.GetS("")))
+                foreach (var rollupGroupPeriod in threadGroup.GetL("Config/rollup_group_periods"))
                 {
+                    var period = rollupGroupPeriod.GetS("period");
+                    var rollupFrequency = rollupGroupPeriod.GetS("rollup_frequency") ?? period;
+
                     var jobDetail = JobBuilder.Create<RollupJob>()
-                        .WithIdentity($"{threadGroupName}_{period}")
+                        .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
                         .UsingJobData(new JobDataMap(parameters))
                         .Build();
 
-                    var cron = PeriodToCron(period);
+                    var cron = PeriodToCron(rollupFrequency);
 
                     await _fw.Log("EdwRollupService.InitScheduler", $"Scheduling {threadGroupName} {period} for {cron}");
 #if DEBUG
@@ -110,14 +119,68 @@ namespace EdwRollupLib
 #endif
 
                     var trigger = TriggerBuilder.Create()
-                        .WithIdentity($"{threadGroupName}_{period}")
+                        .WithIdentity($"{threadGroupName}_{period}", "RollupJob")
                         .WithCronSchedule(cron)
                         .ForJob(jobDetail)
-                        .UsingJobData("period", period)
+                        .UsingJobData("Period", period)
+                        .UsingJobData("TriggerFrequency", rollupFrequency)
+                        .UsingJobData("Cron", cron)
                         .Build();
 
                     await _scheduler.ScheduleJob(jobDetail, trigger);
                 }
+            }
+
+            var maintenanceTasks = await Data.CallFn("config", "SelectConfigBody", JsonWrapper.Json(new
+            {
+                ConfigType = "EDW.MaintenanceTask"
+            }), "");
+
+            foreach (var maintenanceTask in maintenanceTasks.GetL(""))
+            {
+                if (maintenanceTask.GetS("Name") != "Nightly Clickhouse Import")
+                {
+                    continue;
+                }
+                
+                //var enabled = maintenanceTask.GetB("Config/enabled");
+                //if (!enabled)
+                //{
+                //    continue;
+                //}
+
+                var name = maintenanceTask.GetS("Name");
+                var cronExpression = maintenanceTask.GetS("Config/cron_expression");
+                var implementationLbmId = Guid.Parse(maintenanceTask.GetS("Config/implementation"));
+                var exclusive = maintenanceTask.GetB("Config/exclusive");
+
+                IDictionary<string, object> parameters = new Dictionary<string, object>
+                {
+                    ["Name"] = name,
+                    ["Exclusive"] = exclusive,
+                    ["RsConfigId"] = rsConfigId,
+                    ["ImplementationLbmId"] = implementationLbmId,
+                    ["Cron"] = cronExpression
+                };
+
+                var jobDetail = JobBuilder.Create<MaintenanceJob>()
+                    .WithIdentity(name, exclusive ? MaintenanceJob.ExclusiveJobGroup : MaintenanceJob.JobGroup)
+                    .UsingJobData(new JobDataMap(parameters))
+                    .Build();
+
+                await _fw.Log("EdwRollupService.InitScheduler", $"Scheduling maintenance task {name} for {cronExpression}");
+#if DEBUG
+                Console.WriteLine($"{DateTime.Now}: Scheduling maintenance task {name} for {cronExpression}");
+#endif
+
+                var trigger = TriggerBuilder.Create()
+                    .WithIdentity(name, exclusive ? MaintenanceJob.ExclusiveJobGroup : MaintenanceJob.JobGroup)
+                    .WithCronSchedule(cronExpression)
+                    .UsingJobData(new JobDataMap(parameters))
+                    .ForJob(jobDetail)
+                    .Build();
+
+                await _scheduler.ScheduleJob(jobDetail, trigger);
             }
 
             await _scheduler.Start();
@@ -130,6 +193,7 @@ namespace EdwRollupLib
 
             return periodType switch
             {
+                's' => $"{_random.Next(periodRange)}-59/{periodRange} * * * * ?",
                 'm' => $"{_random.Next(60)} {_random.Next(periodRange)}-59/{periodRange} * * * ?",
                 'h' => $"{_random.Next(60)} {_random.Next(60)} {_random.Next(periodRange)}-23/{periodRange} * * ?",
                 'd' => $"{_random.Next(60)} {_random.Next(60)} {_random.Next(24)} */{periodRange} * ?",
@@ -168,31 +232,39 @@ namespace EdwRollupLib
                 else if (path == "/pauseall" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     await _scheduler.PauseAll();
+                    Console.WriteLine($"{DateTime.Now}: Paused All");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/resumeall" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     await _scheduler.ResumeAll();
+                    Console.WriteLine($"{DateTime.Now}: Resumed All");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/pause" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     var jobName = context.Request.Query["job"].ToString();
-                    await _scheduler.PauseJob(new JobKey(jobName));
-                    await _scheduler.PauseTrigger(new TriggerKey(jobName));
+                    var group = context.Request.Query["group"].ToString();
+                    await _scheduler.PauseJob(new JobKey(jobName, group));
+                    await _scheduler.PauseTrigger(new TriggerKey(jobName, group));
+                    Console.WriteLine($"{DateTime.Now}: Paused {jobName}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/resume" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     var jobName = context.Request.Query["job"].ToString();
-                    await _scheduler.ResumeJob(new JobKey(jobName));
-                    await _scheduler.ResumeTrigger(new TriggerKey(jobName));
+                    var group = context.Request.Query["group"].ToString();
+                    await _scheduler.ResumeJob(new JobKey(jobName, group));
+                    await _scheduler.ResumeTrigger(new TriggerKey(jobName, group));
+                    Console.WriteLine($"{DateTime.Now}: Resumed {jobName}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/delete" && context.Request.Method == WebRequestMethods.Http.Post)
                 {
                     var jobName = context.Request.Query["job"].ToString();
-                    await _scheduler.DeleteJob(new JobKey(jobName));
+                    var group = context.Request.Query["group"].ToString();
+                    await _scheduler.DeleteJob(new JobKey(jobName, group));
+                    Console.WriteLine($"{DateTime.Now}: Deleted {jobName}");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else if (path == "/reset" && context.Request.Method == WebRequestMethods.Http.Post)
@@ -200,6 +272,7 @@ namespace EdwRollupLib
                     await ShutdownScheduler();
                     await _fw.ReInitialize();
                     await InitScheduler();
+                    Console.WriteLine($"{DateTime.Now}: Reset");
                     await context.WriteSuccessRespAsync(_defaultResponse);
                 }
                 else
@@ -214,7 +287,7 @@ namespace EdwRollupLib
             }
         }
 
-        private string _defaultResponse = JsonConvert.SerializeObject(new { result = "success" });
+        private readonly string _defaultResponse = JsonConvert.SerializeObject(new { result = "success" });
 
         private async Task GetStatus(HttpContext context)
         {
@@ -225,7 +298,7 @@ namespace EdwRollupLib
             var jobs = new List<IDictionary<string, object>>();
             foreach (var group in jobGroups)
             {
-                var groupMatcher = GroupMatcher<JobKey>.GroupContains(group);
+                var groupMatcher = GroupMatcher<JobKey>.GroupEquals(group);
                 var jobKeys = await _scheduler.GetJobKeys(groupMatcher);
                 foreach (var jobKey in jobKeys)
                 {
@@ -234,11 +307,16 @@ namespace EdwRollupLib
                     foreach (var trigger in triggers)
                     {
                         var triggerState = await _scheduler.GetTriggerState(trigger.Key);
+                        var triggerFrequency = trigger.JobDataMap.GetString("TriggerFrequency");
+                        var cron = trigger.JobDataMap.GetString("Cron");
+
                         var job = new Dictionary<string, object>
                         {
                             {"group", group},
                             {"name", jobKey.Name},
                             {"description", detail.Description},
+                            {"triggerFrequency", triggerFrequency },
+                            {"cron", cron },
                             {"currentlyRunning", activeJobs.Contains(detail)},
                             {"triggerName", trigger.Key.Name},
                             {"triggerGroup", trigger.Key.Group},

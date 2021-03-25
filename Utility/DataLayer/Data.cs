@@ -17,11 +17,11 @@ namespace Utility.DataLayer
         public const string ConfigFunctionName = "SelectConfig";
 
         // TODO: This should all be ConcurrentDictionary to become thread-safe
-        private static readonly ConcurrentDictionary<string, Connection> Connections = new ConcurrentDictionary<string, Connection>();
+        private static readonly ConcurrentDictionary<string, Connection> Connections = new();
         private static Connection _configConn;
         private static string _configFunction;
         private static string[] _commandLineArgs;
-        private static readonly List<(DateTime logTime, string location, string log)> _traceLog = new List<(DateTime logTime, string location, string log)>();
+        private static readonly List<(DateTime logTime, string location, string log)> _traceLog = new();
 
         private static void TraceLog(string location, string log) => _traceLog.Add((DateTime.Now, location, log));
 
@@ -114,7 +114,7 @@ namespace Utility.DataLayer
 
                 var conf = Jw.ToGenericEntity(await GetConfigRecordValue(o.Item2, _configConn, _configFunction));
 
-                var conn = Connections.GetOrAdd(o.Item1,s => new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString"))); 
+                var conn = Connections.GetOrAdd(o.Item1, s => new Connection(o.Item2, DataLayerClientFactory.DataStoreInstance(conf.GetS("DataLayerType")), conf.GetS("ConnectionString")));
 
                 foreach (var sp in conf.GetD("DataLayer"))
                 {
@@ -298,6 +298,15 @@ namespace Utility.DataLayer
             }
         }
 
+        public static async Task<IGenericEntity> CallFn(string conName, string method, object args, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
+        {
+            var argsString = JsonConvert.SerializeObject(args ?? new object());
+            payload = payload.IfNullOrWhitespace(Jw.Empty);
+            var res = await CallFnString(conName, method, argsString, payload, timeout);
+
+            return res.IsNullOrWhitespace() ? null : Jw.JsonToGenericEntity(res);
+        }
+
         public static async Task<IGenericEntity> CallFn(string conName, string method, string args = null, string payload = null, RoslynWrapper rw = null, object config = null, int timeout = 120)
         {
             args = args.IfNullOrWhitespace(Jw.Empty);
@@ -312,7 +321,7 @@ namespace Utility.DataLayer
             try
             {
                 var conn = Connections.GetValueOrDefault(conName) ?? throw new ArgumentException($"Unknown connection name {conName}.", nameof(conName));
-                
+
                 var sp = conn.Functions.GetValueOrDefault(method);
 
                 if (sp.IsNullOrWhitespace())

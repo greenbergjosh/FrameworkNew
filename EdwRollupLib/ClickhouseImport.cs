@@ -16,11 +16,11 @@ using Utility.DataLayer;
 using Utility.EDW.Reporting;
 using Utility.GenericEntity;
 
-namespace QuickTester
+namespace EdwRollupLib
 {
-    internal class ClickhouseImport
+    public class ClickhouseImport
     {
-        private record Parameters(IGenericEntity Config, int? TableIndex = null, string PartitionIndex = null, string MergedTableName = null)
+        private record Parameters(DateTime StartDate, DateTime EndDate, IGenericEntity Config, int? TableIndex = null, string PartitionIndex = null, string MergedTableName = null)
         {
             public string Table
             {
@@ -52,14 +52,6 @@ namespace QuickTester
         private Guid _rsId;
         private DateTime _rsTs;
 
-        public static async Task ImportTest()
-        {
-            var fw = new FrameworkWrapper();
-            var config = await fw.Entities.GetEntity(Guid.Parse("f4de787b-2bd6-443d-9e57-e3930bb86a8c"));
-
-            await new ClickhouseImport(config, fw).RunAsync();
-        }
-
         public ClickhouseImport(IGenericEntity config, FrameworkWrapper fw)
         {
             _config = config;
@@ -67,7 +59,7 @@ namespace QuickTester
             _fw = fw;
         }
 
-        public async Task RunAsync()
+        public async Task RunAsync(DateTime startDate, DateTime endDate)
         {
             if (_running)
             {
@@ -84,26 +76,28 @@ namespace QuickTester
             edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { name = _config.GetS("Name") }, _rsConfigId);
             await _fw.EdwWriter.Write(edwBulkEvent);
 
-            await DropStartEvent(new Parameters(null), "ImportProcess");
+            await DropStartEvent(new Parameters(startDate, endDate, _config.GetE("Config")), "ImportProcess");
             var start = DateTime.Now;
 
             try
             {
                 var options = new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 4, EnsureOrdered = false, BoundedCapacity = -1 };
 
-                var createTargetTable = new TransformBlock<Parameters, Parameters>(WithEvents(CreateTargetTable), options);
-                var createFileTasks = new TransformManyBlock<Parameters, Parameters>(WithEvents(CreateFileTasks), options);
-                var createExportFile = new TransformBlock<Parameters, Parameters>(WithEvents(CreateExportFile), options);
-                var createImportTables = new TransformBlock<Parameters, Parameters>(WithEvents(CreateImportTables), options);
-                var importFile = new TransformBlock<Parameters, Parameters>(WithEvents(ImportFile), options);
-                var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(WithEvents(CreatePartitionTasks), options);
-                var populateGroupedTable = new TransformBlock<Parameters, Parameters>(WithEvents(PopulateGroupedTable), options);
-                var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(WithEvents(GatherPopulatedPartition), options);
-                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(WithEvents(MergeTablesInPartition), options);
-                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(WithEvents(MergePartitionIntoFinalTable), options);
-                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(WithEvents(GatherCompletedPartitions), options);
-                var swapMergedTables = new TransformBlock<Parameters, Parameters>(WithEvents(SwapMergedTable), options);
-                var cleanupTempTables = new ActionBlock<Parameters>(WithEvents(CleanupTempTables), options);
+                var withEventsMaker = new WithEventsMaker<Parameters>(DropStartEvent, DropEndEvent, DropErrorEvent);
+
+                var createTargetTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateTargetTable), options);
+                var createFileTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateFileTasks), options);
+                var createExportFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateExportFile), options);
+                var createImportTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreateImportTables), options);
+                var importFile = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(ImportFile), options);
+                var createPartitionTasks = new TransformManyBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CreatePartitionTasks), options);
+                var populateGroupedTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(PopulateGroupedTable), options);
+                var gatherPopulatedPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherPopulatedPartition), options);
+                var mergeTablesInPartition = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergeTablesInPartition), options);
+                var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable), options);
+                var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions), options);
+                var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable), options);
+                var cleanupTempTables = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupTempTables), options);
 
                 var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
 
@@ -133,7 +127,7 @@ namespace QuickTester
                 using (_client = new SshClient(host, user, password))
                 {
                     _client.Connect();
-                    await createTargetTable.SendAsync(new Parameters(_config.GetE("Config")));
+                    await createTargetTable.SendAsync(new Parameters(startDate, endDate, _config.GetE("Config")));
 
                     createTargetTable.Complete();
 
@@ -143,9 +137,11 @@ namespace QuickTester
             finally
             {
                 var end = DateTime.Now;
-                await DropEndEvent(new Parameters(null), end - start, "ImportProcess");
+                await DropEndEvent(new Parameters(startDate, endDate, _config.GetE("Config")), end - start, "ImportProcess");
                 _running = false;
-                Console.WriteLine(end - start);
+#if DEBUG
+                    Console.WriteLine(end - start);
+#endif
             }
         }
 
@@ -203,18 +199,15 @@ SETTINGS index_granularity = 8192;";
 
             var export = tableConfig.GetE("export");
 
-            var startDate = DateTime.Now.Date.AddDays(-1);
-            var endDate = DateTime.Now.Date;
-
             var connectionString = export.GetS("connection_string");
             var function = export.GetS("function");
             var path = export.GetS("source_path");
-            var filename = $"{tableName}_{startDate:yyyy_MM_dd}.csv";
+            var filename = $"{tableName}_{parameters.StartDate:yyyy_MM_dd}.csv";
 
             var result = await ExecutePostgresQuery(connectionString, "exportData", new
             {
-                date_start = startDate,
-                date_end = endDate,
+                date_start = parameters.StartDate,
+                date_end = parameters.EndDate,
                 export_function = function,
                 export_path = $"{path}/{filename}",
                 columns = config.GetL("key_columns").Concat(tableConfig.GetL("columns")).Select(c => new
@@ -304,8 +297,7 @@ SETTINGS index_granularity = 8192;";
 
             var export = tableConfig.GetE("export");
             var path = export.GetS("target_path");
-            var startDate = DateTime.Now.Date.AddDays(-1);
-            var filename = $"{tableConfig.GetS("table_name")}_{startDate:yyyy_MM_dd}.csv";
+            var filename = $"{tableConfig.GetS("table_name")}_{parameters.StartDate:yyyy_MM_dd}.csv";
             var importPath = $"{path}/{filename}";
 
             await ExecuteClickhouseQuery($"INSERT INTO datasets.import_{tableName} FORMAT CSVWithNames", importPath);
@@ -618,106 +610,6 @@ from datasets.{mergedTableName};";
         #endregion
 
         #region Helper Methods
-        private Func<Parameters, Task<Parameters>> WithEvents(Func<Parameters, Parameters> dataflowTask)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
-
-                await DropStartEvent(input, dataflowTask.Method.Name);
-
-                try
-                {
-                    return dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await DropErrorEvent(ex, input, dataflowTask.Method.Name);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await DropEndEvent(input, end - start, dataflowTask.Method.Name);
-                }
-            };
-        }
-
-        private Func<Parameters, Task<Parameters>> WithEvents(Func<Parameters, Task<Parameters>> dataflowTask)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
-
-                await DropStartEvent(input, dataflowTask.Method.Name);
-
-                try
-                {
-                    return await dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await DropErrorEvent(ex, input, dataflowTask.Method.Name);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await DropEndEvent(input, end - start, dataflowTask.Method.Name);
-                }
-            };
-        }
-
-        private Func<Parameters, Task<IEnumerable<Parameters>>> WithEvents(Func<Parameters, IEnumerable<Parameters>> dataflowTask)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
-
-                await DropStartEvent(input, dataflowTask.Method.Name);
-
-                try
-                {
-                    return dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await DropErrorEvent(ex, input, dataflowTask.Method.Name);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await DropEndEvent(input, end - start, dataflowTask.Method.Name);
-                }
-            };
-        }
-
-        private Func<Parameters, Task> WithEvents(Func<Parameters, Task> dataflowTask)
-        {
-            return async (input) =>
-            {
-                var start = DateTime.Now;
-
-                await DropStartEvent(input, dataflowTask.Method.Name);
-
-                try
-                {
-                    await dataflowTask(input);
-                }
-                catch (Exception ex)
-                {
-                    await DropErrorEvent(ex, input, dataflowTask.Method.Name);
-                    throw;
-                }
-                finally
-                {
-                    var end = DateTime.Now;
-                    await DropEndEvent(input, end - start, dataflowTask.Method.Name);
-                }
-            };
-        }
-
         private Task DropEvent(object payload)
         {
             var edwBulkEvent = new EdwBulkEvent();
@@ -727,39 +619,75 @@ from datasets.{mergedTableName};";
             return _fw.EdwWriter.Write(edwBulkEvent);
         }
 
-        private Task DropStartEvent(Parameters input, [CallerMemberName] string step = null)
+        private async Task DropStartEvent(Parameters input, [CallerMemberName] string step = null)
         {
-            return DropEvent(new
+            var payload = new
             {
+                job = input.Config.GetS("Name"),
                 step,
                 eventType = "Start",
                 table = input.Table,
                 partitionIndex = input.PartitionIndex
-            });
+            };
+
+            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonConvert.SerializeObject(payload));
+            await DropEvent(payload);
         }
 
-        private Task DropEndEvent(Parameters input, TimeSpan elapsed, [CallerMemberName] string step = null)
+        private async Task DropEndEvent(Parameters input, TimeSpan elapsed, [CallerMemberName] string step = null)
         {
-            return DropEvent(new
+            var payload = new
             {
+                job = input.Config.GetS("Name"),
                 step,
                 eventType = "End",
                 table = input.Table,
                 partitionIndex = input.PartitionIndex,
                 elapsed = elapsed.TotalSeconds
-            });
+            };
+
+            await _fw.Log($"{nameof(ClickhouseImport)}.{step}", JsonConvert.SerializeObject(payload));
+            await DropEvent(payload);
         }
 
-        private Task DropErrorEvent(Exception ex, Parameters input, [CallerMemberName] string step = null)
+        private async Task DropErrorEvent(Exception ex, Parameters input, [CallerMemberName] string step = null, bool alert = true)
         {
-            return DropEvent(new
+            var payload = new
             {
+                job = input.Config.GetS("Name"),
                 step,
                 eventType = "Error",
                 table = input.Table,
                 partitionIndex = input.PartitionIndex,
                 message = ex.ToString()
-            });
+            };
+
+            await _fw.Error($"{nameof(ClickhouseImport)}.{step}", JsonConvert.SerializeObject(payload));
+            await DropEvent(payload);
+
+            if (alert)
+            {
+                var text = $"Clickhouse Import - {input.Config.GetS("Name")} - ";
+
+                void AddField(string fieldName, object field)
+                {
+                    if (field != default)
+                    {
+                        text += $"{fieldName}: {field} ";
+                    }
+                }
+
+                AddField("Step", step);
+                AddField("Table", input?.Table);
+                AddField("PartitionIndex", input?.PartitionIndex);
+                AddField("Error", ex.Message);
+
+                await ProtocolClient.HttpPostAsync(_fw.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+                {
+                    text
+                }), "application/json");
+            }
+
         }
 
         private async Task<string> ExecuteClickhouseQuery(string query, string pipeIn = null)
@@ -768,13 +696,16 @@ from datasets.{mergedTableName};";
             if (!string.IsNullOrWhiteSpace(pipeIn))
             {
                 commandText += $" < {pipeIn}";
+#if DEBUG
                 Console.WriteLine(query + " < " + pipeIn);
                 Console.WriteLine();
+
             }
             else
             {
                 Console.WriteLine(query);
                 Console.WriteLine();
+#endif
             }
 
             using var command = _client.CreateCommand(commandText);
@@ -791,7 +722,9 @@ from datasets.{mergedTableName};";
 
         private static Task<IGenericEntity> ExecutePostgresQuery(string connectionName, string functionName, object args)
         {
+#if DEBUG
             Console.WriteLine($"{connectionName}:{functionName} {JsonConvert.SerializeObject(args)}");
+#endif
             return Data.CallFn(connectionName, functionName, JsonConvert.SerializeObject(args), timeout: 600000);
         }
 
