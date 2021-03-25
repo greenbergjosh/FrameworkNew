@@ -138,16 +138,11 @@ namespace EdwRollupLib
 
             foreach (var maintenanceTask in maintenanceTasks.GetL(""))
             {
-                if (maintenanceTask.GetS("Name") != "Nightly Clickhouse Import")
+                var enabled = maintenanceTask.GetB("Config/enabled");
+                if (!enabled)
                 {
                     continue;
                 }
-                
-                //var enabled = maintenanceTask.GetB("Config/enabled");
-                //if (!enabled)
-                //{
-                //    continue;
-                //}
 
                 var name = maintenanceTask.GetS("Name");
                 var cronExpression = maintenanceTask.GetS("Config/cron_expression");
