@@ -13,6 +13,7 @@ export const remoteUrlSettings = [
     component: "text",
     marginBottom: 20,
     components: [],
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -33,6 +34,7 @@ export const remoteUrlSettings = [
     defaultValue: false,
     label: "CRUD Operation",
     help: "Does this query CReate Update or Delete data?",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "remote-url",
@@ -49,6 +51,7 @@ export const remoteUrlSettings = [
     component: "select",
     dataHandlerType: "remote-config",
     remoteConfigType: "Report.Query",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "remote-url",

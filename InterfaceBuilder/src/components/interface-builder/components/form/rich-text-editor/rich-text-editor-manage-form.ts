@@ -18,10 +18,12 @@ const richTextEditorManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Input Text",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
             ],
           },

@@ -21,12 +21,14 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "remote",
+                bindable: true,
               },
               {
                 key: "header",
                 valueKey: "header",
                 component: "input",
                 label: "Header Text",
+                bindable: true,
               },
               {
                 key: "remoteId",
@@ -36,6 +38,7 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Select which configuration item to repeat the layout from",
                 dataHandlerType: "remote-config",
                 remoteDataFilter: { "!!": { var: ["config.layout"] } },
+                bindable: true,
               },
             ],
           },
@@ -49,6 +52,7 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 help: "Indent all components in the loaded layout",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "collapsible",
@@ -56,6 +60,7 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Collapsible?",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "startCollapsed",
@@ -63,6 +68,7 @@ const remoteComponentManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Start Collapsed?",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },

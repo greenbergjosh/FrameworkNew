@@ -13,6 +13,7 @@ export const remoteConfigSettings = [
     component: "text",
     marginBottom: 20,
     components: [],
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -33,6 +34,7 @@ export const remoteConfigSettings = [
     component: "select",
     dataHandlerType: "local",
     defaultValue: "fetch",
+    bindable: true,
     data: {
       values: [
         {
@@ -70,6 +72,7 @@ export const remoteConfigSettings = [
     component: "select",
     dataHandlerType: "local",
     defaultValue: "all",
+    bindable: true,
     data: {
       values: [
         {
@@ -114,6 +117,7 @@ export const remoteConfigSettings = [
     component: "select",
     dataHandlerType: "remote-config",
     remoteConfigType: "EntityType",
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -194,6 +198,7 @@ export const remoteConfigSettings = [
     component: "select",
     dataHandlerType: "remote-config",
     remoteConfigType: "",
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -229,6 +234,7 @@ export const remoteConfigSettings = [
     component: "toggle",
     defaultValue: false,
     label: "Redirect After Delete",
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -256,6 +262,7 @@ export const remoteConfigSettings = [
     label: "Redirect Path",
     component: "input",
     defaultValue: "/dashboard/apps/",
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -302,6 +309,7 @@ export const remoteConfigSettings = [
     marginTop: 20,
     marginBottom: 20,
     components: [],
+    bindable: true,
     visibilityConditions: {
       and: [
         {

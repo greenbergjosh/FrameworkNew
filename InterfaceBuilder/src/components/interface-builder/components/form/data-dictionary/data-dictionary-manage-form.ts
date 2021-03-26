@@ -18,10 +18,12 @@ const dataDictionaryManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Data Dictionary",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "keyLabel",
@@ -29,6 +31,7 @@ const dataDictionaryManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Key Label",
                 defaultValue: "Key",
                 component: "input",
+                bindable: true,
               },
             ],
           },

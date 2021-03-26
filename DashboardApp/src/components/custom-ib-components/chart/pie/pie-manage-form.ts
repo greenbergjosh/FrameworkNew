@@ -17,10 +17,12 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Pie Chart",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "sliceLabelKey",
@@ -28,6 +30,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Slice Label Name Key",
                 defaultValue: "label",
+                bindable: true,
               },
               {
                 key: "sliceValueKey",
@@ -35,6 +38,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Slice Value Key",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "sliceLabelValueType",
@@ -48,6 +52,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "default",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -71,6 +76,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Slice Label Value Key",
                 defaultValue: "value",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     {
@@ -87,6 +93,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "remote-config",
                 remoteConfigType: "Components.PieChart.SliceLabelValueFunction",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     {
@@ -101,6 +108,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "sliceLabelValueFunctionParameters",
                 label: "Function Parameters",
                 component: "data-dictionary",
+                bindable: true,
                 valueComponent: [
                   {
                     size: "default",
@@ -129,6 +137,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Tooltip Custom Formatter",
                 help:
                   "A function that receives the slice and returns a formatted string displayed as the tooltip of the slice.",
+                bindable: true,
               },
               {
                 key: "tooltipFunctionConfigId",
@@ -137,6 +146,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "remote-config",
                 remoteConfigType: "Components.PieChart.TooltipFunction",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     {
@@ -151,6 +161,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "tooltipFunctionParameters",
                 label: "Function Parameters",
                 component: "data-dictionary",
+                bindable: true,
                 valueComponent: [
                   {
                     size: "default",
@@ -178,6 +189,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Slice Gap",
                 component: "number-input",
                 defaultValue: 2,
+                bindable: true,
               },
               {
                 key: "preSorted",
@@ -185,6 +197,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Data is pre-sorted",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },
@@ -199,6 +212,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "set1",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -246,6 +260,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Donut",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "enableSliceLabels",
@@ -253,6 +268,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Slice Labels",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "enableRadialLabels",
@@ -260,6 +276,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Radial Labels",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "showLegend",
@@ -267,6 +284,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Legend",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "threshold",
@@ -276,6 +294,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                   'Set the cutoff value to display. Values below this amount will be aggregated into an "Other" slice.',
                 component: "number-input",
                 defaultValue: 0,
+                bindable: true,
               },
               {
                 key: "otherAggregatorFunctionConfigId",
@@ -284,6 +303,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "remote-config",
                 remoteConfigType: "Components.PieChart.OtherSliceAggregatorFunction",
+                bindable: true,
                 visibilityConditions: {
                   ">": [
                     {
@@ -298,6 +318,7 @@ export const PieManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "otherAggregatorFunctionParameters",
                 label: "Function Parameters",
                 component: "data-dictionary",
+                bindable: true,
                 valueComponent: [
                   {
                     size: "default",

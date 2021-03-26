@@ -19,16 +19,19 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Thermometer",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "absoluteValueKey",
                 valueKey: "absoluteValueKey",
                 component: "input",
                 label: "Absolute Value Key",
+                bindable: true,
               },
             ],
           },
@@ -43,6 +46,7 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "classic",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -67,6 +71,7 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: 150,
                 help: "Height of the thermometer. Width is calculated automatically.",
                 component: "number-input",
+                bindable: true,
               },
               {
                 key: "fillColor",
@@ -75,6 +80,7 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "red",
+                bindable: true,
                 data: {
                   values: colorOptions,
                 },
@@ -86,6 +92,7 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "black",
+                bindable: true,
                 data: {
                   values: colorOptions,
                 },
@@ -96,12 +103,14 @@ const thermometerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Line Thickness",
                 defaultValue: 2,
                 component: "number-input",
+                bindable: true,
               },
               {
                 key: "thermometerLabel",
                 valueKey: "thermometerLabel",
                 component: "input",
                 label: "Thermometer Label",
+                bindable: true,
               },
             ],
           },

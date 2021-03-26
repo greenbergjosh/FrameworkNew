@@ -23,6 +23,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "The greyed out text to appear in the box when no item is selected",
                 component: "input",
                 defaultValue: null,
+                bindable: true,
               },
               {
                 key: "allowClear",
@@ -31,6 +32,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Allow the user to clear the selection.",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "size",
@@ -40,6 +42,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Size",
                 component: "select",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {

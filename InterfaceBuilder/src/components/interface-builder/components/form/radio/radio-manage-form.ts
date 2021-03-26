@@ -27,6 +27,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Button Type",
                 size: "default",
                 valueKey: "buttonType",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -50,6 +51,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Size",
                 size: "default",
                 valueKey: "size",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -81,6 +83,7 @@ export const selectManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Style",
                 size: "default",
                 valueKey: "buttonStyle",
+                bindable: true,
                 data: {
                   values: [
                     {

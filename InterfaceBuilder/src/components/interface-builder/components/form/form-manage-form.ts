@@ -30,6 +30,7 @@ const formManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "vertical",
+                bindable: true,
                 data: {
                   values: [
                     {

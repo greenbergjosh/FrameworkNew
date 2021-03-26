@@ -18,6 +18,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Number Range",
+                bindable: true,
               },
               {
                 key: "valueKey",
@@ -31,6 +32,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "start",
                 label: "Start API Name",
                 help: "The name of the lower value field in the API endpoint.",
+                bindable: true,
               },
               {
                 key: "endKey",
@@ -40,6 +42,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "end",
                 label: "End API Name",
                 help: "The name of the upper value field in the API endpoint.",
+                bindable: true,
               },
               {
                 key: "lowerBound",
@@ -48,6 +51,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Lower Bound",
                 help: "The minimum value of the range.",
+                bindable: true,
               },
               {
                 key: "upperBound",
@@ -56,6 +60,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Upper Bound",
                 help: "The minimum value of the range.",
+                bindable: true,
               },
               {
                 key: "defaultRangeValueType",
@@ -66,6 +71,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "The initial value of the range",
                 defaultValue: "full",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     { label: "No Value", value: "none" },
@@ -81,6 +87,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Default Lower Value",
                 help: "The default value of the lower value.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     "partial",
@@ -97,6 +104,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Default Upper Value",
                 help: "The default value of the upper value.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     "partial",
@@ -114,6 +122,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "data-map",
                 defaultValue: [],
                 multiple: true,
+                bindable: true,
                 keyComponent: {
                   label: "Value",
                   component: "number-input",
@@ -133,6 +142,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Use API Wrapper Object",
                 help: "Whether to send the start and end values as two separate values or contained in an object.",
+                bindable: true,
               },
               {
                 key: "wrapperObjectKey",
@@ -142,6 +152,7 @@ const numberRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "range",
                 label: "Wrapper Object API Name",
                 help: "The name of the wrapper object field in the API endpoint.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     true,

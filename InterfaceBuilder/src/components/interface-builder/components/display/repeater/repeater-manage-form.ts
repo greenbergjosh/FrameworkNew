@@ -18,6 +18,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Repeater",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "components",
+                bindable: true,
               },
               {
                 key: "addItemLabel",
@@ -33,6 +35,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Add Item",
                 label: "'Add' Button Text",
+                bindable: true,
               },
               {
                 key: "emptyText",
@@ -40,6 +43,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "No Items",
                 label: "Empty Text",
+                bindable: true,
               },
               {
                 key: "hasInitialRecord",
@@ -48,6 +52,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Show the form on start instead of the empty message.",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "hasLastItemComponents",
@@ -56,6 +61,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Provide a separate template for the last item in the collection.",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },
@@ -68,6 +74,7 @@ const repeaterManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Read Only",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },

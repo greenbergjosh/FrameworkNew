@@ -19,6 +19,7 @@ const appearanceComponents = [
     defaultValue: null,
     dataHandlerType: "local",
     ordinal: 11,
+    bindable: true,
     data: {
       values: [
         {
@@ -56,6 +57,7 @@ const appearanceComponents = [
     defaultValue: null,
     dataHandlerType: "local",
     ordinal: 12,
+    bindable: true,
     data: {
       values: [
         {
@@ -91,6 +93,7 @@ const appearanceComponents = [
     component: "toggle",
     defaultValue: false,
     label: "Hide Button Text",
+    bindable: true,
     visibilityConditions: {
       and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
     },
@@ -102,6 +105,7 @@ const appearanceComponents = [
     component: "input",
     defaultValue: "Button",
     label: "Button Text",
+    bindable: true,
   },
   {
     key: "size",
@@ -111,6 +115,7 @@ const appearanceComponents = [
     defaultValue: null,
     dataHandlerType: "local",
     ordinal: 16,
+    bindable: true,
     data: {
       values: [
         {
@@ -135,6 +140,7 @@ const appearanceComponents = [
     component: "toggle",
     defaultValue: false,
     label: "Full Width",
+    bindable: true,
     visibilityConditions: {
       and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
     },
@@ -147,6 +153,7 @@ const appearanceComponents = [
     defaultValue: false,
     label: "Contrast",
     help: "Increase contrast when placed over a dark background",
+    bindable: true,
   },
 ]
 
@@ -163,6 +170,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Download File",
+                bindable: true,
               },
               {
                 key: "valueKey",
@@ -175,6 +183,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "",
                 component: "input",
                 defaultValue: "https://",
+                bindable: true,
               },
               {
                 key: "httpMethod",
@@ -183,6 +192,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "HTTP Method",
                 defaultValue: "GET",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -202,6 +212,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 label: "Filename from server",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "filename",
@@ -210,6 +221,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "",
                 component: "input",
                 defaultValue: "",
+                bindable: true,
                 visibilityConditions: {
                   "===": [false, { var: ["useFilenameFromServer"] }],
                 },
@@ -221,6 +233,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Deprecated, please use Map Params instead",
                 component: "input",
                 defaultValue: "params",
+                bindable: true,
                 visibilityConditions: {
                   "===": ["POST", { var: ["httpMethod"] }],
                 },
@@ -231,6 +244,7 @@ const buttonManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Map Params",
                 component: "data-map",
                 multiple: true,
+                bindable: true,
                 keyComponent: {
                   label: "Param Field Name",
                   component: "input",

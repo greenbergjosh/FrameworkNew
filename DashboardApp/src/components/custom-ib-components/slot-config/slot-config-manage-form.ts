@@ -17,10 +17,12 @@ const slotConfigManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Slot Config",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "seqs",
+                bindable: true,
               },
               {
                 key: "providerType",
@@ -30,6 +32,7 @@ const slotConfigManageFormDefinition: Partial<ComponentDefinition>[] = [
                 placeholder: "Select an Provider Type",
                 required: true,
                 dataHandlerType: "remote-config",
+                bindable: true,
               },
               {
                 key: "actionType",
@@ -40,6 +43,7 @@ const slotConfigManageFormDefinition: Partial<ComponentDefinition>[] = [
                 required: true,
                 dataHandlerType: "remote-config",
                 remoteConfigType: "KeyValuePairs",
+                bindable: true,
               },
             ],
           },

@@ -56,6 +56,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 defaultValue: false,
                 label: "Hide Label",
                 help: "Whether or not to hide the label of this field.",
+                bindable: true,
               },
               {
                 key: "label",
@@ -63,6 +64,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 ordinal: 0.1,
                 component: "input",
                 label: "Label",
+                bindable: true,
                 visibilityConditions: {
                   "!==": [
                     true,
@@ -79,6 +81,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 component: "input",
                 label: "API Key",
                 help: "The API property name to use for this input component.",
+                bindable: true,
               },
             ],
           },
@@ -96,6 +99,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 label: "Disable",
                 help: "Do not render and block behavior.",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "invisible",
@@ -105,6 +109,7 @@ const baseManageFormDefinition: ComponentDefinition[] = [
                 label: "Invisible",
                 help: "Do not display but otherwise behave as normal.",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },

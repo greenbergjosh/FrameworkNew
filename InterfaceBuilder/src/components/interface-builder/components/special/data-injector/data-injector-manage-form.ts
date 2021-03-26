@@ -18,14 +18,17 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Data",
+                hidden: true,
               },
               {
                 key: "hideLabel",
                 defaultValue: true,
+                hidden: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "dataType",
@@ -35,6 +38,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 defaultValue: "json",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -46,7 +50,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                       value: "number",
                     },
                     {
-                      label: "Text",
+                      label: "Text (string)",
                       value: "string",
                     },
                     {
@@ -68,6 +72,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 hideLabel: false,
                 component: "code-editor",
                 height: 100,
+                bindable: true,
                 visibilityConditions: {
                   "===": ["json", { var: "dataType" }],
                 },
@@ -78,6 +83,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 label: "Boolean Value",
+                bindable: true,
                 visibilityConditions: {
                   "===": ["boolean", { var: "dataType" }],
                 },
@@ -88,6 +94,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "",
                 label: "String Value",
+                bindable: true,
                 visibilityConditions: {
                   "===": ["string", { var: "dataType" }],
                 },
@@ -98,6 +105,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Number Value",
                 defaultValue: 0,
+                bindable: true,
                 visibilityConditions: {
                   "===": ["number", { var: "dataType" }],
                 },

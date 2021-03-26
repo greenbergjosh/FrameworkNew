@@ -18,10 +18,12 @@ const numberInputManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Number",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
             ],
           },
@@ -36,6 +38,7 @@ const numberInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Size",
                 component: "select",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {

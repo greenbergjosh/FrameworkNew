@@ -18,6 +18,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Link",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "useUriTokens",
@@ -33,6 +35,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Replace Link Tokens",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "uri",
@@ -41,6 +44,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Link",
                 help: 'The link can include simple jsonPath tokens such as "?id={$.id}" (using model properties only)',
                 defaultValue: "https://",
+                bindable: true,
               },
               {
                 key: "useLinkLabelKey",
@@ -49,6 +53,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Should this component get the label's value from data instead of a static value entered here?",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "linkLabel",
@@ -56,6 +61,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Link Label",
                 defaultValue: "",
+                bindable: true,
                 visibilityConditions: {
                   and: [
                     {
@@ -70,6 +76,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Link Label Key",
                 defaultValue: "",
+                bindable: true,
                 visibilityConditions: {
                   and: [
                     {
@@ -90,6 +97,7 @@ export const LinkManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 defaultValue: "link",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {

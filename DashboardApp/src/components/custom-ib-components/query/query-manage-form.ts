@@ -27,12 +27,14 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "header",
                 valueKey: "header",
                 component: "input",
                 label: "Header",
+                bindable: true,
               },
               {
                 key: "queryType",
@@ -41,6 +43,7 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 help: "How to fetch the data for this query",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -78,6 +81,7 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                 //   ],
                 // },
                 remoteConfigType: "Report.Query",
+                bindable: true,
                 visibilityConditions: {
                   and: [
                     {
@@ -103,6 +107,7 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                   { label: "label", value: "" },
                   { label: "value", value: "" },
                 ],
+                bindable: true,
                 keyComponent: {
                   label: "Property",
                   component: "input",
@@ -113,7 +118,6 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                   component: "input",
                   valueKey: "value",
                 },
-
                 visibilityConditions: {
                   "===": [
                     "remote-query",
@@ -130,6 +134,7 @@ const queryManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "remote-config",
                 remoteConfigType: "EntityType",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     "remote-config",

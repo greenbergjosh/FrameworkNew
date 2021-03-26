@@ -18,16 +18,19 @@ const dataMapManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Data Map",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "multiple",
                 valueKey: "multiple",
                 label: "Multiple",
                 component: "toggle",
+                bindable: true,
               },
             ],
           },

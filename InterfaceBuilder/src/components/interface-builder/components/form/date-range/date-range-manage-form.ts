@@ -19,6 +19,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Date Range",
+                bindable: true,
               },
               {
                 key: "valueKey",
@@ -33,6 +34,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "The initial value of the range",
                 defaultValue: "Today",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     { label: "Empty", value: "Empty" },
@@ -54,6 +56,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "startDate",
                 label: "Start Date API Name",
                 help: "The name of the start date field in the API endpoint.",
+                bindable: true,
               },
               {
                 key: "endDateKey",
@@ -63,6 +66,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "endDate",
                 label: "End Date API Name",
                 help: "The name of the end date field in the API endpoint.",
+                bindable: true,
               },
               {
                 key: "useWrapperObject",
@@ -72,6 +76,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Use API Wrapper Object",
                 help: "Whether to send the start and end values as two separate values or contained in an object.",
+                bindable: true,
               },
               {
                 key: "wrapperObjectKey",
@@ -81,6 +86,7 @@ const dateRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "dateRange",
                 label: "Wrapper Object API Name",
                 help: "The name of the wrapper object field in the API endpoint.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     true,

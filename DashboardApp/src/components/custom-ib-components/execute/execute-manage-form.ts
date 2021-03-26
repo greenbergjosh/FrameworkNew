@@ -31,6 +31,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 key: "valueKey",
                 defaultValue: "data",
                 help: "The key used to get data from the model",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     "do-not-show",
@@ -47,6 +48,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "data",
                 help: "The key used to put data into the model",
+                bindable: true,
               },
               {
                 key: "outboundLoadingKey",
@@ -55,12 +57,14 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "loading",
                 help: "The key used to put loading state (true|false) into the model",
+                bindable: true,
               },
               {
                 key: "header",
                 valueKey: "header",
                 component: "input",
                 label: "Header",
+                bindable: true,
               },
               {
                 key: "executeImmediately",
@@ -69,6 +73,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Execute Immediately?",
                 help: "Should this action be executed when the page loads?",
+                bindable: true,
               },
               {
                 key: "autoExecuteIntervalSeconds",
@@ -77,6 +82,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
                 label: "Auto Execute Interval Seconds",
                 help: "The number of seconds between auto-execution. (0 or blank to disable)",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     true,
@@ -93,6 +99,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 help: "How to fetch the data for this query",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -133,6 +140,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "For fields that need property name transformations applied, describe these here",
                 component: "data-map",
                 multiple: true,
+                bindable: true,
                 keyComponent: {
                   label: "Param Field Name",
                   component: "input",
@@ -157,6 +165,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
                 dataHandlerType: "local",
                 ordinal: 11,
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -194,6 +203,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
                 dataHandlerType: "local",
                 ordinal: 12,
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -230,6 +240,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 label: "Hide Button Text",
+                bindable: true,
                 visibilityConditions: {
                   and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
                 },
@@ -241,6 +252,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Button",
                 label: "Button Text",
+                bindable: true,
               },
               {
                 key: "size",
@@ -250,6 +262,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: null,
                 dataHandlerType: "local",
                 ordinal: 16,
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -274,6 +287,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 label: "Full Width",
+                bindable: true,
                 visibilityConditions: {
                   and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
                 },
@@ -286,6 +300,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Contrast",
                 help: "Increase contrast when placed over a dark background",
+                bindable: true,
               },
               {
                 key: "requireConfirmation",
@@ -295,6 +310,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Require Confirmation",
                 help: "Requires the user to confirm this action before it will be executed.",
+                bindable: true,
               },
               {
                 key: "confirmation.title",
@@ -303,6 +319,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Are you sure?",
                 label: "Confirmation Title",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "requireConfirmation" }],
                 },
@@ -314,6 +331,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "This action cannot be undone and may take a while. Are you sure?",
                 label: "Confirmation Message",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "requireConfirmation" }],
                 },
@@ -325,6 +343,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Continue",
                 label: "OK Option Text",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "requireConfirmation" }],
                 },
@@ -336,6 +355,7 @@ const executeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Cancel",
                 label: "Cancel Option Text",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "requireConfirmation" }],
                 },

@@ -1,11 +1,12 @@
 import { Alert } from "antd"
 import React from "react"
 import { ComponentDefinition } from "components/interface-builder/components/base/BaseInterfaceComponent"
+import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 
 export function DebugComponent(props: {
   componentDefinition: ComponentDefinition
   index: number
-  mode: string
+  mode: UserInterfaceProps["mode"]
 }): JSX.Element {
   console.error(`Missing Component ${props.componentDefinition.component}`, {
     componentDefinition: props.componentDefinition,

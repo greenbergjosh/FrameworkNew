@@ -18,6 +18,7 @@ const wizardManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Wizard",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -35,11 +36,13 @@ const wizardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Disable Step Numbers",
                 help: "Prevent clicking on step numbers from changing the active tab.",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "steps",
                 valueKey: "steps",
                 component: "list",
+                bindable: true,
                 components: [
                   {
                     component: "form",

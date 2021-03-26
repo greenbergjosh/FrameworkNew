@@ -18,6 +18,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Table Config",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "columns",
+                bindable: true,
               },
               {
                 key: "abstract",
@@ -35,6 +37,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 help:
                   'Marking this component as "Abstract" will force it to be configured in a descendant configuration',
+                bindable: true,
               },
               {
                 key: "allowAdding",
@@ -43,6 +46,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Allow the user to create new rows in the table",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     false,
@@ -59,6 +63,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Allow the user to edit rows in the table",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     false,
@@ -75,6 +80,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Allow the user to delete rows in the table",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     false,
@@ -90,6 +96,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "loading",
                 label: "Loading Key",
+                bindable: true,
               },
             ],
           },
@@ -103,6 +110,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 help: "Make the top toolbar visible.",
+                bindable: true,
               },
               {
                 key: "defaultCollapseAll",
@@ -111,6 +119,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 help: "Start with all groups collapsed.",
+                bindable: true,
               },
               {
                 key: "autoFitColumns",
@@ -120,6 +129,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 help:
                   "Automatically adjusts column widths to fit the data. When disabled, the available width is distributed evenly across all columns.",
+                bindable: true,
               },
               {
                 key: "useSmallFont",
@@ -127,6 +137,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Small Font Size",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "useSmallPager",
@@ -134,6 +145,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Small Pager",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "enableAltRow",
@@ -141,6 +153,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Enable Alt Row Color",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "enableVirtualization",
@@ -149,6 +162,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 help: "Load and render rows as they scroll into view to improve performance in some cases.",
+                bindable: true,
               },
               {
                 key: "height",
@@ -156,6 +170,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Table Height",
                 component: "number-input",
                 help: "A table height is required when Enable Virtualization is enabled.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     true,
@@ -173,6 +188,7 @@ export const tableManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "50",
                 dataHandlerType: "local",
                 help: "Default number of rows to show per page.",
+                bindable: true,
                 data: {
                   values: [
                     {

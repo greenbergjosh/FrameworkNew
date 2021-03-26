@@ -18,10 +18,12 @@ const userInterfaceManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Layout Creator",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "layout",
+                bindable: true,
               },
             ],
           },

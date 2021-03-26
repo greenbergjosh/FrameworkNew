@@ -7,6 +7,7 @@ import { EventPayloadType } from "../../../../services/event-bus"
 import { IconProps } from "antd/lib/icon"
 import { getValue } from "components/interface-builder/lib/get-value"
 import { v4 as uuid } from "uuid"
+import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 
 export interface LayoutDefinition {
   /** A grouping of the component in the component selection */
@@ -31,6 +32,8 @@ export interface ChangeObject {
   [key: string]: unknown
 }
 
+export type DataBindings = { [K in keyof ComponentDefinitionNamedProps]: JSONRecord }
+
 export interface ComponentDefinitionNamedProps {
   key: string
   abstract?: boolean
@@ -43,6 +46,8 @@ export interface ComponentDefinitionNamedProps {
   label?: string
   preview?: boolean
   visibilityConditions?: JSONObject
+  bindable?: boolean
+  bindings?: DataBindings
 
   [key: string]: unknown
 

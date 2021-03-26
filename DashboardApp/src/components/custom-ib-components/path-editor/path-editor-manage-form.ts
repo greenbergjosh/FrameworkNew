@@ -17,10 +17,12 @@ const pathEditorManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Path Editor",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "code",
+                bindable: true,
               },
               {
                 key: "defaultValue",
@@ -28,6 +30,7 @@ const pathEditorManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "path-editor",
                 defaultTheme: "vs-dark",
                 label: "Default Value",
+                bindable: true,
               },
             ],
           },
@@ -43,6 +46,7 @@ const pathEditorManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Default Theme",
                 help: "Select the highlighting theme to initially set for this code editor",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: supportedEditorTheme,
                 },

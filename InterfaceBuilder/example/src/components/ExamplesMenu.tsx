@@ -49,6 +49,9 @@ export const ExamplesMenu: React.FC = () => {
         <Menu.Item key="/examples/radio">
           <Link to="/examples/radio">Radio</Link>
         </Menu.Item>
+        <Menu.Item key="/examples/data-binding">
+          <Link to="/examples/data-binding">Data Binding</Link>
+        </Menu.Item>
       </Menu.SubMenu>
     </Menu>
   )
