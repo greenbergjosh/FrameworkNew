@@ -18,6 +18,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Progress",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "calculatePercent",
@@ -35,6 +37,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Calculate Percent",
                 help:
                   "Calculate the percent from the current count and a maximum value. When not selected, the data is assumed to be a percentage.",
+                bindable: true,
               },
               {
                 key: "maxValueKey",
@@ -43,6 +46,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "maxValue",
                 label: "Max Value API Key",
                 help: "The API property name to use for the Progress component's maximum value.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "calculatePercent" }],
                 },
@@ -59,6 +63,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "normal",
                 label: "Status",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -89,6 +94,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "statusGroup",
                 label: "Status Options",
                 component: "card",
+                bindable: true,
                 components: [
                   {
                     key: "statusKey",
@@ -138,6 +144,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Progress Type",
                 defaultValue: "line",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -162,6 +169,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Small Line",
                 defaultValue: false,
                 dataHandlerType: "local",
+                bindable: true,
                 visibilityConditions: {
                   "===": ["line", { var: "type" }],
                 },
@@ -172,6 +180,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Width",
                 dataHandlerType: "local",
+                bindable: true,
                 visibilityConditions: {
                   "!==": ["line", { var: "type" }],
                 },
@@ -183,6 +192,7 @@ const progressManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Hide Info",
                 defaultValue: false,
                 help: "Hide progress summary information",
+                bindable: true,
               },
             ],
           },

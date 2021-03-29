@@ -1,0 +1,68 @@
+.controlWrapper {
+  align-content: stretch;
+  align-items: flex-start;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+
+/*
+ * :global {...} is used by rollup-plugin-postcss-modules
+ * For more info, see:
+ * https://github.com/css-modules/css-modules
+ */
+:global {
+  :local(.bindingIcon) {
+    flex: 0 1 auto;
+    align-self: flex-start;
+    border: none !important;
+    color: lightgrey;
+    font-size: 12px;
+    line-height: 32px;
+
+    &.ant-btn-icon-only.ant-btn-sm {
+      font-size: 12px;
+      line-height: 32px;
+    }
+  }
+}
+
+.controlMaskContainer {
+  flex: 1 0 auto;
+  align-self: auto;
+  position: relative;
+}
+
+.controlMask {
+  background-color: rgba(255, 251, 119, 0.5);
+  border-radius: 3px;
+  border: solid 1px #0089ff;
+  color: #919191;
+  height: 100%;
+  left: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+
+  // Parent container
+  align-content: center;
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  line-height: 12px;
+}
+
+.controlMaskLabel {
+  background-color: white;
+  padding: 3px;
+  flex: 0 1 auto;
+  align-self: auto;
+  line-height: 12px;
+  font-size: 12px;
+}

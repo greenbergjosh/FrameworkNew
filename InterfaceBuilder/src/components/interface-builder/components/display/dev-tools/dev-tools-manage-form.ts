@@ -18,14 +18,17 @@ export const devToolsManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Dev Tools",
+                hidden: true,
               },
               {
                 key: "hideLabel",
                 defaultValue: true,
+                hidden: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
             ],
           },
@@ -38,6 +41,7 @@ export const devToolsManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 label: "Height",
                 defaultValue: 150,
+                bindable: true,
               },
             ],
           },

@@ -18,6 +18,7 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Tabs",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -28,6 +29,7 @@ const tabsManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "tabs",
                 ordinal: 20,
                 component: "list",
+                bindable: true,
                 components: [
                   {
                     key: "label",

@@ -18,6 +18,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Time Range",
+                bindable: true,
               },
               {
                 key: "valueKey",
@@ -31,6 +32,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "startTime",
                 label: "Start Time API Name",
                 help: "The name of the start time field in the API endpoint.",
+                bindable: true,
               },
               {
                 key: "endTimeKey",
@@ -40,6 +42,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "endTime",
                 label: "End Time API Name",
                 help: "The name of the end time field in the API endpoint.",
+                bindable: true,
               },
               {
                 key: "useWrapperObject",
@@ -49,6 +52,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Use API Wrapper Object",
                 help: "Whether to send the start and end values as two separate values or contained in an object.",
+                bindable: true,
               },
               {
                 key: "wrapperObjectKey",
@@ -58,6 +62,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "timeRange",
                 label: "Wrapper Object API Name",
                 help: "The name of the wrapper object field in the API endpoint.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     true,
@@ -80,6 +85,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "default",
                 dataHandlerType: "local",
                 ordinal: 12,
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -104,6 +110,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Start Time",
                 label: "Start Time Placeholder",
+                bindable: true,
               },
               {
                 key: "endTimePlaceholder",
@@ -112,6 +119,7 @@ const timeRangeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "End Time",
                 label: "End Time Placeholder",
+                bindable: true,
               },
             ],
           },

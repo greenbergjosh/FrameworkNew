@@ -74,6 +74,7 @@
     "@types/ckeditor": "4.9.10",
     "@types/classnames": "2.2.10",
     "@types/d3-geo": "2.0.0",
+    "@types/json-logic-js": "1.2.1",
     "@types/loadable__component": "5.13.1",
     "@types/lodash": "4.14.162",
     "@types/node": "14.14.5",

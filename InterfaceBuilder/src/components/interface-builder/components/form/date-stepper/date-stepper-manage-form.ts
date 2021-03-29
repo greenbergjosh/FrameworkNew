@@ -18,6 +18,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Date Stepper",
+                bindable: true,
               },
               {
                 key: "valueKey",
@@ -30,6 +31,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Submit the parent form on click.",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               // {
               //   key: "dateFormat",
@@ -61,6 +63,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 label: "Date Range",
+                bindable: true,
               },
               {
                 key: "dateKey",
@@ -69,6 +72,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "startDate",
                 label: "Date Key",
                 help: "The name of the date field.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [false, { var: ["isDateRange"] }],
                 },
@@ -80,6 +84,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "startDate",
                 label: "Start Date Key",
                 help: "The name of the start date field.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: ["isDateRange"] }],
                 },
@@ -91,6 +96,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "endDate",
                 label: "End Date Key",
                 help: "The name of the end date field.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: ["isDateRange"] }],
                 },
@@ -107,6 +113,7 @@ const dateStepperManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Size",
                 component: "select",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {

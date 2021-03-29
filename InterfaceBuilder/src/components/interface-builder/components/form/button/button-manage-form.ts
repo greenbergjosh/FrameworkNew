@@ -16,10 +16,12 @@ const dataTab = {
     {
       key: "label",
       hidden: true,
+      bindable: true,
     },
     {
       key: "valueKey",
       hidden: true,
+      bindable: true,
     },
     {
       key: "paramKVPMaps",
@@ -27,6 +29,7 @@ const dataTab = {
       label: "Map Params",
       component: "data-map",
       multiple: true,
+      bindable: true,
       keyComponent: {
         label: "Param Source Key",
         help: "Where to get the data",
@@ -78,6 +81,7 @@ const confirmationSettings = [
     defaultValue: false,
     label: "Require Confirm",
     help: "Requires the user to confirm this action before it will be executed.",
+    bindable: true,
   },
   {
     key: "confirmation.title",
@@ -86,6 +90,7 @@ const confirmationSettings = [
     component: "input",
     defaultValue: "Are you sure?",
     label: "Title",
+    bindable: true,
     visibilityConditions: {
       "===": [true, { var: "requireConfirmation" }],
     },
@@ -97,6 +102,7 @@ const confirmationSettings = [
     component: "input",
     defaultValue: "This action cannot be undone and may take a while. Are you sure?",
     label: "Message",
+    bindable: true,
     visibilityConditions: {
       "===": [true, { var: "requireConfirmation" }],
     },
@@ -108,6 +114,7 @@ const confirmationSettings = [
     component: "input",
     defaultValue: "Continue",
     label: "OK Button Label",
+    bindable: true,
     visibilityConditions: {
       "===": [true, { var: "requireConfirmation" }],
     },
@@ -119,6 +126,7 @@ const confirmationSettings = [
     component: "input",
     defaultValue: "Cancel",
     label: "Cancel Button Label",
+    bindable: true,
     visibilityConditions: {
       "===": [true, { var: "requireConfirmation" }],
     },
@@ -136,6 +144,7 @@ const appearanceTab = {
       defaultValue: null,
       dataHandlerType: "local",
       ordinal: 11,
+      bindable: true,
       data: {
         values: [
           {
@@ -173,6 +182,7 @@ const appearanceTab = {
       defaultValue: null,
       dataHandlerType: "local",
       ordinal: 12,
+      bindable: true,
       data: {
         values: [
           {
@@ -208,6 +218,7 @@ const appearanceTab = {
       component: "toggle",
       defaultValue: false,
       label: "Hide Button Text",
+      bindable: true,
       visibilityConditions: {
         and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
       },
@@ -219,6 +230,7 @@ const appearanceTab = {
       component: "input",
       defaultValue: "Button",
       label: "Button Text",
+      bindable: true,
     },
     {
       key: "size",
@@ -228,6 +240,7 @@ const appearanceTab = {
       defaultValue: null,
       dataHandlerType: "local",
       ordinal: 16,
+      bindable: true,
       data: {
         values: [
           {
@@ -252,6 +265,7 @@ const appearanceTab = {
       component: "toggle",
       defaultValue: false,
       label: "Full Width",
+      bindable: true,
       visibilityConditions: {
         and: [{ "!==": ["circle", { var: ["shape"] }] }, { "!==": ["circle-outline", { var: ["shape"] }] }],
       },
@@ -264,6 +278,7 @@ const appearanceTab = {
       defaultValue: false,
       label: "Contrast",
       help: "Increase contrast when placed over a dark background",
+      bindable: true,
     },
     ...confirmationSettings,
   ],

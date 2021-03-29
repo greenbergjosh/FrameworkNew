@@ -18,6 +18,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Text",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "stringTemplate",
@@ -34,6 +36,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Text",
                 help: 'Text can include simple jsonPath tokens as "{$.propertyName}" (using model properties only)',
                 defaultValue: "",
+                bindable: true,
               },
             ],
           },
@@ -47,6 +50,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 defaultValue: "text",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -90,6 +94,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Show Icon",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
                 visibilityConditions: {
                   or: [
                     {
@@ -113,6 +118,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Description",
                 defaultValue: "",
+                bindable: true,
                 visibilityConditions: {
                   or: [
                     {
@@ -136,6 +142,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Banner",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
                 visibilityConditions: {
                   or: [
                     {
@@ -159,6 +166,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Closeable",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
                 visibilityConditions: {
                   or: [
                     {
@@ -183,6 +191,7 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 defaultValue: "h2",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -213,30 +222,35 @@ export const textManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Center",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "marginTop",
                 valueKey: "marginTop",
                 label: "Top Margin",
                 component: "number-input",
+                bindable: true,
               },
               {
                 key: "marginRight",
                 valueKey: "marginRight",
                 label: "Right Margin",
                 component: "number-input",
+                bindable: true,
               },
               {
                 key: "marginBottom",
                 valueKey: "marginBottom",
                 label: "Bottom Margin",
                 component: "number-input",
+                bindable: true,
               },
               {
                 key: "marginLeft",
                 valueKey: "marginLeft",
                 label: "Left Margin",
                 component: "number-input",
+                bindable: true,
               },
             ],
           },

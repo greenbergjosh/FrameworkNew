@@ -18,6 +18,7 @@ const iFrameManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "IFrame",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ const iFrameManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "src",
@@ -33,6 +35,7 @@ const iFrameManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "IFrame URL",
                 defaultValue: "https://",
+                bindable: true,
               },
             ],
           },
@@ -45,6 +48,7 @@ const iFrameManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 label: "Show Border",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "height",
@@ -52,6 +56,7 @@ const iFrameManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Height",
                 component: "number-input",
                 defaultValue: 500,
+                bindable: true,
               },
             ],
           },

@@ -17,6 +17,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
               {
                 key: "label",
                 defaultValue: "Template",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -25,6 +26,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
               {
                 key: "valueKey",
                 defaultValue: "components",
+                bindable: true,
               },
               {
                 key: "serializeConfigId",
@@ -34,6 +36,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
                 component: "select",
                 dataHandlerType: "remote-config",
                 remoteConfigType: "Components.StringTemplate.Serialization",
+                bindable: true,
               },
               {
                 key: "deserializeConfigId",
@@ -44,6 +47,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
                 component: "select",
                 dataHandlerType: "remote-config",
                 remoteConfigType: "Components.StringTemplate.Serialization",
+                bindable: true,
               },
             ],
           },
@@ -56,6 +60,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
                 component: "toggle",
                 defaultValue: true,
                 label: "Border",
+                bindable: true,
               },
             ],
           },

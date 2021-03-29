@@ -18,10 +18,12 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Input Text",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "maxLength",
@@ -30,6 +32,7 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 defaultValue: null,
                 label: "Max length",
+                bindable: true,
               },
             ],
           },
@@ -41,6 +44,7 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "placeholder",
                 component: "input",
                 label: "Placeholder",
+                bindable: true,
               },
               {
                 key: "size",
@@ -50,6 +54,7 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Size",
                 component: "select",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {

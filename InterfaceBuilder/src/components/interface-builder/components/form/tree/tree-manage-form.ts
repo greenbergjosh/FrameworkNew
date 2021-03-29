@@ -18,10 +18,12 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Tree",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "dataTree",
+                bindable: true,
               },
               {
                 key: "modifiable",
@@ -30,6 +32,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 help: "Is the user allowed to modify the tree in any way (Add, Edit, Rearrange)?",
+                bindable: true,
               },
               {
                 key: "allowNestingInLeaves",
@@ -39,6 +42,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: true,
                 help:
                   "Allows nesting a leaf under another leaf. If false, leaves and parents are considered separate types.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "modifiable" }],
                 },
@@ -50,6 +54,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 help: "Allow adding new items to the tree",
+                bindable: true,
                 visibilityConditions: {
                   and: [{ "===": [true, { var: "modifiable" }] }, { "===": [true, { var: "allowNestingInLeaves" }] }],
                 },
@@ -60,6 +65,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Allow add leaves?",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
                 visibilityConditions: {
                   and: [{ "===": [true, { var: "modifiable" }] }, { "===": [false, { var: "allowNestingInLeaves" }] }],
                 },
@@ -70,6 +76,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Allow add parents?",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
                 visibilityConditions: {
                   and: [{ "===": [true, { var: "modifiable" }] }, { "===": [false, { var: "allowNestingInLeaves" }] }],
                 },
@@ -81,6 +88,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 help: "Can the user select entries in the tree?",
+                bindable: true,
               },
               {
                 key: "selectedKey",
@@ -89,6 +97,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "selected",
                 help: "The property that tracks the selection value",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "selectable" }],
                 },
@@ -100,6 +109,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 help: "Can the user select multiple entries in the tree at the same time?",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "selectable" }],
                 },
@@ -111,6 +121,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: false,
                 help: "Turn this on to allow the user to select both leaf nodes as well as parent nodes in the tree",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "selectable" }],
                 },
@@ -129,6 +140,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 help: "Whether there are details components / properties that should be shown about tree items",
+                bindable: true,
               },
               {
                 key: "detailsOrientation",
@@ -136,6 +148,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Details location",
                 component: "select",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -161,6 +174,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "No Items",
                 help: "Text to display when the tree is empty",
+                bindable: true,
               },
               {
                 key: "addLabel",
@@ -169,6 +183,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Add Item",
                 help: "Allow adding new items to the tree",
+                bindable: true,
                 visibilityConditions: {
                   and: [
                     { "===": [true, { var: "modifiable" }] },
@@ -184,6 +199,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Add Leaf",
                 help: "Allow adding new single items to the tree",
+                bindable: true,
                 visibilityConditions: {
                   and: [
                     { "===": [true, { var: "modifiable" }] },
@@ -199,6 +215,7 @@ const treeManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Add Parent",
                 help: "Allow adding new parents/groups to the tree",
+                bindable: true,
                 visibilityConditions: {
                   and: [
                     { "===": [true, { var: "modifiable" }] },

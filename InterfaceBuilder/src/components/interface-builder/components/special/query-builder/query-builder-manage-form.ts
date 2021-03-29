@@ -18,10 +18,12 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
               {
                 key: "label",
                 defaultValue: "Query Builder",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "qbData",
+                bindable: true,
               },
               {
                 key: "jsonLogicKey",
@@ -30,6 +32,7 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 label: "JsonLogic Key",
                 help: "Key to to access the JsonLogic for the query.",
                 defaultValue: "jsonLogic",
+                bindable: true,
               },
               {
                 key: "exposeQueryableFields",
@@ -40,12 +43,14 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 help:
                   "Make the queryable fields (root properties) available on the data model when the schema is loaded.",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "queryableFieldsKey",
                 valueKey: "queryableFieldsKey",
                 component: "input",
                 label: "Queryable Fields Key",
+                bindable: true,
                 visibilityConditions: {
                   "===": [
                     true,
@@ -62,6 +67,7 @@ export const queryBuilderManageFormDefinition: Partial<ComponentDefinition>[] = 
                 label: "Schema Key",
                 help: "Key to to access the schema for the data to be queried.",
                 defaultValue: "schema",
+                bindable: true,
               },
             ],
           },

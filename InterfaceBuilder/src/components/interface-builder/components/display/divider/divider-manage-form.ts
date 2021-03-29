@@ -42,6 +42,7 @@ const dividerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "",
                 label: "Label",
                 help: "Text to appear on the divider itself",
+                bindable: true,
               },
               {
                 key: "textAlignment",
@@ -51,6 +52,7 @@ const dividerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Text Alignment",
                 help: "Whether the text on the label should appear on the left, right, or center of the divider.",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -79,6 +81,7 @@ const dividerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Orientation",
                 help: "Whether the divider appears horizontally or vertically.",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -99,6 +102,7 @@ const dividerManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Dashed",
                 help: "Instead of a solid line, the divider can appear as a dashed line.",
+                bindable: true,
               },
             ],
           },

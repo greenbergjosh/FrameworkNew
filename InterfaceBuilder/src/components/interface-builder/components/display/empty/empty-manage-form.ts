@@ -33,6 +33,7 @@ const emptyManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Message",
                 component: "input",
                 defaultValue: "No Data",
+                bindable: true,
               },
               {
                 key: "image",
@@ -41,6 +42,7 @@ const emptyManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "default",
+                bindable: true,
                 data: {
                   values: [
                     { label: "Default", value: "default" },
@@ -55,6 +57,7 @@ const emptyManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Custom Image",
                 component: "input",
                 help: "Either a URL to an image or a Base64 encoded Data URL of an image ",
+                bindable: true,
                 visibilityConditions: {
                   "===": ["custom", { var: "image" }],
                 },

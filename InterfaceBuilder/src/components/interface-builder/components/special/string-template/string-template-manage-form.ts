@@ -18,6 +18,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
               {
                 key: "label",
                 defaultValue: "Template",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
               {
                 key: "valueKey",
                 defaultValue: "components",
+                bindable: true,
               },
               {
                 valueKey: "serializeSrc",
@@ -37,6 +39,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
                 hideLabel: false,
                 component: "code-editor",
                 height: 200,
+                bindable: true,
               },
               {
                 valueKey: "deserializeSrc",
@@ -49,6 +52,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
                 hideLabel: false,
                 component: "code-editor",
                 height: 200,
+                bindable: true,
               },
             ],
           },
@@ -61,6 +65,7 @@ export const stringTemplateManageFormDefinition: Partial<ComponentDefinition>[] 
                 component: "toggle",
                 defaultValue: true,
                 label: "Border",
+                bindable: true,
               },
             ],
           },

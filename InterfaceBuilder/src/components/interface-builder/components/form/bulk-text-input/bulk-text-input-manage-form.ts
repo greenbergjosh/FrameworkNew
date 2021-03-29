@@ -19,10 +19,12 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Text Area",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "itemSeparator",
@@ -32,6 +34,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Item Separator",
                 dataHandlerType: "local",
                 defaultValue: separator.newline,
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -57,6 +60,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 label: "Autosize height",
+                bindable: true,
               },
               {
                 key: "newlinePlaceholder",
@@ -65,6 +69,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Enter each item on a line by itself",
                 label: "Placeholder",
+                bindable: true,
                 visibilityConditions: {
                   "===": [separator.newline, { var: "itemSeparator" }],
                 },
@@ -76,6 +81,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Enter items separated by commas",
                 label: "Placeholder",
+                bindable: true,
                 visibilityConditions: {
                   "===": [separator.comma, { var: "itemSeparator" }],
                 },
@@ -87,6 +93,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 defaultValue: null,
                 label: "Min rows",
+                bindable: true,
                 visibilityConditions: {
                   "===": [false, { var: "autosize" }],
                 },
@@ -98,6 +105,7 @@ const bulkTextInputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 defaultValue: null,
                 label: "Max rows",
+                bindable: true,
                 visibilityConditions: {
                   "===": [false, { var: "autosize" }],
                 },

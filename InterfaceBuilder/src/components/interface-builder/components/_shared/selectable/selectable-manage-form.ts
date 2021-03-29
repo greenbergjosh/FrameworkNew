@@ -2,16 +2,19 @@ export const baseSelectDataComponents = [
   {
     key: "label",
     defaultValue: "Select",
+    bindable: true,
   },
   {
     key: "valueKey",
     defaultValue: "value",
+    bindable: true,
   },
   {
     key: "defaultValue",
     valueKey: "defaultValue",
     label: "Default Value",
     component: "input",
+    bindable: true,
   },
   {
     key: "dataHandlerType",
@@ -21,6 +24,7 @@ export const baseSelectDataComponents = [
     component: "select",
     help: "Where to fetch the data for this Select box from",
     dataHandlerType: "local",
+    bindable: true,
     data: {
       values: [
         {
@@ -39,6 +43,7 @@ export const baseSelectDataComponents = [
     component: "data-map",
     defaultValue: [],
     multiple: true,
+    bindable: true,
     keyComponent: {
       label: "Option Name",
       component: "input",

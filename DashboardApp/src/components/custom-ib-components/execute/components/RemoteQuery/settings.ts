@@ -13,6 +13,7 @@ export const remoteQuerySettings = [
     component: "text",
     marginBottom: 20,
     components: [],
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -33,6 +34,7 @@ export const remoteQuerySettings = [
     defaultValue: false,
     label: "CRUD Operation",
     help: "Does this query CReate Update or Delete data?",
+    bindable: true,
     visibilityConditions: {
       or: [
         {
@@ -62,6 +64,7 @@ export const remoteQuerySettings = [
     //   ],
     // },
     remoteConfigType: "Report.Query",
+    bindable: true,
     visibilityConditions: {
       and: [
         {

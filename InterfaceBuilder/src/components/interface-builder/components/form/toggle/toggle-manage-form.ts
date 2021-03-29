@@ -18,10 +18,12 @@ const toggleManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Toggle",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "inverted",
@@ -30,6 +32,7 @@ const toggleManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "For the case when toggled on should mean false and toggled off should mean true",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },
@@ -44,6 +47,7 @@ const toggleManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Size",
                 component: "select",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {

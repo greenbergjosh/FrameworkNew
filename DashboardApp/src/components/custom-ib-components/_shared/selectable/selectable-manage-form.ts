@@ -12,6 +12,7 @@ export const baseSelectDataComponents = [
     valueKey: "defaultValue",
     label: "Default Value",
     component: "input",
+    bindable: true,
   },
   {
     key: "dataHandlerType",
@@ -21,6 +22,7 @@ export const baseSelectDataComponents = [
     component: "select",
     help: "Where to fetch the data for this Select box from",
     dataHandlerType: "local",
+    bindable: true,
     data: {
       values: [
         {
@@ -62,6 +64,7 @@ export const baseSelectDataComponents = [
     component: "data-map",
     defaultValue: [],
     multiple: true,
+    bindable: true,
     keyComponent: {
       label: "Option Name",
       component: "input",
@@ -87,6 +90,7 @@ export const baseSelectDataComponents = [
     label: "Options API Key",
     component: "input",
     defaultValue: "options",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "ui-data-key",
@@ -102,6 +106,7 @@ export const baseSelectDataComponents = [
     label: "Option Name Key",
     component: "input",
     defaultValue: "label",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "ui-data-key",
@@ -117,6 +122,7 @@ export const baseSelectDataComponents = [
     label: "Option Value Key",
     component: "input",
     defaultValue: "value",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "ui-data-key",
@@ -134,6 +140,7 @@ export const baseSelectDataComponents = [
     help: "Provide a function that returns the options (Advanced).",
     dataHandlerType: "remote-config",
     remoteConfigType: "Select.RemoteFunction",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "remote-function",
@@ -160,6 +167,7 @@ export const baseSelectDataComponents = [
       ],
     },
     remoteConfigType: "Report.Query",
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -181,6 +189,7 @@ export const baseSelectDataComponents = [
     help: "User must select from configured Key Value Pairs.",
     dataHandlerType: "remote-config",
     remoteConfigType: "KeyValuePairs",
+    bindable: true,
     visibilityConditions: {
       and: [
         {
@@ -204,6 +213,7 @@ export const baseSelectDataComponents = [
       { label: "label", value: "" },
       { label: "value", value: "" },
     ],
+    bindable: true,
     keyComponent: {
       label: "Property",
       unique: true,
@@ -240,6 +250,7 @@ export const baseSelectDataComponents = [
     component: "select",
     dataHandlerType: "remote-config",
     remoteConfigType: "EntityType",
+    bindable: true,
     visibilityConditions: {
       "===": [
         "remote-config",
@@ -257,6 +268,7 @@ export const baseSelectDataComponents = [
     component: "toggle",
     defaultValue: false,
     hidden: true,
+    bindable: true,
     visibilityConditions: {
       "===": [
         "remote-config",
@@ -274,6 +286,7 @@ export const baseSelectDataComponents = [
     component: "input",
     defaultValue: "Create New...",
     hidden: true,
+    bindable: true,
     visibilityConditions: {
       and: [
         {

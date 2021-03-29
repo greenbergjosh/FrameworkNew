@@ -18,6 +18,7 @@ const collapseManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Collapse",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -35,6 +36,7 @@ const collapseManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "When accordion mode is active, only one section can be open at a time.",
                 component: "toggle",
                 defaultValue: true,
+                bindable: true,
               },
               {
                 key: "sections",
@@ -66,6 +68,7 @@ const collapseManageFormDefinition: Partial<ComponentDefinition>[] = [
                 addItemLabel: "Add Section",
                 emptyText: "No Configured Collapse Sections",
                 help: "List the named sections here, and fill in the components in the Layout Creator",
+                bindable: true,
               },
             ],
           },

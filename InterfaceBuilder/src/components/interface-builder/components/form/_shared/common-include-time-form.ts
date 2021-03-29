@@ -40,6 +40,7 @@ export const commonIncludeTimeForm = [
     defaultValue: false,
     label: "Include Time Picker?",
     help: "Indicates whether to allow picking time in the ranges as well as date.",
+    bindable: true,
   },
   {
     key: "timeSettingsColumnsWrapper",
@@ -125,6 +126,7 @@ export const commonIncludeTimeForm = [
     defaultValue: false,
     label: "Use 24 Hour Clock?",
     help: "Turn this on to remove AM/PM and use hours from 00 to 23. ",
+    bindable: true,
     visibilityConditions: {
       "===": [true, { var: "timeSettings.includeTime" }],
     },

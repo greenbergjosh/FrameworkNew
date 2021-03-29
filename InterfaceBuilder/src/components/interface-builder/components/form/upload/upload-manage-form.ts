@@ -18,10 +18,12 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Upload File",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -36,6 +38,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "https://",
                 label: "Upload URL",
                 help: "URL for the service that receives the uploaded file.",
+                bindable: true,
               },
               {
                 key: "removeUrl",
@@ -45,6 +48,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "https://",
                 label: "Remove URL",
                 help: "URL for the service that removes an uploaded file.",
+                bindable: true,
               },
               {
                 key: "chunkSize",
@@ -54,6 +58,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: 500000, // 500 KB
                 label: "Max chunk size (bytes)",
                 help: "Maximum size in bytes of chunks that are sent to the server.",
+                bindable: true,
               },
               {
                 key: "maxFileSize",
@@ -64,6 +69,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "50000000", // 50 MB
                 dataHandlerType: "local",
                 help: "Maximum file size in bytes.",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -121,6 +127,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: 3,
                 label: "Retry count",
                 help: "Maximum upload retry attempts on network failure.",
+                bindable: true,
               },
               {
                 key: "retryAfterDelay",
@@ -130,6 +137,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: 500,
                 label: "Retry delay (ms)",
                 help: "Milliseconds to wait between each retry.",
+                bindable: true,
               },
               {
                 key: "headers",
@@ -139,6 +147,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: [],
                 multiple: true,
                 help: "Provide header parameter name and API key pairs to send data to the server with the upload.",
+                bindable: true,
                 keyComponent: {
                   label: "Param Name",
                   component: "input",
@@ -162,6 +171,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: true,
                 label: "Standalone Button?",
                 help: "Should the button be shown by itself? Best for row display.",
+                bindable: true,
               },
               {
                 key: "standaloneButtonLabel",
@@ -170,6 +180,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "Upload",
                 label: "Standalone Button Label",
                 help: "Button label when only the button appears.",
+                bindable: true,
                 visibilityConditions: {
                   "===": [true, { var: "standaloneButton" }],
                 },
@@ -181,6 +192,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: "Browse...",
                 label: "Normal Button Label",
                 help: "Button label when drag-and-drop is enabled.",
+                bindable: true,
                 visibilityConditions: {
                   "!==": [true, { var: "standaloneButton" }],
                 },
@@ -192,6 +204,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: true,
                 label: "Auto start upload",
                 help: "Should the upload start automatically after a file is chosen?",
+                bindable: true,
                 visibilityConditions: {
                   "!==": [true, { var: "standaloneButton" }],
                 },
@@ -203,6 +216,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Show Files",
                 help: "Show the uploaded files list?",
+                bindable: true,
               },
               {
                 key: "allowMultiple",
@@ -211,6 +225,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 defaultValue: false,
                 label: "Multiple uploads",
                 help: "Allow multiple simultaneous uploads?",
+                bindable: true,
               },
               {
                 key: "accept",
@@ -219,6 +234,7 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Accept File Type",
                 defaultValue: "",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
                   values: [
@@ -279,10 +295,11 @@ const uploadManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "",
                 label: "Other Type",
+                help: "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
+                bindable: true,
                 visibilityConditions: {
                   "===": ["other", { var: "accept" }],
                 },
-                help: "Enter a filename with wildcards (e.g., *.txt), or a MIME type (e.g., application/pdf)",
               },
             ],
           },

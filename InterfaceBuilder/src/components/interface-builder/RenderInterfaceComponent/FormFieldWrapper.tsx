@@ -15,7 +15,7 @@ export const FormFieldWrapper: React.FC<{
     return <>{props.children}</>
   }
 
-  const helpContent = isEmpty(props.help) ? null : (
+  const helpIcon = isEmpty(props.help) ? null : (
     <Tooltip title={props.help}>
       <Icon type="question-circle-o" />
     </Tooltip>
@@ -30,7 +30,7 @@ export const FormFieldWrapper: React.FC<{
         colon={false}
         label={
           <>
-            {props.label} {helpContent}
+            {props.label} {helpIcon}
           </>
         }>
         {props.children}
@@ -39,12 +39,12 @@ export const FormFieldWrapper: React.FC<{
   }
 
   /*
-   * Non-form control
+   * Non-form control, so just add the label
    */
   return (
     <div className="label-wrapper">
       <label>
-        {props.label} {helpContent}
+        {props.label} {helpIcon}
       </label>
       {props.children}
     </div>

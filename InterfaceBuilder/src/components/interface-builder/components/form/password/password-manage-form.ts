@@ -18,10 +18,12 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Input Text",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
             ],
           },
@@ -35,6 +37,7 @@ const inputManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "checkbox",
                 defaultValue: false,
                 label: "Show Password Toggle",
+                bindable: true,
               },
             ],
           },

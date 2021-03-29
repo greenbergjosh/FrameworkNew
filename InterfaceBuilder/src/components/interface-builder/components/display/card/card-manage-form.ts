@@ -18,6 +18,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Card",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "data",
+                bindable: true,
               },
               {
                 key: "title",
@@ -33,6 +35,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Card Title",
                 defaultValue: "Card Title",
+                bindable: true,
               },
               {
                 key: "extra",
@@ -40,6 +43,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 label: "Detail Text",
                 defaultValue: "",
+                bindable: true,
               },
             ],
           },
@@ -52,6 +56,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 label: "Hover Effect",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "bordered",
@@ -59,6 +64,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 label: "Show Border",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "size",
@@ -67,6 +73,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Card Size",
                 defaultValue: "default",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -86,6 +93,7 @@ const cardManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 label: "Show Inset",
                 defaultValue: false,
+                bindable: true,
               },
             ],
           },

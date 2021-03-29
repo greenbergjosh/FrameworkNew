@@ -19,10 +19,12 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Geo Map",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
                 help:
                   'The data must be an array of objects with the properties: { "percentage", "magnitude", "name", "latitude", "longitude" }.',
               },
@@ -31,6 +33,7 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "markerLimit",
                 label: "Marker Limit",
                 component: "number-input",
+                bindable: true,
               },
             ],
           },
@@ -45,6 +48,7 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 defaultValue: "usaStates",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -64,6 +68,7 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Width",
                 help: "Width in pixels. Height is determined by the component.",
                 component: "number-input",
+                bindable: true,
               },
               {
                 key: "markerFillColor",
@@ -72,6 +77,7 @@ const mapManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "red",
+                bindable: true,
                 data: {
                   values: colorOptions,
                 },

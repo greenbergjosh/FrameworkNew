@@ -6,6 +6,7 @@ import { VisibilityIndicator } from "./VisibilityIndicator"
 import { FormFieldWrapper } from "./FormFieldWrapper"
 import { DraggableWrapper } from "./DraggableWrapper"
 import { DebugComponent } from "./DebugComponent"
+import { DataBinding } from "./DataBinding/DataBinding"
 import { RenderInterfaceComponentProps, RenderInterfaceComponentState } from "./types"
 import { LayoutDefinition } from "components/interface-builder/components/base/BaseInterfaceComponent"
 
@@ -53,16 +54,23 @@ export class RenderInterfaceComponent extends React.Component<
         hideLabel={componentDefinition.hideLabel}
         help={componentDefinition.help}
         label={componentDefinition.label}>
-        <Component
-          {...componentDefinition}
-          userInterfaceData={data}
-          getRootUserInterfaceData={this.props.getRootData}
-          mode={mode}
+        <DataBinding
+          componentDefinition={componentDefinition}
           onChangeData={onChangeData}
           onChangeSchema={onChangeSchema}
-          submit={submit}
-          userInterfaceSchema={componentDefinition}
-        />
+          userInterfaceData={data}
+          mode={mode}>
+          <Component
+            {...componentDefinition}
+            userInterfaceData={data}
+            getRootUserInterfaceData={this.props.getRootData}
+            mode={mode}
+            onChangeData={onChangeData}
+            onChangeSchema={onChangeSchema}
+            submit={submit}
+            userInterfaceSchema={componentDefinition}
+          />
+        </DataBinding>
       </FormFieldWrapper>
     )
   }

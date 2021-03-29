@@ -34,11 +34,13 @@ const sectionedNavigationManageFormDefinition: Partial<ComponentDefinition>[] = 
                 valueKey: "title",
                 label: "Title",
                 component: "input",
+                bindable: true,
               },
               {
                 key: "sections",
                 valueKey: "sections",
                 component: "list",
+                bindable: true,
                 components: [
                   {
                     component: "form",

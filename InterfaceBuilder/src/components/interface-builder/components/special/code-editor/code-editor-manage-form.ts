@@ -32,10 +32,12 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Code Editor",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "code",
+                bindable: true,
               },
               {
                 key: "defaultValue",
@@ -43,6 +45,7 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "code-editor",
                 defaultTheme: "vs-dark",
                 label: "Default Value",
+                bindable: true,
               },
             ],
           },
@@ -66,6 +69,7 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Default Language",
                 help: "Select the code language to initially set for this code editor",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: supportedEditorLang,
                 },
@@ -85,6 +89,7 @@ const codeEditorFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Default Theme",
                 help: "Select the highlighting theme to initially set for this code editor",
                 dataHandlerType: "local",
+                bindable: true,
                 data: {
                   values: supportedEditorTheme,
                 },

@@ -19,10 +19,12 @@ const dateManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Date",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "date",
+                bindable: true,
               },
             ],
           },

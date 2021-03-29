@@ -18,6 +18,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Components",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -26,6 +27,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "valueKey",
                 defaultValue: "components",
+                bindable: true,
               },
               {
                 key: "unwrapped",
@@ -34,6 +36,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 help: "Normally, a list contains JSON objects, but unwrapping allows the list to contain scalar values",
                 component: "toggle",
                 defaultValue: false,
+                bindable: true,
               },
               {
                 key: "interleave",
@@ -44,6 +47,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "select",
                 dataHandlerType: "local",
                 defaultValue: "none",
+                bindable: true,
                 data: {
                   values: [
                     {
@@ -67,6 +71,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "Add Item",
                 label: "'Add' Button Text",
+                bindable: true,
               },
               {
                 key: "emptyText",
@@ -74,6 +79,7 @@ const listManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "input",
                 defaultValue: "No Items",
                 label: "Empty Text",
+                bindable: true,
               },
             ],
           },

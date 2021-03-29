@@ -50,7 +50,7 @@ export const ManageComponentModal = ({
 
   return (
     <Modal
-      title={layoutDefinition && layoutDefinition.title}
+      title={`${layoutDefinition && layoutDefinition.title} component`}
       visible={!!propComponentDefinition}
       okText="Save"
       onCancel={(e) => {

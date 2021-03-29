@@ -18,6 +18,7 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Columns",
+                bindable: true,
               },
               {
                 key: "hideLabel",
@@ -33,6 +34,7 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
                 valueKey: "columns",
                 component: "list",
                 orientation: "horizontal",
+                bindable: true,
                 components: [
                   {
                     component: "form",
@@ -90,6 +92,7 @@ const columnManageFormDefinition: Partial<ComponentDefinition>[] = [
                 label: "Gap between columns",
                 defaultValue: 8,
                 help: "Spacing (in pixels) between columns",
+                bindable: true,
               },
             ],
           },

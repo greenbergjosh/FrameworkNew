@@ -18,10 +18,12 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
               {
                 key: "label",
                 defaultValue: "Text Area",
+                bindable: true,
               },
               {
                 key: "valueKey",
                 defaultValue: "value",
+                bindable: true,
               },
               {
                 key: "maxLength",
@@ -30,6 +32,7 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 defaultValue: null,
                 label: "Max length",
+                bindable: true,
               },
             ],
           },
@@ -43,6 +46,7 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "toggle",
                 defaultValue: true,
                 label: "Autosize height",
+                bindable: true,
               },
               {
                 key: "minRows",
@@ -51,6 +55,7 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 defaultValue: null,
                 label: "Min rows",
+                bindable: true,
                 visibilityConditions: {
                   "===": [false, { var: "autosize" }],
                 },
@@ -62,6 +67,7 @@ const textAreaManageFormDefinition: Partial<ComponentDefinition>[] = [
                 component: "number-input",
                 defaultValue: null,
                 label: "Max rows",
+                bindable: true,
                 visibilityConditions: {
                   "===": [false, { var: "autosize" }],
                 },
