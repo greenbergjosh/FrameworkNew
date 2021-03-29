@@ -97,7 +97,8 @@ namespace EdwRollupLib
                 var mergePartitionIntoFinalTable = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(MergePartitionIntoFinalTable), options);
                 var gatherCompletedPartitions = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(GatherCompletedPartitions), options);
                 var swapMergedTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(SwapMergedTable), options);
-                var cleanupTempTables = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupTempTables), options);
+                var cleanupTempTables = new TransformBlock<Parameters, Parameters>(withEventsMaker.WithEvents(CleanupTempTables), options);
+                var cleanupFiles = new ActionBlock<Parameters>(withEventsMaker.WithEvents(CleanupFiles), options);
 
                 var linkOptions = new DataflowLinkOptions { PropagateCompletion = true };
 
@@ -115,6 +116,7 @@ namespace EdwRollupLib
                 gatherCompletedPartitions.LinkTo(DataflowBlock.NullTarget<Parameters>(), linkOptions, (output) => output == default);
                 gatherCompletedPartitions.LinkTo(swapMergedTables, linkOptions);
                 swapMergedTables.LinkTo(cleanupTempTables, linkOptions);
+                cleanupTempTables.LinkTo(cleanupFiles, linkOptions);
 
                 var clickhouseConfig = _config.GetE("Config/clickhouse");
                 var host = clickhouseConfig.GetS("host");
@@ -131,7 +133,7 @@ namespace EdwRollupLib
 
                     createTargetTable.Complete();
 
-                    await cleanupTempTables.Completion;
+                    await cleanupFiles.Completion;
                 }
             }
             finally
@@ -299,6 +301,8 @@ SETTINGS index_granularity = 8192;";
             var path = export.GetS("target_path");
             var filename = $"{tableConfig.GetS("table_name")}_{parameters.StartDate:yyyy_MM_dd}.csv";
             var importPath = $"{path}/{filename}";
+
+            await ExecuteSSHCommand($"sudo chmod 666 {path}/*");
 
             await ExecuteClickhouseQuery($"INSERT INTO datasets.import_{tableName} FORMAT CSVWithNames", importPath);
 
@@ -575,7 +579,7 @@ from datasets.{mergedTableName};";
             return parameters;
         }
 
-        private async Task CleanupTempTables(Parameters parameters)
+        private async Task<Parameters> CleanupTempTables(Parameters parameters)
         {
             var config = parameters.Config;
 
@@ -605,6 +609,23 @@ from datasets.{mergedTableName};";
                 }
 
                 previousTable = table;
+            }
+
+            return parameters;
+        }
+
+        private async Task CleanupFiles(Parameters parameters)
+        {
+            foreach(var tableConfig in parameters.Config.GetL("source_tables"))
+            {
+                var tableName = tableConfig.GetS("table_name");
+
+                var export = tableConfig.GetE("export");
+                var path = export.GetS("target_path");
+                var filename = $"{tableName}_{parameters.StartDate:yyyy_MM_dd}.csv";
+                var importPath = $"{path}/{filename}";
+
+                await ExecuteSSHCommand($"sudo rm {importPath}");
             }
         }
         #endregion
@@ -690,7 +711,21 @@ from datasets.{mergedTableName};";
 
         }
 
-        private async Task<string> ExecuteClickhouseQuery(string query, string pipeIn = null)
+        private async Task<string> ExecuteSSHCommand(string commandText)
+        {
+            using var command = _client.CreateCommand(commandText);
+
+            var result = await command.ExecuteAsync();
+
+            if (!string.IsNullOrWhiteSpace(command.Error))
+            {
+                throw new Exception(command.Error);
+            }
+
+            return result;
+        }
+
+        private Task<string> ExecuteClickhouseQuery(string query, string pipeIn = null)
         {
             var commandText = $"clickhouse-client -u {_clickhouseUser} --password {_clickhousePassword} --query \"{query.Replace("`", "\\`")}\"";
             if (!string.IsNullOrWhiteSpace(pipeIn))
@@ -708,16 +743,7 @@ from datasets.{mergedTableName};";
 #endif
             }
 
-            using var command = _client.CreateCommand(commandText);
-
-            var result = await command.ExecuteAsync();
-
-            if (!string.IsNullOrWhiteSpace(command.Error))
-            {
-                throw new ClickHouseException(command.Error);
-            }
-
-            return result;
+            return ExecuteSSHCommand(commandText);
         }
 
         private static Task<IGenericEntity> ExecutePostgresQuery(string connectionName, string functionName, object args)
