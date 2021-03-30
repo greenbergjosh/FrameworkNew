@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using ClickHouse.Ado;
 using Newtonsoft.Json;
 using Renci.SshNet;
 using Renci.SshNet.Async;
@@ -49,8 +48,7 @@ namespace EdwRollupLib
         private string _clickhouseUser;
         private string _clickhousePassword;
 
-        private Guid _rsId;
-        private DateTime _rsTs;
+        private Dictionary<Guid, (Guid rsId, DateTime rsTs)> _reportingSequences;
 
         public ClickhouseImport(IGenericEntity config, FrameworkWrapper fw)
         {
@@ -59,7 +57,7 @@ namespace EdwRollupLib
             _fw = fw;
         }
 
-        public async Task RunAsync(DateTime startDate, DateTime endDate)
+        public async Task RunAsync(DateTime startDate, DateTime endDate, IEnumerable<(Guid rsConfigId, Guid rsId, DateTime rsTs)> additionalReportingSequences = null)
         {
             if (_running)
             {
@@ -69,11 +67,21 @@ namespace EdwRollupLib
             _running = true;
             _partitionPopulationProgress.Clear();
             _partitionCompletionProgress.Clear();
-            _rsId = Guid.NewGuid();
-            _rsTs = DateTime.UtcNow;
+
+            var rsId = Guid.NewGuid();
+            var rsTs = DateTime.UtcNow;
+
+            _reportingSequences = new() { [_rsConfigId] = (rsId, rsTs) };
+            if (additionalReportingSequences != null)
+            {
+                foreach(var rs in additionalReportingSequences)
+                {
+                    _reportingSequences[rs.rsConfigId] = (rs.rsId, rs.rsTs);
+                }
+            }
 
             var edwBulkEvent = new EdwBulkEvent();
-            edwBulkEvent.AddReportingSequence(_rsId, _rsTs, new { name = _config.GetS("Name") }, _rsConfigId);
+            edwBulkEvent.AddReportingSequence(rsId, rsTs, new { name = _config.GetS("Name") }, _rsConfigId);
             await _fw.EdwWriter.Write(edwBulkEvent);
 
             await DropStartEvent(new Parameters(startDate, endDate, _config.GetE("Config")), "ImportProcess");
@@ -142,7 +150,7 @@ namespace EdwRollupLib
                 await DropEndEvent(new Parameters(startDate, endDate, _config.GetE("Config")), end - start, "ImportProcess");
                 _running = false;
 #if DEBUG
-                    Console.WriteLine(end - start);
+                Console.WriteLine(end - start);
 #endif
             }
         }
@@ -616,7 +624,7 @@ from datasets.{mergedTableName};";
 
         private async Task CleanupFiles(Parameters parameters)
         {
-            foreach(var tableConfig in parameters.Config.GetL("source_tables"))
+            foreach (var tableConfig in parameters.Config.GetL("source_tables"))
             {
                 var tableName = tableConfig.GetS("table_name");
 
@@ -635,7 +643,7 @@ from datasets.{mergedTableName};";
         {
             var edwBulkEvent = new EdwBulkEvent();
 
-            edwBulkEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, new Dictionary<Guid, (Guid rsId, DateTime rsTs)> { [_rsConfigId] = (_rsId, _rsTs) }, payload);
+            edwBulkEvent.AddEvent(Guid.NewGuid(), DateTime.UtcNow, _reportingSequences, payload);
 
             return _fw.EdwWriter.Write(edwBulkEvent);
         }

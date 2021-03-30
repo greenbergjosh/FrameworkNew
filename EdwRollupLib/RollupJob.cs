@@ -276,7 +276,8 @@ namespace EdwRollupLib
                 sessionId = input?.SessionId,
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
-                rollupName = input?.RollupName
+                rollupName = input?.RollupName,
+                rollupArgs = input?.RollupArgs?.GetS("")
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
@@ -293,7 +294,8 @@ namespace EdwRollupLib
                 sessionId = input?.SessionId,
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
-                rollupName = input?.RollupName
+                rollupName = input?.RollupName,
+                rollupArgs = input?.RollupArgs?.GetS("")
             };
 
             await FrameworkWrapper.Log($"{nameof(RollupJob)}.{step}", JsonConvert.SerializeObject(payload));
@@ -310,6 +312,7 @@ namespace EdwRollupLib
                 workingSetTableName = input?.WorkingSetTableName,
                 rsConfigId = input?.RsConfigId,
                 rollupName = input?.RollupName,
+                rollupArgs = input?.RollupArgs?.GetS(""),
                 message = ex.ToString()
             };
 
@@ -339,6 +342,8 @@ namespace EdwRollupLib
                     text
                 }), "application/json");
             }
+
+            _complete.SetException(ex);
         }
 
         private ITargetBlock<Parameters> PrepareDataflow(CancellationToken cancellationToken)

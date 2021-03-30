@@ -113,7 +113,7 @@ namespace EdwRollupLib
             }
 
             var (debug, debugDir) = FrameworkWrapper.RoslynWrapper.GetDefaultDebugValues();
-            var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent));
+            var lbmContext = new LbmParameters(context, FrameworkWrapper, new WithEventsMaker<object>(DropStartEvent, DropEndEvent, DropErrorEvent), (RsConfigId, _rsId, _rsTs));
 
             await FrameworkWrapper.RoslynWrapper.Evaluate(ImplementationLbmId.ToString(), lbm.GetS("Config"), lbmContext, null, debug, debugDir);
         }
@@ -239,34 +239,50 @@ namespace EdwRollupLib
 
         private async Task DropErrorEvent(Exception ex, IJobExecutionContext context, string step, bool alert)
         {
-            var payload = new
+            if (ex is AggregateException aggregateException)
             {
-                step,
-                eventType = "Error"
-            };
-
-            await FrameworkWrapper.Error($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
-            await DropEvent(payload);
-
-            if (alert)
-            {
-                var text = $"{Name} - ";
-
-                void AddField(string fieldName, object field)
+                foreach (Exception e in aggregateException.InnerExceptions)
                 {
-                    if (field != default)
-                    {
-                        text += $"{fieldName}: {field} ";
-                    }
+                    await ProcessException(e);
                 }
+            }
+            else
+            {
+                await ProcessException(ex);
+            }
 
-                AddField("Step", step);
-                AddField("Error", ex.Message);
-
-                await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+            async Task ProcessException(Exception e)
+            {
+                var payload = new
                 {
-                    text
-                }), "application/json");
+                    step,
+                    eventType = "Error",
+                    message = e.Message
+                };
+
+                await FrameworkWrapper.Error($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+                await DropEvent(payload);
+
+                if (alert)
+                {
+                    var text = $"{Name} - ";
+
+                    void AddField(string fieldName, object field)
+                    {
+                        if (field != default)
+                        {
+                            text += $"{fieldName}: {field} ";
+                        }
+                    }
+
+                    AddField("Step", step);
+                    AddField("Error", e.Message);
+
+                    await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+                    {
+                        text
+                    }), "application/json");
+                }
             }
         }
 
@@ -299,39 +315,55 @@ namespace EdwRollupLib
 
         private async Task DropErrorEvent(Exception ex, object context, string step, bool alert)
         {
-            var payload = new
+            if (ex is AggregateException aggregateException)
             {
-                step,
-                eventType = "Error",
-                context
-            };
-
-            await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
-            await DropEvent(payload);
-
-            if (alert)
-            {
-                var text = $"{Name} - ";
-
-                void AddField(string fieldName, object field)
+                foreach (Exception e in aggregateException.InnerExceptions)
                 {
-                    if (field != default)
-                    {
-                        text += $"{fieldName}: {field} ";
-                    }
+                    await ProcessException(e);
                 }
+            }
+            else
+            {
+                await ProcessException(ex);
+            }
 
-                AddField("Step", step);
-                AddField("Error", ex.Message);
-
-                await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+            async Task ProcessException(Exception e)
+            {
+                var payload = new
                 {
-                    text
-                }), "application/json");
+                    step,
+                    eventType = "Error",
+                    context,
+                    message = e.Message
+                };
+
+                await FrameworkWrapper.Log($"{nameof(MaintenanceJob)}.{step}", JsonConvert.SerializeObject(payload));
+                await DropEvent(payload);
+
+                if (alert)
+                {
+                    var text = $"{Name} - ";
+
+                    void AddField(string fieldName, object field)
+                    {
+                        if (field != default)
+                        {
+                            text += $"{fieldName}: {field} ";
+                        }
+                    }
+
+                    AddField("Step", step);
+                    AddField("Error", e.Message);
+
+                    await ProtocolClient.HttpPostAsync(FrameworkWrapper.StartupConfiguration.GetS("Config/SlackAlertUrl"), JsonConvert.SerializeObject(new
+                    {
+                        text
+                    }), "application/json");
+                }
             }
         }
         #endregion
 
-        private record LbmParameters(IJobExecutionContext Context, FrameworkWrapper FrameworkWrapper, WithEventsMaker<object> WithEventsMaker);
+        private record LbmParameters(IJobExecutionContext Context, FrameworkWrapper FrameworkWrapper, WithEventsMaker<object> WithEventsMaker, (Guid rsConfigId, Guid rsId, DateTime rsTs) ReportingSequence);
     }
 }
