@@ -1,4 +1,4 @@
-import { isEmpty, set } from "lodash/fp"
+import { set } from "lodash/fp"
 import { forIn } from "lodash"
 import React from "react"
 import { deepDiff } from "./lib/deep-diff"
@@ -21,6 +21,7 @@ interface ComponentRendererProps {
   onChangeSchema: EditUserInterfaceProps["onChangeSchema"]
   submit?: UserInterfaceProps["submit"]
   onDrop?: DroppableContextType["onDrop"]
+  keyPrefix?: string
 }
 
 export const ComponentRendererModeContext = React.createContext<UserInterfaceProps["mode"]>("display")
@@ -38,6 +39,7 @@ export const _ComponentRenderer = ({
   onChangeSchema,
   submit,
   onDrop,
+  keyPrefix,
 }: ComponentRendererProps): JSX.Element => {
   // const { componentRegistry } = React.useContext(ComponentRegistryContext)
   const contextMode = React.useContext(ComponentRendererModeContext)
@@ -54,7 +56,7 @@ export const _ComponentRenderer = ({
 
   const content = components.map((componentDefinition, index) => {
     return (
-      <DataPathContext path={index} key={`${componentDefinition.component}-${index}`}>
+      <DataPathContext path={index} key={`${keyPrefix}${componentDefinition.component}-${index}`}>
         {(path) => (
           <DetokenizedComponent
             componentDefinition={componentDefinition}
