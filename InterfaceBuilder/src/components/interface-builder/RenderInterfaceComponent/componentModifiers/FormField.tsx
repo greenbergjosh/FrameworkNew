@@ -4,7 +4,7 @@ import { Form, Icon, Tooltip } from "antd"
 import { ComponentModifierProps } from "components/interface-builder/RenderInterfaceComponent"
 import { LayoutDefinition } from "components/interface-builder/components/base/BaseInterfaceComponent"
 
-export const FormFieldWrapper: React.FC<
+export const FormField: React.FC<
   ComponentModifierProps & {
     layoutDefinition: LayoutDefinition
   }

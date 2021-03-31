@@ -1,8 +1,8 @@
 import { Alert } from "antd"
 import React from "react"
-import { FormFieldWrapper } from "./FormFieldWrapper"
-import { DraggableWrapper } from "./DraggableWrapper"
-import { DataBinding } from "./DataBinding/DataBinding"
+import { FormField } from "./componentModifiers/FormField"
+import { DraggableWrapper } from "./componentModifiers/DraggableWrapper"
+import { DataBinding } from "./componentModifiers/DataBinding"
 import { EditDataBinding } from "./componentModifiers/EditDataBinding/EditDataBinding"
 import { RenderInterfaceComponentProps, RenderInterfaceComponentState } from "./types"
 import { Visibility } from "./componentModifiers/Visibility/Visibility"
@@ -79,7 +79,7 @@ export class RenderInterfaceComponent extends React.Component<
             layoutDefinition={layoutDefinition}
             mode={mode}
             userInterfaceData={userInterfaceData}>
-            <FormFieldWrapper componentDefinition={componentDefinition} layoutDefinition={layoutDefinition}>
+            <FormField componentDefinition={componentDefinition} layoutDefinition={layoutDefinition}>
               <EditDataBinding
                 componentDefinition={componentDefinition}
                 mode={mode}
@@ -97,7 +97,7 @@ export class RenderInterfaceComponent extends React.Component<
                   userInterfaceSchema={componentDefinition}
                 />
               </EditDataBinding>
-            </FormFieldWrapper>
+            </FormField>
           </Visibility>
         </DraggableWrapper>
       </DataBinding>

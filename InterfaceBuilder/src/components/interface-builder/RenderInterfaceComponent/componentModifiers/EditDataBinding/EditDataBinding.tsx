@@ -6,7 +6,7 @@ import { ComponentModifierProps, RenderInterfaceComponentProps } from "../../typ
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
 import styles from "./styles.scss"
 import { EditDataBindingModal } from "./EditDataBindingModal"
-import { DataBinding } from "../../DataBinding/DataBinding"
+import { DataBinding } from "../DataBinding"
 
 /**
  *
