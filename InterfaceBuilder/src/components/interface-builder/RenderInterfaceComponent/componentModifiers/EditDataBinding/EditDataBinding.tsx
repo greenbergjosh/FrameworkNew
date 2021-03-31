@@ -27,7 +27,7 @@ export const EditDataBinding: React.FC<
   }
 > = (props): JSX.Element => {
   const { key } = props.componentDefinition
-  const { bindings } = props.userInterfaceData
+  const { bindings } = props.userInterfaceData || {}
   const initialRawRules = bindings ? bindings[key] : {}
 
   const [isBinding, setIsBinding] = React.useState(false)
