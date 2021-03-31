@@ -7,7 +7,7 @@ import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 export interface RenderInterfaceComponentProps {
   Component: typeof BaseInterfaceComponent
   componentDefinition: ComponentDefinition
-  data: UserInterfaceProps["data"]
+  userInterfaceData: UserInterfaceProps["data"]
   getRootData: () => UserInterfaceProps["data"]
   dragDropDisabled?: boolean
   index: number
@@ -28,4 +28,8 @@ export type VisibilityStyle = {
   border?: string
   modeTitle: string
   blockEvents: boolean
+}
+
+export interface ComponentModifierProps {
+  componentDefinition: ComponentDefinition
 }

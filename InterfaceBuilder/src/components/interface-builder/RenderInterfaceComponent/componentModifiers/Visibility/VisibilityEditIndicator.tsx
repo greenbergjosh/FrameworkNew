@@ -21,7 +21,7 @@ export enum VISIBILITY_MODES {
  * @param props
  * @constructor
  */
-export const VisibilityIndicator: React.FC<{
+export const VisibilityEditIndicator: React.FC<{
   blocked?: boolean
   hidden?: boolean
   invisible?: boolean

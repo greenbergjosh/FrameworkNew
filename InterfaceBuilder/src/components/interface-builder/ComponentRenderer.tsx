@@ -164,7 +164,7 @@ function DetokenizedComponent(props: {
     <RenderInterfaceComponent
       Component={registry.lookup(componentDef.component)}
       componentDefinition={componentDef}
-      data={data}
+      userInterfaceData={data}
       dragDropDisabled={dragDropDisabled}
       getRootData={getRootData}
       index={index}
