@@ -6,7 +6,7 @@ import { AppConfig } from "../../../../state/apps"
 import { VerticalInlineMenu } from "../../../../components/VerticalInlineMenu/VerticalInlineMenu"
 import { IRouteMeta } from "../../../../state/navigation"
 import styles from "./sidebar.module.scss"
-import { throttle } from "lodash/fp"
+import { throttle, debounce } from "lodash"
 
 export function Sidebar(props: {
   appConfig: AppConfig
@@ -20,21 +20,32 @@ export function Sidebar(props: {
   setPinned: React.Dispatch<React.SetStateAction<boolean>>
   subroutes: IRouteMeta["subroutes"]
 }): JSX.Element {
-  const handleMouseEnter = throttle(500, (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (props.collapsed && !props.pinned) {
-      props.setCollapsed(false)
-    }
-  })
+  const [enterDelayHandler, setEnterDelayHandler] = React.useState<any>(null)
+  const [leaveDelayHandler, setLeaveDelayHandler] = React.useState<any>(null)
 
-  const handleMouseLeave = throttle(500, (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!props.collapsed && !props.pinned) {
-      setTimeout(() => {
-        if (!props.collapsed && !props.pinned) {
-          props.setCollapsed(true)
-        }
-      }, 200)
+  const handleMouseEnter = () => {
+    if (props.pinned) {
+      return
     }
-  })
+    clearTimeout(leaveDelayHandler)
+    setEnterDelayHandler(
+      setTimeout(() => {
+        props.setCollapsed(false)
+      }, 250)
+    )
+  }
+
+  const handleMouseLeave = () => {
+    if (props.pinned) {
+      return
+    }
+    clearTimeout(enterDelayHandler)
+    setLeaveDelayHandler(
+      setTimeout(() => {
+        props.setCollapsed(true)
+      }, 250)
+    )
+  }
 
   return (
     <Layout.Sider
