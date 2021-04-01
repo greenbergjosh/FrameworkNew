@@ -4,7 +4,7 @@ import { isEmpty, isPlainObject, set } from "lodash/fp"
 import { UserInterfaceProps } from "components/interface-builder/UserInterface"
 import { ComponentModifierProps, RenderInterfaceComponentProps } from "../../types"
 import { JSONRecord } from "components/interface-builder/@types/JSONTypes"
-import styles from "./styles.scss"
+import styles from "../styles.scss"
 import { EditDataBindingModal } from "./EditDataBindingModal"
 import { DataBinding } from "../DataBinding"
 
